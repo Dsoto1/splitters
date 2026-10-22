@@ -16,6 +16,7 @@ import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import {
   PLAYER,
   POWERUP_DAMAGE_BIT,
+  angleDelta,
   POWERUP_SPEED_BIT,
   WEAPONS_BY_SLOT,
   getWeapon,
@@ -29,6 +30,8 @@ import { MapStyler } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import { ScenarioVisuals } from './scenarioVisuals.ts';
+import { CharacterLibrary, type CharacterInstance, type CharacterSpec } from '../content/characters.ts';
+import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
 
 const SLOT_COLORS = ['#e6544a', '#4aa3e6', '#f2c14e', '#5cc77a', '#b276e0', '#f28f3b', '#46c9c0', '#e872b0'];
@@ -46,10 +49,27 @@ interface Fx {
 }
 
 interface Avatar {
-  body: Mesh;
+  root: TransformNode;
+  /** Capsule shown until the character model loads. */
+  placeholder: Mesh;
   mat: StandardMaterial;
   weaponSlot: number;
   weaponNode?: TransformNode;
+  anim?: CharacterAnimator;
+  specKey: string;
+  last?: { x: number; y: number; z: number; t: number };
+  vel: { x: number; z: number };
+}
+
+/** Characters face +Z (our yaw 0) after glTF import; fit them to the player height. */
+const MODEL_YAW = 0;
+
+function fitCharacter(ch: CharacterInstance): void {
+  ch.root.rotation.y = MODEL_YAW;
+  const { min, max } = ch.root.getHierarchyBoundingVectors(true);
+  const h = max.y - min.y;
+  // Keep any size multiplier already on the model (NPC heavies are bigger).
+  if (h > 0.5) ch.root.scaling.scaleInPlace((PLAYER.height * ch.root.scaling.y) / h);
 }
 
 interface PickupVisual {
@@ -64,6 +84,7 @@ export class GameView {
   readonly camera: FreeCamera;
   readonly models: ModelLibrary;
   readonly scenario: ScenarioVisuals;
+  readonly characters: CharacterLibrary;
   private readonly avatars = new Map<number, Avatar>();
   private readonly pickups = new Map<string, PickupVisual>();
   private readonly projectiles = new Map<number, TransformNode>();
@@ -89,6 +110,7 @@ export class GameView {
     this.camera.inputs.clear();
     this.models = new ModelLibrary(this.scene);
     this.scenario = new ScenarioVisuals(this.scene);
+    this.characters = new CharacterLibrary(this.scene);
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
     hemi.intensity = 0.8;
@@ -176,72 +198,121 @@ export class GameView {
 
   // ---------------------------------------------------------------- avatars
 
-  /** Update remote player avatars from interpolated poses. */
-  updateAvatars(poses: readonly RemotePose[], localSlot: number, npcLook: (id: number) => { color: string; scale: number } | undefined = () => undefined): void {
+  /**
+   * Update remote player and NPC avatars from interpolated poses. Each one is
+   * a capsule until its character model has loaded, then an animated character.
+   */
+  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => CharacterSpec, celebrate = false): void {
+    const now = performance.now();
     const seen = new Set<number>();
     for (const p of poses) {
       if (p.slot === localSlot) continue;
       seen.add(p.slot);
       let a = this.avatars.get(p.slot);
+      const want = spec(p.slot);
+      const key = JSON.stringify(want);
+      if (a && a.specKey !== key) {
+        this.disposeAvatar(a);
+        a = undefined;
+      }
       if (!a) {
-        a = this.createAvatar(p.slot, npcLook(p.slot));
+        a = this.createAvatar(p.slot, want, key);
         this.avatars.set(p.slot, a);
       }
-      a.body.setEnabled(p.alive);
-      a.body.position.set(p.x, p.y + PLAYER.height / 2, p.z);
-      a.body.rotation.y = p.yaw;
-      // Powerups glow: cyan for speed, magenta for damage.
+      // Motion from successive interpolated positions.
+      const dt = a.last ? (now - a.last.t) / 1000 : 0;
+      if (a.last && dt > 0) {
+        const k = Math.min(1, dt * 12);
+        a.vel.x += ((p.x - a.last.x) / dt - a.vel.x) * k;
+        a.vel.z += ((p.z - a.last.z) / dt - a.vel.z) * k;
+        // Respawn teleports are not motion.
+        if (Math.hypot(p.x - a.last.x, p.z - a.last.z) > 4) a.vel = { x: 0, z: 0 };
+      }
+      a.last = { x: p.x, y: p.y, z: p.z, t: now };
+      a.root.position.set(p.x, p.y, p.z);
+      a.root.rotation.y = p.yaw;
+      a.placeholder.setEnabled(p.alive && !a.anim);
       const glowColor = p.powerups & POWERUP_DAMAGE_BIT ? '#c03cff' : p.powerups & POWERUP_SPEED_BIT ? '#36d6ff' : null;
       a.mat.emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
+      if (a.anim) {
+        const speed = Math.hypot(a.vel.x, a.vel.z);
+        a.anim.update(Math.min(0.1, dt), {
+          speed,
+          moveAngle: speed > 0.3 ? angleDelta(p.yaw, Math.atan2(a.vel.x, a.vel.z)) : 0,
+          airborne: !p.grounded,
+          alive: p.alive,
+          pitch: p.pitch,
+          celebrate: celebrate && p.alive,
+        });
+        for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
+      }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
     }
     for (const [slot, a] of this.avatars) {
       if (!seen.has(slot)) {
-        a.body.dispose(false, true);
+        this.disposeAvatar(a);
         this.avatars.delete(slot);
       }
     }
+  }
+
+  /** Play an upper-body action on a remote avatar (shooting, melee). */
+  avatarAction(slot: number, action: OneShot): void {
+    this.avatars.get(slot)?.anim?.trigger(action);
+  }
+
+  /** Remote avatars currently shown as animated characters (for tests and the stats overlay). */
+  characterCount(): number {
+    return [...this.avatars.values()].filter((a) => a.anim).length;
   }
 
   private setAvatarWeapon(a: Avatar, slot: number): void {
     a.weaponSlot = slot;
     a.weaponNode?.dispose();
     a.weaponNode = undefined;
+    a.anim?.hold(null);
     const def = WEAPONS_BY_SLOT.find((w) => w.slot === slot);
     if (!def) return;
     void this.models.instantiate(def.view.model, `held_${slot}`).then((node) => {
-      if (a.weaponSlot !== slot || a.body.isDisposed()) return node.dispose();
-      node.parent = a.body;
+      if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
+      if (a.anim) {
+        a.anim.hold(node);
+        return;
+      }
+      node.parent = a.placeholder;
       // Right hand, chest height, pointing where the player faces.
       node.position.set(0.3, 0.25, 0.35);
       a.weaponNode = node;
     });
   }
 
-  /** Players are capsules in their slot colour; NPCs wear their faction colour, a helmet and a red visor. */
-  private createAvatar(slot: number, npc?: { color: string; scale: number }): Avatar {
-    const body = CreateCapsule(`avatar_${slot}`, { height: PLAYER.height, radius: PLAYER.radius, tessellation: 12, subdivisions: 2 }, this.scene);
-    const mat = solid(this.scene, `avatar_${slot}_mat`, npc?.color ?? slotColor(slot));
-    body.material = mat;
-    if (npc) {
-      body.scaling.set(npc.scale, 1, npc.scale);
-      const helmet = CreateSphere(`helmet_${slot}`, { diameter: PLAYER.radius * 2.3, segments: 8, slice: 0.5 }, this.scene);
-      helmet.parent = body;
-      helmet.position.y = PLAYER.height / 2 - 0.3;
-      helmet.material = solid(this.scene, `helmet_${slot}_mat`, '#2b2f36');
-      const pads = CreateBox(`pads_${slot}`, { width: PLAYER.radius * 2.6, height: 0.18, depth: PLAYER.radius * 1.3 }, this.scene);
-      pads.parent = body;
-      pads.position.y = 0.38;
-      pads.material = helmet.material;
-      for (const m of [helmet, pads]) m.isPickable = false;
-    }
-    // Visor shows facing direction at a glance.
-    const visor = CreateBox(`visor_${slot}`, { width: 0.5, height: 0.14, depth: 0.2 }, this.scene);
-    visor.parent = body;
-    visor.position = new Vector3(0, PLAYER.eyeHeight - PLAYER.height / 2, PLAYER.radius - 0.05);
-    visor.material = npc ? glow(this.scene, `visor_${slot}_mat`, '#ff3b30', 0.8) : solid(this.scene, `visor_${slot}_mat`, '#1c1f26');
-    body.isPickable = false;
-    return { body, mat, weaponSlot: -1 };
+  private createAvatar(slot: number, spec: CharacterSpec, specKey: string): Avatar {
+    const root = new TransformNode(`avatar_${slot}`, this.scene);
+    const placeholder = CreateCapsule(`avatarcap_${slot}`, { height: PLAYER.height, radius: PLAYER.radius, tessellation: 12, subdivisions: 2 }, this.scene);
+    placeholder.parent = root;
+    placeholder.position.y = PLAYER.height / 2;
+    const mat = solid(this.scene, `avatar_${slot}_mat`, spec.npc?.color ?? slotColor(slot));
+    placeholder.material = mat;
+    placeholder.isPickable = false;
+    const a: Avatar = { root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 } };
+    void this.characters.create(spec, `char_${slot}`).then((ch) => {
+      if (root.isDisposed()) return ch.dispose();
+      ch.root.parent = root;
+      fitCharacter(ch);
+      a.anim = new CharacterAnimator(this.scene, ch);
+      placeholder.setEnabled(false);
+      // Move the held weapon from the capsule to the hand.
+      const slotNow = a.weaponSlot;
+      a.weaponSlot = -1;
+      if (slotNow >= 0) this.setAvatarWeapon(a, slotNow);
+    });
+    return a;
+  }
+
+  private disposeAvatar(a: Avatar): void {
+    a.anim?.dispose();
+    a.weaponNode?.dispose();
+    a.root.dispose(false, true);
   }
 
   // ---------------------------------------------------------------- pickups

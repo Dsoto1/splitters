@@ -105,7 +105,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         // Make room by dropping a bot if the server is full of them.
         const bot = match.combatants().find((c) => c.kind === 'bot');
         if (match.combatants().length >= MAX_PLAYER_SLOTS && bot) match.remove(bot.slot);
-        const player = match.addHuman(sanitizeName(msg.name));
+        const player = match.addHuman(sanitizeName(msg.name), msg.look);
         if (!player) {
           send(client, { t: 'reject', reason: 'server full' });
           ws.close(4002, 'full');
@@ -244,7 +244,7 @@ export function parseClientMessage(text: string): ClientMessage | null {
   const o = m as Record<string, unknown>;
   switch (o.t) {
     case 'hello':
-      return typeof o.protocol === 'number' && typeof o.name === 'string' ? { t: 'hello', protocol: o.protocol, name: o.name } : null;
+      return typeof o.protocol === 'number' && typeof o.name === 'string' ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}) } : null;
     case 'ping':
       return typeof o.id === 'number' && typeof o.ct === 'number' ? { t: 'ping', id: o.id, ct: o.ct } : null;
     case 'input': {

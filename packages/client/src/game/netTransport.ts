@@ -13,6 +13,7 @@ export class NetTransport implements Transport {
   constructor(
     private readonly url: string,
     private readonly name: string,
+    private readonly look?: string,
   ) {}
 
   get label(): string {
@@ -23,7 +24,7 @@ export class NetTransport implements Transport {
     const ws = new WebSocket(this.url);
     this.ws = ws;
     ws.addEventListener('open', () => {
-      this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name });
+      this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look });
       this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: ++this.pingId, ct: performance.now() }), 1000);
     });
     ws.addEventListener('message', (e) => {

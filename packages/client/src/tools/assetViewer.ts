@@ -37,7 +37,7 @@ export async function openAssetViewer(engine: AbstractEngine, canvas: HTMLCanvas
   panel.innerHTML = `<h2 style="margin:0 0 8px">Asset viewer</h2><p style="color:#9aa">Orbit: drag · Zoom: wheel · Red arrow = +Z (forward) · Grid = 10 cm</p>`;
   document.body.append(panel);
 
-  const assets = provenance.assets;
+  const assets = provenance.assets.filter((a) => a.file.startsWith('models/'));
   const cols = 3;
   await Promise.all(
     assets.map(async (a, i) => {

@@ -12,7 +12,7 @@ export const PROTOCOL_VERSION = 1;
 export type Tuple3 = [number, number, number];
 
 export type ClientMessage =
-  | { t: 'hello'; protocol: number; name: string }
+  | { t: 'hello'; protocol: number; name: string; look?: string }
   | { t: 'input'; inputs: PlayerInput[] }
   | { t: 'ping'; id: number; ct: number };
 
@@ -114,6 +114,8 @@ export interface RosterEntry {
   slot: number;
   name: string;
   bot: boolean;
+  /** Character look ID (CORE_LOOKS). */
+  look: string;
 }
 
 export interface ServerStats {

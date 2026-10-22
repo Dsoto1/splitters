@@ -25,6 +25,7 @@ import { PhysicsWorld } from './physics.ts';
 import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
+import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_PROFILE, NPC_ROLE_SPECS, mapFactions, relation } from './npc.ts';
 import { getWeapon, rayCapsule, resolveHitscan, type WeaponDefinition } from './weapons.ts';
 
@@ -53,6 +54,8 @@ export interface Combatant {
   speedMul: number;
   /** NPC details. */
   npc?: { encounter: string; role: NpcRole; removeAt: number };
+  /** Character look (players and bots). */
+  look: string;
   name: string;
   collider: RAPIER.Collider;
   move: MoveState;
@@ -271,6 +274,7 @@ export class Match {
       slot,
       kind,
       name,
+      look: DEFAULT_LOOK,
       faction: kind === 'npc' ? null : this.playerFaction,
       speedMul: 1,
       collider: this.physics.createPlayerCollider(),
@@ -310,13 +314,16 @@ export class Match {
     return this.slots.filter((c): c is Combatant => c !== null);
   }
 
-  addHuman(name: string): Combatant | null {
-    return this.addCombatant('human', name);
+  addHuman(name: string, look?: string): Combatant | null {
+    const c = this.addCombatant('human', name);
+    if (c) c.look = getLook(look).id;
+    return c;
   }
 
   addBot(name: string, profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal): Combatant | null {
     const c = this.addCombatant('bot', name);
     if (c) {
+      c.look = lookForBot(c.slot);
       c.bot = new BotBrain(c.slot, profile, difficulty, this.seed);
       c.bot.onSpawn(c.yaw);
     }
@@ -876,7 +883,7 @@ export class Match {
   }
 
   roster(): RosterEntry[] {
-    return this.combatants().map((c) => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot' }));
+    return this.combatants().map((c) => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look }));
   }
 
   destroy(): void {

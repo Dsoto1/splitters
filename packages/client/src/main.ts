@@ -1,5 +1,5 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
-import { initPhysics, loadMap } from '@chronosplit/shared';
+import { CORE_LOOKS, DEFAULT_LOOK, getLook, initPhysics, loadMap } from '@chronosplit/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
@@ -15,8 +15,12 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const params = new URLSearchParams(location.search);
 const nameInput = $<HTMLInputElement>('name');
 const serverInput = $<HTMLInputElement>('server');
+const lookSelect = $<HTMLSelectElement>('look');
 
 nameInput.value = params.get('name') ?? storage('cs.name') ?? `Player${Math.floor(Math.random() * 900 + 100)}`;
+for (const l of CORE_LOOKS) lookSelect.add(new Option(l.name, l.id));
+lookSelect.value = getLook(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK).id;
+lookSelect.addEventListener('change', () => storage('cs.look', lookSelect.value));
 serverInput.value = params.get('server') ?? `ws://${location.hostname || 'localhost'}:7777`;
 
 function storage(key: string, value?: string): string | null {
@@ -102,7 +106,7 @@ class App {
   private startTest(req: TestRequest): void {
     const t0 = performance.now();
     this.editor!.hide();
-    this.startSession(new LocalTransport(req.map, { name: nameInput.value || 'Tester', botFill: req.botFill, difficulty: req.difficulty }), {
+    this.startSession(new LocalTransport(req.map, { name: nameInput.value || 'Tester', look: lookSelect.value, botFill: req.botFill, difficulty: req.difficulty }), {
       exitLabel: 'Back to MapMaker',
       exitOnF5: true,
       onReady: () => {
@@ -124,7 +128,7 @@ class App {
     if (!arena.ok) return this.showMenu('Built-in map failed to load');
     // Co-op: two bot teammates; deathmatch maps: a lobby of opponents.
     const botFill = which === 'outpost' ? 3 : which === 'vault' ? 4 : 6;
-    this.startSession(new LocalTransport(arena.map, { name: nameInput.value || 'Player', botFill, difficulty: 'normal' }), {
+    this.startSession(new LocalTransport(arena.map, { name: nameInput.value || 'Player', look: lookSelect.value, botFill, difficulty: 'normal' }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       onExit: (reason) => this.showMenu(reason ?? ''),
@@ -135,7 +139,7 @@ class App {
     storage('cs.name', name);
     $('status').textContent = 'Connecting…';
     await this.init();
-    this.startSession(new NetTransport(url, name), {
+    this.startSession(new NetTransport(url, name, lookSelect.value), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       onExit: (reason) => this.showMenu(reason ? `Disconnected: ${reason}` : ''),
@@ -181,6 +185,16 @@ if (params.get('mode') === 'assets') {
     const { engine, canvas } = await createEngine($<HTMLCanvasElement>('view'));
     window.addEventListener('resize', () => engine.resize());
     await openAssetViewer(engine, canvas);
+  })();
+} else if (params.get('mode') === 'characters') {
+  // Team tool: inspect character looks, rig and animations.
+  void (async () => {
+    $('menu').hidden = true;
+    const { createEngine } = await import('./engine.ts');
+    const { openCharacterViewer } = await import('./tools/characterViewer.ts');
+    const { engine, canvas } = await createEngine($<HTMLCanvasElement>('view'));
+    window.addEventListener('resize', () => engine.resize());
+    await openCharacterViewer(engine, canvas);
   })();
 } else if (params.get('mode') === 'editor') void app.openEditor();
 else if (params.has('offline')) {

@@ -80,6 +80,8 @@ export class GameSession {
   private outcome: 'victory' | 'defeat' | null = null;
   /** Role and faction of each NPC seen, for names and looks. */
   private npcInfo = new Map<number, { role: number; faction: number }>();
+  /** Character look of each player slot (from the roster). */
+  private looks = new Map<number, string>();
   private botStates: string[] = [];
   private outbox: PlayerInput[] = [];
   private showStats: boolean;
@@ -188,6 +190,8 @@ export class GameSession {
         break;
       case 'roster':
         this.hud.setRoster(msg.players);
+        this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
+        for (const p of msg.players) this.view.characters.preload({ look: p.look });
         break;
       case 'snapshot': {
         this.phase = msg.phase;
@@ -218,9 +222,11 @@ export class GameSession {
             } else {
               const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
               for (const to of ev.to) this.view.addTracer(from, { x: to[0], y: to[1], z: to[2] }, slotColor(ev.s));
+              this.view.avatarAction(ev.s, 'shoot');
             }
           } else if (ev.e === 'melee') {
             if (ev.s === this.slot && ev.hit !== null) this.hud.hit();
+            if (ev.s !== this.slot) this.view.avatarAction(ev.s, 'melee');
           } else if (ev.e === 'explode') {
             this.view.explosion({ x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ev.r);
           } else if (ev.e === 'pickup') {
@@ -373,7 +379,15 @@ export class GameSession {
     this.view.updatePickups(this.taken, now);
     this.view.updateProjectiles(this.interp.sampleProjectiles(now));
     const poses = this.interp.sample(now);
-    this.view.updateAvatars(poses, this.slot, (id) => this.npcLook(id));
+    this.view.updateAvatars(
+      poses,
+      this.slot,
+      (id) => {
+        const npc = this.npcLook(id);
+        return npc ? { npc: { color: npc.color, scale: npc.scale } } : { look: this.looks.get(id) };
+      },
+      this.phase === 'intermission',
+    );
     this.sfx.remoteSteps(poses);
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot);
 

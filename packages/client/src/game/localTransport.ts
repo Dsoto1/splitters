@@ -17,6 +17,8 @@ import type { Transport } from './transport.ts';
 
 export interface LocalMatchOptions {
   name: string;
+  /** Character look for the local player. */
+  look?: string;
   /** Total players to fill with Player Bots. */
   botFill: number;
   difficulty: BotDifficulty['id'];
@@ -56,7 +58,7 @@ export class LocalTransport implements Transport {
     if (this.stopped) return;
     const rules = this.opts.rules ?? rulesForMap(this.map);
     const match = new Match(this.map, rules, Math.floor(Math.random() * 1e6));
-    const me = match.addHuman(this.opts.name)!;
+    const me = match.addHuman(this.opts.name, this.opts.look)!;
     new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]).rebalance(Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));
     this.queueInputs = (inputs) => match.queueInputs(me.slot, inputs);
     this.teardown = () => match.destroy();

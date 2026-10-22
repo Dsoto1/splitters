@@ -343,6 +343,57 @@ for (const f of existsSync(SOUND_DIR) ? readdirSync(SOUND_DIR) : []) {
 }
 console.log(`${check ? 'checked' : 'built  '} ${soundFiles.size} sound files`);
 
+// ---------------------------------------------------------------- characters
+// Characters are prepared from the full pack downloads by
+// tools/content/prepare-characters.mjs (too large to keep in assets-src); its
+// lock file records what it wrote, and this checks the shipped files against it.
+const CHAR_LOCK = join(ROOT, 'content/characters.lock.json');
+const CHAR_MODS = {
+  rig: ['clips selected, renamed and resampled', 'mannequin only'],
+  head: ['cut from the base body', 'rebound to the regular body pose', 'materials simplified'],
+  hair: ['rebound to the regular body pose', 'simplified', 'materials simplified'],
+  outfit: ['merged into one skinned body', 'simplified', 'materials simplified', 'textures downscaled'],
+  texture: ['alternative colourway from the pack', 'downscaled to a 1024 px JPEG'],
+};
+const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));
+const charFiles = new Set();
+for (const f of charLock.files) {
+  charFiles.add(f.file);
+  const packIds = f.source.split(/,\s*/);
+  const packs = packIds.map((id) => manifest.packs[id]);
+  if (packs.some((p) => !p)) {
+    problems.push(`${f.file}: unknown pack in ${f.source}`);
+    continue;
+  }
+  for (const pack of packs) {
+    if (!existsSync(join(ROOT, pack.licenseFile))) problems.push(`${f.file}: licence file missing (${pack.licenseFile})`);
+    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
+  }
+  const path = join(ROOT, 'packages/client/public', f.file);
+  if (!existsSync(path)) problems.push(`${f.file}: missing (run node tools/content/prepare-characters.mjs)`);
+  else if (createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${f.file}: does not match content/characters.lock.json`);
+  if (f.triangles > manifest.characterBudgets.maxTriangles) problems.push(`${f.file}: ${f.triangles} triangles exceeds budget ${manifest.characterBudgets.maxTriangles}`);
+  if (f.bytes > manifest.characterBudgets.maxBytes) problems.push(`${f.file}: ${f.bytes} bytes exceeds budget ${manifest.characterBudgets.maxBytes}`);
+  ledger.assets.push({
+    file: f.file,
+    sha256: f.sha256,
+    triangles: f.triangles,
+    bytes: f.bytes,
+    source: f.source,
+    title: packs.map((p) => p.title).join(' + '),
+    creator: [...new Set(packs.map((p) => p.creator))].join(', '),
+    url: packs.map((p) => p.url).join(' '),
+    license: [...new Set(packs.map((p) => p.license))].join(', '),
+    modifications: CHAR_MODS[f.role] ?? [],
+  });
+}
+const CHAR_DIR = join(ROOT, 'packages/client/public/characters');
+for (const f of existsSync(CHAR_DIR) ? readdirSync(CHAR_DIR, { recursive: true }) : []) {
+  const rel = `characters/${String(f).replaceAll('\\', '/')}`;
+  if (/\.(glb|jpg|png)$/.test(rel) && !charFiles.has(rel)) problems.push(`${rel}: not in content/characters.lock.json`);
+}
+console.log(`checked ${charLock.files.length} character files`);
+
 const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
 if (check) {
   if (!existsSync(LEDGER) || readFileSync(LEDGER, 'utf8') !== ledgerText) problems.push('content/provenance.json is out of date (run pnpm content:build)');

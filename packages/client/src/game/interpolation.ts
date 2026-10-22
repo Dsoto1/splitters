@@ -18,6 +18,8 @@ export interface RemotePose {
   yaw: number;
   pitch: number;
   alive: boolean;
+  /** Standing on the ground (players report it; NPCs are assumed grounded). */
+  grounded: boolean;
   weapon: number;
   powerups: number;
   state?: string;
@@ -101,6 +103,7 @@ export class Interpolator {
         yaw: from.yaw + angleDelta(from.yaw, pb.yaw) * blend,
         pitch: from.pitch + (pb.pitch - from.pitch) * blend,
         alive: pb.alive === 1,
+        grounded: pb.g === 1,
         weapon: pb.w,
         powerups: pb.pu,
         state: pb.st,

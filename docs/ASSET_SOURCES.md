@@ -13,6 +13,7 @@ The authoritative per-file list is generated at `content/provenance.json` (`pnpm
 | Quaternius — Ultimate Gun Pack (itch.io "50+ LowPoly Guns") | CC0 1.0 | Pistol, revolver, SMG, assault rifle, shotgun, sniper rifle, bayonet (knife) |
 | Kenney — Blaster Kit 2.1 | CC0 1.0 | Grenade launcher (recoloured blaster-h), grenade projectile |
 | Kenney — Sci-Fi Sounds, Impact Sounds, RPG Audio, Interface Sounds, Voiceover Pack: Fighter | CC0 1.0 | Explosions, impacts, footsteps, reloads, pickups, UI cues, announcer (see AUDIO.md) |
+| Quaternius — Universal Base Characters, Modular Character Outfits – Fantasy, Universal Animation Library 1 + 2 (free Standard editions) | CC0 1.0 | Player, bot and NPC characters: heads, hair, outfits, colourways, the rig and 20 animation clips (see CHARACTERS.md) |
 
 ## Licence tiers
 

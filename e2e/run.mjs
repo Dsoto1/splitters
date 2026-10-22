@@ -129,7 +129,9 @@ async function editorFlow(browser) {
   check(d.logic.rules.length === 1 && rule.when.event === 'button_pressed' && rule.when.target === btn.id && rule.do.some((a) => a.type === 'door_unlock' && a.target === door.id), 'logic template wires the button to the door');
   // Panels refresh on the editor's next frame (slow under software rendering): wait for it to catch up.
   await page.evaluate(() => document.activeElement?.blur());
-  await page.waitForFunction(() => window.__editor.renderedRevision === window.__editor.history.revision, null, { timeout: 10000 });
+  await page
+    .waitForFunction(() => !/does nothing|never unlocks/.test(document.getElementById('ed-issues')?.textContent ?? ''), null, { timeout: 10000 })
+    .catch(() => {});
   const issuesText = await page.textContent('#ed-issues');
   check(!/does nothing|never unlocks/.test(issuesText ?? ''), `validation is satisfied once the rule exists (${issuesText})`);
   await page.click('.lg-head button');
@@ -204,8 +206,26 @@ async function outpostFlow(browser) {
   await page.waitForTimeout(2500);
   const objectives = await page.textContent('#objectives');
   check((objectives ?? '').includes('Clear the courtyard'), `co-op mission shows its first objective (${objectives})`);
-  const npcs = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('helmet_') && m.isEnabled()).length);
-  check(npcs >= 4, `NPC squads are rendered (${npcs} helmets)`);
+  // Player, two bot teammates and at least one NPC squad, all as animated characters.
+  await page.waitForFunction(() => window.__cs.view.characterCount() >= 7, null, { timeout: 20000 }).catch(() => {});
+  const chars = await page.evaluate(() => window.__cs.view.characterCount());
+  check(chars >= 7, `players, bots and NPC squads are rendered as characters (${chars})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+async function charactersFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?mode=characters`);
+  await page.waitForFunction(() => window.__charsReady === true, null, { timeout: 30000 });
+  const n = await page.evaluate(() => window.__charAnimators.length);
+  check(n === 8, `character viewer builds every look and NPC (${n})`);
+  for (const label of ['Rifle', 'Run', 'shoot', 'Death', 'Idle']) {
+    await page.click(`button:text-is("${label}")`);
+    await page.waitForTimeout(300);
+  }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -235,11 +255,10 @@ try {
   await waitForHttp(CLIENT);
   await sleep(1500);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
-  await editorFlow(browser);
-  await offlineFlow(browser);
-  await vaultFlow(browser);
-  await outpostFlow(browser);
-  await onlineFlow(browser);
+  // E2E_ONLY=editor,characters runs a subset of the flows.
+  const only = process.env.E2E_ONLY?.split(',');
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, characters: charactersFlow, online: onlineFlow };
+  for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {
   console.log(`FAIL ${e.message}`);

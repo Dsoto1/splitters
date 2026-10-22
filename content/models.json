@@ -16,6 +16,38 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/kenney-blaster-kit/License.txt",
       "retrieved": "2026-10-22"
+    },
+    "quaternius-universal-base-characters": {
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-universal-base-characters/License.txt",
+      "retrieved": "2026-10-22"
+    },
+    "quaternius-modular-outfits-fantasy": {
+      "title": "Modular Character Outfits - Fantasy",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-modular-outfits-fantasy/License.txt",
+      "retrieved": "2026-10-22"
+    },
+    "quaternius-universal-animation-library": {
+      "title": "Universal Animation Library",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-animation-library",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-universal-animation-library/License.txt",
+      "retrieved": "2026-10-22"
+    },
+    "quaternius-universal-animation-library-2": {
+      "title": "Universal Animation Library 2",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-animation-library-2",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-universal-animation-library-2/License.txt",
+      "retrieved": "2026-10-22"
     }
   },
   "models": [
@@ -94,5 +126,9 @@
   "budgets": {
     "maxTriangles": 8000,
     "maxBytes": 524288
+  },
+  "characterBudgets": {
+    "maxTriangles": 20000,
+    "maxBytes": 1500000
   }
 }

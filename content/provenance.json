@@ -742,6 +742,231 @@
       "url": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0",
       "modifications": []
+    },
+    {
+      "file": "characters/rig.glb",
+      "sha256": "3561f13d5d3f5f5b",
+      "triangles": 13744,
+      "bytes": 710732,
+      "source": "quaternius-universal-animation-library, quaternius-universal-animation-library-2",
+      "title": "Universal Animation Library + Universal Animation Library 2",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-animation-library https://quaternius.itch.io/universal-animation-library-2",
+      "license": "CC0-1.0",
+      "modifications": [
+        "clips selected, renamed and resampled",
+        "mannequin only"
+      ]
+    },
+    {
+      "file": "characters/head_male.glb",
+      "sha256": "0c3f1b755b3872c4",
+      "triangles": 4604,
+      "bytes": 307016,
+      "source": "quaternius-universal-base-characters",
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "modifications": [
+        "cut from the base body",
+        "rebound to the regular body pose",
+        "materials simplified"
+      ]
+    },
+    {
+      "file": "characters/head_female.glb",
+      "sha256": "b43bbc29b368c71e",
+      "triangles": 5318,
+      "bytes": 341792,
+      "source": "quaternius-universal-base-characters",
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "modifications": [
+        "cut from the base body",
+        "rebound to the regular body pose",
+        "materials simplified"
+      ]
+    },
+    {
+      "file": "characters/outfit_ranger_m.glb",
+      "sha256": "86e850ebddc66ed3",
+      "triangles": 17026,
+      "bytes": 1284152,
+      "source": "quaternius-modular-outfits-fantasy",
+      "title": "Modular Character Outfits - Fantasy",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "license": "CC0-1.0",
+      "modifications": [
+        "merged into one skinned body",
+        "simplified",
+        "materials simplified",
+        "textures downscaled"
+      ]
+    },
+    {
+      "file": "characters/outfit_ranger_f.glb",
+      "sha256": "91f711072f33b4c6",
+      "triangles": 17076,
+      "bytes": 1296544,
+      "source": "quaternius-modular-outfits-fantasy",
+      "title": "Modular Character Outfits - Fantasy",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "license": "CC0-1.0",
+      "modifications": [
+        "merged into one skinned body",
+        "simplified",
+        "materials simplified",
+        "textures downscaled"
+      ]
+    },
+    {
+      "file": "characters/outfit_peasant_m.glb",
+      "sha256": "764ce0bb05ccb80e",
+      "triangles": 9332,
+      "bytes": 574504,
+      "source": "quaternius-modular-outfits-fantasy",
+      "title": "Modular Character Outfits - Fantasy",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "license": "CC0-1.0",
+      "modifications": [
+        "merged into one skinned body",
+        "simplified",
+        "materials simplified",
+        "textures downscaled"
+      ]
+    },
+    {
+      "file": "characters/outfit_peasant_f.glb",
+      "sha256": "ebdfa158c25f84f9",
+      "triangles": 9826,
+      "bytes": 589264,
+      "source": "quaternius-modular-outfits-fantasy",
+      "title": "Modular Character Outfits - Fantasy",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "license": "CC0-1.0",
+      "modifications": [
+        "merged into one skinned body",
+        "simplified",
+        "materials simplified",
+        "textures downscaled"
+      ]
+    },
+    {
+      "file": "characters/textures/ranger_moss.jpg",
+      "sha256": "ff19f626d8e380aa",
+      "triangles": 0,
+      "bytes": 104923,
+      "source": "quaternius-modular-outfits-fantasy",
+      "title": "Modular Character Outfits - Fantasy",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "license": "CC0-1.0",
+      "modifications": [
+        "alternative colourway from the pack",
+        "downscaled to a 1024 px JPEG"
+      ]
+    },
+    {
+      "file": "characters/textures/peasant_dusk.jpg",
+      "sha256": "ef46d85a3d9b45a7",
+      "triangles": 0,
+      "bytes": 79271,
+      "source": "quaternius-modular-outfits-fantasy",
+      "title": "Modular Character Outfits - Fantasy",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "license": "CC0-1.0",
+      "modifications": [
+        "alternative colourway from the pack",
+        "downscaled to a 1024 px JPEG"
+      ]
+    },
+    {
+      "file": "characters/hair_simpleparted.glb",
+      "sha256": "8d267ae706a7963b",
+      "triangles": 1195,
+      "bytes": 88536,
+      "source": "quaternius-universal-base-characters",
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rebound to the regular body pose",
+        "simplified",
+        "materials simplified"
+      ]
+    },
+    {
+      "file": "characters/hair_buzzed.glb",
+      "sha256": "2f04ed15d94c6aaf",
+      "triangles": 774,
+      "bytes": 72328,
+      "source": "quaternius-universal-base-characters",
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rebound to the regular body pose",
+        "simplified",
+        "materials simplified"
+      ]
+    },
+    {
+      "file": "characters/hair_beard.glb",
+      "sha256": "e12ab3e68b6c7794",
+      "triangles": 870,
+      "bytes": 76852,
+      "source": "quaternius-universal-base-characters",
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rebound to the regular body pose",
+        "simplified",
+        "materials simplified"
+      ]
+    },
+    {
+      "file": "characters/hair_long.glb",
+      "sha256": "25e972392af96b23",
+      "triangles": 2380,
+      "bytes": 198528,
+      "source": "quaternius-universal-base-characters",
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rebound to the regular body pose",
+        "simplified",
+        "materials simplified"
+      ]
+    },
+    {
+      "file": "characters/hair_buns.glb",
+      "sha256": "3d610f5ac9fa92ce",
+      "triangles": 2620,
+      "bytes": 214368,
+      "source": "quaternius-universal-base-characters",
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rebound to the regular body pose",
+        "simplified",
+        "materials simplified"
+      ]
     }
   ]
 }
