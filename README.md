@@ -47,6 +47,7 @@ Also:
 
 - [`docs/PHASE1.md`](docs/PHASE1.md) — vertical-slice milestones, rendering engine decision, M1 status
 - [`docs/PLAYER_EXPRESSION.md`](docs/PLAYER_EXPRESSION.md) — the sandbox: per-surface map materials, Character Designer (part/limb/colour swapping), how looks show in multiplayer
+- [`docs/ASSET_SOURCES.md`](docs/ASSET_SOURCES.md) — free (CC0) and credit-only (CC-BY) asset sources, licence tiers, import checklist
 - [`docs/CONTENT_PIPELINE.md`](docs/CONTENT_PIPELINE.md) — the hand-made toy box players build with, and the pipeline/tools the team uses to make it
 - [`docs/PHASE0.md`](docs/PHASE0.md) — what Phase 0 proves, measurements, known gaps
 - [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md) — remaining inconsistencies in the v2 pack
