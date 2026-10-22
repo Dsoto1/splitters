@@ -1,40 +1,32 @@
-# Open Questions — Spec Reconciliation
+# Open Questions
 
-The master spec and `CHARACTERS_BOTS.md` were written with different platform assumptions. These should be resolved before Phase 0 code, because several of them change the architecture.
+## Resolved by pack v2
 
-## 1. Platform: PC-first (Godot) vs browser-first
+The v1 conflicts are settled by `MASTER_SPEC_V2.md`:
 
-- **Master spec §header, §18:** Godot 4.x, Windows PC primary; Linux/Steam Deck secondary.
-- **CHARACTERS_BOTS header, §8, §26, §34:** "browser-first"; LODs, streaming, and acceptance criteria are written for browser clients.
+| v1 conflict | v2 decision |
+|---|---|
+| Godot / PC vs browser | Browser-first; TypeScript + Babylon.js; WebGPU with WebGL2 fallback (§3, TECH_ARCHITECTURE) |
+| Listen servers, 12–16 players vs dedicated, 32 slots | Dedicated authoritative servers; 32-slot architecture; vertical slice proves 8 slots, then staged 16/24/32 load tests (§3.4, §11) |
+| MapMaker vs Scenario Maker | One MapMaker with BUILD / GAMEPLAY / ENTITIES / LOGIC / WORLD / TEST workspaces (§5) |
+| Vertical-slice roster size | 12 characters (§10, §11) |
+| NPCs / squads / factions missing from phases | Factions, encounters, squads, and WHEN→IF→DO logic are core; slice includes 1 enemy faction + 1 NPC squad archetype (§7, §8, §11) |
 
-Godot 4 can export to the web, but web exports have real limits: they need cross-origin isolation for threads, run with WebGL 2 / Compatibility renderer constraints, and give no raw UDP. Pick one primary target; the other becomes a stretch target.
+## Still inconsistent in v2
 
-## 2. Player count and server model
+These are small and `MASTER_SPEC_V2.md` already wins on each, but the supporting docs should be corrected so implementers don't trip on them.
 
-- **Master spec §12.2, §19:** host-authoritative listen servers; 12–16 combatants baseline.
-- **CHARACTERS_BOTS §10, §13, §14:** 32 player slots, dedicated authoritative servers, plus ~64 active NPCs.
+1. **`CHARACTERS_BOTS_V2.md` §9 vertical-slice breakdown.** The headline now says 12 characters, but the "At least" list underneath (8 grounded, 8 heightened, 6 weird, 2–6 extreme) still adds up to 24–28. Suggested 12-character split, keeping the §5 ratios: 4 grounded, 4 heightened, 3 weird, 1 extreme.
+2. **`CHARACTERS_BOTS_V2.md` §34 acceptance criteria.** Still says "At least 24 distinct characters exist." This should be 12.
+3. **"Scenario Maker" naming.** `CHARACTERS_BOTS_V2.md` §1, §18, §23 and §24 still say "Scenario Maker". Master §5 says it is not a separate application. Rename it to MapMaker (ENTITIES / LOGIC workspaces).
+4. **v1-only detail.** Accessibility (v1 §17), validation severity classes (v1 §9), weapon data fields (v1 §5.2), map versioning fields (v1 §10.3), and save/profile (v1 §20) have no v2 home yet. They live in `archive/MASTER_SPEC_V1.md` until `WEAPONS_ITEMS.md`, `UI_UX.md`, etc. are written (master §16 "Later" list).
 
-This sets the networking budget, the bot tick budget, and hosting costs. A suggested reconciliation: ship listen servers at 16 slots for the vertical slice, and keep gameplay authority isolated so dedicated servers and 32 slots can follow (master spec §12.2 already asks for this).
+## Decisions needed before Phase 0 code
 
-## 3. "MapMaker" vs "Scenario Maker"
+These are not specified anywhere yet and affect the initial scaffold:
 
-The master spec describes a MapMaker with a Simple/Advanced logic editor (§8.8). CHARACTERS_BOTS refers to a "Scenario Maker" with a WHEN → IF → DO trigger system, NPC squads, bosses, and factions (§16, §24, §25). Decide whether these are the same tool or whether the Scenario Maker is a later layer on top of the MapMaker. Either way, NPCs, factions, and squads are not in the master spec's phases.
-
-## 4. Roster size at vertical slice
-
-- **Master spec §21 Phase 1:** no character count; Phase 2 says 20+; Phase 4 says 30–50.
-- **CHARACTERS_BOTS §9, §34:** 12 for the prototype and 24–32 for the vertical slice.
-
-The CHARACTERS_BOTS slice target is far above the master spec's Phase 1 scope, which is 4 weapons and 1 theme. Suggest the master spec's slice uses the 12-character prototype set.
-
-## 5. Theme lists
-
-The environment themes (master spec §8.6, e.g. "Egyptian tomb", "space station") and the character theme families (CHARACTERS_BOTS §6, e.g. "Victorian Macabre", "Retro Space Resort") are separate lists that only partly overlap. Decide whether map themes and character worlds share one taxonomy.
-
-## 6. Bot personality fields
-
-The master spec §7.4 and CHARACTERS_BOTS §29 `BotProfile` list overlapping but different dimensions. Treat CHARACTERS_BOTS §29 as the canonical schema, with difficulty modifiers kept separate (§12).
-
-## 7. Repository document set
-
-Master spec §24 lists 15 sub-docs (`GAME_DESIGN.md`, `MAPMAKER.md`, `MAP_FORMAT.md`, …). Only the master spec and the characters/bots doc exist so far. `CHARACTERS_BOTS.md` covers most of what `BOTS_AI.md` and `CHARACTER_ART.md` would hold.
+- **Server runtime.** Node.js, Bun, or Deno for the headless server. All three can share TypeScript modules with the client.
+- **Transport.** WebSocket only at first, or WebTransport/WebRTC data channels for unreliable delivery. TECH_ARCHITECTURE leaves snapshot/delta strategy to prototype measurement.
+- **Physics/collision.** Babylon's Havok plugin on the client is not available headless as-is. The server needs its own collision (e.g. Rapier via WASM, or custom capsule-vs-grid) shared by both sides for prediction.
+- **Navigation.** Recast/Detour (e.g. recast-navigation-js) generated from tile geometry is the obvious candidate for "no manual waypoints".
+- **Repo layout.** A monorepo (e.g. pnpm workspaces) with `client`, `server`, and shared `shared/map-format`, `shared/sim`, `shared/protocol` packages fits the "share pure TS modules" rule.

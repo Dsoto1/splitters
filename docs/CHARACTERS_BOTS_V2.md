@@ -1,8 +1,10 @@
-# PROJECT CHRONOSPLIT — CHARACTERS & BOTS SPECIFICATION
+# PROJECT CHRONOSPLIT — CHARACTERS & BOTS SPECIFICATION v2
 
 **Document:** `CHARACTERS_BOTS.md`  
 **Status:** Pre-production handoff  
-**Purpose:** Define the character roster, visual identity, bot personalities, NPC reuse, content pipeline, originality guardrails, and technical requirements for a browser-first arcade FPS / scenario creation platform inspired by the breadth, humor, readability, and variety of classic arena shooters without reproducing protected character designs.
+**Authority:** Supporting specification. `MASTER_SPEC_V2.md` is authoritative if any conflict remains.
+
+**Purpose:** Define the character roster, visual identity, bot personalities, NPC reuse, content pipeline, originality guardrails, and technical requirements for the browser-first arcade FPS / creation platform without reproducing protected character designs.
 
 ---
 
@@ -439,7 +441,7 @@ Purpose: prove body families, animation sharing, browser performance, and AI per
 
 ## Vertical slice
 
-24–32 characters
+12 characters
 
 At least:
 
@@ -1227,7 +1229,7 @@ Recommended spread:
 | Reality Glitch | 3 |
 | **Total** | **50** |
 
-From these, select approximately 24–32 for vertical-slice development.
+From these, select exactly 12 strongly differentiated characters for vertical-slice development; preserve the remainder as post-slice concept candidates.
 
 ---
 
@@ -1298,8 +1300,8 @@ The character system is ready for vertical slice when:
 - [ ] Characters can be assigned as Player Bot or NPC.
 - [ ] Scenario Maker can override faction, weapon, AI profile, and role.
 - [ ] Character death/kill/alert events connect to trigger logic.
-- [ ] 32 player-slot test works with mixed human/bot simulation.
-- [ ] Large NPC test demonstrates LOD/AI/replication scaling.
+- [ ] Player/bot data structures and protocols are 32-slot capable; the vertical slice proves 8 mixed human/bot slots, followed by staged 16/24/32 load validation.
+- [ ] Initial NPC test demonstrates LOD/AI/replication profiling at modest counts; staged scaling toward ~64 active NPCs is a validated target, not a vertical-slice gate.
 - [ ] Originality review has been performed for all shipped characters.
 
 ---

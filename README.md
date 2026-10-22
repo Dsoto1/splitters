@@ -1,17 +1,25 @@
 # splitters — Project ChronoSplit (working title)
 
-An original arena FPS and community creation platform with a built-in grid-based MapMaker, configurable bots, and a deliberately chaotic cross-era character roster. Inspired by the design lessons of classic console arena shooters; uses no proprietary assets, names, or content.
+An original browser-first arcade FPS and community creation platform with a built-in MapMaker (grid construction through scripted co-op scenarios), full Player Bots, scenario NPCs, and a deliberately chaotic cross-era character roster. Inspired by the design lessons of classic console arena shooters; uses no proprietary assets, names, or content.
 
-**Status:** pre-production. No code yet.
+**Status:** pre-production (spec pack v2). No code yet.
+**Stack direction:** TypeScript + Babylon.js client (WebGPU, WebGL2 fallback); headless dedicated authoritative server.
 
 ## Documents
 
-| Doc | Scope |
-|---|---|
-| [`docs/TS_SPIRITUAL_SUCCESSOR_MASTER_SPEC.md`](docs/TS_SPIRITUAL_SUCCESSOR_MASTER_SPEC.md) | Master spec: vision, legal boundary, modes, combat, MapMaker, validation, map format, multiplayer, architecture, phases, P0 backlog |
-| [`docs/CHARACTERS_BOTS.md`](docs/CHARACTERS_BOTS.md) | Character roster, originality guardrails, bot personalities, NPC/squad AI, Scenario Maker integration |
-| [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md) | Where the two specs disagree, and the decisions needed before Phase 0 code |
+`MASTER_SPEC_V2.md` is authoritative; supporting docs lose on conflict. Recommended reading order:
 
-## North star
+1. [`docs/MASTER_SPEC_V2.md`](docs/MASTER_SPEC_V2.md) — product definition, platform, combatant model, vertical-slice scope, phases, engineering rules
+2. [`docs/TECH_ARCHITECTURE.md`](docs/TECH_ARCHITECTURE.md) — client/server split, data formats, safe logic, networking, security, testing gates
+3. [`docs/MAPMAKER_SCENARIO.md`](docs/MAPMAKER_SCENARIO.md) — workspaces, construction layers, logic, factions/encounters/squads, validation
+4. [`docs/MULTIPLAYER_AI_SCALE.md`](docs/MULTIPLAYER_AI_SCALE.md) — 32-slot architecture, NPC scaling, interest management, load-test ladder
+5. [`docs/CHARACTERS_BOTS_V2.md`](docs/CHARACTERS_BOTS_V2.md) — roster, originality guardrails, bot personalities, NPC reuse
 
-> "I had an idea for a ridiculous FPS match, built it in ten minutes, filled it with bots, and my friends were playing it with me a few minutes later."
+Also:
+
+- [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md) — remaining inconsistencies in the v2 pack
+- [`docs/archive/MASTER_SPEC_V1.md`](docs/archive/MASTER_SPEC_V1.md) — superseded v1 master spec, kept for detail v2 doesn't yet cover
+
+## First loop to prove
+
+> Open browser → build room → place gun/enemy/door → attach trigger/objective → Test → fight → return to editor → change → Test again.
