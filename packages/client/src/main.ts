@@ -151,6 +151,16 @@ $('join').addEventListener('submit', (e) => {
   e.preventDefault();
   void app.playOnline(serverInput.value.trim(), nameInput.value.trim());
 });
-if (params.get('mode') === 'editor') void app.openEditor();
+if (params.get('mode') === 'assets') {
+  // Team tool: inspect imported models (orientation, scale, colour, licence).
+  void (async () => {
+    $('menu').hidden = true;
+    const { createEngine } = await import('./engine.ts');
+    const { openAssetViewer } = await import('./tools/assetViewer.ts');
+    const { engine, canvas } = await createEngine($<HTMLCanvasElement>('view'));
+    window.addEventListener('resize', () => engine.resize());
+    await openAssetViewer(engine, canvas);
+  })();
+} else if (params.get('mode') === 'editor') void app.openEditor();
 else if (params.has('offline')) void app.playOffline();
 else if (params.has('autojoin')) void app.playOnline(serverInput.value, nameInput.value);

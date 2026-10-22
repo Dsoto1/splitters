@@ -1,0 +1,98 @@
+{
+  "$comment": "Third-party source packs and the models built from them. `pnpm content:build` regenerates packages/client/public/models from this file; `pnpm content:check` verifies outputs, budgets and licences. See docs/ASSET_SOURCES.md.",
+  "packs": {
+    "quaternius-ultimate-gun-pack": {
+      "title": "Ultimate Gun Pack (50+ LowPoly Guns)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/50-lowpoly-guns",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-ultimate-gun-pack/License.txt",
+      "retrieved": "2026-10-22"
+    },
+    "kenney-blaster-kit": {
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-blaster-kit/License.txt",
+      "retrieved": "2026-10-22"
+    }
+  },
+  "models": [
+    {
+      "out": "weapons/pistol.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/Pistol_1.obj",
+      "forward": "+x",
+      "length": 0.22
+    },
+    {
+      "out": "weapons/revolver.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/Revolver_1.obj",
+      "forward": "+x",
+      "length": 0.28
+    },
+    {
+      "out": "weapons/smg.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/SubmachineGun_1.obj",
+      "forward": "+x",
+      "length": 0.5
+    },
+    {
+      "out": "weapons/rifle.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/AssaultRifle_1.obj",
+      "forward": "+x",
+      "length": 0.85
+    },
+    {
+      "out": "weapons/shotgun.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/Shotgun_1.obj",
+      "forward": "+x",
+      "length": 0.95
+    },
+    {
+      "out": "weapons/sniper.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/SniperRifle_1.obj",
+      "forward": "+x",
+      "length": 1.15
+    },
+    {
+      "out": "weapons/knife.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/Accessories/Bayonet.obj",
+      "forward": "+x",
+      "length": 0.3
+    },
+    {
+      "out": "weapons/launcher.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-h.glb",
+      "forward": "-z",
+      "length": 0.9,
+      "recolor": {
+        "desaturate": 0.85,
+        "tint": "#8a9078"
+      }
+    },
+    {
+      "out": "projectiles/grenade.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "grenade-b.glb",
+      "forward": "-z",
+      "length": 0.2,
+      "recolor": {
+        "desaturate": 0.5,
+        "tint": "#7d8466"
+      }
+    }
+  ],
+  "budgets": {
+    "maxTriangles": 8000,
+    "maxBytes": 524288
+  }
+}
