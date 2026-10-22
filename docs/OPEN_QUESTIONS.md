@@ -1,5 +1,10 @@
 # Open Questions
 
+## Decisions
+
+- **No player-uploaded assets.** Players cannot upload models, textures or audio. All shipped content is made or licensed in-house ([`CONTENT_PIPELINE.md`](CONTENT_PIPELINE.md)). Players still create maps in MapMaker, using only catalog content. A modular character builder from our own parts (CHARACTERS_BOTS_V2 §36) remains a possible later feature.
+- **Moderation baseline (Phase 5).** An age rating can permit mature content but does not replace handling illegal content, copyright notices, or platform/regional rules. Community votes rank content; they do not remove it. Planned minimum: terms and content policy; report buttons on maps, names and chat; admin hide/delete/rename/ban with an audit log; auto-hide after enough reports pending review; name/title filter for slurs and personal info (profanity filter per player); a DMCA contact and takedown process. Have it reviewed by a lawyer before public launch.
+
 ## Resolved by pack v2
 
 The v1 conflicts are settled by `MASTER_SPEC_V2.md`:
