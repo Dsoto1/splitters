@@ -15,6 +15,7 @@ export * from './sim/items.ts';
 export * from './sim/rules.ts';
 export * from './sim/scenarioDefs.ts';
 export * from './sim/scenario.ts';
+export * from './sim/npc.ts';
 export * from './protocol.ts';
 export * from './bots/profile.ts';
 export * from './editor/commands.ts';

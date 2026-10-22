@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
+import { CORE_WEAPONS, NPC_ID_BASE, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
 import { slotColor } from './view.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -80,8 +80,12 @@ export class Hud {
     this.roster = new Map(players.map((p) => [p.slot, p]));
   }
 
+  /** Display names for NPC actor IDs, provided by the session. */
+  npcName: (id: number) => string | undefined = () => undefined;
+
   name(slot: number | null): string {
     if (slot === null) return 'The arena';
+    if (slot >= NPC_ID_BASE) return this.npcName(slot) ?? 'Enemy';
     return this.roster.get(slot)?.name ?? `Player ${slot + 1}`;
   }
 
@@ -125,11 +129,11 @@ export class Hud {
     this.scope.hidden = !on;
   }
 
-  setStatus(phase: MatchPhase, timeLeft: number, alive: boolean, winner: string | null): void {
+  setStatus(phase: MatchPhase, timeLeft: number, alive: boolean, winner: string | null, outcome: 'victory' | 'defeat' | null = null): void {
     const m = Math.floor(timeLeft / 60);
     const s = String(timeLeft % 60).padStart(2, '0');
     this.timer.textContent = phase === 'intermission' ? 'Intermission' : timeLeft ? `${m}:${s}` : '';
-    if (phase === 'intermission') this.banner.textContent = winner ? `${winner} wins the round` : 'Round over';
+    if (phase === 'intermission') this.banner.textContent = outcome === 'victory' ? 'Mission complete' : outcome === 'defeat' ? 'Mission failed' : winner ? `${winner} wins the round` : 'Round over';
     else this.banner.textContent = alive ? '' : 'Respawning…';
   }
 

@@ -1,0 +1,1053 @@
+{
+  "format": "chronosplit.map",
+  "formatVersion": 5,
+  "metadata": {
+    "id": "m4_outpost_siege",
+    "name": "Outpost Siege",
+    "author": "ChronoSplit team",
+    "description": "Co-op mission: take the courtyard, open the gate, hold the uplink against two attack waves for 60 seconds, then fight through to extraction. Militia allies follow you. The team shares 15 lives.",
+    "createdAt": "2026-10-22T00:00:00.000Z",
+    "updatedAt": "2026-10-22T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 1,
+      "max": 4
+    },
+    "supportedModes": [
+      "core.coop"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.lab",
+    "tiles": [
+      {
+        "id": "t_landing",
+        "tile": "core.room",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_corridor",
+        "tile": "core.corridor",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "t_courtyard",
+        "tile": "core.room_columns",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_uplink",
+        "tile": "core.room_dais",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_north",
+        "tile": "core.room_cover",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_south",
+        "tile": "core.room",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_extract",
+        "tile": "core.room",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "sp_1",
+      "position": [
+        -2,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "sp_2",
+      "position": [
+        -2,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "sp_3",
+      "position": [
+        -3,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "sp_4",
+      "position": [
+        -1,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "pk_ammo_landing",
+      "position": [
+        2,
+        0,
+        -3
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_armor_landing",
+      "position": [
+        2,
+        0,
+        3
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_shotgun",
+      "position": [
+        8,
+        0,
+        -2.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_health_court",
+      "position": [
+        16,
+        0,
+        3.2
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_ammo_court",
+      "position": [
+        13,
+        0,
+        -3
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_launcher",
+      "position": [
+        26.5,
+        0,
+        -3
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_health_uplink",
+      "position": [
+        21.5,
+        0,
+        3
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_armor_uplink",
+      "position": [
+        26.5,
+        0,
+        3
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_damage",
+      "position": [
+        24,
+        0,
+        1
+      ],
+      "kind": "pickup",
+      "item": "core.powerup_damage",
+      "respawnSeconds": null
+    },
+    {
+      "id": "enc_militia",
+      "position": [
+        0,
+        0,
+        2.5
+      ],
+      "name": "Militia escort",
+      "kind": "encounter",
+      "yaw": -1.5707963267948966,
+      "faction": "militia",
+      "roster": {
+        "trooper": 2,
+        "gunner": 0,
+        "heavy": 0
+      },
+      "activeCap": 4,
+      "reinforcements": 0,
+      "perPlayer": 0,
+      "respawnSeconds": 5,
+      "radius": 2,
+      "order": "follow",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_guards",
+      "position": [
+        17,
+        0,
+        0
+      ],
+      "name": "Courtyard guards",
+      "kind": "encounter",
+      "yaw": -1.5707963267948966,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 3,
+        "gunner": 1,
+        "heavy": 0
+      },
+      "activeCap": 4,
+      "reinforcements": 0,
+      "perPlayer": 1,
+      "respawnSeconds": 5,
+      "radius": 3,
+      "order": "hold",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_wave_north",
+      "position": [
+        24,
+        0,
+        9
+      ],
+      "name": "North wave",
+      "kind": "encounter",
+      "yaw": -1.5707963267948966,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 2,
+        "gunner": 1,
+        "heavy": 0
+      },
+      "activeCap": 4,
+      "reinforcements": 6,
+      "perPlayer": 2,
+      "respawnSeconds": 5,
+      "radius": 2.5,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_wave_south",
+      "position": [
+        24,
+        0,
+        -8
+      ],
+      "name": "South wave",
+      "kind": "encounter",
+      "yaw": -1.5707963267948966,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 1,
+        "gunner": 0,
+        "heavy": 1
+      },
+      "activeCap": 3,
+      "reinforcements": 4,
+      "perPlayer": 1,
+      "respawnSeconds": 6,
+      "radius": 2.5,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_extract",
+      "position": [
+        33,
+        0,
+        0
+      ],
+      "name": "Extraction guards",
+      "kind": "encounter",
+      "yaw": -1.5707963267948966,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 2,
+        "gunner": 0,
+        "heavy": 1
+      },
+      "activeCap": 4,
+      "reinforcements": 0,
+      "perPlayer": 1,
+      "respawnSeconds": 5,
+      "radius": 2.5,
+      "order": "hold",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "btn_gate",
+      "position": [
+        18,
+        0,
+        -3.3
+      ],
+      "name": "Gate control",
+      "kind": "button",
+      "yaw": 0,
+      "label": "Open the gate",
+      "once": true,
+      "cooldownSeconds": 1,
+      "startEnabled": false
+    },
+    {
+      "id": "door_gate",
+      "position": [
+        20,
+        0,
+        0
+      ],
+      "name": "Gate",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "startOpen": false,
+      "locked": true,
+      "auto": true
+    },
+    {
+      "id": "door_extract",
+      "position": [
+        28,
+        0,
+        0
+      ],
+      "name": "Extraction door",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "startOpen": false,
+      "locked": true,
+      "auto": true
+    },
+    {
+      "id": "zone_uplink",
+      "position": [
+        24,
+        0,
+        0.5
+      ],
+      "name": "Uplink",
+      "kind": "zone",
+      "size": [
+        6,
+        3,
+        5
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true
+    },
+    {
+      "id": "zone_extract",
+      "position": [
+        34,
+        0,
+        0
+      ],
+      "name": "Evac point",
+      "kind": "zone",
+      "size": [
+        4,
+        3,
+        4
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true
+    },
+    {
+      "id": "barrel_court",
+      "position": [
+        19,
+        0,
+        3
+      ],
+      "kind": "destructible",
+      "model": "barrel",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "crate_court_1",
+      "position": [
+        13.5,
+        0,
+        1.5
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0.3,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "crate_court_2",
+      "position": [
+        14,
+        0,
+        -1.8
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    }
+  ],
+  "factions": [
+    {
+      "id": "syndicate",
+      "name": "Syndicate",
+      "color": "#d04a3a",
+      "relations": {}
+    },
+    {
+      "id": "militia",
+      "name": "Militia",
+      "color": "#5cc77a",
+      "relations": {
+        "players": "ally",
+        "syndicate": "enemy"
+      }
+    }
+  ],
+  "logic": {
+    "variables": [
+      {
+        "id": "var_lives",
+        "name": "lives",
+        "initial": 15
+      }
+    ],
+    "timers": [
+      {
+        "id": "timer_uplink",
+        "name": "Uplink",
+        "seconds": 60,
+        "loop": false,
+        "visible": true
+      }
+    ],
+    "objectives": [
+      {
+        "id": "obj_courtyard",
+        "text": "Clear the courtyard",
+        "startActive": true,
+        "marker": "enc_guards"
+      },
+      {
+        "id": "obj_gate",
+        "text": "Open the gate",
+        "startActive": false,
+        "marker": "btn_gate"
+      },
+      {
+        "id": "obj_uplink",
+        "text": "Hold the uplink until the transfer completes",
+        "startActive": false,
+        "marker": "zone_uplink"
+      },
+      {
+        "id": "obj_extract",
+        "text": "Clear the extraction room and reach evac",
+        "startActive": false,
+        "marker": "zone_extract"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule_intro",
+        "name": "Briefing",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 5,
+            "text": "Take the outpost. The militia will cover you.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_courtyard",
+        "name": "Courtyard cleared",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_guards"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_courtyard",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "enable",
+            "target": "btn_gate",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_gate",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Courtyard clear. Open the gate.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_gate",
+        "name": "Gate opened: start the siege",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_gate"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "door_unlock",
+            "target": "door_gate",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_gate",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_gate",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_uplink",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Uplink started. Hold out for 60 seconds!",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_uplink",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_wave_north",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 6,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_wave_south",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_uplink_done",
+        "name": "Uplink done: open extraction",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_uplink"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "encounter_stop",
+            "target": "enc_wave_north",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_wave_south",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_uplink",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_extract",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_extract",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_extract",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_extract",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Transfer complete! Fight your way to evac.",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          }
+        ]
+      },
+      {
+        "id": "rule_evac_walk",
+        "name": "Reach evac when clear",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_extract"
+        },
+        "if": [
+          {
+            "type": "encounter_alive",
+            "target": "enc_extract",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_extract",
+            "op": "==",
+            "value": 0,
+            "state": "active"
+          }
+        ],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_extract",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Extraction! Mission complete.",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players win"
+          }
+        ]
+      },
+      {
+        "id": "rule_evac_clear",
+        "name": "Clear while at evac",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_extract"
+        },
+        "if": [
+          {
+            "type": "zone_count",
+            "target": "zone_extract",
+            "op": ">=",
+            "value": 1,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_extract",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Extraction! Mission complete.",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players win"
+          }
+        ]
+      },
+      {
+        "id": "rule_evac_hot",
+        "name": "Evac still hot",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_extract"
+        },
+        "if": [
+          {
+            "type": "encounter_alive",
+            "target": "enc_extract",
+            "op": ">",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "Clear the extraction room first!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_extract_clear",
+        "name": "Evac clear",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_extract"
+        },
+        "if": [
+          {
+            "type": "zone_count",
+            "target": "zone_extract",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Evac is clear. Get to the evac point!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_uplink_empty",
+        "name": "Uplink unguarded",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "zone_exit",
+          "target": "zone_uplink"
+        },
+        "if": [
+          {
+            "type": "zone_count",
+            "target": "zone_uplink",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_uplink",
+            "op": "==",
+            "value": 0,
+            "state": "active"
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "Get back to the uplink!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_life_lost",
+        "name": "Count lives",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "player_killed",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_lives",
+            "value": -1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_low_lives",
+        "name": "Low on lives",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_lives"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_lives",
+            "op": "==",
+            "value": 3,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Only 3 lives left!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_defeat",
+        "name": "Out of lives",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_lives"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_lives",
+            "op": "<=",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Out of lives. Mission failed.",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players lose"
+          }
+        ]
+      }
+    ]
+  },
+  "dependencies": []
+}

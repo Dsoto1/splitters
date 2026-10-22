@@ -59,7 +59,8 @@ export type GameEvent =
   | { e: 'pickup'; s: number; id: string; item: string }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string }
   | { e: 'spawn'; s: number }
-  | { e: 'round_end'; winner: number | null }
+  /** `outcome` is set when a co-op mission ends (victory or defeat). */
+  | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat' }
   | { e: 'round_start' }
   // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
   /** Creator message from a logic rule. */
@@ -90,6 +91,12 @@ export interface ScenarioSnapshot {
   /** Visible running timers as [timer index, seconds left], when the list changed. */
   tm?: [number, number][];
 }
+
+/**
+ * One NPC: [actor id, x, y, z, yaw, pitch, health %, role (index into NPC_ROLES),
+ * faction (index into the map's factions), alive 0/1, held weapon slot].
+ */
+export type NpcSnapshot = [number, number, number, number, number, number, number, number, number, 0 | 1, number];
 
 export const TRAP_ENABLED = 1;
 export const TRAP_ACTIVE = 2;
@@ -161,6 +168,8 @@ export type ServerMessage =
       me?: PrivateState;
       /** Scenario state changes (absent when nothing changed). */
       sc?: ScenarioSnapshot;
+      /** NPCs (living and recently dead). */
+      np: NpcSnapshot[];
     }
   | { t: 'pong'; id: number; ct: number }
   | ({ t: 'stats' } & ServerStats);

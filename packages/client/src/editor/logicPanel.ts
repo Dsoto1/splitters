@@ -7,7 +7,11 @@ import {
   EVENT_INFO,
   EVENT_TYPES,
   TOGGLEABLE_KINDS,
+  PLAYERS_FACTION,
+  RELATIONS,
   entityLabel,
+  mapFactions,
+  type Faction,
   newId,
   type ActionType,
   type ConditionType,
@@ -25,6 +29,8 @@ export interface LogicPanelHost {
   doc(): MapDocument;
   /** Record a logic change as one undo step. */
   commit(label: string, after: ScenarioLogic): void;
+  /** Record a factions change as one undo step. */
+  commitFactions(label: string, after: Faction[]): void;
   /** Select and frame an entity in the 3D view. */
   focusEntity(id: string): void;
 }
@@ -37,6 +43,7 @@ const EVENT_FOR_KIND: Partial<Record<MapEntity['kind'], EventType>> = {
   door: 'door_opened',
   trap: 'trap_fired',
   pickup: 'pickup_taken',
+  encounter: 'encounter_cleared',
 };
 
 const action = (type: ActionType, extra: Partial<LogicAction> = {}): LogicAction => ({ type, target: null, value: 0, text: '', state: '', ...extra });
@@ -114,6 +121,47 @@ export class LogicPanel {
     templates.title = 'Add a ready-made set of rules';
     head.append(title, templates, btn('×', () => this.close(), 'Close (L)'));
     this.el.append(head);
+
+    // Factions
+    this.el.append(section('Factions', 'Sides for NPC squads. Each faction is allied with itself; set how it treats the players and the other factions.'));
+    const factions = mapFactions(doc);
+    const editFactions = (label: string, f: (list: Faction[]) => void) => {
+      const next = structuredClone([...factions]) as Faction[];
+      f(next);
+      this.host.commitFactions(label, next);
+    };
+    factions.forEach((fa, i) => {
+      const r = div('lg-row');
+      const color = document.createElement('input');
+      color.type = 'color';
+      color.value = fa.color;
+      color.addEventListener('change', () => editFactions('Recolour faction', (l) => (l[i]!.color = color.value.toLowerCase())));
+      r.append(color, input(fa.name, (v) => editFactions('Rename faction', (l) => (l[i]!.name = v.slice(0, 40) || fa.id)), 'Faction name'));
+      const rel = (other: string, label: string) =>
+        labeled(
+          label,
+          select(RELATIONS.map((x): [string, string] => [x, x]), fa.relations[other] ?? factions.find((o) => o.id === other)?.relations[fa.id] ?? 'enemy', (v) =>
+            editFactions('Change relation', (l) => {
+              l[i]!.relations[other] = v as Faction['relations'][string];
+              const back = l.find((o) => o.id === other);
+              if (back) back.relations[fa.id] = v as Faction['relations'][string];
+            }),
+          ),
+        );
+      r.append(rel(PLAYERS_FACTION, 'vs players'));
+      for (const other of factions) if (other.id !== fa.id) r.append(rel(other.id, `vs ${other.name}`));
+      r.append(btn('🗑', () => factions.length > 1 && editFactions('Delete faction', (l) => l.splice(i, 1)), factions.length > 1 ? 'Delete' : 'A map needs at least one faction'));
+      this.el.append(r);
+    });
+    this.el.append(
+      btn('+ Faction', () =>
+        editFactions('Add faction', (l) => {
+          let n = l.length + 1;
+          while (l.some((f) => f.id === `faction${n}`)) n++;
+          l.push({ id: `faction${n}`, name: `Faction ${n}`, color: '#4aa36b', relations: { [PLAYERS_FACTION]: 'ally' } });
+        }),
+      undefined, 'lg-add'),
+    );
 
     // Objectives
     this.el.append(section('Objectives', 'Shown on every player\'s HUD while active. Rules start, complete or fail them.'));
@@ -310,6 +358,35 @@ const TEMPLATES: { label: string; apply: (l: ScenarioLogic, doc: MapDocument) =>
           action('door_open', { target: first(doc, (e) => e.kind === 'door') }),
         ]),
       );
+    },
+  },
+  {
+    label: 'Ambush (zone starts an NPC squad)',
+    apply: (l, doc) => {
+      l.rules.push(
+        newRule('Ambush', { event: 'zone_enter', target: first(doc, (e) => e.kind === 'zone') }, [action('encounter_start', { target: first(doc, (e) => e.kind === 'encounter') }), action('message', { text: 'Ambush!', value: 3 }), action('sound', { state: 'alarm' })], { once: true }),
+      );
+    },
+  },
+  {
+    label: 'Clear the squad (objective)',
+    apply: (l, doc) => {
+      const squad = first(doc, (e) => e.kind === 'encounter');
+      const obj = { id: newId('obj'), text: 'Defeat the enemy squad', startActive: true, marker: squad };
+      l.objectives.push(obj);
+      l.rules.push(newRule('Squad defeated', { event: 'encounter_cleared', target: squad }, [action('objective', { target: obj.id, state: 'complete' }), action('message', { text: 'Area clear!', value: 3 })], { once: true }));
+    },
+  },
+  {
+    label: 'Co-op: win when all squads are cleared',
+    apply: (l, doc) => {
+      const squads = doc.entities.filter((e) => e.kind === 'encounter');
+      const v = { id: newId('var'), name: 'squads_cleared', initial: 0 };
+      l.variables.push(v);
+      l.rules.push(newRule('Count cleared squads', { event: 'encounter_cleared', target: null }, [action('add_var', { target: v.id, value: 1 })]));
+      const win = newRule('All clear', { event: 'variable_changed', target: v.id }, [action('message', { text: 'Mission complete!', value: 3 }), action('wait', { value: 2 }), action('end_round', { state: 'players win' })], { once: true });
+      win.if.push({ type: 'variable', target: v.id, op: '>=', value: Math.max(1, squads.length), state: '' });
+      l.rules.push(win);
     },
   },
   {

@@ -14,6 +14,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [2, (doc) => ({ ...doc })],
   // v3 -> v4: scenario entities (door, button, destructible, zone, trap) and the `logic` block, which defaults to empty.
   [3, (doc) => ({ ...doc })],
+  // v4 -> v5: `encounter` entities and the `factions` list (defaults to empty = the built-in enemy faction).
+  [4, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

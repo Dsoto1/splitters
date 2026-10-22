@@ -177,14 +177,14 @@ export class GameView {
   // ---------------------------------------------------------------- avatars
 
   /** Update remote player avatars from interpolated poses. */
-  updateAvatars(poses: readonly RemotePose[], localSlot: number): void {
+  updateAvatars(poses: readonly RemotePose[], localSlot: number, npcLook: (id: number) => { color: string; scale: number } | undefined = () => undefined): void {
     const seen = new Set<number>();
     for (const p of poses) {
       if (p.slot === localSlot) continue;
       seen.add(p.slot);
       let a = this.avatars.get(p.slot);
       if (!a) {
-        a = this.createAvatar(p.slot);
+        a = this.createAvatar(p.slot, npcLook(p.slot));
         this.avatars.set(p.slot, a);
       }
       a.body.setEnabled(p.alive);
@@ -218,15 +218,28 @@ export class GameView {
     });
   }
 
-  private createAvatar(slot: number): Avatar {
+  /** Players are capsules in their slot colour; NPCs wear their faction colour, a helmet and a red visor. */
+  private createAvatar(slot: number, npc?: { color: string; scale: number }): Avatar {
     const body = CreateCapsule(`avatar_${slot}`, { height: PLAYER.height, radius: PLAYER.radius, tessellation: 12, subdivisions: 2 }, this.scene);
-    const mat = solid(this.scene, `avatar_${slot}_mat`, slotColor(slot));
+    const mat = solid(this.scene, `avatar_${slot}_mat`, npc?.color ?? slotColor(slot));
     body.material = mat;
+    if (npc) {
+      body.scaling.set(npc.scale, 1, npc.scale);
+      const helmet = CreateSphere(`helmet_${slot}`, { diameter: PLAYER.radius * 2.3, segments: 8, slice: 0.5 }, this.scene);
+      helmet.parent = body;
+      helmet.position.y = PLAYER.height / 2 - 0.3;
+      helmet.material = solid(this.scene, `helmet_${slot}_mat`, '#2b2f36');
+      const pads = CreateBox(`pads_${slot}`, { width: PLAYER.radius * 2.6, height: 0.18, depth: PLAYER.radius * 1.3 }, this.scene);
+      pads.parent = body;
+      pads.position.y = 0.38;
+      pads.material = helmet.material;
+      for (const m of [helmet, pads]) m.isPickable = false;
+    }
     // Visor shows facing direction at a glance.
     const visor = CreateBox(`visor_${slot}`, { width: 0.5, height: 0.14, depth: 0.2 }, this.scene);
     visor.parent = body;
     visor.position = new Vector3(0, PLAYER.eyeHeight - PLAYER.height / 2, PLAYER.radius - 0.05);
-    visor.material = solid(this.scene, `visor_${slot}_mat`, '#1c1f26');
+    visor.material = npc ? glow(this.scene, `visor_${slot}_mat`, '#ff3b30', 0.8) : solid(this.scene, `visor_${slot}_mat`, '#1c1f26');
     body.isPickable = false;
     return { body, mat, weaponSlot: -1 };
   }

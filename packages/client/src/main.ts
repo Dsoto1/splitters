@@ -2,6 +2,7 @@ import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { initPhysics, loadMap } from '@chronosplit/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
+import outpostJson from '../../../maps/m4_outpost.json';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { EditorApp, type TestRequest } from './editor/editorApp.ts';
@@ -117,11 +118,13 @@ class App {
     });
   }
 
-  async playOffline(which: 'arena' | 'vault' = 'arena'): Promise<void> {
+  async playOffline(which: 'arena' | 'vault' | 'outpost' = 'arena'): Promise<void> {
     await this.init();
-    const arena = loadMap(which === 'vault' ? vaultJson : arenaJson);
+    const arena = loadMap(which === 'vault' ? vaultJson : which === 'outpost' ? outpostJson : arenaJson);
     if (!arena.ok) return this.showMenu('Built-in map failed to load');
-    this.startSession(new LocalTransport(arena.map, { name: nameInput.value || 'Player', botFill: which === 'vault' ? 4 : 6, difficulty: 'normal' }), {
+    // Co-op: two bot teammates; deathmatch maps: a lobby of opponents.
+    const botFill = which === 'outpost' ? 3 : which === 'vault' ? 4 : 6;
+    this.startSession(new LocalTransport(arena.map, { name: nameInput.value || 'Player', botFill, difficulty: 'normal' }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       onExit: (reason) => this.showMenu(reason ?? ''),
@@ -164,6 +167,7 @@ const app = new App();
 $('open-editor').addEventListener('click', () => void app.openEditor());
 $('play-offline').addEventListener('click', () => void app.playOffline());
 $('play-vault').addEventListener('click', () => void app.playOffline('vault'));
+$('play-outpost').addEventListener('click', () => void app.playOffline('outpost'));
 $('join').addEventListener('submit', (e) => {
   e.preventDefault();
   void app.playOnline(serverInput.value.trim(), nameInput.value.trim());
@@ -179,5 +183,8 @@ if (params.get('mode') === 'assets') {
     await openAssetViewer(engine, canvas);
   })();
 } else if (params.get('mode') === 'editor') void app.openEditor();
-else if (params.has('offline')) void app.playOffline(params.get('offline') === 'vault' ? 'vault' : 'arena');
+else if (params.has('offline')) {
+  const which = params.get('offline');
+  void app.playOffline(which === 'vault' || which === 'outpost' ? which : 'arena');
+}
 else if (params.has('autojoin')) void app.playOnline(serverInput.value, nameInput.value);

@@ -14,7 +14,7 @@ import { z } from 'zod';
 const LogicId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
 
 /** What a `target` field refers to. */
-export type TargetKind = 'door' | 'button' | 'destructible' | 'zone' | 'trap' | 'pickup' | 'toggleable' | 'variable' | 'timer' | 'objective';
+export type TargetKind = 'door' | 'button' | 'destructible' | 'zone' | 'trap' | 'pickup' | 'encounter' | 'toggleable' | 'variable' | 'timer' | 'objective';
 
 export const EVENT_TYPES = [
   'match_start',
@@ -30,6 +30,8 @@ export const EVENT_TYPES = [
   'timer_done',
   'objective_completed',
   'variable_changed',
+  'encounter_cleared',
+  'npc_killed',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -47,12 +49,14 @@ export const EVENT_INFO: Record<EventType, { label: string; target: TargetKind |
   timer_done: { label: 'Timer runs out', target: 'timer' },
   objective_completed: { label: 'Objective completed', target: 'objective' },
   variable_changed: { label: 'Variable changes', target: 'variable' },
+  encounter_cleared: { label: 'Encounter cleared', target: 'encounter' },
+  npc_killed: { label: 'An NPC dies', target: 'encounter' },
 };
 
 export const COMPARE_OPS = ['==', '!=', '<', '<=', '>', '>='] as const;
 export type CompareOp = (typeof COMPARE_OPS)[number];
 
-export const CONDITION_TYPES = ['variable', 'objective', 'door', 'zone_count', 'enabled'] as const;
+export const CONDITION_TYPES = ['variable', 'objective', 'door', 'zone_count', 'enabled', 'encounter_alive'] as const;
 export type ConditionType = (typeof CONDITION_TYPES)[number];
 
 /** `states`: allowed values of the condition's `state` field; `compare`: uses op + value. */
@@ -62,6 +66,7 @@ export const CONDITION_INFO: Record<ConditionType, { label: string; target: Targ
   door: { label: 'Door is', target: 'door', states: ['open', 'closed', 'locked', 'unlocked'] },
   zone_count: { label: 'Players in zone', target: 'zone', compare: true },
   enabled: { label: 'Is enabled', target: 'toggleable', states: ['enabled', 'disabled'] },
+  encounter_alive: { label: 'NPCs alive in', target: 'encounter', compare: true },
 };
 
 export const ACTION_TYPES = [
@@ -83,6 +88,9 @@ export const ACTION_TYPES = [
   'sound',
   'wait',
   'end_round',
+  'encounter_start',
+  'encounter_stop',
+  'encounter_order',
 ] as const;
 export type ActionType = (typeof ACTION_TYPES)[number];
 
@@ -112,7 +120,10 @@ export const ACTION_INFO: Record<ActionType, { label: string; target: TargetKind
   message: { label: 'Show message', target: null, value: 'seconds', text: true },
   sound: { label: 'Play sound', target: null, states: SOUND_CUES },
   wait: { label: 'Wait', target: null, value: 'seconds' },
-  end_round: { label: 'End the round', target: null, states: ['instigator wins', 'nobody wins'] },
+  end_round: { label: 'End the round', target: null, states: ['instigator wins', 'nobody wins', 'players win', 'players lose'] },
+  encounter_start: { label: 'Start encounter', target: 'encounter' },
+  encounter_stop: { label: 'Stop reinforcements', target: 'encounter' },
+  encounter_order: { label: 'Order squad to', target: 'encounter', states: ['hold', 'attack', 'defend', 'patrol', 'follow'] },
 };
 
 export const LogicWhen = z.object({

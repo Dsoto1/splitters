@@ -1,6 +1,6 @@
 import {
   BOT_DIFFICULTIES,
-  DEFAULT_DEATHMATCH_RULES,
+  rulesForMap,
   MAX_PLAYER_SLOTS,
   PROTOCOL_VERSION,
   SNAPSHOT_INTERVAL_TICKS,
@@ -54,7 +54,7 @@ export class LocalTransport implements Transport {
     const [{ Match, BotFiller, initNavigation }] = await Promise.all([import('@chronosplit/shared/match'), initPhysics()]);
     await initNavigation();
     if (this.stopped) return;
-    const rules = this.opts.rules ?? DEFAULT_DEATHMATCH_RULES;
+    const rules = this.opts.rules ?? rulesForMap(this.map);
     const match = new Match(this.map, rules, Math.floor(Math.random() * 1e6));
     const me = match.addHuman(this.opts.name)!;
     new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]).rebalance(Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));

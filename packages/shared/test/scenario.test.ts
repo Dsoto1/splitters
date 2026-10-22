@@ -79,6 +79,15 @@ function start(map: MapDocument): Driver {
   return d;
 }
 
+describe('map format v5', () => {
+  it('migrates a v4 map with no factions', () => {
+    const v4 = JSON.parse(readFileSync(new URL('./fixtures/vault_v4.json', import.meta.url), 'utf8'));
+    const r = loadMap(v4);
+    expect(r.ok && r.migratedFrom).toBe(4);
+    if (r.ok) expect(r.map.factions).toEqual([]);
+  });
+});
+
 describe('map format v4', () => {
   it('migrates a v3 map with empty logic', () => {
     const v3 = JSON.parse(readFileSync(new URL('./fixtures/arena_v3.json', import.meta.url), 'utf8'));

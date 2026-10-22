@@ -47,6 +47,11 @@ export interface BotWorldView {
   blockers?: readonly Aabb[];
   /** Traps that are dangerous right now: bots wait at the edge instead of walking in. */
   hazards?: readonly Aabb[];
+  /**
+   * Squad order (NPCs) or co-op goal (Player Bots): when not fighting, go here
+   * instead of roaming, and wait within `radius` of it.
+   */
+  orderGoal?: { pos: Vec3; radius: number } | null;
 }
 
 export type BotState = 'roam' | 'engage' | 'chase' | 'retreat' | 'dead';
@@ -98,6 +103,23 @@ export class BotBrain {
     seed: number,
   ) {
     this.rng = createRng(seed * 7919 + slot);
+  }
+
+  /** Enemy currently targeted (actor ID), if any. */
+  get target(): number | null {
+    return this.targetSlot;
+  }
+
+  /** Where an enemy was last seen, and when. */
+  get lastSeen(): { pos: Vec3; tick: number } | null {
+    return this.lastKnown;
+  }
+
+  /** A squadmate saw an enemy here: go and look, unless already fighting. */
+  alert(pos: Vec3, tick: number): void {
+    if (this.targetSlot !== null) return;
+    if (this.lastKnown && this.lastKnown.tick >= tick) return;
+    this.lastKnown = { pos: { ...pos }, tick };
   }
 
   /** Reset per-life memory when the bot respawns. */
@@ -156,6 +178,17 @@ export class BotBrain {
         break;
       }
       case 'roam':
+        if (view.orderGoal) {
+          const g = view.orderGoal;
+          if (horizontalDistance(me.pos, g.pos) > g.radius || Math.abs(me.pos.y - g.pos.y) > 2) {
+            moveYaw = this.followPathTo(view, g.pos, true);
+            this.lookAlongPath(view);
+          } else {
+            // On station: slowly scan around.
+            this.turnToward(this.yaw + 0.6 * TICK_DT * (this.strafeDir || 1), 0);
+          }
+          break;
+        }
         if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 1.5 || (view.tick + this.slot) % TICK_RATE === 0) {
           // Re-evaluate pickups once a second; otherwise keep the current goal.
           this.roamGoal = this.pickupGoal(view) ?? (this.roamGoal && horizontalDistance(me.pos, this.roamGoal) >= 1.5 ? this.roamGoal : this.pickRoamGoal(view));
@@ -378,7 +411,7 @@ export class BotBrain {
     for (const c of this.path) {
       const a = { x: prev.x, y: prev.y + 1, z: prev.z };
       const b = { x: c.x, y: c.y + 1, z: c.z };
-      if (view.blockers.some((box) => segmentHitsAabb(a, b, box, PLAYER.radius))) return true;
+      if (view.blockers.some((box) => segmentHitsAabb(a, b, box))) return true;
       prev = c;
     }
     return false;

@@ -3,3 +3,4 @@
 export * from './sim/match.ts';
 export * from './bots/brain.ts';
 export * from './nav/index.ts';
+export * from './sim/encounters.ts';

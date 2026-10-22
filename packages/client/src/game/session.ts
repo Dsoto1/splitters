@@ -7,7 +7,12 @@ import {
   TICK_RATE,
   WEAPONS_BY_SLOT,
   DESTRUCTIBLE_SPECS,
+  NPC_ROLES,
+  NPC_ROLE_SPECS,
   OBJECTIVE_STATES,
+  mapFactions,
+  type NpcSnapshot,
+  type PlayerSnapshot,
   buildMapGeometry,
   getItem,
   loadMap,
@@ -72,6 +77,9 @@ export class GameSession {
   private scores: ScoreEntry[] = [];
   private serverStats: ServerStats | null = null;
   private winner: string | null = null;
+  private outcome: 'victory' | 'defeat' | null = null;
+  /** Role and faction of each NPC seen, for names and looks. */
+  private npcInfo = new Map<number, { role: number; faction: number }>();
   private botStates: string[] = [];
   private outbox: PlayerInput[] = [];
   private showStats: boolean;
@@ -169,8 +177,9 @@ export class GameSession {
         this.scenario = new ScenarioState(loaded.map, physics);
         this.scenario.apply(msg.sc);
         this.hud.show();
+        this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view };
         this.opts.onReady?.();
         break;
       }
@@ -184,7 +193,8 @@ export class GameSession {
         this.phase = msg.phase;
         this.timeLeft = msg.timeLeft;
         this.scores = msg.score;
-        this.interp.push(msg.tick, msg.players, msg.pr);
+        for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8] });
+        this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr);
         this.taken = new Set(msg.pk);
         // Door and crate colliders first, so reconciliation replays against the same world as the server.
         this.scenario?.apply(msg.sc);
@@ -219,6 +229,10 @@ export class GameSession {
             this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot);
           } else if (ev.e === 'round_end') {
             this.winner = ev.winner === null ? null : this.hud.name(ev.winner);
+            this.outcome = ev.outcome ?? null;
+          } else if (ev.e === 'round_start') {
+            this.outcome = null;
+            this.npcInfo.clear();
           } else if (ev.e === 'msg') {
             this.hud.showMessage(ev.text, ev.secs);
           } else if (ev.e === 'obj') {
@@ -239,6 +253,14 @@ export class GameSession {
       case 'pong':
         break;
     }
+  }
+
+  private npcLook(id: number): { color: string; scale: number; label: string } | undefined {
+    const info = this.npcInfo.get(id);
+    if (!info || !this.map) return undefined;
+    const faction = mapFactions(this.map)[info.faction];
+    const role = NPC_ROLES[info.role] ?? 'trooper';
+    return { color: faction?.color ?? '#d04a3a', scale: NPC_ROLE_SPECS[role].scale, label: `${faction?.name ?? 'Enemy'} ${NPC_ROLE_SPECS[role].label}` };
   }
 
   /** Objectives, timers, the Use prompt and the objective marker. */
@@ -344,14 +366,14 @@ export class GameSession {
       this.hud.setHealth(local.health, local.armor, local.alive);
       this.hud.setWeapons(WEAPONS_BY_SLOT, local.inventory, local.held, local.reloadTicks > 0, local.alive);
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE);
-      this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner);
+      this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
       this.updateScenarioHud(local, now);
     }
     if (this.scenario) this.view.scenario.apply(this.scenario.entities);
     this.view.updatePickups(this.taken, now);
     this.view.updateProjectiles(this.interp.sampleProjectiles(now));
     const poses = this.interp.sample(now);
-    this.view.updateAvatars(poses, this.slot);
+    this.view.updateAvatars(poses, this.slot, (id) => this.npcLook(id));
     this.sfx.remoteSteps(poses);
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot);
 
@@ -385,4 +407,9 @@ export class GameSession {
     );
     this.view.render();
   }
+}
+
+/** NPCs ride the same interpolation as players; fields they don't have are zero. */
+function npcAsPlayer(n: NpcSnapshot): PlayerSnapshot {
+  return { s: n[0], p: [n[1], n[2], n[3]], vy: 0, g: 1, yaw: n[4], pitch: n[5], hp: n[6], ar: 0, alive: n[9], w: n[10], pu: 0 };
 }

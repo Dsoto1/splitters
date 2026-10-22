@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { WebSocketServer, type WebSocket } from 'ws';
 import {
   BOT_DIFFICULTIES,
-  DEFAULT_DEATHMATCH_RULES,
+  rulesForMap,
   MAX_PLAYER_SLOTS,
   PROTOCOL_VERSION,
   SNAPSHOT_INTERVAL_TICKS,
@@ -59,7 +59,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   await Promise.all([initPhysics(), initNavigation()]);
 
   const map = typeof opts.map === 'string' ? readMapFile(opts.map) : opts.map;
-  const match = new Match(map, opts.rules ?? DEFAULT_DEATHMATCH_RULES, opts.seed ?? Date.now() % 100000);
+  const match = new Match(map, opts.rules ?? rulesForMap(map), opts.seed ?? Date.now() % 100000);
   for (const issue of validateNavigation(map, match.nav)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
   const difficulty = BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'];
   const botFill = Math.min(opts.botFill, MAX_PLAYER_SLOTS);

@@ -2,7 +2,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 import { BotBrain, type CombatantView, type PickupView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { buildMapGeometry, type WorldBox } from '../map/geometry.ts';
-import type { MapDocument } from '../map/schema.ts';
+import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, horizontalDistance, normalize, scale, viewDirection, type Vec3 } from '../math.ts';
 import { NavWorld } from '../nav/index.ts';
 import {
@@ -10,6 +10,7 @@ import {
   POWERUP_SPEED_BIT,
   type GameEvent,
   type MatchPhase,
+  type NpcSnapshot,
   type PlayerSnapshot,
   type PrivateState,
   type RosterEntry,
@@ -23,6 +24,8 @@ import { BUTTON_FIRE, BUTTON_RELOAD, BUTTON_USE, sanitizeInput, stepMovement, ty
 import { PhysicsWorld } from './physics.ts';
 import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
 import { Scenario } from './scenario.ts';
+import { Encounters } from './encounters.ts';
+import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_PROFILE, NPC_ROLE_SPECS, mapFactions, relation } from './npc.ts';
 import { getWeapon, rayCapsule, resolveHitscan, type WeaponDefinition } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -41,8 +44,15 @@ export interface WeaponState {
 }
 
 export interface Combatant {
+  /** Actor ID: the player slot (0..31), or NPC_ID_BASE + n for NPCs. */
   slot: number;
-  kind: 'human' | 'bot';
+  kind: 'human' | 'bot' | 'npc';
+  /** Faction; null = free-for-all player (deathmatch). */
+  faction: string | null;
+  /** Movement speed multiplier (NPC roles are slower). */
+  speedMul: number;
+  /** NPC details. */
+  npc?: { encounter: string; role: NpcRole; removeAt: number };
   name: string;
   collider: RAPIER.Collider;
   move: MoveState;
@@ -109,6 +119,11 @@ export class Match {
   readonly pickups: PickupState[];
   /** Doors, buttons, destructibles, zones, traps and the map's logic rules. */
   readonly scenario: Scenario;
+  /** NPC squads spawned by encounter entities. */
+  readonly encounters: Encounters;
+  /** Living and recently dead NPCs by actor ID. */
+  readonly npcs = new Map<number, Combatant>();
+  private nextNpcId = NPC_ID_BASE;
 
   tick = 0;
   phase: MatchPhase = 'playing';
@@ -150,21 +165,141 @@ export class Match {
         return match.tick;
       },
       players: () => this.combatants().map((c) => ({ slot: c.slot, alive: c.alive, pos: c.move.pos })),
+      actors: () => this.actors().map((c) => ({ slot: c.slot, alive: c.alive, pos: c.move.pos })),
       hurt: (slot, amount, weapon) => {
-        const c = this.slots[slot];
+        const c = this.actor(slot);
         if (c) this.damage(c, amount, null, weapon);
       },
       blast: (at, radius, damage, edge, owner, weapon) => {
         this.pendingEvents.push({ e: 'explode', s: owner ?? -1, p: tuple(at), r: radius });
-        this.splash(at, radius, damage, edge, owner === null ? null : (this.slots[owner] ?? null), weapon, 1);
+        this.splash(at, radius, damage, edge, owner === null ? null : (this.actor(owner) ?? null), weapon, 1);
       },
-      endRound: (winner) => this.endRound(winner),
+      endRound: (winner, outcome) => this.endRound(winner, outcome),
+      encounter: (id, op, order) => {
+        if (op === 'start') this.encounters.start(id);
+        else if (op === 'stop') this.encounters.stop(id);
+        else if (order) this.encounters.setOrder(id, order);
+      },
+      encounterAlive: (id) => this.encounters.alive(id),
       setPickupEnabled: (id, enabled) => {
         const p = this.pickups.find((q) => q.id === id);
         if (p) p.enabled = enabled;
       },
       emit: (ev) => this.pendingEvents.push(ev),
     });
+    this.encounters = new Encounters(map, {
+      get tick() {
+        return match.tick;
+      },
+      nav: this.nav,
+      players: () => this.combatants().filter((c) => c.alive).map((c) => ({ slot: c.slot, pos: c.move.pos })),
+      hostiles: (faction) => this.actors().filter((c) => c.alive && relation(this.factions, faction, c.faction) === 'enemy').map((c) => ({ id: c.slot, pos: c.move.pos })),
+      spawnNpc: (e, role, pos, yaw) => this.spawnNpc(e, role, pos, yaw),
+      npc: (id) => {
+        const c = this.npcs.get(id);
+        return c && { alive: c.alive, pos: c.move.pos, brain: c.bot! };
+      },
+      entityPos: (id) => {
+        const e = map.entities.find((x) => x.id === id);
+        return e && { x: e.position[0], y: e.position[1], z: e.position[2] };
+      },
+      fire: (event, target, instigator) => this.scenario.fire(event, target, instigator),
+      random: () => this.rng(),
+    });
+  }
+
+  /** The map's NPC factions (or the default enemy faction). */
+  get factions() {
+    return mapFactions(this.map);
+  }
+
+  /** Faction players join: everyone shares one side in co-op; deathmatch is free-for-all. */
+  private get playerFaction(): string | null {
+    return this.rules.mode === 'core.coop' ? PLAYERS_FACTION : null;
+  }
+
+  private readonly hostility = new Map<string, boolean>();
+
+  /** Should `a` attack (and be able to hurt) `b`? */
+  hostile(a: Combatant, b: Combatant): boolean {
+    if (a === b) return false;
+    // Fast paths: deathmatch players fight everyone; same faction never fights.
+    if (a.faction === null && b.faction === null) return true;
+    if (a.faction === b.faction) return false;
+    const key = `${a.faction}|${b.faction}`;
+    let h = this.hostility.get(key);
+    if (h === undefined) {
+      h = relation(this.factions, a.faction, b.faction) === 'enemy';
+      this.hostility.set(key, h);
+    }
+    return h;
+  }
+
+  /** Players and NPCs. */
+  actors(): Combatant[] {
+    return [...this.combatants(), ...this.npcs.values()];
+  }
+
+  actor(id: number): Combatant | undefined {
+    return id >= NPC_ID_BASE ? this.npcs.get(id) : (this.slots[id] ?? undefined);
+  }
+
+  private spawnNpc(e: EncounterEntity, role: NpcRole, pos: Vec3, yaw: number): number | null {
+    const spec = NPC_ROLE_SPECS[role];
+    const id = this.nextNpcId++;
+    const def = getWeapon(spec.weapon);
+    const c: Combatant = {
+      ...this.blankCombatant(id, 'npc', spec.label),
+      faction: e.faction,
+      speedMul: spec.speed,
+      npc: { encounter: e.id, role, removeAt: Infinity },
+      move: { pos: { ...pos }, velY: 0, grounded: false },
+      yaw,
+      health: spec.health,
+      alive: true,
+      weapons: new Map([[def.slot, { def, mag: def.magazine, reserve: def.reserveMax }]]),
+      current: def.slot,
+    };
+    c.bot = new BotBrain(id, NPC_PROFILE, BOT_DIFFICULTIES[e.difficulty], this.seed);
+    c.bot.onSpawn(yaw);
+    this.npcs.set(id, c);
+    return id;
+  }
+
+  private blankCombatant(slot: number, kind: Combatant['kind'], name: string): Combatant {
+    return {
+      slot,
+      kind,
+      name,
+      faction: kind === 'npc' ? null : this.playerFaction,
+      speedMul: 1,
+      collider: this.physics.createPlayerCollider(),
+      move: { pos: { x: 0, y: 0, z: 0 }, velY: 0, grounded: false },
+      yaw: 0,
+      pitch: 0,
+      health: PLAYER.maxHealth,
+      armor: 0,
+      alive: false,
+      respawnTick: 0,
+      kills: 0,
+      deaths: 0,
+      weapons: new Map(),
+      current: 0,
+      fireCooldown: 0,
+      reloadTicks: 0,
+      raiseTicks: 0,
+      speedTicks: 0,
+      damageTicks: 0,
+      queue: [],
+      lastSeq: 0,
+    };
+  }
+
+  private removeNpc(id: number): void {
+    const c = this.npcs.get(id);
+    if (!c) return;
+    this.physics.removeCollider(c.collider);
+    this.npcs.delete(id);
   }
 
   private roundEndTick(): number {
@@ -191,30 +326,7 @@ export class Match {
   private addCombatant(kind: Combatant['kind'], name: string): Combatant | null {
     const slot = this.slots.indexOf(null);
     if (slot < 0) return null;
-    const c: Combatant = {
-      slot,
-      kind,
-      name,
-      collider: this.physics.createPlayerCollider(),
-      move: { pos: { x: 0, y: 0, z: 0 }, velY: 0, grounded: false },
-      yaw: 0,
-      pitch: 0,
-      health: PLAYER.maxHealth,
-      armor: 0,
-      alive: false,
-      respawnTick: 0,
-      kills: 0,
-      deaths: 0,
-      weapons: new Map(),
-      current: 0,
-      fireCooldown: 0,
-      reloadTicks: 0,
-      raiseTicks: 0,
-      speedTicks: 0,
-      damageTicks: 0,
-      queue: [],
-      lastSeq: 0,
-    };
+    const c = this.blankCombatant(slot, kind, name);
     this.slots[slot] = c;
     this.spawn(c);
     return c;
@@ -249,12 +361,14 @@ export class Match {
       if (this.tick >= this.phaseEndTick) this.startRound();
     } else {
       this.runBots();
-      for (const c of this.combatants()) this.applyInputs(c);
+      for (const c of this.actors()) this.applyInputs(c);
       this.stepProjectiles();
       if (this.phase === 'playing') this.scenario.step();
+      if (this.phase === 'playing') this.encounters.step();
       for (const c of this.combatants()) {
         if (!c.alive && this.tick >= c.respawnTick) this.spawn(c);
       }
+      for (const c of this.npcs.values()) if (!c.alive && this.tick >= c.npc!.removeAt) this.removeNpc(c.slot);
       if (this.tick >= this.phaseEndTick) this.endRound();
     }
     this.recordHistory();
@@ -265,29 +379,61 @@ export class Match {
 
   private runBots(): void {
     const t0 = performance.now();
-    const views = this.combatants().map(toView);
+    const actors = this.actors();
+    const views = new Map(actors.map((c) => [c.slot, toView(c)]));
     const pickups: PickupView[] = this.pickups.map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt }));
+    const npcPickups: PickupView[] = [];
     const blockers = this.scenario.blockers();
     const hazards = this.scenario.hazards();
-    for (const c of this.combatants()) {
+    const spawnPoints = this.spawnPoints.map((s) => s.pos);
+    const coop = this.rules.mode === 'core.coop';
+    for (const c of actors) {
       if (!c.bot) continue;
-      const self = views.find((v) => v.slot === c.slot)!;
+      const hostiles = actors.filter((o) => o.alive && this.hostile(c, o));
+      const npc = c.npc;
+      // Dormant NPCs (no enemy within earshot of the squad's area) skip thinking entirely.
+      if (npc && c.alive && !c.bot.lastSeen && !hostiles.some((o) => horizontalDistance(o.move.pos, c.move.pos) < 70)) {
+        c.queue.push({ seq: c.lastSeq + 1, forward: 0, right: 0, yaw: c.yaw, pitch: c.pitch, buttons: 0 });
+        continue;
+      }
+      const orderGoal = npc ? this.encounters.goalFor(c.slot) : coop ? this.coopGoal(c, hostiles) : null;
       const input = c.bot.think({
         tick: this.tick,
-        self,
-        others: views.filter((v) => v.slot !== c.slot),
+        self: views.get(c.slot)!,
+        others: hostiles.map((o) => views.get(o.slot)!),
         physics: this.physics,
         nav: this.nav,
-        spawnPoints: this.spawnPoints.map((s) => s.pos),
-        pickups,
+        spawnPoints: npc && orderGoal ? [orderGoal.pos] : spawnPoints,
+        pickups: npc ? npcPickups : pickups,
         inventory: [...c.weapons.values()].map((w) => ({ def: w.def, mag: w.mag, reserve: w.reserve })),
         held: c.current,
         blockers,
         hazards,
+        orderGoal,
       });
       c.queue.push(input);
     }
     this.lastAiMs = performance.now() - t0;
+  }
+
+  /**
+   * Co-op Player Bots head for the nearest enemy they know of (the mission's
+   * NPCs), or stay near a human when there is nothing to fight.
+   */
+  private coopGoal(c: Combatant, hostiles: Combatant[]): { pos: Vec3; radius: number } | null {
+    let best: Vec3 | null = null;
+    let bestD = Infinity;
+    for (const h of hostiles) {
+      const d = horizontalDistance(h.move.pos, c.move.pos) + Math.abs(h.move.pos.y - c.move.pos.y) * 2;
+      if (d < bestD) {
+        bestD = d;
+        best = h.move.pos;
+      }
+    }
+    // Close right in: line of sight is what starts the fight, not distance.
+    if (best) return { pos: best, radius: 2 };
+    const human = this.combatants().find((o) => o.kind === 'human' && o.alive);
+    return human ? { pos: human.move.pos, radius: 4 } : null;
   }
 
   private applyInputs(c: Combatant): void {
@@ -301,7 +447,7 @@ export class Match {
 
       if (input.weapon && input.weapon !== c.current && c.weapons.has(input.weapon)) this.switchTo(c, input.weapon);
 
-      c.move = stepMovement(this.physics, c.collider, c.move, input, c.speedTicks > 0 ? SPEED_BOOST : 1);
+      c.move = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul);
       if (c.fireCooldown > 0) c.fireCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
       if (c.speedTicks > 0) c.speedTicks--;
@@ -323,7 +469,9 @@ export class Match {
         }
       }
 
-      this.collectPickups(c);
+      if (!c.npc) this.collectPickups(c);
+      // NPCs never run dry: their reserve refills.
+      else if (held.reserve < held.def.magazine) held.reserve = held.def.reserveMax;
       if (c.move.pos.y < PLAYER.killY) this.kill(c, null, 'core.fall');
       if (!c.alive) break;
     }
@@ -385,7 +533,7 @@ export class Match {
         if (world && body === null) body = world.handle;
       }
       this.pendingEvents.push({ e: 'melee', s: shooter.slot, hit });
-      if (hit !== null) this.damage(this.slots[hit]!, def.damage, shooter, def.id);
+      if (hit !== null) this.damage(this.actor(hit)!, def.damage, shooter, def.id);
       else if (body !== null) this.scenario.damageBody(body, this.boosted(shooter, def.damage), shooter.slot);
       return;
     }
@@ -402,7 +550,7 @@ export class Match {
       if (shot.hitSlot === null && world) bodies.push(world.handle);
     }
     this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits });
-    for (const h of hits) if (h !== null) this.damage(this.slots[h]!, def.damage, shooter, def.id);
+    for (const h of hits) if (h !== null) this.damage(this.actor(h)!, def.damage, shooter, def.id);
     for (const b of bodies) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
   }
 
@@ -430,14 +578,15 @@ export class Match {
       const t = Math.max(this.tick - MAX_REWIND_TICKS, Math.min(this.tick, viewTick));
       past = this.history.get(t);
     }
-    return this.combatants()
-      .filter((o) => o !== shooter && o.alive)
+    // Allies are not targets: shots pass through them (no friendly fire).
+    return this.actors()
+      .filter((o) => o.alive && this.hostile(shooter, o))
       .map((o) => ({ slot: o.slot, feet: past?.get(o.slot) ?? o.move.pos }));
   }
 
   private recordHistory(): void {
     const snap = new Map<number, Vec3>();
-    for (const c of this.combatants()) if (c.alive) snap.set(c.slot, { ...c.move.pos });
+    for (const c of this.actors()) if (c.alive) snap.set(c.slot, { ...c.move.pos });
     this.history.set(this.tick, snap);
     this.history.delete(this.tick - HISTORY_TICKS);
   }
@@ -452,8 +601,10 @@ export class Match {
       const len = Math.hypot(delta.x, delta.y, delta.z);
       const dir = scale(delta, 1 / (len || 1));
       let hitDist = this.physics.raycastWorld(p.pos, dir, len);
-      for (const c of this.combatants()) {
-        if (!c.alive || (c.slot === p.owner && p.age < OWNER_GRACE_TICKS)) continue;
+      const owner = this.actor(p.owner);
+      for (const c of this.actors()) {
+        if (!c.alive || (c === owner && p.age < OWNER_GRACE_TICKS)) continue;
+        if (owner && c !== owner && !this.hostile(owner, c)) continue;
         const d = rayCapsule(p.pos, dir, c.move.pos);
         if (d !== null && d <= len && (hitDist === null || d < hitDist)) hitDist = d;
       }
@@ -473,14 +624,14 @@ export class Match {
 
   private explode(p: Projectile, at: Vec3): void {
     const spec = p.def.projectile!;
-    const owner = this.slots[p.owner] ?? null;
+    const owner = this.actor(p.owner) ?? null;
     this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius });
     this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.def.id, spec.selfDamageScale);
   }
 
   /** Radial damage falling off from `damage` at the centre to `edge` at `radius`, blocked by walls. Also hits destructibles. */
   private splash(at: Vec3, radius: number, damage: number, edge: number, owner: Combatant | null, weapon: string, selfScale: number): void {
-    for (const c of this.combatants()) {
+    for (const c of this.actors()) {
       if (!c.alive) continue;
       const target = chest(c.move.pos);
       const d = distance(at, target);
@@ -500,6 +651,9 @@ export class Match {
   /** Apply damage through armor and the attacker's damage boost. */
   private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string): void {
     if (!victim.alive || this.phase !== 'playing') return;
+    // No friendly fire; hazards (no attacker) and your own grenades still hurt.
+    if (attacker && attacker !== victim && !this.hostile(attacker, victim)) return;
+    if (attacker?.npc && !victim.npc) amount *= NPC_DAMAGE_TO_PLAYERS;
     let dmg = attacker && attacker !== victim && attacker.damageTicks > 0 ? amount * DAMAGE_BOOST : amount;
     if (victim.armor > 0) {
       const absorbed = Math.min(victim.armor, dmg * ARMOR_ABSORB);
@@ -513,13 +667,19 @@ export class Match {
   private kill(victim: Combatant, killer: Combatant | null, weapon: string): void {
     victim.alive = false;
     victim.health = 0;
+    this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon });
+    // Only players score; NPC kills of players count as the player's death.
+    if (killer && !killer.npc) killer.kills++;
+    if (victim.npc) {
+      victim.npc.removeAt = this.tick + TICK_RATE * 2;
+      this.encounters.onNpcKilled(victim.slot, killer?.slot ?? null);
+      return;
+    }
     victim.deaths++;
     victim.respawnTick = this.tick + this.rules.respawnDelayTicks;
-    if (killer) killer.kills++;
-    else victim.kills--; // suicides (falls, own grenades, traps) cost a point
-    this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon });
+    if (!killer) victim.kills--; // suicides (falls, own grenades, traps) cost a point
     this.scenario.playerKilled(victim.slot, killer?.slot ?? null);
-    if (killer && killer.kills >= this.rules.scoreLimit) this.endRound();
+    if (killer && !killer.npc && this.rules.scoreLimit > 0 && killer.kills >= this.rules.scoreLimit) this.endRound();
   }
 
   // ---------------------------------------------------------------- pickups
@@ -580,7 +740,7 @@ export class Match {
 
   /** Spawn at the point farthest from living opponents, with a little randomness among near-equal choices. */
   private spawn(c: Combatant): void {
-    const enemies = this.combatants().filter((o) => o !== c && o.alive);
+    const enemies = this.actors().filter((o) => o.alive && this.hostile(c, o));
     let best = this.spawnPoints[0];
     let bestScore = -Infinity;
     for (const sp of this.spawnPoints) {
@@ -613,22 +773,28 @@ export class Match {
     this.pendingEvents.push({ e: 'spawn', s: c.slot });
   }
 
-  /** Ends the round; the winner is the top scorer unless scenario logic names one (`null` = nobody). */
-  private endRound(forced?: number | null): void {
+  /**
+   * Ends the round; the winner is the top scorer unless scenario logic names
+   * one (`null` = nobody). Co-op missions end with an outcome instead.
+   */
+  private endRound(forced?: number | null, outcome?: 'victory' | 'defeat'): void {
     if (this.phase !== 'playing') return;
     const ranked = this.combatants().sort((a, b) => b.kills - a.kills);
-    const top = forced === undefined ? ranked[0] : forced === null ? undefined : (this.slots[forced] ?? undefined);
+    const named = forced === undefined || forced === null ? undefined : this.actor(forced);
+    const top = forced === undefined ? ranked[0] : named && !named.npc ? named : undefined;
     const tied = forced === undefined && top && ranked[1] && ranked[1].kills === top.kills;
     this.phase = 'intermission';
     this.phaseEndTick = this.tick + this.rules.intermissionTicks;
     this.projectiles = [];
-    this.pendingEvents.push({ e: 'round_end', winner: top && !tied ? top.slot : null });
+    this.pendingEvents.push(outcome ? { e: 'round_end', winner: null, outcome } : { e: 'round_end', winner: top && !tied ? top.slot : null });
   }
 
   private startRound(): void {
     this.phase = 'playing';
     this.phaseEndTick = this.roundEndTick();
     for (const p of this.pickups) p.availableAt = 0;
+    for (const id of [...this.npcs.keys()]) this.removeNpc(id);
+    this.encounters.reset();
     this.scenario.reset();
     for (const c of this.combatants()) {
       c.kills = 0;
@@ -678,6 +844,17 @@ export class Match {
     };
   }
 
+  /** Compact NPC state for snapshots (see NpcSnapshot). */
+  npcSnapshots(): NpcSnapshot[] {
+    const factions = this.factions;
+    const r2 = (v: number) => Math.round(v * 100) / 100;
+    return [...this.npcs.values()].map((c) => {
+      const role = NPC_ROLES.indexOf(c.npc!.role);
+      const spec = NPC_ROLE_SPECS[c.npc!.role];
+      return [c.slot, r2(c.move.pos.x), r2(c.move.pos.y), r2(c.move.pos.z), r3(c.yaw), r3(c.pitch), Math.ceil((Math.max(0, c.health) / spec.health) * 100), role, Math.max(0, factions.findIndex((f) => f.id === c.faction)), c.alive ? 1 : 0, c.current];
+    });
+  }
+
   scores(): ScoreEntry[] {
     return this.combatants().map((c) => ({ s: c.slot, k: c.kills, d: c.deaths }));
   }
@@ -694,6 +871,7 @@ export class Match {
       pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z)]),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
       sc: this.scenario.delta(),
+      np: this.npcSnapshots(),
     };
   }
 

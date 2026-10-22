@@ -127,7 +127,9 @@ async function editorFlow(browser) {
   d = await doc();
   const rule = d.logic.rules[0];
   check(d.logic.rules.length === 1 && rule.when.event === 'button_pressed' && rule.when.target === btn.id && rule.do.some((a) => a.type === 'door_unlock' && a.target === door.id), 'logic template wires the button to the door');
-  await page.waitForTimeout(300); // panels refresh on the next frame
+  // Panels refresh on the editor's next frame (slow under software rendering): wait for it to catch up.
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.waitForFunction(() => window.__editor.renderedRevision === window.__editor.history.revision, null, { timeout: 10000 });
   const issuesText = await page.textContent('#ed-issues');
   check(!/does nothing|never unlocks/.test(issuesText ?? ''), `validation is satisfied once the rule exists (${issuesText})`);
   await page.click('.lg-head button');
@@ -177,6 +179,7 @@ async function offlineFlow(browser) {
   const played = await page.evaluate(() => window.__audio.stats.played);
   check(played > 0, `match events play sounds (${played} played)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 async function vaultFlow(browser) {
@@ -189,6 +192,22 @@ async function vaultFlow(browser) {
   const objectives = await page.textContent('#objectives');
   check((objectives ?? '').includes('Find the vault control'), `scenario demo shows its first objective (${objectives})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+async function outpostFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=outpost`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForTimeout(2500);
+  const objectives = await page.textContent('#objectives');
+  check((objectives ?? '').includes('Clear the courtyard'), `co-op mission shows its first objective (${objectives})`);
+  const npcs = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('helmet_') && m.isEnabled()).length);
+  check(npcs >= 4, `NPC squads are rendered (${npcs} helmets)`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 async function onlineFlow(browser) {
@@ -219,6 +238,7 @@ try {
   await editorFlow(browser);
   await offlineFlow(browser);
   await vaultFlow(browser);
+  await outpostFlow(browser);
   await onlineFlow(browser);
   await browser.close();
 } catch (e) {

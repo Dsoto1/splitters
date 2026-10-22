@@ -38,7 +38,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 | M1.5 | Map look: material library (~20), per-surface material + tint, Paint tool in MapMaker, map format v2 migration ([`PLAYER_EXPRESSION.md`](PLAYER_EXPRESSION.md) §1) | **Done** |
 | M2 | Weapons and items: 6 weapon roles (pistol, automatic, shotgun, precision, explosive, melee), weapon/health/armor pickups, 2 powerups, bot weapon choice and pickup seeking, lag compensation | **Done** |
 | M3 | Scenario primitives: doors, buttons, destructibles, trigger volumes, **traps**, WHEN → IF → DO logic (data-only interpreter), objectives, LOGIC/ENTITIES workspaces | **Done** |
-| M4 | NPCs: factions model, one enemy faction, one NPC squad archetype, encounter spawners, the co-op scenario | |
+| M4 | NPCs: factions model, one enemy faction, one NPC squad archetype, encounter spawners, the co-op scenario | **Done** |
 | M5 | Rig standard, first character part library, **Character Designer**, 12 preset characters built with it, character select, looks visible to everyone in multiplayer, Team Deathmatch on factions | |
 | M6 | Multiplayer slice: hosting an editor map on the dedicated server (map transfer), 8-slot proof, staged 16/24/32 load tests, bundle splitting, §11 acceptance pass | |
 
@@ -102,6 +102,58 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 - **Projectiles are not lag-compensated** (standard for slow projectiles), and pickups are not predicted client-side.
 - **Bot stuck recoveries rose** with pickup detours (~88 per minute across 32 bots in the bench, up from ~50). Tuning goes with the nav-debug overlay work.
 - **Recoil and spread** are fixed values per weapon. There is no recoil pattern or movement inaccuracy yet. Balance numbers are first-pass.
+
+## M4 — what exists
+
+The creator guide is the "NPCs, factions and co-op" section of [`SCENARIO.md`](SCENARIO.md).
+
+- **Map format v5:**
+  - a `factions` list (an empty list means the default enemy faction, *Syndicate*);
+  - the `encounter` entity;
+  - the co-op mode in `supportedModes`.
+  - v4 maps migrate (fixture tested).
+- **Factions:** any number of creator factions with ally / neutral / enemy relations to the players and to each other. Each faction is allied with itself and an enemy of everyone else unless told otherwise. Deathmatch players fight everyone.
+- **NPC combatants:**
+  - They don't use player slots; actor IDs start at 100.
+  - One squad archetype with three roles: Trooper (rifle, 70 HP), Gunner (shotgun, 90 HP) and Heavy (grenade launcher, 160 HP, slower).
+  - They reuse the Player Bot brain with an NPC profile (worse aim, slower reactions, skill per encounter) and never run out of ammo.
+  - Dormant NPCs (no enemy within 70 m and nothing sighted) skip thinking.
+- **Encounters and squads:**
+  - Settings: first-wave roster, max alive, a reinforcement pool trickled in every N seconds, extra reinforcements per extra player (co-op scaling), and a spawn radius.
+  - Spawns avoid enemies and crowding.
+  - Squad orders: hold, attack (hunt), defend a target, patrol to a target, follow the players.
+  - Squadmates share sightings.
+- **Combat rules:**
+  - No friendly fire: shots, grenades and splash pass through or ignore allies. Hazards and your own grenades still hurt.
+  - Only players score; deaths to NPCs count as deaths. NPC weapons deal 55 % damage to players (`NPC_DAMAGE_TO_PLAYERS`), so squads are dangerous in numbers rather than one-shot killers.
+  - Lag compensation covers NPCs.
+- **Co-op mode:**
+  - Every player and Player Bot is on the players faction, with no score or time limit.
+  - Bots hunt the mission's NPCs (or stay with a human).
+  - Logic ends the round with **players win** / **players lose**, shown as "Mission complete" / "Mission failed".
+- **Logic:**
+  - events: Encounter cleared, An NPC dies;
+  - condition: NPCs alive in (compare);
+  - actions: Start encounter, Stop reinforcements, Order squad to …
+- **Network:** NPCs travel as compact 11-number tuples (`snapshot.np`) and share player interpolation on the client.
+- **Client:** NPCs are capsules in their faction colour with a helmet, shoulder pads, a red visor and their weapon. Heavies are bigger. They appear in the kill feed by faction and role ("Syndicate Heavy").
+- **MapMaker:**
+  - an **NPC Squad** tool (the spawn area, a flag and figures in the faction colour);
+  - a full encounter inspector;
+  - a **Mode** setting (Deathmatch / Co-op mission);
+  - a **Factions** section in the Logic panel;
+  - three new templates: Ambush, Clear the squad, Co-op win when all squads are cleared.
+  - Validation flags unknown factions, empty squads, defend/patrol orders without a target, and co-op maps with no enemies.
+- **Demo:** *Outpost Siege* (`maps/m4_outpost.json`; main menu → "Play Outpost Siege", or a MapMaker template). You take the courtyard with a militia escort, open the gate, hold the uplink for 60 s against waves from two sides, then fight to evac. The team shares 15 lives. A test plays it through to victory, and another runs 3 Player Bots + NPCs on it until the courtyard falls.
+- **Measured** (`pnpm bench 32 15 -- --npcs=N`): 32 bots alone 0.8–1.1 ms per tick; 32 bots + 32 NPCs 2.8 ms (p99 6.5); 32 bots + 64 NPCs 4.2 ms (p99 9.3), against a 16.7 ms budget.
+
+### Known M4 gaps
+
+- NPCs are full-rate in snapshots (about 40 bytes each at 30 Hz). Interest management (distance/visibility-based rates) is next before larger NPC counts online.
+- No cover-seeking, grenades thrown by hand, or medic/sergeant roles yet; the squad is one archetype with three weapons.
+- Players can't give squad orders yet (CHARACTERS_BOTS_V2 §16); logic can.
+- NPC looks are placeholder capsules until the character rig and Character Designer (M5).
+- Team Deathmatch on factions is scheduled with M5.
 
 ## M3 — what exists
 

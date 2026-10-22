@@ -149,7 +149,34 @@ export class ScenarioVisuals {
         return this.zone(name, e);
       case 'trap':
         return this.trap(name, e);
+      case 'encounter':
+        return this.encounter(name, e);
     }
+  }
+
+  /** Faction colours for encounter markers (MapMaker). */
+  factionColor: (faction: string) => string = () => '#d04a3a';
+
+  /** Editor-only marker: the spawn area in the faction's colour, a flag, and one figure per first-wave member. */
+  private encounter(name: string, e: Extract<MapEntity, { kind: 'encounter' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    if (!this.opts.editor) return { root };
+    const color = this.factionColor(e.faction);
+    const disc = CreateCylinder(`${name}_area`, { diameter: e.radius * 2, height: 0.04, tessellation: 32 }, this.scene);
+    disc.parent = root;
+    disc.position.y = 0.03;
+    disc.material = this.mat('encArea', color, { emissive: 0.4, alpha: 0.18 });
+    this.box(`${name}_pole`, root, [0.08, 2.6, 0.08], [0, 1.3, 0], this.mat('pole', '#3a3f48'));
+    this.box(`${name}_flag`, root, [0.7, 0.45, 0.03], [0.35, 2.3, 0], this.mat('encFlag', color, { emissive: 0.5 }));
+    const count = Math.min(8, e.roster.trooper + e.roster.gunner + e.roster.heavy);
+    for (let i = 0; i < count; i++) {
+      const a = (i / Math.max(1, count)) * Math.PI * 2;
+      const fig = CreateCylinder(`${name}_fig${i}`, { diameterTop: 0.35, diameterBottom: 0.5, height: 1.2, tessellation: 8 }, this.scene);
+      fig.parent = root;
+      fig.position.set(Math.cos(a) * Math.min(1.2, e.radius * 0.6), 0.6, Math.sin(a) * Math.min(1.2, e.radius * 0.6));
+      fig.material = this.mat('encFig', color);
+    }
+    return { root };
   }
 
   private door(name: string, e: Extract<MapEntity, { kind: 'door' }>): Visual {

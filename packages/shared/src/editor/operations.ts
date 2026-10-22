@@ -154,6 +154,7 @@ export function newMapDocument(name = 'Untitled Map', now: Date = new Date()): M
     },
     classicStructure: { cellSize: 8, levelHeight: 4, theme: 'core.prototype', tiles: [{ id: newId('tile'), tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }] },
     entities: [{ id: newId('spawn'), kind: 'spawn', position: [0, 0, 0], yaw: 0, faction: null }],
+    factions: [],
     logic: emptyLogic(),
     dependencies: [],
   };
@@ -223,6 +224,7 @@ export const SCENARIO_PALETTE = [
   { key: 'barrel', label: 'Explosive Barrel', search: 'barrel explosive destructible red boom' },
   { key: 'wall', label: 'Breakable Wall', search: 'wall breakable destructible breach' },
   { key: 'zone', label: 'Trigger Zone', search: 'zone trigger volume area region enter' },
+  { key: 'encounter', label: 'NPC Squad', search: 'npc squad encounter enemy soldiers spawner faction ai' },
   { key: 'trap:spikes', label: 'Spike Floor', search: 'trap spikes floor hazard' },
   { key: 'trap:flames', label: 'Flame Jet', search: 'trap flame fire jet hazard burn' },
   { key: 'trap:crusher', label: 'Crusher', search: 'trap crusher ceiling piston hazard' },
@@ -249,6 +251,24 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId(key), kind: 'destructible', model: key, ...base, health: null, explosiveOnly: false };
     case 'zone':
       return { id: newId('zone'), kind: 'zone', position, size: [4, 3, 4], who: 'any', count: 1, startEnabled: true };
+    case 'encounter':
+      return {
+        id: newId('squad'),
+        kind: 'encounter',
+        position,
+        yaw,
+        faction: 'syndicate',
+        roster: { trooper: 2, gunner: 1, heavy: 0 },
+        activeCap: 4,
+        reinforcements: 0,
+        perPlayer: 1,
+        respawnSeconds: 4,
+        radius: 3,
+        order: 'hold',
+        orderTarget: null,
+        startActive: true,
+        difficulty: 'normal',
+      };
     default: {
       const trap = key.slice(5) as TrapKind;
       const d = TRAP_SPECS[trap].defaults;
@@ -271,7 +291,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {

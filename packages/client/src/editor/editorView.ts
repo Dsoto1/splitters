@@ -14,7 +14,7 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
-import { DESTRUCTIBLE_SPECS, PLAYER, buildMapGeometry, placementCells, viewDirection } from '@chronosplit/shared';
+import { DESTRUCTIBLE_SPECS, PLAYER, buildMapGeometry, mapFactions, placementCells, viewDirection } from '@chronosplit/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -190,11 +190,14 @@ export class EditorView {
   setEntities(doc: MapDocument, level: number, showAll: boolean, selected: ReadonlySet<string>): void {
     const { levelHeight } = doc.classicStructure;
     const seen = new Set<string>();
+    const factions = mapFactions(doc);
+    const factionColor = (id: string) => factions.find((f) => f.id === id)?.color ?? '#888888';
+    this.scenario.factionColor = factionColor;
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
       seen.add(e.id);
       // Rebuild a marker when the entity changed kind, item or any scenario property.
-      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null });
+      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null, color: e.kind === 'encounter' ? factionColor(e.faction) : null });
       let m = this.markers.get(e.id);
       if (m && m.key !== key) {
         m.node.dispose(false, false);
@@ -338,6 +341,8 @@ function selectionSize(e: MapEntity): number {
       return 3.4;
     case 'zone':
       return Math.max(e.size[0], e.size[2]) * 1.2;
+    case 'encounter':
+      return e.radius * 2 + 0.4;
     case 'trap':
       return e.trap === 'mine' ? 1.1 : e.trap === 'flames' ? 1.4 : 3.6;
     case 'destructible':

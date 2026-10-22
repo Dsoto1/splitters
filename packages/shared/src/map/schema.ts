@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { ScenarioLogic } from './logic.ts';
 
 /**
- * ChronoSplit map document, format version 4 (v2 added per-surface tile styles, v3 pickup
- * entities, v4 scenario entities and logic).
+ * ChronoSplit map document, format version 5 (v2 added per-surface tile styles, v3 pickup
+ * entities, v4 scenario entities and logic, v5 factions and NPC encounters).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -12,7 +12,7 @@ import { ScenarioLogic } from './logic.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 4;
+export const MAP_FORMAT_VERSION = 5;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -173,7 +173,50 @@ export const TrapEntity = EntityBase.extend({
   damage: z.number().min(1).max(1000).nullable().default(null),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity]);
+/** Faction IDs are short lowercase words; `players` is the built-in faction of every player in co-op. */
+export const FactionId = z.string().regex(/^[a-z0-9_]{2,32}$/, 'faction IDs are 2-32 chars of [a-z0-9_]');
+export const PLAYERS_FACTION = 'players';
+
+export const NPC_ROLES = ['trooper', 'gunner', 'heavy'] as const;
+export const SQUAD_ORDERS = ['hold', 'attack', 'defend', 'patrol', 'follow'] as const;
+
+/**
+ * An NPC encounter: a squad of a faction's soldiers that spawns around this
+ * point. `roster` is the first wave; `reinforcements` more spawn one by one as
+ * members die, never more than `activeCap` alive at once.
+ */
+export const EncounterEntity = EntityBase.extend({
+  kind: z.literal('encounter'),
+  yaw: Yaw,
+  faction: FactionId.default('syndicate'),
+  roster: z
+    .object({ trooper: z.number().int().min(0).max(16), gunner: z.number().int().min(0).max(16), heavy: z.number().int().min(0).max(16) })
+    .default({ trooper: 2, gunner: 1, heavy: 0 }),
+  activeCap: z.number().int().min(1).max(32).default(4),
+  reinforcements: z.number().int().min(0).max(500).default(0),
+  /** Extra reinforcements for each player beyond the first (co-op scaling). */
+  perPlayer: z.number().int().min(0).max(16).default(1),
+  respawnSeconds: z.number().min(0.5).max(120).default(4),
+  /** Spawn area radius around the position. */
+  radius: z.number().min(1).max(16).default(3),
+  order: z.enum(SQUAD_ORDERS).default('hold'),
+  /** Point of interest for defend/patrol orders (any entity). */
+  orderTarget: StableId.nullable().default(null),
+  startActive: z.boolean().default(true),
+  difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity]);
+
+export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
+
+/** A creator-defined side. Relations default to "ally" with itself and "enemy" with everyone else. */
+export const Faction = z.object({
+  id: FactionId,
+  name: z.string().min(1).max(40),
+  color: z.string().regex(/^#[0-9a-f]{6}$/).default('#d04a3a'),
+  relations: z.record(FactionId, z.enum(RELATIONS)).default({}),
+});
 
 export const MapDocument = z.object({
   format: z.literal(MAP_FORMAT),
@@ -181,6 +224,8 @@ export const MapDocument = z.object({
   metadata: MapMetadata,
   classicStructure: ClassicStructure,
   entities: z.array(MapEntity).max(4096),
+  /** NPC factions. Empty means the default enemy faction ("Syndicate"). */
+  factions: z.array(Faction).max(16).default([]),
   /** Scenario logic: variables, timers, objectives and WHEN -> IF -> DO rules. */
   logic: ScenarioLogic.default({ variables: [], timers: [], objectives: [], rules: [] }),
   /** Content packs this map needs, beyond the always-present core pack. */
@@ -200,6 +245,11 @@ export type TrapKind = (typeof TRAP_KINDS)[number];
 export type TrapActivation = (typeof TRAP_ACTIVATIONS)[number];
 export type DestructibleModel = (typeof DESTRUCTIBLE_MODELS)[number];
 export type EntityKind = MapEntity['kind'];
+export type EncounterEntity = z.infer<typeof EncounterEntity>;
+export type Faction = z.infer<typeof Faction>;
+export type NpcRole = (typeof NPC_ROLES)[number];
+export type SquadOrder = (typeof SQUAD_ORDERS)[number];
+export type Relation = (typeof RELATIONS)[number];
 export type TilePlacement = z.infer<typeof TilePlacement>;
 export type Rotation = z.infer<typeof Rotation>;
 export type SurfaceStyle = z.infer<typeof SurfaceStyle>;

@@ -1,5 +1,6 @@
 import { ACTION_INFO, CONDITION_INFO, EVENT_INFO, TOGGLEABLE_KINDS, type TargetKind } from './logic.ts';
-import type { MapDocument } from './schema.ts';
+import { PLAYERS_FACTION, type MapDocument } from './schema.ts';
+import { mapFactions } from '../sim/npc.ts';
 import type { ValidationIssue } from './validate.ts';
 
 const KIND_LABEL: Record<TargetKind, string> = {
@@ -9,6 +10,7 @@ const KIND_LABEL: Record<TargetKind, string> = {
   zone: 'zone',
   trap: 'trap',
   pickup: 'pickup',
+  encounter: 'encounter',
   toggleable: 'button, zone, trap or pickup',
   variable: 'variable',
   timer: 'timer',
@@ -86,6 +88,24 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
   for (const o of logic.objectives) {
     if (o.marker && !entities.has(o.marker)) issues.push({ severity: 'warning', code: 'logic.marker', message: `objective "${o.text}" points at a missing object`, targetId: o.id });
     if (!used.completed.has(o.id)) issues.push({ severity: 'suggestion', code: 'logic.objective_never_completes', message: `objective "${o.text}" is never completed by a rule`, targetId: o.id });
+  }
+
+  const factionIds = new Set([PLAYERS_FACTION, ...mapFactions(map).map((f) => f.id)]);
+  for (const f of map.factions) {
+    for (const other of Object.keys(f.relations)) {
+      if (!factionIds.has(other)) issues.push({ severity: 'warning', code: 'faction.unknown', message: `faction "${f.name}" has a relation with unknown faction "${other}"` });
+    }
+  }
+  for (const e of map.entities) {
+    if (e.kind !== 'encounter') continue;
+    if (!factionIds.has(e.faction) || e.faction === PLAYERS_FACTION) issues.push({ severity: 'error', code: 'encounter.faction', message: `encounter ${e.id} uses unknown faction "${e.faction}"`, targetId: e.id });
+    if (e.roster.trooper + e.roster.gunner + e.roster.heavy === 0) issues.push({ severity: 'warning', code: 'encounter.empty', message: `encounter ${e.id} has nobody in its squad`, targetId: e.id });
+    if ((e.order === 'defend' || e.order === 'patrol') && (!e.orderTarget || !entities.has(e.orderTarget))) {
+      issues.push({ severity: 'warning', code: 'encounter.target', message: `encounter ${e.id} is ordered to ${e.order} but has no target object`, targetId: e.id });
+    }
+  }
+  if (map.metadata.supportedModes[0] === 'core.coop' && !map.entities.some((e) => e.kind === 'encounter')) {
+    issues.push({ severity: 'suggestion', code: 'coop.no_enemies', message: 'co-op map has no NPC encounters to fight' });
   }
 
   for (const e of map.entities) {

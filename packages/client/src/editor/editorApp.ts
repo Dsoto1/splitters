@@ -24,6 +24,10 @@ import {
   CORE_ITEMS,
   DESTRUCTIBLE_MODELS,
   DESTRUCTIBLE_SPECS,
+  NPC_ROLES,
+  NPC_ROLE_SPECS,
+  SQUAD_ORDERS,
+  mapFactions,
   SCENARIO_PALETTE,
   TRAP_ACTIVATIONS,
   TRAP_KINDS,
@@ -55,6 +59,7 @@ import {
 } from '@chronosplit/shared';
 import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
+import outpostTemplate from '../../../../maps/m4_outpost.json';
 import { EditorView } from './editorView.ts';
 import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibrary, readAutosave, saveToLibrary, writeAutosave } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
@@ -97,6 +102,7 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'trap:flames': '<rect x="6" y="24" width="10" height="12" fill="#3a3f48"/><path d="M16 30c8-10 18-8 32-4-12 2-16 8-32 4z" fill="#ff8a2a"/><path d="M16 30c6-5 12-4 22-2-8 1-12 4-22 2z" fill="#ffe08a"/>',
   'trap:crusher': '<rect x="10" y="8" width="36" height="12" fill="#5e636b"/><rect x="8" y="6" width="3" height="42" fill="#4b525c"/><rect x="45" y="6" width="3" height="42" fill="#4b525c"/><path d="M28 24v12m-5-5l5 5 5-5" stroke="#e3b021" stroke-width="3" fill="none"/><rect x="10" y="46" width="36" height="3" fill="#e3b021"/>',
   'trap:mine': '<ellipse cx="28" cy="38" rx="14" ry="5" fill="#3b4033"/><circle cx="28" cy="34" r="3" fill="#ff2a2a"/>',
+  encounter: '<ellipse cx="28" cy="44" rx="20" ry="6" fill="#d04a3a" fill-opacity=".25" stroke="#d04a3a" stroke-width="2"/><rect x="26" y="6" width="2.5" height="36" fill="#3a3f48"/><rect x="28.5" y="6" width="12" height="8" fill="#d04a3a"/><circle cx="17" cy="30" r="5" fill="#d04a3a"/><rect x="13" y="34" width="8" height="10" rx="3" fill="#d04a3a"/><circle cx="38" cy="30" r="5" fill="#d04a3a"/><rect x="34" y="34" width="8" height="10" rx="3" fill="#d04a3a"/>',
   'trap:laser': '<rect x="8" y="10" width="4" height="38" fill="#2a2d33"/><rect x="44" y="10" width="4" height="38" fill="#2a2d33"/><path d="M12 18h32M12 26h32M12 34h32M12 42h32" stroke="#ff2040" stroke-width="2"/>',
 };
 
@@ -111,6 +117,8 @@ function pickRadius(e: MapEntity): number {
       return e.trap === 'mine' ? 0.7 : 1.5;
     case 'destructible':
       return e.model === 'wall' ? 1.5 : 0.9;
+    case 'encounter':
+      return Math.max(1.2, Math.min(3, e.radius));
     default:
       return 0.9;
   }
@@ -177,6 +185,7 @@ export class EditorApp {
     this.logic = new LogicPanel({
       doc: () => this.doc,
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
+      commitFactions: (label, after) => this.run(label, { kind: 'setFactions', before: this.doc.factions, after }),
       focusEntity: (id) => this.focusEntity(id),
     });
     this.buildPalette();
@@ -865,10 +874,11 @@ export class EditorApp {
     const tiles = this.doc.classicStructure.tiles.length;
     const spawns = this.doc.entities.filter((e) => e.kind === 'spawn').length;
     const pickups = this.doc.entities.filter((e) => e.kind === 'pickup').length;
-    const scenario = this.doc.entities.length - spawns - pickups;
+    const npcs = this.doc.entities.filter((e) => e.kind === 'encounter').length;
+    const scenario = this.doc.entities.length - spawns - pickups - npcs;
     const rules = this.doc.logic.rules.length;
     const boxes = buildMapGeometry(this.doc).length;
-    $('ed-counts').textContent = `${tiles} tiles · ${spawns} spawns · ${pickups} pickups · ${scenario} scenario objects · ${rules} rules · ${boxes} collision boxes`;
+    $('ed-counts').textContent = `${tiles} tiles · ${spawns} spawns · ${pickups} pickups · ${scenario} scenario objects · ${npcs} NPC squads · ${rules} rules · ${boxes} collision boxes`;
   }
 
   private renderInspector(): void {
@@ -888,6 +898,10 @@ export class EditorApp {
       const setPlayers = (min: number, max: number) =>
         this.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(32, min)), max: Math.max(1, Math.min(32, max)) } } });
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
+      const mode = document.createElement('select');
+      mode.append(new Option('Deathmatch', 'core.deathmatch', false, doc.metadata.supportedModes[0] !== 'core.coop'), new Option('Co-op mission', 'core.coop', false, doc.metadata.supportedModes[0] === 'core.coop'));
+      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value] } }));
+      el.append(row('Mode', mode), small(mode.value === 'core.coop' ? 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".' : 'Deathmatch: everyone for themselves. NPC squads fight everyone.'));
       const theme = document.createElement('select');
       for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
       theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
@@ -1023,6 +1037,25 @@ export class EditorApp {
         if (e.activation === 'cycle' && e.trap !== 'mine') number('Offset (s)', e.offsetSeconds, 0.25, (v) => ({ offsetSeconds: clamp(v, 0, 60) }));
         number('Damage', e.damage ?? spec.blast?.damage ?? spec.damage, 5, (v) => ({ damage: v === (spec.blast?.damage ?? spec.damage) ? null : clamp(v, 1, 1000) }));
         toggle('Starts enabled', e.startEnabled, (v) => ({ startEnabled: v }));
+        break;
+      }
+      case 'encounter': {
+        const factions = mapFactions(doc);
+        choose('Faction', factions.map((f) => [f.id, f.name] as const), e.faction, (v) => ({ faction: v }));
+        for (const role of NPC_ROLES) number(`${NPC_ROLE_SPECS[role].label}s`, e.roster[role], 1, (v) => ({ roster: { ...e.roster, [role]: clamp(Math.round(v), 0, 16) } }));
+        number('Max alive', e.activeCap, 1, (v) => ({ activeCap: clamp(Math.round(v), 1, 32) }));
+        number('Reinforcements', e.reinforcements, 1, (v) => ({ reinforcements: clamp(Math.round(v), 0, 500) }));
+        number('+ per extra player', e.perPlayer, 1, (v) => ({ perPlayer: clamp(Math.round(v), 0, 16) }));
+        number('Reinforce every (s)', e.respawnSeconds, 1, (v) => ({ respawnSeconds: clamp(v, 0.5, 120) }));
+        number('Spawn radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 1, 16) }));
+        const orderLabels: Record<(typeof SQUAD_ORDERS)[number], string> = { hold: 'hold here', attack: 'hunt the enemy', defend: 'defend the target', patrol: 'patrol to the target and back', follow: 'follow the players (allies)' };
+        choose('Order', SQUAD_ORDERS.map((o) => [o, orderLabels[o]] as const), e.order, (v) => ({ order: v as typeof e.order }));
+        if (e.order === 'defend' || e.order === 'patrol') {
+          choose('Target', [['', '— choose —'] as const, ...doc.entities.filter((o) => o.id !== e.id && o.kind !== 'spawn').map((o) => [o.id, entityLabel(doc, o)] as const)], e.orderTarget ?? '', (v) => ({ orderTarget: v || null }));
+        }
+        choose('Skill', [['easy', 'easy'], ['normal', 'normal'], ['hard', 'hard']], e.difficulty, (v) => ({ difficulty: v as typeof e.difficulty }));
+        toggle('Active at start', e.startActive, (v) => ({ startActive: v }));
+        el.append(small(`${e.roster.trooper + e.roster.gunner + e.roster.heavy} in the first wave, then ${e.reinforcements} reinforcements (+${e.perPlayer} per extra player). Factions are edited in the Logic panel (L).`));
         break;
       }
       case 'spawn':
@@ -1176,6 +1209,10 @@ export class EditorApp {
     add('The Vault', 'Template · scenario with doors, traps and logic', () => {
       const r = loadMap(vaultTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Vault Remix', parentId: r.map.metadata.id } });
+    });
+    add('Outpost Siege', 'Template · co-op mission with NPC squads and factions', () => {
+      const r = loadMap(outpostTemplate);
+      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Outpost Remix', parentId: r.map.metadata.id } });
     });
     for (const entry of listLibrary()) {
       add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {

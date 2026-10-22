@@ -1,4 +1,4 @@
-import type { ButtonEntity, DestructibleEntity, DoorEntity, MapDocument, MapEntity, TrapEntity, ZoneEntity } from '../map/schema.ts';
+import { SQUAD_ORDERS, type ButtonEntity, type DestructibleEntity, type DoorEntity, type MapDocument, type MapEntity, type SquadOrder, type TrapEntity, type ZoneEntity } from '../map/schema.ts';
 import { OBJECTIVE_STATES, type CompareOp, type EventType, type LogicAction, type LogicCondition, type ObjectiveState } from '../map/logic.ts';
 import { distance, viewDirection, type Vec3 } from '../math.ts';
 import { TRAP_ACTIVE, TRAP_ENABLED, TRAP_SPENT, TRAP_WARNING, type GameEvent, type ScenarioSnapshot } from '../protocol.ts';
@@ -27,11 +27,17 @@ import {
 /** What the scenario needs from the match it runs in. */
 export interface ScenarioHost {
   readonly tick: number;
+  /** Players (humans and Player Bots): zones count these. */
   players(): readonly { slot: number; alive: boolean; pos: Vec3 }[];
+  /** Players and NPCs: doors open for them and traps hurt them. */
+  actors(): readonly { slot: number; alive: boolean; pos: Vec3 }[];
   hurt(slot: number, amount: number, weapon: string): void;
   /** An explosion (barrel, mine) that hurts players and other destructibles. */
   blast(at: Vec3, radius: number, damage: number, edge: number, owner: number | null, weapon: string): void;
-  endRound(winner: number | null): void;
+  /** End the round; co-op missions pass an outcome. */
+  endRound(winner: number | null, outcome?: 'victory' | 'defeat'): void;
+  encounter(id: string, op: 'start' | 'stop' | 'order', order?: SquadOrder): void;
+  encounterAlive(id: string): number;
   setPickupEnabled(id: string, enabled: boolean): void;
   emit(ev: GameEvent): void;
 }
@@ -187,6 +193,7 @@ export class Scenario {
           this.pickupEnabled.set(e.id, true);
           break;
         case 'spawn':
+        case 'encounter':
           break;
       }
     });
@@ -219,7 +226,7 @@ export class Scenario {
   }
 
   private stepDoors(tick: number): void {
-    const players = this.host.players().filter((p) => p.alive);
+    const players = this.host.actors().filter((p) => p.alive);
     const speed = 1 / (DOOR.travelSeconds * TICK_RATE);
     for (const d of this.doors.values()) {
       const way = doorway(d.e);
@@ -279,7 +286,7 @@ export class Scenario {
   }
 
   private stepTraps(tick: number): void {
-    const players = this.host.players().filter((p) => p.alive);
+    const players = this.host.actors().filter((p) => p.alive);
     for (const t of this.traps.values()) {
       const spec = TRAP_SPECS[t.e.trap];
       const was = t.active;
@@ -534,6 +541,8 @@ export class Scenario {
         const on = this.isEnabled(c.target);
         return on !== undefined && on === (c.state !== 'disabled');
       }
+      case 'encounter_alive':
+        return this.entityIndex(c.target, 'encounter') !== undefined && compare(this.host.encounterAlive(c.target!), c.op, c.value);
     }
   }
 
@@ -625,7 +634,14 @@ export class Scenario {
         this.host.emit({ e: 'cue', cue: a.state || 'chime' });
         break;
       case 'end_round':
-        this.host.endRound(a.state === 'nobody wins' ? null : instigator);
+        if (a.state === 'players win' || a.state === 'players lose') this.host.endRound(null, a.state === 'players win' ? 'victory' : 'defeat');
+        else this.host.endRound(a.state === 'nobody wins' ? null : instigator);
+        break;
+      case 'encounter_start':
+      case 'encounter_stop':
+      case 'encounter_order':
+        if (this.entityIndex(a.target, 'encounter') === undefined) return;
+        this.host.encounter(a.target!, a.type === 'encounter_start' ? 'start' : a.type === 'encounter_stop' ? 'stop' : 'order', (SQUAD_ORDERS as readonly string[]).includes(a.state) ? (a.state as SquadOrder) : 'attack');
         break;
       case 'wait':
         break;
@@ -638,7 +654,8 @@ export class Scenario {
   blockers(): Aabb[] {
     const out: Aabb[] = [];
     for (const d of this.doors.values()) {
-      if (d.open < 0.9 && (d.locked || !d.e.auto)) out.push(oboxAabb(doorway(d.e)));
+      // Just the door's own plane, so goals standing next to a closed door stay reachable.
+      if (d.open < 0.9 && (d.locked || !d.e.auto)) out.push(oboxAabb({ ...doorway(d.e), half: { ...doorway(d.e).half, z: DOOR.thickness } }));
     }
     for (const d of this.destructibles.values()) {
       if (d.alive && d.e.model === 'wall') out.push(oboxAabb(destructibleBox(d.e)));

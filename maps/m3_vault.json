@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 4,
+  "formatVersion": 5,
   "metadata": {
     "id": "m3_the_vault",
     "name": "The Vault",
@@ -480,6 +480,7 @@
       "startEnabled": true
     }
   ],
+  "factions": [],
   "logic": {
     "variables": [],
     "timers": [

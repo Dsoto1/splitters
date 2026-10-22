@@ -7,16 +7,34 @@ import { Match, initNavigation } from '@chronosplit/shared/match';
 /**
  * Headless load harness: runs a full match with N Player Bots as fast as
  * possible and reports per-tick cost against the 60 Hz budget.
- * Usage: pnpm bench [bots=32] [seconds=60] [map.json]
+ * Usage: pnpm bench [bots=32] [seconds=60] [map.json] [--npcs=N]
+ *
+ * --npcs adds N always-attacking enemy NPCs (spread over encounters at the
+ * map's spawn points, endlessly reinforced) for mixed player + NPC load tests.
  */
-const bots = Math.min(Number(process.argv[2] ?? MAX_PLAYER_SLOTS), MAX_PLAYER_SLOTS);
-const seconds = Number(process.argv[3] ?? 60);
-const mapPath = process.argv[4] ? resolve(process.env.INIT_CWD ?? process.cwd(), process.argv[4]) : fileURLToPath(new URL('../../../../maps/phase0_arena.json', import.meta.url));
+const flags = process.argv.slice(2).filter((a) => a.startsWith('--'));
+const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+const bots = Math.min(Number(args[0] ?? MAX_PLAYER_SLOTS), MAX_PLAYER_SLOTS);
+const seconds = Number(args[1] ?? 60);
+const npcs = Number(flags.find((f) => f.startsWith('--npcs='))?.slice(7) ?? 0);
+const mapPath = args[2] ? resolve(process.env.INIT_CWD ?? process.cwd(), args[2]) : fileURLToPath(new URL('../../../../maps/phase0_arena.json', import.meta.url));
 
 await Promise.all([initPhysics(), initNavigation()]);
 const loaded = loadMap(readFileSync(mapPath, 'utf8'));
 if (!loaded.ok) throw new Error('map failed validation');
-const match = new Match(loaded.map, undefined, 42);
+const map = loaded.map;
+if (npcs > 0) {
+  const spawns = map.entities.filter((e) => e.kind === 'spawn');
+  const groups = Math.min(spawns.length, Math.max(1, Math.ceil(npcs / 8)));
+  for (let g = 0; g < groups; g++) {
+    const size = Math.floor(npcs / groups) + (g < npcs % groups ? 1 : 0);
+    map.entities.push({
+      ...{ id: `bench_enc_${g}`, kind: 'encounter', position: spawns[(g * 3) % spawns.length]!.position, yaw: 0, faction: 'syndicate' },
+      ...{ roster: { trooper: size, gunner: 0, heavy: 0 }, activeCap: size, reinforcements: 100000, perPlayer: 0, respawnSeconds: 0.5, radius: 4, order: 'attack', orderTarget: null, startActive: true, difficulty: 'normal' },
+    } as (typeof map.entities)[number]);
+  }
+}
+const match = new Match(map, undefined, 42);
 for (let i = 0; i < bots; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
 
 const tickMs: number[] = [];
@@ -37,7 +55,7 @@ const avg = (a: number[]) => a.reduce((s, v) => s + v, 0) / a.length;
 const budget = 1000 / TICK_RATE;
 const stuck = match.combatants().reduce((s, c) => s + (c.bot?.stuckCount ?? 0), 0);
 
-console.log(`bots ${bots} | simulated ${seconds}s in ${wall.toFixed(2)}s (${(seconds / wall).toFixed(1)}x realtime)`);
+console.log(`bots ${bots} | npcs ${npcs} (alive at end ${[...match.npcs.values()].filter((c) => c.alive).length}) | simulated ${seconds}s in ${wall.toFixed(2)}s (${(seconds / wall).toFixed(1)}x realtime)`);
 console.log(`tick ms  avg ${avg(tickMs).toFixed(3)}  p50 ${pct(0.5).toFixed(3)}  p99 ${pct(0.99).toFixed(3)}  max ${sorted[sorted.length - 1]!.toFixed(3)}  (budget ${budget.toFixed(2)})`);
 console.log(`ai ms    avg ${avg(aiMs).toFixed(3)}  (${((avg(aiMs) / avg(tickMs)) * 100).toFixed(0)}% of tick)`);
 console.log(`kills ${kills} | bot stuck recoveries ${stuck}`);

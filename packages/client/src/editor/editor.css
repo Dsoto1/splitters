@@ -118,3 +118,4 @@ label.inline-row { flex-direction: row; align-items: center; justify-content: sp
 @media (max-width: 1100px) {
   #ed-logic { right: 0; width: min(620px, 100vw); }
 }
+#ed-logic input[type='color'] { flex: none; width: 36px; height: 28px; padding: 0 2px; }

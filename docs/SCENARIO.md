@@ -83,3 +83,43 @@ Clicking an issue frames the object or opens the rule.
 - **Network:** `snapshot.sc` carries entity states as deltas, with a full keyframe every 2 s; `welcome.sc` carries a full copy. Events cover doors, buttons, traps, breakage, objectives, messages and sound cues.
 - **Bots:** paths through locked/manual closed doors and intact breakable walls count as blocked, and bots wait at the edge of an active trap. Mines are hidden from them. Bots don't press buttons or chase objectives yet (M4).
 - **Look and sound:** procedural models (`client/src/game/scenarioVisuals.ts`), the same in MapMaker and in game. Sounds are Kenney CC0 plus our synthesised flame, beep and alarm (see [`AUDIO.md`](AUDIO.md)).
+
+## NPCs, factions and co-op (M4)
+
+### NPC squads (MapMaker → "NPC Squad")
+
+An **encounter** is one squad of a faction's soldiers that spawns around its marker.
+
+| Setting | Meaning |
+|---|---|
+| Faction | Which side the squad fights for (see Factions below) |
+| Troopers / Gunners / Heavies | The first wave. Troopers carry rifles, Gunners shotguns, Heavies grenade launchers (tougher, slower) |
+| Max alive | Never more than this many at once |
+| Reinforcements, + per extra player | Extra soldiers that trickle in as others die. The per-player number scales co-op difficulty with team size |
+| Reinforce every (s) | Delay between reinforcements |
+| Spawn radius | Spawn area. Soldiers avoid spawning next to enemies |
+| Order | hold here · hunt the enemy · defend the target · patrol to the target and back · follow the players (allies) |
+| Skill | easy / normal / hard aim and reactions |
+| Active at start | Otherwise a rule starts it ("Start encounter") |
+
+- Squads share sightings, so when one soldier spots you, the rest come looking.
+- NPCs don't use player slots.
+- In deathmatch they fight everyone; in co-op they fight the players' side.
+
+### Factions (Logic panel → Factions)
+
+- Every map has at least one NPC faction. The default is the red *Syndicate*.
+- Add more, recolour them, and set each one's relation to the players and to the other factions: **ally**, **neutral** (they won't attack each other) or **enemy**.
+- A friendly "Militia" squad with *follow* fights alongside the players.
+
+### Co-op missions (Map inspector → Mode → Co-op mission)
+
+- All players and Player Bots share a side. There's no friendly fire and no score or time limit.
+- Bots go after the mission's NPCs.
+- End the mission from logic with **End the round → players win / players lose**, which shows "Mission complete" or "Mission failed".
+- Useful pieces:
+  - **Encounter cleared** (the squad and all its reinforcements are dead), **An NPC dies**, and **NPCs alive in** (condition);
+  - **Start encounter**, **Stop reinforcements**, **Order squad to …**;
+  - a lives counter on **A player dies**.
+- Templates: *Ambush*, *Clear the squad*, *Co-op: win when all squads are cleared*.
+- See *Outpost Siege* for a full mission.
