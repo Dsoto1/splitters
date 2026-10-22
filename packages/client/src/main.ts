@@ -1,42 +1,22 @@
-import {
-  PhysicsWorld,
-  TICK_DT,
-  buildMapGeometry,
-  getWeapon,
-  initPhysics,
-  loadMap,
-  type MatchPhase,
-  type PlayerInput,
-  type ScoreEntry,
-  type ServerMessage,
-  type ServerStats,
-} from '@chronosplit/shared';
-import { Hud } from './hud.ts';
-import { InputState } from './input.ts';
-import { Interpolator } from './interpolation.ts';
-import { Connection } from './net.ts';
-import { LocalPlayer } from './prediction.ts';
-import { Renderer, slotColor } from './renderer.ts';
+import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
+import { initPhysics, loadMap } from '@chronosplit/shared';
+import arenaJson from '../../../maps/phase0_arena.json';
+import { createEngine, type RendererKind } from './engine.ts';
+import { EditorApp, type TestRequest } from './editor/editorApp.ts';
+import { LocalTransport } from './game/localTransport.ts';
+import { NetTransport } from './game/netTransport.ts';
+import { GameSession } from './game/session.ts';
+import type { Transport } from './game/transport.ts';
 
-const canvas = document.getElementById('view') as HTMLCanvasElement;
-const menu = document.getElementById('menu')!;
-const status = document.getElementById('status')!;
-const clickToPlay = document.getElementById('clicktoplay')!;
-const nameInput = document.getElementById('name') as HTMLInputElement;
-const serverInput = document.getElementById('server') as HTMLInputElement;
-
+const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
-let started = false;
-nameInput.value = params.get('name') ?? safeStorage('cs.name') ?? `Player${Math.floor(Math.random() * 900 + 100)}`;
+const nameInput = $<HTMLInputElement>('name');
+const serverInput = $<HTMLInputElement>('server');
+
+nameInput.value = params.get('name') ?? storage('cs.name') ?? `Player${Math.floor(Math.random() * 900 + 100)}`;
 serverInput.value = params.get('server') ?? `ws://${location.hostname || 'localhost'}:7777`;
 
-document.getElementById('join')!.addEventListener('submit', (e) => {
-  e.preventDefault();
-  void start(serverInput.value.trim(), nameInput.value.trim());
-});
-if (params.has('autojoin')) void start(serverInput.value, nameInput.value);
-
-function safeStorage(key: string, value?: string): string | null {
+function storage(key: string, value?: string): string | null {
   try {
     if (value !== undefined) localStorage.setItem(key, value);
     return localStorage.getItem(key);
@@ -45,167 +25,132 @@ function safeStorage(key: string, value?: string): string | null {
   }
 }
 
+type Mode = 'menu' | 'editor' | 'game';
 
-async function start(url: string, name: string): Promise<void> {
-  if (started) return;
-  started = true;
-  status.textContent = 'Connecting…';
-  safeStorage('cs.name', name);
-  const [renderer] = await Promise.all([Renderer.create(canvas), initPhysics()]);
-  const hud = new Hud();
-  const input = new InputState(canvas);
-  const interp = new Interpolator();
+/** Top-level shell: one Babylon engine shared by the main menu, MapMaker and game sessions. */
+class App {
+  private engine!: AbstractEngine;
+  private kind!: RendererKind;
+  private canvas!: HTMLCanvasElement;
+  private mode: Mode = 'menu';
+  private editor?: EditorApp;
+  private session?: GameSession;
+  private ready?: Promise<void>;
+  private last = performance.now();
 
-  let slot = -1;
-  let local: LocalPlayer | null = null;
-  let phase: MatchPhase = 'playing';
-  let timeLeft = 0;
-  let scores: ScoreEntry[] = [];
-  let serverStats: ServerStats | null = null;
-  let winner: string | null = null;
-  let showStats = params.has('stats');
-  let botStates: string[] = [];
-  const outbox: PlayerInput[] = [];
+  private init(): Promise<void> {
+    this.ready ??= (async () => {
+      // Physics is needed by every session for client prediction, online or local.
+      const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), initPhysics()]);
+      this.engine = created.engine;
+      this.kind = created.kind;
+      this.canvas = created.canvas;
+      if (created.note) console.info(created.note);
+      window.addEventListener('resize', () => this.engine.resize());
+      this.engine.runRenderLoop(() => this.frame());
+    })();
+    return this.ready;
+  }
 
-  input.onToggle.set('F3', () => (showStats = !showStats));
-
-  const conn = new Connection(
-    url,
-    name,
-    (msg: ServerMessage) => {
-      switch (msg.t) {
-        case 'welcome': {
-          const loaded = loadMap(msg.map);
-          if (!loaded.ok) {
-            status.textContent = `Server sent an invalid map: ${loaded.issues[0]?.message}`;
-            return;
-          }
-          slot = msg.slot;
-          const geometry = buildMapGeometry(loaded.map);
-          renderer.buildMap(geometry);
-          local = new LocalPlayer(new PhysicsWorld(geometry), getWeapon(msg.rules.startingWeapon));
-          menu.hidden = true;
-          hud.show();
-          clickToPlay.hidden = input.locked;
-          (window as unknown as { __cs: unknown }).__cs = { slot, renderer: renderer.kind, local };
-          break;
-        }
-        case 'reject':
-          status.textContent = `Rejected: ${msg.reason}`;
-          break;
-        case 'roster':
-          hud.setRoster(msg.players);
-          break;
-        case 'snapshot': {
-          phase = msg.phase;
-          timeLeft = msg.timeLeft;
-          scores = msg.score;
-          interp.push(msg.tick, msg.players);
-          const me = msg.players.find((p) => p.s === slot);
-          if (me && local) {
-            if (me.alive && !local.alive) {
-              input.yaw = me.yaw;
-              input.pitch = 0;
-            }
-            local.reconcile(me, msg.ack);
-          }
-          botStates = msg.players.filter((p) => p.st).map((p) => `  ${hud.name(p.s).padEnd(14)} ${p.st}`);
-          for (const ev of msg.ev) {
-            if (ev.e === 'shot') {
-              if (ev.s === slot) {
-                if (ev.hit !== null) hud.hit();
-              } else {
-                renderer.addTracer({ x: ev.from[0], y: ev.from[1], z: ev.from[2] }, { x: ev.to[0], y: ev.to[1], z: ev.to[2] }, slotColor(ev.s));
-              }
-            } else if (ev.e === 'kill') {
-              hud.kill(ev.killer, ev.victim, slot);
-            } else if (ev.e === 'round_end') {
-              winner = ev.winner === null ? null : hud.name(ev.winner);
-            }
-          }
-          break;
-        }
-        case 'stats':
-          serverStats = msg;
-          break;
-        case 'pong':
-          break;
-      }
-    },
-    (reason) => {
-      menu.hidden = false;
-      status.textContent = `Disconnected: ${reason}`;
-      started = false;
-    },
-  );
-
-  canvas.addEventListener('click', () => void canvas.requestPointerLock());
-  clickToPlay.addEventListener('click', () => void canvas.requestPointerLock());
-  document.addEventListener('pointerlockchange', () => {
-    clickToPlay.hidden = input.locked || !menu.hidden;
-  });
-
-  // Fixed 60 Hz simulation for prediction; rendering runs at display rate.
-  let acc = 0;
-  let last = performance.now();
-  let frames = 0;
-  let fps = 0;
-  let fpsAt = last;
-  let frameMs = 0;
-  let lastCorrections = 0;
-  let correctionsPerSec = 0;
-  let bytesInAt = 0;
-  let kibPerSec = 0;
-
-  renderer.engine.runRenderLoop(() => {
+  private frame(): void {
     const now = performance.now();
-    const dt = Math.min(0.25, (now - last) / 1000);
-    frameMs = now - last;
-    last = now;
+    const dt = Math.min(0.1, (now - this.last) / 1000);
+    this.last = now;
+    if (this.mode === 'game') this.session?.frame();
+    else if (this.mode === 'editor') this.editor?.frame(dt);
+  }
 
-    if (local) {
-      acc += dt;
-      while (acc >= TICK_DT) {
-        acc -= TICK_DT;
-        const { input: cmd, shotEnd } = local.tick(input.sample(), input.yaw, input.pitch);
-        outbox.push(cmd);
-        if (shotEnd) renderer.addTracer(local.eye, shotEnd, '#ffe08a', 60);
-      }
-      conn.sendInputs(outbox.splice(0));
-      renderer.setCamera(local.eye, input.yaw, input.pitch);
-      hud.setHealth(local.health, local.alive);
-      hud.setStatus(phase, timeLeft, local.alive, winner);
-    }
-    renderer.updateAvatars(interp.sample(now), slot);
-    hud.renderScoreboard(input.held('Tab') || phase === 'intermission', scores, slot);
+  private showMenu(status = ''): void {
+    this.mode = 'menu';
+    this.editor?.hide();
+    $('menu').hidden = false;
+    $('status').textContent = status;
+  }
 
-    frames++;
-    if (now - fpsAt >= 1000) {
-      const secs = (now - fpsAt) / 1000;
-      fps = frames / secs;
-      correctionsPerSec = ((local?.corrections ?? 0) - lastCorrections) / secs;
-      lastCorrections = local?.corrections ?? 0;
-      kibPerSec = (conn.bytesIn - bytesInAt) / 1024 / secs;
-      bytesInAt = conn.bytesIn;
-      frames = 0;
-      fpsAt = now;
-    }
-    hud.renderPerf(
-      showStats,
-      {
-        renderer: renderer.kind,
-        fps: fps.toFixed(0),
-        frame: `${frameMs.toFixed(1)} ms`,
-        ping: `${conn.rttMs.toFixed(0)} ms`,
-        'down (client)': `${kibPerSec.toFixed(1)} KiB/s`,
-        corrections: `${correctionsPerSec.toFixed(1)}/s (last ${((local?.lastCorrection ?? 0) * 100).toFixed(1)} cm)`,
-        'unacked input': local?.pendingCount ?? 0,
-        'active meshes': renderer.scene.getActiveMeshes().length,
-        position: local ? `${local.state.pos.x.toFixed(1)}, ${local.state.pos.y.toFixed(1)}, ${local.state.pos.z.toFixed(1)}` : '-',
+  async openEditor(): Promise<void> {
+    $('status').textContent = 'Loading MapMaker…';
+    await this.init();
+    this.editor ??= new EditorApp({
+      engine: this.engine,
+      canvas: this.canvas,
+      startTest: (req) => this.startTest(req),
+      goHome: () => this.showMenu(),
+    });
+    $('menu').hidden = true;
+    this.mode = 'editor';
+    this.editor.show();
+    // Automation hook for browser tests.
+    (window as unknown as { __editor: EditorApp }).__editor = this.editor;
+  }
+
+  private startTest(req: TestRequest): void {
+    const t0 = performance.now();
+    this.editor!.hide();
+    this.startSession(new LocalTransport(req.map, { name: nameInput.value || 'Tester', botFill: req.botFill, difficulty: req.difficulty }), {
+      exitLabel: 'Back to MapMaker',
+      exitOnF5: true,
+      onReady: () => {
+        const ms = performance.now() - t0;
+        (window as unknown as { __testStartMs: number }).__testStartMs = ms;
+        console.info(`TEST ready in ${ms.toFixed(0)} ms`);
       },
-      serverStats,
-      botStates,
-    );
-    renderer.render();
-  });
+      onExit: (reason) => {
+        this.mode = 'editor';
+        this.editor!.show();
+        if (reason) this.editor!.toast(`Test ended: ${reason}`, true);
+      },
+    });
+  }
+
+  async playOffline(): Promise<void> {
+    await this.init();
+    const arena = loadMap(arenaJson);
+    if (!arena.ok) return this.showMenu('Built-in arena failed to load');
+    this.startSession(new LocalTransport(arena.map, { name: nameInput.value || 'Player', botFill: 6, difficulty: 'normal' }), {
+      exitLabel: 'Leave match',
+      exitOnF5: false,
+      onExit: (reason) => this.showMenu(reason ?? ''),
+    });
+  }
+
+  async playOnline(url: string, name: string): Promise<void> {
+    storage('cs.name', name);
+    $('status').textContent = 'Connecting…';
+    await this.init();
+    this.startSession(new NetTransport(url, name), {
+      exitLabel: 'Leave match',
+      exitOnF5: false,
+      onExit: (reason) => this.showMenu(reason ? `Disconnected: ${reason}` : ''),
+    });
+  }
+
+  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; onExit: (reason?: string) => void; onReady?: () => void }): void {
+    $('menu').hidden = true;
+    this.mode = 'game';
+    this.session = new GameSession({
+      engine: this.engine,
+      rendererKind: this.kind,
+      canvas: this.canvas,
+      transport,
+      exitLabel: o.exitLabel,
+      exitOnF5: o.exitOnF5,
+      showStats: params.has('stats'),
+      onReady: o.onReady,
+      onExit: (reason) => {
+        this.session = undefined;
+        o.onExit(reason);
+      },
+    });
+  }
 }
+
+const app = new App();
+$('open-editor').addEventListener('click', () => void app.openEditor());
+$('play-offline').addEventListener('click', () => void app.playOffline());
+$('join').addEventListener('submit', (e) => {
+  e.preventDefault();
+  void app.playOnline(serverInput.value.trim(), nameInput.value.trim());
+});
+if (params.get('mode') === 'editor') void app.openEditor();
+else if (params.has('offline')) void app.playOffline();
+else if (params.has('autojoin')) void app.playOnline(serverInput.value, nameInput.value);

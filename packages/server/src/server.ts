@@ -3,7 +3,6 @@ import type { AddressInfo } from 'node:net';
 import { WebSocketServer, type WebSocket } from 'ws';
 import {
   BOT_DIFFICULTIES,
-  CORE_BOT_PROFILES,
   DEFAULT_DEATHMATCH_RULES,
   MAX_PLAYER_SLOTS,
   PROTOCOL_VERSION,
@@ -19,7 +18,7 @@ import {
   type PlayerInput,
   type ServerMessage,
 } from '@chronosplit/shared';
-import { Match, initNavigation, validateNavigation } from '@chronosplit/shared/match';
+import { BotFiller, Match, initNavigation, validateNavigation } from '@chronosplit/shared/match';
 import { StatsWindow } from './stats.ts';
 
 export interface ServerOptions {
@@ -50,7 +49,6 @@ interface Client {
 
 const MAX_INPUTS_PER_MESSAGE = 32;
 const HELLO_TIMEOUT_MS = 5000;
-const BOT_NAMES = ['Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash', 'Nub', 'Quill'];
 
 /**
  * Dedicated authoritative game server: owns the Match, accepts WebSocket
@@ -69,7 +67,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const clients = new Set<Client>();
   const stats = new StatsWindow();
   let pendingEvents: GameEvent[] = [];
-  let botCounter = 0;
+  const bots = new BotFiller(match, difficulty);
 
   const send = (c: Client, msg: ServerMessage | string) => {
     const data = typeof msg === 'string' ? msg : JSON.stringify(msg);
@@ -82,19 +80,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   };
 
   /** Keep humans + bots at the fill target: bots leave when humans join and return when they go. */
-  const rebalanceBots = () => {
-    const all = match.combatants();
-    const humans = all.filter((c) => c.kind === 'human').length;
-    const bots = all.filter((c) => c.kind === 'bot');
-    const want = Math.max(0, Math.min(botFill - humans, MAX_PLAYER_SLOTS - humans));
-    for (let i = bots.length; i > want; i--) match.remove(bots[i - 1]!.slot);
-    for (let i = bots.length; i < want; i++) {
-      const profile = CORE_BOT_PROFILES[botCounter % CORE_BOT_PROFILES.length]!;
-      const name = BOT_NAMES[botCounter % BOT_NAMES.length]!;
-      botCounter++;
-      if (!match.addBot(name, profile, difficulty)) break;
-    }
-  };
+  const rebalanceBots = () => bots.rebalance(botFill);
   rebalanceBots();
 
   const wss = new WebSocketServer({ port: opts.port, host: opts.host, maxPayload: 64 * 1024 });
@@ -163,14 +149,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     const ev = pendingEvents;
     pendingEvents = [];
     // Everything but the per-recipient ack is shared, so serialise it once.
-    const body = JSON.stringify({
-      tick: match.tick,
-      phase: match.phase,
-      timeLeft: match.timeLeftSeconds(),
-      players: match.playerSnapshots(),
-      score: match.scores(),
-      ev,
-    });
+    const body = JSON.stringify(match.snapshot(ev));
     let total = 0;
     let n = 0;
     for (const c of clients) {

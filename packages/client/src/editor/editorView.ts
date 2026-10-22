@@ -1,0 +1,250 @@
+import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
+import { Scene } from '@babylonjs/core/scene';
+import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
+import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
+import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
+// Side-effect import: registers scene.createPickingRay.
+import '@babylonjs/core/Culling/ray';
+import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
+import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
+import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
+import type { BoxKind, MapDocument, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
+import { PLAYER, buildMapGeometry, placementCells, viewDirection } from '@chronosplit/shared';
+import { boxVertexData, buildMapMeshes, createMapMaterials } from '../mapMeshes.ts';
+
+const GRID_EXTENT = 12;
+
+/**
+ * Editor scene: the map (with floor isolation), active-level grid, ghost
+ * preview, selection/hover outlines, spawn markers, and a free-fly camera.
+ * Pure presentation: it never changes the document.
+ */
+export class EditorView {
+  readonly scene: Scene;
+  readonly camera: FreeCamera;
+  yaw = 0;
+  pitch = -0.9;
+  private readonly materials: Record<BoxKind, StandardMaterial>;
+  private mapMeshes: Mesh[] = [];
+  private grid?: LinesMesh;
+  private hover?: Mesh;
+  private ghost?: Mesh;
+  private ghostKey = '';
+  private outlines: Mesh[] = [];
+  private markers = new Map<string, Mesh>();
+  private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'hover' | 'spawn' | 'spawnSel' | 'visor', StandardMaterial>;
+
+  constructor(engine: AbstractEngine) {
+    this.scene = new Scene(engine);
+    this.scene.clearColor = new Color4(0.16, 0.18, 0.21, 1);
+    this.scene.skipPointerMovePicking = true;
+    this.camera = new FreeCamera('editorCam', new Vector3(0, 22, -18), this.scene);
+    this.camera.inputs.clear();
+    this.camera.minZ = 0.1;
+    this.camera.maxZ = 2000;
+    this.camera.fov = 1.0;
+    const hemi = new HemisphericLight('hemi', new Vector3(0.3, 1, 0.2), this.scene);
+    hemi.intensity = 0.8;
+    hemi.groundColor = new Color3(0.3, 0.3, 0.32);
+    new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene).intensity = 0.5;
+    this.materials = createMapMaterials(this.scene);
+
+    const flat = (name: string, hex: string, alpha = 1, wire = false) => {
+      const m = new StandardMaterial(name, this.scene);
+      m.diffuseColor = Color3.FromHexString(hex);
+      m.emissiveColor = Color3.FromHexString(hex).scale(wire ? 1 : 0.35);
+      m.specularColor = Color3.Black();
+      m.alpha = alpha;
+      m.wireframe = wire;
+      m.disableLighting = wire;
+      return m;
+    };
+    this.mat = {
+      ghostOk: flat('ghostOk', '#58d68d', 0.45),
+      ghostBad: flat('ghostBad', '#ff5a4f', 0.45),
+      outline: flat('outline', '#ffb03b', 1, true),
+      outlineBad: flat('outlineBad', '#ff5a4f', 1, true),
+      hover: flat('hover', '#ffffff', 1, true),
+      spawn: flat('spawn', '#4fb3ff'),
+      spawnSel: flat('spawnSel', '#ffb03b'),
+      visor: flat('visorMat', '#1c1f26'),
+    };
+    this.applyCamera();
+  }
+
+  // ---------- camera ----------
+
+  applyCamera(): void {
+    this.camera.rotation.set(-this.pitch, this.yaw, 0);
+  }
+
+  /** Move relative to the view: forward along yaw, right, and world up. */
+  fly(forward: number, right: number, up: number): void {
+    const s = Math.sin(this.yaw);
+    const c = Math.cos(this.yaw);
+    this.camera.position.x += s * forward + c * right;
+    this.camera.position.z += c * forward - s * right;
+    this.camera.position.y += up;
+  }
+
+  dolly(amount: number): void {
+    const d = viewDirection(this.yaw, this.pitch);
+    this.camera.position.addInPlace(new Vector3(d.x * amount, d.y * amount, d.z * amount));
+  }
+
+  look(dYaw: number, dPitch: number): void {
+    this.yaw += dYaw;
+    this.pitch = Math.max(-1.5, Math.min(1.5, this.pitch + dPitch));
+    this.applyCamera();
+  }
+
+  focus(target: Vec3): void {
+    this.pitch = -0.85;
+    this.applyCamera();
+    const d = viewDirection(this.yaw, this.pitch);
+    const dist = 22;
+    this.camera.position.set(target.x - d.x * dist, target.y - d.y * dist, target.z - d.z * dist);
+  }
+
+  /** Intersect the pointer ray with the horizontal plane y = planeY. */
+  pickPlane(clientX: number, clientY: number, planeY: number): Vec3 | null {
+    const rect = this.scene.getEngine().getRenderingCanvasClientRect();
+    if (!rect) return null;
+    const ray = this.scene.createPickingRay(clientX - rect.left, clientY - rect.top, null, this.camera);
+    if (Math.abs(ray.direction.y) < 1e-6) return null;
+    const t = (planeY - ray.origin.y) / ray.direction.y;
+    if (t <= 0) return null;
+    return { x: ray.origin.x + ray.direction.x * t, y: planeY, z: ray.origin.z + ray.direction.z * t };
+  }
+
+  /** Screen (client) coordinates of a world point; used by automation and future tooltips. */
+  project(p: Vec3): { x: number; y: number } {
+    const engine = this.scene.getEngine();
+    const rect = engine.getRenderingCanvasClientRect()!;
+    const v = Vector3.Project(new Vector3(p.x, p.y, p.z), Matrix.Identity(), this.scene.getTransformMatrix(), this.camera.viewport.toGlobal(rect.width, rect.height));
+    return { x: rect.left + v.x, y: rect.top + v.y };
+  }
+
+  // ---------- content ----------
+
+  /** Rebuild map meshes. Tiles above the active level are hidden unless showAll. */
+  setMap(doc: MapDocument, level: number, showAll: boolean): WorldBox[] {
+    for (const m of this.mapMeshes) m.dispose();
+    const visibleTiles = showAll ? doc.classicStructure.tiles : doc.classicStructure.tiles.filter((t) => t.z <= level);
+    const boxes = buildMapGeometry({ ...doc, classicStructure: { ...doc.classicStructure, tiles: visibleTiles } });
+    this.mapMeshes = buildMapMeshes(this.scene, boxes, this.materials, 'edmap');
+    this.setGrid(doc, level);
+    this.setSpawns(doc, level, showAll, new Set());
+    return boxes;
+  }
+
+  private setGrid(doc: MapDocument, level: number): void {
+    this.grid?.dispose();
+    const { cellSize, levelHeight } = doc.classicStructure;
+    const y = level * levelHeight + 0.03;
+    const lines: Vector3[][] = [];
+    const lo = (-GRID_EXTENT - 0.5) * cellSize;
+    const hi = (GRID_EXTENT + 0.5) * cellSize;
+    for (let i = -GRID_EXTENT; i <= GRID_EXTENT + 1; i++) {
+      const v = (i - 0.5) * cellSize;
+      lines.push([new Vector3(v, y, lo), new Vector3(v, y, hi)], [new Vector3(lo, y, v), new Vector3(hi, y, v)]);
+    }
+    this.grid = CreateLineSystem('grid', { lines }, this.scene);
+    this.grid.color = new Color3(0.45, 0.5, 0.58);
+    this.grid.alpha = 0.6;
+    this.grid.isPickable = false;
+  }
+
+  setSpawns(doc: MapDocument, level: number, showAll: boolean, selected: ReadonlySet<string>): void {
+    const { levelHeight } = doc.classicStructure;
+    const seen = new Set<string>();
+    for (const e of doc.entities) {
+      if (e.kind !== 'spawn') continue;
+      if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
+      seen.add(e.id);
+      let m = this.markers.get(e.id);
+      if (!m) {
+        m = CreateCapsule(`spawn_${e.id}`, { height: PLAYER.height, radius: PLAYER.radius, tessellation: 10 }, this.scene);
+        const visor = CreateBox(`spawnvisor_${e.id}`, { width: 0.5, height: 0.14, depth: 0.5 }, this.scene);
+        visor.parent = m;
+        visor.position = new Vector3(0, PLAYER.eyeHeight - PLAYER.height / 2, PLAYER.radius);
+        visor.material = this.mat.visor;
+        m.isPickable = false;
+        this.markers.set(e.id, m);
+      }
+      m.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
+      m.rotation.y = e.yaw;
+      m.material = selected.has(e.id) ? this.mat.spawnSel : this.mat.spawn;
+    }
+    for (const [id, m] of this.markers) {
+      if (!seen.has(id)) {
+        m.dispose(false, false);
+        this.markers.delete(id);
+      }
+    }
+  }
+
+  setHoverCell(doc: MapDocument, cell: [number, number, number] | null): void {
+    if (!cell) {
+      this.hover?.setEnabled(false);
+      return;
+    }
+    const { cellSize, levelHeight } = doc.classicStructure;
+    if (!this.hover) {
+      this.hover = CreateBox('hover', { size: 1 }, this.scene);
+      this.hover.material = this.mat.hover;
+      this.hover.isPickable = false;
+    }
+    this.hover.setEnabled(true);
+    this.hover.scaling.set(cellSize, 0.05, cellSize);
+    this.hover.position.set(cell[0] * cellSize, cell[2] * levelHeight + 0.05, cell[1] * cellSize);
+  }
+
+  /** Translucent preview of a tile about to be placed. */
+  setGhost(doc: MapDocument, tile: string | null, cell: [number, number, number] | null, rotation: Rotation, ok: boolean): void {
+    if (!tile || !cell) {
+      this.ghost?.setEnabled(false);
+      return;
+    }
+    const key = `${tile}:${rotation}`;
+    if (key !== this.ghostKey) {
+      this.ghost?.dispose();
+      const single: MapDocument = { ...doc, classicStructure: { ...doc.classicStructure, tiles: [{ id: 'ghost', tile, x: 0, y: 0, z: 0, rotation }] } };
+      this.ghost = new Mesh('ghost', this.scene);
+      boxVertexData(buildMapGeometry(single)).applyToMesh(this.ghost);
+      this.ghost.isPickable = false;
+      this.ghostKey = key;
+    }
+    const { cellSize, levelHeight } = doc.classicStructure;
+    this.ghost!.setEnabled(true);
+    this.ghost!.material = ok ? this.mat.ghostOk : this.mat.ghostBad;
+    this.ghost!.position.set(cell[0] * cellSize, cell[2] * levelHeight + 0.01, cell[1] * cellSize);
+  }
+
+  /** Outline every cell of the given tiles, optionally offset (drag preview). */
+  setOutlines(doc: MapDocument, tileIds: readonly string[], offset: [number, number, number] = [0, 0, 0], bad = false): void {
+    for (const o of this.outlines) o.dispose();
+    this.outlines = [];
+    const { cellSize, levelHeight } = doc.classicStructure;
+    const ids = new Set(tileIds);
+    for (const t of doc.classicStructure.tiles) {
+      if (!ids.has(t.id)) continue;
+      for (const [x, y, z] of placementCells(t) ?? []) {
+        const box = CreateBox('outline', { width: cellSize - 0.1, depth: cellSize - 0.1, height: levelHeight - 0.1 }, this.scene);
+        box.position.set((x + offset[0]) * cellSize, (z + offset[2]) * levelHeight + levelHeight / 2, (y + offset[1]) * cellSize);
+        box.material = bad ? this.mat.outlineBad : this.mat.outline;
+        box.isPickable = false;
+        this.outlines.push(box);
+      }
+    }
+  }
+
+  render(): void {
+    this.scene.render();
+  }
+}

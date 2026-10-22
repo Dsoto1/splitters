@@ -11,3 +11,5 @@ export * from './sim/weapons.ts';
 export * from './sim/rules.ts';
 export * from './protocol.ts';
 export * from './bots/profile.ts';
+export * from './editor/commands.ts';
+export * from './editor/operations.ts';

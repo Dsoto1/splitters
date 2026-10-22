@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChronoSplit — Phase 0</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23ffb03b'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/editor/editor.css" />
   </head>
   <body>
     <canvas id="view"></canvas>
@@ -21,15 +23,75 @@
     </div>
     <div id="menu">
       <h1>ChronoSplit</h1>
-      <p class="sub">Phase 0 technical proof</p>
+      <p class="sub">Vertical slice in progress</p>
+      <div id="menu-actions">
+        <button id="open-editor" class="primary">MapMaker</button>
+        <button id="play-offline">Play offline vs bots</button>
+      </div>
       <form id="join">
         <label>Name <input id="name" maxlength="24" autocomplete="off" /></label>
         <label>Server <input id="server" autocomplete="off" /></label>
-        <button type="submit">Play</button>
+        <button type="submit">Play online</button>
       </form>
       <p id="status"></p>
     </div>
-    <div id="clicktoplay" hidden>Click to play</div>
+    <div id="pause" hidden>
+      <button id="resume" class="primary">Click to play</button>
+      <button id="exitmatch">Leave</button>
+      <p class="hint">Esc again to leave</p>
+    </div>
+
+    <div id="editor" hidden>
+      <header id="ed-top">
+        <button id="ed-home" title="Main menu">◀ Menu</button>
+        <input id="ed-name" maxlength="80" aria-label="Map name" />
+        <span id="ed-dirty" title="Unsaved changes"></span>
+        <div class="group">
+          <button id="ed-new">New</button>
+          <button id="ed-open">Open…</button>
+          <button id="ed-save" title="Ctrl+S">Save</button>
+          <button id="ed-export">Export</button>
+          <button id="ed-import">Import</button>
+          <input id="ed-import-file" type="file" accept=".json,application/json" hidden />
+        </div>
+        <div class="group">
+          <button id="ed-undo" title="Ctrl+Z">↶</button>
+          <button id="ed-redo" title="Ctrl+Y">↷</button>
+        </div>
+        <button id="ed-status" class="pill">Checking…</button>
+        <div class="spacer"></div>
+        <label class="inline">Bots <select id="ed-bots"></select></label>
+        <label class="inline">Skill <select id="ed-skill"><option>easy</option><option selected>normal</option><option>hard</option></select></label>
+        <button id="ed-test" class="primary" title="F5">▶ TEST</button>
+      </header>
+      <aside id="ed-palette">
+        <input id="ed-search" placeholder="Search pieces…" autocomplete="off" />
+        <div id="ed-tools"></div>
+        <h3>Structure</h3>
+        <div id="ed-tiles" class="tiles"></div>
+        <h3>Gameplay</h3>
+        <div id="ed-entities" class="tiles"></div>
+      </aside>
+      <aside id="ed-right">
+        <section id="ed-inspector"></section>
+        <section>
+          <h3>Validation</h3>
+          <ul id="ed-issues"></ul>
+        </section>
+      </aside>
+      <footer id="ed-bottom">
+        <span class="group">Level <button id="ed-level-down" title="Page Down">−</button><b id="ed-level">0</b><button id="ed-level-up" title="Page Up">+</button></span>
+        <label class="inline"><input type="checkbox" id="ed-showall" /> Show all levels</label>
+        <span id="ed-counts"></span>
+        <span id="ed-hint"></span>
+      </footer>
+      <div id="ed-toast"></div>
+      <dialog id="ed-open-dialog">
+        <h2>Open map</h2>
+        <ul id="ed-library"></ul>
+        <form method="dialog"><button>Close</button></form>
+      </dialog>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

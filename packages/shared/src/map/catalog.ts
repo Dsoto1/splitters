@@ -107,6 +107,66 @@ export const CORE_TILES: readonly TileDefinition[] = [
     ],
   },
   {
+    id: 'core.dead_end',
+    displayName: 'Dead End',
+    cells: [[0, 0, 0]],
+    floors: [0],
+    ports: [{ side: 'N', level: 0 }],
+    solids: [{ min: [-1.5, 0, -3.5], max: [1.5, 1.1, -2.5] }],
+  },
+  {
+    id: 'core.junction_x',
+    displayName: 'Crossroads',
+    cells: [[0, 0, 0]],
+    floors: [0],
+    ports: ALL_SIDES,
+    // Corner pillars narrow the sightlines through the crossing.
+    solids: [
+      { min: [-3.5, 0, -3.5], max: [-2.5, 4, -2.5] },
+      { min: [2.5, 0, -3.5], max: [3.5, 4, -2.5] },
+      { min: [-3.5, 0, 2.5], max: [-2.5, 4, 3.5] },
+      { min: [2.5, 0, 2.5], max: [3.5, 4, 3.5] },
+    ],
+  },
+  {
+    id: 'core.room_columns',
+    displayName: 'Room (Columns)',
+    cells: [[0, 0, 0]],
+    floors: [0],
+    ports: ALL_SIDES,
+    solids: [
+      { min: [-2.4, 0, -2.4], max: [-1.6, 4, -1.6] },
+      { min: [1.6, 0, -2.4], max: [2.4, 4, -1.6] },
+      { min: [-2.4, 0, 1.6], max: [-1.6, 4, 2.4] },
+      { min: [1.6, 0, 1.6], max: [2.4, 4, 2.4] },
+    ],
+  },
+  {
+    id: 'core.room_cover',
+    displayName: 'Room (Low Cover)',
+    cells: [[0, 0, 0]],
+    floors: [0],
+    ports: ALL_SIDES,
+    solids: [
+      { min: [-2.5, 0, -0.5], max: [-0.5, 1.1, 0.5] },
+      { min: [0.5, 0, 1.5], max: [1.5, 1.1, 3] },
+      { min: [1, 0, -2.5], max: [2.5, 1.1, -1.5] },
+    ],
+  },
+  {
+    id: 'core.room_dais',
+    displayName: 'Room (Dais)',
+    cells: [[0, 0, 0]],
+    floors: [0],
+    ports: ALL_SIDES,
+    // Raised 0.75 m platform with three 0.25 m steps on its south side.
+    solids: [
+      { min: [-2, 0, -1], max: [2, 0.75, 2] },
+      { min: [-1, 0, -1.5], max: [1, 0.5, -1] },
+      { min: [-1, 0, -2], max: [1, 0.25, -1.5] },
+    ],
+  },
+  {
     id: 'core.stairs',
     displayName: 'Stairs',
     cells: [

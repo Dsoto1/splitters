@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { BUTTON_JUMP, PhysicsWorld, getWeapon, initPhysics, loadMap, type PlayerInput, type PlayerSnapshot } from '@chronosplit/shared';
 import { Match, initNavigation } from '@chronosplit/shared/match';
-import { LocalPlayer } from '../src/prediction.ts';
+import { LocalPlayer } from '../src/game/prediction.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 

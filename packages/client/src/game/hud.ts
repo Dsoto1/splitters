@@ -1,5 +1,5 @@
 import type { MatchPhase, RosterEntry, ScoreEntry, ServerStats } from '@chronosplit/shared';
-import { slotColor } from './renderer.ts';
+import { slotColor } from './view.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -19,6 +19,20 @@ export class Hud {
 
   show(): void {
     this.root.hidden = false;
+  }
+
+  hide(): void {
+    this.root.hidden = true;
+  }
+
+  /** Clear per-match state left over from a previous session. */
+  reset(): void {
+    this.feed.replaceChildren();
+    this.banner.textContent = '';
+    this.timer.textContent = '';
+    this.health.textContent = '';
+    this.scoreboard.hidden = true;
+    this.roster.clear();
   }
 
   setRoster(players: RosterEntry[]): void {

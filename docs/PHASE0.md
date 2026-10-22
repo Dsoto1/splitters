@@ -39,8 +39,8 @@ Status of the MASTER_SPEC_V2 §14 Phase 0 list. Measured numbers are from the cl
 - **JSON protocol.** Fine at this scale. Revisit (binary/delta) once 16/24/32-slot load tests measure bandwidth.
 - **Idle humans don't fall.** The server only simulates a human when an input arrives; a client that stops sending freezes in place. Needs a server-side "no input" step policy.
 - **Bot quirks.** In the 32-bot soak, bots trigger ~50 stuck recoveries per minute, mostly from strafing into door frames while fighting. Fine for a proof; tune when doing personalities properly.
-- **WebGPU path unverified here.** The container has no GPU, so only the WebGL2 fallback was exercised. Check `renderer` in the F3 panel on real hardware.
-- **No editor yet.** The map format, validation and the shared `Match` are ready for MapMaker (Phase 1).
+- **WebGPU path unverified here.** The container's software WebGPU adapter loses its device on first present, so only the WebGL2 fallback can be exercised. Phase 1 added an automatic fallback for exactly that case; see `PHASE1.md`.
+- **No editor yet.** Addressed in Phase 1 M1 (MapMaker + in-browser TEST).
 
 ## Running it
 

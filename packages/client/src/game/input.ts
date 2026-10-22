@@ -11,30 +11,52 @@ export class InputState {
   private mouseDown = false;
   private jumpQueued = false;
   readonly onToggle = new Map<string, () => void>();
+  private readonly abort = new AbortController();
 
   constructor(private readonly canvas: HTMLCanvasElement) {
+    const opts = { signal: this.abort.signal };
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Tab' || e.code === 'F3') e.preventDefault();
+      if (e.code === 'Tab' || e.code === 'F3' || e.code === 'F5') e.preventDefault();
       if (!e.repeat) this.onToggle.get(e.code)?.();
       this.keys.add(e.code);
       if (e.code === 'Space') this.jumpQueued = true;
-    });
-    window.addEventListener('keyup', (e) => this.keys.delete(e.code));
-    window.addEventListener('blur', () => {
-      this.keys.clear();
-      this.mouseDown = false;
-    });
-    canvas.addEventListener('mousedown', (e) => {
-      if (e.button === 0) this.mouseDown = true;
-    });
-    window.addEventListener('mouseup', (e) => {
-      if (e.button === 0) this.mouseDown = false;
-    });
-    window.addEventListener('mousemove', (e) => {
-      if (!this.locked) return;
-      this.yaw += e.movementX * MOUSE_SENSITIVITY;
-      this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - e.movementY * MOUSE_SENSITIVITY));
-    });
+    }, opts);
+    window.addEventListener('keyup', (e) => this.keys.delete(e.code), opts);
+    window.addEventListener(
+      'blur',
+      () => {
+        this.keys.clear();
+        this.mouseDown = false;
+      },
+      opts,
+    );
+    canvas.addEventListener(
+      'mousedown',
+      (e) => {
+        if (e.button === 0) this.mouseDown = true;
+      },
+      opts,
+    );
+    window.addEventListener(
+      'mouseup',
+      (e) => {
+        if (e.button === 0) this.mouseDown = false;
+      },
+      opts,
+    );
+    window.addEventListener(
+      'mousemove',
+      (e) => {
+        if (!this.locked) return;
+        this.yaw += e.movementX * MOUSE_SENSITIVITY;
+        this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - e.movementY * MOUSE_SENSITIVITY));
+      },
+      opts,
+    );
+  }
+
+  dispose(): void {
+    this.abort.abort();
   }
 
   get locked(): boolean {

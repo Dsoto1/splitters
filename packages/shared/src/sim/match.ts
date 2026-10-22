@@ -1,11 +1,11 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { BotBrain, type CombatantView } from '../bots/brain.ts';
-import { BOT_DIFFICULTIES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
+import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { buildMapGeometry, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
 import { createRng, horizontalDistance, viewDirection, type Vec3 } from '../math.ts';
 import { NavWorld } from '../nav/index.ts';
-import type { GameEvent, MatchPhase, PlayerSnapshot, RosterEntry, ScoreEntry, Tuple3 } from '../protocol.ts';
+import type { GameEvent, MatchPhase, PlayerSnapshot, RosterEntry, ScoreEntry, ServerMessage, Tuple3 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_RATE } from './constants.ts';
 import { BUTTON_FIRE, sanitizeInput, stepMovement, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
@@ -299,6 +299,11 @@ export class Match {
     return this.combatants().map((c) => ({ s: c.slot, k: c.kills, d: c.deaths }));
   }
 
+  /** Snapshot message body shared by every recipient; hosts add the per-recipient `ack`. */
+  snapshot(events: GameEvent[]): Omit<Extract<ServerMessage, { t: 'snapshot' }>, 't' | 'ack'> {
+    return { tick: this.tick, phase: this.phase, timeLeft: this.timeLeftSeconds(), players: this.playerSnapshots(), score: this.scores(), ev: events };
+  }
+
   roster(): RosterEntry[] {
     return this.combatants().map((c) => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot' }));
   }
@@ -311,4 +316,30 @@ export class Match {
 
 function toView(c: Combatant): CombatantView {
   return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, alive: c.alive };
+}
+
+const BOT_NAMES = ['Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash', 'Nub', 'Quill'];
+
+/** Keeps a match at a target player count by adding or removing Player Bots around the humans. */
+export class BotFiller {
+  private counter = 0;
+
+  constructor(
+    private readonly match: Match,
+    private readonly difficulty: BotDifficulty = BOT_DIFFICULTIES.normal,
+  ) {}
+
+  rebalance(fill: number): void {
+    const all = this.match.combatants();
+    const humans = all.filter((c) => c.kind === 'human').length;
+    const bots = all.filter((c) => c.kind === 'bot');
+    const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans));
+    for (let i = bots.length; i > want; i--) this.match.remove(bots[i - 1]!.slot);
+    for (let i = bots.length; i < want; i++) {
+      const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
+      const name = BOT_NAMES[this.counter % BOT_NAMES.length]!;
+      this.counter++;
+      if (!this.match.addBot(name, profile, this.difficulty)) break;
+    }
+  }
 }
