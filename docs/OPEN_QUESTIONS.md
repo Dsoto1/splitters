@@ -18,7 +18,7 @@ These are small and `MASTER_SPEC_V2.md` already wins on each, but the supporting
 
 1. **`CHARACTERS_BOTS_V2.md` §9 vertical-slice breakdown.** The headline now says 12 characters, but the "At least" list underneath (8 grounded, 8 heightened, 6 weird, 2–6 extreme) still adds up to 24–28. Suggested 12-character split, keeping the §5 ratios: 4 grounded, 4 heightened, 3 weird, 1 extreme.
 2. **`CHARACTERS_BOTS_V2.md` §34 acceptance criteria.** Still says "At least 24 distinct characters exist." This should be 12.
-3. **"Scenario Maker" naming.** `CHARACTERS_BOTS_V2.md` §1, §18, §23 and §24 still say "Scenario Maker". Master §5 says it is not a separate application. Rename it to MapMaker (ENTITIES / LOGIC workspaces).
+3. **"Scenario Maker" naming.** `CHARACTERS_BOTS_V2.md` still says "Scenario Maker" throughout (e.g. §1, §4, §16, §23, §24, §34, §37). Master §5 says it is not a separate application. Rename it to MapMaker (ENTITIES / LOGIC workspaces).
 4. **v1-only detail.** Accessibility (v1 §17), validation severity classes (v1 §9), weapon data fields (v1 §5.2), map versioning fields (v1 §10.3), and save/profile (v1 §20) have no v2 home yet. They live in `archive/MASTER_SPEC_V1.md` until `WEAPONS_ITEMS.md`, `UI_UX.md`, etc. are written (master §16 "Later" list).
 
 ## Decisions needed before Phase 0 code
