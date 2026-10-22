@@ -2,20 +2,21 @@
 
 **Status:** proposal, adopted direction.
 
-The team hand-makes the toy box: building pieces, themes, props, interactive objects, characters, weapons, sounds and the MapMaker tools. Players bring the imagination and build maps from those pieces. There are no player-uploaded assets and no generated content (see `OPEN_QUESTIONS.md`, "Decisions").
+The team hand-makes the toy box: building pieces, materials, colours, props, interactive objects, character parts and costume pieces, weapons, sounds, and the in-house tools. Players combine those parts their own way (see [`PLAYER_EXPRESSION.md`](PLAYER_EXPRESSION.md)). There are no player-uploaded assets and no generated content (see `OPEN_QUESTIONS.md`, "Decisions"). This document is how the team makes and ships the parts.
 
 ## 0. What players get to play with
 
-Breadth matters more than polish per item: the goal is that two players with the same toy box build maps that look and play nothing alike. Every item must also *combine* with the others (shared grid, ports, scale and material rules), so pieces from different themes can sit side by side.
+Breadth and *combinability* matter more than polish per item. Every part shares the grid, scale, attach-point and material rules, so any piece works with any other and each new option multiplies the possibilities.
 
 | Toy box | Vertical slice (M1–M6) | Growth after the slice |
 |---|---|---|
 | Structural pieces | ~15–20 graybox tiles (11 today) | More shapes per family: big rooms, ramps, bridges, balconies, pits, windows, open-air platforms |
-| Themes (visual kits for every piece) | 1 hand-made theme + the prototype grid look | 3–4 themes in Phase 2, then one per world family (tomb, gothic, lab, space station…) |
+| Materials and tints (painted per surface) | ~20 starter materials + tint swatches (M1.5) | Large library across all world families |
+| Themes (default palettes for every piece) | 1 hand-made theme + the prototype grid look | 3–4 themes in Phase 2, then one per world family (tomb, gothic, lab, space station…) |
 | Props / dressing | Small set (crates, barrels, cover, lights) | Per-theme prop sets, freely placed |
 | Interactive objects | Doors, buttons, destructibles, trigger volumes, pickups, spawners | Elevators, teleporters, hazards, turrets, vehicles later |
 | Logic blocks | WHEN → IF → DO with a starter set of events/conditions/actions, plus templates | More blocks and templates, then the visual graph |
-| Characters | 12 | Toward the roster targets in CHARACTERS_BOTS_V2 §9 |
+| Character parts (heads, torsos, limbs, hands, feet, outerwear, attachments, accessories, swatches) | Enough parts for the Character Designer plus 12 preset characters built with it | Growing part library; the roster targets in CHARACTERS_BOTS_V2 §9 become presets |
 | Weapons and items | 6 weapon roles, health/armor, 2 powerups | 20–30 weapons |
 | Audio | Weapon/pickup/UI sounds, 1 ambience and music set | Ambience and music per theme; placeable sound emitters |
 

@@ -35,10 +35,11 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 | # | Milestone | Status |
 |---|---|---|
 | M1 | MapMaker core loop: Classic Grid building, spawns, undo/redo, levels, validation, save/load, in-browser TEST, offline play | **Done** |
-| M2 | Weapons and items: 6 weapon roles (pistol, automatic, shotgun, precision, explosive, melee), weapon/health/armor pickups, 2 powerups, bot weapon choice and pickup seeking, lag compensation | Next |
+| M1.5 | Map look: material library (~20), per-surface material + tint, Paint tool in MapMaker, map format v2 migration ([`PLAYER_EXPRESSION.md`](PLAYER_EXPRESSION.md) §1) | |
+| M2 | Weapons and items: 6 weapon roles (pistol, automatic, shotgun, precision, explosive, melee), weapon/health/armor pickups, 2 powerups, bot weapon choice and pickup seeking, lag compensation | |
 | M3 | Scenario primitives: doors, buttons, destructibles, trigger volumes, WHEN → IF → DO logic (data-only interpreter), objectives, LOGIC/ENTITIES workspaces | |
 | M4 | NPCs: factions model, one enemy faction, one NPC squad archetype, encounter spawners, the co-op scenario | |
-| M5 | Team Deathmatch on factions, 12 placeholder characters, character select, bots inheriting character personalities | |
+| M5 | Rig standard, first character part library, **Character Designer**, 12 preset characters built with it, character select, looks visible to everyone in multiplayer, Team Deathmatch on factions | |
 | M6 | Multiplayer slice: hosting an editor map on the dedicated server (map transfer), 8-slot proof, staged 16/24/32 load tests, bundle splitting, §11 acceptance pass | |
 
 ## M1 — what exists
