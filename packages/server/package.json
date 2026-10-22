@@ -1,0 +1,20 @@
+{
+  "name": "@chronosplit/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "bench": "tsx src/tools/bench.ts",
+    "validate-map": "tsx src/tools/validate-map.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@chronosplit/shared": "workspace:*",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.20.6"
+  }
+}

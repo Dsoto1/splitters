@@ -1,0 +1,18 @@
+{
+  "name": "@chronosplit/client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@babylonjs/core": "^9.30.0",
+    "@chronosplit/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^7.3.7"
+  }
+}
