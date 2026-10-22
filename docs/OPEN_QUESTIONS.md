@@ -21,12 +21,12 @@ These are small and `MASTER_SPEC_V2.md` already wins on each, but the supporting
 3. **"Scenario Maker" naming.** `CHARACTERS_BOTS_V2.md` still says "Scenario Maker" throughout (e.g. §1, §4, §16, §23, §24, §34, §37). Master §5 says it is not a separate application. Rename it to MapMaker (ENTITIES / LOGIC workspaces).
 4. **v1-only detail.** Accessibility (v1 §17), validation severity classes (v1 §9), weapon data fields (v1 §5.2), map versioning fields (v1 §10.3), and save/profile (v1 §20) have no v2 home yet. They live in `archive/MASTER_SPEC_V1.md` until `WEAPONS_ITEMS.md`, `UI_UX.md`, etc. are written (master §16 "Later" list).
 
-## Decisions needed before Phase 0 code
+## Phase 0 stack decisions (made)
 
-These are not specified anywhere yet and affect the initial scaffold:
+- **Server runtime:** Node.js 22.
+- **Transport:** WebSocket with JSON messages. Revisit binary/delta encoding or WebTransport after staged load tests.
+- **Physics/collision:** Rapier (WASM) shared by server and client prediction.
+- **Navigation:** Recast/Detour via recast-navigation-js, generated from map geometry.
+- **Repo layout:** pnpm monorepo with `shared`, `server`, `client` packages.
 
-- **Server runtime.** Node.js, Bun, or Deno for the headless server. All three can share TypeScript modules with the client.
-- **Transport.** WebSocket only at first, or WebTransport/WebRTC data channels for unreliable delivery. TECH_ARCHITECTURE leaves snapshot/delta strategy to prototype measurement.
-- **Physics/collision.** Babylon's Havok plugin on the client is not available headless as-is. The server needs its own collision (e.g. Rapier via WASM, or custom capsule-vs-grid) shared by both sides for prediction.
-- **Navigation.** Recast/Detour (e.g. recast-navigation-js) generated from tile geometry is the obvious candidate for "no manual waypoints".
-- **Repo layout.** A monorepo (e.g. pnpm workspaces) with `client`, `server`, and shared `shared/map-format`, `shared/sim`, `shared/protocol` packages fits the "share pure TS modules" rule.
+See [`PHASE0.md`](PHASE0.md) for results and deferred gaps.

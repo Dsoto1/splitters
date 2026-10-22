@@ -1,0 +1,46 @@
+:root {
+  --fg: #f2f2f2;
+  --muted: #a9b0b8;
+  --panel: rgba(12, 14, 18, 0.72);
+  --accent: #ffb03b;
+  --danger: #ff5a4f;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--fg);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #111; }
+#view { width: 100vw; height: 100vh; display: block; outline: none; }
+
+#menu, #clicktoplay {
+  position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(8, 9, 12, 0.82); gap: 8px;
+}
+#menu h1 { margin: 0; font-size: 48px; letter-spacing: 2px; }
+#menu .sub { margin: 0 0 16px; color: var(--muted); }
+#join { display: flex; flex-direction: column; gap: 10px; width: min(320px, 90vw); }
+#join label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+#join input { font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid #444; background: #1b1e24; color: var(--fg); }
+#join button { font: inherit; font-weight: 600; padding: 10px; border: 0; border-radius: 6px; background: var(--accent); color: #1a1205; cursor: pointer; }
+#status { color: var(--danger); min-height: 1.2em; }
+#clicktoplay { font-size: 22px; cursor: pointer; background: rgba(8, 9, 12, 0.5); }
+[hidden] { display: none !important; }
+
+#hud { position: fixed; inset: 0; pointer-events: none; }
+#crosshair { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; }
+#crosshair::before, #crosshair::after { content: ''; position: absolute; background: var(--fg); box-shadow: 0 0 2px #000; }
+#crosshair::before { left: 8px; top: 0; width: 2px; height: 18px; }
+#crosshair::after { top: 8px; left: 0; height: 2px; width: 18px; }
+#hitmarker { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; opacity: 0; border: 2px solid var(--danger); transform: rotate(45deg); transition: opacity 0.15s; }
+#hitmarker.on { opacity: 1; transition: none; }
+#health { position: absolute; left: 24px; bottom: 20px; font-size: 40px; font-weight: 700; text-shadow: 0 1px 3px #000; }
+#timer { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 20px; font-variant-numeric: tabular-nums; background: var(--panel); padding: 4px 12px; border-radius: 6px; }
+#feed { position: absolute; top: 14px; right: 16px; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; font-size: 14px; }
+#feed div { background: var(--panel); padding: 3px 8px; border-radius: 4px; }
+#banner { position: absolute; top: 30%; width: 100%; text-align: center; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px #000; }
+#scoreboard { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); min-width: min(440px, 92vw); background: var(--panel); border-radius: 8px; padding: 12px 16px; }
+#scoreboard table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+#scoreboard th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12px; }
+#scoreboard td, #scoreboard th { padding: 4px 6px; }
+#scoreboard tr.me td { color: var(--accent); }
+#perf { position: absolute; left: 12px; top: 12px; margin: 0; font: 12px/1.45 ui-monospace, monospace; background: var(--panel); padding: 8px 10px; border-radius: 6px; }
+#help { position: absolute; right: 16px; bottom: 14px; font-size: 12px; color: var(--muted); }

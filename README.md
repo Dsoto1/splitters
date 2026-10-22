@@ -2,8 +2,33 @@
 
 An original browser-first arcade FPS and community creation platform with a built-in MapMaker (grid construction through scripted co-op scenarios), full Player Bots, scenario NPCs, and a deliberately chaotic cross-era character roster. Inspired by the design lessons of classic console arena shooters; uses no proprietary assets, names, or content.
 
-**Status:** pre-production (spec pack v2). No code yet.
+**Status:** Phase 0 technical proofs — see [`docs/PHASE0.md`](docs/PHASE0.md).
 **Stack direction:** TypeScript + Babylon.js client (WebGPU, WebGL2 fallback); headless dedicated authoritative server.
+
+## Quick start
+
+Requires Node 22+ and pnpm 10.
+
+```bash
+pnpm install
+pnpm dev:server   # dedicated server on ws://localhost:7777 (fills with bots)
+pnpm dev:client   # open http://localhost:5173, click Play, click to lock the mouse
+```
+
+WASD move · Space jump · Left mouse fire · Tab scoreboard · F3 performance/bot overlay.
+Open a second browser tab to play against yourself over the network.
+
+`pnpm test` · `pnpm typecheck` · `pnpm validate-map maps/phase0_arena.json` · `pnpm bench 32 60`
+
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| `packages/shared` | Map format, Classic Grid tiles, physics/movement, weapons, Match simulation, navmesh, Player Bot AI, wire protocol |
+| `packages/server` | Dedicated authoritative WebSocket server, instrumentation, `validate-map` and `bench` tools |
+| `packages/client` | Babylon.js browser client: rendering, input, prediction, interpolation, HUD |
+| `maps/` | Map documents (JSON) |
+| `docs/` | Specs, open questions, Phase 0 report |
 
 ## Documents
 
@@ -17,6 +42,7 @@ An original browser-first arcade FPS and community creation platform with a buil
 
 Also:
 
+- [`docs/PHASE0.md`](docs/PHASE0.md) — what Phase 0 proves, measurements, known gaps
 - [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md) — remaining inconsistencies in the v2 pack
 - [`docs/archive/MASTER_SPEC_V1.md`](docs/archive/MASTER_SPEC_V1.md) — superseded v1 master spec, kept for detail v2 doesn't yet cover
 

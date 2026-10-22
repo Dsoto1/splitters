@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChronoSplit — Phase 0</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+    <div id="hud" hidden>
+      <div id="crosshair"></div>
+      <div id="hitmarker"></div>
+      <div id="health"></div>
+      <div id="timer"></div>
+      <div id="feed"></div>
+      <div id="banner"></div>
+      <div id="scoreboard" hidden></div>
+      <pre id="perf" hidden></pre>
+      <div id="help">WASD move · Space jump · Mouse fire · Tab scores · F3 stats</div>
+    </div>
+    <div id="menu">
+      <h1>ChronoSplit</h1>
+      <p class="sub">Phase 0 technical proof</p>
+      <form id="join">
+        <label>Name <input id="name" maxlength="24" autocomplete="off" /></label>
+        <label>Server <input id="server" autocomplete="off" /></label>
+        <button type="submit">Play</button>
+      </form>
+      <p id="status"></p>
+    </div>
+    <div id="clicktoplay" hidden>Click to play</div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
