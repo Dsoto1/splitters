@@ -1,6 +1,7 @@
 import { coreCatalog, type TileCatalog } from '../map/catalog.ts';
 import { buildOccupancy, cellKey, rotateXZ } from '../map/geometry.ts';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type TilePlacement } from '../map/schema.ts';
+import type { SurfaceSlot } from '../map/materials.ts';
+import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 
 /** Editor-level selection: stable IDs only, never object references or indices. */
@@ -168,4 +169,41 @@ export function moveEntitiesCommand(doc: MapDocument, ids: readonly string[], dx
   const r = (v: number) => Math.round(v * 1000) / 1000;
   const after = before.map((e) => ({ ...e, position: [r(e.position[0] + dx), r(e.position[1] + dy), r(e.position[2] + dz)] as [number, number, number] }));
   return { kind: 'updateEntities', before, after };
+}
+
+/** Which tiles a paint stroke affects (PLAYER_EXPRESSION.md §1). */
+export type PaintScope = 'surface' | 'sameType' | 'level' | 'all';
+
+/**
+ * Set one surface slot on the clicked tile, or on every tile in the chosen
+ * scope. `style` null clears the override back to the theme default.
+ * Tiles already carrying the exact style are left out, so the command only
+ * records real changes.
+ */
+export function paintCommand(doc: MapDocument, tileId: string, slot: SurfaceSlot, style: SurfaceStyle | null, scope: PaintScope = 'surface'): EditCommand {
+  const origin = doc.classicStructure.tiles.find((t) => t.id === tileId);
+  if (!origin) return { kind: 'updateTiles', before: [], after: [] };
+  const inScope = (t: TilePlacement) =>
+    scope === 'surface' ? t.id === tileId : scope === 'sameType' ? t.tile === origin.tile : scope === 'level' ? t.z === origin.z : true;
+  const before: TilePlacement[] = [];
+  const after: TilePlacement[] = [];
+  for (const t of doc.classicStructure.tiles) {
+    if (!inScope(t)) continue;
+    const current = t.surfaces?.[slot];
+    const same = style === null ? current === undefined : current?.material === style.material && (current.tint ?? null) === (style.tint ?? null);
+    if (same) continue;
+    const surfaces = { ...t.surfaces };
+    if (style === null) delete surfaces[slot];
+    else surfaces[slot] = { material: style.material, tint: style.tint ?? null };
+    const next: TilePlacement = { ...t, surfaces };
+    if (Object.keys(surfaces).length === 0) delete next.surfaces;
+    before.push(t);
+    after.push(next);
+  }
+  return { kind: 'updateTiles', before, after };
+}
+
+/** Change the map's theme (its default palette). Tile overrides are kept. */
+export function setThemeCommand(doc: MapDocument, theme: string): EditCommand {
+  return { kind: 'setTheme', before: doc.classicStructure.theme, after: theme };
 }

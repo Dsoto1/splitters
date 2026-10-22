@@ -4,11 +4,13 @@ import { MAP_FORMAT, MAP_FORMAT_VERSION } from './schema.ts';
 export type Migration = (doc: Record<string, unknown>) => Record<string, unknown>;
 
 /**
- * Registered migrations keyed by the version they upgrade *from*. Empty while
- * v1 is the only version; every future format change adds an entry here plus
- * a test fixture of the old version.
+ * Registered migrations keyed by the version they upgrade *from*. Every format
+ * change adds an entry here plus a test fixture of the old version.
  */
-export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map();
+export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migration>([
+  // v1 -> v2: tiles gained optional per-surface styles. Absent means "theme default", so v1 data is already valid.
+  [1, (doc) => ({ ...doc })],
+]);
 
 export class MapMigrationError extends Error {}
 

@@ -13,9 +13,9 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import type { BoxKind, MapDocument, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
+import type { MapDocument, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
 import { PLAYER, buildMapGeometry, placementCells, viewDirection } from '@chronosplit/shared';
-import { boxVertexData, buildMapMeshes, createMapMaterials } from '../mapMeshes.ts';
+import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 
 const GRID_EXTENT = 12;
 
@@ -29,15 +29,15 @@ export class EditorView {
   readonly camera: FreeCamera;
   yaw = 0;
   pitch = -0.9;
-  private readonly materials: Record<BoxKind, StandardMaterial>;
-  private mapMeshes: Mesh[] = [];
+  private readonly styler: MapStyler;
+  private faceHighlight?: Mesh;
   private grid?: LinesMesh;
   private hover?: Mesh;
   private ghost?: Mesh;
   private ghostKey = '';
   private outlines: Mesh[] = [];
   private markers = new Map<string, Mesh>();
-  private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'hover' | 'spawn' | 'spawnSel' | 'visor', StandardMaterial>;
+  private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'hover' | 'spawn' | 'spawnSel' | 'visor' | 'face', StandardMaterial>;
 
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
@@ -52,7 +52,7 @@ export class EditorView {
     hemi.intensity = 0.8;
     hemi.groundColor = new Color3(0.3, 0.3, 0.32);
     new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene).intensity = 0.5;
-    this.materials = createMapMaterials(this.scene);
+    this.styler = new MapStyler(this.scene);
 
     const flat = (name: string, hex: string, alpha = 1, wire = false) => {
       const m = new StandardMaterial(name, this.scene);
@@ -73,6 +73,7 @@ export class EditorView {
       spawn: flat('spawn', '#4fb3ff'),
       spawnSel: flat('spawnSel', '#ffb03b'),
       visor: flat('visorMat', '#1c1f26'),
+      face: flat('faceHi', '#ffb03b', 0.35),
     };
     this.applyCamera();
   }
@@ -111,6 +112,14 @@ export class EditorView {
     this.camera.position.set(target.x - d.x * dist, target.y - d.y * dist, target.z - d.z * dist);
   }
 
+  /** World-space ray under the pointer. */
+  pointerRay(clientX: number, clientY: number): { origin: Vec3; dir: Vec3 } | null {
+    const rect = this.scene.getEngine().getRenderingCanvasClientRect();
+    if (!rect) return null;
+    const ray = this.scene.createPickingRay(clientX - rect.left, clientY - rect.top, null, this.camera);
+    return { origin: { x: ray.origin.x, y: ray.origin.y, z: ray.origin.z }, dir: { x: ray.direction.x, y: ray.direction.y, z: ray.direction.z } };
+  }
+
   /** Intersect the pointer ray with the horizontal plane y = planeY. */
   pickPlane(clientX: number, clientY: number, planeY: number): Vec3 | null {
     const rect = this.scene.getEngine().getRenderingCanvasClientRect();
@@ -134,10 +143,11 @@ export class EditorView {
 
   /** Rebuild map meshes. Tiles above the active level are hidden unless showAll. */
   setMap(doc: MapDocument, level: number, showAll: boolean): WorldBox[] {
-    for (const m of this.mapMeshes) m.dispose();
     const visibleTiles = showAll ? doc.classicStructure.tiles : doc.classicStructure.tiles.filter((t) => t.z <= level);
     const boxes = buildMapGeometry({ ...doc, classicStructure: { ...doc.classicStructure, tiles: visibleTiles } });
-    this.mapMeshes = buildMapMeshes(this.scene, boxes, this.materials, 'edmap');
+    this.styler.build(doc, boxes, 'edmap');
+    const sky = MapStyler.skyColor(doc).scale(0.45);
+    this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
     this.setGrid(doc, level);
     this.setSpawns(doc, level, showAll, new Set());
     return boxes;
@@ -242,6 +252,28 @@ export class EditorView {
         this.outlines.push(box);
       }
     }
+  }
+
+  /** Highlight one face of a box (paint hover); null hides it. */
+  setFaceHighlight(box: WorldBox | null, normal: readonly [number, number, number] | null): void {
+    if (!box || !normal) {
+      this.faceHighlight?.setEnabled(false);
+      return;
+    }
+    if (!this.faceHighlight) {
+      this.faceHighlight = CreateBox('faceHi', { size: 1 }, this.scene);
+      this.faceHighlight.material = this.mat.face;
+      this.faceHighlight.isPickable = false;
+    }
+    const size = [box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]];
+    const center = [(box.min[0] + box.max[0]) / 2, (box.min[1] + box.max[1]) / 2, (box.min[2] + box.max[2]) / 2];
+    const axis = normal.findIndex((v) => v !== 0);
+    const pad = 0.02;
+    const scale = size.map((v, i) => (i === axis ? pad : v + pad));
+    const pos = center.map((c, i) => (i === axis ? c + (normal[i]! * size[i]!) / 2 : c));
+    this.faceHighlight.setEnabled(true);
+    this.faceHighlight.scaling.set(scale[0]!, scale[1]!, scale[2]!);
+    this.faceHighlight.position.set(pos[0]!, pos[1]!, pos[2]!);
   }
 
   render(): void {

@@ -85,7 +85,7 @@ Rules:
 
 | Piece | When |
 |---|---|
-| Map materials, tints and the Paint tool (graybox-era starter library of ~20 materials), format v2 migration | **M1.5**, small and visible, before weapons |
+| Map materials, tints and the Paint tool (graybox-era starter library of ~20 materials), format v2 migration | **M1.5 — done** (25 materials, 5 themes) |
 | Props with variants, lights, atmosphere | M3 alongside scenario objects |
 | Rig standard, first part library, Character Designer, 12 preset characters built with it | **M5** |
 | Terrain sculpt/paint | Phase 2 |

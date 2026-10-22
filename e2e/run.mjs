@@ -78,6 +78,30 @@ async function editorFlow(browser) {
   check((await tileOf()).y === 1, 'redo reapplies the move');
   await page.keyboard.press('Control+KeyZ');
 
+  // Paint: brick walls on the start room, then checker floors on every room via scope.
+  await page.click('[data-tool="paint"]');
+  await page.click('[data-material="core.red_brick"]');
+  const wall = await page.evaluate(() => window.__editor.view.project({ x: 0, y: 2, z: 3.5 }));
+  await page.mouse.move(wall.x, wall.y);
+  await page.mouse.click(wall.x, wall.y);
+  const startRoom = async () => (await doc()).classicStructure.tiles.find((t) => t.tile === 'core.room');
+  check((await startRoom()).surfaces?.walls?.material === 'core.red_brick', 'paints a wall surface');
+  await page.click('[data-material="core.checker"]');
+  await page.click('[data-tint="#4cc9f0"]');
+  await page.selectOption('#ed-scope', 'all');
+  const floor = await page.evaluate(() => window.__editor.view.project({ x: 1.5, y: 0, z: 1.5 }));
+  await page.mouse.move(floor.x, floor.y);
+  await page.mouse.click(floor.x, floor.y);
+  d = await doc();
+  check(d.classicStructure.tiles.every((t) => t.surfaces?.floor?.material === 'core.checker' && t.surfaces.floor.tint === '#4cc9f0'), 'paints every floor in one stroke (whole-map scope)');
+  await page.screenshot({ path: process.env.E2E_SHOTS ? `${process.env.E2E_SHOTS}/paint.png` : '/dev/null' }).catch(() => {});
+  await page.keyboard.press('Control+KeyZ');
+  d = await doc();
+  check(!d.classicStructure.tiles.some((t) => t.surfaces?.floor) && (await startRoom()).surfaces?.walls, 'undo removes the whole stroke in one step');
+  await page.keyboard.press('Control+KeyY');
+  await page.selectOption('#ed-scope', 'surface');
+  await page.keyboard.press('Escape');
+
   await page.keyboard.press('F5');
   await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: 20000 });
   const ms = await page.evaluate(() => window.__testStartMs);
@@ -92,7 +116,7 @@ async function editorFlow(browser) {
   await page.reload();
   await page.waitForFunction(() => window.__editor, null, { timeout: 30000 });
   d = await doc();
-  check(d.metadata.id === id && d.classicStructure.tiles.length === 3, 'autosave restores the map after reload');
+  check(d.metadata.id === id && d.classicStructure.tiles.length === 3 && d.classicStructure.tiles[0].surfaces?.floor?.material === 'core.checker', 'autosave restores the painted map after reload');
   await page.click('#ed-open');
   const lib = await page.$$eval('#ed-library li', (ls) => ls.map((l) => l.textContent));
   check(lib.some((t) => t.includes('Untitled Map')), 'saved map is listed in the library');

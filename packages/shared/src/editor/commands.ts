@@ -13,6 +13,7 @@ export type EditCommand =
   | { kind: 'removeEntities'; entities: MapEntity[] }
   | { kind: 'updateEntities'; before: MapEntity[]; after: MapEntity[] }
   | { kind: 'setMetadata'; before: Partial<MapDocument['metadata']>; after: Partial<MapDocument['metadata']> }
+  | { kind: 'setTheme'; before: string; after: string }
   | { kind: 'batch'; commands: EditCommand[] };
 
 export class CommandError extends Error {}
@@ -60,6 +61,8 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       return { ...doc, entities: replaceById(doc.entities, cmd.after) };
     case 'setMetadata':
       return { ...doc, metadata: { ...doc.metadata, ...cmd.after } };
+    case 'setTheme':
+      return { ...doc, classicStructure: { ...cs, theme: cmd.after } };
     case 'batch':
       return cmd.commands.reduce(applyCommand, doc);
   }
@@ -81,6 +84,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'updateEntities', before: cmd.after, after: cmd.before };
     case 'setMetadata':
       return { kind: 'setMetadata', before: cmd.after, after: cmd.before };
+    case 'setTheme':
+      return { kind: 'setTheme', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -99,6 +104,8 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
       return cmd.after.length === 0;
     case 'setMetadata':
       return Object.keys(cmd.after).length === 0;
+    case 'setTheme':
+      return cmd.before === cmd.after;
     case 'batch':
       return cmd.commands.every(isEmptyCommand);
   }

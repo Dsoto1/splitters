@@ -69,7 +69,7 @@ describe('migrations', () => {
   });
 
   it('fails loudly on a gap in the chain', () => {
-    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), 2)).toThrow(MapMigrationError);
+    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), 3)).toThrow(MapMigrationError);
   });
 });
 
@@ -112,5 +112,41 @@ describe('classic grid geometry', () => {
     expect(eastWall).toHaveLength(3);
     const lower = eastWall.filter((b) => b.min[1] === 0).map((b) => [b.min[2], b.max[2]]);
     expect(lower).toEqual([[-4, -1.5], [1.5, 4]]);
+  });
+});
+
+describe('format v2 (surface styles)', () => {
+  it('migrates a v1 map file to v2 without losing anything', async () => {
+    const { readFileSync } = await import('node:fs');
+    const v1 = JSON.parse(readFileSync(new URL('./fixtures/arena_v1.json', import.meta.url), 'utf8'));
+    expect(v1.formatVersion).toBe(1);
+    const r = loadMap(v1);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.migratedFrom).toBe(1);
+    expect(r.map).toEqual(loadArena());
+  });
+
+  it('rejects unknown materials, unknown themes and malformed tints', () => {
+    const arena = loadArena();
+    const tiles = arena.classicStructure.tiles.map((t, i) => (i === 0 ? { ...t, surfaces: { walls: { material: 'core.nope', tint: null } } } : t));
+    const r = loadMap({ ...arena, classicStructure: { ...arena.classicStructure, theme: 'core.missing', tiles } });
+    expect(r.ok).toBe(false);
+    expect(r.issues.map((i) => i.code).sort()).toEqual(['material.unknown', 'theme.unknown']);
+    const badTint = arena.classicStructure.tiles.map((t, i) => (i === 0 ? { ...t, surfaces: { floor: { material: 'core.marble', tint: 'red' } } } : t));
+    expect(loadMap({ ...arena, classicStructure: { ...arena.classicStructure, tiles: badTint } }).ok).toBe(false);
+  });
+
+  it('resolves tile overrides over theme defaults and maps box faces to slots', async () => {
+    const { resolveSurface, faceSlot } = await import('../src/index.ts');
+    const arena = loadArena();
+    const tile = { ...arena.classicStructure.tiles[0]!, surfaces: { walls: { material: 'core.red_brick', tint: '#ff0000' } } };
+    expect(resolveSurface(arena, tile, 'walls')).toMatchObject({ material: { id: 'core.red_brick' }, tint: '#ff0000' });
+    expect(resolveSurface(arena, tile, 'floor')).toMatchObject({ material: { id: 'core.proto_floor' }, tint: null });
+    const tomb = { ...arena, classicStructure: { ...arena.classicStructure, theme: 'core.tomb' } };
+    expect(resolveSurface(tomb, undefined, 'floor').material.id).toBe('core.sandstone');
+    expect(faceSlot({ kind: 'floor' }, [0, 1, 0])).toBe('floor');
+    expect(faceSlot({ kind: 'floor' }, [0, -1, 0])).toBe('underside');
+    expect(faceSlot({ kind: 'wall' }, [1, 0, 0])).toBe('walls');
   });
 });

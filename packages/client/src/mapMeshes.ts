@@ -5,100 +5,132 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import type { BoxKind, WorldBox } from '@chronosplit/shared';
+import { coreThemes, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TilePlacement, type WorldBox } from '@chronosplit/shared';
+import { materialPixels } from './materials/patterns.ts';
 
-const TINTS: Record<BoxKind, string> = { floor: '#9aa0a8', wall: '#d9d6cf', solid: '#d98b3a' };
-
-/** Prototype-theme materials, one per box kind, shared by the game view and the editor. */
-export function createMapMaterials(scene: Scene): Record<BoxKind, StandardMaterial> {
-  const grid = gridTexture(scene);
-  const make = (kind: BoxKind) => {
-    const mat = new StandardMaterial(`map_${kind}_mat`, scene);
-    mat.diffuseTexture = grid;
-    mat.diffuseColor = Color3.FromHexString(TINTS[kind]);
-    mat.specularColor = new Color3(0.05, 0.05, 0.05);
-    return mat;
-  };
-  return { floor: make('floor'), wall: make('wall'), solid: make('solid') };
+/** Faces of an axis-aligned box: corners (clockwise from outside, Babylon's front face) and outward normal. */
+function boxFaces(b: WorldBox): [number[][], [number, number, number]][] {
+  const [x0, y0, z0] = b.min;
+  const [x1, y1, z1] = b.max;
+  return [
+    [[[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], [1, 0, 0]],
+    [[[x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [x0, y0, z0]], [-1, 0, 0]],
+    [[[x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0]], [0, 1, 0]],
+    [[[x0, y0, z1], [x0, y0, z0], [x1, y0, z0], [x1, y0, z1]], [0, -1, 0]],
+    [[[x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [x0, y0, z1]], [0, 0, 1]],
+    [[[x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [x1, y0, z0]], [0, 0, -1]],
+  ];
 }
 
-/** One merged mesh per box kind: three draw calls for the whole layout. */
-export function buildMapMeshes(scene: Scene, boxes: readonly WorldBox[], materials: Record<BoxKind, StandardMaterial>, name = 'map'): Mesh[] {
-  const meshes: Mesh[] = [];
-  for (const kind of ['floor', 'wall', 'solid'] as const) {
-    const ofKind = boxes.filter((b) => b.kind === kind);
-    if (!ofKind.length) continue;
-    const mesh = new Mesh(`${name}_${kind}`, scene);
-    boxVertexData(ofKind).applyToMesh(mesh);
-    mesh.material = materials[kind];
-    mesh.isPickable = false;
-    mesh.freezeWorldMatrix();
-    meshes.push(mesh);
+class FaceBuffer {
+  positions: number[] = [];
+  normals: number[] = [];
+  uvs: number[] = [];
+  indices: number[] = [];
+
+  /** Add one face with UVs in world metres divided by the material's repeat size. */
+  add(corners: number[][], n: readonly [number, number, number], uvScale: number): void {
+    const base = this.positions.length / 3;
+    for (const c of corners) {
+      this.positions.push(c[0]!, c[1]!, c[2]!);
+      this.normals.push(n[0], n[1], n[2]);
+      // Project onto the two axes perpendicular to the normal.
+      const u = n[0] !== 0 ? c[2]! : c[0]!;
+      const v = n[1] !== 0 ? c[2]! : c[1]!;
+      this.uvs.push(u * uvScale, v * uvScale);
+    }
+    this.indices.push(base, base + 2, base + 1, base, base + 3, base + 2);
   }
-  return meshes;
+
+  toVertexData(): VertexData {
+    const vd = new VertexData();
+    vd.positions = this.positions;
+    vd.normals = this.normals;
+    vd.uvs = this.uvs;
+    vd.indices = this.indices;
+    return vd;
+  }
+}
+
+/** Plain vertex data for a set of boxes (ghost previews, outlines). */
+export function boxVertexData(boxes: readonly WorldBox[]): VertexData {
+  const buf = new FaceBuffer();
+  for (const b of boxes) for (const [corners, n] of boxFaces(b)) buf.add(corners, n, 0.5);
+  return buf.toVertexData();
 }
 
 /**
- * Grid texture (the classic "dev theme" look that makes scale readable). Built
- * from raw pixels rather than a canvas so WebGPU uploads it with a plain
- * buffer write instead of an external-image copy.
+ * Builds painted map meshes: every box face is assigned its tile's surface
+ * style (override or theme default), and faces sharing a style merge into one
+ * mesh, so draw calls scale with the number of distinct looks, not tiles.
+ * Textures and materials are cached per scene.
  */
-function gridTexture(scene: Scene): RawTexture {
-  const size = 128;
-  const data = new Uint8Array(size * size * 4);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const edge = x < 2 || y < 2 || x >= size - 1 || y >= size - 1;
-      const mid = Math.abs(x - size / 2) < 1 || Math.abs(y - size / 2) < 1;
-      const v = edge ? 205 : mid ? 236 : 255;
-      const i = (y * size + x) * 4;
-      data[i] = data[i + 1] = data[i + 2] = v;
-      data[i + 3] = 255;
-    }
-  }
-  const tex = RawTexture.CreateRGBATexture(data, size, size, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
-  tex.wrapU = Texture.WRAP_ADDRESSMODE;
-  tex.wrapV = Texture.WRAP_ADDRESSMODE;
-  tex.anisotropicFilteringLevel = 8;
-  return tex;
-}
+export class MapStyler {
+  private readonly textures = new Map<string, RawTexture>();
+  private readonly materials = new Map<string, StandardMaterial>();
+  private meshes: Mesh[] = [];
 
-/** Box faces with flat normals and UVs in world metres (1 texture repeat per 2 m). */
-export function boxVertexData(boxes: readonly WorldBox[]): VertexData {
-  const positions: number[] = [];
-  const normals: number[] = [];
-  const uvs: number[] = [];
-  const indices: number[] = [];
-  const uvScale = 0.5;
-  for (const b of boxes) {
-    const [x0, y0, z0] = b.min;
-    const [x1, y1, z1] = b.max;
-    // Each face: 4 corners and the outward normal. Babylon treats clockwise-from-outside as front-facing.
-    const faces: [number[][], number[]][] = [
-      [[[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], [1, 0, 0]],
-      [[[x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [x0, y0, z0]], [-1, 0, 0]],
-      [[[x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0]], [0, 1, 0]],
-      [[[x0, y0, z1], [x0, y0, z0], [x1, y0, z0], [x1, y0, z1]], [0, -1, 0]],
-      [[[x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [x0, y0, z1]], [0, 0, 1]],
-      [[[x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [x1, y0, z0]], [0, 0, -1]],
-    ];
-    for (const [corners, n] of faces) {
-      const base = positions.length / 3;
-      for (const c of corners) {
-        positions.push(c[0]!, c[1]!, c[2]!);
-        normals.push(n[0]!, n[1]!, n[2]!);
-        // Project onto the two axes perpendicular to the normal.
-        const u = n[0] !== 0 ? c[2]! : c[0]!;
-        const v = n[1] !== 0 ? c[2]! : c[1]!;
-        uvs.push(u * uvScale, v * uvScale);
+  constructor(private readonly scene: Scene) {}
+
+  build(doc: MapDocument, boxes: readonly WorldBox[], name = 'map'): Mesh[] {
+    for (const m of this.meshes) m.dispose();
+    const tiles = new Map<string, TilePlacement>(doc.classicStructure.tiles.map((t) => [t.id, t]));
+    const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
+    for (const b of boxes) {
+      const tile = tiles.get(b.sourceId);
+      for (const [corners, n] of boxFaces(b)) {
+        const style = resolveSurface(doc, tile, faceSlot(b, n));
+        const key = styleKey(style);
+        let g = groups.get(key);
+        if (!g) groups.set(key, (g = { style, buf: new FaceBuffer() }));
+        g.buf.add(corners, n, 1 / style.material.scale);
       }
-      indices.push(base, base + 2, base + 1, base, base + 3, base + 2);
     }
+    this.meshes = [...groups.entries()].map(([key, g]) => {
+      const mesh = new Mesh(`${name}_${key}`, this.scene);
+      g.buf.toVertexData().applyToMesh(mesh);
+      mesh.material = this.material(g.style);
+      mesh.isPickable = false;
+      mesh.freezeWorldMatrix();
+      return mesh;
+    });
+    return this.meshes;
   }
-  const vd = new VertexData();
-  vd.positions = positions;
-  vd.normals = normals;
-  vd.uvs = uvs;
-  vd.indices = indices;
-  return vd;
+
+  /** Sky colour of the map's theme. */
+  static skyColor(doc: MapDocument): Color3 {
+    return Color3.FromHexString(coreThemes.get(doc.classicStructure.theme)?.sky ?? '#85a0b8');
+  }
+
+  private texture(def: MaterialDefinition): RawTexture {
+    let tex = this.textures.get(def.id);
+    if (!tex) {
+      // Raw pixel upload (no canvas) keeps WebGPU on a plain buffer write.
+      tex = RawTexture.CreateRGBATexture(materialPixels(def), 128, 128, this.scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+      tex.wrapU = Texture.WRAP_ADDRESSMODE;
+      tex.wrapV = Texture.WRAP_ADDRESSMODE;
+      tex.anisotropicFilteringLevel = 8;
+      this.textures.set(def.id, tex);
+    }
+    return tex;
+  }
+
+  private material(style: ResolvedStyle): StandardMaterial {
+    const key = styleKey(style);
+    let mat = this.materials.get(key);
+    if (!mat) {
+      const def = style.material;
+      mat = new StandardMaterial(`mat_${key}`, this.scene);
+      mat.diffuseTexture = this.texture(def);
+      mat.diffuseColor = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
+      mat.specularColor = new Color3(def.shine * 0.6, def.shine * 0.6, def.shine * 0.6);
+      mat.specularPower = 16 + def.shine * 96;
+      if (def.emissive) {
+        mat.emissiveTexture = this.texture(def);
+        mat.emissiveColor = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
+      }
+      this.materials.set(key, mat);
+    }
+    return mat;
+  }
 }

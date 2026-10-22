@@ -130,7 +130,7 @@ export class GameSession {
         }
         this.slot = msg.slot;
         const geometry = buildMapGeometry(loaded.map);
-        this.view.buildMap(geometry);
+        this.view.buildMap(loaded.map, geometry);
         this.local = new LocalPlayer(new PhysicsWorld(geometry), getWeapon(msg.rules.startingWeapon));
         this.hud.show();
         this.updatePause();

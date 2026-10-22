@@ -2,7 +2,7 @@
 
 An original browser-first arcade FPS and community creation platform with a built-in MapMaker (grid construction through scripted co-op scenarios), full Player Bots, scenario NPCs, and a deliberately chaotic cross-era character roster. Inspired by the design lessons of classic console arena shooters; uses no proprietary assets, names, or content.
 
-**Status:** Phase 1 (vertical slice), milestone M1 done: in-browser MapMaker with instant TEST. See [`docs/PHASE1.md`](docs/PHASE1.md).
+**Status:** Phase 1 (vertical slice). M1 (MapMaker + instant TEST) and M1.5 (materials, themes, Paint tool) done. See [`docs/PHASE1.md`](docs/PHASE1.md).
 **Stack direction:** TypeScript + Babylon.js client (WebGPU, WebGL2 fallback); headless dedicated authoritative server.
 
 ## Quick start
@@ -18,7 +18,7 @@ pnpm dev:client   # open http://localhost:5173
 The menu offers **MapMaker**, **Play offline vs bots** (no server needed) and **Play online** (needs `dev:server`).
 
 - **Playing:** WASD move · Space jump · Left mouse fire · Tab scoreboard · F3 performance/bot overlay · Esc twice to leave.
-- **MapMaker:** pick a piece and click to place · R rotate · right-click erase · Select tool (V) to click/drag/Shift-select · Del delete · Ctrl+D duplicate · Ctrl+Z / Ctrl+Y undo/redo · PgUp/PgDn change floor · RMB drag look, WASD/QE fly, wheel zoom · F5 or ▶ TEST to play the map instantly with bots.
+- **MapMaker:** pick a piece and click to place · R rotate · right-click erase · Select tool (V) to click/drag/Shift-select · Del delete · Ctrl+D duplicate · Ctrl+Z / Ctrl+Y undo/redo · PgUp/PgDn change floor · RMB drag look, WASD/QE fly, wheel zoom · B Paint tool: pick a material + tint, click surfaces (scope: surface / piece type / level / map), Alt-click picks a style · F5 or ▶ TEST to play the map instantly with bots.
 
 `pnpm test` · `pnpm typecheck` · `pnpm validate-map maps/phase0_arena.json` · `pnpm bench 32 60` · `pnpm build && pnpm e2e` (browser tests)
 

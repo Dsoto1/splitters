@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * ChronoSplit map document, format version 1.
+ * ChronoSplit map document, format version 2 (v2 added per-surface tile styles).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -10,7 +10,7 @@ import { z } from 'zod';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 1;
+export const MAP_FORMAT_VERSION = 2;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -34,6 +34,24 @@ export const MapMetadata = z.object({
   supportedModes: z.array(ContentId).default(['core.deathmatch']),
 });
 
+/** A material from the library plus an optional tint, applied to one surface slot. */
+export const SurfaceStyle = z.object({
+  material: ContentId,
+  tint: z
+    .string()
+    .regex(/^#[0-9a-f]{6}$/, 'tints are lowercase #rrggbb')
+    .nullable()
+    .default(null),
+});
+
+/** Per-slot overrides of the map theme. Absent slots use the theme default. */
+export const TileSurfaces = z.object({
+  floor: SurfaceStyle.optional(),
+  walls: SurfaceStyle.optional(),
+  solids: SurfaceStyle.optional(),
+  underside: SurfaceStyle.optional(),
+});
+
 export const Rotation = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]);
 
 /**
@@ -48,6 +66,7 @@ export const TilePlacement = z.object({
   y: z.number().int().min(-256).max(256),
   z: z.number().int().min(-16).max(16),
   rotation: Rotation.default(0),
+  surfaces: TileSurfaces.optional(),
 });
 
 export const ClassicStructure = z.object({
@@ -89,3 +108,5 @@ export type MapEntity = z.infer<typeof MapEntity>;
 export type SpawnEntity = z.infer<typeof SpawnEntity>;
 export type TilePlacement = z.infer<typeof TilePlacement>;
 export type Rotation = z.infer<typeof Rotation>;
+export type SurfaceStyle = z.infer<typeof SurfaceStyle>;
+export type TileSurfaces = z.infer<typeof TileSurfaces>;

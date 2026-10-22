@@ -14,12 +14,25 @@ import {
   newId,
   newMapDocument,
   normalizeYaw,
+  paintCommand,
+  resolveSurface,
+  faceSlot,
   rotateCommand,
+  setThemeCommand,
+  coreMaterials,
+  coreThemes,
+  SURFACE_SLOTS,
+  SURFACE_SLOT_LABELS,
+  TINT_SWATCHES,
   tileAt,
   updateTileCommand,
   validateMap,
   type EditCommand,
   type MapDocument,
+  type PaintScope,
+  type SurfaceSlot,
+  type SurfaceStyle,
+  type WorldBox,
   type Rotation,
   type Selection,
   type TileDefinition,
@@ -30,6 +43,8 @@ import arenaTemplate from '../../../../maps/phase0_arena.json';
 import { EditorView } from './editorView.ts';
 import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibrary, readAutosave, saveToLibrary, writeAutosave } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
+import { raycastBoxes, type BoxHit } from './raycast.ts';
+import { materialThumbnail } from '../materials/patterns.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -44,7 +59,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' };
+type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'paint' };
 
 interface DragState {
   startCell: [number, number];
@@ -92,6 +107,11 @@ export class EditorApp {
   private navToken = 0;
   private toastTimer?: number;
   private active = false;
+  /** Boxes currently shown (respecting floor isolation), for surface picking. */
+  private visibleBoxes: WorldBox[] = [];
+  private hoverFace: BoxHit | null = null;
+  private paintStyle: SurfaceStyle = { material: 'core.red_brick', tint: null };
+  private paintScope: PaintScope = 'surface';
 
   constructor(private readonly host: EditorHost) {
     this.view = new EditorView(host.engine);
@@ -145,7 +165,7 @@ export class EditorApp {
     const docChanged = force || rev !== this.renderedRevision;
     const viewChanged = this.level !== this.renderedLevel || this.showAll !== this.renderedShowAll;
     if (docChanged || viewChanged) {
-      this.view.setMap(this.doc, this.level, this.showAll);
+      this.visibleBoxes = this.view.setMap(this.doc, this.level, this.showAll);
       this.renderedLevel = this.level;
       this.renderedShowAll = this.showAll;
       this.updateSelectionVisuals();
@@ -162,6 +182,7 @@ export class EditorApp {
       this.validate();
       this.renderInspector();
       this.updateTopBar();
+      this.updateHover();
       if (!force) this.scheduleAutosave();
     }
   }
@@ -194,6 +215,7 @@ export class EditorApp {
 
   private setTool(tool: Tool): void {
     this.tool = tool;
+    if (tool.kind !== 'paint') this.hoverFace = null;
     for (const b of document.querySelectorAll<HTMLElement>('[data-tool]')) {
       const t = b.dataset.tool;
       b.classList.toggle('active', (tool.kind === 'tile' && t === `tile:${tool.tile}`) || t === tool.kind);
@@ -202,6 +224,7 @@ export class EditorApp {
       select: 'Click select · Shift add · Drag move · Del delete · Ctrl+D duplicate · R rotate · F focus',
       tile: 'Click place · R rotate · Right-click erase · PgUp/PgDn level · Esc select tool',
       spawn: 'Click place spawn · R turn 45° · Right-click erase · Esc select tool',
+      paint: 'Click a surface to paint · Right-click resets to theme · Alt-click or I picks a style',
     };
     $('ed-hint').textContent = `${hints[tool.kind]} · RMB look · WASD/QE fly`;
     this.updateHover();
@@ -243,6 +266,32 @@ export class EditorApp {
     if (!hit) return;
     const sel = hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : { tiles: [], entities: [hit.id] };
     this.run(hit.kind === 'tile' ? 'Erase tile' : 'Erase spawn', deleteCommand(this.doc, sel));
+  }
+
+  /** Tile and surface slot under the cursor in paint mode. */
+  private paintTarget(): { tile: MapDocument['classicStructure']['tiles'][number]; slot: SurfaceSlot } | null {
+    const hit = this.hoverFace;
+    if (!hit) return null;
+    const tile = this.doc.classicStructure.tiles.find((t) => t.id === hit.box.sourceId);
+    return tile ? { tile, slot: faceSlot(hit.box, hit.normal) } : null;
+  }
+
+  private paintAtHover(clear: boolean): void {
+    const target = this.paintTarget();
+    if (!target) return;
+    const scopeLabel: Record<PaintScope, string> = { surface: '', sameType: ' (all of this piece)', level: ' (whole level)', all: ' (whole map)' };
+    const label = `${clear ? 'Reset' : 'Paint'} ${SURFACE_SLOT_LABELS[target.slot].toLowerCase()}${scopeLabel[this.paintScope]}`;
+    this.run(label, paintCommand(this.doc, target.tile.id, target.slot, clear ? null : this.paintStyle, this.paintScope));
+  }
+
+  /** Eyedropper: copy the hovered surface's effective style into the brush. */
+  private pickStyleAtHover(): void {
+    const target = this.paintTarget();
+    if (!target) return;
+    const s = resolveSurface(this.doc, target.tile, target.slot);
+    this.paintStyle = { material: s.material.id, tint: s.tint };
+    this.syncPaintUi();
+    this.toast(`Picked ${s.material.displayName}${s.tint ? ` tinted ${s.tint}` : ''}`);
   }
 
   /** What is under the cursor at the active level: spawns win over tiles. */
@@ -332,12 +381,21 @@ export class EditorApp {
     const { cellSize, levelHeight } = this.doc.classicStructure;
     this.hoverPoint = this.view.pickPlane(clientX, clientY, this.level * levelHeight);
     this.hoverCell = this.hoverPoint ? [Math.round(this.hoverPoint.x / cellSize), Math.round(this.hoverPoint.z / cellSize), this.level] : null;
+    if (this.tool.kind === 'paint') {
+      const ray = this.view.pointerRay(clientX, clientY);
+      this.hoverFace = ray ? raycastBoxes(ray.origin, ray.dir, this.visibleBoxes) : null;
+    } else this.hoverFace = null;
     this.updateHover();
   }
 
   private updateHover(): void {
+    this.view.setFaceHighlight(this.hoverFace?.box ?? null, this.hoverFace?.normal ?? null);
+    if (this.tool.kind === 'paint') {
+      const target = this.paintTarget();
+      $('ed-target').textContent = target ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}` : '';
+    } else $('ed-target').textContent = '';
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
-    this.view.setHoverCell(this.doc, this.tool.kind === 'select' ? null : cell);
+    this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
       const ok = checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok;
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);
@@ -404,6 +462,7 @@ export class EditorApp {
         return;
       }
       if (e.button !== 0) return;
+      if (this.tool.kind === 'paint') return e.altKey ? this.pickStyleAtHover() : this.paintAtHover(false);
       if (this.tool.kind !== 'select') return this.placeAtHover();
       const hit = this.pick();
       if (!hit) {
@@ -427,7 +486,10 @@ export class EditorApp {
       if (this.looking && (e.button === 2 || e.button === 1)) {
         const wasClick = !this.looking.moved && e.button === 2;
         this.looking = null;
-        if (wasClick && this.tool.kind !== 'select') {
+        if (wasClick && this.tool.kind === 'paint') {
+          this.updatePointer(e.clientX, e.clientY);
+          this.paintAtHover(true);
+        } else if (wasClick && this.tool.kind !== 'select') {
           this.updatePointer(e.clientX, e.clientY);
           this.eraseAtHover();
         }
@@ -481,6 +543,12 @@ export class EditorApp {
         case 'KeyF':
           this.focusSelection();
           break;
+        case 'KeyB':
+          this.setTool({ kind: 'paint' });
+          break;
+        case 'KeyI':
+          if (this.tool.kind === 'paint') this.pickStyleAtHover();
+          break;
         case 'KeyV':
         case 'Escape':
           if (this.tool.kind === 'select') this.setSelection(emptySelection());
@@ -529,7 +597,10 @@ export class EditorApp {
     const tools = $('ed-tools');
     const selectBtn = button('Select (V)', () => this.setTool({ kind: 'select' }));
     selectBtn.dataset.tool = 'select';
-    tools.append(selectBtn);
+    const paintBtn = button('Paint (B)', () => this.setTool({ kind: 'paint' }));
+    paintBtn.dataset.tool = 'paint';
+    tools.append(selectBtn, paintBtn);
+    this.buildPaintPalette();
 
     const tiles = $('ed-tiles');
     for (const def of coreCatalog.all()) tiles.append(this.paletteButton(def));
@@ -543,9 +614,74 @@ export class EditorApp {
 
     $<HTMLInputElement>('ed-search').addEventListener('input', (e) => {
       const q = (e.target as HTMLInputElement).value.trim().toLowerCase();
-      for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn')) b.hidden = !!q && !(b.dataset.search ?? '').includes(q);
+      for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn, #ed-palette .mat-btn')) b.hidden = !!q && !(b.dataset.search ?? '').includes(q);
     });
     this.setTool({ kind: 'select' });
+  }
+
+  private buildPaintPalette(): void {
+    const mats = $('ed-materials');
+    let category = '';
+    for (const def of coreMaterials.all()) {
+      if (def.category !== category) {
+        category = def.category;
+        const h = document.createElement('div');
+        h.className = 'mat-cat';
+        h.textContent = category;
+        mats.append(h);
+      }
+      const b = document.createElement('button');
+      b.className = 'mat-btn';
+      b.dataset.material = def.id;
+      b.dataset.search = `${def.displayName} ${def.category} ${def.id}`.toLowerCase();
+      b.title = def.displayName;
+      b.innerHTML = `<img alt="" src="${materialThumbnail(def)}"><span>${def.displayName}</span>`;
+      b.addEventListener('click', () => {
+        this.paintStyle = { ...this.paintStyle, material: def.id };
+        this.setTool({ kind: 'paint' });
+        this.syncPaintUi();
+      });
+      mats.append(b);
+    }
+    const tints = $('ed-tints');
+    const none = document.createElement('button');
+    none.className = 'swatch none';
+    none.title = 'No tint';
+    none.dataset.tint = '';
+    tints.append(none);
+    for (const t of TINT_SWATCHES) {
+      const b = document.createElement('button');
+      b.className = 'swatch';
+      b.style.background = t;
+      b.title = t;
+      b.dataset.tint = t;
+      tints.append(b);
+    }
+    tints.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement).dataset.tint;
+      if (t === undefined) return;
+      this.paintStyle = { ...this.paintStyle, tint: t || null };
+      this.setTool({ kind: 'paint' });
+      this.syncPaintUi();
+    });
+    $<HTMLInputElement>('ed-tint-custom').addEventListener('input', (e) => {
+      this.paintStyle = { ...this.paintStyle, tint: (e.target as HTMLInputElement).value.toLowerCase() };
+      this.setTool({ kind: 'paint' });
+      this.syncPaintUi();
+    });
+    $<HTMLSelectElement>('ed-scope').addEventListener('change', (e) => (this.paintScope = (e.target as HTMLSelectElement).value as PaintScope));
+    this.syncPaintUi();
+  }
+
+  /** Reflect the current brush in the palette. */
+  private syncPaintUi(): void {
+    for (const b of document.querySelectorAll<HTMLElement>('.mat-btn')) b.classList.toggle('active', b.dataset.material === this.paintStyle.material);
+    for (const b of document.querySelectorAll<HTMLElement>('#ed-tints .swatch')) b.classList.toggle('active', (b.dataset.tint || null) === (this.paintStyle.tint ?? null));
+    const def = coreMaterials.get(this.paintStyle.material);
+    const brush = $<HTMLImageElement>('ed-brush');
+    if (def) brush.src = materialThumbnail(def, this.paintStyle.tint ?? null, 40);
+    $('ed-brush-label').textContent = `${def?.displayName ?? this.paintStyle.material}${this.paintStyle.tint ? ` · ${this.paintStyle.tint}` : ''}`;
+    if (this.paintStyle.tint) $<HTMLInputElement>('ed-tint-custom').value = this.paintStyle.tint;
   }
 
   private paletteButton(def: TileDefinition): HTMLButtonElement {
@@ -633,6 +769,10 @@ export class EditorApp {
       const setPlayers = (min: number, max: number) =>
         this.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(32, min)), max: Math.max(1, Math.min(32, max)) } } });
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
+      const theme = document.createElement('select');
+      for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
+      theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
+      el.append(row('Theme', theme), small('The theme is the default look; painted surfaces keep their own style.'));
       return;
     }
     if (tiles.length === 1 && entities.length === 0) {
@@ -648,8 +788,12 @@ export class EditorApp {
         row('Y', numberInput(t.y, 1, (v) => set({ y: v }))),
         row('Level', numberInput(t.z, 1, (v) => set({ z: v }))),
         row('Rotation', text(`${t.rotation * 90}°`)),
-        small(`ID ${t.id}`),
       );
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Surfaces';
+      el.append(h3);
+      for (const slot of SURFACE_SLOTS) el.append(this.surfaceRow(t, slot));
+      el.append(small(`ID ${t.id}`));
     } else if (entities.length === 1 && tiles.length === 0) {
       const e = doc.entities.find((x) => x.id === entities[0])!;
       el.append(h2('Player Spawn'));
@@ -676,6 +820,26 @@ export class EditorApp {
     buttons.className = 'buttons';
     buttons.append(button('Rotate (R)', () => this.run('Rotate', rotateCommand(this.doc, this.selection))), button('Duplicate', () => this.duplicate()), button('Delete', () => this.deleteSelection()), button('Focus (F)', () => this.focusSelection()));
     el.append(buttons);
+  }
+
+  /** One surface slot in the tile inspector: material (or theme default) and tint. */
+  private surfaceRow(t: MapDocument['classicStructure']['tiles'][number], slot: SurfaceSlot): HTMLElement {
+    const current = t.surfaces?.[slot];
+    const mat = document.createElement('select');
+    mat.append(new Option(`Theme (${resolveSurface({ ...this.doc }, undefined, slot).material.displayName})`, '', false, !current));
+    for (const def of coreMaterials.all()) mat.append(new Option(def.displayName, def.id, false, current?.material === def.id));
+    const tint = document.createElement('input');
+    tint.type = 'color';
+    tint.value = current?.tint ?? '#ffffff';
+    tint.disabled = !current;
+    tint.title = 'Tint';
+    const apply = (style: SurfaceStyle | null) => this.run(`Paint ${SURFACE_SLOT_LABELS[slot].toLowerCase()}`, paintCommand(this.doc, t.id, slot, style));
+    mat.addEventListener('change', () => apply(mat.value ? { material: mat.value, tint: current?.tint ?? null } : null));
+    tint.addEventListener('change', () => current && apply({ material: current.material, tint: tint.value.toLowerCase() }));
+    const wrap = document.createElement('div');
+    wrap.className = 'surface-row';
+    wrap.append(text(SURFACE_SLOT_LABELS[slot]), mat, tint);
+    return wrap;
   }
 
   // ---------------------------------------------------------------- validation

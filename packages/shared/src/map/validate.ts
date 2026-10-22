@@ -1,4 +1,5 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
+import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { buildOccupancy, cellKey } from './geometry.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument } from './schema.ts';
@@ -66,6 +67,17 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   }
   for (const o of overlaps) {
     issues.push({ severity: 'error', code: 'tile.overlap', message: `tiles ${o.ids[0]} and ${o.ids[1]} overlap at cell ${o.key}`, targetId: o.ids[1] });
+  }
+  if (!coreThemes.get(map.classicStructure.theme)) {
+    issues.push({ severity: 'error', code: 'theme.unknown', message: `unknown theme "${map.classicStructure.theme}"` });
+  }
+  for (const t of map.classicStructure.tiles) {
+    for (const slot of SURFACE_SLOTS) {
+      const style = t.surfaces?.[slot];
+      if (style && !coreMaterials.get(style.material)) {
+        issues.push({ severity: 'error', code: 'material.unknown', message: `tile ${t.id} uses unknown material "${style.material}"`, targetId: t.id });
+      }
+    }
   }
   if (map.classicStructure.tiles.length === 0) {
     issues.push({ severity: 'error', code: 'tile.none', message: 'map has no structural tiles' });

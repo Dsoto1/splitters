@@ -11,8 +11,8 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import { PLAYER, type Vec3, type WorldBox } from '@chronosplit/shared';
-import { buildMapMeshes, createMapMaterials } from '../mapMeshes.ts';
+import { PLAYER, type MapDocument, type Vec3, type WorldBox } from '@chronosplit/shared';
+import { MapStyler } from '../mapMeshes.ts';
 import type { RemotePose } from './interpolation.ts';
 
 const SLOT_COLORS = ['#e6544a', '#4aa3e6', '#f2c14e', '#5cc77a', '#b276e0', '#f28f3b', '#46c9c0', '#e872b0'];
@@ -53,8 +53,10 @@ export class GameView {
     gun.renderingGroupId = 1;
   }
 
-  buildMap(boxes: readonly WorldBox[]): void {
-    buildMapMeshes(this.scene, boxes, createMapMaterials(this.scene));
+  buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
+    new MapStyler(this.scene).build(doc, boxes);
+    const sky = MapStyler.skyColor(doc);
+    this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
   }
 
   setCamera(eye: Vec3, yaw: number, pitch: number): void {

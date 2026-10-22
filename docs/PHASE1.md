@@ -35,7 +35,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 | # | Milestone | Status |
 |---|---|---|
 | M1 | MapMaker core loop: Classic Grid building, spawns, undo/redo, levels, validation, save/load, in-browser TEST, offline play | **Done** |
-| M1.5 | Map look: material library (~20), per-surface material + tint, Paint tool in MapMaker, map format v2 migration ([`PLAYER_EXPRESSION.md`](PLAYER_EXPRESSION.md) §1) | |
+| M1.5 | Map look: material library (~20), per-surface material + tint, Paint tool in MapMaker, map format v2 migration ([`PLAYER_EXPRESSION.md`](PLAYER_EXPRESSION.md) §1) | **Done** |
 | M2 | Weapons and items: 6 weapon roles (pistol, automatic, shotgun, precision, explosive, melee), weapon/health/armor pickups, 2 powerups, bot weapon choice and pickup seeking, lag compensation | |
 | M3 | Scenario primitives: doors, buttons, destructibles, trigger volumes, WHEN → IF → DO logic (data-only interpreter), objectives, LOGIC/ENTITIES workspaces | |
 | M4 | NPCs: factions model, one enemy faction, one NPC squad archetype, encounter spawners, the co-op scenario | |
@@ -60,6 +60,16 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 **Shell:** a main menu with MapMaker, offline play vs bots (same local transport), and online play. One Babylon engine is shared across modes.
 
 **Tests:** 41 unit/integration tests, plus `pnpm e2e` (Playwright). The e2e suite builds a map with mouse input, drag-moves, undoes and redoes, runs TEST and returns, saves, reloads, reopens from the library, and runs two online clients against the dedicated server.
+
+## M1.5 — what exists
+
+- **Material library:** 25 hand-made materials in 9 categories (prototype, stone, brick, wood, metal, tile, fabric, tech, paint). Each is a pattern drawn by our own code (bricks, blocks, planks, tiles, checker, plates, grate, panels, stripes, hex, marble, weave, noise, grid, plain) with colours, repeat scale, gloss and optional glow. No external or generated images. The same pixels feed GPU textures and palette thumbnails.
+- **Themes as default palettes:** Prototype, Desert Tomb, Factory, Research Lab, Gothic Manor (map inspector). Each sets the default material/tint per slot and the sky colour. Painted surfaces keep their own style when the theme changes.
+- **Paint tool (B):** four slots per tile (floor, walls, pillars/cover/steps, underside = the ceiling seen from below). Pick a material and tint (30 swatches, or any colour), then click a surface. "Apply to" sets the scope: this surface, same piece type, whole level, or whole map. Each stroke is one undo step. Right-click resets to the theme, and Alt-click or I picks a style. The hovered surface is highlighted and named in the footer.
+- **Tile inspector:** material and tint per slot, with "Theme" to clear an override.
+- **Rendering:** faces sharing a material and tint merge into one mesh, so draw calls scale with distinct looks, not tile count. The same styler draws the editor, TEST and online matches.
+- **Map format v2:** `tiles[].surfaces` per-slot overrides. v1 files (and old autosaves) migrate automatically; a v1 fixture is tested. Validation rejects unknown materials/themes and malformed tints.
+- **Tests:** paint scopes, no-op repaints, clearing, theme changes and full undo in unit tests. e2e paints a wall, paints every floor in one stroke, undoes it, and checks the painted map survives reload.
 
 ## Known M1 gaps
 

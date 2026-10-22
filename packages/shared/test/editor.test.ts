@@ -155,3 +155,36 @@ describe('fine-grained edits', () => {
     expect(moved.entities.find((e) => e.id === 'sp_hub')!.position).toEqual([11, 0, 7.5]);
   });
 });
+
+describe('painting', () => {
+  it('paints one surface, a whole tile type, a level, or everything — each as one undo step', async () => {
+    const { paintCommand, setThemeCommand } = await import('../src/index.ts');
+    const doc = loadArena();
+    const h = new EditHistory(doc);
+    const brick = { material: 'core.red_brick', tint: null };
+
+    h.execute('Paint', paintCommand(h.doc, 't_hub', 'walls', brick));
+    expect(h.doc.classicStructure.tiles.filter((t) => t.surfaces?.walls)).toHaveLength(1);
+
+    h.execute('Paint', paintCommand(h.doc, 't_room_sw', 'floor', { material: 'core.checker', tint: '#ff6b6b' }, 'sameType'));
+    const rooms = h.doc.classicStructure.tiles.filter((t) => t.tile === 'core.room');
+    expect(rooms.every((t) => t.surfaces?.floor?.material === 'core.checker')).toBe(true);
+
+    h.execute('Paint', paintCommand(h.doc, 't_upper_n', 'floor', { material: 'core.grate', tint: null }, 'level'));
+    expect(h.doc.classicStructure.tiles.filter((t) => t.surfaces?.floor?.material === 'core.grate').map((t) => t.z)).toEqual([1, 1]);
+
+    // Repainting with the same style records nothing.
+    const rev = h.revision;
+    h.execute('Paint', paintCommand(h.doc, 't_hub', 'walls', brick));
+    expect(h.revision).toBe(rev);
+
+    // Clearing restores the theme default and drops empty surface objects.
+    h.execute('Clear', paintCommand(h.doc, 't_hub', 'walls', null));
+    expect(h.doc.classicStructure.tiles.find((t) => t.id === 't_hub')!.surfaces).toBeUndefined();
+
+    h.execute('Theme', setThemeCommand(h.doc, 'core.factory'));
+    expect(h.doc.classicStructure.theme).toBe('core.factory');
+    while (h.canUndo) h.undo();
+    expect(h.doc).toEqual(doc);
+  });
+});

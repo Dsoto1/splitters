@@ -71,6 +71,21 @@
         <div id="ed-tiles" class="tiles"></div>
         <h3>Gameplay</h3>
         <div id="ed-entities" class="tiles"></div>
+        <h3>Paint</h3>
+        <div id="ed-brush-row"><img id="ed-brush" alt="" /><span id="ed-brush-label"></span></div>
+        <label class="stack">Apply to
+          <select id="ed-scope">
+            <option value="surface">This surface</option>
+            <option value="sameType">Same piece type</option>
+            <option value="level">Whole level</option>
+            <option value="all">Whole map</option>
+          </select>
+        </label>
+        <div class="sub-h">Tint</div>
+        <div id="ed-tints"></div>
+        <label class="stack inline-row">Custom tint <input id="ed-tint-custom" type="color" value="#ffffff" /></label>
+        <div class="sub-h">Materials</div>
+        <div id="ed-materials"></div>
       </aside>
       <aside id="ed-right">
         <section id="ed-inspector"></section>
@@ -83,6 +98,7 @@
         <span class="group">Level <button id="ed-level-down" title="Page Down">−</button><b id="ed-level">0</b><button id="ed-level-up" title="Page Up">+</button></span>
         <label class="inline"><input type="checkbox" id="ed-showall" /> Show all levels</label>
         <span id="ed-counts"></span>
+        <span id="ed-target"></span>
         <span id="ed-hint"></span>
       </footer>
       <div id="ed-toast"></div>
