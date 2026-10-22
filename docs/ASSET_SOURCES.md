@@ -69,6 +69,7 @@ Fit note: our Classic Grid uses 8 m cells and 4 m floors. Third-party modular ki
 | [Freesound](https://app.cinevva.com/guides/free-sound-effects-music) | Per sound: CC0 / CC-BY / CC-BY-NC | Filter to **CC0 (or CC-BY with credit)**; never NC |
 | [Sonniss GDC Game Audio Bundle](https://gamefromscratch.com/soniss-release-16gb-of-sound-fx-for-free/) | Custom royalty-free (tier 3) | Hundreds of GB of professional SFX across yearly bundles; commercial use, no attribution. Its own licence, not CC, so keep the licence PDF with the files |
 | OpenGameArt | Per file | Filter to CC0/CC-BY |
+| Artlist SFX catalog | Artlist subscription licence | Human-recorded and good quality, but **not usable for shipped builds on a standard plan**. Artlist's [Enterprise plan page](https://help.artlist.io/hc/en-us/articles/33980035053213-Enterprise-plan-explained) says stock assets in games need an Enterprise plan. The standard licence lists games only for "background" use and bars standalone distribution, and a web game ships every sound as its own file. Use only with written confirmation from Artlist or an Enterprise agreement. Keep files out of the repo until then |
 
 ### Music
 
