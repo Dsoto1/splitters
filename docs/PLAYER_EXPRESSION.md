@@ -22,7 +22,7 @@ The shape of a map comes from tiles; its **look** is chosen surface by surface.
 - **Themes are starting palettes, not cages.** A tile can use any material from any theme, so an Egyptian floor under space-station walls is the player's call.
 - **Material library (hand-made):** stone, brick, plaster, concrete, wood, metal plate, rust, tile, marble, carpet, fabric, sci-fi panels, grates, glass, emissive strips, and so on. Each has pattern scale and tint parameters, so every material is many looks.
 - **Props** come with material/colour variants. **Lights** have colour and intensity. **Atmosphere** covers sky, fog, time of day and ambience.
-- **Signage** comes from our decal library. Player-typed text is filtered (moderation baseline).
+- **Signage** comes from our preset decal library at fixed spots on pieces. No free placement or drawing; player-typed text is filtered (moderation baseline).
 
 ## 2. Terrain (Phase 2)
 
@@ -61,11 +61,18 @@ Rules that keep it working:
 
 ## 5. "Within reason": look-alikes
 
-Players will build their own versions of characters they love from our generic pieces (a cowboy hat, a lab coat, a space helmet, a bandana). That is the point of a sandbox, and it needs nothing from the original game. To keep it on the right side of the line:
+Players will build their own versions of characters they love from our generic pieces: a cape, a leotard and a colour picker make a Superman look-alike in five minutes. That's expected, and it needs nothing from any original game. The tool is defensible because **we supply generic parts, not anyone's marks**.
 
-- We ship **generic** costume pieces. We don't ship parts that copy a specific franchise character's distinctive design, logo or signature outfit as a set (CHARACTERS_BOTS_V2 §2).
-- **No official presets** named after or deliberately imitating other franchises' characters.
-- Player looks and names fall under the community content policy (`OPEN_QUESTIONS.md`): filtered names, reports, and takedown if a rights holder complains.
+Precedent: in 2004 Marvel sued NCsoft over City of Heroes because players built Marvel look-alikes in its character creator. The case settled in 2005, and the game kept its creator. The lesson: a generic creation tool is defensible as long as the company doesn't ship the infringing elements and acts on complaints. (Not legal advice; have counsel review before launch.)
+
+Rules:
+
+- **Only in-house options, no free drawing or custom placement.** Every part, emblem, pattern and decal is a preset from our library, placed at fixed attach points. Players choose among options and colours; they never draw or position artwork. This keeps the toy box large while keeping every element ours.
+- **Generic marks only.** Emblems are generic shapes (stars, bolts, circles, wings, plain letters in plain fonts), not franchise symbols. No "S" shield, bat, spider or similar, and no letter-in-a-diamond combinations that reproduce one.
+- **Generic costume pieces.** Capes, leotards, trench coats, lab coats and helmets are fine. We don't ship parts that copy a specific franchise character's distinctive design or signature outfit as a set (CHARACTERS_BOTS_V2 §2).
+- **No official presets, trailers, store art or marketing** that name or imitate other franchises' characters.
+- **Name filter** blocks major franchise character names for player names, character names and map titles. A look-alike is fine; calling it "Superman" invites a trademark complaint.
+- **Takedown ready.** Shared looks and maps fall under the community content policy (`OPEN_QUESTIONS.md`): reports, and removal when a rights holder complains.
 
 ## 6. Data and code implications
 
