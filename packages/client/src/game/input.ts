@@ -1,4 +1,4 @@
-import { BUTTON_FIRE, BUTTON_JUMP } from '@chronosplit/shared';
+import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_ZOOM } from '@chronosplit/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const PITCH_LIMIT = 1.5;
@@ -7,40 +7,65 @@ const PITCH_LIMIT = 1.5;
 export class InputState {
   yaw = 0;
   pitch = 0;
+  /** Zoomed aim lowers mouse sensitivity by this factor (set by the session). */
+  sensitivityScale = 1;
   private keys = new Set<string>();
-  private mouseDown = false;
+  private fireDown = false;
+  private zoomDown = false;
   private jumpQueued = false;
+  private reloadQueued = false;
+  /** Weapon slot requested with number keys (0 = none pending). */
+  private slotRequest = 0;
+  /** Mouse wheel steps since last read (+ = next weapon). */
+  private wheelSteps = 0;
   readonly onToggle = new Map<string, () => void>();
   private readonly abort = new AbortController();
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     const opts = { signal: this.abort.signal };
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'Tab' || e.code === 'F3' || e.code === 'F5') e.preventDefault();
-      if (!e.repeat) this.onToggle.get(e.code)?.();
-      this.keys.add(e.code);
-      if (e.code === 'Space') this.jumpQueued = true;
-    }, opts);
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.code === 'Tab' || e.code === 'F3' || e.code === 'F5') e.preventDefault();
+        if (!e.repeat) this.onToggle.get(e.code)?.();
+        this.keys.add(e.code);
+        if (e.code === 'Space') this.jumpQueued = true;
+        if (e.code === 'KeyR') this.reloadQueued = true;
+        const digit = /^Digit([1-9])$/.exec(e.code);
+        if (digit) this.slotRequest = Number(digit[1]);
+      },
+      opts,
+    );
     window.addEventListener('keyup', (e) => this.keys.delete(e.code), opts);
     window.addEventListener(
       'blur',
       () => {
         this.keys.clear();
-        this.mouseDown = false;
+        this.fireDown = this.zoomDown = false;
       },
       opts,
     );
     canvas.addEventListener(
       'mousedown',
       (e) => {
-        if (e.button === 0) this.mouseDown = true;
+        if (e.button === 0) this.fireDown = true;
+        if (e.button === 2) this.zoomDown = true;
       },
       opts,
     );
     window.addEventListener(
       'mouseup',
       (e) => {
-        if (e.button === 0) this.mouseDown = false;
+        if (e.button === 0) this.fireDown = false;
+        if (e.button === 2) this.zoomDown = false;
+      },
+      opts,
+    );
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault(), opts);
+    window.addEventListener(
+      'wheel',
+      (e) => {
+        if (this.locked) this.wheelSteps += Math.sign(e.deltaY);
       },
       opts,
     );
@@ -48,8 +73,9 @@ export class InputState {
       'mousemove',
       (e) => {
         if (!this.locked) return;
-        this.yaw += e.movementX * MOUSE_SENSITIVITY;
-        this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - e.movementY * MOUSE_SENSITIVITY));
+        const s = MOUSE_SENSITIVITY * this.sensitivityScale;
+        this.yaw += e.movementX * s;
+        this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - e.movementY * s));
       },
       opts,
     );
@@ -63,8 +89,26 @@ export class InputState {
     return document.pointerLockElement === this.canvas;
   }
 
+  get zooming(): boolean {
+    return this.locked && this.zoomDown;
+  }
+
   held(code: string): boolean {
     return this.keys.has(code);
+  }
+
+  /** Consume a pending number-key weapon request. */
+  takeSlotRequest(): number {
+    const s = this.slotRequest;
+    this.slotRequest = 0;
+    return s;
+  }
+
+  /** Consume accumulated wheel steps. */
+  takeWheel(): number {
+    const w = this.wheelSteps;
+    this.wheelSteps = 0;
+    return w;
   }
 
   /** Sample movement axes and buttons for one simulation tick. */
@@ -73,8 +117,11 @@ export class InputState {
     const axis = (pos: string, neg: string) => (this.keys.has(pos) ? 1 : 0) - (this.keys.has(neg) ? 1 : 0);
     let buttons = 0;
     if (this.jumpQueued || this.keys.has('Space')) buttons |= BUTTON_JUMP;
-    if (this.mouseDown) buttons |= BUTTON_FIRE;
+    if (this.fireDown) buttons |= BUTTON_FIRE;
+    if (this.reloadQueued) buttons |= BUTTON_RELOAD;
+    if (this.zoomDown) buttons |= BUTTON_ZOOM;
     this.jumpQueued = false;
+    this.reloadQueued = false;
     return { forward: axis('KeyW', 'KeyS'), right: axis('KeyD', 'KeyA'), buttons };
   }
 }

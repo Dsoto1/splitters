@@ -2,8 +2,10 @@ import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   PhysicsWorld,
   TICK_DT,
+  TICK_RATE,
+  WEAPONS_BY_SLOT,
   buildMapGeometry,
-  getWeapon,
+  getItem,
   loadMap,
   type MatchPhase,
   type PlayerInput,
@@ -17,7 +19,7 @@ import { InputState } from './input.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import type { Transport } from './transport.ts';
-import { GameView, slotColor } from './view.ts';
+import { DEFAULT_FOV, GameView, slotColor } from './view.ts';
 
 export interface SessionOptions {
   engine: AbstractEngine;
@@ -59,6 +61,11 @@ export class GameSession {
   private outbox: PlayerInput[] = [];
   private showStats: boolean;
   private closed = false;
+  /** Pickups currently taken (hidden until they respawn). */
+  private taken = new Set<string>();
+  /** Weapon slot the player asked for (0 = no request). */
+  private wantWeapon = 0;
+  private lastWeapon = 0;
 
   // Frame timing / instrumentation.
   private acc = 0;
@@ -78,6 +85,9 @@ export class GameSession {
     this.showStats = opts.showStats;
     this.input.onToggle.set('F3', () => (this.showStats = !this.showStats));
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
+    this.input.onToggle.set('KeyQ', () => {
+      if (this.lastWeapon && this.local?.inventory.has(this.lastWeapon)) this.requestWeapon(this.lastWeapon);
+    });
     this.hud.reset();
 
     const signal = this.abort.signal;
@@ -131,7 +141,7 @@ export class GameSession {
         this.slot = msg.slot;
         const geometry = buildMapGeometry(loaded.map);
         this.view.buildMap(loaded.map, geometry);
-        this.local = new LocalPlayer(new PhysicsWorld(geometry), getWeapon(msg.rules.startingWeapon));
+        this.local = new LocalPlayer(new PhysicsWorld(geometry));
         this.hud.show();
         this.updatePause();
         (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local };
@@ -148,25 +158,34 @@ export class GameSession {
         this.phase = msg.phase;
         this.timeLeft = msg.timeLeft;
         this.scores = msg.score;
-        this.interp.push(msg.tick, msg.players);
+        this.interp.push(msg.tick, msg.players, msg.pr);
+        this.taken = new Set(msg.pk);
         const me = msg.players.find((p) => p.s === this.slot);
         if (me && this.local) {
           if (me.alive && !this.local.alive) {
             this.input.yaw = me.yaw;
             this.input.pitch = 0;
+            this.wantWeapon = 0;
           }
-          this.local.reconcile(me, msg.ack);
+          this.local.reconcile(me, msg.ack, msg.me);
         }
         this.botStates = msg.players.filter((p) => p.st).map((p) => `  ${this.hud.name(p.s).padEnd(14)} ${p.st}`);
         for (const ev of msg.ev) {
           if (ev.e === 'shot') {
             if (ev.s === this.slot) {
-              if (ev.hit !== null) this.hud.hit();
+              if (ev.hit.some((h) => h !== null)) this.hud.hit();
             } else {
-              this.view.addTracer({ x: ev.from[0], y: ev.from[1], z: ev.from[2] }, { x: ev.to[0], y: ev.to[1], z: ev.to[2] }, slotColor(ev.s));
+              const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
+              for (const to of ev.to) this.view.addTracer(from, { x: to[0], y: to[1], z: to[2] }, slotColor(ev.s));
             }
+          } else if (ev.e === 'melee') {
+            if (ev.s === this.slot && ev.hit !== null) this.hud.hit();
+          } else if (ev.e === 'explode') {
+            this.view.explosion({ x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ev.r);
+          } else if (ev.e === 'pickup') {
+            if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
           } else if (ev.e === 'kill') {
-            this.hud.kill(ev.killer, ev.victim, this.slot);
+            this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot);
           } else if (ev.e === 'round_end') {
             this.winner = ev.winner === null ? null : this.hud.name(ev.winner);
           }
@@ -181,6 +200,12 @@ export class GameSession {
     }
   }
 
+  private requestWeapon(slot: number): void {
+    const current = this.wantWeapon || this.local?.held || 0;
+    if (slot !== current) this.lastWeapon = current;
+    this.wantWeapon = slot;
+  }
+
   /** Advance prediction at a fixed 60 Hz and render one frame. */
   frame(): void {
     if (this.closed) return;
@@ -191,18 +216,49 @@ export class GameSession {
     const local = this.local;
 
     if (local) {
+      // Weapon selection: number keys or wheel cycling through owned weapons.
+      const key = this.input.takeSlotRequest();
+      if (key && local.inventory.has(key)) this.requestWeapon(key);
+      const wheel = this.input.takeWheel();
+      if (wheel) {
+        const owned = local.ownedSlots();
+        const i = owned.indexOf(this.wantWeapon || local.held);
+        const next = owned[(((i + wheel) % owned.length) + owned.length) % owned.length];
+        if (next) this.requestWeapon(next);
+      }
+
       this.acc += dt;
+      let moving = false;
+      const viewTick = Math.round(this.interp.renderTick(now));
       while (this.acc >= TICK_DT) {
         this.acc -= TICK_DT;
-        const { input: cmd, shotEnd } = local.tick(this.input.sample(), this.input.yaw, this.input.pitch);
+        const sample = this.input.sample();
+        moving ||= sample.forward !== 0 || sample.right !== 0;
+        const { input: cmd, shot } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
         this.outbox.push(cmd);
-        if (shotEnd) this.view.addTracer(local.eye, shotEnd, '#ffe08a', 60);
+        if (shot) {
+          this.view.kick(shot.def);
+          for (const end of shot.ends) this.view.addTracer(local.eye, end, shot.def.view.tracer, 60);
+        }
       }
       this.opts.transport.sendInputs(this.outbox.splice(0));
-      this.view.setCamera(local.eye, this.input.yaw, this.input.pitch);
-      this.hud.setHealth(local.health, local.alive);
+
+      const weapon = local.alive ? local.weapon : undefined;
+      const zoomed = !!weapon?.view.zoomFov && this.input.zooming && local.raiseTicks === 0 && local.reloadTicks === 0;
+      const fov = zoomed ? weapon!.view.zoomFov! : DEFAULT_FOV;
+      this.input.sensitivityScale = fov / DEFAULT_FOV;
+      this.view.setCamera(local.eye, this.input.yaw, this.input.pitch, fov);
+      this.view.setViewmodel(weapon);
+      const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, (weapon.reloadTicks - local.reloadTicks) / 10) : 0;
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed });
+      this.hud.setScope(zoomed);
+      this.hud.setHealth(local.health, local.armor, local.alive);
+      this.hud.setWeapons(WEAPONS_BY_SLOT, local.inventory, local.held, local.reloadTicks > 0, local.alive);
+      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE);
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner);
     }
+    this.view.updatePickups(this.taken, now);
+    this.view.updateProjectiles(this.interp.sampleProjectiles(now));
     this.view.updateAvatars(this.interp.sample(now), this.slot);
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot);
 

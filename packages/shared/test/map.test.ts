@@ -42,14 +42,14 @@ describe('map loading', () => {
     );
     const r = loadMap(map);
     expect(r.ok).toBe(false);
-    const codes = r.issues.map((i) => i.code).sort();
+    const codes = r.issues.filter((i) => i.severity !== 'suggestion').map((i) => i.code).sort();
     expect(codes).toEqual(['id.duplicate', 'spawn.none', 'tile.overlap', 'tile.unknown']);
   });
 
   it('warns about spawns outside the layout', () => {
     const r = loadMap(makeMap([{ id: 'tile_a', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }], [[0, 0, 0], [40, 0, 0]]));
     expect(r.ok).toBe(true);
-    expect(r.issues.map((i) => [i.code, i.targetId])).toEqual([['spawn.no_floor', 'spawn_1']]);
+    expect(r.issues.filter((i) => i.severity !== 'suggestion').map((i) => [i.code, i.targetId])).toEqual([['spawn.no_floor', 'spawn_1']]);
   });
 });
 
@@ -69,7 +69,7 @@ describe('migrations', () => {
   });
 
   it('fails loudly on a gap in the chain', () => {
-    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), 3)).toThrow(MapMigrationError);
+    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), 4)).toThrow(MapMigrationError);
   });
 });
 
@@ -124,7 +124,9 @@ describe('format v2 (surface styles)', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.migratedFrom).toBe(1);
-    expect(r.map).toEqual(loadArena());
+    const arena = loadArena();
+    expect(r.map.classicStructure).toEqual(arena.classicStructure);
+    expect(r.map.entities).toEqual(arena.entities.filter((e) => e.kind === 'spawn'));
   });
 
   it('rejects unknown materials, unknown themes and malformed tints', () => {
@@ -132,7 +134,7 @@ describe('format v2 (surface styles)', () => {
     const tiles = arena.classicStructure.tiles.map((t, i) => (i === 0 ? { ...t, surfaces: { walls: { material: 'core.nope', tint: null } } } : t));
     const r = loadMap({ ...arena, classicStructure: { ...arena.classicStructure, theme: 'core.missing', tiles } });
     expect(r.ok).toBe(false);
-    expect(r.issues.map((i) => i.code).sort()).toEqual(['material.unknown', 'theme.unknown']);
+    expect(r.issues.filter((i) => i.severity === 'error').map((i) => i.code).sort()).toEqual(['material.unknown', 'theme.unknown']);
     const badTint = arena.classicStructure.tiles.map((t, i) => (i === 0 ? { ...t, surfaces: { floor: { material: 'core.marble', tint: 'red' } } } : t));
     expect(loadMap({ ...arena, classicStructure: { ...arena.classicStructure, tiles: badTint } }).ok).toBe(false);
   });
@@ -148,5 +150,20 @@ describe('format v2 (surface styles)', () => {
     expect(faceSlot({ kind: 'floor' }, [0, 1, 0])).toBe('floor');
     expect(faceSlot({ kind: 'floor' }, [0, -1, 0])).toBe('underside');
     expect(faceSlot({ kind: 'wall' }, [1, 0, 0])).toBe('walls');
+  });
+});
+
+describe('format v3 (pickups)', () => {
+  it('migrates a v2 map and validates pickup items', async () => {
+    const { readFileSync } = await import('node:fs');
+    const v2 = JSON.parse(readFileSync(new URL('./fixtures/arena_v2.json', import.meta.url), 'utf8'));
+    const r = loadMap(v2);
+    expect(r.ok && r.migratedFrom).toBe(2);
+    const arena = loadArena();
+    expect(arena.entities.filter((e) => e.kind === 'pickup').length).toBeGreaterThan(10);
+    const bad = { ...arena, entities: [...arena.entities, { id: 'pk_bad', kind: 'pickup', position: [0, 0, 0], item: 'core.nope', respawnSeconds: null }] };
+    const rb = loadMap(bad);
+    expect(rb.ok).toBe(false);
+    expect(rb.issues.map((i) => [i.code, i.targetId])).toEqual([['pickup.unknown', 'pk_bad']]);
   });
 });

@@ -155,7 +155,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     for (const c of clients) {
       if (c.slot === null) continue;
       const ack = match.slots[c.slot]?.lastSeq ?? 0;
-      const data = `{"t":"snapshot","ack":${ack},${body.slice(1)}`;
+      const me = match.privateState(c.slot);
+      const data = `{"t":"snapshot","ack":${ack},${me ? `"me":${JSON.stringify(me)},` : ''}${body.slice(1)}`;
       send(c, data);
       total += data.length;
       n++;
@@ -253,7 +254,11 @@ export function parseClientMessage(text: string): ClientMessage | null {
         const r = raw as Record<string, unknown>;
         const fields = ['seq', 'forward', 'right', 'yaw', 'pitch', 'buttons'] as const;
         if (!fields.every((f) => typeof r[f] === 'number')) return null;
-        inputs.push({ seq: r.seq as number, forward: r.forward as number, right: r.right as number, yaw: r.yaw as number, pitch: r.pitch as number, buttons: r.buttons as number });
+        const input: PlayerInput = { seq: r.seq as number, forward: r.forward as number, right: r.right as number, yaw: r.yaw as number, pitch: r.pitch as number, buttons: r.buttons as number };
+        // Optional fields: weapon selection and the tick the player was viewing (lag compensation).
+        if (typeof r.weapon === 'number') input.weapon = r.weapon;
+        if (typeof r.viewTick === 'number') input.viewTick = r.viewTick;
+        inputs.push(input);
       }
       return { t: 'input', inputs };
     }

@@ -16,12 +16,23 @@ import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
 import { PLAYER, buildMapGeometry, placementCells, viewDirection } from '@chronosplit/shared';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
+import { ModelLibrary } from '../content/models.ts';
+import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
+
+interface EntityMarker {
+  key: string;
+  node: TransformNode;
+  /** Selection outline for pickups. */
+  ring?: Mesh;
+}
 
 const GRID_EXTENT = 12;
 
 /**
  * Editor scene: the map (with floor isolation), active-level grid, ghost
- * preview, selection/hover outlines, spawn markers, and a free-fly camera.
+ * preview, selection/hover outlines, spawn and pickup markers, and a free-fly camera.
  * Pure presentation: it never changes the document.
  */
 export class EditorView {
@@ -36,7 +47,8 @@ export class EditorView {
   private ghost?: Mesh;
   private ghostKey = '';
   private outlines: Mesh[] = [];
-  private markers = new Map<string, Mesh>();
+  private markers = new Map<string, EntityMarker>();
+  private readonly models: ModelLibrary;
   private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'hover' | 'spawn' | 'spawnSel' | 'visor' | 'face', StandardMaterial>;
 
   constructor(engine: AbstractEngine) {
@@ -53,6 +65,7 @@ export class EditorView {
     hemi.groundColor = new Color3(0.3, 0.3, 0.32);
     new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene).intensity = 0.5;
     this.styler = new MapStyler(this.scene);
+    this.models = new ModelLibrary(this.scene);
 
     const flat = (name: string, hex: string, alpha = 1, wire = false) => {
       const m = new StandardMaterial(name, this.scene);
@@ -149,7 +162,7 @@ export class EditorView {
     const sky = MapStyler.skyColor(doc).scale(0.45);
     this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
     this.setGrid(doc, level);
-    this.setSpawns(doc, level, showAll, new Set());
+    this.setEntities(doc, level, showAll, new Set());
     return boxes;
   }
 
@@ -170,33 +183,60 @@ export class EditorView {
     this.grid.isPickable = false;
   }
 
-  setSpawns(doc: MapDocument, level: number, showAll: boolean, selected: ReadonlySet<string>): void {
+  /** Spawn markers and pickup previews for entities on visible levels; selected ones are highlighted. */
+  setEntities(doc: MapDocument, level: number, showAll: boolean, selected: ReadonlySet<string>): void {
     const { levelHeight } = doc.classicStructure;
     const seen = new Set<string>();
     for (const e of doc.entities) {
-      if (e.kind !== 'spawn') continue;
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
       seen.add(e.id);
+      // Rebuild a marker when the entity changed kind or item.
+      const key = e.kind === 'pickup' ? `pickup:${e.item}` : 'spawn';
       let m = this.markers.get(e.id);
+      if (m && m.key !== key) {
+        m.node.dispose(false, false);
+        m.ring?.dispose();
+        m = undefined;
+      }
       if (!m) {
-        m = CreateCapsule(`spawn_${e.id}`, { height: PLAYER.height, radius: PLAYER.radius, tessellation: 10 }, this.scene);
-        const visor = CreateBox(`spawnvisor_${e.id}`, { width: 0.5, height: 0.14, depth: 0.5 }, this.scene);
-        visor.parent = m;
-        visor.position = new Vector3(0, PLAYER.eyeHeight - PLAYER.height / 2, PLAYER.radius);
-        visor.material = this.mat.visor;
-        m.isPickable = false;
+        m = e.kind === 'spawn' ? this.createSpawnMarker(e.id) : { key, node: createPickupVisual(this.scene, this.models, e.item, `edpickup_${e.id}`) };
+        m.key = key;
         this.markers.set(e.id, m);
       }
-      m.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
-      m.rotation.y = e.yaw;
-      m.material = selected.has(e.id) ? this.mat.spawnSel : this.mat.spawn;
+      if (e.kind === 'spawn') {
+        m.node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
+        m.node.rotation.y = e.yaw;
+        (m.node as Mesh).material = selected.has(e.id) ? this.mat.spawnSel : this.mat.spawn;
+      } else {
+        m.node.position.set(e.position[0], e.position[1] + PICKUP_HOVER, e.position[2]);
+        if (selected.has(e.id) && !m.ring) {
+          m.ring = CreateCylinder(`edsel_${e.id}`, { diameter: 1.1, height: 1.2, tessellation: 16 }, this.scene);
+          m.ring.material = this.mat.outline;
+          m.ring.isPickable = false;
+        } else if (!selected.has(e.id) && m.ring) {
+          m.ring.dispose();
+          m.ring = undefined;
+        }
+        m.ring?.position.set(e.position[0], e.position[1] + 0.6, e.position[2]);
+      }
     }
     for (const [id, m] of this.markers) {
       if (!seen.has(id)) {
-        m.dispose(false, false);
+        m.node.dispose(false, false);
+        m.ring?.dispose();
         this.markers.delete(id);
       }
     }
+  }
+
+  private createSpawnMarker(id: string): EntityMarker {
+    const m = CreateCapsule(`spawn_${id}`, { height: PLAYER.height, radius: PLAYER.radius, tessellation: 10 }, this.scene);
+    const visor = CreateBox(`spawnvisor_${id}`, { width: 0.5, height: 0.14, depth: 0.5 }, this.scene);
+    visor.parent = m;
+    visor.position = new Vector3(0, PLAYER.eyeHeight - PLAYER.height / 2, PLAYER.radius);
+    visor.material = this.mat.visor;
+    m.isPickable = false;
+    return { key: 'spawn', node: m };
   }
 
   setHoverCell(doc: MapDocument, cell: [number, number, number] | null): void {

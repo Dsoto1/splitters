@@ -5,6 +5,9 @@ import type { PhysicsWorld } from './physics.ts';
 
 export const BUTTON_JUMP = 1;
 export const BUTTON_FIRE = 2;
+export const BUTTON_RELOAD = 4;
+export const BUTTON_ZOOM = 8;
+const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {
@@ -16,6 +19,10 @@ export interface PlayerInput {
   yaw: number;
   pitch: number;
   buttons: number;
+  /** Weapon slot the player wants held (0 = keep current). */
+  weapon?: number;
+  /** Server tick the player was looking at when this input was made (lag compensation). */
+  viewTick?: number;
 }
 
 export interface MoveState {
@@ -37,7 +44,9 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
     right: clamp1(i.right),
     yaw: finite(i.yaw) % (Math.PI * 2),
     pitch: Math.max(-1.55, Math.min(1.55, finite(i.pitch))),
-    buttons: Math.trunc(finite(i.buttons)) & (BUTTON_JUMP | BUTTON_FIRE),
+    buttons: Math.trunc(finite(i.buttons)) & ALL_BUTTONS,
+    weapon: Math.max(0, Math.min(9, Math.trunc(finite(i.weapon ?? 0)))),
+    viewTick: Math.max(0, Math.trunc(finite(i.viewTick ?? 0))),
   };
 }
 
@@ -46,7 +55,7 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
  * output is quantised so a client replaying the same inputs from a server
  * snapshot reproduces the server result exactly.
  */
-export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, state: MoveState, input: PlayerInput, dt: number = TICK_DT): MoveState {
+export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, state: MoveState, input: PlayerInput, speedScale = 1, dt: number = TICK_DT): MoveState {
   // Horizontal wish velocity in the yaw frame (see viewDirection for axes).
   const sin = Math.sin(input.yaw);
   const cos = Math.cos(input.yaw);
@@ -57,8 +66,8 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     wx /= wl;
     wz /= wl;
   }
-  wx *= PLAYER.runSpeed;
-  wz *= PLAYER.runSpeed;
+  wx *= PLAYER.runSpeed * speedScale;
+  wz *= PLAYER.runSpeed * speedScale;
 
   let velY = state.velY;
   if (state.grounded && input.buttons & BUTTON_JUMP) velY = PLAYER.jumpSpeed;

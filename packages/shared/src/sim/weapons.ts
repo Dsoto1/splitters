@@ -1,28 +1,180 @@
 import { add, dot, scale, type Vec3 } from '../math.ts';
 import { PLAYER } from './constants.ts';
 
-/** Data-driven weapon definition (subset of the v1 spec §5.2 fields needed for Phase 0). */
+export type WeaponKind = 'hitscan' | 'projectile' | 'melee';
+
+export interface ProjectileSpec {
+  /** Launch speed (m/s). */
+  speed: number;
+  /** Downward acceleration (m/s²); 0 flies straight. */
+  gravity: number;
+  /** Seconds before it explodes on its own. */
+  fuseSeconds: number;
+  splashRadius: number;
+  /** Damage at the centre, falling linearly to `splashEdgeDamage` at the radius. */
+  splashDamage: number;
+  splashEdgeDamage: number;
+  /** Fraction of splash damage the shooter takes from their own explosion. */
+  selfDamageScale: number;
+}
+
+/** First-person and third-person presentation (client only; the server ignores it). */
+export interface WeaponPresentation {
+  /** Built model path under /models (see content/models.json). */
+  model: string;
+  /** Viewmodel offset from the camera (right, up, forward) in metres. */
+  viewOffset: [number, number, number];
+  /** Tracer colour. */
+  tracer: string;
+  /** Vertical FOV while aiming (radians); absent = no zoom. */
+  zoomFov?: number;
+}
+
+/** Data-driven weapon definition (v1 spec §5.2). Gameplay code never names a specific weapon. */
 export interface WeaponDefinition {
   id: string;
   displayName: string;
-  kind: 'hitscan';
+  kind: WeaponKind;
+  /** Inventory slot and number key, 1..9. */
+  slot: number;
+  /** Damage per hit (per pellet for multi-pellet weapons). */
   damage: number;
+  pellets: number;
+  /** Cone half-angle of random spread (radians). */
+  spread: number;
   /** Minimum ticks between shots. */
   fireIntervalTicks: number;
   range: number;
-  /** AI desirability, 0..1. */
+  /** 0 = no ammunition (melee). */
+  magazine: number;
+  reserveMax: number;
+  /** Reserve ammo granted when picked up (or topped up if already owned). */
+  pickupAmmo: number;
+  reloadTicks: number;
+  /** Ticks after switching to this weapon before it can fire. */
+  raiseTicks: number;
+  projectile?: ProjectileSpec;
+  /** AI: 0..1 general preference and the distance band (m) it is best at. */
   botDesirability: number;
+  botRange: [number, number];
+  view: WeaponPresentation;
 }
 
 export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
+  'core.knife': {
+    id: 'core.knife',
+    displayName: 'Knife',
+    kind: 'melee',
+    slot: 1,
+    damage: 55,
+    pellets: 1,
+    spread: 0,
+    fireIntervalTicks: 30,
+    range: 2.2,
+    magazine: 0,
+    reserveMax: 0,
+    pickupAmmo: 0,
+    reloadTicks: 0,
+    raiseTicks: 10,
+    botDesirability: 0.15,
+    botRange: [0, 2],
+    view: { model: 'weapons/knife.glb', viewOffset: [0.2, -0.2, 0.42], tracer: '#ffffff' },
+  },
+  'core.pistol': {
+    id: 'core.pistol',
+    displayName: 'Pistol',
+    kind: 'hitscan',
+    slot: 2,
+    damage: 22,
+    pellets: 1,
+    spread: 0.008,
+    fireIntervalTicks: 12,
+    range: 120,
+    magazine: 12,
+    reserveMax: 96,
+    pickupAmmo: 24,
+    reloadTicks: 60,
+    raiseTicks: 15,
+    botDesirability: 0.35,
+    botRange: [2, 25],
+    view: { model: 'weapons/pistol.glb', viewOffset: [0.2, -0.18, 0.42], tracer: '#ffe08a' },
+  },
   'core.rifle': {
     id: 'core.rifle',
-    displayName: 'Rifle',
+    displayName: 'Assault Rifle',
     kind: 'hitscan',
-    damage: 20,
-    fireIntervalTicks: 8,
+    slot: 3,
+    damage: 14,
+    pellets: 1,
+    spread: 0.02,
+    fireIntervalTicks: 6,
     range: 150,
+    magazine: 30,
+    reserveMax: 180,
+    pickupAmmo: 60,
+    reloadTicks: 80,
+    raiseTicks: 20,
+    botDesirability: 0.7,
+    botRange: [4, 35],
+    view: { model: 'weapons/rifle.glb', viewOffset: [0.2, -0.2, 0.55], tracer: '#ffd36b' },
+  },
+  'core.shotgun': {
+    id: 'core.shotgun',
+    displayName: 'Shotgun',
+    kind: 'hitscan',
+    slot: 4,
+    damage: 9,
+    pellets: 8,
+    spread: 0.085,
+    fireIntervalTicks: 50,
+    range: 45,
+    magazine: 6,
+    reserveMax: 36,
+    pickupAmmo: 12,
+    reloadTicks: 90,
+    raiseTicks: 20,
+    botDesirability: 0.65,
+    botRange: [0, 9],
+    view: { model: 'weapons/shotgun.glb', viewOffset: [0.2, -0.2, 0.6], tracer: '#ffb38a' },
+  },
+  'core.sniper': {
+    id: 'core.sniper',
+    displayName: 'Sniper Rifle',
+    kind: 'hitscan',
+    slot: 5,
+    damage: 75,
+    pellets: 1,
+    spread: 0,
+    fireIntervalTicks: 75,
+    range: 300,
+    magazine: 5,
+    reserveMax: 25,
+    pickupAmmo: 10,
+    reloadTicks: 110,
+    raiseTicks: 25,
     botDesirability: 0.6,
+    botRange: [18, 120],
+    view: { model: 'weapons/sniper.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4 },
+  },
+  'core.launcher': {
+    id: 'core.launcher',
+    displayName: 'Grenade Launcher',
+    kind: 'projectile',
+    slot: 6,
+    damage: 0,
+    pellets: 1,
+    spread: 0,
+    fireIntervalTicks: 55,
+    range: 0,
+    magazine: 4,
+    reserveMax: 16,
+    pickupAmmo: 6,
+    reloadTicks: 100,
+    raiseTicks: 25,
+    projectile: { speed: 26, gravity: 12, fuseSeconds: 3, splashRadius: 4.5, splashDamage: 100, splashEdgeDamage: 15, selfDamageScale: 0.6 },
+    botDesirability: 0.75,
+    botRange: [6, 22],
+    view: { model: 'weapons/launcher.glb', viewOffset: [0.22, -0.22, 0.55], tracer: '#c2c9a8' },
   },
 };
 
@@ -31,6 +183,9 @@ export function getWeapon(id: string): WeaponDefinition {
   if (!w) throw new Error(`unknown weapon ${id}`);
   return w;
 }
+
+/** Weapons ordered by slot, for switching and HUD. */
+export const WEAPONS_BY_SLOT: readonly WeaponDefinition[] = Object.values(CORE_WEAPONS).sort((a, b) => a.slot - b.slot);
 
 /**
  * Ray vs upright player capsule standing with its feet at `feet`.

@@ -21,6 +21,8 @@ import {
   setThemeCommand,
   coreMaterials,
   coreThemes,
+  CORE_ITEMS,
+  getItem,
   SURFACE_SLOTS,
   SURFACE_SLOT_LABELS,
   TINT_SWATCHES,
@@ -45,6 +47,13 @@ import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibra
 import { tileIcon } from './tileIcon.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
+import { itemColor } from '../game/pickupVisuals.ts';
+
+/** Small palette icon for a pickup item, coloured by item type. */
+function itemIcon(itemId: string): string {
+  const c = itemColor(itemId);
+  return `<svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="15" fill="${c}" fill-opacity=".25" stroke="${c}" stroke-width="3"/><circle cx="28" cy="28" r="6" fill="${c}"/></svg>`;
+}
 
 export interface TestRequest {
   map: MapDocument;
@@ -59,7 +68,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'paint' };
+type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'paint' };
 
 interface DragState {
   startCell: [number, number];
@@ -218,12 +227,13 @@ export class EditorApp {
     if (tool.kind !== 'paint') this.hoverFace = null;
     for (const b of document.querySelectorAll<HTMLElement>('[data-tool]')) {
       const t = b.dataset.tool;
-      b.classList.toggle('active', (tool.kind === 'tile' && t === `tile:${tool.tile}`) || t === tool.kind);
+      b.classList.toggle('active', (tool.kind === 'tile' && t === `tile:${tool.tile}`) || (tool.kind === 'pickup' && t === `pickup:${tool.item}`) || t === tool.kind);
     }
     const hints: Record<Tool['kind'], string> = {
       select: 'Click select · Shift add · Drag move · Del delete · Ctrl+D duplicate · R rotate · F focus',
       tile: 'Click place · R rotate · Right-click erase · PgUp/PgDn level · Esc select tool',
       spawn: 'Click place spawn · R turn 45° · Right-click erase · Esc select tool',
+      pickup: 'Click place pickup · Right-click erase · Esc select tool',
       paint: 'Click a surface to paint · Right-click resets to theme · Alt-click or I picks a style',
     };
     $('ed-hint').textContent = `${hints[tool.kind]} · RMB look · WASD/QE fly`;
@@ -238,7 +248,7 @@ export class EditorApp {
 
   private updateSelectionVisuals(offset?: [number, number, number], bad = false): void {
     this.view.setOutlines(this.doc, this.selection.tiles, offset, bad);
-    this.view.setSpawns(this.doc, this.level, this.showAll, new Set(this.selection.entities));
+    this.view.setEntities(this.doc, this.level, this.showAll, new Set(this.selection.entities));
   }
 
   private setLevel(level: number): void {
@@ -258,6 +268,11 @@ export class EditorApp {
       const p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), this.level * this.doc.classicStructure.levelHeight, snap(this.hoverPoint.z, 0.5)];
       const { command, id } = addSpawnCommand(p, this.spawnYaw);
       if (this.run('Place spawn', command)) this.setSelection({ tiles: [], entities: [id] });
+    } else if (this.tool.kind === 'pickup' && this.hoverPoint) {
+      const p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), this.level * this.doc.classicStructure.levelHeight, snap(this.hoverPoint.z, 0.5)];
+      const id = newId('pickup');
+      const name = getItem(this.tool.item)?.displayName ?? 'pickup';
+      if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'pickup', position: p, item: this.tool.item, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
     }
   }
 
@@ -265,7 +280,7 @@ export class EditorApp {
     const hit = this.pick();
     if (!hit) return;
     const sel = hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : { tiles: [], entities: [hit.id] };
-    this.run(hit.kind === 'tile' ? 'Erase tile' : 'Erase spawn', deleteCommand(this.doc, sel));
+    this.run(hit.kind === 'tile' ? 'Erase tile' : `Erase ${this.doc.entities.find((e) => e.id === hit.id)?.kind ?? 'item'}`, deleteCommand(this.doc, sel));
   }
 
   /** Tile and surface slot under the cursor in paint mode. */
@@ -395,7 +410,7 @@ export class EditorApp {
       $('ed-target').textContent = target ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}` : '';
     } else $('ed-target').textContent = '';
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
-    this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' ? cell : null);
+    this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
       const ok = checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok;
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);
@@ -611,6 +626,15 @@ export class EditorApp {
     spawnBtn.innerHTML = `<svg viewBox="0 0 56 56"><circle cx="28" cy="30" r="12" fill="#4fb3ff"/><rect x="22" y="14" width="12" height="6" rx="2" fill="#1c1f26"/></svg>Player Spawn`;
     spawnBtn.addEventListener('click', () => this.setTool({ kind: 'spawn' }));
     $('ed-entities').append(spawnBtn);
+    for (const item of CORE_ITEMS) {
+      const b = document.createElement('button');
+      b.className = 'tile-btn';
+      b.dataset.tool = `pickup:${item.id}`;
+      b.dataset.search = `${item.displayName} ${item.id} pickup ${item.effect.kind}`.toLowerCase();
+      b.innerHTML = `${itemIcon(item.id)}${escapeHtml(item.displayName)}`;
+      b.addEventListener('click', () => this.setTool({ kind: 'pickup', item: item.id }));
+      $('ed-entities').append(b);
+    }
 
     $<HTMLInputElement>('ed-search').addEventListener('input', (e) => {
       const q = (e.target as HTMLInputElement).value.trim().toLowerCase();
@@ -748,8 +772,9 @@ export class EditorApp {
   private updateCounts(): void {
     const tiles = this.doc.classicStructure.tiles.length;
     const spawns = this.doc.entities.filter((e) => e.kind === 'spawn').length;
+    const pickups = this.doc.entities.length - spawns;
     const boxes = buildMapGeometry(this.doc).length;
-    $('ed-counts').textContent = `${tiles} tiles · ${spawns} spawns · ${boxes} collision boxes`;
+    $('ed-counts').textContent = `${tiles} tiles · ${spawns} spawns · ${pickups} pickups · ${boxes} collision boxes`;
   }
 
   private renderInspector(): void {
@@ -796,25 +821,39 @@ export class EditorApp {
       el.append(small(`ID ${t.id}`));
     } else if (entities.length === 1 && tiles.length === 0) {
       const e = doc.entities.find((x) => x.id === entities[0])!;
-      el.append(h2('Player Spawn'));
+      const label = e.kind === 'spawn' ? 'spawn' : 'pickup';
+      el.append(h2(e.kind === 'spawn' ? 'Player Spawn' : (getItem(e.item)?.displayName ?? e.item)));
       const setPos = (i: number, v: number) => {
         const position = [...e.position] as [number, number, number];
         position[i] = v;
-        this.run('Move spawn', { kind: 'updateEntities', before: [e], after: [{ ...e, position }] });
+        this.run(`Move ${label}`, { kind: 'updateEntities', before: [e], after: [{ ...e, position }] });
       };
       el.append(
         row('X', numberInput(e.position[0], 0.5, (v) => setPos(0, v))),
         row('Height', numberInput(e.position[1], 0.25, (v) => setPos(1, v))),
         row('Z', numberInput(e.position[2], 0.5, (v) => setPos(2, v))),
-        row(
-          'Facing',
-          numberInput(Math.round((e.yaw * 180) / Math.PI), 15, (deg) => this.run('Turn spawn', { kind: 'updateEntities', before: [e], after: [{ ...e, yaw: normalizeYaw((deg * Math.PI) / 180) }] })),
-        ),
-        small(`ID ${e.id}`),
       );
+      if (e.kind === 'spawn') {
+        el.append(
+          row(
+            'Facing',
+            numberInput(Math.round((e.yaw * 180) / Math.PI), 15, (deg) => this.run('Turn spawn', { kind: 'updateEntities', before: [e], after: [{ ...e, yaw: normalizeYaw((deg * Math.PI) / 180) }] })),
+          ),
+        );
+      } else {
+        const itemSelect = document.createElement('select');
+        for (const it of CORE_ITEMS) itemSelect.append(new Option(it.displayName, it.id, false, it.id === e.item));
+        itemSelect.addEventListener('change', () => this.run('Change pickup', { kind: 'updateEntities', before: [e], after: [{ ...e, item: itemSelect.value }] }));
+        const def = getItem(e.item)?.respawnSeconds ?? 0;
+        const respawn = numberInput(e.respawnSeconds ?? def, 5, (v) =>
+          this.run('Set respawn time', { kind: 'updateEntities', before: [e], after: [{ ...e, respawnSeconds: v === def ? null : Math.max(1, Math.min(600, v)) }] }),
+        );
+        el.append(row('Item', itemSelect), row('Respawn (s)', respawn), small(e.respawnSeconds === null ? `Item default (${def}s)` : 'Custom respawn time'));
+      }
+      el.append(small(`ID ${e.id}`));
     } else {
       el.append(h2(`${tiles.length + entities.length} selected`));
-      el.append(text(`${tiles.length} tiles, ${entities.length} spawns`));
+      el.append(text(`${tiles.length} tiles, ${entities.length} entities`));
     }
     const buttons = document.createElement('div');
     buttons.className = 'buttons';

@@ -80,7 +80,7 @@ export class LocalTransport implements Transport {
         const s = performance.now();
         events.push(...match.step());
         if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
-          onMessage({ t: 'snapshot', ack: me.lastSeq, ...match.snapshot(events) });
+          onMessage({ t: 'snapshot', ack: me.lastSeq, me: match.privateState(me.slot), ...match.snapshot(events) });
           events = [];
         }
         const ms = performance.now() - s;

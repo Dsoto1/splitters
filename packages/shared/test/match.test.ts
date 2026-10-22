@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BOT_DIFFICULTIES, BUTTON_FIRE, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, MAX_PLAYER_SLOTS, PLAYER, initPhysics, lookAngles, type GameEvent } from '../src/index.ts';
+import { BOT_DIFFICULTIES, BUTTON_FIRE, CORE_BOT_PROFILES, getWeapon, DEFAULT_DEATHMATCH_RULES, MAX_PLAYER_SLOTS, PLAYER, initPhysics, lookAngles, type GameEvent } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 import { loadArena, makeMap } from './helpers.ts';
 
@@ -29,12 +29,13 @@ describe('Match', () => {
       const aim = lookAngles(eye(a.move.pos), chest(b.move.pos));
       match.queueInputs(a.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: aim.yaw, pitch: aim.pitch, buttons: BUTTON_FIRE }]);
     });
+    const pistol = getWeapon('core.pistol');
     const shots = events.filter((e) => e.e === 'shot');
-    const hits = shots.filter((e) => e.e === 'shot' && e.hit === b.slot);
-    expect(hits.length).toBe(Math.ceil(PLAYER.maxHealth / a.weapon.damage));
+    const hits = shots.filter((e) => e.e === 'shot' && e.hit[0] === b.slot);
+    expect(hits.length).toBe(Math.ceil(PLAYER.maxHealth / pistol.damage));
     // Fire rate is limited by the weapon's interval, not by how often the button is held.
-    expect(shots.length).toBeLessThanOrEqual(Math.ceil(120 / a.weapon.fireIntervalTicks));
-    expect(events).toContainEqual({ e: 'kill', killer: a.slot, victim: b.slot, weapon: 'core.rifle' });
+    expect(shots.length).toBeLessThanOrEqual(Math.ceil(120 / pistol.fireIntervalTicks));
+    expect(events).toContainEqual({ e: 'kill', killer: a.slot, victim: b.slot, weapon: 'core.pistol' });
     expect(a.kills).toBe(1);
     expect(b.deaths).toBe(1);
     expect(b.alive).toBe(false);
@@ -57,7 +58,7 @@ describe('Match', () => {
     const aim = lookAngles(eye(a.move.pos), chest(b.move.pos));
     const events = runTicks(match, 60, () => match.queueInputs(a.slot, [{ seq: match.tick + 1, forward: 0, right: 0, yaw: aim.yaw, pitch: aim.pitch, buttons: BUTTON_FIRE }]));
     expect(events.some((e) => e.e === 'shot')).toBe(true);
-    expect(events.some((e) => e.e === 'shot' && e.hit !== null)).toBe(false);
+    expect(events.some((e) => e.e === 'shot' && e.hit.some((h) => h !== null))).toBe(false);
     expect(b.health).toBe(PLAYER.maxHealth);
   });
 

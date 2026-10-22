@@ -6,64 +6,171 @@ import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
+import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import { PLAYER, type MapDocument, type Vec3, type WorldBox } from '@chronosplit/shared';
+import {
+  PLAYER,
+  POWERUP_DAMAGE_BIT,
+  POWERUP_SPEED_BIT,
+  WEAPONS_BY_SLOT,
+  getWeapon,
+  type MapDocument,
+  type PickupEntity,
+  type Vec3,
+  type WeaponDefinition,
+  type WorldBox,
+} from '@chronosplit/shared';
 import { MapStyler } from '../mapMeshes.ts';
+import { ModelLibrary } from '../content/models.ts';
+import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import type { RemotePose } from './interpolation.ts';
 
 const SLOT_COLORS = ['#e6544a', '#4aa3e6', '#f2c14e', '#5cc77a', '#b276e0', '#f28f3b', '#46c9c0', '#e872b0'];
 export const slotColor = (slot: number): string => SLOT_COLORS[slot % SLOT_COLORS.length]!;
 
-interface Tracer {
-  mesh: LinesMesh;
-  expires: number;
+/** Default vertical FOV (~77°); an options screen will expose it. */
+export const DEFAULT_FOV = 1.35;
+
+interface Fx {
+  mesh: Mesh | LinesMesh;
+  born: number;
+  ttl: number;
+  /** Per-frame update with age fraction 0..1. */
+  update?: (f: number) => void;
 }
 
-/** First-person match scene: map, remote avatars, tracers, viewmodel. */
+interface Avatar {
+  body: Mesh;
+  mat: StandardMaterial;
+  weaponSlot: number;
+  weaponNode?: TransformNode;
+}
+
+interface PickupVisual {
+  root: TransformNode;
+  baseY: number;
+  phase: number;
+}
+
+/** First-person match scene: map, viewmodel, remote avatars, pickups, projectiles and effects. */
 export class GameView {
   readonly scene: Scene;
   readonly camera: FreeCamera;
-  private readonly avatars = new Map<number, Mesh>();
-  private tracers: Tracer[] = [];
+  readonly models: ModelLibrary;
+  private readonly avatars = new Map<number, Avatar>();
+  private readonly pickups = new Map<string, PickupVisual>();
+  private readonly projectiles = new Map<number, TransformNode>();
+  private effects: Fx[] = [];
+  private readonly viewRoot: TransformNode;
+  private viewmodel?: TransformNode;
+  private viewWeapon?: string;
+  private viewLoad = 0;
+  /** Front of the loaded viewmodel along its forward axis, for the muzzle flash. */
+  private muzzleZ = 0.2;
+  private kickAmount = 0;
+  private bobPhase = 0;
+  private readonly flash: Mesh;
+  private flashUntil = 0;
 
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
     this.scene.clearColor = new Color4(0.52, 0.62, 0.72, 1);
     this.scene.skipPointerMovePicking = true;
     this.camera = new FreeCamera('camera', new Vector3(0, 10, -10), this.scene);
-    this.camera.minZ = 0.05;
-    this.camera.fov = 1.35; // ~77° vertical; FOV slider comes with the options screen
+    this.camera.minZ = 0.03;
+    this.camera.fov = DEFAULT_FOV;
     this.camera.inputs.clear();
+    this.models = new ModelLibrary(this.scene);
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
-    hemi.intensity = 0.75;
+    hemi.intensity = 0.8;
     hemi.groundColor = new Color3(0.35, 0.33, 0.3);
     const sun = new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene);
     sun.intensity = 0.6;
 
-    // Viewmodel placeholder so first person has a weapon in view.
-    const gun = CreateBox('viewmodel', { width: 0.06, height: 0.08, depth: 0.4 }, this.scene);
-    gun.parent = this.camera;
-    gun.position = new Vector3(0.22, -0.2, 0.5);
-    gun.material = solid(this.scene, 'gunMat', '#2c2f36');
-    gun.renderingGroupId = 1;
+    this.viewRoot = new TransformNode('viewRoot', this.scene);
+    this.viewRoot.parent = this.camera;
+    this.flash = CreateSphere('muzzleFlash', { diameter: 0.09, segments: 6 }, this.scene);
+    this.flash.material = glow(this.scene, 'flashMat', '#ffd27a');
+    this.flash.renderingGroupId = 1;
+    this.flash.isPickable = false;
+    this.flash.setEnabled(false);
   }
 
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
     new MapStyler(this.scene).build(doc, boxes);
     const sky = MapStyler.skyColor(doc);
     this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
+    for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
+    // Warm the model cache so first switches and pickups don't hitch.
+    for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);
+    void this.models.load('projectiles/grenade.glb');
   }
 
-  setCamera(eye: Vec3, yaw: number, pitch: number): void {
+  setCamera(eye: Vec3, yaw: number, pitch: number, fov: number): void {
     this.camera.position.set(eye.x, eye.y, eye.z);
     // Babylon: rotation.y is yaw (0 = +Z), positive rotation.x looks down.
     this.camera.rotation.set(-pitch, yaw, 0);
+    this.camera.fov = fov;
   }
+
+  // ---------------------------------------------------------------- viewmodel
+
+  /** Show the held weapon in first person (undefined hides it, e.g. while dead or scoped). */
+  setViewmodel(def: WeaponDefinition | undefined): void {
+    if (def?.id === this.viewWeapon) return;
+    this.viewWeapon = def?.id;
+    const load = ++this.viewLoad;
+    this.viewmodel?.dispose();
+    this.viewmodel = undefined;
+    if (!def) return;
+    void this.models.instantiate(def.view.model, `view_${def.id}`).then((node) => {
+      if (load !== this.viewLoad) return node.dispose();
+      // Measure before parenting, in the model's own space.
+      this.muzzleZ = node.getHierarchyBoundingVectors(true).max.z;
+      node.parent = this.viewRoot;
+      // Draw on top of the world so the gun never clips into walls.
+      for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+      this.viewmodel = node;
+    });
+  }
+
+  /** Recoil kick and muzzle flash for a predicted shot. */
+  kick(def: WeaponDefinition): void {
+    this.kickAmount = Math.min(1, this.kickAmount + (def.kind === 'melee' ? 0.9 : def.pellets > 1 || def.projectile ? 1 : 0.45));
+    if (def.kind !== 'melee') this.flashUntil = performance.now() + 50;
+  }
+
+  /** Position the viewmodel: offset, bob while moving, recoil, and dips for raising/reloading. */
+  updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean }): void {
+    const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
+    this.viewRoot.setEnabled(!o.hidden && !!def);
+    if (!def) return;
+    this.kickAmount = Math.max(0, this.kickAmount - dt * 6);
+    if (o.moving) this.bobPhase += dt * 9;
+    const bob = o.moving ? 1 : 0;
+    const [x, y, z] = def.view.viewOffset;
+    const melee = def.kind === 'melee';
+    this.viewRoot.position.set(
+      x + Math.sin(this.bobPhase) * 0.012 * bob,
+      y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - o.reload * 0.08,
+      z - this.kickAmount * (melee ? -0.25 : 0.06),
+    );
+    this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
+    const flashing = performance.now() < this.flashUntil;
+    this.flash.setEnabled(flashing);
+    if (flashing) {
+      this.flash.parent = this.viewRoot;
+      this.flash.position.set(0, 0.02, this.muzzleZ + 0.03);
+    }
+  }
+
+  // ---------------------------------------------------------------- avatars
 
   /** Update remote player avatars from interpolated poses. */
   updateAvatars(poses: readonly RemotePose[], localSlot: number): void {
@@ -71,48 +178,133 @@ export class GameView {
     for (const p of poses) {
       if (p.slot === localSlot) continue;
       seen.add(p.slot);
-      let mesh = this.avatars.get(p.slot);
-      if (!mesh) {
-        mesh = this.createAvatar(p.slot);
-        this.avatars.set(p.slot, mesh);
+      let a = this.avatars.get(p.slot);
+      if (!a) {
+        a = this.createAvatar(p.slot);
+        this.avatars.set(p.slot, a);
       }
-      mesh.setEnabled(p.alive);
-      mesh.position.set(p.x, p.y + PLAYER.height / 2, p.z);
-      mesh.rotation.y = p.yaw;
+      a.body.setEnabled(p.alive);
+      a.body.position.set(p.x, p.y + PLAYER.height / 2, p.z);
+      a.body.rotation.y = p.yaw;
+      // Powerups glow: cyan for speed, magenta for damage.
+      const glowColor = p.powerups & POWERUP_DAMAGE_BIT ? '#c03cff' : p.powerups & POWERUP_SPEED_BIT ? '#36d6ff' : null;
+      a.mat.emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
+      if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
     }
-    for (const [slot, mesh] of this.avatars) {
+    for (const [slot, a] of this.avatars) {
       if (!seen.has(slot)) {
-        mesh.dispose(false, true);
+        a.body.dispose(false, true);
         this.avatars.delete(slot);
       }
     }
   }
 
-  private createAvatar(slot: number): Mesh {
+  private setAvatarWeapon(a: Avatar, slot: number): void {
+    a.weaponSlot = slot;
+    a.weaponNode?.dispose();
+    a.weaponNode = undefined;
+    const def = WEAPONS_BY_SLOT.find((w) => w.slot === slot);
+    if (!def) return;
+    void this.models.instantiate(def.view.model, `held_${slot}`).then((node) => {
+      if (a.weaponSlot !== slot || a.body.isDisposed()) return node.dispose();
+      node.parent = a.body;
+      // Right hand, chest height, pointing where the player faces.
+      node.position.set(0.3, 0.25, 0.35);
+      a.weaponNode = node;
+    });
+  }
+
+  private createAvatar(slot: number): Avatar {
     const body = CreateCapsule(`avatar_${slot}`, { height: PLAYER.height, radius: PLAYER.radius, tessellation: 12, subdivisions: 2 }, this.scene);
-    body.material = solid(this.scene, `avatar_${slot}_mat`, slotColor(slot));
+    const mat = solid(this.scene, `avatar_${slot}_mat`, slotColor(slot));
+    body.material = mat;
     // Visor shows facing direction at a glance.
     const visor = CreateBox(`visor_${slot}`, { width: 0.5, height: 0.14, depth: 0.2 }, this.scene);
     visor.parent = body;
     visor.position = new Vector3(0, PLAYER.eyeHeight - PLAYER.height / 2, PLAYER.radius - 0.05);
     visor.material = solid(this.scene, `visor_${slot}_mat`, '#1c1f26');
     body.isPickable = false;
-    return body;
+    return { body, mat, weaponSlot: -1 };
+  }
+
+  // ---------------------------------------------------------------- pickups
+
+  private addPickup(e: PickupEntity): void {
+    const root = createPickupVisual(this.scene, this.models, e.item, `pickup_${e.id}`);
+    const baseY = e.position[1] + PICKUP_HOVER;
+    root.position.set(e.position[0], baseY, e.position[2]);
+    this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2) });
+  }
+
+  /** Spin and bob pickups; hide the ones currently taken. */
+  updatePickups(taken: ReadonlySet<string>, now: number): void {
+    for (const [id, p] of this.pickups) {
+      p.root.setEnabled(!taken.has(id));
+      p.root.rotation.y = now * 0.0015 + p.phase;
+      p.root.position.y = p.baseY + Math.sin(now * 0.003 + p.phase) * 0.08;
+    }
+  }
+
+  // ---------------------------------------------------------------- projectiles & effects
+
+  updateProjectiles(positions: ReadonlyMap<number, [number, number, number]>): void {
+    for (const [id, pos] of positions) {
+      let node = this.projectiles.get(id);
+      if (!node) {
+        node = new TransformNode(`proj_${id}`, this.scene);
+        this.projectiles.set(id, node);
+        const holder = node;
+        void this.models.instantiate('projectiles/grenade.glb', `grenade_${id}`).then((m) => {
+          if (holder.isDisposed()) return m.dispose();
+          m.parent = holder;
+        });
+      }
+      node.position.set(pos[0], pos[1], pos[2]);
+      node.rotation.x += 0.3;
+    }
+    for (const [id, node] of this.projectiles) {
+      if (!positions.has(id)) {
+        node.dispose();
+        this.projectiles.delete(id);
+      }
+    }
+  }
+
+  explosion(at: Vec3, radius: number): void {
+    const ball = CreateSphere('boom', { diameter: 1, segments: 12 }, this.scene);
+    const mat = glow(this.scene, 'boomMat', '#ffb347', 1);
+    ball.material = mat;
+    ball.position.set(at.x, at.y, at.z);
+    ball.isPickable = false;
+    this.effects.push({
+      mesh: ball,
+      born: performance.now(),
+      ttl: 380,
+      update: (f) => {
+        ball.scaling.setAll(radius * 2 * (0.3 + 0.7 * Math.sqrt(f)));
+        mat.alpha = 0.85 * (1 - f);
+      },
+    });
   }
 
   addTracer(from: Vec3, to: Vec3, color: string, ttlMs = 90): void {
     const mesh = CreateLines('tracer', { points: [new Vector3(from.x, from.y - 0.08, from.z), new Vector3(to.x, to.y, to.z)] }, this.scene);
     mesh.color = Color3.FromHexString(color);
     mesh.isPickable = false;
-    this.tracers.push({ mesh, expires: performance.now() + ttlMs });
+    this.effects.push({ mesh, born: performance.now(), ttl: ttlMs });
   }
 
   render(): void {
     const now = performance.now();
-    this.tracers = this.tracers.filter((t) => {
-      if (t.expires > now) return true;
-      t.mesh.dispose();
-      return false;
+    this.effects = this.effects.filter((fx) => {
+      const f = (now - fx.born) / fx.ttl;
+      if (f >= 1) {
+        fx.mesh.material?.dispose();
+        fx.mesh.dispose();
+        return false;
+      }
+      fx.update?.(f);
+      return true;
     });
     this.scene.render();
   }
@@ -126,5 +318,11 @@ function solid(scene: Scene, name: string, hex: string): StandardMaterial {
   const m = new StandardMaterial(name, scene);
   m.diffuseColor = Color3.FromHexString(hex);
   m.specularColor = new Color3(0.1, 0.1, 0.1);
+  return m;
+}
+
+function glow(scene: Scene, name: string, hex: string, strength = 1): StandardMaterial {
+  const m = solid(scene, name, hex);
+  m.emissiveColor = Color3.FromHexString(hex).scale(strength);
   return m;
 }

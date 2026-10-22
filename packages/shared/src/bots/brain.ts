@@ -1,7 +1,9 @@
-import { angleDelta, clamp, createRng, horizontalDistance, lookAngles, type Vec3 } from '../math.ts';
+import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3 } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, TICK_DT, TICK_RATE } from '../sim/constants.ts';
-import { BUTTON_FIRE, BUTTON_JUMP, type PlayerInput } from '../sim/movement.ts';
+import type { ItemDefinition } from '../sim/items.ts';
+import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, type PlayerInput } from '../sim/movement.ts';
+import type { WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import type { BotDifficulty, BotProfile } from './profile.ts';
 
@@ -11,7 +13,21 @@ export interface CombatantView {
   yaw: number;
   pitch: number;
   health: number;
+  armor: number;
   alive: boolean;
+}
+
+export interface PickupView {
+  id: string;
+  item: ItemDefinition;
+  pos: Vec3;
+  available: boolean;
+}
+
+export interface InventoryView {
+  def: WeaponDefinition;
+  mag: number;
+  reserve: number;
 }
 
 /** Everything a bot may read. Bots get no more information than this. */
@@ -22,6 +38,10 @@ export interface BotWorldView {
   physics: PhysicsWorld;
   nav: NavWorld;
   spawnPoints: readonly Vec3[];
+  pickups: readonly PickupView[];
+  /** The bot's own weapons and the slot it is holding. */
+  inventory: readonly InventoryView[];
+  held: number;
 }
 
 export type BotState = 'roam' | 'engage' | 'chase' | 'retreat' | 'dead';
@@ -124,15 +144,16 @@ export class BotBrain {
         break;
       case 'retreat': {
         const threat = target?.pos ?? this.lastKnown?.pos ?? me.pos;
-        const refuge = farthest(view.spawnPoints, threat) ?? me.pos;
+        const refuge = this.pickupGoal(view, 'health') ?? farthest(view.spawnPoints, threat) ?? me.pos;
         moveYaw = this.followPathTo(view, refuge, false);
         if (target) wantFire = this.aimAt(view, target);
         else this.lookAlongPath(view);
         break;
       }
       case 'roam':
-        if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 1.5) {
-          this.roamGoal = this.pickRoamGoal(view);
+        if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 1.5 || (view.tick + this.slot) % TICK_RATE === 0) {
+          // Re-evaluate pickups once a second; otherwise keep the current goal.
+          this.roamGoal = this.pickupGoal(view) ?? (this.roamGoal && horizontalDistance(me.pos, this.roamGoal) >= 1.5 ? this.roamGoal : this.pickRoamGoal(view));
         }
         moveYaw = this.followPathTo(view, this.roamGoal, false);
         // Arrived or unreachable: pick another goal next tick.
@@ -162,11 +183,71 @@ export class BotBrain {
 
     let buttons = 0;
     if (wantFire) buttons |= BUTTON_FIRE;
+    const held = view.inventory.find((w) => w.def.slot === view.held);
+    // Reload when empty, or top up when nothing is threatening us.
+    if (held && held.def.magazine > 0 && held.reserve > 0 && (held.mag === 0 || (!target && held.mag < held.def.magazine / 2))) buttons |= BUTTON_RELOAD;
     if (this.checkStuck(view, forward !== 0 || right !== 0) || this.jumpNext) {
       buttons |= BUTTON_JUMP;
       this.jumpNext = false;
     }
-    return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons };
+    return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon: this.chooseWeapon(view, target) };
+  }
+
+  /**
+   * Best owned weapon with ammo for the current distance: data-driven via each
+   * weapon's desirability and range band, nudged by personality (range
+   * preference, explosives fans) and avoiding splash damage up close.
+   */
+  private chooseWeapon(view: BotWorldView, target: CombatantView | undefined): number {
+    const dist = target ? distance(view.self.pos, target.pos) : 15;
+    let best = view.held;
+    let bestScore = -Infinity;
+    for (const w of view.inventory) {
+      const hasAmmo = w.def.magazine === 0 || w.mag + w.reserve > 0;
+      if (!hasAmmo) continue;
+      const [lo, hi] = w.def.botRange;
+      let score = w.def.botDesirability + (dist >= lo && dist <= hi ? 0.6 : -Math.min(dist < lo ? lo - dist : dist - hi, 20) * 0.03);
+      if (w.def.projectile && dist < w.def.projectile.splashRadius + 1) score -= 1.5 * (this.profile.selfPreservation / 100);
+      if (this.profile.tags.includes('EXPLOSIVES_FAN') && w.def.projectile) score += 0.4;
+      if (w.def.kind === 'melee') score += (this.profile.meleePreference / 100) * 0.5;
+      // Avoid dithering between near-equal choices.
+      if (w.def.slot === view.held) score += 0.15;
+      if (score > bestScore) {
+        bestScore = score;
+        best = w.def.slot;
+      }
+    }
+    return best;
+  }
+
+  /**
+   * The most worthwhile available pickup, if any is worth the detour. Value
+   * depends on need (health/armor missing, weapon not owned, ammo low) and the
+   * bot's item greed, discounted by distance.
+   */
+  private pickupGoal(view: BotWorldView, only?: 'health'): Vec3 | null {
+    const me = view.self;
+    let best: { pos: Vec3; score: number } | null = null;
+    const owned = new Map(view.inventory.map((w) => [w.def.id, w]));
+    for (const p of view.pickups) {
+      if (!p.available) continue;
+      const e = p.item.effect;
+      if (only && e.kind !== only) continue;
+      let need = 0;
+      if (e.kind === 'health') need = (100 - me.health) / 60;
+      else if (e.kind === 'armor') need = (100 - me.armor) / 100;
+      else if (e.kind === 'powerup') need = 1;
+      else if (e.kind === 'weapon') {
+        const w = owned.get(e.weapon);
+        need = !w ? 1 : w.reserve < w.def.reserveMax / 3 ? 0.4 : 0;
+      } else if (e.kind === 'ammo') need = view.inventory.some((w) => w.def.magazine > 0 && w.reserve < w.def.reserveMax / 3) ? 0.6 : 0;
+      if (need <= 0) continue;
+      const greed = 0.3 + (this.profile.itemGreed / 100) * 1.2;
+      const d = horizontalDistance(me.pos, p.pos) + Math.abs(me.pos.y - p.pos.y) * 2;
+      const score = (p.item.botValue * need * greed) / (1 + d / 20);
+      if (score > 0.12 && (!best || score > best.score)) best = { pos: p.pos, score };
+    }
+    return best ? { ...best.pos } : null;
   }
 
   private perceive(view: BotWorldView): void {
@@ -225,7 +306,15 @@ export class BotBrain {
 
   /** Turn toward the target with limited turn rate; returns true when the shot is lined up and reaction time has passed. */
   private aimAt(view: BotWorldView, target: CombatantView): boolean {
-    const want = lookAngles(eye(view.self.pos), chest(target.pos));
+    const from = eye(view.self.pos);
+    const want = lookAngles(from, chest(target.pos));
+    // Lobbed projectiles: aim above the target to cancel the drop over the flight time.
+    const lob = view.inventory.find((w) => w.def.slot === view.held)?.def.projectile;
+    if (lob && lob.gravity > 0) {
+      const d = distance(from, chest(target.pos));
+      const t = d / lob.speed;
+      want.pitch += Math.atan2(0.5 * lob.gravity * t * t, d);
+    }
     this.turnToward(want.yaw + this.aimErrYaw, want.pitch + this.aimErrPitch);
     const since = this.visibleSince.get(target.slot);
     const reactionTicks = (this.difficulty.reactionMs / 1000) * TICK_RATE * (1.5 - this.profile.reactionSpeed / 100);

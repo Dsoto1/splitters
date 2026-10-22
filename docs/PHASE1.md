@@ -36,7 +36,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 |---|---|---|
 | M1 | MapMaker core loop: Classic Grid building, spawns, undo/redo, levels, validation, save/load, in-browser TEST, offline play | **Done** |
 | M1.5 | Map look: material library (~20), per-surface material + tint, Paint tool in MapMaker, map format v2 migration ([`PLAYER_EXPRESSION.md`](PLAYER_EXPRESSION.md) §1) | **Done** |
-| M2 | Weapons and items: 6 weapon roles (pistol, automatic, shotgun, precision, explosive, melee), weapon/health/armor pickups, 2 powerups, bot weapon choice and pickup seeking, lag compensation | |
+| M2 | Weapons and items: 6 weapon roles (pistol, automatic, shotgun, precision, explosive, melee), weapon/health/armor pickups, 2 powerups, bot weapon choice and pickup seeking, lag compensation | **Done** |
 | M3 | Scenario primitives: doors, buttons, destructibles, trigger volumes, WHEN → IF → DO logic (data-only interpreter), objectives, LOGIC/ENTITIES workspaces | |
 | M4 | NPCs: factions model, one enemy faction, one NPC squad archetype, encounter spawners, the co-op scenario | |
 | M5 | Rig standard, first character part library, **Character Designer**, 12 preset characters built with it, character select, looks visible to everyone in multiplayer, Team Deathmatch on factions | |
@@ -70,6 +70,38 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 - **Rendering:** faces sharing a material and tint merge into one mesh, so draw calls scale with distinct looks, not tile count. The same styler draws the editor, TEST and online matches.
 - **Map format v2:** `tiles[].surfaces` per-slot overrides. v1 files (and old autosaves) migrate automatically; a v1 fixture is tested. Validation rejects unknown materials/themes and malformed tints.
 - **Tests:** paint scopes, no-op repaints, clearing, theme changes and full undo in unit tests. e2e paints a wall, paints every floor in one stroke, undoes it, and checks the painted map survives reload.
+
+## M2 — what exists
+
+**Weapons** (`shared/src/sim/weapons.ts`, data-driven):
+
+| Slot | Weapon | Model | Role |
+|---|---|---|---|
+| 1 | Knife | Quaternius bayonet | Melee, 55 dmg, three-ray fan |
+| 2 | Pistol | Quaternius Pistol_1 | Spawn weapon, 12-round magazine |
+| 3 | Assault Rifle | Quaternius AssaultRifle_1 | Automatic |
+| 4 | Shotgun | Quaternius Shotgun_1 | 8 pellets × 9 dmg |
+| 5 | Sniper Rifle | Quaternius SniperRifle_1 | 75 dmg, scope zoom (RMB) |
+| 6 | Grenade Launcher | Kenney blaster-h (recoloured) + grenade | Lobbed projectile, 4.5 m splash, 60 % self-damage, no splash through walls |
+
+- **Inventory:** each weapon has a magazine, reserve, reload and raise time. Players spawn with knife + pistol. Empty magazines reload on fire or with R. Switching uses 1–6, the mouse wheel or Q (last weapon). New guns auto-switch when picked up.
+- **Items** (`sim/items.ts`): small/large health, small/large armor (absorbs ⅔ of damage), ammo box, the four weapon pickups, Speed Boost (×1.35 for 15 s) and Double Damage (15 s), each with a default respawn time.
+- **Map format v3:** a `pickup` entity (item + optional respawn override). v2 maps migrate (fixture tested). The validator flags unknown items and suggests adding health. The Phase 0 arena now has 13 pickups.
+- **Lag compensation:** inputs carry the server tick the player was looking at. Hitscan and melee from humans are resolved against recorded positions at that tick, rewinding at most 18 ticks (300 ms). Bots and projectiles use the present.
+- **Bots:** they pick the best owned weapon for the distance (each weapon's desirability and range band, adjusted for personality, avoiding splash damage up close). They reload when empty or safe, lead lobbed grenades for drop, and detour for pickups by need × item greed ÷ distance. Retreating bots head for health.
+- **Client:** first-person weapon models with bob, recoil, raise/reload motion and muzzle flash. Remote players hold their current weapon, and powerups glow on them. Pickups spin and bob, and hide while respawning. Grenades are drawn smoothly between snapshots, with explosion effects, scope overlay and zoom sensitivity. The HUD shows ammo, armor, weapon bar, powerup timers, pickup messages and kill-feed weapon names.
+- **Prediction:** movement, including speed boosts, stays exact. A test shows exactly one correction, when the server reports the pickup; the boost and its expiry then predict exactly. Weapon state is predicted cosmetically (instant tracers and kick); the server stays authoritative.
+- **MapMaker:** a palette entry per item, placement and erasing, and an inspector (item type, respawn override, position). Placed pickups are drawn with the same visuals as in game.
+- **Content pipeline in use:** `pnpm content:build` converts the selected Quaternius OBJ files with our own OBJ→glTF converter, bakes and normalises the Kenney GLBs, recolours Kenney's palette texture, enforces budgets and writes `content/provenance.json`. `pnpm content:check` runs in CI. The asset viewer (`?mode=assets`) shows every model with its licence.
+- **Measured:** the 32-bot bench averages 0.79 ms per tick, 2.4 ms p99.
+
+### Known M2 gaps
+
+- **No audio yet.** Weapon, pickup and explosion sounds come with the audio pass (Kenney/Freesound CC0, Sonniss).
+- **Placeholder models.** Viewmodels are bare guns, with no hands or arms until the character rig lands in M5. Remote players are still capsules holding a gun.
+- **Projectiles are not lag-compensated** (standard for slow projectiles), and pickups are not predicted client-side.
+- **Bot stuck recoveries rose** with pickup detours (~88 per minute across 32 bots in the bench, up from ~50). Tuning goes with the nav-debug overlay work.
+- **Recoil and spread** are fixed values per weapon. There is no recoil pattern or movement inaccuracy yet. Balance numbers are first-pass.
 
 ## Known M1 gaps
 

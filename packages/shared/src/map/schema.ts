@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * ChronoSplit map document, format version 2 (v2 added per-surface tile styles).
+ * ChronoSplit map document, format version 3 (v2 added per-surface tile styles, v3 pickup entities).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -10,7 +10,7 @@ import { z } from 'zod';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 2;
+export const MAP_FORMAT_VERSION = 3;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -91,7 +91,15 @@ export const SpawnEntity = EntityBase.extend({
   faction: ContentId.nullable().default(null),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity]);
+/** A pickup (health, armor, ammo, weapon, powerup) that respawns after being taken. */
+export const PickupEntity = EntityBase.extend({
+  kind: z.literal('pickup'),
+  item: ContentId,
+  /** Overrides the item's default respawn time; null = item default. */
+  respawnSeconds: z.number().min(1).max(600).nullable().default(null),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity]);
 
 export const MapDocument = z.object({
   format: z.literal(MAP_FORMAT),
@@ -106,6 +114,7 @@ export const MapDocument = z.object({
 export type MapDocument = z.infer<typeof MapDocument>;
 export type MapEntity = z.infer<typeof MapEntity>;
 export type SpawnEntity = z.infer<typeof SpawnEntity>;
+export type PickupEntity = z.infer<typeof PickupEntity>;
 export type TilePlacement = z.infer<typeof TilePlacement>;
 export type Rotation = z.infer<typeof Rotation>;
 export type SurfaceStyle = z.infer<typeof SurfaceStyle>;

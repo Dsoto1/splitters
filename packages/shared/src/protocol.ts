@@ -25,13 +25,38 @@ export interface PlayerSnapshot {
   yaw: number;
   pitch: number;
   hp: number;
+  /** Armor points. */
+  ar: number;
   alive: 0 | 1;
+  /** Held weapon slot (for third-person models and HUD). */
+  w: number;
+  /** Active powerups: bit 1 speed, bit 2 damage. */
+  pu: number;
   /** Bot AI state for the debug overlay; absent for humans. */
   st?: string;
 }
 
+/** State only the owning player receives: inventory and timers for HUD and prediction. */
+export interface PrivateState {
+  /** Owned weapons as [slot, magazine, reserve]. */
+  inv: [number, number, number][];
+  /** Ticks left on reload / weapon raise (0 = ready). */
+  rl: number;
+  rs: number;
+  /** Remaining inputs of speed / damage boost. */
+  sp: number;
+  dm: number;
+}
+
+export const POWERUP_SPEED_BIT = 1;
+export const POWERUP_DAMAGE_BIT = 2;
+
 export type GameEvent =
-  | { e: 'shot'; s: number; from: Tuple3; to: Tuple3; hit: number | null }
+  /** One trigger pull: `to`/`hit` hold one entry per pellet (one for most weapons). */
+  | { e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[] }
+  | { e: 'melee'; s: number; hit: number | null }
+  | { e: 'explode'; s: number; p: Tuple3; r: number }
+  | { e: 'pickup'; s: number; id: string; item: string }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string }
   | { e: 'spawn'; s: number }
   | { e: 'round_end'; winner: number | null }
@@ -91,6 +116,12 @@ export type ServerMessage =
       players: PlayerSnapshot[];
       score: ScoreEntry[];
       ev: GameEvent[];
+      /** Live projectiles as [id, x, y, z]. */
+      pr: [number, number, number, number][];
+      /** IDs of pickups currently taken (waiting to respawn). */
+      pk: string[];
+      /** Receiving player's private state (absent while not in the match). */
+      me?: PrivateState;
     }
   | { t: 'pong'; id: number; ct: number }
   | ({ t: 'stats' } & ServerStats);

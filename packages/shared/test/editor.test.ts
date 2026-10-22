@@ -119,7 +119,8 @@ describe('editor operations', () => {
     const doc = loadArena();
     const r = applyCommand(doc, unwrap(rotateCommand(doc, { tiles: ['t_corr_s'], entities: ['sp_room_sw'] })));
     expect(r.classicStructure.tiles.find((t) => t.id === 't_corr_s')!.rotation).toBe(2);
-    expect(r.entities.find((e) => e.id === 'sp_room_sw')!.kind === 'spawn' && r.entities.find((e) => e.id === 'sp_room_sw')!.yaw).toBeCloseTo(0.785 + Math.PI / 4, 2);
+    const spawn = r.entities.find((e) => e.id === 'sp_room_sw')!;
+    expect(spawn.kind === 'spawn' ? spawn.yaw : NaN).toBeCloseTo(0.785 + Math.PI / 4, 2);
     // Stairs reserve the cell above them, which stays put under rotation, so this is allowed.
     expect('kind' in rotateCommand(doc, { tiles: ['t_stairs'], entities: [] })).toBe(true);
   });

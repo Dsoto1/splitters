@@ -7,6 +7,7 @@ const BUFFER_TICKS = TICK_RATE * 2;
 interface Frame {
   tick: number;
   players: Map<number, PlayerSnapshot>;
+  projectiles: Map<number, [number, number, number]>;
 }
 
 export interface RemotePose {
@@ -17,6 +18,8 @@ export interface RemotePose {
   yaw: number;
   pitch: number;
   alive: boolean;
+  weapon: number;
+  powerups: number;
   state?: string;
 }
 
@@ -26,18 +29,52 @@ export class Interpolator {
   private latestTick = 0;
   private latestAt = 0;
 
-  push(tick: number, players: PlayerSnapshot[]): void {
+  push(tick: number, players: PlayerSnapshot[], projectiles: [number, number, number, number][] = []): void {
     if (tick <= this.latestTick && this.frames.length) return;
-    this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])) });
+    this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])), projectiles: new Map(projectiles.map(([id, x, y, z]) => [id, [x, y, z]])) });
     this.latestTick = tick;
     this.latestAt = performance.now();
     while (this.frames.length > 2 && this.frames[0]!.tick < tick - BUFFER_TICKS) this.frames.shift();
   }
 
+  /** The (fractional) server tick remote players are currently drawn at. Sent with inputs for lag compensation. */
+  renderTick(now: number = performance.now()): number {
+    if (!this.frames.length) return 0;
+    const estServerTick = this.latestTick + ((now - this.latestAt) / 1000) * TICK_RATE;
+    return Math.min(estServerTick - INTERP_DELAY_TICKS, this.latestTick);
+  }
+
+  /** The two buffered frames around `renderTick` and the blend factor between them. */
+  private bracket(renderTick: number): { a: Frame; b: Frame; t: number } {
+    let a = this.frames[0]!;
+    let b = a;
+    for (const f of this.frames) {
+      if (f.tick <= renderTick) a = f;
+      if (f.tick >= renderTick) {
+        b = f;
+        break;
+      }
+      b = f;
+    }
+    const span = b.tick - a.tick;
+    return { a, b, t: span > 0 ? Math.max(0, Math.min(1, (renderTick - a.tick) / span)) : 1 };
+  }
+
+  /** Interpolated projectile positions by ID. */
+  sampleProjectiles(now: number = performance.now()): Map<number, [number, number, number]> {
+    const out = new Map<number, [number, number, number]>();
+    if (!this.frames.length) return out;
+    const { a, b, t } = this.bracket(this.renderTick(now));
+    for (const [id, pb] of b.projectiles) {
+      const pa = a.projectiles.get(id) ?? pb;
+      out.set(id, [pa[0] + (pb[0] - pa[0]) * t, pa[1] + (pb[1] - pa[1]) * t, pa[2] + (pb[2] - pa[2]) * t]);
+    }
+    return out;
+  }
+
   sample(now: number = performance.now()): RemotePose[] {
     if (!this.frames.length) return [];
-    const estServerTick = this.latestTick + ((now - this.latestAt) / 1000) * TICK_RATE;
-    const renderTick = Math.min(estServerTick - INTERP_DELAY_TICKS, this.latestTick);
+    const renderTick = this.renderTick(now);
     let a = this.frames[0]!;
     let b = a;
     for (const f of this.frames) {
@@ -64,6 +101,8 @@ export class Interpolator {
         yaw: from.yaw + angleDelta(from.yaw, pb.yaw) * blend,
         pitch: from.pitch + (pb.pitch - from.pitch) * blend,
         alive: pb.alive === 1,
+        weapon: pb.w,
+        powerups: pb.pu,
         state: pb.st,
       });
     }

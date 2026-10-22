@@ -4,6 +4,15 @@
 
 Policy recap: shipped content is hand-made by people, either by us or by human artists under a free licence. No generated content (OPEN_QUESTIONS.md, "Decisions"). Prefer packs from **named creators** over open aggregators, where machine-generated uploads are harder to rule out.
 
+## Imported so far
+
+The authoritative per-file list is generated at `content/provenance.json` (`pnpm content:build`). Source files and each pack's licence live in `assets-src/<pack>/`.
+
+| Pack | Licence (verified in the download) | Used for |
+|---|---|---|
+| Quaternius — Ultimate Gun Pack (itch.io "50+ LowPoly Guns") | CC0 1.0 | Pistol, revolver, SMG, assault rifle, shotgun, sniper rifle, bayonet (knife) |
+| Kenney — Blaster Kit 2.1 | CC0 1.0 | Grenade launcher (recoloured blaster-h), grenade projectile |
+
 ## Licence tiers
 
 | Tier | Licences | Obligations | Use for |

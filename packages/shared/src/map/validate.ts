@@ -1,5 +1,6 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
+import { getItem } from '../sim/items.ts';
 import { buildOccupancy, cellKey } from './geometry.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument } from './schema.ts';
@@ -104,6 +105,14 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     if (!occ || !occ.def.floors.includes(occ.level)) {
       issues.push({ severity: 'warning', code: 'spawn.no_floor', message: `spawn ${s.id} is not above a tile floor`, targetId: s.id });
     }
+  }
+
+  const pickups = map.entities.filter((e) => e.kind === 'pickup');
+  for (const p of pickups) {
+    if (!getItem(p.item)) issues.push({ severity: 'error', code: 'pickup.unknown', message: `pickup ${p.id} uses unknown item "${p.item}"`, targetId: p.id });
+  }
+  if (!pickups.some((p) => getItem(p.item)?.effect.kind === 'health')) {
+    issues.push({ severity: 'suggestion', code: 'pickup.no_health', message: 'no health pickups: fights will snowball' });
   }
 
   const { min, max } = map.metadata.recommendedPlayers;

@@ -40,7 +40,27 @@ button.primary:hover { background: #ffc061; }
 #crosshair::after { top: 8px; left: 0; height: 2px; width: 18px; }
 #hitmarker { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; opacity: 0; border: 2px solid var(--danger); transform: rotate(45deg); transition: opacity 0.15s; }
 #hitmarker.on { opacity: 1; transition: none; }
-#health { position: absolute; left: 24px; bottom: 20px; font-size: 40px; font-weight: 700; text-shadow: 0 1px 3px #000; }
+#vitals { position: absolute; left: 24px; bottom: 20px; display: flex; gap: 18px; align-items: baseline; text-shadow: 0 1px 3px #000; font-variant-numeric: tabular-nums; }
+#health { font-size: 40px; font-weight: 700; }
+#health::before { content: '+ '; color: #e23b3b; font-size: 26px; }
+#armor { font-size: 28px; font-weight: 700; color: #7fb4ff; }
+#armor:empty, #health:empty { display: none; }
+#armor::before { content: '◆ '; font-size: 18px; }
+#ammo { position: absolute; right: 24px; bottom: 44px; text-align: right; text-shadow: 0 1px 3px #000; display: flex; flex-direction: column; font-variant-numeric: tabular-nums; }
+#weapon-name { font-size: 14px; color: var(--muted); }
+#ammo-count { font-size: 34px; }
+#ammo-count.low { color: var(--danger); }
+#weapon-bar { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
+#weapon-bar span { min-width: 30px; padding: 3px 8px; border-radius: 4px; background: var(--panel); color: #666; font-size: 12px; text-align: center; }
+#weapon-bar span.owned { color: var(--fg); }
+#weapon-bar span.held { background: var(--accent); color: #1a1205; font-weight: 700; }
+#powerups { position: absolute; left: 24px; bottom: 74px; display: flex; flex-direction: column; gap: 4px; font-weight: 700; text-shadow: 0 1px 3px #000; }
+#pickup-msg { position: absolute; left: 50%; top: 62%; transform: translateX(-50%); font-weight: 600; text-shadow: 0 1px 3px #000; opacity: 0; transition: opacity 0.3s; }
+#pickup-msg.on { opacity: 1; transition: none; }
+#scope { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, transparent 0 32vh, rgba(0, 0, 0, 0.92) 32.5vh); }
+#scope::before, #scope::after { content: ''; position: absolute; background: rgba(0, 0, 0, 0.8); }
+#scope::before { left: 50%; top: 18vh; bottom: 18vh; width: 1px; }
+#scope::after { top: 50%; left: calc(50% - 32vh); right: calc(50% - 32vh); height: 1px; }
 #timer { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 20px; font-variant-numeric: tabular-nums; background: var(--panel); padding: 4px 12px; border-radius: 6px; }
 #feed { position: absolute; top: 14px; right: 16px; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; font-size: 14px; }
 #feed div { background: var(--panel); padding: 3px 8px; border-radius: 4px; }

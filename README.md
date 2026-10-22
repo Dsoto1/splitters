@@ -2,7 +2,7 @@
 
 An original browser-first arcade FPS and community creation platform with a built-in MapMaker (grid construction through scripted co-op scenarios), full Player Bots, scenario NPCs, and a deliberately chaotic cross-era character roster. Inspired by the design lessons of classic console arena shooters; uses no proprietary assets, names, or content.
 
-**Status:** Phase 1 (vertical slice). M1 (MapMaker + instant TEST) and M1.5 (materials, themes, Paint tool) done. See [`docs/PHASE1.md`](docs/PHASE1.md).
+**Status:** Phase 1 (vertical slice). M1 (MapMaker + instant TEST), M1.5 (materials, themes, Paint tool) and M2 (six weapons, pickups, powerups, lag compensation) done. See [`docs/PHASE1.md`](docs/PHASE1.md).
 **Stack direction:** TypeScript + Babylon.js client (WebGPU, WebGL2 fallback); headless dedicated authoritative server.
 
 ## Quick start
@@ -17,10 +17,10 @@ pnpm dev:client   # open http://localhost:5173
 
 The menu offers **MapMaker**, **Play offline vs bots** (no server needed) and **Play online** (needs `dev:server`).
 
-- **Playing:** WASD move · Space jump · Left mouse fire · Tab scoreboard · F3 performance/bot overlay · Esc twice to leave.
+- **Playing:** WASD move · Space jump · LMB fire · RMB zoom (sniper) · R reload · 1–6 / wheel / Q switch weapons · Tab scoreboard · F3 performance/bot overlay · Esc twice to leave.
 - **MapMaker:** pick a piece and click to place · R rotate · right-click erase · Select tool (V) to click/drag/Shift-select · Del delete · Ctrl+D duplicate · Ctrl+Z / Ctrl+Y undo/redo · PgUp/PgDn change floor · RMB drag look, WASD/QE fly, wheel zoom · B Paint tool: pick a material + tint, click surfaces (scope: surface / piece type / level / map), Alt-click picks a style · F5 or ▶ TEST to play the map instantly with bots.
 
-`pnpm test` · `pnpm typecheck` · `pnpm validate-map maps/phase0_arena.json` · `pnpm bench 32 60` · `pnpm build && pnpm e2e` (browser tests)
+`pnpm test` · `pnpm typecheck` · `pnpm validate-map maps/phase0_arena.json` · `pnpm bench 32 60` · `pnpm build && pnpm e2e` (browser tests) · `pnpm content:build` / `content:check` (imported models) · `?mode=assets` (asset viewer)
 
 ## Repository layout
 
@@ -30,6 +30,7 @@ The menu offers **MapMaker**, **Play offline vs bots** (no server needed) and **
 | `packages/server` | Dedicated authoritative WebSocket server, instrumentation, `validate-map` and `bench` tools |
 | `packages/client` | Babylon.js browser client: MapMaker (`src/editor`), game sessions with prediction/interpolation/HUD (`src/game`), local and network transports |
 | `maps/` | Map documents (JSON) |
+| `content/`, `assets-src/`, `tools/content/` | Imported model manifest + provenance, licensed source files, content build |
 | `e2e/` | Playwright browser checks (editor loop, online clients) |
 | `docs/` | Specs, open questions, Phase 0 report |
 

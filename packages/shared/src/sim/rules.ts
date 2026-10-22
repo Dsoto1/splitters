@@ -7,7 +7,8 @@ export interface MatchRules {
   /** 0 = no time limit. */
   timeLimitSeconds: number;
   respawnDelayTicks: number;
-  startingWeapon: string;
+  /** Weapons every player spawns with; the last one is held. */
+  startingWeapons: string[];
   /** Ticks the results screen stays up before the next round starts. */
   intermissionTicks: number;
 }
@@ -17,6 +18,6 @@ export const DEFAULT_DEATHMATCH_RULES: MatchRules = {
   scoreLimit: 15,
   timeLimitSeconds: 600,
   respawnDelayTicks: Math.round(TICK_RATE * 2),
-  startingWeapon: 'core.rifle',
+  startingWeapons: ['core.knife', 'core.pistol'],
   intermissionTicks: TICK_RATE * 6,
 };

@@ -10,6 +10,8 @@ export type Migration = (doc: Record<string, unknown>) => Record<string, unknown
 export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migration>([
   // v1 -> v2: tiles gained optional per-surface styles. Absent means "theme default", so v1 data is already valid.
   [1, (doc) => ({ ...doc })],
+  // v2 -> v3: new `pickup` entity kind. Existing entities are unchanged.
+  [2, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

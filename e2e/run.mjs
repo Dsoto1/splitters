@@ -102,6 +102,13 @@ async function editorFlow(browser) {
   await page.selectOption('#ed-scope', 'surface');
   await page.keyboard.press('Escape');
 
+  // Pickups: place a health pack in the start room.
+  await page.click('[data-tool="pickup:core.health_small"]');
+  await clickWorld(-2, -2);
+  await page.keyboard.press('Escape');
+  d = await doc();
+  check(d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.health_small'), 'places a pickup');
+
   await page.keyboard.press('F5');
   await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: 20000 });
   const ms = await page.evaluate(() => window.__testStartMs);
@@ -120,6 +127,20 @@ async function editorFlow(browser) {
   await page.click('#ed-open');
   const lib = await page.$$eval('#ed-library li', (ls) => ls.map((l) => l.textContent));
   check(lib.some((t) => t.includes('Untitled Map')), 'saved map is listed in the library');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+}
+
+async function offlineFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  const inv = await page.evaluate(() => [...window.__cs.local.inventory.keys()]);
+  check(inv.join(',') === '1,2', `offline match spawns with knife + pistol (${inv})`);
+  await page.waitForTimeout(1500);
+  const meshes = await page.evaluate(() => document.getElementById('ammo-count').textContent);
+  check(/\d+ \/ \d+/.test(meshes ?? ''), `HUD shows ammo (${meshes})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
 }
 
@@ -149,6 +170,7 @@ try {
   await sleep(1500);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   await editorFlow(browser);
+  await offlineFlow(browser);
   await onlineFlow(browser);
   await browser.close();
 } catch (e) {

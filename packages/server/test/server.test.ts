@@ -5,7 +5,7 @@ import { parseClientMessage, startServer, type RunningServer } from '../src/serv
 
 const room: MapDocument = {
   format: 'chronosplit.map',
-  formatVersion: 2,
+  formatVersion: 3,
   metadata: {
     id: 'test_room',
     name: 'Test Room',
@@ -85,7 +85,9 @@ describe('dedicated server', () => {
     expect(wa.map.metadata.id).toBe('test_room');
     await a.waitFor('roster', (r) => r.players.length === 2);
 
-    await a.waitFor('snapshot', (s) => s.players.length === 2);
+    const first = await a.waitFor('snapshot', (s) => s.players.length === 2);
+    // Each client gets its own private inventory: knife (slot 1) and pistol (slot 2) at spawn.
+    expect(first.me?.inv.map((w) => w[0])).toEqual([1, 2]);
     const kill = new Promise<void>((resolve, reject) => {
       const iv = setInterval(() => {
         const snap = a.latest!;
@@ -145,5 +147,9 @@ describe('client message parsing', () => {
     expect(parseClientMessage(JSON.stringify({ t: 'input', inputs: new Array(33).fill({ seq: 1, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0 }) }))).toBeNull();
     expect(parseClientMessage('{"t":"admin"}')).toBeNull();
     expect(parseClientMessage('{"t":"ping","id":1,"ct":2}')).toEqual({ t: 'ping', id: 1, ct: 2 });
+    expect(parseClientMessage('{"t":"input","inputs":[{"seq":1,"forward":0,"right":0,"yaw":0,"pitch":0,"buttons":0,"weapon":3,"viewTick":99}]}')).toEqual({
+      t: 'input',
+      inputs: [{ seq: 1, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0, weapon: 3, viewTick: 99 }],
+    });
   });
 });

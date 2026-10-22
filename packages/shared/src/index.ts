@@ -10,6 +10,7 @@ export * from './sim/constants.ts';
 export * from './sim/physics.ts';
 export * from './sim/movement.ts';
 export * from './sim/weapons.ts';
+export * from './sim/items.ts';
 export * from './sim/rules.ts';
 export * from './protocol.ts';
 export * from './bots/profile.ts';
