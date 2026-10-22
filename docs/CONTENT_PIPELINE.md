@@ -1,12 +1,29 @@
-# Content Pipeline
+# Content Pipeline — Building the Sandbox
 
-**Status:** proposal, adopted direction. All shipped content (characters, environment kits, props, weapons, audio, UI, official maps) is made or licensed in-house. Players build maps in MapMaker only from catalog content. There are no player-uploaded models, textures or audio (see `OPEN_QUESTIONS.md`, "Decisions").
+**Status:** proposal, adopted direction.
+
+The team hand-makes the toy box: building pieces, themes, props, interactive objects, characters, weapons, sounds and the MapMaker tools. Players bring the imagination and build maps from those pieces. There are no player-uploaded assets and no generated content (see `OPEN_QUESTIONS.md`, "Decisions").
+
+## 0. What players get to play with
+
+Breadth matters more than polish per item: the goal is that two players with the same toy box build maps that look and play nothing alike. Every item must also *combine* with the others (shared grid, ports, scale and material rules), so pieces from different themes can sit side by side.
+
+| Toy box | Vertical slice (M1–M6) | Growth after the slice |
+|---|---|---|
+| Structural pieces | ~15–20 graybox tiles (11 today) | More shapes per family: big rooms, ramps, bridges, balconies, pits, windows, open-air platforms |
+| Themes (visual kits for every piece) | 1 hand-made theme + the prototype grid look | 3–4 themes in Phase 2, then one per world family (tomb, gothic, lab, space station…) |
+| Props / dressing | Small set (crates, barrels, cover, lights) | Per-theme prop sets, freely placed |
+| Interactive objects | Doors, buttons, destructibles, trigger volumes, pickups, spawners | Elevators, teleporters, hazards, turrets, vehicles later |
+| Logic blocks | WHEN → IF → DO with a starter set of events/conditions/actions, plus templates | More blocks and templates, then the visual graph |
+| Characters | 12 | Toward the roster targets in CHARACTERS_BOTS_V2 §9 |
+| Weapons and items | 6 weapon roles, health/armor, 2 powerups | 20–30 weapons |
+| Audio | Weapon/pickup/UI sounds, 1 ambience and music set | Ambience and music per theme; placeable sound emitters |
 
 ## 1. Principles
 
 1. **Content is data plus assets, referenced by stable content ID.** Gameplay code never names a specific character, tile or weapon (master spec v1 §23 rule 2).
 2. **Gameplay shape and visual dressing are separate.** Collision, navigation and hitboxes come from data (tile cells/ports/solids, capsule classes). Art meshes dress that shape. Visuals can change, or whole themes swap (v1 §8.6), without touching gameplay.
-3. **Every asset has a provenance record** (who or what made it, under which license) and passes the originality review before it ships (CHARACTERS_BOTS_V2 §2).
+3. **Hand-made, no generated content.** Shipped assets are authored by the team (or, case by case, licensed from conventional asset libraries made by people). Generative AI is not used to create shipped models, textures, sounds, music, voices or writing. Every asset records its author and licence, and characters pass the originality review (CHARACTERS_BOTS_V2 §2).
 4. **Budgets are checked by machines.** CI rejects assets over budget, with a wrong skeleton, without provenance, or with a broken reference. People review taste, readability and originality.
 5. **Our own tools first.** Official maps are built in MapMaker, so the creator tools get used daily by the people shipping the game.
 
@@ -37,7 +54,7 @@ assets-src/                 # source files (.blend, .psd, .wav): Git LFS or exte
 Blender / DCC export (glTF 2.0)
   -> validate (gltf-validator, naming, scale, skeleton)
   -> optimise (gltf-transform: dedupe, weld, meshopt compression, KTX2/Basis textures)
-  -> generate LODs (simplify) and a thumbnail/portrait render
+  -> build lower-detail LODs by mesh simplification, and render a thumbnail/portrait
   -> budget check
   -> content-hashed output in dist/content/  (CDN-ready, immutable, cacheable)
   -> registry entry updated with hashes + measured stats
@@ -62,7 +79,7 @@ Run it with `pnpm content:build` (local) and `pnpm content:check` (CI, fails on 
 
 1. **Concept:** DNA sheet (era, archetype, species, body family, personality, twist, motif), then a batch of silhouette thumbnails.
 2. **Originality gate 1:** checklist §2.2. No prompts or briefs that name existing franchise characters.
-3. **Model:** modular parts on the **shared skeleton** for the body family (spec published as `docs/RIG_STANDARD.md` before M5).
+3. **Model (by hand):** modular parts on the **shared skeleton** for the body family (spec published as `docs/RIG_STANDARD.md` before M5).
 4. **Rig check:** automated bone names/hierarchy/rest pose plus deformation test poses.
 5. **Materials and LODs** via the build step.
 6. **Data:** `characters/<id>.json` (default bot profile, voice set, animation attitude, tags).
@@ -82,24 +99,17 @@ Run it with `pnpm content:build` (local) and `pnpm content:check` (CI, fails on 
 
 ### Audio
 
-- Original recordings and synthesis first. Licensed libraries second.
-- Library rules: **CC0 or a commercial licence only.** No CC-BY-NC, no "personal use". CC-BY is allowed only with an attribution entry. Every file's licence and source URL go into provenance.
+- Original recordings, foley and synthesis by the team.
+- If a conventional (human-recorded) sound library is ever used, it must be **CC0 or a commercial licence**. No CC-BY-NC, no "personal use". CC-BY is allowed only with an attribution entry, and every file's licence and source go into provenance.
 - Loudness normalisation and trimming run in the build step.
 
 ### Official maps
 
 - Built in MapMaker, saved to `maps/`, validated in CI (`validate-map`), and bot-tested with the headless bench (no stuck bots, every spawn reachable).
 
-## 5. AI-assisted tools: allowed as raw material, with rules
+## 5. In-house tools to build
 
-Connected in this environment: **Meshy** (3D generation/texturing), **Freesound** (sound library), **Artlist** (images, video, music, voice). They are useful for concept exploration, blockouts and placeholder audio.
-
-- Treat output as **raw material**: it always gets human art direction, cleanup, retopology/rigging to our standard, and both originality gates.
-- **Never** prompt with franchise names, specific characters, or "in the style of" a living artist or existing game.
-- Record the tool, plan/tier and date in provenance. **Confirm each service's commercial-use terms for the plan in use before shipping anything derived from it.**
-- Purely machine-generated material may get weak or no copyright protection in some jurisdictions. Substantial human authorship is what makes an asset defensibly *ours*. Get legal advice before relying on AI output for hero characters.
-
-## 6. In-house tools to build
+These are tools for the team's artists and designers. The player-facing creation tools are MapMaker itself (PHASE1.md).
 
 | Tool | Purpose | When |
 |---|---|---|
@@ -109,9 +119,9 @@ Connected in this environment: **Meshy** (3D generation/texturing), **Freesound*
 | `RIG_STANDARD.md` + Blender export preset | One skeleton per body family; one-click compliant export | Before M5 |
 | Character viewer + roster wall | Animation playback, silhouette mode, side-by-side readability | M5 |
 | Kit viewer | Theme art over tile collision; port/doorway clearance overlay | First art theme |
-| `ASSET_SOURCES.md` (generated) | Licence/attribution ledger built from provenance fields | M2, CI-maintained |
+| `ASSET_SOURCES.md` (built by script) | Licence/attribution ledger built from provenance fields | M2, CI-maintained |
 
-## 7. Roles and review
+## 6. Roles and review
 
 - **Content owner** per pack approves additions.
 - **Originality reviewer** signs both character gates (a second person, not the author).

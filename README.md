@@ -46,7 +46,7 @@ The menu offers **MapMaker**, **Play offline vs bots** (no server needed) and **
 Also:
 
 - [`docs/PHASE1.md`](docs/PHASE1.md) — vertical-slice milestones, rendering engine decision, M1 status
-- [`docs/CONTENT_PIPELINE.md`](docs/CONTENT_PIPELINE.md) — in-house content pipeline: packs, build/validation, budgets, provenance, tools
+- [`docs/CONTENT_PIPELINE.md`](docs/CONTENT_PIPELINE.md) — the hand-made toy box players build with, and the pipeline/tools the team uses to make it
 - [`docs/PHASE0.md`](docs/PHASE0.md) — what Phase 0 proves, measurements, known gaps
 - [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md) — remaining inconsistencies in the v2 pack
 - [`docs/archive/MASTER_SPEC_V1.md`](docs/archive/MASTER_SPEC_V1.md) — superseded v1 master spec, kept for detail v2 doesn't yet cover
