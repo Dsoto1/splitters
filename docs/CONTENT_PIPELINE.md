@@ -103,6 +103,7 @@ Run it with `pnpm content:build` (local) and `pnpm content:check` (CI, fails on 
 - Original recordings, foley and synthesis by the team.
 - If a conventional (human-recorded) sound library is ever used, it must be **CC0 or a commercial licence**. No CC-BY-NC, no "personal use". CC-BY is allowed only with an attribution entry, and every file's licence and source go into provenance.
 - Loudness normalisation and trimming run in the build step.
+- Current state: [`AUDIO.md`](AUDIO.md). Kenney CC0 packs plus an in-house weapon synthesiser, listed in `content/sounds.json`.
 
 ### Official maps
 

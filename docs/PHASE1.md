@@ -97,7 +97,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 
 ### Known M2 gaps
 
-- **No audio yet.** Weapon, pickup and explosion sounds come with the audio pass (Kenney/Freesound CC0, Sonniss).
+- **Audio:** the first audio pass has landed (see [`AUDIO.md`](AUDIO.md)). Gunshots are synthesised in-house as placeholders until recorded CC0 gunshots are imported.
 - **Placeholder models.** Viewmodels are bare guns, with no hands or arms until the character rig lands in M5. Remote players are still capsules holding a gun.
 - **Projectiles are not lag-compensated** (standard for slow projectiles), and pickups are not predicted client-side.
 - **Bot stuck recoveries rose** with pickup detours (~88 per minute across 32 bots in the bench, up from ~50). Tuning goes with the nav-debug overlay work.

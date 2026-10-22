@@ -1,6 +1,8 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
+  BUTTON_FIRE,
   PhysicsWorld,
+  SPEED_BOOST,
   TICK_DT,
   TICK_RATE,
   WEAPONS_BY_SLOT,
@@ -13,11 +15,13 @@ import {
   type ServerMessage,
   type ServerStats,
 } from '@chronosplit/shared';
+import type { AudioSystem } from '../audio/audio.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { InputState } from './input.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
+import { SessionAudio } from './sessionAudio.ts';
 import type { Transport } from './transport.ts';
 import { DEFAULT_FOV, GameView, slotColor } from './view.ts';
 
@@ -26,6 +30,7 @@ export interface SessionOptions {
   rendererKind: RendererKind;
   canvas: HTMLCanvasElement;
   transport: Transport;
+  audio: AudioSystem;
   /** Label for the pause menu's exit button ("Back to MapMaker", "Leave match"). */
   exitLabel: string;
   showStats: boolean;
@@ -49,6 +54,7 @@ export class GameSession {
   private readonly hud = new Hud();
   private readonly input: InputState;
   private readonly interp = new Interpolator();
+  private readonly sfx: SessionAudio;
   private readonly abort = new AbortController();
   private slot = -1;
   private local: LocalPlayer | null = null;
@@ -82,6 +88,7 @@ export class GameSession {
   constructor(private readonly opts: SessionOptions) {
     this.view = new GameView(opts.engine);
     this.input = new InputState(opts.canvas);
+    this.sfx = new SessionAudio(opts.audio, () => this.slot);
     this.showStats = opts.showStats;
     this.input.onToggle.set('F3', () => (this.showStats = !this.showStats));
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
@@ -91,7 +98,10 @@ export class GameSession {
     this.hud.reset();
 
     const signal = this.abort.signal;
-    const lock = () => void opts.canvas.requestPointerLock();
+    const lock = () => {
+      opts.audio.unlock();
+      void opts.canvas.requestPointerLock();
+    };
     opts.canvas.addEventListener('click', lock, { signal });
     $('resume').addEventListener('click', lock, { signal });
     $('exitmatch').addEventListener('click', () => this.exit(), { signal });
@@ -123,6 +133,7 @@ export class GameSession {
     this.opts.transport.close();
     this.abort.abort();
     this.input.dispose();
+    this.opts.audio.stopAll();
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
@@ -141,6 +152,8 @@ export class GameSession {
         this.slot = msg.slot;
         const geometry = buildMapGeometry(loaded.map);
         this.view.buildMap(loaded.map, geometry);
+        this.sfx.setMap(loaded.map);
+        this.sfx.joined();
         this.local = new LocalPlayer(new PhysicsWorld(geometry));
         this.hud.show();
         this.updatePause();
@@ -170,7 +183,10 @@ export class GameSession {
           this.local.reconcile(me, msg.ack, msg.me);
         }
         this.botStates = msg.players.filter((p) => p.st).map((p) => `  ${this.hud.name(p.s).padEnd(14)} ${p.st}`);
+        let poses: ReturnType<Interpolator['sample']> | undefined;
+        const posesNow = () => (poses ??= this.interp.sample());
         for (const ev of msg.ev) {
+          this.sfx.event(ev, posesNow, performance.now());
           if (ev.e === 'shot') {
             if (ev.s === this.slot) {
               if (ev.hit.some((h) => h !== null)) this.hud.hit();
@@ -234,14 +250,21 @@ export class GameSession {
         this.acc -= TICK_DT;
         const sample = this.input.sample();
         moving ||= sample.forward !== 0 || sample.right !== 0;
+        const before = { ...local.state.pos };
         const { input: cmd, shot } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
         this.outbox.push(cmd);
+        this.sfx.localStep(local, before, local.speedTicks > 0 ? SPEED_BOOST : 1);
+        const ammo = local.inventory.get(local.held);
+        if (local.alive && sample.buttons & BUTTON_FIRE && ammo && ammo[0] === 0 && ammo[1] === 0 && local.weapon?.magazine) this.sfx.dryFire(now);
         if (shot) {
+          this.sfx.localShot(shot.def);
           this.view.kick(shot.def);
           for (const end of shot.ends) this.view.addTracer(local.eye, end, shot.def.view.tracer, 60);
         }
       }
       this.opts.transport.sendInputs(this.outbox.splice(0));
+      this.sfx.localWeapon(local);
+      this.opts.audio.setListener(local.eye, this.input.yaw, this.input.pitch);
 
       const weapon = local.alive ? local.weapon : undefined;
       const zoomed = !!weapon?.view.zoomFov && this.input.zooming && local.raiseTicks === 0 && local.reloadTicks === 0;
@@ -259,7 +282,9 @@ export class GameSession {
     }
     this.view.updatePickups(this.taken, now);
     this.view.updateProjectiles(this.interp.sampleProjectiles(now));
-    this.view.updateAvatars(this.interp.sample(now), this.slot);
+    const poses = this.interp.sample(now);
+    this.view.updateAvatars(poses, this.slot);
+    this.sfx.remoteSteps(poses);
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot);
 
     this.frames++;

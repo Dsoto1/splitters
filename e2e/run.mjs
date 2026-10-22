@@ -141,6 +141,14 @@ async function offlineFlow(browser) {
   await page.waitForTimeout(1500);
   const meshes = await page.evaluate(() => document.getElementById('ammo-count').textContent);
   check(/\d+ \/ \d+/.test(meshes ?? ''), `HUD shows ammo (${meshes})`);
+  // A click is the user gesture that starts audio; bots fighting then make sounds.
+  await page.click('#resume');
+  await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: 15000 });
+  const loaded = await page.evaluate(() => ({ ...window.__audio.stats, total: window.__audio.total }));
+  check(loaded.failed === 0 && loaded.loaded === loaded.total, `all ${loaded.total} sounds load and decode (${loaded.failed} failed)`);
+  await page.waitForFunction(() => window.__audio.stats.played > 0, null, { timeout: 20000 }).catch(() => {});
+  const played = await page.evaluate(() => window.__audio.stats.played);
+  check(played > 0, `match events play sounds (${played} played)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
 }
 

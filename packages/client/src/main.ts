@@ -1,6 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { initPhysics, loadMap } from '@chronosplit/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
+import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { EditorApp, type TestRequest } from './editor/editorApp.ts';
 import { LocalTransport } from './game/localTransport.ts';
@@ -26,6 +27,19 @@ function storage(key: string, value?: string): string | null {
 }
 
 type Mode = 'menu' | 'editor' | 'game';
+
+// One audio system for the whole app. Browsers only start audio after a user
+// gesture, so the first click or key press unlocks it.
+const audio = new AudioSystem();
+audio.setVolume(Number(storage('cs.volume') ?? 0.8));
+const volumeInput = $<HTMLInputElement>('volume');
+volumeInput.value = String(Math.round(audio.getVolume() * 100));
+volumeInput.addEventListener('input', () => {
+  audio.setVolume(Number(volumeInput.value) / 100);
+  storage('cs.volume', String(audio.getVolume()));
+});
+for (const type of ['pointerdown', 'keydown'] as const) window.addEventListener(type, () => audio.unlock(), { capture: true });
+(window as unknown as { __audio: AudioSystem }).__audio = audio;
 
 /** Top-level shell: one Babylon engine shared by the main menu, MapMaker and game sessions. */
 class App {
@@ -132,6 +146,7 @@ class App {
       rendererKind: this.kind,
       canvas: this.canvas,
       transport,
+      audio,
       exitLabel: o.exitLabel,
       exitOnF5: o.exitOnF5,
       showStats: params.has('stats'),

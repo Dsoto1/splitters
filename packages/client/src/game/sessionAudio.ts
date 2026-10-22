@@ -1,0 +1,183 @@
+import { PLAYER, getItem, type MapDocument, type GameEvent, type Vec3, type WeaponDefinition } from '@chronosplit/shared';
+import type { AudioSystem, SoundId } from '../audio/audio.ts';
+import type { LocalPlayer } from './prediction.ts';
+import type { RemotePose } from './interpolation.ts';
+
+/** Metres walked per footstep. */
+const STRIDE = 2.3;
+/** Kills this close together (seconds) count towards a multi-kill. */
+const MULTI_KILL_WINDOW = 4;
+/** Shotgun pellets that each make an impact sound (the rest would only add mush). */
+const MAX_IMPACTS_PER_SHOT = 2;
+
+const fireSound = (weaponId: string) => `fire.${weaponId.replace(/^core\./, '')}` as SoundId;
+const tuple = (p: readonly number[]): Vec3 => ({ x: p[0]!, y: p[1]!, z: p[2]! });
+
+/**
+ * Turns one match's events and movement into sounds. Local actions (own shots,
+ * footsteps, reloads) play immediately from prediction and without position;
+ * everything else is positioned in the world.
+ */
+export class SessionAudio {
+  private readonly pickupAt = new Map<string, Vec3>();
+  private readonly strides = new Map<number, { x: number; z: number; acc: number }>();
+  private localStride = 0;
+  private wasGrounded = true;
+  private fallSpeed = 0;
+  private prevReload = 0;
+  private prevHeld = 0;
+  private dryFireAt = 0;
+  private recentKills: number[] = [];
+
+  constructor(
+    private readonly audio: AudioSystem,
+    private readonly localSlot: () => number,
+  ) {}
+
+  setMap(doc: MapDocument): void {
+    for (const e of doc.entities) if (e.kind === 'pickup') this.pickupAt.set(e.id, tuple(e.position));
+  }
+
+  joined(): void {
+    this.audio.play('announce.fight');
+  }
+
+  /** A shot the local player just fired (predicted). */
+  localShot(def: WeaponDefinition): void {
+    this.audio.play(fireSound(def.id));
+  }
+
+  /** The fire button is down with an empty magazine. */
+  dryFire(now: number): void {
+    if (now - this.dryFireAt < 300) return;
+    this.dryFireAt = now;
+    this.audio.play('dryfire');
+  }
+
+  /** Per-tick local movement: footsteps and landings. */
+  localStep(local: LocalPlayer, before: Vec3, speedScale: number): void {
+    const s = local.state;
+    if (!local.alive) {
+      this.wasGrounded = true;
+      return;
+    }
+    if (s.grounded) {
+      if (!this.wasGrounded && this.fallSpeed > 5) this.audio.play('land', { gain: Math.min(1.4, this.fallSpeed / 9) });
+      this.localStride += Math.hypot(s.pos.x - before.x, s.pos.z - before.z);
+      if (this.localStride > STRIDE * speedScale) {
+        this.localStride = 0;
+        this.audio.play('footstep', { gain: 0.7 });
+      }
+    } else {
+      this.fallSpeed = -s.velY;
+    }
+    this.wasGrounded = s.grounded;
+  }
+
+  /** Per-frame local weapon state: reload and weapon-raise cues. */
+  localWeapon(local: LocalPlayer): void {
+    if (local.alive) {
+      if (local.held !== this.prevHeld && this.prevHeld !== 0) this.audio.play('weapon.raise');
+      if (local.reloadTicks > 0 && this.prevReload === 0) this.audio.play('reload.start');
+      if (local.reloadTicks === 0 && this.prevReload > 0 && local.held === this.prevHeld) this.audio.play('reload.end');
+    }
+    this.prevHeld = local.alive ? local.held : 0;
+    this.prevReload = local.alive ? local.reloadTicks : 0;
+  }
+
+  /** Per-frame remote movement: footsteps from interpolated poses. */
+  remoteSteps(poses: readonly RemotePose[]): void {
+    const me = this.localSlot();
+    for (const p of poses) {
+      if (p.slot === me) continue;
+      const prev = this.strides.get(p.slot);
+      if (!p.alive || !prev) {
+        this.strides.set(p.slot, { x: p.x, z: p.z, acc: 0 });
+        continue;
+      }
+      const d = Math.hypot(p.x - prev.x, p.z - prev.z);
+      // Teleports (respawns) are not steps.
+      prev.acc = d > 3 ? 0 : prev.acc + d;
+      prev.x = p.x;
+      prev.z = p.z;
+      if (prev.acc > STRIDE) {
+        prev.acc = 0;
+        this.audio.play('footstep', { at: { x: p.x, y: p.y, z: p.z } });
+      }
+    }
+  }
+
+  /** Server events. `poses` gives remote positions for events that carry none. */
+  event(ev: GameEvent, poses: () => readonly RemotePose[], now: number): void {
+    const me = this.localSlot();
+    const poseOf = (slot: number): Vec3 | undefined => {
+      const p = poses().find((q) => q.slot === slot);
+      return p && { x: p.x, y: p.y + PLAYER.eyeHeight, z: p.z };
+    };
+    switch (ev.e) {
+      case 'shot': {
+        const mine = ev.s === me;
+        // Own shots already played from prediction.
+        if (!mine) this.audio.play(fireSound(ev.w), { at: tuple(ev.from) });
+        let impacts = 0;
+        ev.to.forEach((to, i) => {
+          if (impacts >= MAX_IMPACTS_PER_SHOT) return;
+          impacts++;
+          const hit = ev.hit[i];
+          if (hit === me) return; // the hurt sound covers it
+          this.audio.play(hit === null || hit === undefined ? 'impact.world' : 'impact.body', { at: tuple(to) });
+        });
+        if (mine && ev.hit.some((h) => h !== null)) this.audio.play('ui.hit');
+        break;
+      }
+      case 'melee': {
+        if (ev.s !== me) {
+          const at = poseOf(ev.s);
+          if (at) this.audio.play('fire.knife', { at });
+          if (at && ev.hit !== null) this.audio.play('knife.hit', { at });
+        } else if (ev.hit !== null) {
+          this.audio.play('knife.hit');
+          this.audio.play('ui.hit');
+        }
+        break;
+      }
+      case 'explode': {
+        const at = tuple(ev.p);
+        this.audio.play('explosion', { at });
+        this.audio.play('explosion.debris', { at });
+        break;
+      }
+      case 'pickup': {
+        const kind = getItem(ev.item)?.effect.kind ?? 'ammo';
+        const id = `pickup.${kind}` as SoundId;
+        if (ev.s === me) this.audio.play(id);
+        else {
+          const at = this.pickupAt.get(ev.id) ?? poseOf(ev.s);
+          if (at) this.audio.play(id, { at, gain: 0.7 });
+        }
+        break;
+      }
+      case 'kill': {
+        const at = ev.victim === me ? undefined : poseOf(ev.victim);
+        if (ev.victim === me) this.audio.play('death');
+        else if (at) this.audio.play('death', { at });
+        if (ev.killer === me && ev.victim !== me) {
+          this.audio.play('ui.kill');
+          const t = now / 1000;
+          this.recentKills = [...this.recentKills.filter((k) => t - k < MULTI_KILL_WINDOW), t];
+          if (this.recentKills.length === 2) this.audio.play('announce.multikill');
+        }
+        break;
+      }
+      case 'round_end':
+        this.audio.play(ev.winner === null ? 'announce.tie' : ev.winner === me ? 'announce.win' : 'announce.lose');
+        break;
+      case 'round_start':
+        this.recentKills = [];
+        this.audio.play('announce.fight');
+        break;
+      case 'spawn':
+        break;
+    }
+  }
+}

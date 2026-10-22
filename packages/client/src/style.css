@@ -31,6 +31,7 @@ button.primary:hover { background: #ffc061; }
 #pause { background: rgba(8, 9, 12, 0.5); }
 #pause button { min-width: 220px; font-size: 18px; }
 #pause .hint { color: var(--muted); font-size: 13px; }
+#pause .volume { display: flex; gap: 10px; align-items: center; color: var(--muted); font-size: 14px; margin-top: 6px; pointer-events: auto; }
 [hidden] { display: none !important; }
 
 #hud { position: fixed; inset: 0; pointer-events: none; }

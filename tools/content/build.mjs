@@ -1,5 +1,6 @@
 // Content build: converts selected third-party source models into normalised
-// GLB files for the client, and writes a provenance/credits ledger.
+// GLB files for the client, copies selected sound files, and writes a
+// provenance/credits ledger.
 //
 //   node tools/content/build.mjs           build everything
 //   node tools/content/build.mjs --check   verify outputs exist, are up to date, within budget, and licensed
@@ -9,7 +10,7 @@
 // Material names are kept so runtime recolouring can target them.
 
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Document, NodeIO } from '@gltf-transform/core';
@@ -20,6 +21,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = join(ROOT, 'content/models.json');
 const OUT_DIR = join(ROOT, 'packages/client/public/models');
 const LEDGER = join(ROOT, 'content/provenance.json');
+const SOUND_MANIFEST = join(ROOT, 'content/sounds.json');
+const SOUND_DIR = join(ROOT, 'packages/client/public/sounds');
 const check = process.argv.includes('--check');
 
 const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
@@ -291,6 +294,55 @@ for (const entry of manifest.models) {
   console.log(`${check ? 'checked' : 'built  '} ${entry.out.padEnd(26)} ${String(tris).padStart(5)} tris ${String(glb.byteLength).padStart(7)} B  ${pack.creator} (${pack.license})`);
 }
 
+// ---------------------------------------------------------------- sounds
+
+// Sound files are shipped as-is (Ogg Vorbis): copied byte for byte, so the
+// check needs no audio tools. Synthesised sounds have no files.
+const sounds = JSON.parse(readFileSync(SOUND_MANIFEST, 'utf8'));
+const soundFiles = new Set();
+for (const [id, sound] of Object.entries(sounds.sounds)) {
+  if (sound.synth) continue;
+  sound.variants.forEach((variant, i) => {
+    const out = `${id}_${i}.ogg`;
+    soundFiles.add(out);
+    const pack = sounds.packs[variant.pack];
+    if (!pack) return void problems.push(`sounds/${out}: unknown pack ${variant.pack}`);
+    if (!existsSync(join(ROOT, pack.licenseFile))) problems.push(`sounds/${out}: licence file missing (${pack.licenseFile})`);
+    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$/.test(pack.license)) problems.push(`sounds/${out}: licence ${pack.license} is not an approved tier`);
+    const src = join(ROOT, 'assets-src', variant.pack, variant.file);
+    if (!existsSync(src)) return void problems.push(`sounds/${out}: source missing (${variant.pack}/${variant.file})`);
+    const data = readFileSync(src);
+    const hash = createHash('sha256').update(data).digest('hex').slice(0, 16);
+    if (data.byteLength > sounds.budgets.maxBytes) problems.push(`sounds/${out}: ${data.byteLength} bytes exceeds budget ${sounds.budgets.maxBytes}`);
+    const outPath = join(SOUND_DIR, out);
+    if (check) {
+      if (!existsSync(outPath)) problems.push(`sounds/${out}: not built (run pnpm content:build)`);
+      else if (createHash('sha256').update(readFileSync(outPath)).digest('hex').slice(0, 16) !== hash) problems.push(`sounds/${out}: out of date (run pnpm content:build)`);
+    } else {
+      mkdirSync(SOUND_DIR, { recursive: true });
+      writeFileSync(outPath, data);
+    }
+    ledger.assets.push({
+      file: `sounds/${out}`,
+      sha256: hash,
+      bytes: data.byteLength,
+      source: `${variant.pack}/${variant.file}`,
+      title: pack.title,
+      creator: pack.creator,
+      url: pack.url,
+      license: pack.license,
+      modifications: [],
+    });
+  });
+}
+// Files left behind by renamed or removed sounds.
+for (const f of existsSync(SOUND_DIR) ? readdirSync(SOUND_DIR) : []) {
+  if (soundFiles.has(f)) continue;
+  if (check) problems.push(`sounds/${f}: not in content/sounds.json (run pnpm content:build)`);
+  else rmSync(join(SOUND_DIR, f));
+}
+console.log(`${check ? 'checked' : 'built  '} ${soundFiles.size} sound files`);
+
 const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
 if (check) {
   if (!existsSync(LEDGER) || readFileSync(LEDGER, 'utf8') !== ledgerText) problems.push('content/provenance.json is out of date (run pnpm content:build)');
@@ -300,4 +352,4 @@ if (problems.length) {
   for (const p of problems) console.error(`ERROR ${p}`);
   process.exit(1);
 }
-console.log(check ? 'content OK' : `wrote ${manifest.models.length} models and content/provenance.json`);
+console.log(check ? 'content OK' : `wrote ${manifest.models.length} models, ${soundFiles.size} sounds and content/provenance.json`);
