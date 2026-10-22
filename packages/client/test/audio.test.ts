@@ -11,7 +11,7 @@ describe('synthesiser', () => {
   it.each(SYNTH_RECIPES)('%s renders a clean, deterministic, audible buffer', (recipe) => {
     const a = synthesize(recipe, 0);
     expect(a.length).toBeGreaterThan(0.05 * SYNTH_RATE);
-    expect(a.length).toBeLessThan(2 * SYNTH_RATE);
+    expect(a.length).toBeLessThanOrEqual(2.5 * SYNTH_RATE);
     let peak = 0;
     let energy = 0;
     for (const s of a) {
@@ -24,9 +24,9 @@ describe('synthesiser', () => {
     expect(Math.sqrt(energy / a.length)).toBeGreaterThan(0.01);
     // Ends at silence (no click when the buffer stops).
     expect(Math.abs(a[a.length - 1]!)).toBeLessThan(1e-3);
-    // Same variant, same samples; different variants differ.
+    // Same variant, same samples; different variants differ (tonal cues have a single variant).
     expect(synthesize(recipe, 0)).toEqual(a);
-    expect(synthesize(recipe, 1)).not.toEqual(a);
+    if (recipe !== 'beep' && recipe !== 'alarm') expect(synthesize(recipe, 1)).not.toEqual(a);
   });
 });
 

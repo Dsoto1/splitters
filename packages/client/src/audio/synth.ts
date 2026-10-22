@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'shotgun' | 'sniper' | 'launcher' | 'swing' | 'dryfire';
+export type SynthRecipe = 'pistol' | 'rifle' | 'shotgun' | 'sniper' | 'launcher' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'shotgun', 'sniper', 'launcher', 'swing', 'dryfire'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'shotgun', 'sniper', 'launcher', 'swing', 'dryfire', 'flame', 'beep', 'alarm'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -227,6 +227,52 @@ function renderDryfire(seed: number): Float32Array<ArrayBuffer> {
   return finish(out);
 }
 
+/** Flame jet: a low, flickering roar of filtered noise that swells and dies away. */
+function renderFlame(seed: number): Float32Array<ArrayBuffer> {
+  const n = Math.ceil(1.6 * SYNTH_RATE);
+  const out = new Float32Array(n);
+  const rnd = noiseSource(seed);
+  const lp = new Biquad('lowpass').set(900, 0.7);
+  const crackle = new Biquad('bandpass').set(2500, 1.5);
+  for (let i = 0; i < n; i++) {
+    const t = i / SYNTH_RATE;
+    const swell = Math.min(1, t / 0.08) * Math.exp(-Math.max(0, t - 0.9) / 0.25);
+    const flicker = 0.75 + 0.25 * Math.sin(t * 37 + Math.sin(t * 11) * 3);
+    const pop = rnd() > 0.9985 ? 3 : 0;
+    out[i] = (lp.run(rnd()) * 3 * flicker + crackle.run(rnd() * (0.3 + pop))) * swell;
+  }
+  return finish(out);
+}
+
+/** Three short warning beeps (proximity mines and traps arming). */
+function renderBeep(): Float32Array<ArrayBuffer> {
+  const n = Math.ceil(0.36 * SYNTH_RATE);
+  const out = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = i / SYNTH_RATE;
+    const k = t % 0.12;
+    const on = k < 0.06 ? Math.min(1, k / 0.003, (0.06 - k) / 0.003) : 0;
+    out[i] = Math.sin(2 * Math.PI * 1900 * t) * on * 0.8;
+  }
+  return finish(out);
+}
+
+/** Two-tone siren for the alarm cue. */
+function renderAlarm(): Float32Array<ArrayBuffer> {
+  const n = Math.ceil(2.4 * SYNTH_RATE);
+  const out = new Float32Array(n);
+  let phase = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / SYNTH_RATE;
+    const f = 620 + 260 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2 * 0.9));
+    phase += (2 * Math.PI * f) / SYNTH_RATE;
+    // A square-ish wave reads as "klaxon" better than a pure sine.
+    const v = Math.tanh(Math.sin(phase) * 3) * 0.6 + Math.sin(phase * 2) * 0.15;
+    out[i] = v * Math.min(1, t / 0.05, (2.4 - t) / 0.2);
+  }
+  return finish(out);
+}
+
 /** Soft-clip, normalise to a fixed peak and fade the last few ms to avoid a pop. */
 function finish(buf: Float32Array<ArrayBuffer>): Float32Array<ArrayBuffer> {
   let peak = 0;
@@ -258,5 +304,11 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
       return renderSwing(seed);
     case 'dryfire':
       return renderDryfire(seed);
+    case 'flame':
+      return renderFlame(seed);
+    case 'beep':
+      return renderBeep();
+    case 'alarm':
+      return renderAlarm();
   }
 }

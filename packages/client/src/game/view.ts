@@ -1,7 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
@@ -28,6 +28,7 @@ import {
 import { MapStyler } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
+import { ScenarioVisuals } from './scenarioVisuals.ts';
 import type { RemotePose } from './interpolation.ts';
 
 const SLOT_COLORS = ['#e6544a', '#4aa3e6', '#f2c14e', '#5cc77a', '#b276e0', '#f28f3b', '#46c9c0', '#e872b0'];
@@ -62,6 +63,7 @@ export class GameView {
   readonly scene: Scene;
   readonly camera: FreeCamera;
   readonly models: ModelLibrary;
+  readonly scenario: ScenarioVisuals;
   private readonly avatars = new Map<number, Avatar>();
   private readonly pickups = new Map<string, PickupVisual>();
   private readonly projectiles = new Map<number, TransformNode>();
@@ -86,6 +88,7 @@ export class GameView {
     this.camera.fov = DEFAULT_FOV;
     this.camera.inputs.clear();
     this.models = new ModelLibrary(this.scene);
+    this.scenario = new ScenarioVisuals(this.scene);
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
     hemi.intensity = 0.8;
@@ -107,6 +110,7 @@ export class GameView {
     const sky = MapStyler.skyColor(doc);
     this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
+    this.scenario.build(doc.entities);
     // Warm the model cache so first switches and pickups don't hitch.
     for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);
     void this.models.load('projectiles/grenade.glb');
@@ -285,6 +289,43 @@ export class GameView {
         mat.alpha = 0.85 * (1 - f);
       },
     });
+  }
+
+  /** Chunks flying out of a broken crate, barrel or wall. */
+  debris(at: Vec3, color: string, size: number): void {
+    for (let k = 0; k < 10; k++) {
+      const s = size * (0.15 + Math.random() * 0.2);
+      const chunk = CreateBox('debris', { size: s }, this.scene);
+      // Each effect disposes its own material when it ends.
+      chunk.material = solid(this.scene, 'debrisMat', color);
+      chunk.isPickable = false;
+      const v = new Vector3((Math.random() - 0.5) * 6, 2 + Math.random() * 4, (Math.random() - 0.5) * 6);
+      const spin = new Vector3(Math.random() * 8, Math.random() * 8, Math.random() * 8);
+      const start = new Vector3(at.x, at.y, at.z);
+      this.effects.push({
+        mesh: chunk,
+        born: performance.now(),
+        ttl: 900,
+        update: (f) => {
+          const t = f * 0.9;
+          chunk.position.set(start.x + v.x * t, Math.max(0.05 + at.y - size, start.y + v.y * t - 10 * t * t), start.z + v.z * t);
+          chunk.rotation.set(spin.x * t, spin.y * t, spin.z * t);
+          chunk.scaling.setAll(f > 0.7 ? (1 - f) / 0.3 : 1);
+        },
+      });
+    }
+  }
+
+  /** Screen position (CSS px) of a world point, or null when it is behind the camera. */
+  project(p: Vec3): { x: number; y: number } | null {
+    const engine = this.scene.getEngine();
+    const w = engine.getRenderWidth();
+    const h = engine.getRenderHeight();
+    const v = Vector3.Project(new Vector3(p.x, p.y, p.z), Matrix.IdentityReadOnly, this.scene.getTransformMatrix(), this.camera.viewport.toGlobal(w, h));
+    if (v.z < 0 || v.z > 1) return null;
+    const canvas = engine.getRenderingCanvas();
+    const scale = canvas ? canvas.clientWidth / w : 1;
+    return { x: v.x * scale, y: v.y * scale };
   }
 
   addTracer(from: Vec3, to: Vec3, color: string, ttlMs = 90): void {

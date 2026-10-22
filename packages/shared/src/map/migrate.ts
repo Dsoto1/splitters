@@ -12,6 +12,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [1, (doc) => ({ ...doc })],
   // v2 -> v3: new `pickup` entity kind. Existing entities are unchanged.
   [2, (doc) => ({ ...doc })],
+  // v3 -> v4: scenario entities (door, button, destructible, zone, trap) and the `logic` block, which defaults to empty.
+  [3, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

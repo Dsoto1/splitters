@@ -13,6 +13,7 @@
 | Hit marker, kill confirm, health pickup | Kenney Interface Sounds (CC0) | |
 | Armor and powerup pickups | Kenney Impact / Sci-Fi Sounds (CC0) | |
 | Announcer | Kenney Voiceover Pack: Fighter (CC0) | "Fight!", "You win", "You lose", "Tie", "Multi kill" |
+| Scenario (M3) | Kenney Sci-Fi / Impact / Interface (CC0) + synthesiser | doors, button press and refusal, spike/crusher/laser traps, crate and wall breaks, chime/buzzer cues, objective and message chimes; synthesised flame roar, mine warning beep and alarm siren |
 
 The synthesiser is ordinary signal processing written by us, in the same spirit as the procedural map materials. Each weapon is a recipe of layers (supersonic crack, filtered noise body, low "thump" sweep, room tail, mechanical clicks, echoes), rendered at load time with fixed seeds, so it always sounds the same. It is a stand-in for recorded gunshots: when we get CC0 recordings (Sonniss GDC bundles, Freesound CC0, our own foley), switch that sound's entry in `content/sounds.json` from `synth` to file variants. No code changes.
 

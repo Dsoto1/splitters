@@ -544,6 +544,204 @@
       "url": "https://kenney.nl/assets/voiceover-pack-fighter",
       "license": "CC0-1.0",
       "modifications": []
+    },
+    {
+      "file": "sounds/door.open_0.ogg",
+      "sha256": "5b7e07eccd4413ad",
+      "bytes": 19616,
+      "source": "kenney-sci-fi-sounds/Audio/doorOpen_000.ogg",
+      "title": "Sci-Fi Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/door.open_1.ogg",
+      "sha256": "8c204ca94eb722d3",
+      "bytes": 21442,
+      "source": "kenney-sci-fi-sounds/Audio/doorOpen_001.ogg",
+      "title": "Sci-Fi Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/door.close_0.ogg",
+      "sha256": "c9134651ebbd7c01",
+      "bytes": 20369,
+      "source": "kenney-sci-fi-sounds/Audio/doorClose_000.ogg",
+      "title": "Sci-Fi Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/door.close_1.ogg",
+      "sha256": "2153e83ff9880c78",
+      "bytes": 21561,
+      "source": "kenney-sci-fi-sounds/Audio/doorClose_001.ogg",
+      "title": "Sci-Fi Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/button.press_0.ogg",
+      "sha256": "ca12dd32103f4014",
+      "bytes": 9653,
+      "source": "kenney-interface-sounds/Audio/switch_003.ogg",
+      "title": "Interface Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/use.denied_0.ogg",
+      "sha256": "0b574cea597d9650",
+      "bytes": 6393,
+      "source": "kenney-interface-sounds/Audio/error_004.ogg",
+      "title": "Interface Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/trap.spikes_0.ogg",
+      "sha256": "e07045693e4a2b3d",
+      "bytes": 6110,
+      "source": "kenney-impact-sounds/Audio/impactMetal_heavy_000.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/trap.spikes_1.ogg",
+      "sha256": "83554049f81f4db9",
+      "bytes": 7279,
+      "source": "kenney-impact-sounds/Audio/impactMetal_heavy_001.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/trap.crusher_0.ogg",
+      "sha256": "112d4f93ddcc370b",
+      "bytes": 10032,
+      "source": "kenney-impact-sounds/Audio/impactPlate_heavy_000.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/trap.laser_0.ogg",
+      "sha256": "72b589eadd417812",
+      "bytes": 7286,
+      "source": "kenney-sci-fi-sounds/Audio/laserSmall_000.ogg",
+      "title": "Sci-Fi Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/break.crate_0.ogg",
+      "sha256": "15ff82332f342c30",
+      "bytes": 6233,
+      "source": "kenney-impact-sounds/Audio/impactWood_heavy_000.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/break.crate_1.ogg",
+      "sha256": "f1b07a53ac10c615",
+      "bytes": 6239,
+      "source": "kenney-impact-sounds/Audio/impactWood_heavy_001.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/break.wall_0.ogg",
+      "sha256": "36b4ea107222d073",
+      "bytes": 12035,
+      "source": "kenney-impact-sounds/Audio/impactMining_000.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/cue.chime_0.ogg",
+      "sha256": "568967a3d9f8a8f6",
+      "bytes": 12391,
+      "source": "kenney-interface-sounds/Audio/confirmation_004.ogg",
+      "title": "Interface Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/cue.buzzer_0.ogg",
+      "sha256": "46e67425d1633977",
+      "bytes": 7373,
+      "source": "kenney-interface-sounds/Audio/error_001.ogg",
+      "title": "Interface Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/objective.new_0.ogg",
+      "sha256": "59c7a24b204be24d",
+      "bytes": 17723,
+      "source": "kenney-interface-sounds/Audio/maximize_004.ogg",
+      "title": "Interface Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/objective.complete_0.ogg",
+      "sha256": "3091bf0be0497f82",
+      "bytes": 9535,
+      "source": "kenney-interface-sounds/Audio/confirmation_003.ogg",
+      "title": "Interface Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/message_0.ogg",
+      "sha256": "a27c6bb0df7da1e6",
+      "bytes": 9834,
+      "source": "kenney-interface-sounds/Audio/open_001.ogg",
+      "title": "Interface Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
     }
   ]
 }

@@ -39,6 +39,8 @@ const START_LIFT = CONTROLLER_OFFSET / 2;
 export class PhysicsWorld {
   readonly world: RAPIER.World;
   readonly controller: RAPIER.KinematicCharacterController;
+  /** Set when a movable world collider changed; queries need a broad-phase update first. */
+  private dirty = false;
 
   constructor(boxes: readonly WorldBox[]) {
     this.world = new RAPIER.World({ x: 0, y: 0, z: 0 });
@@ -65,6 +67,40 @@ export class PhysicsWorld {
     return this.world.createCollider(desc);
   }
 
+  /**
+   * A world collider that scenario objects (doors, crates) move, enable and
+   * disable. It blocks movement, shots and line of sight like static geometry.
+   * `yaw` turns the box about the vertical axis (see viewDirection()).
+   */
+  createBox(center: Vec3, half: Vec3, yaw = 0): RAPIER.Collider {
+    const desc = RAPIER.ColliderDesc.cuboid(half.x, half.y, half.z)
+      .setTranslation(center.x, center.y, center.z)
+      .setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) })
+      .setCollisionGroups(WORLD_COLLIDER_GROUPS);
+    this.dirty = true;
+    return this.world.createCollider(desc);
+  }
+
+  moveBox(collider: RAPIER.Collider, center: Vec3): void {
+    const t = collider.translation();
+    if (t.x === center.x && t.y === center.y && t.z === center.z) return;
+    collider.setTranslation(center);
+    this.dirty = true;
+  }
+
+  setBoxEnabled(collider: RAPIER.Collider, enabled: boolean): void {
+    if (collider.isEnabled() === enabled) return;
+    collider.setEnabled(enabled);
+    this.dirty = true;
+  }
+
+  /** Bring scene queries up to date after boxes moved. Cheap when nothing changed. */
+  commit(): void {
+    if (!this.dirty) return;
+    this.dirty = false;
+    this.world.step();
+  }
+
   removeCollider(collider: RAPIER.Collider): void {
     this.world.removeCollider(collider, false);
   }
@@ -82,6 +118,12 @@ export class PhysicsWorld {
     const next = { x: feet.x + m.x, y: startY + m.y, z: feet.z + m.z };
     collider.setTranslation({ x: next.x, y: next.y + CAPSULE_CENTER_Y, z: next.z });
     return { feet: next, grounded: this.controller.computedGrounded(), movedY: m.y + START_LIFT };
+  }
+
+  /** Like raycastWorld, but also returns the collider handle that was hit. */
+  raycastHit(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number } | null {
+    const hit = this.world.castRay(new RAPIER.Ray(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
+    return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle } : null;
   }
 
   /** Distance along a normalised ray to the first static surface, or null within maxDist. */

@@ -1,5 +1,6 @@
 export * from './math.ts';
 export * from './map/schema.ts';
+export * from './map/logic.ts';
 export * from './map/catalog.ts';
 export * from './map/materials.ts';
 export * from './map/surfaces.ts';
@@ -12,6 +13,8 @@ export * from './sim/movement.ts';
 export * from './sim/weapons.ts';
 export * from './sim/items.ts';
 export * from './sim/rules.ts';
+export * from './sim/scenarioDefs.ts';
+export * from './sim/scenario.ts';
 export * from './protocol.ts';
 export * from './bots/profile.ts';
 export * from './editor/commands.ts';

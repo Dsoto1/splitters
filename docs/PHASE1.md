@@ -37,7 +37,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 | M1 | MapMaker core loop: Classic Grid building, spawns, undo/redo, levels, validation, save/load, in-browser TEST, offline play | **Done** |
 | M1.5 | Map look: material library (~20), per-surface material + tint, Paint tool in MapMaker, map format v2 migration ([`PLAYER_EXPRESSION.md`](PLAYER_EXPRESSION.md) §1) | **Done** |
 | M2 | Weapons and items: 6 weapon roles (pistol, automatic, shotgun, precision, explosive, melee), weapon/health/armor pickups, 2 powerups, bot weapon choice and pickup seeking, lag compensation | **Done** |
-| M3 | Scenario primitives: doors, buttons, destructibles, trigger volumes, WHEN → IF → DO logic (data-only interpreter), objectives, LOGIC/ENTITIES workspaces | |
+| M3 | Scenario primitives: doors, buttons, destructibles, trigger volumes, **traps**, WHEN → IF → DO logic (data-only interpreter), objectives, LOGIC/ENTITIES workspaces | **Done** |
 | M4 | NPCs: factions model, one enemy faction, one NPC squad archetype, encounter spawners, the co-op scenario | |
 | M5 | Rig standard, first character part library, **Character Designer**, 12 preset characters built with it, character select, looks visible to everyone in multiplayer, Team Deathmatch on factions | |
 | M6 | Multiplayer slice: hosting an editor map on the dedicated server (map transfer), 8-slot proof, staged 16/24/32 load tests, bundle splitting, §11 acceptance pass | |
@@ -102,6 +102,28 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 - **Projectiles are not lag-compensated** (standard for slow projectiles), and pickups are not predicted client-side.
 - **Bot stuck recoveries rose** with pickup detours (~88 per minute across 32 bots in the bench, up from ~50). Tuning goes with the nav-debug overlay work.
 - **Recoil and spread** are fixed values per weapon. There is no recoil pattern or movement inaccuracy yet. Balance numbers are first-pass.
+
+## M3 — what exists
+
+Details and the creator guide are in [`SCENARIO.md`](SCENARIO.md).
+
+- **Map format v4:** five new entity kinds (door, button, destructible, zone, trap), optional entity names, and a `logic` block (variables, timers, objectives, rules). v3 maps migrate with empty logic (fixture tested).
+- **Scenario objects:** sliding double doors (auto, manual with E, locked); wall buttons with a custom prompt, single use and cooldown; crates, explosive barrels (chain reactions) and breakable walls (optionally explosives-only); trigger zones (any player / N players / everyone).
+- **Traps:** spike floor, flame jet, crusher, proximity mine, laser fence. Each can be always on, on a cycle (with an offset so rows ripple), stepped on (with a warning), or fired by logic. Damage is configurable, and kills show in the feed ("was crushed").
+- **Logic:** WHEN → IF → DO rules interpreted by the server (`sim/scenario.ts`); there is no creator code. 13 events, 5 condition types, 18 actions, including `wait` sequences, objectives, timers, variables, messages, sound cues and ending the round. Runaway chains are cut off at depth 8.
+- **Networking:** scenario state replicates as deltas with a keyframe every 2 s, and a full copy on join. Door and crate colliders are mirrored in client prediction.
+- **Bots:** they treat locked or manual doors and intact breakable walls as walls when planning, and wait at the edge of active traps. Mines stay hidden from them.
+- **Client:** procedural models for every object, animated from replicated state; objectives list, HUD marker, timers, creator messages and the "E" prompt; 17 new sounds (Kenney CC0 + synthesised flame, beep and alarm).
+- **MapMaker:** a Scenario & Traps palette (doors and lasers snap into doorways), per-kind inspector fields, a rules list per object with "Add rule for this", and the **Logic panel** (L) with objectives, variables, timers, rule forms and six quick templates. Every logic edit is one undo step. Validation flags broken references, buttons that do nothing, locked doors nothing opens, traps nothing fires, and objectives nothing completes.
+- **Demo:** *The Vault* (`maps/m3_vault.json`, main menu → "Play The Vault", or a MapMaker template). A test plays it through to a win.
+- **Measured:** the 32-bot bench is unchanged (0.82 ms per tick); a 6-bot, 60 s Vault match runs in the test suite.
+
+### Known M3 gaps
+
+- No visual graph editor yet; rules are forms (MASTER_SPEC's "Expert" layer comes later over the same data).
+- Bots don't press buttons or pursue objectives; that comes with NPC/co-op work in M4.
+- Doors and traps aren't lag-compensated, and the client doesn't predict door motion (it follows the server).
+- Zones are axis-aligned boxes; no faction filters until M4 adds factions.
 
 ## Known M1 gaps
 

@@ -6,9 +6,13 @@ import {
   TICK_DT,
   TICK_RATE,
   WEAPONS_BY_SLOT,
+  DESTRUCTIBLE_SPECS,
+  OBJECTIVE_STATES,
   buildMapGeometry,
   getItem,
   loadMap,
+  pickUsable,
+  type MapDocument,
   type MatchPhase,
   type PlayerInput,
   type ScoreEntry,
@@ -22,6 +26,7 @@ import { InputState } from './input.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
+import { ScenarioState } from './scenarioState.ts';
 import type { Transport } from './transport.ts';
 import { DEFAULT_FOV, GameView, slotColor } from './view.ts';
 
@@ -58,6 +63,10 @@ export class GameSession {
   private readonly abort = new AbortController();
   private slot = -1;
   private local: LocalPlayer | null = null;
+  private map: MapDocument | null = null;
+  private scenario: ScenarioState | null = null;
+  /** When each objective last changed state, for fading out finished ones on the HUD. */
+  private objectiveChanged = new Map<number, number>();
   private phase: MatchPhase = 'playing';
   private timeLeft = 0;
   private scores: ScoreEntry[] = [];
@@ -151,10 +160,14 @@ export class GameSession {
         }
         this.slot = msg.slot;
         const geometry = buildMapGeometry(loaded.map);
+        this.map = loaded.map;
         this.view.buildMap(loaded.map, geometry);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
-        this.local = new LocalPlayer(new PhysicsWorld(geometry));
+        const physics = new PhysicsWorld(geometry);
+        this.local = new LocalPlayer(physics);
+        this.scenario = new ScenarioState(loaded.map, physics);
+        this.scenario.apply(msg.sc);
         this.hud.show();
         this.updatePause();
         (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local };
@@ -173,6 +186,8 @@ export class GameSession {
         this.scores = msg.score;
         this.interp.push(msg.tick, msg.players, msg.pr);
         this.taken = new Set(msg.pk);
+        // Door and crate colliders first, so reconciliation replays against the same world as the server.
+        this.scenario?.apply(msg.sc);
         const me = msg.players.find((p) => p.s === this.slot);
         if (me && this.local) {
           if (me.alive && !this.local.alive) {
@@ -204,6 +219,16 @@ export class GameSession {
             this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot);
           } else if (ev.e === 'round_end') {
             this.winner = ev.winner === null ? null : this.hud.name(ev.winner);
+          } else if (ev.e === 'msg') {
+            this.hud.showMessage(ev.text, ev.secs);
+          } else if (ev.e === 'obj') {
+            this.objectiveChanged.set(ev.i, performance.now());
+          } else if (ev.e === 'broken') {
+            const e = this.map?.entities[ev.i];
+            if (e?.kind === 'destructible') {
+              const h = DESTRUCTIBLE_SPECS[e.model].half;
+              this.view.debris({ x: e.position[0], y: e.position[1] + h.y, z: e.position[2] }, e.model === 'crate' ? '#8a5d33' : e.model === 'barrel' ? '#9c2f22' : '#8d8c86', Math.max(h.x, h.y));
+            }
           }
         }
         break;
@@ -214,6 +239,47 @@ export class GameSession {
       case 'pong':
         break;
     }
+  }
+
+  /** Objectives, timers, the Use prompt and the objective marker. */
+  private updateScenarioHud(local: LocalPlayer, now: number): void {
+    const map = this.map;
+    const sc = this.scenario;
+    if (!map || !sc) return;
+    type Shown = { text: string; state: 'active' | 'complete' | 'failed' | 'gone' };
+    const objectives = map.logic.objectives.flatMap((o, i): Shown[] => {
+      const state = OBJECTIVE_STATES[sc.objectives[i] ?? 0];
+      if (state === 'active') return [{ text: o.text, state: 'active' }];
+      if (state === 'complete' || state === 'failed') {
+        const age = now - (this.objectiveChanged.get(i) ?? -Infinity);
+        if (age < 5000) return [{ text: o.text, state: age < 4000 ? state : 'gone' }];
+      }
+      return [];
+    });
+    this.hud.setObjectives(objectives);
+    this.hud.setTimers(sc.timers.map((t) => {
+      const left = sc.timerLeft(t, now);
+      return `${map.logic.timers[t[0]]?.name ?? 'Timer'} ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+    }));
+
+    // Use prompt for the button or door in front of the player.
+    const target = local.alive ? pickUsable(map, local.eye, this.input.yaw, this.input.pitch, (i) => sc.usable(i)) : null;
+    const e = target === null ? undefined : map.entities[target];
+    if (e?.kind === 'button') this.hud.setPrompt(sc.state(target!)?.[0] === 0 ? 'Not working' : e.label || 'Press', sc.state(target!)?.[0] === 0);
+    else if (e?.kind === 'door') {
+      const [open, locked] = sc.state(target!) ?? [0, 0];
+      this.hud.setPrompt(locked ? 'Locked' : open > 50 ? 'Close' : 'Open', locked === 1);
+    } else this.hud.setPrompt(null);
+
+    // Marker for the first active objective that points at something.
+    const marked = map.logic.objectives.find((o, i) => o.marker && OBJECTIVE_STATES[sc.objectives[i] ?? 0] === 'active');
+    const markerEntity = marked ? map.entities.find((m) => m.id === marked.marker) : undefined;
+    if (markerEntity && local.alive) {
+      const p = { x: markerEntity.position[0], y: markerEntity.position[1] + 1.6, z: markerEntity.position[2] };
+      const screen = this.view.project(p);
+      const eye = local.eye;
+      this.hud.setMarker(screen && { ...screen, dist: Math.hypot(p.x - eye.x, p.y - eye.y, p.z - eye.z) });
+    } else this.hud.setMarker(null);
   }
 
   private requestWeapon(slot: number): void {
@@ -279,7 +345,9 @@ export class GameSession {
       this.hud.setWeapons(WEAPONS_BY_SLOT, local.inventory, local.held, local.reloadTicks > 0, local.alive);
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE);
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner);
+      this.updateScenarioHud(local, now);
     }
+    if (this.scenario) this.view.scenario.apply(this.scenario.entities);
     this.view.updatePickups(this.taken, now);
     this.view.updateProjectiles(this.interp.sampleProjectiles(now));
     const poses = this.interp.sample(now);

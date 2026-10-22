@@ -122,6 +122,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           snapshotInterval: SNAPSHOT_INTERVAL_TICKS,
           map,
           rules: match.rules,
+          sc: match.scenario.fullState(),
         });
         broadcast({ t: 'roster', players: match.roster() });
       } else if (msg.t === 'input' && client.slot !== null) {

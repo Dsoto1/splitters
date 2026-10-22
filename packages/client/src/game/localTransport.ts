@@ -61,7 +61,7 @@ export class LocalTransport implements Transport {
     this.queueInputs = (inputs) => match.queueInputs(me.slot, inputs);
     this.teardown = () => match.destroy();
 
-    onMessage({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules });
+    onMessage({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() });
     onMessage({ t: 'roster', players: match.roster() });
     this.startupMs = performance.now() - t0;
 

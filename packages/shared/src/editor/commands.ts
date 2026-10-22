@@ -1,3 +1,4 @@
+import type { ScenarioLogic } from '../map/logic.ts';
 import type { MapDocument, MapEntity, TilePlacement } from '../map/schema.ts';
 
 /**
@@ -14,6 +15,8 @@ export type EditCommand =
   | { kind: 'updateEntities'; before: MapEntity[]; after: MapEntity[] }
   | { kind: 'setMetadata'; before: Partial<MapDocument['metadata']>; after: Partial<MapDocument['metadata']> }
   | { kind: 'setTheme'; before: string; after: string }
+  /** Scenario logic is edited as a whole block: it is small, and whole-block undo keeps rule edits exact. */
+  | { kind: 'setLogic'; before: ScenarioLogic; after: ScenarioLogic }
   | { kind: 'batch'; commands: EditCommand[] };
 
 export class CommandError extends Error {}
@@ -63,6 +66,8 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       return { ...doc, metadata: { ...doc.metadata, ...cmd.after } };
     case 'setTheme':
       return { ...doc, classicStructure: { ...cs, theme: cmd.after } };
+    case 'setLogic':
+      return { ...doc, logic: cmd.after };
     case 'batch':
       return cmd.commands.reduce(applyCommand, doc);
   }
@@ -86,6 +91,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setMetadata', before: cmd.after, after: cmd.before };
     case 'setTheme':
       return { kind: 'setTheme', before: cmd.after, after: cmd.before };
+    case 'setLogic':
+      return { kind: 'setLogic', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -106,6 +113,8 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
       return Object.keys(cmd.after).length === 0;
     case 'setTheme':
       return cmd.before === cmd.after;
+    case 'setLogic':
+      return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':
       return cmd.commands.every(isEmptyCommand);
   }

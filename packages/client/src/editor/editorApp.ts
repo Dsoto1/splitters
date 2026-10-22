@@ -22,6 +22,16 @@ import {
   coreMaterials,
   coreThemes,
   CORE_ITEMS,
+  DESTRUCTIBLE_MODELS,
+  DESTRUCTIBLE_SPECS,
+  SCENARIO_PALETTE,
+  TRAP_ACTIVATIONS,
+  TRAP_KINDS,
+  TRAP_SPECS,
+  entityLabel,
+  newScenarioEntity,
+  snapToDoorway,
+  snapsToDoorway,
   getItem,
   SURFACE_SLOTS,
   SURFACE_SLOT_LABELS,
@@ -31,6 +41,8 @@ import {
   validateMap,
   type EditCommand,
   type MapDocument,
+  type MapEntity,
+  type ScenarioPaletteKey,
   type PaintScope,
   type SurfaceSlot,
   type SurfaceStyle,
@@ -42,12 +54,14 @@ import {
   type Vec3,
 } from '@chronosplit/shared';
 import arenaTemplate from '../../../../maps/phase0_arena.json';
+import vaultTemplate from '../../../../maps/m3_vault.json';
 import { EditorView } from './editorView.ts';
 import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibrary, readAutosave, saveToLibrary, writeAutosave } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
+import { LogicPanel } from './logicPanel.ts';
 
 /** Small palette icon for a pickup item, coloured by item type. */
 function itemIcon(itemId: string): string {
@@ -68,7 +82,39 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'paint' };
+type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' };
+
+/** Palette icons for scenario objects (simple SVG glyphs). */
+const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
+  door: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#3fd26b"/>',
+  door_locked: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#e0412f"/><rect x="23" y="34" width="10" height="9" rx="1" fill="#e0412f"/><path d="M25 34v-3a3 3 0 0 1 6 0v3" stroke="#e0412f" stroke-width="2" fill="none"/>',
+  button: '<rect x="24" y="24" width="8" height="26" fill="#3a3f48"/><rect x="17" y="12" width="22" height="16" rx="2" fill="#c9ccd2"/><circle cx="28" cy="20" r="5" fill="#3fd26b"/>',
+  crate: '<rect x="12" y="14" width="32" height="32" fill="#9a6b3d"/><path d="M12 14L44 46M12 18h32M12 42h32" stroke="#6e4a28" stroke-width="3"/>',
+  barrel: '<rect x="16" y="10" width="24" height="38" rx="5" fill="#c23b2a"/><rect x="16" y="16" width="24" height="4" fill="#f2c14e"/><rect x="16" y="38" width="24" height="4" fill="#f2c14e"/>',
+  wall: '<rect x="8" y="10" width="40" height="38" fill="#9b9a94"/><path d="M18 14l6 12-4 8 8 10M36 18l-5 9 6 7" stroke="#44433f" stroke-width="2" fill="none"/>',
+  zone: '<rect x="10" y="12" width="36" height="34" fill="#36d6ff" fill-opacity=".18" stroke="#36d6ff" stroke-width="2" stroke-dasharray="4 3"/>',
+  'trap:spikes': '<rect x="8" y="42" width="40" height="5" fill="#3d4249"/><path d="M11 42l4-16 4 16M21 42l4-16 4 16M31 42l4-16 4 16M41 42l3-12 3 12" fill="#b9bec6"/>',
+  'trap:flames': '<rect x="6" y="24" width="10" height="12" fill="#3a3f48"/><path d="M16 30c8-10 18-8 32-4-12 2-16 8-32 4z" fill="#ff8a2a"/><path d="M16 30c6-5 12-4 22-2-8 1-12 4-22 2z" fill="#ffe08a"/>',
+  'trap:crusher': '<rect x="10" y="8" width="36" height="12" fill="#5e636b"/><rect x="8" y="6" width="3" height="42" fill="#4b525c"/><rect x="45" y="6" width="3" height="42" fill="#4b525c"/><path d="M28 24v12m-5-5l5 5 5-5" stroke="#e3b021" stroke-width="3" fill="none"/><rect x="10" y="46" width="36" height="3" fill="#e3b021"/>',
+  'trap:mine': '<ellipse cx="28" cy="38" rx="14" ry="5" fill="#3b4033"/><circle cx="28" cy="34" r="3" fill="#ff2a2a"/>',
+  'trap:laser': '<rect x="8" y="10" width="4" height="38" fill="#2a2d33"/><rect x="44" y="10" width="4" height="38" fill="#2a2d33"/><path d="M12 18h32M12 26h32M12 34h32M12 42h32" stroke="#ff2040" stroke-width="2"/>',
+};
+
+/** How close (m) a click must be to an entity's position to select it. */
+function pickRadius(e: MapEntity): number {
+  switch (e.kind) {
+    case 'door':
+      return 1.6;
+    case 'zone':
+      return Math.max(0.9, Math.min(e.size[0], e.size[2]) / 2);
+    case 'trap':
+      return e.trap === 'mine' ? 0.7 : 1.5;
+    case 'destructible':
+      return e.model === 'wall' ? 1.5 : 0.9;
+    default:
+      return 0.9;
+  }
+}
 
 interface DragState {
   startCell: [number, number];
@@ -97,6 +143,8 @@ export class EditorApp {
   private tool: Tool = { kind: 'select' };
   private rotation: Rotation = 0;
   private spawnYaw = 0;
+  private scenarioYaw = 0;
+  readonly logic: LogicPanel;
   private level = 0;
   private showAll = false;
   private selection: Selection = emptySelection();
@@ -126,6 +174,11 @@ export class EditorApp {
     this.view = new EditorView(host.engine);
     const restored = readAutosave();
     this.history = new EditHistory(restored?.map ?? newMapDocument('Untitled Map'));
+    this.logic = new LogicPanel({
+      doc: () => this.doc,
+      commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
+      focusEntity: (id) => this.focusEntity(id),
+    });
     this.buildPalette();
     this.bindUi();
     this.bindInput();
@@ -192,6 +245,7 @@ export class EditorApp {
       this.renderInspector();
       this.updateTopBar();
       this.updateHover();
+      this.logic.render();
       if (!force) this.scheduleAutosave();
     }
   }
@@ -227,13 +281,14 @@ export class EditorApp {
     if (tool.kind !== 'paint') this.hoverFace = null;
     for (const b of document.querySelectorAll<HTMLElement>('[data-tool]')) {
       const t = b.dataset.tool;
-      b.classList.toggle('active', (tool.kind === 'tile' && t === `tile:${tool.tile}`) || (tool.kind === 'pickup' && t === `pickup:${tool.item}`) || t === tool.kind);
+      b.classList.toggle('active', (tool.kind === 'tile' && t === `tile:${tool.tile}`) || (tool.kind === 'pickup' && t === `pickup:${tool.item}`) || (tool.kind === 'scenario' && t === `scenario:${tool.key}`) || t === tool.kind);
     }
     const hints: Record<Tool['kind'], string> = {
       select: 'Click select · Shift add · Drag move · Del delete · Ctrl+D duplicate · R rotate · F focus',
       tile: 'Click place · R rotate · Right-click erase · PgUp/PgDn level · Esc select tool',
       spawn: 'Click place spawn · R turn 45° · Right-click erase · Esc select tool',
       pickup: 'Click place pickup · Right-click erase · Esc select tool',
+      scenario: 'Click place · Doors, walls and lasers snap to doorways · R turn 90° · Right-click erase · L logic',
       paint: 'Click a surface to paint · Right-click resets to theme · Alt-click or I picks a style',
     };
     $('ed-hint').textContent = `${hints[tool.kind]} · RMB look · WASD/QE fly`;
@@ -273,6 +328,18 @@ export class EditorApp {
       const id = newId('pickup');
       const name = getItem(this.tool.item)?.displayName ?? 'pickup';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'pickup', position: p, item: this.tool.item, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
+    } else if (this.tool.kind === 'scenario' && this.hoverPoint) {
+      const y = this.level * this.doc.classicStructure.levelHeight;
+      let p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), y, snap(this.hoverPoint.z, 0.5)];
+      let yaw = this.scenarioYaw;
+      if (snapsToDoorway(this.tool.key)) {
+        const d = snapToDoorway(this.hoverPoint.x, this.hoverPoint.z, this.doc.classicStructure.cellSize);
+        p = [d.x, y, d.z];
+        yaw = d.yaw;
+      }
+      const entity = newScenarioEntity(this.tool.key, p, yaw);
+      const label = SCENARIO_PALETTE.find((x) => x.key === (this.tool as { key: string }).key)?.label ?? 'object';
+      if (this.run(`Place ${label}`, { kind: 'addEntities', entities: [entity] })) this.setSelection({ tiles: [], entities: [entity.id] });
     }
   }
 
@@ -318,7 +385,7 @@ export class EditorApp {
     for (const e of this.doc.entities) {
       if (Math.floor((e.position[1] + 0.01) / levelHeight) !== this.level) continue;
       const d = Math.hypot(e.position[0] - p.x, e.position[2] - p.z);
-      if (d < 0.9 && (!best || d < best.d)) best = { id: e.id, d };
+      if (d < pickRadius(e) && (!best || d < best.d)) best = { id: e.id, d };
     }
     if (best) return { kind: 'entity', id: best.id };
     const cell = this.hoverCell;
@@ -332,6 +399,9 @@ export class EditorApp {
       this.updateHover();
     } else if (this.tool.kind === 'spawn') {
       this.spawnYaw = normalizeYaw(this.spawnYaw + Math.PI / 4);
+    } else if (this.tool.kind === 'scenario') {
+      this.scenarioYaw = normalizeYaw(this.scenarioYaw + Math.PI / 2);
+      this.toast(`Facing ${Math.round((this.scenarioYaw * 180) / Math.PI)}°`);
     } else if (this.selection.tiles.length || this.selection.entities.length) {
       this.run('Rotate', rotateCommand(this.doc, this.selection));
     }
@@ -374,11 +444,20 @@ export class EditorApp {
     return { x: pts.reduce((s, p) => s + p.x, 0) / n, y: pts.reduce((s, p) => s + p.y, 0) / n, z: pts.reduce((s, p) => s + p.z, 0) / n };
   }
 
-  /** Select and frame the object a validation issue points at. */
+  private focusEntity(id: string): void {
+    this.focusIssue({ severity: 'suggestion', code: 'focus', message: '', targetId: id });
+  }
+
+  /** Select and frame the object a validation issue points at (or open the logic item). */
   private focusIssue(issue: ValidationIssue): void {
     if (!issue.targetId) return;
     const tile = this.doc.classicStructure.tiles.find((t) => t.id === issue.targetId);
     const entity = this.doc.entities.find((e) => e.id === issue.targetId);
+    const { logic } = this.doc;
+    if (!tile && !entity && [...logic.rules, ...logic.objectives, ...logic.variables, ...logic.timers].some((x) => x.id === issue.targetId)) {
+      this.logic.open(issue.targetId);
+      return;
+    }
     if (tile) {
       this.setLevel(tile.z);
       this.setSelection({ tiles: [tile.id], entities: [] });
@@ -410,7 +489,7 @@ export class EditorApp {
       $('ed-target').textContent = target ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}` : '';
     } else $('ed-target').textContent = '';
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
-    this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' ? cell : null);
+    this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
       const ok = checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok;
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);
@@ -558,6 +637,9 @@ export class EditorApp {
         case 'KeyF':
           this.focusSelection();
           break;
+        case 'KeyL':
+          this.logic.toggle();
+          break;
         case 'KeyB':
           this.setTool({ kind: 'paint' });
           break;
@@ -626,6 +708,15 @@ export class EditorApp {
     spawnBtn.innerHTML = `<svg viewBox="0 0 56 56"><circle cx="28" cy="30" r="12" fill="#4fb3ff"/><rect x="22" y="14" width="12" height="6" rx="2" fill="#1c1f26"/></svg>Player Spawn`;
     spawnBtn.addEventListener('click', () => this.setTool({ kind: 'spawn' }));
     $('ed-entities').append(spawnBtn);
+    for (const entry of SCENARIO_PALETTE) {
+      const b = document.createElement('button');
+      b.className = 'tile-btn';
+      b.dataset.tool = `scenario:${entry.key}`;
+      b.dataset.search = `${entry.label} ${entry.search}`.toLowerCase();
+      b.innerHTML = `<svg viewBox="0 0 56 56">${SCENARIO_ICONS[entry.key]}</svg>${escapeHtml(entry.label)}`;
+      b.addEventListener('click', () => this.setTool({ kind: 'scenario', key: entry.key }));
+      $('ed-scenario').append(b);
+    }
     for (const item of CORE_ITEMS) {
       const b = document.createElement('button');
       b.className = 'tile-btn';
@@ -741,6 +832,7 @@ export class EditorApp {
       this.toast(`Imported ${r.map.metadata.name}`);
     });
     $('ed-test').addEventListener('click', () => this.test());
+    $('ed-logic-btn').addEventListener('click', () => this.logic.toggle());
     $('ed-status').addEventListener('click', () => $('ed-issues').scrollIntoView({ behavior: 'smooth' }));
     $('ed-level-up').addEventListener('click', () => this.setLevel(this.level + 1));
     $('ed-level-down').addEventListener('click', () => this.setLevel(this.level - 1));
@@ -772,9 +864,11 @@ export class EditorApp {
   private updateCounts(): void {
     const tiles = this.doc.classicStructure.tiles.length;
     const spawns = this.doc.entities.filter((e) => e.kind === 'spawn').length;
-    const pickups = this.doc.entities.length - spawns;
+    const pickups = this.doc.entities.filter((e) => e.kind === 'pickup').length;
+    const scenario = this.doc.entities.length - spawns - pickups;
+    const rules = this.doc.logic.rules.length;
     const boxes = buildMapGeometry(this.doc).length;
-    $('ed-counts').textContent = `${tiles} tiles · ${spawns} spawns · ${pickups} pickups · ${boxes} collision boxes`;
+    $('ed-counts').textContent = `${tiles} tiles · ${spawns} spawns · ${pickups} pickups · ${scenario} scenario objects · ${rules} rules · ${boxes} collision boxes`;
   }
 
   private renderInspector(): void {
@@ -820,37 +914,7 @@ export class EditorApp {
       for (const slot of SURFACE_SLOTS) el.append(this.surfaceRow(t, slot));
       el.append(small(`ID ${t.id}`));
     } else if (entities.length === 1 && tiles.length === 0) {
-      const e = doc.entities.find((x) => x.id === entities[0])!;
-      const label = e.kind === 'spawn' ? 'spawn' : 'pickup';
-      el.append(h2(e.kind === 'spawn' ? 'Player Spawn' : (getItem(e.item)?.displayName ?? e.item)));
-      const setPos = (i: number, v: number) => {
-        const position = [...e.position] as [number, number, number];
-        position[i] = v;
-        this.run(`Move ${label}`, { kind: 'updateEntities', before: [e], after: [{ ...e, position }] });
-      };
-      el.append(
-        row('X', numberInput(e.position[0], 0.5, (v) => setPos(0, v))),
-        row('Height', numberInput(e.position[1], 0.25, (v) => setPos(1, v))),
-        row('Z', numberInput(e.position[2], 0.5, (v) => setPos(2, v))),
-      );
-      if (e.kind === 'spawn') {
-        el.append(
-          row(
-            'Facing',
-            numberInput(Math.round((e.yaw * 180) / Math.PI), 15, (deg) => this.run('Turn spawn', { kind: 'updateEntities', before: [e], after: [{ ...e, yaw: normalizeYaw((deg * Math.PI) / 180) }] })),
-          ),
-        );
-      } else {
-        const itemSelect = document.createElement('select');
-        for (const it of CORE_ITEMS) itemSelect.append(new Option(it.displayName, it.id, false, it.id === e.item));
-        itemSelect.addEventListener('change', () => this.run('Change pickup', { kind: 'updateEntities', before: [e], after: [{ ...e, item: itemSelect.value }] }));
-        const def = getItem(e.item)?.respawnSeconds ?? 0;
-        const respawn = numberInput(e.respawnSeconds ?? def, 5, (v) =>
-          this.run('Set respawn time', { kind: 'updateEntities', before: [e], after: [{ ...e, respawnSeconds: v === def ? null : Math.max(1, Math.min(600, v)) }] }),
-        );
-        el.append(row('Item', itemSelect), row('Respawn (s)', respawn), small(e.respawnSeconds === null ? `Item default (${def}s)` : 'Custom respawn time'));
-      }
-      el.append(small(`ID ${e.id}`));
+      this.entityInspector(el, doc.entities.find((x) => x.id === entities[0])!);
     } else {
       el.append(h2(`${tiles.length + entities.length} selected`));
       el.append(text(`${tiles.length} tiles, ${entities.length} entities`));
@@ -859,6 +923,127 @@ export class EditorApp {
     buttons.className = 'buttons';
     buttons.append(button('Rotate (R)', () => this.run('Rotate', rotateCommand(this.doc, this.selection))), button('Duplicate', () => this.duplicate()), button('Delete', () => this.deleteSelection()), button('Focus (F)', () => this.focusSelection()));
     el.append(buttons);
+  }
+
+  /** Inspector fields for one entity: position, facing and its kind's settings. */
+  private entityInspector(el: HTMLElement, e: MapEntity): void {
+    const doc = this.doc;
+    const update = (label: string, patch: Partial<MapEntity>) => this.run(label, { kind: 'updateEntities', before: [e], after: [{ ...e, ...patch } as MapEntity] });
+    el.append(h2(e.kind === 'spawn' ? 'Player Spawn' : e.kind === 'pickup' ? (getItem(e.item)?.displayName ?? e.item) : entityLabel(doc, e)));
+    if (e.kind !== 'spawn' && e.kind !== 'pickup') {
+      const name = document.createElement('input');
+      name.type = 'text';
+      name.value = e.name ?? '';
+      name.placeholder = entityLabel(doc, { ...e, name: undefined });
+      name.maxLength = 40;
+      name.addEventListener('change', () => update('Rename', { name: name.value.trim() || undefined }));
+      el.append(row('Name', name));
+    }
+    const setPos = (i: number, v: number) => {
+      const position = [...e.position] as [number, number, number];
+      position[i] = v;
+      update(`Move ${e.kind}`, { position });
+    };
+    el.append(
+      row('X', numberInput(e.position[0], 0.5, (v) => setPos(0, v))),
+      row('Height', numberInput(e.position[1], 0.25, (v) => setPos(1, v))),
+      row('Z', numberInput(e.position[2], 0.5, (v) => setPos(2, v))),
+    );
+    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), e.kind === 'spawn' ? 15 : 90, (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))));
+
+    const toggle = (label: string, value: boolean, patch: (v: boolean) => Partial<MapEntity>) => {
+      const c = document.createElement('input');
+      c.type = 'checkbox';
+      c.checked = value;
+      c.addEventListener('change', () => update(`Set ${label.toLowerCase()}`, patch(c.checked)));
+      el.append(row(label, c));
+    };
+    const choose = (label: string, options: readonly (readonly [string, string])[], value: string, patch: (v: string) => Partial<MapEntity>) => {
+      const sel = document.createElement('select');
+      for (const [v, l] of options) sel.append(new Option(l, v, false, v === value));
+      sel.addEventListener('change', () => update(`Set ${label.toLowerCase()}`, patch(sel.value)));
+      el.append(row(label, sel));
+    };
+    const number = (label: string, value: number, step: number, patch: (v: number) => Partial<MapEntity>) => el.append(row(label, numberInput(value, step, (v) => update(`Set ${label.toLowerCase()}`, patch(v)))));
+    const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
+    switch (e.kind) {
+      case 'pickup': {
+        choose('Item', CORE_ITEMS.map((it) => [it.id, it.displayName] as const), e.item, (v) => ({ item: v }));
+        const def = getItem(e.item)?.respawnSeconds ?? 0;
+        number('Respawn (s)', e.respawnSeconds ?? def, 5, (v) => ({ respawnSeconds: v === def ? null : clamp(v, 1, 600) }));
+        el.append(small(e.respawnSeconds === null ? `Item default (${def}s)` : 'Custom respawn time'));
+        break;
+      }
+      case 'door':
+        toggle('Opens by itself', e.auto, (v) => ({ auto: v }));
+        toggle('Locked', e.locked, (v) => ({ locked: v }));
+        toggle('Starts open', e.startOpen, (v) => ({ startOpen: v }));
+        el.append(small(e.auto ? 'Slides open when a player comes close (unless locked).' : 'Players press E to open it, or logic opens it.'));
+        break;
+      case 'button':
+        {
+          const label = document.createElement('input');
+          label.type = 'text';
+          label.value = e.label;
+          label.maxLength = 40;
+          label.addEventListener('change', () => update('Set prompt', { label: label.value.trim() || 'Press' }));
+          el.append(row('Prompt', label));
+        }
+        toggle('Single use', e.once, (v) => ({ once: v }));
+        number('Cooldown (s)', e.cooldownSeconds, 0.5, (v) => ({ cooldownSeconds: clamp(v, 0.2, 60) }));
+        toggle('Starts enabled', e.startEnabled, (v) => ({ startEnabled: v }));
+        break;
+      case 'destructible': {
+        const spec = DESTRUCTIBLE_SPECS[e.model];
+        choose('Model', DESTRUCTIBLE_MODELS.map((m) => [m, DESTRUCTIBLE_SPECS[m].label] as const), e.model, (v) => ({ model: v as typeof e.model, health: null }));
+        number('Health', e.health ?? spec.health, 10, (v) => ({ health: v === spec.health ? null : clamp(v, 1, 5000) }));
+        toggle('Explosives only', e.explosiveOnly, (v) => ({ explosiveOnly: v }));
+        if (spec.blast) el.append(small('Explodes when destroyed.'));
+        break;
+      }
+      case 'zone':
+        number('Width (X)', e.size[0], 0.5, (v) => ({ size: [clamp(v, 0.5, 64), e.size[1], e.size[2]] }));
+        number('Height', e.size[1], 0.5, (v) => ({ size: [e.size[0], clamp(v, 0.5, 32), e.size[2]] }));
+        number('Depth (Z)', e.size[2], 0.5, (v) => ({ size: [e.size[0], e.size[1], clamp(v, 0.5, 64)] }));
+        choose('Fires when', [['any', 'any player enters'], ['count', 'enough players are in'], ['all', 'every living player is in']], e.who, (v) => ({ who: v as typeof e.who }));
+        if (e.who === 'count') number('Players needed', e.count, 1, (v) => ({ count: clamp(Math.round(v), 1, 32) }));
+        toggle('Starts enabled', e.startEnabled, (v) => ({ startEnabled: v }));
+        break;
+      case 'trap': {
+        const spec = TRAP_SPECS[e.trap];
+        choose('Trap', TRAP_KINDS.map((k) => [k, TRAP_SPECS[k].label] as const), e.trap, (v) => {
+          const d = TRAP_SPECS[v as typeof e.trap].defaults;
+          return { trap: v as typeof e.trap, activation: d.activation, onSeconds: d.onSeconds, offSeconds: d.offSeconds, damage: null };
+        });
+        const labels: Record<(typeof TRAP_ACTIVATIONS)[number], string> = { always: 'always on', cycle: 'on a cycle', proximity: 'when stepped on', logic: 'only from logic' };
+        if (e.trap !== 'mine') choose('Fires', TRAP_ACTIVATIONS.map((a) => [a, labels[a]] as const), e.activation, (v) => ({ activation: v as typeof e.activation }));
+        if (e.activation !== 'always' || e.trap === 'mine') number(e.trap === 'mine' ? 'Rearm (s)' : 'Off (s)', e.offSeconds, 0.5, (v) => ({ offSeconds: clamp(v, 0.2, 600) }));
+        if (e.trap !== 'mine' && e.activation !== 'always') number('On (s)', e.onSeconds, 0.5, (v) => ({ onSeconds: clamp(v, 0.2, 60) }));
+        if (e.activation === 'cycle' && e.trap !== 'mine') number('Offset (s)', e.offsetSeconds, 0.25, (v) => ({ offsetSeconds: clamp(v, 0, 60) }));
+        number('Damage', e.damage ?? spec.blast?.damage ?? spec.damage, 5, (v) => ({ damage: v === (spec.blast?.damage ?? spec.damage) ? null : clamp(v, 1, 1000) }));
+        toggle('Starts enabled', e.startEnabled, (v) => ({ startEnabled: v }));
+        break;
+      }
+      case 'spawn':
+        break;
+    }
+
+    // Rules that mention this entity, and a shortcut to add one.
+    if (e.kind !== 'spawn') {
+      const rules = doc.logic.rules.filter((r) => r.when.target === e.id || r.if.some((c) => c.target === e.id) || r.do.some((a) => a.target === e.id));
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Logic';
+      el.append(h3);
+      for (const r of rules) {
+        const b = button(`⚙ ${r.name || r.id}`, () => this.logic.open(r.id));
+        b.className = 'rule-link';
+        el.append(b);
+      }
+      if (!rules.length) el.append(small('No rules use this yet.'));
+      el.append(button('+ Add rule for this', () => this.logic.addRuleFor(e)));
+    }
+    el.append(small(`ID ${e.id}`));
   }
 
   /** One surface slot in the tile inspector: material (or theme default) and tint. */
@@ -987,6 +1172,10 @@ export class EditorApp {
     add('Phase 0 Arena', 'Template', () => {
       const r = loadMap(arenaTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Arena Remix', parentId: r.map.metadata.id } });
+    });
+    add('The Vault', 'Template · scenario with doors, traps and logic', () => {
+      const r = loadMap(vaultTemplate);
+      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Vault Remix', parentId: r.map.metadata.id } });
     });
     for (const entry of listLibrary()) {
       add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {

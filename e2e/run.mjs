@@ -109,6 +109,33 @@ async function editorFlow(browser) {
   d = await doc();
   check(d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.health_small'), 'places a pickup');
 
+  // Scenario: a locked door snapped into the doorway, a button and a spike trap, wired with a logic template.
+  await page.click('[data-tool="scenario:door_locked"]');
+  await clickWorld(4.4, 0.6);
+  await page.click('[data-tool="scenario:button"]');
+  await clickWorld(-2, 3);
+  await page.click('[data-tool="scenario:trap:spikes"]');
+  await clickWorld(8, -2);
+  await page.keyboard.press('Escape');
+  d = await doc();
+  const door = d.entities.find((e) => e.kind === 'door');
+  const btn = d.entities.find((e) => e.kind === 'button');
+  check(door && door.locked && door.position[0] === 4 && door.position[2] === 0 && Math.abs(door.yaw - Math.PI / 2) < 1e-6, 'locked door snaps into the doorway');
+  check(btn && d.entities.some((e) => e.kind === 'trap' && e.trap === 'spikes'), 'places a button and a spike trap');
+  await page.click('#ed-logic-btn');
+  await page.selectOption('.lg-head select', '0');
+  d = await doc();
+  const rule = d.logic.rules[0];
+  check(d.logic.rules.length === 1 && rule.when.event === 'button_pressed' && rule.when.target === btn.id && rule.do.some((a) => a.type === 'door_unlock' && a.target === door.id), 'logic template wires the button to the door');
+  await page.waitForTimeout(300); // panels refresh on the next frame
+  const issuesText = await page.textContent('#ed-issues');
+  check(!/does nothing|never unlocks/.test(issuesText ?? ''), `validation is satisfied once the rule exists (${issuesText})`);
+  await page.click('.lg-head button');
+  await page.keyboard.press('Control+KeyZ');
+  check((await doc()).logic.rules.length === 0, 'undo removes the rule');
+  await page.keyboard.press('Control+KeyY');
+  check((await doc()).logic.rules.length === 1, 'redo restores the rule');
+
   await page.keyboard.press('F5');
   await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: 20000 });
   const ms = await page.evaluate(() => window.__testStartMs);
@@ -152,6 +179,18 @@ async function offlineFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
 }
 
+async function vaultFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=vault`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForTimeout(1500);
+  const objectives = await page.textContent('#objectives');
+  check((objectives ?? '').includes('Find the vault control'), `scenario demo shows its first objective (${objectives})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+}
+
 async function onlineFlow(browser) {
   const open = async (name) => {
     const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
@@ -179,6 +218,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   await editorFlow(browser);
   await offlineFlow(browser);
+  await vaultFlow(browser);
   await onlineFlow(browser);
   await browser.close();
 } catch (e) {

@@ -4,7 +4,16 @@ import { slotColor } from './view.ts';
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-const weaponLabel = (id: string) => CORE_WEAPONS[id]?.displayName ?? '✕';
+const HAZARD_DEATHS: Record<string, string> = {
+  'core.trap_spikes': 'was impaled',
+  'core.trap_flames': 'was burned',
+  'core.trap_crusher': 'was crushed',
+  'core.trap_mine': 'stepped on a mine',
+  'core.trap_laser': 'was sliced by a laser',
+  'core.barrel': 'was caught in a barrel blast',
+  'core.fall': 'fell',
+};
+const weaponLabel = (id: string) => CORE_WEAPONS[id]?.displayName ?? (id === 'core.barrel' ? 'Barrel' : '✕');
 
 export class Hud {
   private readonly root = $('hud');
@@ -22,6 +31,15 @@ export class Hud {
   private readonly powerups = $('powerups');
   private readonly pickupMsg = $('pickup-msg');
   private readonly scope = $('scope');
+  private readonly objectives = $('objectives');
+  private readonly message = $('message');
+  private readonly prompt = $('prompt');
+  private readonly scTimers = $('sc-timers');
+  private readonly marker = $('marker');
+  private messageTimer?: number;
+  private lastObjectives = '';
+  private lastPrompt = '';
+  private lastTimers = '';
   private pickupTimer?: number;
   private lastWeaponBar = '';
   private roster = new Map<number, RosterEntry>();
@@ -49,6 +67,12 @@ export class Hud {
     this.powerups.innerHTML = '';
     this.scope.hidden = true;
     this.scoreboard.hidden = true;
+    this.objectives.replaceChildren();
+    this.lastObjectives = '';
+    this.message.classList.remove('on');
+    this.setPrompt(null);
+    this.setTimers([]);
+    this.marker.hidden = true;
     this.roster.clear();
   }
 
@@ -112,11 +136,51 @@ export class Hud {
   kill(killer: number | null, victim: number, weapon: string, localSlot: number): void {
     const line = document.createElement('div');
     const name = (slot: number | null) => `<span style="color:${slot === null ? '#ccc' : slotColor(slot)}">${escapeHtml(this.name(slot))}</span>`;
-    line.innerHTML = killer === null ? `${name(victim)} ${weapon === 'core.fall' ? 'fell' : 'blew themselves up'}` : `${name(killer)} <small>${escapeHtml(weaponLabel(weapon))}</small> ${name(victim)}`;
+    line.innerHTML = killer === null ? `${name(victim)} ${HAZARD_DEATHS[weapon] ?? 'blew themselves up'}` : `${name(killer)} <small>${escapeHtml(weaponLabel(weapon))}</small> ${name(victim)}`;
     if (killer === localSlot || victim === localSlot) line.style.outline = '1px solid rgba(255,255,255,0.5)';
     this.feed.prepend(line);
     while (this.feed.children.length > 5) this.feed.lastChild?.remove();
     window.setTimeout(() => line.remove(), 5000);
+  }
+
+  /** Active objectives, plus completed/failed ones while they fade out. */
+  setObjectives(list: { text: string; state: 'active' | 'complete' | 'failed' | 'gone' }[]): void {
+    const key = JSON.stringify(list);
+    if (key === this.lastObjectives) return;
+    this.lastObjectives = key;
+    this.objectives.innerHTML = list.map((o) => `<div class="${o.state}">${escapeHtml(o.text)}</div>`).join('');
+  }
+
+  showMessage(text: string, seconds: number): void {
+    this.message.textContent = text;
+    this.message.classList.add('on');
+    clearTimeout(this.messageTimer);
+    this.messageTimer = window.setTimeout(() => this.message.classList.remove('on'), seconds * 1000);
+  }
+
+  /** "[E] Open the gate" under the crosshair; `denied` shows a refusal (locked). */
+  setPrompt(text: string | null, denied = false): void {
+    const key = `${text}|${denied}`;
+    if (key === this.lastPrompt) return;
+    this.lastPrompt = key;
+    this.prompt.classList.toggle('denied', denied);
+    this.prompt.innerHTML = text === null ? '' : denied ? escapeHtml(text) : `<kbd>E</kbd>${escapeHtml(text)}`;
+  }
+
+  setTimers(lines: string[]): void {
+    const key = lines.join('|');
+    if (key === this.lastTimers) return;
+    this.lastTimers = key;
+    this.scTimers.innerHTML = lines.map((l) => `<div>${escapeHtml(l)}</div>`).join('');
+  }
+
+  /** Objective marker at screen position (CSS px), or hidden. */
+  setMarker(at: { x: number; y: number; dist: number } | null): void {
+    this.marker.hidden = !at;
+    if (!at) return;
+    this.marker.style.left = `${at.x}px`;
+    this.marker.style.top = `${at.y}px`;
+    this.marker.querySelector('span')!.textContent = `${Math.round(at.dist)} m`;
   }
 
   hit(): void {

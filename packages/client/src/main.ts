@@ -1,6 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { initPhysics, loadMap } from '@chronosplit/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
+import vaultJson from '../../../maps/m3_vault.json';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { EditorApp, type TestRequest } from './editor/editorApp.ts';
@@ -116,11 +117,11 @@ class App {
     });
   }
 
-  async playOffline(): Promise<void> {
+  async playOffline(which: 'arena' | 'vault' = 'arena'): Promise<void> {
     await this.init();
-    const arena = loadMap(arenaJson);
-    if (!arena.ok) return this.showMenu('Built-in arena failed to load');
-    this.startSession(new LocalTransport(arena.map, { name: nameInput.value || 'Player', botFill: 6, difficulty: 'normal' }), {
+    const arena = loadMap(which === 'vault' ? vaultJson : arenaJson);
+    if (!arena.ok) return this.showMenu('Built-in map failed to load');
+    this.startSession(new LocalTransport(arena.map, { name: nameInput.value || 'Player', botFill: which === 'vault' ? 4 : 6, difficulty: 'normal' }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       onExit: (reason) => this.showMenu(reason ?? ''),
@@ -162,6 +163,7 @@ class App {
 const app = new App();
 $('open-editor').addEventListener('click', () => void app.openEditor());
 $('play-offline').addEventListener('click', () => void app.playOffline());
+$('play-vault').addEventListener('click', () => void app.playOffline('vault'));
 $('join').addEventListener('submit', (e) => {
   e.preventDefault();
   void app.playOnline(serverInput.value.trim(), nameInput.value.trim());
@@ -177,5 +179,5 @@ if (params.get('mode') === 'assets') {
     await openAssetViewer(engine, canvas);
   })();
 } else if (params.get('mode') === 'editor') void app.openEditor();
-else if (params.has('offline')) void app.playOffline();
+else if (params.has('offline')) void app.playOffline(params.get('offline') === 'vault' ? 'vault' : 'arena');
 else if (params.has('autojoin')) void app.playOnline(serverInput.value, nameInput.value);

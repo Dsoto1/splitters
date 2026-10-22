@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 3,
+  "formatVersion": 4,
   "metadata": {
     "id": "phase0_arena",
     "name": "Phase 0 Arena",
@@ -115,235 +115,241 @@
   "entities": [
     {
       "id": "sp_room_sw",
-      "kind": "spawn",
       "position": [
         0,
         0,
         0
       ],
+      "kind": "spawn",
       "yaw": 0.785,
       "faction": null
     },
     {
       "id": "sp_corr_s",
-      "kind": "spawn",
       "position": [
         8,
         0,
         -2
       ],
+      "kind": "spawn",
       "yaw": 1.571,
       "faction": null
     },
     {
       "id": "sp_room_se",
-      "kind": "spawn",
       "position": [
         16,
         0,
         -2.5
       ],
+      "kind": "spawn",
       "yaw": -0.651,
       "faction": null
     },
     {
       "id": "sp_hub",
-      "kind": "spawn",
       "position": [
         10.5,
         0,
         8
       ],
+      "kind": "spawn",
       "yaw": -1.571,
       "faction": null
     },
     {
       "id": "sp_room_nw",
-      "kind": "spawn",
       "position": [
         0,
         0,
         16
       ],
+      "kind": "spawn",
       "yaw": 2.356,
       "faction": null
     },
     {
       "id": "sp_room_ne",
-      "kind": "spawn",
       "position": [
         16,
         0,
         16
       ],
+      "kind": "spawn",
       "yaw": -2.356,
       "faction": null
     },
     {
       "id": "sp_upper_n",
-      "kind": "spawn",
       "position": [
         16,
         4,
         16
       ],
+      "kind": "spawn",
       "yaw": -1.571,
       "faction": null
     },
     {
       "id": "sp_upper_s",
-      "kind": "spawn",
       "position": [
         16,
         4,
         5.5
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "pk_health_sw",
-      "kind": "pickup",
       "position": [
         2.5,
         0,
         -2.5
       ],
+      "kind": "pickup",
       "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "pk_health_ne",
-      "kind": "pickup",
       "position": [
         13.5,
         0,
         13.5
       ],
+      "kind": "pickup",
       "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "pk_health_up",
-      "kind": "pickup",
       "position": [
         18.5,
         4,
         18.5
       ],
+      "kind": "pickup",
       "item": "core.health_large",
       "respawnSeconds": null
     },
     {
       "id": "pk_armor_hub",
-      "kind": "pickup",
       "position": [
         5.5,
         0,
         8
       ],
+      "kind": "pickup",
       "item": "core.armor_large",
       "respawnSeconds": null
     },
     {
       "id": "pk_armor_se",
-      "kind": "pickup",
       "position": [
         13.5,
         0,
         -2.5
       ],
+      "kind": "pickup",
       "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
       "id": "pk_ammo_w",
-      "kind": "pickup",
       "position": [
         0,
         0,
         8
       ],
+      "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     },
     {
       "id": "pk_ammo_e",
-      "kind": "pickup",
       "position": [
         16,
         0,
         8
       ],
+      "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     },
     {
       "id": "pk_rifle",
-      "kind": "pickup",
       "position": [
         18.5,
         0,
         2.5
       ],
+      "kind": "pickup",
       "item": "core.weapon_rifle",
       "respawnSeconds": null
     },
     {
       "id": "pk_shotgun",
-      "kind": "pickup",
       "position": [
         -2.5,
         0,
         18.5
       ],
+      "kind": "pickup",
       "item": "core.weapon_shotgun",
       "respawnSeconds": null
     },
     {
       "id": "pk_sniper",
-      "kind": "pickup",
       "position": [
         18.5,
         4,
         10.5
       ],
+      "kind": "pickup",
       "item": "core.weapon_sniper",
       "respawnSeconds": null
     },
     {
       "id": "pk_launcher",
-      "kind": "pickup",
       "position": [
         13.5,
         0,
         18.5
       ],
+      "kind": "pickup",
       "item": "core.weapon_launcher",
       "respawnSeconds": null
     },
     {
       "id": "pk_speed",
-      "kind": "pickup",
       "position": [
         5.5,
         0,
         -2
       ],
+      "kind": "pickup",
       "item": "core.powerup_speed",
       "respawnSeconds": null
     },
     {
       "id": "pk_damage",
-      "kind": "pickup",
       "position": [
         13.5,
         4,
         13.5
       ],
+      "kind": "pickup",
       "item": "core.powerup_damage",
       "respawnSeconds": null
     }
   ],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
   "dependencies": []
 }

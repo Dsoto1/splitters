@@ -20,11 +20,16 @@
       <div id="powerups"></div>
       <div id="pickup-msg"></div>
       <div id="timer"></div>
+      <div id="sc-timers"></div>
+      <div id="objectives"></div>
+      <div id="message"></div>
+      <div id="prompt"></div>
+      <div id="marker" hidden><span></span></div>
       <div id="feed"></div>
       <div id="banner"></div>
       <div id="scoreboard" hidden></div>
       <pre id="perf" hidden></pre>
-      <div id="help">WASD move · Space jump · LMB fire · RMB zoom · R reload · 1–6 / wheel / Q weapons · Tab scores · F3 stats</div>
+      <div id="help">WASD move · Space jump · LMB fire · RMB zoom · R reload · E use · 1–6 / wheel / Q weapons · Tab scores · F3 stats</div>
     </div>
     <div id="menu">
       <h1>ChronoSplit</h1>
@@ -32,6 +37,7 @@
       <div id="menu-actions">
         <button id="open-editor" class="primary">MapMaker</button>
         <button id="play-offline">Play offline vs bots</button>
+        <button id="play-vault" title="Scenario demo: doors, buttons, traps, objectives">Play The Vault (scenario)</button>
       </div>
       <form id="join">
         <label>Name <input id="name" maxlength="24" autocomplete="off" /></label>
@@ -65,6 +71,7 @@
           <button id="ed-redo" title="Ctrl+Y">↷</button>
         </div>
         <button id="ed-status" class="pill">Checking…</button>
+        <button id="ed-logic-btn" title="Scenario logic: objectives, variables, timers, rules (L)">⚙ Logic</button>
         <div class="spacer"></div>
         <label class="inline">Bots <select id="ed-bots"></select></label>
         <label class="inline">Skill <select id="ed-skill"><option>easy</option><option selected>normal</option><option>hard</option></select></label>
@@ -77,6 +84,8 @@
         <div id="ed-tiles" class="tiles"></div>
         <h3>Gameplay</h3>
         <div id="ed-entities" class="tiles"></div>
+        <h3>Scenario &amp; Traps</h3>
+        <div id="ed-scenario" class="tiles"></div>
         <h3>Paint</h3>
         <div id="ed-brush-row"><img id="ed-brush" alt="" /><span id="ed-brush-label"></span></div>
         <label class="stack">Apply to
@@ -108,6 +117,7 @@
         <span id="ed-hint"></span>
       </footer>
       <div id="ed-toast"></div>
+      <div id="ed-logic" hidden></div>
       <dialog id="ed-open-dialog">
         <h2>Open map</h2>
         <ul id="ed-library"></ul>

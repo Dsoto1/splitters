@@ -19,9 +19,10 @@ import {
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
-import { BUTTON_FIRE, BUTTON_RELOAD, sanitizeInput, stepMovement, type MoveState, type PlayerInput } from './movement.ts';
+import { BUTTON_FIRE, BUTTON_RELOAD, BUTTON_USE, sanitizeInput, stepMovement, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
+import { Scenario } from './scenario.ts';
 import { getWeapon, rayCapsule, resolveHitscan, type WeaponDefinition } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -84,6 +85,8 @@ interface PickupState {
   pos: Vec3;
   respawnTicks: number;
   availableAt: number;
+  /** Scenario logic can switch pickups off. */
+  enabled: boolean;
 }
 
 const r3 = (v: number): number => Math.round(v * 1000) / 1000;
@@ -104,6 +107,8 @@ export class Match {
   readonly slots: (Combatant | null)[] = new Array(MAX_PLAYER_SLOTS).fill(null);
   readonly spawnPoints: { pos: Vec3; yaw: number }[];
   readonly pickups: PickupState[];
+  /** Doors, buttons, destructibles, zones, traps and the map's logic rules. */
+  readonly scenario: Scenario;
 
   tick = 0;
   phase: MatchPhase = 'playing';
@@ -136,9 +141,30 @@ export class Match {
       if (e.kind !== 'pickup') continue;
       const item = getItem(e.item);
       if (!item) continue;
-      this.pickups.push({ id: e.id, item, pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, respawnTicks: Math.round((e.respawnSeconds ?? item.respawnSeconds) * TICK_RATE), availableAt: 0 });
+      this.pickups.push({ id: e.id, item, pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, respawnTicks: Math.round((e.respawnSeconds ?? item.respawnSeconds) * TICK_RATE), availableAt: 0, enabled: true });
     }
     this.phaseEndTick = this.roundEndTick();
+    const match = this;
+    this.scenario = new Scenario(map, this.physics, {
+      get tick() {
+        return match.tick;
+      },
+      players: () => this.combatants().map((c) => ({ slot: c.slot, alive: c.alive, pos: c.move.pos })),
+      hurt: (slot, amount, weapon) => {
+        const c = this.slots[slot];
+        if (c) this.damage(c, amount, null, weapon);
+      },
+      blast: (at, radius, damage, edge, owner, weapon) => {
+        this.pendingEvents.push({ e: 'explode', s: owner ?? -1, p: tuple(at), r: radius });
+        this.splash(at, radius, damage, edge, owner === null ? null : (this.slots[owner] ?? null), weapon, 1);
+      },
+      endRound: (winner) => this.endRound(winner),
+      setPickupEnabled: (id, enabled) => {
+        const p = this.pickups.find((q) => q.id === id);
+        if (p) p.enabled = enabled;
+      },
+      emit: (ev) => this.pendingEvents.push(ev),
+    });
   }
 
   private roundEndTick(): number {
@@ -225,6 +251,7 @@ export class Match {
       this.runBots();
       for (const c of this.combatants()) this.applyInputs(c);
       this.stepProjectiles();
+      if (this.phase === 'playing') this.scenario.step();
       for (const c of this.combatants()) {
         if (!c.alive && this.tick >= c.respawnTick) this.spawn(c);
       }
@@ -239,7 +266,9 @@ export class Match {
   private runBots(): void {
     const t0 = performance.now();
     const views = this.combatants().map(toView);
-    const pickups: PickupView[] = this.pickups.map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: this.tick >= p.availableAt }));
+    const pickups: PickupView[] = this.pickups.map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt }));
+    const blockers = this.scenario.blockers();
+    const hazards = this.scenario.hazards();
     for (const c of this.combatants()) {
       if (!c.bot) continue;
       const self = views.find((v) => v.slot === c.slot)!;
@@ -253,6 +282,8 @@ export class Match {
         pickups,
         inventory: [...c.weapons.values()].map((w) => ({ def: w.def, mag: w.mag, reserve: w.reserve })),
         held: c.current,
+        blockers,
+        hazards,
       });
       c.queue.push(input);
     }
@@ -277,6 +308,10 @@ export class Match {
       if (c.damageTicks > 0) c.damageTicks--;
       if (c.reloadTicks > 0 && --c.reloadTicks === 0) this.finishReload(c);
 
+      if (input.buttons & BUTTON_USE) {
+        this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
+        if (this.phase !== 'playing') break;
+      }
       const held = heldWeapon(c);
       if (input.buttons & BUTTON_RELOAD) this.startReload(c);
       if (input.buttons & BUTTON_FIRE && c.fireCooldown === 0 && c.raiseTicks === 0 && c.reloadTicks === 0) {
@@ -338,29 +373,37 @@ export class Match {
     if (def.kind === 'melee') {
       // Three short rays in a narrow fan make melee forgiving without a full sweep.
       let hit: number | null = null;
+      let body: number | null = null;
       for (const yawOffset of [0, -0.3, 0.3]) {
         const dir = viewDirection(shooter.yaw + yawOffset, shooter.pitch);
-        const shot = resolveHitscan(eye, dir, def.range, this.physics.raycastWorld(eye, dir, def.range), targets);
+        const world = this.physics.raycastHit(eye, dir, def.range);
+        const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
         if (shot.hitSlot !== null) {
           hit = shot.hitSlot;
           break;
         }
+        if (world && body === null) body = world.handle;
       }
       this.pendingEvents.push({ e: 'melee', s: shooter.slot, hit });
       if (hit !== null) this.damage(this.slots[hit]!, def.damage, shooter, def.id);
+      else if (body !== null) this.scenario.damageBody(body, this.boosted(shooter, def.damage), shooter.slot);
       return;
     }
 
     const to: Tuple3[] = [];
     const hits: (number | null)[] = [];
+    const bodies: number[] = [];
     for (let p = 0; p < def.pellets; p++) {
       const dir = this.spreadDir(aim, def.spread);
-      const shot = resolveHitscan(eye, dir, def.range, this.physics.raycastWorld(eye, dir, def.range), targets);
+      const world = this.physics.raycastHit(eye, dir, def.range);
+      const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
       to.push(tuple(shot.end));
       hits.push(shot.hitSlot);
+      if (shot.hitSlot === null && world) bodies.push(world.handle);
     }
     this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits });
     for (const h of hits) if (h !== null) this.damage(this.slots[h]!, def.damage, shooter, def.id);
+    for (const b of bodies) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
   }
 
   /** Uniform random direction within a cone around `dir`. */
@@ -432,15 +475,26 @@ export class Match {
     const spec = p.def.projectile!;
     const owner = this.slots[p.owner] ?? null;
     this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius });
+    this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.def.id, spec.selfDamageScale);
+  }
+
+  /** Radial damage falling off from `damage` at the centre to `edge` at `radius`, blocked by walls. Also hits destructibles. */
+  private splash(at: Vec3, radius: number, damage: number, edge: number, owner: Combatant | null, weapon: string, selfScale: number): void {
     for (const c of this.combatants()) {
       if (!c.alive) continue;
       const target = chest(c.move.pos);
       const d = distance(at, target);
-      if (d > spec.splashRadius || !this.physics.lineOfSight(at, target)) continue;
-      let dmg = spec.splashDamage + (spec.splashEdgeDamage - spec.splashDamage) * (d / spec.splashRadius);
-      if (owner && c === owner) dmg *= spec.selfDamageScale;
-      this.damage(c, dmg, owner, p.def.id);
+      if (d > radius || !this.physics.lineOfSight(at, target)) continue;
+      let dmg = damage + (edge - damage) * (d / radius);
+      if (owner && c === owner) dmg *= selfScale;
+      this.damage(c, dmg, owner, weapon);
     }
+    const boost = owner && owner.damageTicks > 0 ? DAMAGE_BOOST : 1;
+    this.scenario.splash(at, radius, damage * boost, edge * boost, owner?.slot ?? null, this.physics);
+  }
+
+  private boosted(attacker: Combatant, amount: number): number {
+    return attacker.damageTicks > 0 ? amount * DAMAGE_BOOST : amount;
   }
 
   /** Apply damage through armor and the attacker's damage boost. */
@@ -462,8 +516,9 @@ export class Match {
     victim.deaths++;
     victim.respawnTick = this.tick + this.rules.respawnDelayTicks;
     if (killer) killer.kills++;
-    else victim.kills--; // suicides (falls, own grenades) cost a point
+    else victim.kills--; // suicides (falls, own grenades, traps) cost a point
     this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon });
+    this.scenario.playerKilled(victim.slot, killer?.slot ?? null);
     if (killer && killer.kills >= this.rules.scoreLimit) this.endRound();
   }
 
@@ -471,11 +526,12 @@ export class Match {
 
   private collectPickups(c: Combatant): void {
     for (const p of this.pickups) {
-      if (this.tick < p.availableAt) continue;
+      if (!p.enabled || this.tick < p.availableAt) continue;
       if (horizontalDistance(p.pos, c.move.pos) > PICKUP_RADIUS || Math.abs(p.pos.y - c.move.pos.y) > 1.5) continue;
       if (!this.applyItem(c, p.item)) continue;
       p.availableAt = this.tick + p.respawnTicks;
       this.pendingEvents.push({ e: 'pickup', s: c.slot, id: p.id, item: p.item.id });
+      this.scenario.pickupTaken(p.id, c.slot);
     }
   }
 
@@ -557,11 +613,12 @@ export class Match {
     this.pendingEvents.push({ e: 'spawn', s: c.slot });
   }
 
-  private endRound(): void {
+  /** Ends the round; the winner is the top scorer unless scenario logic names one (`null` = nobody). */
+  private endRound(forced?: number | null): void {
     if (this.phase !== 'playing') return;
     const ranked = this.combatants().sort((a, b) => b.kills - a.kills);
-    const top = ranked[0];
-    const tied = top && ranked[1] && ranked[1].kills === top.kills;
+    const top = forced === undefined ? ranked[0] : forced === null ? undefined : (this.slots[forced] ?? undefined);
+    const tied = forced === undefined && top && ranked[1] && ranked[1].kills === top.kills;
     this.phase = 'intermission';
     this.phaseEndTick = this.tick + this.rules.intermissionTicks;
     this.projectiles = [];
@@ -572,6 +629,7 @@ export class Match {
     this.phase = 'playing';
     this.phaseEndTick = this.roundEndTick();
     for (const p of this.pickups) p.availableAt = 0;
+    this.scenario.reset();
     for (const c of this.combatants()) {
       c.kills = 0;
       c.deaths = 0;
@@ -634,7 +692,8 @@ export class Match {
       score: this.scores(),
       ev: events,
       pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z)]),
-      pk: this.pickups.filter((p) => this.tick < p.availableAt).map((p) => p.id),
+      pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
+      sc: this.scenario.delta(),
     };
   }
 

@@ -1,7 +1,9 @@
 import { coreCatalog, type TileCatalog } from '../map/catalog.ts';
 import { buildOccupancy, cellKey, rotateXZ } from '../map/geometry.ts';
 import type { SurfaceSlot } from '../map/materials.ts';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement } from '../map/schema.ts';
+import { emptyLogic } from '../map/logic.ts';
+import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
+import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 
 /** Editor-level selection: stable IDs only, never object references or indices. */
@@ -93,7 +95,8 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
   const rotated = tiles.map((t) => ({ ...t, rotation: ((t.rotation + 1) % 4) as Rotation }));
   const check = checkPlacement(doc, rotated, [], catalog);
   if (!check.ok) return { error: check.reason };
-  const turned = entities.map((e) => (e.kind === 'spawn' ? { ...e, yaw: normalizeYaw(e.yaw + Math.PI / 4) } : e));
+  // Spawns turn in 45° steps; doors, traps and other facing objects in quarter turns.
+  const turned = entities.map((e) => (e.kind === 'spawn' ? { ...e, yaw: normalizeYaw(e.yaw + Math.PI / 4) } : 'yaw' in e ? { ...e, yaw: normalizeYaw(e.yaw + Math.PI / 2) } : e));
   return {
     kind: 'batch',
     commands: [
@@ -151,6 +154,7 @@ export function newMapDocument(name = 'Untitled Map', now: Date = new Date()): M
     },
     classicStructure: { cellSize: 8, levelHeight: 4, theme: 'core.prototype', tiles: [{ id: newId('tile'), tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }] },
     entities: [{ id: newId('spawn'), kind: 'spawn', position: [0, 0, 0], yaw: 0, faction: null }],
+    logic: emptyLogic(),
     dependencies: [],
   };
 }
@@ -206,4 +210,75 @@ export function paintCommand(doc: MapDocument, tileId: string, slot: SurfaceSlot
 /** Change the map's theme (its default palette). Tile overrides are kept. */
 export function setThemeCommand(doc: MapDocument, theme: string): EditCommand {
   return { kind: 'setTheme', before: doc.classicStructure.theme, after: theme };
+}
+
+// ---------------------------------------------------------------- scenario entities
+
+/** Palette entries for scenario objects. Each creates one entity with sensible defaults. */
+export const SCENARIO_PALETTE = [
+  { key: 'door', label: 'Door', search: 'door auto sliding gate' },
+  { key: 'door_locked', label: 'Locked Door', search: 'door locked key gate vault' },
+  { key: 'button', label: 'Button', search: 'button switch lever press use' },
+  { key: 'crate', label: 'Crate', search: 'crate box destructible break cover' },
+  { key: 'barrel', label: 'Explosive Barrel', search: 'barrel explosive destructible red boom' },
+  { key: 'wall', label: 'Breakable Wall', search: 'wall breakable destructible breach' },
+  { key: 'zone', label: 'Trigger Zone', search: 'zone trigger volume area region enter' },
+  { key: 'trap:spikes', label: 'Spike Floor', search: 'trap spikes floor hazard' },
+  { key: 'trap:flames', label: 'Flame Jet', search: 'trap flame fire jet hazard burn' },
+  { key: 'trap:crusher', label: 'Crusher', search: 'trap crusher ceiling piston hazard' },
+  { key: 'trap:mine', label: 'Proximity Mine', search: 'trap mine explosive proximity hazard' },
+  { key: 'trap:laser', label: 'Laser Fence', search: 'trap laser beam fence tripwire hazard' },
+] as const;
+
+export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
+
+/** Entities that sit in a doorway and snap to cell edges. */
+export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key === 'wall' || key === 'trap:laser';
+
+export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, number, number], yaw: number): MapEntity {
+  const base = { position, yaw };
+  switch (key) {
+    case 'door':
+    case 'door_locked':
+      return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: key === 'door_locked', auto: key === 'door' };
+    case 'button':
+      return { id: newId('button'), kind: 'button', ...base, label: 'Press', once: false, cooldownSeconds: 1, startEnabled: true };
+    case 'crate':
+    case 'barrel':
+    case 'wall':
+      return { id: newId(key), kind: 'destructible', model: key, ...base, health: null, explosiveOnly: false };
+    case 'zone':
+      return { id: newId('zone'), kind: 'zone', position, size: [4, 3, 4], who: 'any', count: 1, startEnabled: true };
+    default: {
+      const trap = key.slice(5) as TrapKind;
+      const d = TRAP_SPECS[trap].defaults;
+      return { id: newId(trap), kind: 'trap', trap, ...base, activation: d.activation, onSeconds: d.onSeconds, offSeconds: d.offSeconds, offsetSeconds: 0, startEnabled: true, damage: null };
+    }
+  }
+}
+
+/**
+ * Snap a point to the middle of the nearest Classic Grid cell edge (where
+ * doorways are), returning the position and the facing that spans the opening.
+ */
+export function snapToDoorway(x: number, z: number, cellSize: number): { x: number; z: number; yaw: number } {
+  const half = cellSize / 2;
+  // Candidate on a wall running along Z (between cells east/west) and along X.
+  const ex = Math.round((x - half) / cellSize) * cellSize + half;
+  const ez = Math.round(z / cellSize) * cellSize;
+  const nx = Math.round(x / cellSize) * cellSize;
+  const nz = Math.round((z - half) / cellSize) * cellSize + half;
+  return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
+}
+
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap' };
+
+/** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
+export function entityLabel(doc: MapDocument, e: MapEntity): string {
+  if (e.name) return e.name;
+  let kind = KIND_LABELS[e.kind];
+  if (e.kind === 'trap') kind = TRAP_SPECS[e.trap].label;
+  if (e.kind === 'destructible') kind = DESTRUCTIBLE_SPECS[e.model].label;
+  const same = doc.entities.filter((o) => o.kind === e.kind && (e.kind !== 'trap' || (o.kind === 'trap' && o.trap === e.trap)) && (e.kind !== 'destructible' || (o.kind === 'destructible' && o.model === e.model)));
+  return `${kind} ${same.indexOf(e) + 1}`;
 }

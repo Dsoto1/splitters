@@ -4,6 +4,7 @@ import { getItem } from '../sim/items.ts';
 import { buildOccupancy, cellKey } from './geometry.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument } from './schema.ts';
+import { validateScenario } from './validateScenario.ts';
 
 export type IssueSeverity = 'error' | 'warning' | 'suggestion';
 
@@ -114,6 +115,8 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   if (!pickups.some((p) => getItem(p.item)?.effect.kind === 'health')) {
     issues.push({ severity: 'suggestion', code: 'pickup.no_health', message: 'no health pickups: fights will snowball' });
   }
+
+  issues.push(...validateScenario(map));
 
   const { min, max } = map.metadata.recommendedPlayers;
   if (min > max) issues.push({ severity: 'error', code: 'meta.players', message: `recommended players min ${min} > max ${max}` });

@@ -20,6 +20,7 @@ const tuple = (p: readonly number[]): Vec3 => ({ x: p[0]!, y: p[1]!, z: p[2]! })
  */
 export class SessionAudio {
   private readonly pickupAt = new Map<string, Vec3>();
+  private entities: MapDocument['entities'] = [];
   private readonly strides = new Map<number, { x: number; z: number; acc: number }>();
   private localStride = 0;
   private wasGrounded = true;
@@ -35,6 +36,7 @@ export class SessionAudio {
   ) {}
 
   setMap(doc: MapDocument): void {
+    this.entities = doc.entities;
     for (const e of doc.entities) if (e.kind === 'pickup') this.pickupAt.set(e.id, tuple(e.position));
   }
 
@@ -176,8 +178,44 @@ export class SessionAudio {
         this.recentKills = [];
         this.audio.play('announce.fight');
         break;
+      case 'door':
+        this.audio.play(ev.open ? 'door.open' : 'door.close', { at: this.entityAt(ev.i, 1.5) });
+        break;
+      case 'use':
+        if (ev.s === me) this.audio.play(ev.ok ? 'button.press' : 'use.denied');
+        else if (ev.ok) this.audio.play('button.press', { at: this.entityAt(ev.i, 1.2) });
+        break;
+      case 'trap': {
+        const e = this.entities[ev.i];
+        if (e?.kind !== 'trap') break;
+        const at = this.entityAt(ev.i, 0.5);
+        if (ev.warn) this.audio.play('trap.warn', { at });
+        else if (e.trap !== 'mine') this.audio.play(`trap.${e.trap}` as SoundId, { at });
+        break;
+      }
+      case 'broken': {
+        const e = this.entities[ev.i];
+        if (e?.kind !== 'destructible' || e.model === 'barrel') break; // barrels are heard as explosions
+        this.audio.play(e.model === 'wall' ? 'break.wall' : 'break.crate', { at: this.entityAt(ev.i, 0.6) });
+        if (e.model === 'wall') this.audio.play('explosion.debris', { at: this.entityAt(ev.i, 1) });
+        break;
+      }
+      case 'cue':
+        this.audio.play(ev.cue === 'boom' ? 'explosion' : (`cue.${ev.cue}` as SoundId));
+        break;
+      case 'obj':
+        this.audio.play(ev.st === 2 ? 'objective.complete' : ev.st === 3 ? 'cue.buzzer' : 'objective.new');
+        break;
+      case 'msg':
+        this.audio.play('message');
+        break;
       case 'spawn':
         break;
     }
+  }
+
+  private entityAt(i: number, lift: number): Vec3 | undefined {
+    const e = this.entities[i];
+    return e && { x: e.position[0], y: e.position[1] + lift, z: e.position[2] };
   }
 }

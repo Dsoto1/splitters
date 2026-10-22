@@ -19,6 +19,7 @@ jobs:
       - run: pnpm content:check
       - run: pnpm test
       - run: pnpm validate-map maps/phase0_arena.json
+      - run: pnpm validate-map maps/m3_vault.json
       - run: pnpm bench 32 30
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium

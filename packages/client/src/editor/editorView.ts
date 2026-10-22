@@ -13,8 +13,9 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import type { MapDocument, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
-import { PLAYER, buildMapGeometry, placementCells, viewDirection } from '@chronosplit/shared';
+import type { MapDocument, MapEntity, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
+import { DESTRUCTIBLE_SPECS, PLAYER, buildMapGeometry, placementCells, viewDirection } from '@chronosplit/shared';
+import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
@@ -49,6 +50,7 @@ export class EditorView {
   private outlines: Mesh[] = [];
   private markers = new Map<string, EntityMarker>();
   private readonly models: ModelLibrary;
+  private readonly scenario: ScenarioVisuals;
   private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'hover' | 'spawn' | 'spawnSel' | 'visor' | 'face', StandardMaterial>;
 
   constructor(engine: AbstractEngine) {
@@ -66,6 +68,7 @@ export class EditorView {
     new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene).intensity = 0.5;
     this.styler = new MapStyler(this.scene);
     this.models = new ModelLibrary(this.scene);
+    this.scenario = new ScenarioVisuals(this.scene, { editor: true });
 
     const flat = (name: string, hex: string, alpha = 1, wire = false) => {
       const m = new StandardMaterial(name, this.scene);
@@ -190,8 +193,8 @@ export class EditorView {
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
       seen.add(e.id);
-      // Rebuild a marker when the entity changed kind or item.
-      const key = e.kind === 'pickup' ? `pickup:${e.item}` : 'spawn';
+      // Rebuild a marker when the entity changed kind, item or any scenario property.
+      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null });
       let m = this.markers.get(e.id);
       if (m && m.key !== key) {
         m.node.dispose(false, false);
@@ -199,7 +202,12 @@ export class EditorView {
         m = undefined;
       }
       if (!m) {
-        m = e.kind === 'spawn' ? this.createSpawnMarker(e.id) : { key, node: createPickupVisual(this.scene, this.models, e.item, `edpickup_${e.id}`) };
+        m =
+          e.kind === 'spawn'
+            ? this.createSpawnMarker(e.id)
+            : e.kind === 'pickup'
+              ? { key, node: createPickupVisual(this.scene, this.models, e.item, `edpickup_${e.id}`) }
+              : { key, node: this.scenario.createNode(e, `ed_${e.id}`) };
         m.key = key;
         this.markers.set(e.id, m);
       }
@@ -208,9 +216,11 @@ export class EditorView {
         m.node.rotation.y = e.yaw;
         (m.node as Mesh).material = selected.has(e.id) ? this.mat.spawnSel : this.mat.spawn;
       } else {
-        m.node.position.set(e.position[0], e.position[1] + PICKUP_HOVER, e.position[2]);
+        const scenario = e.kind !== 'pickup';
+        m.node.position.set(e.position[0], e.position[1] + (scenario ? 0 : PICKUP_HOVER), e.position[2]);
+        if ('yaw' in e && scenario) m.node.rotation.y = e.yaw;
         if (selected.has(e.id) && !m.ring) {
-          m.ring = CreateCylinder(`edsel_${e.id}`, { diameter: 1.1, height: 1.2, tessellation: 16 }, this.scene);
+          m.ring = CreateCylinder(`edsel_${e.id}`, { diameter: selectionSize(e), height: 1.2, tessellation: 24 }, this.scene);
           m.ring.material = this.mat.outline;
           m.ring.isPickable = false;
         } else if (!selected.has(e.id) && m.ring) {
@@ -318,5 +328,21 @@ export class EditorView {
 
   render(): void {
     this.scene.render();
+  }
+}
+
+/** Diameter of the selection outline around an entity. */
+function selectionSize(e: MapEntity): number {
+  switch (e.kind) {
+    case 'door':
+      return 3.4;
+    case 'zone':
+      return Math.max(e.size[0], e.size[2]) * 1.2;
+    case 'trap':
+      return e.trap === 'mine' ? 1.1 : e.trap === 'flames' ? 1.4 : 3.6;
+    case 'destructible':
+      return Math.max(DESTRUCTIBLE_SPECS[e.model].half.x, DESTRUCTIBLE_SPECS[e.model].half.z) * 2.4;
+    default:
+      return 1.1;
   }
 }

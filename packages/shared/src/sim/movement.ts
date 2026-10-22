@@ -7,7 +7,9 @@ export const BUTTON_JUMP = 1;
 export const BUTTON_FIRE = 2;
 export const BUTTON_RELOAD = 4;
 export const BUTTON_ZOOM = 8;
-const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM;
+/** Use / interact (E): press buttons, open manual doors. Sent once per key press. */
+export const BUTTON_USE = 16;
+const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {

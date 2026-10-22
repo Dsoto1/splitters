@@ -60,7 +60,42 @@ export type GameEvent =
   | { e: 'kill'; killer: number | null; victim: number; weapon: string }
   | { e: 'spawn'; s: number }
   | { e: 'round_end'; winner: number | null }
-  | { e: 'round_start' };
+  | { e: 'round_start' }
+  // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
+  /** Creator message from a logic rule. */
+  | { e: 'msg'; text: string; secs: number }
+  /** Sound cue from a logic rule (alarm, chime, buzzer, boom); positionless. */
+  | { e: 'cue'; cue: string }
+  /** Objective changed state (index into OBJECTIVE_STATES). */
+  | { e: 'obj'; i: number; st: number }
+  /** A trap fired (or a proximity trap started its warning when `warn` is set). */
+  | { e: 'trap'; i: number; warn?: 1 }
+  | { e: 'door'; i: number; open: 0 | 1 }
+  /** A destructible broke. */
+  | { e: 'broken'; i: number }
+  /** A player pressed a button, or was refused (locked door, disabled button). */
+  | { e: 'use'; s: number; i: number; ok: 0 | 1 };
+
+/**
+ * Scenario state. Sent as a delta (only what changed since the previous
+ * snapshot) plus a full keyframe every couple of seconds; the welcome message
+ * carries a full copy.
+ */
+export interface ScenarioSnapshot {
+  /** Entity states as [entity index, a, b]. door: open 0..100, locked; button: enabled, lit; destructible: health %, 0;
+   *  zone: enabled, players inside; trap: flags (TRAP_* bits), 0. */
+  es?: [number, number, number][];
+  /** Every objective's state (index into OBJECTIVE_STATES), when any changed. */
+  ob?: number[];
+  /** Visible running timers as [timer index, seconds left], when the list changed. */
+  tm?: [number, number][];
+}
+
+export const TRAP_ENABLED = 1;
+export const TRAP_ACTIVE = 2;
+export const TRAP_WARNING = 4;
+/** A mine that has gone off and not rearmed yet. */
+export const TRAP_SPENT = 8;
 
 export interface ScoreEntry {
   s: number;
@@ -102,6 +137,8 @@ export type ServerMessage =
       snapshotInterval: number;
       map: MapDocument;
       rules: MatchRules;
+      /** Full scenario state at join time. */
+      sc?: ScenarioSnapshot;
     }
   | { t: 'reject'; reason: string }
   | { t: 'roster'; players: RosterEntry[] }
@@ -122,6 +159,8 @@ export type ServerMessage =
       pk: string[];
       /** Receiving player's private state (absent while not in the match). */
       me?: PrivateState;
+      /** Scenario state changes (absent when nothing changed). */
+      sc?: ScenarioSnapshot;
     }
   | { t: 'pong'; id: number; ct: number }
   | ({ t: 'stats' } & ServerStats);

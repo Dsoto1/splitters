@@ -5,6 +5,7 @@ import type { ItemDefinition } from '../sim/items.ts';
 import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, type PlayerInput } from '../sim/movement.ts';
 import type { WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
+import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
 import type { BotDifficulty, BotProfile } from './profile.ts';
 
 export interface CombatantView {
@@ -42,6 +43,10 @@ export interface BotWorldView {
   /** The bot's own weapons and the slot it is holding. */
   inventory: readonly InventoryView[];
   held: number;
+  /** Closed doors bots can't open and intact breakable walls: paths through them are treated as unreachable. */
+  blockers?: readonly Aabb[];
+  /** Traps that are dangerous right now: bots wait at the edge instead of walking in. */
+  hazards?: readonly Aabb[];
 }
 
 export type BotState = 'roam' | 'engage' | 'chase' | 'retreat' | 'dead';
@@ -163,6 +168,8 @@ export class BotBrain {
       case 'dead':
         break;
     }
+
+    if (moveYaw !== null && this.hazardAhead(view, moveYaw)) moveYaw = null;
 
     let forward = 0;
     let right = 0;
@@ -347,6 +354,7 @@ export class BotBrain {
     if (goalMoved || ((stale || exhausted) && view.tick - this.lastPathTick >= 6)) {
       this.goal = { ...goal };
       this.path = view.nav.findPath(me.pos, goal) ?? [];
+      if (this.pathBlocked(view)) this.path = [];
       this.pathIndex = this.path.length > 1 ? 1 : 0;
       this.lastPathTick = view.tick;
     }
@@ -361,6 +369,29 @@ export class BotBrain {
       return Math.atan2(goal.x - me.pos.x, goal.z - me.pos.z);
     }
     return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+  }
+
+  /** Does the planned path cross a closed door or breakable wall? */
+  private pathBlocked(view: BotWorldView): boolean {
+    if (!view.blockers?.length) return false;
+    let prev = view.self.pos;
+    for (const c of this.path) {
+      const a = { x: prev.x, y: prev.y + 1, z: prev.z };
+      const b = { x: c.x, y: c.y + 1, z: c.z };
+      if (view.blockers.some((box) => segmentHitsAabb(a, b, box, PLAYER.radius))) return true;
+      prev = c;
+    }
+    return false;
+  }
+
+  /** Would the next couple of metres along `moveYaw` enter an active trap we are not already standing in? */
+  private hazardAhead(view: BotWorldView, moveYaw: number): boolean {
+    if (!view.hazards?.length) return false;
+    const me = view.self.pos;
+    const here = { x: me.x, y: me.y + 0.5, z: me.z };
+    const ahead = { x: me.x + Math.sin(moveYaw) * 2, y: me.y + 0.5, z: me.z + Math.cos(moveYaw) * 2 };
+    const inside = view.hazards.some((h) => segmentHitsAabb(here, here, h, PLAYER.radius));
+    return !inside && view.hazards.some((h) => segmentHitsAabb(here, ahead, h, PLAYER.radius));
   }
 
   private pickRoamGoal(view: BotWorldView): Vec3 {

@@ -1,4 +1,4 @@
-import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_ZOOM } from '@chronosplit/shared';
+import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const PITCH_LIMIT = 1.5;
@@ -14,6 +14,7 @@ export class InputState {
   private zoomDown = false;
   private jumpQueued = false;
   private reloadQueued = false;
+  private useQueued = false;
   /** Weapon slot requested with number keys (0 = none pending). */
   private slotRequest = 0;
   /** Mouse wheel steps since last read (+ = next weapon). */
@@ -31,6 +32,7 @@ export class InputState {
         this.keys.add(e.code);
         if (e.code === 'Space') this.jumpQueued = true;
         if (e.code === 'KeyR') this.reloadQueued = true;
+        if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
         const digit = /^Digit([1-9])$/.exec(e.code);
         if (digit) this.slotRequest = Number(digit[1]);
       },
@@ -120,8 +122,10 @@ export class InputState {
     if (this.fireDown) buttons |= BUTTON_FIRE;
     if (this.reloadQueued) buttons |= BUTTON_RELOAD;
     if (this.zoomDown) buttons |= BUTTON_ZOOM;
+    if (this.useQueued) buttons |= BUTTON_USE;
     this.jumpQueued = false;
     this.reloadQueued = false;
+    this.useQueued = false;
     return { forward: axis('KeyW', 'KeyS'), right: axis('KeyD', 'KeyA'), buttons };
   }
 }

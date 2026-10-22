@@ -42,138 +42,530 @@
       "retrieved": "2026-10-22"
     }
   },
-  "budgets": { "maxBytes": 131072 },
+  "budgets": {
+    "maxBytes": 131072
+  },
   "sounds": {
-    "fire.pistol": { "synth": "pistol", "variants": 3, "gain": 0.7, "range": "far", "jitter": 0.05 },
-    "fire.rifle": { "synth": "rifle", "variants": 3, "gain": 0.6, "range": "far", "jitter": 0.04 },
-    "fire.shotgun": { "synth": "shotgun", "variants": 3, "gain": 0.9, "range": "far", "jitter": 0.04 },
-    "fire.sniper": { "synth": "sniper", "variants": 2, "gain": 1.0, "range": "far", "jitter": 0.03 },
-    "fire.launcher": { "synth": "launcher", "variants": 2, "gain": 0.9, "range": "far", "jitter": 0.05 },
-    "fire.knife": { "synth": "swing", "variants": 3, "gain": 0.5, "range": "mid", "jitter": 0.1 },
-    "dryfire": { "synth": "dryfire", "variants": 1, "gain": 0.5, "range": "near", "jitter": 0.03 },
+    "fire.pistol": {
+      "synth": "pistol",
+      "variants": 3,
+      "gain": 0.7,
+      "range": "far",
+      "jitter": 0.05
+    },
+    "fire.rifle": {
+      "synth": "rifle",
+      "variants": 3,
+      "gain": 0.6,
+      "range": "far",
+      "jitter": 0.04
+    },
+    "fire.shotgun": {
+      "synth": "shotgun",
+      "variants": 3,
+      "gain": 0.9,
+      "range": "far",
+      "jitter": 0.04
+    },
+    "fire.sniper": {
+      "synth": "sniper",
+      "variants": 2,
+      "gain": 1.0,
+      "range": "far",
+      "jitter": 0.03
+    },
+    "fire.launcher": {
+      "synth": "launcher",
+      "variants": 2,
+      "gain": 0.9,
+      "range": "far",
+      "jitter": 0.05
+    },
+    "fire.knife": {
+      "synth": "swing",
+      "variants": 3,
+      "gain": 0.5,
+      "range": "mid",
+      "jitter": 0.1
+    },
+    "dryfire": {
+      "synth": "dryfire",
+      "variants": 1,
+      "gain": 0.5,
+      "range": "near",
+      "jitter": 0.03
+    },
     "explosion": {
-      "gain": 1.0, "range": "far", "jitter": 0.06,
+      "gain": 1.0,
+      "range": "far",
+      "jitter": 0.06,
       "variants": [
-        { "pack": "kenney-sci-fi-sounds", "file": "Audio/lowFrequency_explosion_000.ogg" },
-        { "pack": "kenney-sci-fi-sounds", "file": "Audio/lowFrequency_explosion_001.ogg" }
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/lowFrequency_explosion_000.ogg"
+        },
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/lowFrequency_explosion_001.ogg"
+        }
       ]
     },
     "explosion.debris": {
-      "gain": 0.6, "range": "mid", "jitter": 0.08,
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.08,
       "variants": [
-        { "pack": "kenney-sci-fi-sounds", "file": "Audio/explosionCrunch_000.ogg" },
-        { "pack": "kenney-sci-fi-sounds", "file": "Audio/explosionCrunch_002.ogg" }
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/explosionCrunch_000.ogg"
+        },
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/explosionCrunch_002.ogg"
+        }
       ]
     },
     "impact.world": {
-      "gain": 0.35, "range": "mid", "jitter": 0.12,
+      "gain": 0.35,
+      "range": "mid",
+      "jitter": 0.12,
       "variants": [
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactGeneric_light_000.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactGeneric_light_001.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactGeneric_light_002.ogg" }
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactGeneric_light_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactGeneric_light_001.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactGeneric_light_002.ogg"
+        }
       ]
     },
     "impact.body": {
-      "gain": 0.6, "range": "mid", "jitter": 0.1,
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.1,
       "variants": [
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactPunch_medium_000.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactPunch_medium_001.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactPunch_medium_002.ogg" }
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPunch_medium_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPunch_medium_001.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPunch_medium_002.ogg"
+        }
       ]
     },
     "knife.hit": {
-      "gain": 0.7, "range": "mid", "jitter": 0.08,
+      "gain": 0.7,
+      "range": "mid",
+      "jitter": 0.08,
       "variants": [
-        { "pack": "kenney-rpg-audio", "file": "Audio/knifeSlice.ogg" },
-        { "pack": "kenney-rpg-audio", "file": "Audio/knifeSlice2.ogg" }
+        {
+          "pack": "kenney-rpg-audio",
+          "file": "Audio/knifeSlice.ogg"
+        },
+        {
+          "pack": "kenney-rpg-audio",
+          "file": "Audio/knifeSlice2.ogg"
+        }
       ]
     },
     "death": {
-      "gain": 0.8, "range": "mid", "jitter": 0.06,
+      "gain": 0.8,
+      "range": "mid",
+      "jitter": 0.06,
       "variants": [
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactPunch_heavy_000.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactPunch_heavy_001.ogg" }
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPunch_heavy_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPunch_heavy_001.ogg"
+        }
       ]
     },
     "footstep": {
-      "gain": 0.35, "range": "near", "jitter": 0.1,
+      "gain": 0.35,
+      "range": "near",
+      "jitter": 0.1,
       "variants": [
-        { "pack": "kenney-impact-sounds", "file": "Audio/footstep_concrete_000.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/footstep_concrete_001.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/footstep_concrete_002.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/footstep_concrete_003.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/footstep_concrete_004.ogg" }
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/footstep_concrete_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/footstep_concrete_001.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/footstep_concrete_002.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/footstep_concrete_003.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/footstep_concrete_004.ogg"
+        }
       ]
     },
     "land": {
-      "gain": 0.45, "range": "near", "jitter": 0.08,
+      "gain": 0.45,
+      "range": "near",
+      "jitter": 0.08,
       "variants": [
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactSoft_medium_000.ogg" },
-        { "pack": "kenney-impact-sounds", "file": "Audio/impactSoft_medium_001.ogg" }
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactSoft_medium_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactSoft_medium_001.ogg"
+        }
       ]
     },
     "reload.start": {
-      "gain": 1.0, "range": "near", "jitter": 0.04,
-      "variants": [{ "pack": "kenney-rpg-audio", "file": "Audio/metalClick.ogg" }]
+      "gain": 1.0,
+      "range": "near",
+      "jitter": 0.04,
+      "variants": [
+        {
+          "pack": "kenney-rpg-audio",
+          "file": "Audio/metalClick.ogg"
+        }
+      ]
     },
     "reload.end": {
-      "gain": 0.6, "range": "near", "jitter": 0.04,
-      "variants": [{ "pack": "kenney-rpg-audio", "file": "Audio/metalLatch.ogg" }]
+      "gain": 0.6,
+      "range": "near",
+      "jitter": 0.04,
+      "variants": [
+        {
+          "pack": "kenney-rpg-audio",
+          "file": "Audio/metalLatch.ogg"
+        }
+      ]
     },
     "weapon.raise": {
-      "gain": 0.6, "range": "near", "jitter": 0.06,
+      "gain": 0.6,
+      "range": "near",
+      "jitter": 0.06,
       "variants": [
-        { "pack": "kenney-rpg-audio", "file": "Audio/beltHandle1.ogg" },
-        { "pack": "kenney-rpg-audio", "file": "Audio/beltHandle2.ogg" }
+        {
+          "pack": "kenney-rpg-audio",
+          "file": "Audio/beltHandle1.ogg"
+        },
+        {
+          "pack": "kenney-rpg-audio",
+          "file": "Audio/beltHandle2.ogg"
+        }
       ]
     },
     "pickup.health": {
-      "gain": 0.5, "range": "mid",
-      "variants": [{ "pack": "kenney-interface-sounds", "file": "Audio/confirmation_001.ogg" }]
+      "gain": 0.5,
+      "range": "mid",
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/confirmation_001.ogg"
+        }
+      ]
     },
     "pickup.armor": {
-      "gain": 0.8, "range": "mid", "jitter": 0.04,
-      "variants": [{ "pack": "kenney-impact-sounds", "file": "Audio/impactPlate_light_000.ogg" }]
+      "gain": 0.8,
+      "range": "mid",
+      "jitter": 0.04,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPlate_light_000.ogg"
+        }
+      ]
     },
     "pickup.ammo": {
-      "gain": 0.6, "range": "mid", "jitter": 0.05,
-      "variants": [{ "pack": "kenney-rpg-audio", "file": "Audio/handleCoins.ogg" }]
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.05,
+      "variants": [
+        {
+          "pack": "kenney-rpg-audio",
+          "file": "Audio/handleCoins.ogg"
+        }
+      ]
     },
     "pickup.weapon": {
-      "gain": 0.7, "range": "mid", "rate": 0.9,
-      "variants": [{ "pack": "kenney-rpg-audio", "file": "Audio/metalLatch.ogg" }]
+      "gain": 0.7,
+      "range": "mid",
+      "rate": 0.9,
+      "variants": [
+        {
+          "pack": "kenney-rpg-audio",
+          "file": "Audio/metalLatch.ogg"
+        }
+      ]
     },
     "pickup.powerup": {
-      "gain": 0.5, "range": "mid",
-      "variants": [{ "pack": "kenney-sci-fi-sounds", "file": "Audio/forceField_000.ogg" }]
+      "gain": 0.5,
+      "range": "mid",
+      "variants": [
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/forceField_000.ogg"
+        }
+      ]
     },
     "ui.hit": {
-      "gain": 0.4, "jitter": 0.03,
-      "variants": [{ "pack": "kenney-interface-sounds", "file": "Audio/select_001.ogg" }]
+      "gain": 0.4,
+      "jitter": 0.03,
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/select_001.ogg"
+        }
+      ]
     },
     "ui.kill": {
       "gain": 0.5,
-      "variants": [{ "pack": "kenney-interface-sounds", "file": "Audio/pluck_001.ogg" }]
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/pluck_001.ogg"
+        }
+      ]
     },
     "announce.fight": {
       "gain": 0.8,
-      "variants": [{ "pack": "kenney-voiceover-pack-fighter", "file": "Audio/fight.ogg" }]
+      "variants": [
+        {
+          "pack": "kenney-voiceover-pack-fighter",
+          "file": "Audio/fight.ogg"
+        }
+      ]
     },
     "announce.win": {
       "gain": 0.8,
-      "variants": [{ "pack": "kenney-voiceover-pack-fighter", "file": "Audio/you_win.ogg" }]
+      "variants": [
+        {
+          "pack": "kenney-voiceover-pack-fighter",
+          "file": "Audio/you_win.ogg"
+        }
+      ]
     },
     "announce.lose": {
       "gain": 0.8,
-      "variants": [{ "pack": "kenney-voiceover-pack-fighter", "file": "Audio/you_lose.ogg" }]
+      "variants": [
+        {
+          "pack": "kenney-voiceover-pack-fighter",
+          "file": "Audio/you_lose.ogg"
+        }
+      ]
     },
     "announce.tie": {
       "gain": 0.8,
-      "variants": [{ "pack": "kenney-voiceover-pack-fighter", "file": "Audio/tie.ogg" }]
+      "variants": [
+        {
+          "pack": "kenney-voiceover-pack-fighter",
+          "file": "Audio/tie.ogg"
+        }
+      ]
     },
     "announce.multikill": {
       "gain": 0.8,
-      "variants": [{ "pack": "kenney-voiceover-pack-fighter", "file": "Audio/multi_kill.ogg" }]
+      "variants": [
+        {
+          "pack": "kenney-voiceover-pack-fighter",
+          "file": "Audio/multi_kill.ogg"
+        }
+      ]
+    },
+    "door.open": {
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.05,
+      "variants": [
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/doorOpen_000.ogg"
+        },
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/doorOpen_001.ogg"
+        }
+      ]
+    },
+    "door.close": {
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.05,
+      "variants": [
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/doorClose_000.ogg"
+        },
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/doorClose_001.ogg"
+        }
+      ]
+    },
+    "button.press": {
+      "gain": 0.6,
+      "range": "near",
+      "jitter": 0.03,
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/switch_003.ogg"
+        }
+      ]
+    },
+    "use.denied": {
+      "gain": 0.6,
+      "range": "near",
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/error_004.ogg"
+        }
+      ]
+    },
+    "trap.spikes": {
+      "gain": 0.9,
+      "range": "mid",
+      "jitter": 0.08,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactMetal_heavy_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactMetal_heavy_001.ogg"
+        }
+      ]
+    },
+    "trap.flames": {
+      "synth": "flame",
+      "variants": 2,
+      "gain": 0.7,
+      "range": "mid",
+      "jitter": 0.06
+    },
+    "trap.crusher": {
+      "gain": 1.0,
+      "range": "mid",
+      "rate": 0.7,
+      "jitter": 0.05,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPlate_heavy_000.ogg"
+        }
+      ]
+    },
+    "trap.laser": {
+      "gain": 0.5,
+      "range": "mid",
+      "jitter": 0.05,
+      "variants": [
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/laserSmall_000.ogg"
+        }
+      ]
+    },
+    "trap.warn": {
+      "synth": "beep",
+      "variants": 1,
+      "gain": 0.5,
+      "range": "near"
+    },
+    "break.crate": {
+      "gain": 0.9,
+      "range": "mid",
+      "jitter": 0.08,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactWood_heavy_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactWood_heavy_001.ogg"
+        }
+      ]
+    },
+    "break.wall": {
+      "gain": 1.0,
+      "range": "far",
+      "jitter": 0.05,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactMining_000.ogg"
+        }
+      ]
+    },
+    "cue.alarm": {
+      "synth": "alarm",
+      "variants": 1,
+      "gain": 0.5
+    },
+    "cue.chime": {
+      "gain": 0.6,
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/confirmation_004.ogg"
+        }
+      ]
+    },
+    "cue.buzzer": {
+      "gain": 0.6,
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/error_001.ogg"
+        }
+      ]
+    },
+    "objective.new": {
+      "gain": 0.6,
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/maximize_004.ogg"
+        }
+      ]
+    },
+    "objective.complete": {
+      "gain": 0.7,
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/confirmation_003.ogg"
+        }
+      ]
+    },
+    "message": {
+      "gain": 0.5,
+      "variants": [
+        {
+          "pack": "kenney-interface-sounds",
+          "file": "Audio/open_001.ogg"
+        }
+      ]
     }
   }
 }
