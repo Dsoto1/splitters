@@ -120,6 +120,16 @@ export function validateNavigation(map: MapDocument, nav: NavWorld): ValidationI
         issues.push({ severity: 'warning', code: 'nav.disconnected', message: `spawn ${s.id} cannot be reached from spawn ${first.id}`, targetId: s.id });
       }
     }
+    // Pickups bots and players can't walk (or pad) to are wasted.
+    for (const p of map.entities) {
+      if (p.kind !== 'pickup') continue;
+      const to = { x: p.position[0], y: p.position[1], z: p.position[2] };
+      const path = nav.findPath(from, to);
+      const end = path?.[path.length - 1];
+      if (!end || Math.hypot(end.x - to.x, end.z - to.z) > 1.5 || Math.abs(end.y - to.y) > 2) {
+        issues.push({ severity: 'warning', code: 'nav.pickup_unreachable', message: `pickup ${p.id} cannot be reached on foot from spawn ${first.id}`, targetId: p.id });
+      }
+    }
   }
   return issues;
 }

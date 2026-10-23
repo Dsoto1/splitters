@@ -77,8 +77,8 @@ const bump = (x: number, z: number, cx: number, cz: number, r: number, h: number
 const centre = (z: number) => 6 * Math.sin(z / 37);
 /** Places kept flat for buildings: [x0, z0, x1, z1]. */
 const FLAT: [number, number, number, number][] = [
-  [-20, -94, 20, -66], // Embers base
-  [-20, 66, 20, 94], // Tide base
+  [-28, -94, 28, -66], // Embers base
+  [-28, 66, 28, 94], // Tide base
   [19, -5, 29, 5], // ruins
   [-29, -13, -19, -3], // watchtower
 ];
@@ -91,7 +91,7 @@ function height(x: number, z: number): number {
   let h = 0.9 * Math.sin(x / 11 + 0.7) * Math.cos(z / 15) + 0.6 * Math.sin(z / 23 + x / 31);
   h += bump(x, z, -6, 18, 13, 4.5) + bump(x, z, 8, -20, 12, 3.8) + bump(x, z, 28, 40, 7, 2.2) + bump(x, z, -24, -44, 7, 2);
   // A 5 m ledge along the west wall: high ground for flankers, with sloped ends to climb.
-  const ledge = smooth(-38, -33, -x) * (1 - smooth(34, 48, Math.abs(z))) * 5;
+  const ledge = smooth(30, 35, -x) * (1 - smooth(34, 48, Math.abs(z))) * 5;
   h = Math.max(h, ledge * (1 - smooth(40, 44, dx)) + h * 0);
   // Canyon walls, broken up so the skyline is not a straight line.
   const wall = smooth(36, 52, dx) * (21 + 4 * Math.sin(z / 9) + 3 * Math.cos(z / 13 + x / 7));
@@ -148,6 +148,9 @@ function buildBase(gy: number, front: Side): void {
   // Stairs climb inwards to the roof: the east flight rises west, the west flight rises east.
   tile('stairs_open', 2, gy, 0, 2);
   tile('stairs_open', -2, gy, 0, 0);
+  // A landing at the foot of each flight: the first step is too high to climb straight off the ground.
+  tile('platform', 3, gy);
+  tile('platform', -3, gy);
   for (const x of [-1, 0, 1]) edge(x, gy, 0, front, x === 0 ? 'wide' : 'arch');
   edge(0, gy, 0, back, 'door');
   edge(-1, gy, 0, back, 'windows');
@@ -159,6 +162,11 @@ buildBase(10, 'S');
 // Mid: a ruined courtyard on the east and a watchtower on the west.
 tile('yard_ruins', 3, 0);
 tile('tower', -3, -1, 0, 1);
+// They stand in open ground: no walls round them.
+for (const side of ['N', 'E', 'S', 'W'] as const) {
+  edge(3, 0, 0, side, 'open');
+  edge(-3, -1, 0, side, 'open');
+}
 
 // ---------------------------------------------------------------- boulders, trees and cover
 
@@ -171,11 +179,27 @@ let seed = 1234567;
 const rand = () => ((seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) / 4294967296);
 const clear = (x: number, z: number) =>
   flatWeight(x, z) < 0.05 && Math.abs(x - trail(z)) > 4 && Math.abs(x - centre(z)) < 34 && Math.abs(z) < 96 && !(x < -32 && Math.abs(z) < 44);
+const pickups: [string, number, number][] = [
+  // Each base: rifle, SMG, ammo and grenades; the sniper rifle on the roof.
+  ['weapon_rifle', -8, -76], ['weapon_smg', 8, -76], ['ammo_rifle', -2, -82], ['grenades', 2, -82],
+  ['weapon_rifle', 8, 76], ['weapon_smg', -8, 76], ['ammo_rifle', 2, 82], ['grenades', -2, 82],
+  // Mid and the flanks: the power weapons.
+  ['weapon_rockets', 24, 0], ['weapon_sniper', -24, -8], ['weapon_plasma', -6, 18], ['weapon_shotgun', 8, -20],
+  ['powerup_damage', -36, 0], ['armor_large', 0, 0], ['mines', 28, 40], ['weapon_launcher', -24, -44],
+  ['health_large', -20, 30], ['health_large', 20, -30], ['ammo_sniper', -34, 10], ['ammo_explosive', 30, 6],
+  ['ammo_cells', -12, 30], ['ammo_shells', 16, -40], ['health_small', 4, 36], ['health_small', -4, -36],
+];
+// Keep rocks and logs off the pickups…
 const placed: [number, number, number][] = [];
+for (const [, x, z] of pickups) placed.push([x, z, 1.5]);
+// …and off the vehicle bays (with room to drive out), the hauler and the sentries.
+for (const s of [-1, 1]) for (const x of [-14, 14]) for (const dz of [0, 6, 12]) placed.push([x, s * (60 - dz), 3]);
+for (const [x, z] of [[-30, 0], [-26, -6], [26, 6]] as const) placed.push([x, z, 3]);
+const reserved = placed.length;
 const free = (x: number, z: number, r: number) => placed.every(([px, pz, pr]) => Math.hypot(px - x, pz - z) > r + pr + 3);
 
 // Big boulders: the canyon's main cover, clustered in two fields either side of mid.
-for (let n = 0; n < 400 && placed.length < 34; n++) {
+for (let n = 0; n < 400 && placed.length < reserved + 34; n++) {
   const z = (rand() < 0.5 ? -1 : 1) * (18 + rand() * 50);
   const x = centre(z) + (rand() - 0.5) * 62;
   const scale = +(1.8 + rand() * 1.8).toFixed(2);
@@ -185,7 +209,7 @@ for (let n = 0; n < 400 && placed.length < 34; n++) {
   prop(rand() < 0.65 ? 'rock_large' : 'rock_medium', +x.toFixed(2), +z.toFixed(2), rand() * Math.PI * 2, scale);
 }
 // Rock spires along the foot of the walls.
-for (let n = 0; n < 200 && placed.length < 50; n++) {
+for (let n = 0; n < 200 && placed.length < reserved + 50; n++) {
   const z = (rand() - 0.5) * 180;
   const side = rand() < 0.5 ? -1 : 1;
   const x = centre(z) + side * (31 + rand() * 4);
@@ -194,8 +218,8 @@ for (let n = 0; n < 200 && placed.length < 50; n++) {
   prop('rocks_tall', +x.toFixed(2), +z.toFixed(2), rand() * Math.PI * 2, +(1.4 + rand()).toFixed(2), 0.4);
 }
 // Pines on the hills and the ledge, small rocks and logs scattered for detail.
-for (const [x, z] of [[-10, 24], [-2, 12], [10, -26], [5, -14], [-35, 20], [-35, -12], [-36, 32], [30, 36]] as const) prop(rand() < 0.5 ? 'pine' : 'pine_crooked', x, z, rand() * 6, 1.2, 0.1);
-for (let n = 0; n < 300 && placed.length < 80; n++) {
+for (const [x, z] of [[-10, 24], [-2, 12], [10, -26], [5, -14], [-37, 18], [-35, -12], [-36, 32], [30, 36]] as const) prop(rand() < 0.5 ? 'pine' : 'pine_crooked', x, z, rand() * 6, 1.2, 0.1);
+for (let n = 0; n < 300 && placed.length < reserved + 80; n++) {
   const z = (rand() - 0.5) * 170;
   const x = centre(z) + (rand() - 0.5) * 64;
   if (!clear(x, z) || !free(x, z, 0.6)) continue;
@@ -237,21 +261,12 @@ for (const [x, dz] of [[-9, 2], [-7, -2], [0, 2], [1, -2], [8, 2], [7, -2], [-13
   spawnAt(tide!.id, x, 80 - dz + (dz > 4 ? 16 : 0), Math.PI);
 }
 
-const pickups: [string, number, number][] = [
-  // Each base: rifle, SMG, ammo and grenades; the sniper rifle on the roof.
-  ['weapon_rifle', -8, -76], ['weapon_smg', 8, -76], ['ammo_rifle', -2, -82], ['grenades', 2, -82],
-  ['weapon_rifle', 8, 76], ['weapon_smg', -8, 76], ['ammo_rifle', 2, 82], ['grenades', -2, 82],
-  // Mid and the flanks: the power weapons.
-  ['weapon_rockets', 24, 0], ['weapon_sniper', -24, -8], ['weapon_plasma', -6, 18], ['weapon_shotgun', 8, -20],
-  ['powerup_damage', -36, 0], ['armor_large', 0, 0], ['mines', 28, 40], ['weapon_launcher', -24, -44],
-  ['health_large', -20, 30], ['health_large', 20, -30], ['ammo_sniper', -34, 24], ['ammo_explosive', 30, 6],
-  ['ammo_cells', -12, 30], ['ammo_shells', 16, -40], ['health_small', 4, 36], ['health_small', -4, -36],
-];
+
 const roof: [string, number, number][] = [['weapon_sniper', 0, -80], ['weapon_sniper', 0, 80], ['armor_small', -8, -80], ['armor_small', 8, 80]];
 run('Add pickups', {
   kind: 'addEntities',
   entities: [
-    ...pickups.map(([item, x, z]) => ({ id: id('pickup'), kind: 'pickup' as const, item: `core.${item}`, position: [x, Math.max(0, +ground(x, z).toFixed(2)), z] as [number, number, number], respawnSeconds: null })),
+    ...pickups.map(([item, x, z]) => ({ id: id('pickup'), kind: 'pickup' as const, item: `core.${item}`, position: [x, +ground(x, z).toFixed(2), z] as [number, number, number], respawnSeconds: null })),
     ...roof.map(([item, x, z]) => ({ id: id('pickup'), kind: 'pickup' as const, item: `core.${item}`, position: [x, 4, z] as [number, number, number], respawnSeconds: null })),
   ],
 });
