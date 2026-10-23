@@ -1865,7 +1865,7 @@ export class EditorApp {
       case 'encounter': {
         const factions = mapFactions(doc);
         choose('Faction', factions.map((f) => [f.id, f.name] as const), e.faction, (v) => ({ faction: v }));
-        for (const role of NPC_ROLES) number(`${NPC_ROLE_SPECS[role].label}s`, e.roster[role], 1, (v) => ({ roster: { ...e.roster, [role]: clamp(Math.round(v), 0, 16) } }));
+        for (const role of NPC_ROLES) number(`${NPC_ROLE_SPECS[role].label}s`, e.roster[role] ?? 0, 1, (v) => ({ roster: { ...e.roster, [role]: clamp(Math.round(v), 0, 16) } }));
         number('Max alive', e.activeCap, 1, (v) => ({ activeCap: clamp(Math.round(v), 1, 32) }));
         number('Reinforcements', e.reinforcements, 1, (v) => ({ reinforcements: clamp(Math.round(v), 0, 500) }));
         number('+ per extra player', e.perPlayer, 1, (v) => ({ perPlayer: clamp(Math.round(v), 0, 16) }));
@@ -1878,7 +1878,7 @@ export class EditorApp {
         }
         choose('Skill', [['easy', 'easy'], ['normal', 'normal'], ['hard', 'hard']], e.difficulty, (v) => ({ difficulty: v as typeof e.difficulty }));
         toggle('Active at start', e.startActive, (v) => ({ startActive: v }));
-        el.append(small(`${e.roster.trooper + e.roster.gunner + e.roster.heavy} in the first wave, then ${e.reinforcements} reinforcements (+${e.perPlayer} per extra player). Factions are edited in the Logic panel (L).`));
+        el.append(small(`${e.roster.trooper + e.roster.gunner + e.roster.heavy + (e.roster.sniper ?? 0)} in the first wave, then ${e.reinforcements} reinforcements (+${e.perPlayer} per extra player). Factions are edited in the Logic panel (L).`));
         break;
       }
       case 'flag': {

@@ -1,4 +1,4 @@
-import { init as initRecast, NavMeshQuery, type NavMesh } from 'recast-navigation';
+import { getNavMeshPositionsAndIndices, init as initRecast, NavMeshQuery, type NavMesh } from 'recast-navigation';
 import { generateSoloNavMesh } from 'recast-navigation/generators';
 import { boxesToTriangles, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
@@ -16,6 +16,8 @@ export function initNavigation(): Promise<void> {
 
 const CELL = 0.2;
 const CELL_HEIGHT = 0.05;
+/** Spacing of NavWorld.places(). */
+const PLACE_CELL = 7;
 
 /**
  * Navigation mesh generated from map geometry, so bots work on any Classic
@@ -89,6 +91,34 @@ export class NavWorld {
     // A partial path (destination polygon unreachable) ends short of the goal.
     if (Math.hypot(last.x - end.x, last.z - end.z) > 0.5 || Math.abs(last.y - end.y) > 1) return null;
     return r.path.map((p) => ({ x: p.x, y: p.y, z: p.z }));
+  }
+
+  private placeCache: Vec3[] | null = null;
+
+  /**
+   * Walkable sample points spread over the whole navmesh (about one per
+   * `PLACE_CELL` metres on every floor), for bots choosing where to go and
+   * which way round. Built once, deterministic.
+   */
+  places(): readonly Vec3[] {
+    if (this.placeCache) return this.placeCache;
+    const [pos, idx] = getNavMeshPositionsAndIndices(this.navMesh);
+    const best = new Map<string, { p: Vec3; d: number }>();
+    for (let t = 0; t + 2 < idx.length; t += 3) {
+      const a = idx[t]! * 3;
+      const b = idx[t + 1]! * 3;
+      const c = idx[t + 2]! * 3;
+      const p = { x: (pos[a]! + pos[b]! + pos[c]!) / 3, y: (pos[a + 1]! + pos[b + 1]! + pos[c + 1]!) / 3, z: (pos[a + 2]! + pos[b + 2]! + pos[c + 2]!) / 3 };
+      const cx = Math.floor(p.x / PLACE_CELL);
+      const cz = Math.floor(p.z / PLACE_CELL);
+      const key = `${cx},${Math.floor(p.y / 2.5)},${cz}`;
+      // Keep the sample nearest the cell's centre.
+      const d = Math.hypot(p.x - (cx + 0.5) * PLACE_CELL, p.z - (cz + 0.5) * PLACE_CELL);
+      const prev = best.get(key);
+      if (!prev || d < prev.d) best.set(key, { p, d });
+    }
+    this.placeCache = [...best.entries()].sort((x, y) => (x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0)).map(([, v]) => v.p);
+    return this.placeCache;
   }
 
   destroy(): void {

@@ -21,12 +21,16 @@ export interface NpcRoleSpec {
   scale: number;
 }
 
-/** The basic squad archetype: troopers with rifles, gunners with shotguns, heavies with grenade launchers. */
+/** The basic squad archetype: troopers with rifles, gunners with shotguns, heavies with grenade launchers, snipers with scoped rifles. */
 export const NPC_ROLE_SPECS: Record<NpcRole, NpcRoleSpec> = {
   trooper: { label: 'Trooper', health: 70, weapon: 'core.rifle', speed: 0.82, scale: 1 },
   gunner: { label: 'Gunner', health: 90, weapon: 'core.shotgun', speed: 0.9, scale: 1.05 },
   heavy: { label: 'Heavy', health: 160, weapon: 'core.launcher', speed: 0.7, scale: 1.18 },
+  sniper: { label: 'Sniper', health: 60, weapon: 'core.sniper', speed: 0.8, scale: 0.97 },
 };
+
+/** How many of a role an encounter's roster has (snipers are optional in the map format). */
+export const rosterCount = (roster: Partial<Record<NpcRole, number>>, role: NpcRole): number => roster[role] ?? 0;
 
 /**
  * NPC weapons hit players for this fraction of normal damage, so squads are a
@@ -48,6 +52,19 @@ export const NPC_PROFILE: BotProfile = {
   exploration: 0,
   rangePreference: 55,
   tags: ['NPC'],
+};
+
+/**
+ * Role behaviour on top of NPC_PROFILE (same aim model and cover use as
+ * Player Bots): troopers and gunners are grunts that advance in pairs (one
+ * moves while the other covers), heavies keep firing at where an enemy went
+ * into cover, snipers hang back and go prone at range.
+ */
+export const NPC_ROLE_PROFILES: Record<NpcRole, BotProfile> = {
+  trooper: { ...NPC_PROFILE, id: 'core.npc_trooper', tags: ['NPC', 'GRUNT'] },
+  gunner: { ...NPC_PROFILE, id: 'core.npc_gunner', aggression: 75, rangePreference: 15, tags: ['NPC', 'GRUNT'] },
+  heavy: { ...NPC_PROFILE, id: 'core.npc_heavy', aggression: 45, rangePreference: 60, pursuitPersistence: 30, tags: ['NPC', 'SUPPRESSOR'] },
+  sniper: { ...NPC_PROFILE, id: 'core.npc_sniper', displayName: 'Sniper', accuracy: 45, aggression: 25, rangePreference: 95, pursuitPersistence: 10, tacticalAwareness: 65, tags: ['NPC', 'SNIPER'] },
 };
 
 /** The enemy faction every map has unless it defines its own. */
