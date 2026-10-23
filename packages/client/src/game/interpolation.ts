@@ -7,7 +7,8 @@ const BUFFER_TICKS = TICK_RATE * 2;
 interface Frame {
   tick: number;
   players: Map<number, PlayerSnapshot>;
-  projectiles: Map<number, [number, number, number]>;
+  /** Projectile id -> [x, y, z, look]. */
+  projectiles: Map<number, [number, number, number, number]>;
 }
 
 export interface RemotePose {
@@ -31,9 +32,9 @@ export class Interpolator {
   private latestTick = 0;
   private latestAt = 0;
 
-  push(tick: number, players: PlayerSnapshot[], projectiles: [number, number, number, number][] = []): void {
+  push(tick: number, players: PlayerSnapshot[], projectiles: [number, number, number, number, number][] = []): void {
     if (tick <= this.latestTick && this.frames.length) return;
-    this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])), projectiles: new Map(projectiles.map(([id, x, y, z]) => [id, [x, y, z]])) });
+    this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])), projectiles: new Map(projectiles.map(([id, x, y, z, v]) => [id, [x, y, z, v ?? 0]])) });
     this.latestTick = tick;
     this.latestAt = performance.now();
     while (this.frames.length > 2 && this.frames[0]!.tick < tick - BUFFER_TICKS) this.frames.shift();
@@ -63,13 +64,13 @@ export class Interpolator {
   }
 
   /** Interpolated projectile positions by ID. */
-  sampleProjectiles(now: number = performance.now()): Map<number, [number, number, number]> {
-    const out = new Map<number, [number, number, number]>();
+  sampleProjectiles(now: number = performance.now()): Map<number, [number, number, number, number]> {
+    const out = new Map<number, [number, number, number, number]>();
     if (!this.frames.length) return out;
     const { a, b, t } = this.bracket(this.renderTick(now));
     for (const [id, pb] of b.projectiles) {
       const pa = a.projectiles.get(id) ?? pb;
-      out.set(id, [pa[0] + (pb[0] - pa[0]) * t, pa[1] + (pb[1] - pa[1]) * t, pa[2] + (pb[2] - pa[2]) * t]);
+      out.set(id, [pa[0] + (pb[0] - pa[0]) * t, pa[1] + (pb[1] - pa[1]) * t, pa[2] + (pb[2] - pa[2]) * t, pb[3]]);
     }
     return out;
   }

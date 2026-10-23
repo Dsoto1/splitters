@@ -41,6 +41,8 @@ export class Hud {
   private readonly armor = $('armor');
   private readonly weaponName = $('weapon-name');
   private readonly ammoCount = $('ammo-count');
+  private readonly altEl = $('ammo-alt');
+  private readonly throwEl = $('throwable');
   private readonly weaponBar = $('weapon-bar');
   private readonly powerups = $('powerups');
   private readonly pickupMsg = $('pickup-msg');
@@ -192,7 +194,17 @@ export class Hud {
   }
 
   /** Held weapon, ammo and the owned-weapons bar. */
-  setWeapons(defs: readonly { slot: number; displayName: string; magazine: number }[], owned: ReadonlyMap<number, [number, number]>, held: number, reloading: boolean, alive: boolean): void {
+  /** Grenade / mine count beside the ammo (reference board: the grenade icon and number). */
+  setThrowable(t: { kind: string; count: number } | null, alive: boolean): void {
+    const text = alive && t ? `${t.kind === 'mine' ? '◎' : '●'} ${t.count}` : '';
+    if (this.throwEl.textContent !== text) this.throwEl.textContent = text;
+    this.throwEl.title = t ? (t.kind === 'mine' ? 'Proximity mines (G)' : 'Frag grenades (G)') : '';
+  }
+
+  setWeapons(defs: readonly { slot: number; displayName: string; magazine: number; alt?: { label: string; ammo: string } }[], owned: ReadonlyMap<number, [number, number, number]>, held: number, reloading: boolean, alive: boolean): void {
+    const altDef = defs.find((d) => d.slot === held)?.alt;
+    const altText = alive && altDef ? (altDef.ammo === 'own' ? `RMB ${altDef.label} · ${owned.get(held)?.[2] ?? 0}` : `RMB ${altDef.label}`) : '';
+    if (this.altEl.textContent !== altText) this.altEl.textContent = altText;
     const def = defs.find((d) => d.slot === held);
     const ammo = owned.get(held);
     this.weaponName.textContent = alive && def ? def.displayName : '';

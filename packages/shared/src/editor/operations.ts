@@ -224,6 +224,10 @@ export const SCENARIO_PALETTE = [
   { key: 'crate', label: 'Crate', search: 'crate box destructible break cover' },
   { key: 'barrel', label: 'Explosive Barrel', search: 'barrel explosive destructible red boom' },
   { key: 'wall', label: 'Breakable Wall', search: 'wall breakable destructible breach' },
+  { key: 'glass', label: 'Window Pane', search: 'glass window pane breakable shatter destructible' },
+  { key: 'boards', label: 'Board Barricade', search: 'boards planks barricade doorway breakable destructible' },
+  { key: 'gas', label: 'Gas Cylinder', search: 'gas cylinder tank explosive destructible boom' },
+  { key: 'generator', label: 'Generator', search: 'generator machine objective destroy explosive destructible' },
   { key: 'zone', label: 'Trigger Zone', search: 'zone trigger volume area region enter' },
   { key: 'encounter', label: 'NPC Squad', search: 'npc squad encounter enemy soldiers spawner faction ai' },
   { key: 'trap:spikes', label: 'Spike Floor', search: 'trap spikes floor hazard' },
@@ -236,7 +240,7 @@ export const SCENARIO_PALETTE = [
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 
 /** Entities that sit in a doorway and snap to cell edges. */
-export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key === 'wall' || key === 'trap:laser';
+export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser';
 
 export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, number, number], yaw: number): MapEntity {
   const base = { position, yaw };
@@ -249,6 +253,10 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'crate':
     case 'barrel':
     case 'wall':
+    case 'glass':
+    case 'boards':
+    case 'gas':
+    case 'generator':
       return { id: newId(key), kind: 'destructible', model: key, ...base, health: null, explosiveOnly: false };
     case 'zone':
       return { id: newId('zone'), kind: 'zone', position, size: [4, 3, 4], who: 'any', count: 1, startEnabled: true };

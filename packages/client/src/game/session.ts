@@ -27,6 +27,7 @@ import {
   type ServerStats,
   type MatchRules,
   PLAYER,
+  getProp,
 } from '@chronosplit/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import type { RendererKind } from '../engine.ts';
@@ -265,9 +266,17 @@ export class GameSession {
           } else if (ev.e === 'broken') {
             const e = this.map?.entities[ev.i];
             if (e?.kind === 'destructible') {
-              const h = DESTRUCTIBLE_SPECS[e.model].half;
-              this.view.debris({ x: e.position[0], y: e.position[1] + h.y, z: e.position[2] }, e.model === 'crate' ? '#8a5d33' : e.model === 'barrel' ? '#9c2f22' : '#8d8c86', Math.max(h.x, h.y));
+              const spec = DESTRUCTIBLE_SPECS[e.model];
+              const h = spec.half;
+              const colors: Record<string, string> = { crate: '#8a5d33', barrel: '#9c2f22', glass: '#bfe6f5', boards: '#7a5430', gas: '#d8d8d0', generator: '#5a6066' };
+              this.view.debris({ x: e.position[0], y: e.position[1] + (spec.lift ?? 0) + h.y, z: e.position[2] }, colors[e.model] ?? '#8d8c86', Math.max(h.x, h.y));
+            } else if (e?.kind === 'prop') {
+              const def = getProp(e.model);
+              this.view.breakProp(ev.i);
+              if (def) this.view.debris({ x: e.position[0], y: e.position[1] + (def.size[1] * e.scale) / 2, z: e.position[2] }, def.breakable?.debris ?? '#8a5a32', Math.max(0.3, Math.min(1.2, (Math.max(...def.size) * e.scale) / 2)));
             }
+          } else if (ev.e === 'throw') {
+            if (ev.s !== this.slot) this.view.avatarAction(ev.s, 'throw');
           }
         }
         break;
@@ -370,7 +379,7 @@ export class GameSession {
         const ammo = local.inventory.get(local.held);
         if (local.alive && sample.buttons & BUTTON_FIRE && ammo && ammo[0] === 0 && ammo[1] === 0 && local.weapon?.magazine) this.sfx.dryFire(now);
         if (shot) {
-          this.sfx.localShot(shot.def);
+          this.sfx.localShot(shot.def, shot.alt);
           this.view.kick(shot.def);
           for (const end of shot.ends) this.view.addTracer(local.eye, end, shot.def.view.tracer, 60);
         }
@@ -390,11 +399,16 @@ export class GameSession {
       this.hud.setScope(zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
       this.hud.setWeapons(WEAPONS_BY_SLOT, local.inventory, local.held, local.reloadTicks > 0, local.alive);
+      this.hud.setThrowable(local.throwable, local.alive);
+      this.input.altTrigger = !!local.weapon?.alt;
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE);
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
       this.updateScenarioHud(local, now);
     }
-    if (this.scenario) this.view.scenario.apply(this.scenario.entities);
+    if (this.scenario) {
+      this.view.scenario.apply(this.scenario.entities);
+      this.view.applyPropStates(this.scenario.entities);
+    }
     this.view.updatePickups(this.taken, now);
     this.view.updateProjectiles(this.interp.sampleProjectiles(now));
     const poses = this.interp.sample(now);

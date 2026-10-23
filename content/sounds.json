@@ -566,6 +566,60 @@
           "file": "Audio/open_001.ogg"
         }
       ]
+    },
+    "fire.smg": {
+      "synth": "smg",
+      "variants": 3,
+      "gain": 0.5,
+      "range": "far",
+      "jitter": 0.06
+    },
+    "fire.rockets": {
+      "synth": "launcher",
+      "variants": 2,
+      "gain": 1.0,
+      "range": "far",
+      "jitter": 0.08
+    },
+    "fire.plasma": {
+      "synth": "plasma",
+      "variants": 3,
+      "gain": 0.55,
+      "range": "far",
+      "jitter": 0.07
+    },
+    "throw": {
+      "synth": "swing",
+      "variants": 2,
+      "gain": 0.7,
+      "range": "mid",
+      "jitter": 0.1
+    },
+    "pickup.throwable": {
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.05,
+      "variants": [
+        {
+          "pack": "kenney-rpg-audio",
+          "file": "Audio/handleCoins.ogg"
+        }
+      ]
+    },
+    "break.glass": {
+      "gain": 0.9,
+      "range": "mid",
+      "jitter": 0.08,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactGlass_heavy_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactGlass_heavy_001.ogg"
+        }
+      ]
     }
   }
 }

@@ -194,7 +194,7 @@ describe('props', () => {
 
   it('blocks movement and bots with solid props only', () => {
     const map = makeMap([t('r', 'core.room', 0, 0, 0)]);
-    map.entities.push(prop('p1', 'prop.crate_large', 2, 0), prop('p2', 'prop.rug', -2, 0), prop('p3', 'prop.barrel', 0, 2, { solid: false }), prop('p4', 'prop.tree', -2, -2, { scale: 2 }));
+    map.entities.push(prop('p1', 'prop.rock_large', 2, 0), prop('p2', 'prop.rug', -2, 0), prop('p3', 'prop.rock_medium', 0, 2, { solid: false }), prop('p4', 'prop.tree', -2, -2, { scale: 2 }));
     expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
     const boxes = buildMapGeometry(map).filter((b) => b.kind === 'prop');
     expect(boxes.map((b) => b.sourceId)).toEqual(['p1', 'p4']);
@@ -204,7 +204,7 @@ describe('props', () => {
     expect(tree.max[1]).toBeCloseTo(10);
     // Turned 45°, the collision covers the turned crate's footprint.
     const turned = makeMap([t('r', 'core.room', 0, 0, 0)]);
-    turned.entities.push(prop('p1', 'prop.crate_large', 0, 0, { yaw: Math.PI / 4 }));
+    turned.entities.push(prop('p1', 'prop.rock_large', 0, 0, { yaw: Math.PI / 4 }));
     const b = buildMapGeometry(turned).find((x) => x.kind === 'prop')!;
     expect(b.max[0] - b.min[0]).toBeGreaterThan(boxes[0]!.max[0] - boxes[0]!.min[0]);
   });

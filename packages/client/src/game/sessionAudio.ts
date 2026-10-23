@@ -1,4 +1,4 @@
-import { PLAYER, getItem, type MapDocument, type GameEvent, type Vec3, type WeaponDefinition } from '@chronosplit/shared';
+import { PLAYER, getItem, type MapDocument, type GameEvent, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@chronosplit/shared';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import type { LocalPlayer } from './prediction.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -45,8 +45,8 @@ export class SessionAudio {
   }
 
   /** A shot the local player just fired (predicted). */
-  localShot(def: WeaponDefinition): void {
-    this.audio.play(fireSound(def.id));
+  localShot(def: WeaponDefinition, alt = false): void {
+    this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id));
   }
 
   /** The fire button is down with an empty magazine. */
@@ -119,8 +119,9 @@ export class SessionAudio {
     switch (ev.e) {
       case 'shot': {
         const mine = ev.s === me;
-        // Own shots already played from prediction.
-        if (!mine) this.audio.play(fireSound(ev.w), { at: tuple(ev.from) });
+        // Own shots already played from prediction. A second trigger that launches something sounds like a launcher.
+        const altLaunch = ev.alt && getWeapon(ev.w).alt?.kind === 'projectile' && getWeapon(ev.w).alt?.ammo === 'own';
+        if (!mine) this.audio.play(altLaunch ? 'fire.launcher' : fireSound(ev.w), { at: tuple(ev.from) });
         let impacts = 0;
         ev.to.forEach((to, i) => {
           if (impacts >= MAX_IMPACTS_PER_SHOT) return;
@@ -195,9 +196,20 @@ export class SessionAudio {
       }
       case 'broken': {
         const e = this.entities[ev.i];
-        if (e?.kind !== 'destructible' || e.model === 'barrel') break; // barrels are heard as explosions
-        this.audio.play(e.model === 'wall' ? 'break.wall' : 'break.crate', { at: this.entityAt(ev.i, 0.6) });
+        if (e?.kind === 'prop') {
+          if (!getProp(e.model)?.breakable?.blast) this.audio.play('break.crate', { at: this.entityAt(ev.i, 0.6) });
+          break;
+        }
+        // Barrels, gas and generators are heard as their explosions.
+        if (e?.kind !== 'destructible' || e.model === 'barrel' || e.model === 'gas' || e.model === 'generator') break;
+        this.audio.play(e.model === 'wall' ? 'break.wall' : e.model === 'glass' ? 'break.glass' : 'break.crate', { at: this.entityAt(ev.i, e.model === 'glass' ? 1.7 : 0.6) });
         if (e.model === 'wall') this.audio.play('explosion.debris', { at: this.entityAt(ev.i, 1) });
+        break;
+      }
+      case 'throw': {
+        const at = ev.s === me ? undefined : poseOf(ev.s);
+        if (ev.s === me) this.audio.play('throw');
+        else if (at) this.audio.play('throw', { at });
         break;
       }
       case 'cue':

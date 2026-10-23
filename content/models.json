@@ -121,6 +121,35 @@
         "desaturate": 0.5,
         "tint": "#7d8466"
       }
+    },
+    {
+      "out": "weapons/rockets.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-b.glb",
+      "forward": "-z",
+      "length": 1.0,
+      "recolor": {
+        "desaturate": 0.8,
+        "tint": "#7a8462"
+      }
+    },
+    {
+      "out": "weapons/plasma.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-p.glb",
+      "forward": "-z",
+      "length": 0.85
+    },
+    {
+      "out": "projectiles/frag.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "grenade-a.glb",
+      "forward": "-z",
+      "length": 0.16,
+      "recolor": {
+        "desaturate": 0.9,
+        "tint": "#6a7458"
+      }
     }
   ],
   "budgets": {

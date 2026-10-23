@@ -38,8 +38,10 @@ export interface PlayerSnapshot {
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */
 export interface PrivateState {
-  /** Owned weapons as [slot, magazine, reserve]. */
-  inv: [number, number, number][];
+  /** Owned weapons as [slot, magazine, reserve, second-trigger rounds]. */
+  inv: [number, number, number, number][];
+  /** Carried grenades or mines as [index into THROWABLES, count]; absent = none. */
+  gr?: [number, number];
   /** Ticks left on reload / weapon raise (0 = ready). */
   rl: number;
   rs: number;
@@ -53,7 +55,9 @@ export const POWERUP_DAMAGE_BIT = 2;
 
 export type GameEvent =
   /** One trigger pull: `to`/`hit` hold one entry per pellet (one for most weapons). */
-  | { e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[] }
+  | { e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Second trigger. */ alt?: 1 }
+  /** Someone threw a grenade or mine. */
+  | { e: 'throw'; s: number }
   | { e: 'melee'; s: number; hit: number | null }
   | { e: 'explode'; s: number; p: Tuple3; r: number }
   | { e: 'pickup'; s: number; id: string; item: string }
@@ -164,8 +168,8 @@ export type ServerMessage =
       players: PlayerSnapshot[];
       score: ScoreEntry[];
       ev: GameEvent[];
-      /** Live projectiles as [id, x, y, z]. */
-      pr: [number, number, number, number][];
+      /** Live projectiles as [id, x, y, z, look (index into PROJECTILE_VISUALS)]. */
+      pr: [number, number, number, number, number][];
       /** IDs of pickups currently taken (waiting to respawn). */
       pk: string[];
       /** Receiving player's private state (absent while not in the match). */

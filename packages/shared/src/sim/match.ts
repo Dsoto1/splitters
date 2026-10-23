@@ -1,7 +1,7 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { BotBrain, type CombatantView, type PickupView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
-import { buildMapGeometry, mapKillY, type WorldBox } from '../map/geometry.ts';
+import { buildMapGeometry, mapKillY, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, horizontalDistance, normalize, scale, viewDirection, type Vec3 } from '../math.ts';
 import { NavWorld } from '../nav/index.ts';
@@ -20,14 +20,14 @@ import {
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
-import { BUTTON_FIRE, BUTTON_RELOAD, BUTTON_USE, sanitizeInput, stepMovement, type MoveState, type PlayerInput } from './movement.ts';
+import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_THROW, BUTTON_USE, sanitizeInput, stepMovement, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
 import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_PROFILE, NPC_ROLE_SPECS, mapFactions, mapTeams, relation } from './npc.ts';
-import { getWeapon, rayCapsule, resolveHitscan, type WeaponDefinition } from './weapons.ts';
+import { PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, getWeapon, rayCapsule, resolveHitscan, throwableWeaponId, type AltFire, type ProjectileSpec, type ThrowableKind, type WeaponDefinition } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
@@ -42,6 +42,8 @@ export interface WeaponState {
   def: WeaponDefinition;
   mag: number;
   reserve: number;
+  /** Rounds for a second trigger with its own ammo (the rifle's underbarrel grenades). */
+  alt: number;
 }
 
 export interface Combatant {
@@ -71,8 +73,11 @@ export interface Combatant {
   weapons: Map<number, WeaponState>;
   /** Slot of the held weapon. */
   current: number;
+  /** Carried grenades or mines (G), or none. */
+  throwable: { kind: ThrowableKind; count: number } | null;
   // Timers below count applied inputs (not server ticks) so client prediction can mirror them exactly.
   fireCooldown: number;
+  throwCooldown: number;
   reloadTicks: number;
   raiseTicks: number;
   speedTicks: number;
@@ -85,11 +90,16 @@ export interface Combatant {
 interface Projectile {
   id: number;
   owner: number;
-  def: WeaponDefinition;
+  spec: ProjectileSpec;
+  /** Weapon (or thrown equipment) credited for kills. */
+  weapon: string;
   pos: Vec3;
   vel: Vec3;
   ticksLeft: number;
   age: number;
+  /** Mines: stuck in place, and the tick they arm. */
+  stuck?: boolean;
+  armAt?: number;
 }
 
 interface PickupState {
@@ -152,7 +162,8 @@ export class Match {
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry);
     this.physics = new PhysicsWorld(this.geometry);
-    this.nav = NavWorld.build(this.geometry);
+    // Bots plan around breakable props too (they are scenario colliders, not static geometry).
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true)]);
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -286,7 +297,7 @@ export class Match {
       yaw,
       health: spec.health,
       alive: true,
-      weapons: new Map([[def.slot, { def, mag: def.magazine, reserve: def.reserveMax }]]),
+      weapons: new Map([[def.slot, { def, mag: def.magazine, reserve: def.reserveMax, alt: def.alt?.max ?? 0 }]]),
       current: def.slot,
     };
     c.bot = new BotBrain(id, NPC_PROFILE, BOT_DIFFICULTIES[e.difficulty], this.seed);
@@ -315,7 +326,9 @@ export class Match {
       deaths: 0,
       weapons: new Map(),
       current: 0,
+      throwable: null,
       fireCooldown: 0,
+      throwCooldown: 0,
       reloadTicks: 0,
       raiseTicks: 0,
       speedTicks: 0,
@@ -445,6 +458,7 @@ export class Match {
         spawnPoints: npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
         pickups: npc ? npcPickups : pickups,
         inventory: [...c.weapons.values()].map((w) => ({ def: w.def, mag: w.mag, reserve: w.reserve })),
+        throwables: c.throwable?.count ?? 0,
         held: c.current,
         blockers,
         hazards,
@@ -488,6 +502,7 @@ export class Match {
 
       c.move = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul);
       if (c.fireCooldown > 0) c.fireCooldown--;
+      if (c.throwCooldown > 0) c.throwCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
       if (c.speedTicks > 0) c.speedTicks--;
       if (c.damageTicks > 0) c.damageTicks--;
@@ -499,13 +514,29 @@ export class Match {
       }
       const held = heldWeapon(c);
       if (input.buttons & BUTTON_RELOAD) this.startReload(c);
-      if (input.buttons & BUTTON_FIRE && c.fireCooldown === 0 && c.raiseTicks === 0 && c.reloadTicks === 0) {
+      const ready = c.fireCooldown === 0 && c.raiseTicks === 0 && c.reloadTicks === 0;
+      if (input.buttons & BUTTON_FIRE && ready) {
         if (held.def.magazine > 0 && held.mag === 0) this.startReload(c);
         else {
           if (held.def.magazine > 0) held.mag--;
           c.fireCooldown = held.def.fireIntervalTicks;
-          this.fire(c, held.def, input.viewTick ?? 0);
+          this.fire(c, primaryTrigger(held.def), input.viewTick ?? 0);
         }
+      } else if (input.buttons & BUTTON_ALT && ready && held.def.alt) {
+        const alt = held.def.alt;
+        if (alt.ammo === 'own' ? held.alt >= alt.cost : held.mag >= alt.cost) {
+          if (alt.ammo === 'own') held.alt -= alt.cost;
+          else held.mag -= alt.cost;
+          c.fireCooldown = alt.fireIntervalTicks;
+          this.fire(c, altTrigger(held.def, alt), input.viewTick ?? 0);
+        } else if (alt.ammo === 'shared') this.startReload(c);
+      }
+      if (input.buttons & BUTTON_THROW && c.throwCooldown === 0 && c.throwable && c.throwable.count > 0) {
+        const def = THROWABLE_DEFS[c.throwable.kind];
+        c.throwCooldown = def.throwIntervalTicks;
+        if (--c.throwable.count === 0) c.throwable = null;
+        this.launch(c, def.projectile, throwableWeaponId(def.kind), 0.12);
+        this.pendingEvents.push({ e: 'throw', s: c.slot });
       }
 
       if (!c.npc) this.collectPickups(c);
@@ -539,20 +570,28 @@ export class Match {
     w.reserve -= take;
   }
 
-  private fire(shooter: Combatant, def: WeaponDefinition, viewTick: number): void {
+  /** Launch a projectile from the eye along the aim (lifted a little for throws, so they arc). */
+  private launch(shooter: Combatant, spec: ProjectileSpec, weapon: string, lift = 0, spread = 0): void {
+    const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + PLAYER.eyeHeight, z: shooter.move.pos.z };
+    const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : viewDirection(shooter.yaw, shooter.pitch), spread);
+    this.projectiles.push({
+      id: this.nextProjectileId++,
+      owner: shooter.slot,
+      spec,
+      weapon,
+      pos: add(eye, scale(aim, 0.5)),
+      vel: scale(aim, spec.speed),
+      ticksLeft: Math.round(spec.fuseSeconds * TICK_RATE),
+      age: 0,
+    });
+  }
+
+  private fire(shooter: Combatant, def: Trigger, viewTick: number): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + PLAYER.eyeHeight, z: shooter.move.pos.z };
     const aim = viewDirection(shooter.yaw, shooter.pitch);
     if (def.kind === 'projectile' && def.projectile) {
-      const spec = def.projectile;
-      this.projectiles.push({
-        id: this.nextProjectileId++,
-        owner: shooter.slot,
-        def,
-        pos: add(eye, scale(aim, 0.5)),
-        vel: scale(aim, spec.speed),
-        ticksLeft: Math.round(spec.fuseSeconds * TICK_RATE),
-        age: 0,
-      });
+      this.launch(shooter, def.projectile, def.id, 0, def.spread);
+      if (def.alt) this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to: [], hit: [], alt: 1 });
       return;
     }
 
@@ -588,7 +627,7 @@ export class Match {
       hits.push(shot.hitSlot);
       if (shot.hitSlot === null && world) bodies.push(world.handle);
     }
-    this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits });
+    this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(def.alt ? { alt: 1 as const } : {}) });
     for (const h of hits) if (h !== null) this.damage(this.actor(h)!, def.damage, shooter, def.id);
     for (const b of bodies) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
   }
@@ -633,22 +672,60 @@ export class Match {
   private stepProjectiles(): void {
     const keep: Projectile[] = [];
     for (const p of this.projectiles) {
-      const spec = p.def.projectile!;
+      const spec = p.spec;
       p.age++;
+      const owner = this.actor(p.owner);
+      if (p.stuck) {
+        // An armed mine waits for an enemy (or its fuse).
+        const armed = this.tick >= (p.armAt ?? 0);
+        const trigger = spec.mine?.triggerRadius ?? 0;
+        const near = armed && this.actors().some((c) => c.alive && (!owner || c !== owner) && (!owner || this.hostile(owner, c)) && distance(chest(c.move.pos), p.pos) <= trigger);
+        if (near || --p.ticksLeft <= 0) {
+          this.explode(p, p.pos);
+          continue;
+        }
+        keep.push(p);
+        continue;
+      }
       p.vel = { x: p.vel.x, y: p.vel.y - spec.gravity * TICK_DT, z: p.vel.z };
       const delta = scale(p.vel, TICK_DT);
       const len = Math.hypot(delta.x, delta.y, delta.z);
       const dir = scale(delta, 1 / (len || 1));
-      let hitDist = this.physics.raycastWorld(p.pos, dir, len);
-      const owner = this.actor(p.owner);
+      const wall = this.physics.raycastNormal(p.pos, dir, len);
+      let hitDist = wall?.dist ?? null;
+      let victim: Combatant | null = null;
       for (const c of this.actors()) {
         if (!c.alive || (c === owner && p.age < OWNER_GRACE_TICKS)) continue;
         if (owner && c !== owner && !this.hostile(owner, c)) continue;
         const d = rayCapsule(p.pos, dir, c.move.pos);
-        if (d !== null && d <= len && (hitDist === null || d < hitDist)) hitDist = d;
+        if (d !== null && d <= len && (hitDist === null || d < hitDist)) {
+          hitDist = d;
+          victim = c;
+        }
       }
       if (hitDist !== null) {
-        this.explode(p, add(p.pos, scale(dir, Math.max(0, hitDist - 0.05))));
+        const at = add(p.pos, scale(dir, Math.max(0, hitDist - 0.05)));
+        if (!victim && wall && spec.mine) {
+          // Mines stick to whatever they land on and arm shortly after.
+          p.pos = add(at, scale(wall.normal, 0.06));
+          p.stuck = true;
+          p.armAt = this.tick + Math.round(spec.mine.armSeconds * TICK_RATE);
+          keep.push(p);
+          continue;
+        }
+        if (!victim && wall && spec.bounce !== undefined) {
+          // Reflect off the surface, losing speed; keep the fuse running.
+          const n = wall.normal;
+          const vn = p.vel.x * n.x + p.vel.y * n.y + p.vel.z * n.z;
+          p.vel = scale({ x: p.vel.x - 2 * vn * n.x, y: p.vel.y - 2 * vn * n.y, z: p.vel.z - 2 * vn * n.z }, spec.bounce);
+          p.pos = add(at, scale(n, 0.05));
+          if (--p.ticksLeft <= 0) this.explode(p, p.pos);
+          else keep.push(p);
+          continue;
+        }
+        if (victim && spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
+        if (!victim && wall && spec.impactDamage) this.scenario.damageBody(wall.handle, spec.impactDamage, p.owner);
+        this.explode(p, at);
         continue;
       }
       p.pos = add(p.pos, delta);
@@ -662,10 +739,10 @@ export class Match {
   }
 
   private explode(p: Projectile, at: Vec3): void {
-    const spec = p.def.projectile!;
+    const spec = p.spec;
     const owner = this.actor(p.owner) ?? null;
     this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius });
-    this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.def.id, spec.selfDamageScale);
+    this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.weapon, spec.selfDamageScale);
   }
 
   /** Radial damage falling off from `damage` at the centre to `edge` at `radius`, blocked by walls. Also hits destructibles. */
@@ -749,23 +826,46 @@ export class Match {
         c.armor = Math.min(MAX_ARMOR, c.armor + e.amount);
         return true;
       case 'ammo': {
+        // A typed box fills weapons of that type (fully); the general box gives half a pickup to everything.
         let used = false;
         for (const w of c.weapons.values()) {
-          if (w.def.magazine === 0 || w.reserve >= w.def.reserveMax) continue;
-          w.reserve = Math.min(w.def.reserveMax, w.reserve + Math.ceil(w.def.pickupAmmo / 2));
-          used = true;
+          if (w.def.magazine === 0 || (e.ammo && w.def.ammo !== e.ammo)) continue;
+          if (w.reserve < w.def.reserveMax) {
+            w.reserve = Math.min(w.def.reserveMax, w.reserve + (e.ammo ? w.def.pickupAmmo : Math.ceil(w.def.pickupAmmo / 2)));
+            used = true;
+          }
+        }
+        // Explosives also refill underbarrel grenades.
+        if (!e.ammo || e.ammo === 'explosive') {
+          for (const w of c.weapons.values()) {
+            const alt = w.def.alt;
+            if (alt?.ammo === 'own' && w.alt < (alt.max ?? 0)) {
+              w.alt = Math.min(alt.max ?? 0, w.alt + (e.ammo ? (alt.pickup ?? 1) : 1));
+              used = true;
+            }
+          }
         }
         return used;
+      }
+      case 'throwable': {
+        const max = THROWABLE_DEFS[e.throwable].max;
+        // Carrying the other kind: swap to this one.
+        if (c.throwable && c.throwable.kind === e.throwable && c.throwable.count >= max) return false;
+        const have = c.throwable?.kind === e.throwable ? c.throwable.count : 0;
+        c.throwable = { kind: e.throwable, count: Math.min(max, have + e.count) };
+        return true;
       }
       case 'weapon': {
         const def = getWeapon(e.weapon);
         const owned = c.weapons.get(def.slot);
         if (owned) {
-          if (owned.reserve >= def.reserveMax) return false;
+          const altMax = def.alt?.ammo === 'own' ? (def.alt.max ?? 0) : 0;
+          if (owned.reserve >= def.reserveMax && owned.alt >= altMax) return false;
           owned.reserve = Math.min(def.reserveMax, owned.reserve + def.pickupAmmo);
+          owned.alt = Math.min(altMax, owned.alt + (def.alt?.pickup ?? 0));
           return true;
         }
-        c.weapons.set(def.slot, { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo) });
+        c.weapons.set(def.slot, { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
         // New guns come up immediately, like most arena shooters.
         if (def.slot > c.current) this.switchTo(c, def.slot);
         return true;
@@ -809,10 +909,13 @@ export class Match {
     c.weapons = new Map();
     for (const id of this.rules.startingWeapons) {
       const def = getWeapon(id);
-      c.weapons.set(def.slot, { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo) });
+      c.weapons.set(def.slot, { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
       c.current = def.slot;
     }
+    // Everyone starts with a frag grenade (TimeSplitters-style loadouts are pickups after that).
+    c.throwable = this.rules.startingGrenades > 0 ? { kind: 'frag', count: this.rules.startingGrenades } : null;
     c.fireCooldown = 0;
+    c.throwCooldown = 0;
     c.reloadTicks = 0;
     c.raiseTicks = 0;
     c.speedTicks = 0;
@@ -892,7 +995,8 @@ export class Match {
     const c = this.slots[slot];
     if (!c) return undefined;
     return {
-      inv: [...c.weapons.values()].sort((a, b) => a.def.slot - b.def.slot).map((w) => [w.def.slot, w.mag, w.reserve]),
+      inv: [...c.weapons.values()].sort((a, b) => a.def.slot - b.def.slot).map((w) => [w.def.slot, w.mag, w.reserve, w.alt]),
+      ...(c.throwable ? { gr: [THROWABLES.indexOf(c.throwable.kind), c.throwable.count] as [number, number] } : {}),
       rl: c.reloadTicks,
       rs: c.raiseTicks,
       sp: c.speedTicks,
@@ -924,7 +1028,7 @@ export class Match {
       players: this.playerSnapshots(),
       score: this.scores(),
       ev: events,
-      pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z)]),
+      pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)]),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
@@ -975,4 +1079,33 @@ export class BotFiller {
       if (!this.match.addBot(name, profile, this.difficulty)) break;
     }
   }
+}
+
+/** What one trigger pull does: the weapon's own fire, or its second trigger. */
+interface Trigger {
+  id: string;
+  kind: WeaponDefinition['kind'];
+  damage: number;
+  pellets: number;
+  spread: number;
+  range: number;
+  projectile?: ProjectileSpec;
+  alt?: true;
+}
+
+function primaryTrigger(def: WeaponDefinition): Trigger {
+  return { id: def.id, kind: def.kind, damage: def.damage, pellets: def.pellets, spread: def.spread, range: def.range, ...(def.projectile ? { projectile: def.projectile } : {}) };
+}
+
+function altTrigger(def: WeaponDefinition, alt: AltFire): Trigger {
+  return {
+    id: def.id,
+    kind: alt.kind,
+    damage: alt.damage ?? def.damage,
+    pellets: alt.pellets ?? def.pellets,
+    spread: alt.spread ?? def.spread,
+    range: def.range,
+    ...(alt.projectile ? { projectile: alt.projectile } : {}),
+    alt: true,
+  };
 }

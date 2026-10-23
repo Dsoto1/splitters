@@ -139,9 +139,9 @@ export const ButtonEntity = EntityBase.extend({
   startEnabled: z.boolean().default(true),
 });
 
-export const DESTRUCTIBLE_MODELS = ['crate', 'barrel', 'wall'] as const;
+export const DESTRUCTIBLE_MODELS = ['crate', 'barrel', 'wall', 'glass', 'boards', 'gas', 'generator'] as const;
 
-/** Something that can be shot or blown apart: a crate, an explosive barrel or a breakable wall panel. */
+/** Something that can be shot or blown apart: a crate, an explosive barrel, a breakable wall, a window pane, a board barricade, a gas cylinder or a generator. */
 export const DestructibleEntity = EntityBase.extend({
   kind: z.literal('destructible'),
   model: z.enum(DESTRUCTIBLE_MODELS),

@@ -1,4 +1,4 @@
-import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
+import { BUTTON_ALT, BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const PITCH_LIMIT = 1.5;
@@ -15,6 +15,9 @@ export class InputState {
   private jumpQueued = false;
   private reloadQueued = false;
   private useQueued = false;
+  private throwQueued = false;
+  /** Set by the session: the held weapon has a second trigger (RMB fires it instead of zooming). */
+  altTrigger = false;
   /** Weapon slot requested with number keys (0 = none pending). */
   private slotRequest = 0;
   /** Mouse wheel steps since last read (+ = next weapon). */
@@ -33,6 +36,7 @@ export class InputState {
         if (e.code === 'Space') this.jumpQueued = true;
         if (e.code === 'KeyR') this.reloadQueued = true;
         if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
+        if (e.code === 'KeyG' && !e.repeat) this.throwQueued = true;
         const digit = /^Digit([1-9])$/.exec(e.code);
         if (digit) this.slotRequest = Number(digit[1]);
       },
@@ -121,11 +125,14 @@ export class InputState {
     if (this.jumpQueued || this.keys.has('Space')) buttons |= BUTTON_JUMP;
     if (this.fireDown) buttons |= BUTTON_FIRE;
     if (this.reloadQueued) buttons |= BUTTON_RELOAD;
-    if (this.zoomDown) buttons |= BUTTON_ZOOM;
+    // Right mouse: the held weapon's second trigger if it has one, otherwise zoom.
+    if (this.zoomDown) buttons |= this.altTrigger ? BUTTON_ALT : BUTTON_ZOOM;
+    if (this.throwQueued) buttons |= BUTTON_THROW;
     if (this.useQueued) buttons |= BUTTON_USE;
     this.jumpQueued = false;
     this.reloadQueued = false;
     this.useQueued = false;
+    this.throwQueued = false;
     return { forward: axis('KeyW', 'KeyS'), right: axis('KeyD', 'KeyA'), buttons };
   }
 }

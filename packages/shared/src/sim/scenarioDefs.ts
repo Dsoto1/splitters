@@ -1,3 +1,5 @@
+import { getProp } from '../content/props.ts';
+import { isBreakableProp } from '../map/geometry.ts';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { DestructibleModel, MapDocument, MapEntity, TrapKind } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
@@ -132,19 +134,55 @@ export interface DestructibleSpec {
   label: string;
   half: Vec3;
   health: number;
-  /** Explodes when destroyed (barrels). */
+  /** Height of the bottom above the entity's position (window panes sit in the window). */
+  lift?: number;
+  /** Explodes when destroyed (barrels, gas, generators). */
   blast?: { radius: number; damage: number; edge: number };
+  /** Bots treat it as a wall to path around until it breaks. */
+  blocksPaths?: boolean;
 }
 
 export const DESTRUCTIBLE_SPECS: Record<DestructibleModel, DestructibleSpec> = {
   crate: { label: 'Crate', half: { x: 0.6, y: 0.6, z: 0.6 }, health: 60 },
   barrel: { label: 'Explosive barrel', half: { x: 0.45, y: 0.65, z: 0.45 }, health: 30, blast: { radius: 4.5, damage: 90, edge: 15 } },
-  wall: { label: 'Breakable wall', half: { x: 1.5, y: 1.5, z: 0.25 }, health: 250 },
+  wall: { label: 'Breakable wall', half: { x: 1.5, y: 1.5, z: 0.25 }, health: 250, blocksPaths: true },
+  glass: { label: 'Window pane', half: { x: 1.3, y: 0.7, z: 0.04 }, health: 1, lift: 1 },
+  boards: { label: 'Board barricade', half: { x: 1.5, y: 1.5, z: 0.1 }, health: 70, blocksPaths: true },
+  gas: { label: 'Gas cylinder', half: { x: 0.3, y: 0.65, z: 0.3 }, health: 15, blast: { radius: 5, damage: 110, edge: 20 } },
+  generator: { label: 'Generator', half: { x: 1, y: 0.9, z: 0.7 }, health: 400, blast: { radius: 4, damage: 80, edge: 10 } },
 };
 
 export function destructibleBox(e: Extract<MapEntity, { kind: 'destructible' }>): OBox {
   const spec = DESTRUCTIBLE_SPECS[e.model];
-  return { center: localToWorld(entityPos(e), e.yaw, 0, spec.half.y, 0), half: spec.half, yaw: e.yaw };
+  return { center: localToWorld(entityPos(e), e.yaw, 0, (spec.lift ?? 0) + spec.half.y, 0), half: spec.half, yaw: e.yaw };
+}
+
+/** Anything that can be shot apart: destructible entities and breakable solid props. */
+export interface Breakable {
+  box: OBox;
+  health: number;
+  explosiveOnly: boolean;
+  blast?: { radius: number; damage: number; edge: number };
+  blocksPaths: boolean;
+}
+
+export function breakableOf(e: MapEntity): Breakable | null {
+  if (e.kind === 'destructible') {
+    const spec = DESTRUCTIBLE_SPECS[e.model];
+    return { box: destructibleBox(e), health: e.health ?? spec.health, explosiveOnly: e.explosiveOnly, ...(spec.blast ? { blast: spec.blast } : {}), blocksPaths: !!spec.blocksPaths };
+  }
+  if (e.kind === 'prop' && isBreakableProp(e)) {
+    const def = getProp(e.model)!;
+    const [w, h, d] = def.collision!.map((v) => (v * e.scale) / 2) as [number, number, number];
+    return {
+      box: { center: { x: e.position[0], y: e.position[1] + h, z: e.position[2] }, half: { x: w, y: h, z: d }, yaw: e.yaw },
+      health: def.breakable!.health * e.scale,
+      explosiveOnly: false,
+      ...(def.breakable!.blast ? { blast: def.breakable!.blast } : {}),
+      blocksPaths: false,
+    };
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------- zones
@@ -256,8 +294,8 @@ export class ScenarioBodies {
         this.doorOpen.set(i, 0);
         for (const c of leaves) this.byHandle.set(c.handle, i);
         this.setDoorOpen(i, e.startOpen ? 1 : 0);
-      } else if (e.kind === 'destructible') {
-        const box = destructibleBox(e);
+      } else if (breakableOf(e)) {
+        const box = breakableOf(e)!.box;
         const c = physics.createBox(box.center, box.half, box.yaw);
         this.solids.set(i, c);
         this.byHandle.set(c.handle, i);

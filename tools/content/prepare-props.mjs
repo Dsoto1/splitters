@@ -48,7 +48,7 @@ for (const p of manifest.props) {
   writeFileSync(join(ROOT, 'packages/client/public', file), glb);
   const size = [round((b.max[0] - b.min[0]) * s), round(p.height), round((b.max[2] - b.min[2]) * s)];
   const collision = p.collide === 'none' ? null : p.collide === 'trunk' ? [Math.min(0.5, size[0]), size[1], Math.min(0.5, size[2])] : size;
-  defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision });
+  defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(p.breakable && collision ? { breakable: p.breakable } : {}) });
   lock.files.push({ file, source: p.pack, src: p.src, triangles, bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) });
 }
 

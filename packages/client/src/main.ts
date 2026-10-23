@@ -11,6 +11,7 @@ import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
 import sandgateJson from '../../../maps/sandgate.json';
+import citadelJson from '../../../maps/citadel.json';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { EditorApp, type TestRequest } from './editor/editorApp.ts';
@@ -36,7 +37,7 @@ function storage(key: string, value?: string): string | null {
 
 type Mode = 'menu' | 'editor' | 'game' | 'designer';
 
-const OFFLINE_MAPS = { arena: arenaJson, vault: vaultJson, outpost: outpostJson, sandgate: sandgateJson } as const;
+const OFFLINE_MAPS = { arena: arenaJson, vault: vaultJson, outpost: outpostJson, sandgate: sandgateJson, citadel: citadelJson } as const;
 type OfflineMap = keyof typeof OFFLINE_MAPS;
 
 /** The built-in maps the Arcade offers, with the modes each supports. */
@@ -46,6 +47,7 @@ function arcadeMaps(): ArcadeMap[] {
     return r.ok ? [{ key, map: r.map, blurb, modes, bots }] : [];
   };
   return [
+    ...entry('citadel', 'Castle keep: a two-storey atrium, roof terraces, every weapon.', ['core.deathmatch', 'core.tdm'], 7),
     ...entry('sandgate', 'Desert town: long street, mid doors, tunnels.', ['core.tdm', 'core.deathmatch'], 9),
     ...entry('arena', 'Graybox loop around a pillar hall, with an upper floor.', ['core.deathmatch', 'core.tdm'], 5),
     ...entry('vault', 'Doors, traps and a vault to crack.', ['core.deathmatch'], 3),
@@ -172,7 +174,7 @@ class App {
     const arena = loadMap(OFFLINE_MAPS[which]);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');
     // Co-op: two bot teammates; team deathmatch: 5 v 5; deathmatch maps: a lobby of opponents.
-    const botFill = { outpost: 3, vault: 4, sandgate: 10, arena: 6 }[which];
+    const botFill = { outpost: 3, vault: 4, sandgate: 10, arena: 6, citadel: 8 }[which];
     this.playLocal(arena.map, rulesForMap(arena.map), botFill, 'normal');
   }
 

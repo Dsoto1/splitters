@@ -17,6 +17,8 @@ export interface PropDefinition {
   size: readonly [number, number, number];
   /** Collision box [x, height, z] centred on the footprint, or null to walk through. */
   collision: readonly [number, number, number] | null;
+  /** Can be shot apart: health at scale 1, an explosion when it goes, and the colour of its debris. */
+  breakable?: { health: number; blast?: { radius: number; damage: number; edge: number }; debris: string };
 }
 
 export { CORE_PROPS, PROP_CATEGORIES };

@@ -9,7 +9,11 @@ export const BUTTON_RELOAD = 4;
 export const BUTTON_ZOOM = 8;
 /** Use / interact (E): press buttons, open manual doors. Sent once per key press. */
 export const BUTTON_USE = 16;
-const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE;
+/** Second trigger (right mouse on weapons that have one). */
+export const BUTTON_ALT = 32;
+/** Throw the carried grenade or mine (G). */
+export const BUTTON_THROW = 64;
+const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {

@@ -75,6 +75,7 @@ import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
 import outpostTemplate from '../../../../maps/m4_outpost.json';
 import sandgateTemplate from '../../../../maps/sandgate.json';
+import citadelTemplate from '../../../../maps/citadel.json';
 import { EditorView } from './editorView.ts';
 import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibrary, readAutosave, saveToLibrary, writeAutosave } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
@@ -107,6 +108,10 @@ type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
+  glass: '<rect x="8" y="14" width="40" height="26" fill="#bfe6f5" fill-opacity="0.55" stroke="#9fb6d8" stroke-width="2"/><path d="M14 18l8 8M30 18l10 14" stroke="#ffffff" stroke-width="1.5"/>',
+  boards: '<rect x="10" y="8" width="36" height="42" fill="none" stroke="#5a4030" stroke-width="2"/><rect x="8" y="14" width="40" height="7" fill="#9a6b3d" transform="rotate(-6 28 17)"/><rect x="8" y="27" width="40" height="7" fill="#8a5d33" transform="rotate(5 28 30)"/><rect x="8" y="40" width="40" height="7" fill="#9a6b3d" transform="rotate(-4 28 43)"/>',
+  gas: '<rect x="20" y="14" width="16" height="34" rx="7" fill="#d8d8d0"/><rect x="25" y="8" width="6" height="7" fill="#5a6066"/><rect x="20" y="26" width="16" height="5" fill="#d8483a"/>',
+  generator: '<rect x="8" y="20" width="40" height="26" rx="2" fill="#5a6066"/><rect x="12" y="24" width="14" height="10" fill="#e3b021"/><circle cx="37" cy="33" r="6" fill="#3a3f48"/><rect x="14" y="12" width="6" height="8" fill="#5a6066"/>',
   door: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#3fd26b"/>',
   door_locked: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#e0412f"/><rect x="23" y="34" width="10" height="9" rx="1" fill="#e0412f"/><path d="M25 34v-3a3 3 0 0 1 6 0v3" stroke="#e0412f" stroke-width="2" fill="none"/>',
   button: '<rect x="24" y="24" width="8" height="26" fill="#3a3f48"/><rect x="17" y="12" width="22" height="16" rx="2" fill="#c9ccd2"/><circle cx="28" cy="20" r="5" fill="#3fd26b"/>',
@@ -1417,6 +1422,10 @@ export class EditorApp {
     add('Sandgate', 'Template · desert town for Team Deathmatch, with open courtyards', () => {
       const r = loadMap(sandgateTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Sandgate Remix', parentId: r.map.metadata.id } });
+    });
+    add('Citadel', 'Template · castle keep with a two-storey atrium, roof terraces, props and breakables', () => {
+      const r = loadMap(citadelTemplate);
+      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Citadel Remix', parentId: r.map.metadata.id } });
     });
     for (const entry of listLibrary()) {
       add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {

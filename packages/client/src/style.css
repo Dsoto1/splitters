@@ -276,3 +276,7 @@ img:not([src]) { visibility: hidden; }
 
 #target { position: absolute; left: 50%; top: calc(50% - 76px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font: 600 13px var(--font-display); text-shadow: 0 1px 3px #000; }
 #target .bar { width: 140px; height: 5px; }
+#throwable { margin-left: 10px; padding-left: 10px; border-left: 1px solid var(--line); font-size: 18px; color: var(--orange); }
+#throwable:empty { display: none; }
+#ammo-alt { font: 600 10px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); }
+#ammo-alt:empty { display: none; }

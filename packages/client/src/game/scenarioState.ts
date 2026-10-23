@@ -26,7 +26,7 @@ export class ScenarioState {
       this.entities.set(i, [a, b]);
       const kind = this.map.entities[i]?.kind;
       if (kind === 'door') this.bodies.setDoorOpen(i, a / 100);
-      else if (kind === 'destructible') this.bodies.setSolid(i, a > 0);
+      else if (kind === 'destructible' || kind === 'prop') this.bodies.setSolid(i, a > 0);
     }
     if (sc.es?.length) this.bodies.commit();
     if (sc.ob) this.objectives = sc.ob;

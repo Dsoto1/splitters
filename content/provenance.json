@@ -139,6 +139,53 @@
       ]
     },
     {
+      "file": "models/weapons/rockets.glb",
+      "sha256": "1db6f5ce2c27eb55",
+      "triangles": 368,
+      "bytes": 37972,
+      "source": "kenney-blaster-kit/blaster-b.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/weapons/plasma.glb",
+      "sha256": "ffcb7deda1103b89",
+      "triangles": 882,
+      "bytes": 89976,
+      "source": "kenney-blaster-kit/blaster-p.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/projectiles/frag.glb",
+      "sha256": "fea2048ffddd5144",
+      "triangles": 200,
+      "bytes": 22824,
+      "source": "kenney-blaster-kit/grenade-a.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
       "file": "sounds/explosion_0.ogg",
       "sha256": "3cb48d86dab63140",
       "bytes": 14317,
@@ -740,6 +787,39 @@
       "title": "Interface Sounds 1.0",
       "creator": "Kenney",
       "url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/pickup.throwable_0.ogg",
+      "sha256": "8a91f969e932df70",
+      "bytes": 25394,
+      "source": "kenney-rpg-audio/Audio/handleCoins.ogg",
+      "title": "RPG Audio",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/break.glass_0.ogg",
+      "sha256": "b44b39a940e8948e",
+      "bytes": 7403,
+      "source": "kenney-impact-sounds/Audio/impactGlass_heavy_000.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/break.glass_1.ogg",
+      "sha256": "58686e0e562612cc",
+      "bytes": 8946,
+      "source": "kenney-impact-sounds/Audio/impactGlass_heavy_001.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
       "license": "CC0-1.0",
       "modifications": []
     },

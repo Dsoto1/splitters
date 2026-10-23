@@ -6,7 +6,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { getItem, getWeapon } from '@chronosplit/shared';
+import { getItem, getWeapon , type AmmoType } from '@chronosplit/shared';
 import type { ModelLibrary } from '../content/models.ts';
 
 /** Height of a pickup's centre above the floor. */
@@ -66,12 +66,23 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     part(CreateCylinder(`${name}_ar`, { diameter: 0.6 * s, height: 0.12, tessellation: 6 }, scene), mat(scene, '#3c8dff', 0.35)).rotation.x = Math.PI / 2;
   } else if (fx.kind === 'ammo') {
     part(CreateBox(`${name}_ammo`, { width: 0.5, height: 0.3, depth: 0.32 }, scene), mat(scene, '#6b7048'));
-    part(CreateBox(`${name}_stripe`, { width: 0.51, height: 0.06, depth: 0.33 }, scene), mat(scene, '#f2c14e', 0.4)).position.y = 0.05;
+    // The stripe tells the ammo type apart (general boxes are yellow).
+    part(CreateBox(`${name}_stripe`, { width: 0.51, height: 0.06, depth: 0.33 }, scene), mat(scene, fx.ammo ? AMMO_COLORS[fx.ammo] : '#f2c14e', 0.4)).position.y = 0.05;
+  } else if (fx.kind === 'throwable') {
+    // A small cluster of the thing itself.
+    for (const [x, z] of [[-0.12, 0], [0.12, 0.04], [0, -0.13]] as const) {
+      if (fx.throwable === 'mine') part(CreateCylinder(`${name}_m${x}`, { diameter: 0.26, height: 0.08, tessellation: 12 }, scene), mat(scene, '#3c4038')).position.set(x, 0, z);
+      else part(CreateSphere(`${name}_g${x}`, { diameter: 0.18, segments: 8 }, scene), mat(scene, '#5e6a46')).position.set(x, 0, z);
+    }
+    part(CreateCylinder(`${name}_ring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ff7a3d', 0.5)).position.y = -0.3;
   } else {
     part(CreateSphere(`${name}_pu`, { diameter: 0.5, segments: 12 }, scene), mat(scene, fx.powerup === 'speed' ? '#36d6ff' : '#c03cff', 0.9));
   }
   return root;
 }
+
+/** Stripe colour per ammo type (pickups and MapMaker icons). */
+const AMMO_COLORS: Record<AmmoType, string> = { light: '#f2e28a', rifle: '#e8a33a', shells: '#d8483a', sniper: '#5ab4e6', explosive: '#7a8a3a', cells: '#7dffb0' };
 
 /** Palette swatch colour for an item (MapMaker icons). */
 export function itemColor(itemId: string): string {
@@ -83,7 +94,9 @@ export function itemColor(itemId: string): string {
     case 'armor':
       return '#3c8dff';
     case 'ammo':
-      return '#c9b33a';
+      return fx.ammo ? AMMO_COLORS[fx.ammo] : '#c9b33a';
+    case 'throwable':
+      return '#ff7a3d';
     case 'weapon':
       return '#ffb03b';
     case 'powerup':

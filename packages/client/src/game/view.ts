@@ -10,6 +10,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
+import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
@@ -27,6 +28,7 @@ import {
   type Vec3,
   type WeaponDefinition,
   type WorldBox,
+  PROJECTILE_VISUALS,
 } from '@chronosplit/shared';
 import { MapStyler } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -92,7 +94,9 @@ export class GameView {
   readonly characters: CharacterLibrary;
   private readonly avatars = new Map<number, Avatar>();
   private readonly pickups = new Map<string, PickupVisual>();
-  private readonly projectiles = new Map<number, TransformNode>();
+  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number }>();
+  /** Placed props by entity index (breakable ones disappear when broken). */
+  private readonly props = new Map<number, TransformNode>();
   private effects: Fx[] = [];
   private readonly viewRoot: TransformNode;
   private viewmodel?: TransformNode;
@@ -139,7 +143,9 @@ export class GameView {
     const sky = MapStyler.skyColor(doc);
     this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
-    for (const e of doc.entities) if (e.kind === 'prop') createPropNode(this.scene, this.models, e, `prop_${e.id}`);
+    doc.entities.forEach((e, i) => {
+      if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`));
+    });
     this.scenario.build(doc.entities);
     // Warm the model cache so first switches and pickups don't hitch.
     for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);
@@ -405,27 +411,88 @@ export class GameView {
 
   // ---------------------------------------------------------------- projectiles & effects
 
-  updateProjectiles(positions: ReadonlyMap<number, [number, number, number]>): void {
-    for (const [id, pos] of positions) {
-      let node = this.projectiles.get(id);
-      if (!node) {
-        node = new TransformNode(`proj_${id}`, this.scene);
-        this.projectiles.set(id, node);
-        const holder = node;
-        void this.models.instantiate('projectiles/grenade.glb', `grenade_${id}`).then((m) => {
-          if (holder.isDisposed()) return m.dispose();
-          m.parent = holder;
-        });
-      }
-      node.position.set(pos[0], pos[1], pos[2]);
-      node.rotation.x += 0.3;
+  /** Breakable props follow the replicated state (already broken when you join). */
+  applyPropStates(states: ReadonlyMap<number, readonly [number, number]>): void {
+    for (const [i, node] of this.props) {
+      const s = states.get(i);
+      if (s) node.setEnabled(s[0] > 0);
     }
-    for (const [id, node] of this.projectiles) {
+  }
+
+  /** A broken prop vanishes (the session adds its debris). */
+  breakProp(index: number): void {
+    this.props.get(index)?.setEnabled(false);
+  }
+
+  updateProjectiles(positions: ReadonlyMap<number, [number, number, number, number]>): void {
+    const now = performance.now();
+    for (const [id, pos] of positions) {
+      let p = this.projectiles.get(id);
+      if (!p) {
+        p = { node: this.createProjectile(id, PROJECTILE_VISUALS[pos[3]] ?? 'grenade'), look: pos[3], born: now };
+        this.projectiles.set(id, p);
+      }
+      const prev = p.node.position.clone();
+      p.node.position.set(pos[0], pos[1], pos[2]);
+      const look = PROJECTILE_VISUALS[p.look];
+      if (look === 'grenade' || look === 'frag') p.node.rotation.x += 0.3;
+      else if (look === 'rocket') {
+        // Point the rocket along its flight.
+        const d = p.node.position.subtract(prev);
+        if (d.lengthSquared() > 1e-6) p.node.lookAt(p.node.position.add(d));
+      } else if (look === 'mine') {
+        // Blink once armed.
+        const light = p.node.getChildMeshes().find((m) => m.name.endsWith('_light'));
+        light?.setEnabled(now - p.born > 1200 && Math.floor(now / 350) % 2 === 0);
+      } else p.node.scaling.setAll(1 + Math.sin(now * 0.03) * 0.12);
+    }
+    for (const [id, p] of this.projectiles) {
       if (!positions.has(id)) {
-        node.dispose();
+        p.node.dispose();
         this.projectiles.delete(id);
       }
     }
+  }
+
+  private createProjectile(id: number, look: (typeof PROJECTILE_VISUALS)[number]): TransformNode {
+    const node = new TransformNode(`proj_${id}`, this.scene);
+    const model = look === 'grenade' ? 'projectiles/grenade.glb' : look === 'frag' ? 'projectiles/frag.glb' : null;
+    if (model) {
+      void this.models.instantiate(model, `${look}_${id}`).then((m) => {
+        if (node.isDisposed()) return m.dispose();
+        m.parent = node;
+      });
+    } else if (look === 'rocket') {
+      const body = CreateCylinder(`rocket_${id}`, { diameter: 0.14, height: 0.6, tessellation: 10 }, this.scene);
+      body.rotation.x = Math.PI / 2;
+      body.material = solid(this.scene, 'rocketMat', '#6e7a5c');
+      body.parent = node;
+      const tip = CreateSphere(`rocketTip_${id}`, { diameter: 0.15, segments: 6 }, this.scene);
+      tip.position.z = 0.3;
+      tip.material = solid(this.scene, 'rocketTipMat', '#c8342a');
+      tip.parent = node;
+      const flame = CreateSphere(`rocketFlame_${id}`, { diameter: 0.28, segments: 6 }, this.scene);
+      flame.position.z = -0.38;
+      flame.scaling.z = 2;
+      flame.material = glow(this.scene, 'rocketFlameMat', '#ffb347', 1);
+      flame.parent = node;
+    } else if (look === 'mine') {
+      const disc = CreateCylinder(`mine_${id}`, { diameter: 0.34, height: 0.09, tessellation: 16 }, this.scene);
+      disc.material = solid(this.scene, 'mineMat', '#3c4038');
+      disc.parent = node;
+      const light = CreateSphere(`mine_${id}_light`, { diameter: 0.07, segments: 6 }, this.scene);
+      light.position.y = 0.06;
+      light.material = glow(this.scene, 'mineLightMat', '#ff3b3b', 1);
+      light.parent = node;
+      light.setEnabled(false);
+    } else {
+      // Plasma bolt or charged orb: a glowing ball.
+      const ball = CreateSphere(`${look}_${id}`, { diameter: look === 'orb' ? 0.55 : 0.2, segments: 8 }, this.scene);
+      ball.material = glow(this.scene, `${look}Mat`, look === 'orb' ? '#9b7dff' : '#7dffb0', 1);
+      ball.parent = node;
+    }
+    for (const m of node.getChildMeshes()) m.isPickable = false;
+    return node;
   }
 
   explosion(at: Vec3, radius: number): void {

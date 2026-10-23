@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'shotgun' | 'sniper' | 'launcher' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm';
+export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'shotgun', 'sniper', 'launcher', 'swing', 'dryfire', 'flame', 'beep', 'alarm'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -87,7 +87,7 @@ interface GunParams {
   echoes: [number, number][];
 }
 
-const GUNS: Record<'pistol' | 'rifle' | 'shotgun' | 'sniper', GunParams> = {
+const GUNS: Record<'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper', GunParams> = {
   pistol: {
     length: 0.45,
     crack: { gain: 0.9, decay: 0.003 },
@@ -105,6 +105,16 @@ const GUNS: Record<'pistol' | 'rifle' | 'shotgun' | 'sniper', GunParams> = {
     tail: { gain: 0.2, cutoff: 1800, decay: 0.11 },
     clicks: [[0.045, 0.18, 4500]],
     echoes: [[0.07, 0.15]],
+  },
+  // Lighter and snappier than the rifle: a small calibre at a high rate.
+  smg: {
+    length: 0.28,
+    crack: { gain: 0.8, decay: 0.002 },
+    body: { gain: 0.7, cutoff: 5200, decay: 0.02 },
+    thump: { gain: 0.45, from: 210, to: 80, decay: 0.035 },
+    tail: { gain: 0.14, cutoff: 2200, decay: 0.07 },
+    clicks: [[0.03, 0.12, 5200]],
+    echoes: [[0.06, 0.1]],
   },
   shotgun: {
     length: 0.9,
@@ -218,6 +228,27 @@ function renderSwing(seed: number): Float32Array<ArrayBuffer> {
   return finish(out);
 }
 
+/** Plasma bolt: a falling, buzzing zap over a fizz of filtered noise. */
+function renderPlasma(seed: number): Float32Array<ArrayBuffer> {
+  const n = Math.ceil(0.32 * SYNTH_RATE);
+  const out = new Float32Array(n);
+  const rnd = noiseSource(seed);
+  const bp = new Biquad('bandpass').set(3200, 2);
+  const start = 1500 + rnd() * 200;
+  let phase = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / SYNTH_RATE;
+    const u = i / n;
+    const freq = start * Math.pow(0.18, u);
+    phase += (2 * Math.PI * freq) / SYNTH_RATE;
+    const env = Math.min(1, t / 0.004) * Math.exp(-t / 0.09);
+    // Square-ish tone (buzzy) plus a fizz.
+    const tone = Math.tanh(Math.sin(phase) * 3) * 0.7 + Math.sin(phase * 2.01) * 0.2;
+    out[i] = (tone + bp.run(rnd()) * 0.5) * env;
+  }
+  return finish(out);
+}
+
 /** Empty-magazine trigger click. */
 function renderDryfire(seed: number): Float32Array<ArrayBuffer> {
   const out = new Float32Array(Math.ceil(0.08 * SYNTH_RATE));
@@ -295,9 +326,12 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
   switch (recipe) {
     case 'pistol':
     case 'rifle':
+    case 'smg':
     case 'shotgun':
     case 'sniper':
       return renderGun(GUNS[recipe], seed);
+    case 'plasma':
+      return renderPlasma(seed);
     case 'launcher':
       return renderLauncher(seed);
     case 'swing':

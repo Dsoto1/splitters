@@ -13,6 +13,8 @@ export interface MatchRules {
   respawnDelayTicks: number;
   /** Weapons every player spawns with; the last one is held. */
   startingWeapons: string[];
+  /** Frag grenades everyone spawns with. */
+  startingGrenades: number;
   /** Ticks the results screen stays up before the next round starts. */
   intermissionTicks: number;
 }
@@ -23,6 +25,7 @@ export const DEFAULT_DEATHMATCH_RULES: MatchRules = {
   timeLimitSeconds: 600,
   respawnDelayTicks: Math.round(TICK_RATE * 2),
   startingWeapons: ['core.knife', 'core.pistol'],
+  startingGrenades: 1,
   intermissionTicks: TICK_RATE * 6,
 };
 
@@ -37,6 +40,7 @@ export const DEFAULT_COOP_RULES: MatchRules = {
   timeLimitSeconds: 0,
   respawnDelayTicks: Math.round(TICK_RATE * 3),
   startingWeapons: ['core.knife', 'core.pistol', 'core.rifle'],
+  startingGrenades: 1,
   intermissionTicks: TICK_RATE * 8,
 };
 
@@ -51,6 +55,7 @@ export const DEFAULT_TDM_RULES: MatchRules = {
   timeLimitSeconds: 600,
   respawnDelayTicks: Math.round(TICK_RATE * 2.5),
   startingWeapons: ['core.knife', 'core.pistol'],
+  startingGrenades: 1,
   intermissionTicks: TICK_RATE * 6,
 };
 

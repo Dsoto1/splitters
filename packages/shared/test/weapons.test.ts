@@ -284,7 +284,7 @@ describe('bots and items', () => {
     const target = match.addHuman('t')!;
     for (const id of ['core.shotgun', 'core.launcher', 'core.sniper']) {
       const def = getWeapon(id);
-      bot.weapons.set(def.slot, { def, mag: def.magazine, reserve: def.pickupAmmo });
+      bot.weapons.set(def.slot, { def, mag: def.magazine, reserve: def.pickupAmmo, alt: 0 });
     }
     let seq = 0;
     for (let i = 0; i < 60; i++) {

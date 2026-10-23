@@ -126,6 +126,12 @@ export class PhysicsWorld {
     return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle } : null;
   }
 
+  /** Like raycastHit, plus the surface normal (for bouncing grenades and sticking mines). */
+  raycastNormal(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number; normal: Vec3 } | null {
+    const hit = this.world.castRayAndGetNormal(new RAPIER.Ray(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
+    return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z } } : null;
+  }
+
   /** Distance along a normalised ray to the first static surface, or null within maxDist. */
   raycastWorld(origin: Vec3, dir: Vec3, maxDist: number): number | null {
     const hit = this.world.castRay(new RAPIER.Ray(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);

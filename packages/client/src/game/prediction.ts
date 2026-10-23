@@ -1,5 +1,7 @@
 import {
+  BUTTON_ALT,
   BUTTON_FIRE,
+  THROWABLES,
   PLAYER,
   PhysicsWorld,
   SPEED_BOOST,
@@ -21,6 +23,8 @@ export interface PredictedShot {
   def: WeaponDefinition;
   /** Predicted tracer end points (one per pellet; empty for melee/projectiles). */
   ends: Vec3[];
+  /** The second trigger. */
+  alt?: boolean;
 }
 
 const weaponBySlot = (slot: number) => WEAPONS_BY_SLOT.find((w) => w.slot === slot);
@@ -41,8 +45,10 @@ export class LocalPlayer {
   armor = 0;
   /** Held weapon slot (predicted). */
   held = 2;
-  /** Owned weapons: slot -> [magazine, reserve] (server values, adjusted by predicted shots). */
-  inventory = new Map<number, [number, number]>();
+  /** Owned weapons: slot -> [magazine, reserve, second-trigger rounds] (server values, adjusted by predicted shots). */
+  inventory = new Map<number, [number, number, number]>();
+  /** Carried grenades or mines. */
+  throwable: { kind: (typeof THROWABLES)[number]; count: number } | null = null;
   reloadTicks = 0;
   raiseTicks = 0;
   speedTicks = 0;
@@ -102,22 +108,38 @@ export class LocalPlayer {
   private predictFire(input: PlayerInput): PredictedShot | null {
     const def = this.weapon;
     const ammo = this.inventory.get(this.held);
-    if (!def || !ammo || !(input.buttons & BUTTON_FIRE) || this.fireCooldown > 0 || this.raiseTicks > 0 || this.reloadTicks > 0) return null;
-    if (def.magazine > 0 && ammo[0] === 0) return null;
-    if (def.magazine > 0) ammo[0]--;
-    this.fireCooldown = def.fireIntervalTicks;
-    if (def.kind !== 'hitscan') return { def, ends: [] };
+    if (!def || !ammo || this.fireCooldown > 0 || this.raiseTicks > 0 || this.reloadTicks > 0) return null;
+    let pellets = def.pellets;
+    let spread = def.spread;
+    let alt = false;
+    if (input.buttons & BUTTON_FIRE) {
+      if (def.magazine > 0 && ammo[0] === 0) return null;
+      if (def.magazine > 0) ammo[0]--;
+      this.fireCooldown = def.fireIntervalTicks;
+      if (def.kind !== 'hitscan') return { def, ends: [] };
+    } else if (input.buttons & BUTTON_ALT && def.alt) {
+      // Mirrors the server: own-ammo triggers spend their own rounds, shared ones the magazine.
+      const a = def.alt;
+      if (a.ammo === 'own' ? ammo[2] < a.cost : ammo[0] < a.cost) return null;
+      if (a.ammo === 'own') ammo[2] -= a.cost;
+      else ammo[0] -= a.cost;
+      this.fireCooldown = a.fireIntervalTicks;
+      alt = true;
+      if (a.kind !== 'hitscan') return { def, ends: [], alt };
+      pellets = a.pellets ?? pellets;
+      spread = a.spread ?? spread;
+    } else return null;
     const eye = this.eye;
     const ends: Vec3[] = [];
-    for (let i = 0; i < def.pellets; i++) {
+    for (let i = 0; i < pellets; i++) {
       // Cosmetic spread; the server rolls its own.
-      const yaw = input.yaw + (Math.random() - 0.5) * 2 * def.spread;
-      const pitch = input.pitch + (Math.random() - 0.5) * 2 * def.spread;
+      const yaw = input.yaw + (Math.random() - 0.5) * 2 * spread;
+      const pitch = input.pitch + (Math.random() - 0.5) * 2 * spread;
       const dir = viewDirection(yaw, pitch);
       const d = this.physics.raycastWorld(eye, dir, def.range) ?? def.range;
       ends.push({ x: eye.x + dir.x * d, y: eye.y + dir.y * d, z: eye.z + dir.z * d });
     }
-    return { def, ends };
+    return { def, ends, ...(alt ? { alt } : {}) };
   }
 
   /** Server reconciliation. */
@@ -128,7 +150,8 @@ export class LocalPlayer {
     this.armor = server.ar;
     this.pending = this.pending.filter((i) => i.seq > ack);
     if (me) {
-      this.inventory = new Map(me.inv.map(([slot, mag, reserve]) => [slot, [mag, reserve]]));
+      this.inventory = new Map(me.inv.map(([slot, mag, reserve, alt]) => [slot, [mag, reserve, alt ?? 0]]));
+      this.throwable = me.gr ? { kind: THROWABLES[me.gr[0]] ?? 'frag', count: me.gr[1] } : null;
       this.speedTicks = me.sp;
       this.damageTicks = me.dm;
       this.reloadTicks = Math.max(0, me.rl - this.pending.length);

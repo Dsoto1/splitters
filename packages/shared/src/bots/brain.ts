@@ -2,7 +2,7 @@ import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles,
 import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, TICK_DT, TICK_RATE } from '../sim/constants.ts';
 import type { ItemDefinition } from '../sim/items.ts';
-import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, type PlayerInput } from '../sim/movement.ts';
+import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_THROW, type PlayerInput } from '../sim/movement.ts';
 import type { WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
@@ -42,6 +42,8 @@ export interface BotWorldView {
   pickups: readonly PickupView[];
   /** The bot's own weapons and the slot it is holding. */
   inventory: readonly InventoryView[];
+  /** Grenades or mines carried. */
+  throwables?: number;
   held: number;
   /** Closed doors bots can't open and intact breakable walls: paths through them are treated as unreachable. */
   blockers?: readonly Aabb[];
@@ -223,6 +225,11 @@ export class BotBrain {
 
     let buttons = 0;
     if (wantFire) buttons |= BUTTON_FIRE;
+    // Now and then lob a grenade at a target in throwing range.
+    if (wantFire && target && (view.throwables ?? 0) > 0) {
+      const d = horizontalDistance(me.pos, target.pos);
+      if (d > 6 && d < 18 && this.rng() < 0.012) buttons |= BUTTON_THROW;
+    }
     const held = view.inventory.find((w) => w.def.slot === view.held);
     // Reload when empty, or top up when nothing is threatening us.
     if (held && held.def.magazine > 0 && held.reserve > 0 && (held.mag === 0 || (!target && held.mag < held.def.magazine / 2))) buttons |= BUTTON_RELOAD;

@@ -1,5 +1,5 @@
 import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, type EdgeStyle, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
-import type { MapDocument, TilePlacement } from './schema.ts';
+import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { getProp } from '../content/props.ts';
 
 /**
@@ -227,11 +227,19 @@ export function buildMapDecor(map: MapDocument, catalog: TileCatalog = coreCatal
   return buildBoxes(map, catalog, true);
 }
 
+/** A solid prop that can be shot apart (its catalogue entry has health). */
+export function isBreakableProp(e: MapEntity): boolean {
+  if (e.kind !== 'prop' || !e.solid) return false;
+  const def = getProp(e.model);
+  return !!def?.breakable && !!def.collision;
+}
+
 /** Collision of solid props: the prop's box, scaled and turned (as its axis-aligned bounds). */
-export function propBoxes(map: MapDocument): WorldBox[] {
+export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   const out: WorldBox[] = [];
   for (const e of map.entities) {
-    if (e.kind !== 'prop' || !e.solid) continue;
+    // Breakable props are not static: the scenario runtime owns their colliders (ask for them with `breakable`).
+    if (e.kind !== 'prop' || !e.solid || isBreakableProp(e) !== breakable) continue;
     const def = getProp(e.model);
     if (!def?.collision) continue;
     const [w, h, d] = def.collision.map((v) => v * e.scale) as [number, number, number];

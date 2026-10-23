@@ -11,7 +11,8 @@ import {
   DOOR_USE_REACH,
   ScenarioBodies,
   TRAP_SPECS,
-  destructibleBox,
+  breakableOf,
+  type Breakable,
   doorway,
   entityPos,
   oboxAabb,
@@ -64,7 +65,8 @@ interface ButtonRt {
 
 interface DestructibleRt {
   i: number;
-  e: DestructibleEntity;
+  id: string;
+  b: Breakable;
   health: number;
   max: number;
   alive: boolean;
@@ -176,9 +178,11 @@ export class Scenario {
         case 'button':
           this.buttons.set(i, { i, e, enabled: e.startEnabled, used: false, readyAt: 0, litUntil: 0 });
           break;
-        case 'destructible': {
-          const max = e.health ?? DESTRUCTIBLE_SPECS[e.model].health;
-          this.destructibles.set(i, { i, e, health: max, max, alive: true });
+        case 'destructible':
+        case 'prop': {
+          const b = breakableOf(e);
+          if (!b) break;
+          this.destructibles.set(i, { i, id: e.id, b, health: b.health, max: b.health, alive: true });
           this.bodies.setSolid(i, true);
           break;
         }
@@ -440,7 +444,7 @@ export class Scenario {
   splash(at: Vec3, radius: number, damage: number, edge: number, owner: number | null, physics: PhysicsWorld): void {
     for (const d of this.destructibles.values()) {
       if (!d.alive) continue;
-      const box = oboxAabb(destructibleBox(d.e));
+      const box = oboxAabb(d.b.box);
       const closest = { x: clampTo(at.x, box.min.x, box.max.x), y: clampTo(at.y, box.min.y, box.max.y), z: clampTo(at.z, box.min.z, box.max.z) };
       const dist = distance(at, closest);
       if (dist > radius) continue;
@@ -452,7 +456,7 @@ export class Scenario {
   }
 
   private damageDestructible(d: DestructibleRt, amount: number, explosive: boolean, instigator: number | null): void {
-    if (!d.alive || (d.e.explosiveOnly && !explosive)) return;
+    if (!d.alive || (d.b.explosiveOnly && !explosive)) return;
     d.health -= amount;
     if (d.health <= 0) this.destroy(d, instigator);
   }
@@ -464,9 +468,9 @@ export class Scenario {
     this.bodies.setSolid(d.i, false);
     this.bodies.commit();
     this.host.emit({ e: 'broken', i: d.i });
-    const blast = DESTRUCTIBLE_SPECS[d.e.model].blast;
-    if (blast) this.host.blast(destructibleBox(d.e).center, blast.radius, blast.damage, blast.edge, instigator, BARREL_WEAPON_ID);
-    this.fire('destroyed', d.e.id, instigator);
+    const blast = d.b.blast;
+    if (blast) this.host.blast(d.b.box.center, blast.radius, blast.damage, blast.edge, instigator, BARREL_WEAPON_ID);
+    this.fire('destroyed', d.id, instigator);
   }
 
   /** A pickup was taken (Match calls this). */
@@ -595,7 +599,7 @@ export class Scenario {
         break;
       }
       case 'destroy': {
-        const d = this.destructibles.get(this.entityIndex(a.target, 'destructible') ?? -1);
+        const d = this.destructibles.get(this.entityIndex(a.target) ?? -1);
         if (d) this.destroy(d, instigator);
         break;
       }
@@ -658,7 +662,7 @@ export class Scenario {
       if (d.open < 0.9 && (d.locked || !d.e.auto)) out.push(oboxAabb({ ...doorway(d.e), half: { ...doorway(d.e).half, z: DOOR.thickness } }));
     }
     for (const d of this.destructibles.values()) {
-      if (d.alive && d.e.model === 'wall') out.push(oboxAabb(destructibleBox(d.e)));
+      if (d.alive && d.b.blocksPaths) out.push(oboxAabb(d.b.box));
     }
     return out;
   }
@@ -686,7 +690,7 @@ export class Scenario {
   }
 
   destructibleAlive(id: string): boolean | undefined {
-    return this.destructibles.get(this.entityIndex(id, 'destructible') ?? -1)?.alive;
+    return this.destructibles.get(this.entityIndex(id) ?? -1)?.alive;
   }
 
   // ---------------------------------------------------------------- snapshots

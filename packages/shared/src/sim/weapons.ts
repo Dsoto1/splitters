@@ -3,6 +3,15 @@ import { PLAYER } from './constants.ts';
 
 export type WeaponKind = 'hitscan' | 'projectile' | 'melee';
 
+/** Ammunition families: typed ammo pickups top up every owned weapon of that type. */
+export const AMMO_TYPES = ['light', 'rifle', 'shells', 'sniper', 'explosive', 'cells'] as const;
+export type AmmoType = (typeof AMMO_TYPES)[number];
+export const AMMO_LABELS: Record<AmmoType, string> = { light: 'Light rounds', rifle: 'Rifle rounds', shells: 'Shells', sniper: 'Sniper rounds', explosive: 'Explosives', cells: 'Energy cells' };
+
+/** How a projectile looks on the client (index sent in snapshots). */
+export const PROJECTILE_VISUALS = ['grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine'] as const;
+export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
+
 export interface ProjectileSpec {
   /** Launch speed (m/s). */
   speed: number;
@@ -16,6 +25,36 @@ export interface ProjectileSpec {
   splashEdgeDamage: number;
   /** Fraction of splash damage the shooter takes from their own explosion. */
   selfDamageScale: number;
+  visual: ProjectileVisual;
+  /** Bounces off walls and floors (keeping this share of its speed) instead of exploding on them; still bursts on a player. */
+  bounce?: number;
+  /**
+   * Sticks where it lands, arms after `armSeconds`, then explodes when an
+   * enemy comes within `triggerRadius` (or its fuse runs out).
+   */
+  mine?: { armSeconds: number; triggerRadius: number };
+  /** Direct-hit damage to the player it strikes, on top of the splash. */
+  impactDamage?: number;
+}
+
+/**
+ * A weapon's second trigger (right mouse). `shared` uses the magazine
+ * (`cost` rounds per use); `own` has its own reserve (an underbarrel
+ * grenade), refilled by explosive ammo.
+ */
+export interface AltFire {
+  label: string;
+  ammo: 'shared' | 'own';
+  cost: number;
+  /** Own-reserve size and the rounds a weapon pickup gives. */
+  max?: number;
+  pickup?: number;
+  fireIntervalTicks: number;
+  kind: 'hitscan' | 'projectile';
+  damage?: number;
+  pellets?: number;
+  spread?: number;
+  projectile?: ProjectileSpec;
 }
 
 /** First-person and third-person presentation (client only; the server ignores it). */
@@ -72,6 +111,9 @@ export interface WeaponDefinition {
   /** Ticks after switching to this weapon before it can fire. */
   raiseTicks: number;
   projectile?: ProjectileSpec;
+  /** Ammunition family (absent for melee). */
+  ammo?: AmmoType;
+  alt?: AltFire;
   /** AI: 0..1 general preference and the distance band (m) it is best at. */
   botDesirability: number;
   botRange: [number, number];
@@ -113,6 +155,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pickupAmmo: 24,
     reloadTicks: 60,
     raiseTicks: 15,
+    ammo: 'light',
     botDesirability: 0.35,
     botRange: [2, 25],
     view: { model: 'weapons/pistol.glb', viewOffset: [0.2, -0.18, 0.42], tracer: '#ffe08a', hold: { style: 'pistol', grip: [0, -0.03, -0.075], support: [-0.02, -0.04, -0.065] } },
@@ -132,6 +175,17 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pickupAmmo: 60,
     reloadTicks: 80,
     raiseTicks: 20,
+    ammo: 'rifle',
+    alt: {
+      label: 'Underbarrel grenade',
+      ammo: 'own',
+      cost: 1,
+      max: 4,
+      pickup: 2,
+      fireIntervalTicks: 50,
+      kind: 'projectile',
+      projectile: { speed: 24, gravity: 12, fuseSeconds: 3, splashRadius: 3.5, splashDamage: 85, splashEdgeDamage: 12, selfDamageScale: 0.6, visual: 'grenade' },
+    },
     botDesirability: 0.7,
     botRange: [4, 35],
     view: { model: 'weapons/rifle.glb', viewOffset: [0.2, -0.2, 0.55], tracer: '#ffd36b', hold: { style: 'long', grip: [0, -0.05, -0.375], support: [0, 0.03, 0], shoulder: [0, 0.08, -0.58] } },
@@ -151,6 +205,8 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pickupAmmo: 12,
     reloadTicks: 90,
     raiseTicks: 20,
+    ammo: 'shells',
+    alt: { label: 'Both barrels', ammo: 'shared', cost: 2, fireIntervalTicks: 70, kind: 'hitscan', damage: 9, pellets: 16, spread: 0.11 },
     botDesirability: 0.65,
     botRange: [0, 9],
     view: { model: 'weapons/shotgun.glb', viewOffset: [0.2, -0.2, 0.6], tracer: '#ffb38a', hold: { style: 'long', grip: [0, -0.01, -0.21], support: [0, 0, 0.1], shoulder: [0, -0.03, -0.47] } },
@@ -170,6 +226,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pickupAmmo: 10,
     reloadTicks: 110,
     raiseTicks: 25,
+    ammo: 'sniper',
     botDesirability: 0.6,
     botRange: [18, 120],
     view: { model: 'weapons/sniper.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4, hold: { style: 'long', grip: [0, -0.04, -0.29], support: [0, -0.005, 0.02], shoulder: [0, -0.05, -0.57] } },
@@ -189,12 +246,112 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pickupAmmo: 6,
     reloadTicks: 100,
     raiseTicks: 25,
-    projectile: { speed: 26, gravity: 12, fuseSeconds: 3, splashRadius: 4.5, splashDamage: 100, splashEdgeDamage: 15, selfDamageScale: 0.6 },
+    projectile: { speed: 26, gravity: 12, fuseSeconds: 3, splashRadius: 4.5, splashDamage: 100, splashEdgeDamage: 15, selfDamageScale: 0.6, visual: 'grenade' },
+    ammo: 'explosive',
     botDesirability: 0.75,
     botRange: [6, 22],
     view: { model: 'weapons/launcher.glb', viewOffset: [0.22, -0.22, 0.55], tracer: '#c2c9a8', hold: { style: 'long', grip: [0, -0.1, -0.33], support: [0, -0.08, 0.02], shoulder: [0, 0, -0.45] } },
   },
+  'core.smg': {
+    id: 'core.smg',
+    displayName: 'Submachine Gun',
+    kind: 'hitscan',
+    slot: 7,
+    damage: 9,
+    pellets: 1,
+    spread: 0.035,
+    fireIntervalTicks: 4,
+    range: 80,
+    magazine: 40,
+    reserveMax: 240,
+    pickupAmmo: 80,
+    reloadTicks: 75,
+    raiseTicks: 15,
+    ammo: 'light',
+    botDesirability: 0.6,
+    botRange: [0, 18],
+    view: { model: 'weapons/smg.glb', viewOffset: [0.19, -0.19, 0.45], tracer: '#ffe9a8', hold: { style: 'long', grip: [0, -0.05, -0.1], support: [0, -0.03, 0.12], shoulder: [0, 0.02, -0.25] } },
+  },
+  'core.rockets': {
+    id: 'core.rockets',
+    displayName: 'Rocket Launcher',
+    kind: 'projectile',
+    slot: 8,
+    damage: 0,
+    pellets: 1,
+    spread: 0,
+    fireIntervalTicks: 60,
+    range: 0,
+    magazine: 1,
+    reserveMax: 8,
+    pickupAmmo: 4,
+    reloadTicks: 85,
+    raiseTicks: 30,
+    projectile: { speed: 30, gravity: 0, fuseSeconds: 4, splashRadius: 5, splashDamage: 120, splashEdgeDamage: 20, selfDamageScale: 0.6, visual: 'rocket', impactDamage: 30 },
+    ammo: 'explosive',
+    botDesirability: 0.8,
+    botRange: [7, 40],
+    view: { model: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ffb347', hold: { style: 'long', grip: [0, -0.12, -0.18], support: [0, -0.1, 0.18], shoulder: [0, 0.02, -0.5] } },
+  },
+  'core.plasma': {
+    id: 'core.plasma',
+    displayName: 'Plasma Rifle',
+    kind: 'projectile',
+    slot: 9,
+    damage: 0,
+    pellets: 1,
+    spread: 0.01,
+    fireIntervalTicks: 7,
+    range: 0,
+    magazine: 40,
+    reserveMax: 160,
+    pickupAmmo: 60,
+    reloadTicks: 90,
+    raiseTicks: 20,
+    projectile: { speed: 55, gravity: 0, fuseSeconds: 2, splashRadius: 1.2, splashDamage: 14, splashEdgeDamage: 8, selfDamageScale: 0.3, visual: 'plasma', impactDamage: 12 },
+    ammo: 'cells',
+    alt: {
+      label: 'Charged orb',
+      ammo: 'shared',
+      cost: 8,
+      fireIntervalTicks: 60,
+      kind: 'projectile',
+      projectile: { speed: 20, gravity: 0, fuseSeconds: 3, splashRadius: 4, splashDamage: 95, splashEdgeDamage: 20, selfDamageScale: 0.5, visual: 'orb', impactDamage: 20 },
+    },
+    botDesirability: 0.7,
+    botRange: [3, 25],
+    view: { model: 'weapons/plasma.glb', viewOffset: [0.21, -0.21, 0.52], tracer: '#7dffb0', hold: { style: 'long', grip: [0, -0.08, -0.25], support: [0, -0.06, 0.1], shoulder: [0, 0, -0.42] } },
+  },
 };
+
+/** Thrown equipment (G): one kind carried at a time, with a count. */
+export const THROWABLES = ['frag', 'mine'] as const;
+export type ThrowableKind = (typeof THROWABLES)[number];
+export interface ThrowableDefinition {
+  kind: ThrowableKind;
+  displayName: string;
+  max: number;
+  throwIntervalTicks: number;
+  projectile: ProjectileSpec;
+}
+export const THROWABLE_DEFS: Record<ThrowableKind, ThrowableDefinition> = {
+  frag: {
+    kind: 'frag',
+    displayName: 'Frag Grenade',
+    max: 4,
+    throwIntervalTicks: 45,
+    projectile: { speed: 16, gravity: 14, fuseSeconds: 2.5, splashRadius: 4.5, splashDamage: 100, splashEdgeDamage: 15, selfDamageScale: 0.8, visual: 'frag', bounce: 0.45 },
+  },
+  mine: {
+    kind: 'mine',
+    displayName: 'Proximity Mine',
+    max: 3,
+    throwIntervalTicks: 45,
+    projectile: { speed: 11, gravity: 14, fuseSeconds: 90, splashRadius: 4, splashDamage: 110, splashEdgeDamage: 15, selfDamageScale: 0.8, visual: 'mine', mine: { armSeconds: 1.2, triggerRadius: 2.2 } },
+  },
+};
+/** Weapon IDs used for kill credit of thrown equipment. */
+export const throwableWeaponId = (k: ThrowableKind): string => `core.${k}`;
 
 export function getWeapon(id: string): WeaponDefinition {
   const w = CORE_WEAPONS[id];

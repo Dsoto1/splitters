@@ -268,6 +268,46 @@ export class ScenarioVisuals {
         band.position.y = y;
         band.material = this.mat('barrelBand', '#f2c14e');
       }
+    } else if (e.model === 'glass') {
+      // A pane in a window: translucent, with a thin frame.
+      const lift = spec.lift ?? 0;
+      base = '#bfe6f5';
+      bodyMat = this.ownMat(base);
+      bodyMat.alpha = 0.35;
+      bodyMat.specularColor = new Color3(0.9, 0.9, 0.9);
+      bodyMat.specularPower = 96;
+      body = this.box(`${name}_body`, root, [h.x * 2, h.y * 2, h.z * 2], [0, lift + h.y, 0], bodyMat);
+      const frame = this.mat('paneFrame', '#d9d6cf');
+      this.box(`${name}_mullion`, root, [0.05, h.y * 2, h.z * 2 + 0.02], [0, lift + h.y, 0], frame);
+      this.box(`${name}_transom`, root, [h.x * 2, 0.05, h.z * 2 + 0.02], [0, lift + h.y, 0], frame);
+    } else if (e.model === 'boards') {
+      // Planks nailed across a doorway at slight angles.
+      base = '#8a5d33';
+      bodyMat = this.ownMat(base);
+      body = this.box(`${name}_body`, root, [h.x * 2, 0.32, h.z * 2], [0, 0.55, 0], bodyMat);
+      const plank = this.mat('boardPlank', '#9a6b3d');
+      for (const [y, r] of [[1.3, 0.06], [2.05, -0.05], [2.7, 0.04]] as const) this.box(`${name}_plank${y}`, root, [h.x * 2 + 0.1, 0.3, h.z * 2], [0, y, 0], plank).rotation.z = r;
+      this.box(`${name}_cross`, root, [0.25, h.y * 2.4, h.z * 2 + 0.02], [0, h.y, 0], plank).rotation.z = 0.55;
+    } else if (e.model === 'gas') {
+      base = '#d8d8d0';
+      bodyMat = this.ownMat(base);
+      body = CreateCylinder(`${name}_body`, { diameter: h.x * 2, height: h.y * 2 - 0.2, tessellation: 16 }, this.scene);
+      body.parent = root;
+      body.position.y = h.y - 0.1;
+      body.material = bodyMat;
+      const dome = CreateCylinder(`${name}_valve`, { diameter: 0.14, height: 0.2, tessellation: 10 }, this.scene);
+      dome.parent = root;
+      dome.position.y = h.y * 2 - 0.1;
+      dome.material = this.mat('gasValve', '#5a6066');
+      this.box(`${name}_band`, root, [h.x * 2 + 0.02, 0.12, h.z * 2 + 0.02], [0, h.y * 1.3, 0], this.mat('gasBand', '#d8483a', { emissive: 0.2 }));
+    } else if (e.model === 'generator') {
+      base = '#5a6066';
+      bodyMat = this.ownMat(base);
+      body = this.box(`${name}_body`, root, [h.x * 2, h.y * 2 - 0.2, h.z * 2], [0, h.y - 0.1, 0], bodyMat);
+      this.box(`${name}_panel`, root, [0.7, 0.45, 0.04], [-0.4, h.y, h.z + 0.01], this.mat('genPanel', '#e3b021', { emissive: 0.35 }));
+      this.box(`${name}_fan`, root, [0.6, 0.6, 0.04], [0.45, h.y, h.z + 0.01], this.mat('genFan', '#2a2e34'));
+      this.box(`${name}_exhaust`, root, [0.2, 0.5, 0.2], [-0.6, h.y * 2, -0.3], this.mat('genFan', '#2a2e34'));
+      this.box(`${name}_skid`, root, [h.x * 2 + 0.2, 0.12, h.z * 2 + 0.1], [0, 0.06, 0], this.mat('genSkid', '#e3b021'));
     } else {
       base = '#9b9a94';
       bodyMat = this.ownMat(base);
