@@ -262,7 +262,7 @@ export class GameSession {
               if (target !== undefined) this.hud.showTarget(this.hud.name(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
             } else {
               const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
-              for (const to of ev.to) this.view.addShot(CORE_WEAPONS[ev.w], from, { x: to[0], y: to[1], z: to[2] }, this.hud.team(ev.s)?.color ?? slotColor(ev.s));
+              for (const to of ev.to) this.view.addShot(CORE_WEAPONS[ev.w], from, { x: to[0], y: to[1], z: to[2] }, ev.s < 0 ? (CORE_WEAPONS[ev.w]?.view.tracer ?? '#ffd36b') : (this.hud.team(ev.s)?.color ?? slotColor(ev.s)));
               this.view.avatarAction(ev.s, 'shoot');
             }
           } else if (ev.e === 'melee') {
@@ -474,7 +474,10 @@ export class GameSession {
     this.view.updatePickups(this.taken, now);
     this.view.updateProjectiles(this.interp.sampleProjectiles(now));
     this.view.updateZones(this.zones, now);
-    if (this.mounts) this.view.updateMounts(this.mounts.mounts.values());
+    if (this.mounts) {
+      const manned = this.seat ? this.mounts.mounts.get(this.seat[0]) : undefined;
+      this.view.updateMounts(this.mounts.mounts.values(), manned?.def.kind === 'turret' ? manned.index : null);
+    }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
     this.view.updateAvatars(

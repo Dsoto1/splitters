@@ -567,15 +567,15 @@ export class GameView {
 
   private readonly mountNodes = new Map<number, TransformNode>();
 
-  /** Turrets, sentries and vehicles at their smoothed poses; turret guns follow the aim. */
-  updateMounts(mounts: Iterable<ClientMount>): void {
+  /** Turrets, sentries and vehicles at their smoothed poses; turret guns follow the aim. `manned` (the turret you are gunning) is hidden, as your own body is. */
+  updateMounts(mounts: Iterable<ClientMount>, manned: number | null = null): void {
     for (const m of mounts) {
       let node = this.mountNodes.get(m.index);
       if (!node) {
         node = createMountNode(this.scene, this.models, m.model, `mount_${m.index}`);
         this.mountNodes.set(m.index, node);
       }
-      node.setEnabled(m.alive);
+      node.setEnabled(m.alive && m.index !== manned);
       node.position.set(m.shown.pos.x, m.shown.pos.y, m.shown.pos.z);
       node.rotation.y = m.shown.yaw;
       if (m.def.kind !== 'vehicle') {
