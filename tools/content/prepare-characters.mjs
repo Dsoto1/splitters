@@ -14,10 +14,15 @@
 //   clips from both libraries (in-place versions, no root motion).
 // - heads: cut out of the full base bodies by keeping only triangles skinned
 //   mostly to the neck/head bones (the outfit readme says to use only the head).
-// - outfits and hair: simplified with meshoptimizer, normal/roughness maps
-//   dropped, base colour downscaled to 1024 px JPEG.
-// - every part's skin uses the rig's joint order, so the game can attach any
-//   part to one shared skeleton (the basis of the Character Designer).
+// - base bodies: the base characters below the neck, cut into torso, legs and
+//   feet (the "athlete" parts).
+// - outfit parts (arms, torso, legs, feet, hood, pauldrons) and hair: simplified
+//   with meshoptimizer, normal/roughness maps dropped, base colour downscaled
+//   to 1024 px JPEG.
+// - mannequin_f.glb: the female mannequin, rebound to the rig (NPC bodies).
+// - every part's skin uses the rig's joint order and its body's bind and rest
+//   pose, so the game can attach any part to one shared skeleton (the basis
+//   of the Character Designer).
 
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -25,7 +30,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Document, NodeIO } from '@gltf-transform/core';
+import { Document, NodeIO, PropertyType } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { dedup, prune, resample, simplify, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
@@ -46,6 +51,7 @@ const OUTFITS = 'x_outfits/Modular Character Outfits - Fantasy[Standard]/Exports
 const OUTFIT_TEX = 'x_outfits/Modular Character Outfits - Fantasy[Standard]/Textures';
 const UAL1 = 'x_UniversalAnimationLibraryStandardzip/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb';
 const UAL2 = 'x_UniversalAnimationLibrary2Standardzip/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb';
+const UAL2_F = 'x_UniversalAnimationLibrary2Standardzip/Universal Animation Library 2[Standard]/Female Mannequin/Unreal-Godot/Mannequin_F.glb';
 
 /** Clips the game uses, renamed to stable IDs. [source library, clip, our name]. */
 const CLIPS = [
@@ -96,19 +102,23 @@ function jpeg(pngPath, size = 1024) {
   return new Uint8Array(readFileSync(out));
 }
 
-/** Keep base colour only: drop normal/ORM/roughness maps and set a matte finish. */
-function simplifyMaterials(doc, baseColors) {
+/** Materials whose base colour is a shared texture (textures/<id>.jpg), assigned by the game. */
+const SHARED_MATERIAL = /^MI_(Ranger|Peasant|Regular|Superhero|Athlete|Hair)/;
+
+/**
+ * Keep base colour only: drop normal/ORM/roughness maps and set a matte finish.
+ * Shared textures are removed too, so parts don't each carry a copy.
+ */
+function simplifyMaterials(doc) {
   for (const mat of doc.getRoot().listMaterials()) {
     mat.setNormalTexture(null).setOcclusionTexture(null).setMetallicRoughnessTexture(null).setEmissiveTexture(null);
     mat.setMetallicFactor(0).setRoughnessFactor(0.85);
-    const replacement = baseColors[mat.getName()];
-    if (replacement) {
-      const tex = doc.createTexture(`${mat.getName()}_base`).setImage(replacement).setMimeType('image/jpeg');
-      mat.setBaseColorTexture(tex);
-    } else {
-      const t = mat.getBaseColorTexture();
-      if (t && t.getMimeType() === 'image/png' && t.getImage()?.byteLength > 600_000) throw new Error(`material ${mat.getName()} needs a downscaled base colour`);
+    if (SHARED_MATERIAL.test(mat.getName())) {
+      mat.setBaseColorTexture(null);
+      continue;
     }
+    const t = mat.getBaseColorTexture();
+    if (t && t.getImage()?.byteLength > 300_000) throw new Error(`material ${mat.getName()} has a large texture; make it shared`);
   }
 }
 
@@ -233,38 +243,61 @@ function rebind(doc, targetIbm) {
   skin.getInverseBindMatrices().setArray(new Float32Array(targetIbm));
 }
 
-/** Inverse bind matrices of a source glTF (the reference body for its sex). */
+/** Inverse bind matrices and joint rest transforms of a reference body. */
 async function bindPose(path) {
-  return new Float32Array((await readGltf(path)).getRoot().listSkins()[0].getInverseBindMatrices().getArray());
+  const doc = path.endsWith('.glb') ? await io.read(path) : await readGltf(path);
+  const skin = doc.getRoot().listSkins()[0];
+  const rest = new Map(skin.listJoints().map((j) => [j.getName(), { t: j.getTranslation(), r: j.getRotation(), s: j.getScale() }]));
+  return { ibm: new Float32Array(skin.getInverseBindMatrices().getArray()), rest };
 }
 
-/** Keep only triangles whose three vertices are skinned mostly to one of `bones`. */
-function keepByBones(doc, meshName, bones) {
+/**
+ * Rebind a part to a reference body and give its joint nodes that body's rest
+ * transforms, so whichever part carries the skeleton in game, every part fits it.
+ */
+function conformTo(doc, ref) {
+  rebind(doc, ref.ibm);
+  for (const j of doc.getRoot().listSkins()[0].listJoints()) {
+    const r = ref.rest.get(j.getName());
+    if (r) j.setTranslation(r.t).setRotation(r.r).setScale(r.s);
+  }
+}
+
+/**
+ * Keep the triangles of one body region: each triangle belongs to the region
+ * most of its vertices are skinned to, so regions cut from one mesh meet
+ * without gaps or overlaps.
+ */
+function keepRegion(doc, meshName, regionOf, region) {
   const mesh = doc.getRoot().listMeshes().find((m) => m.getName() === meshName);
-  if (!mesh) throw new Error(`no mesh ${meshName}`);
-  const skin = doc.getRoot().listSkins()[0];
-  const jointNames = skin.listJoints().map((j) => j.getName());
+  const jointNames = doc.getRoot().listSkins()[0].listJoints().map((j) => j.getName());
   for (const prim of mesh.listPrimitives()) {
     const J = prim.getAttribute('JOINTS_0').getArray();
     const W = prim.getAttribute('WEIGHTS_0').getArray();
-    const dominant = (v) => {
+    const of = (v) => {
       let best = 0;
       for (let k = 1; k < 4; k++) if (W[v * 4 + k] > W[v * 4 + best]) best = k;
-      return jointNames[J[v * 4 + best]];
+      return regionOf(jointNames[J[v * 4 + best]]);
     };
     const idx = prim.getIndices().getArray();
     const keep = [];
     for (let i = 0; i < idx.length; i += 3) {
-      if ([idx[i], idx[i + 1], idx[i + 2]].every((v) => bones.has(dominant(v)))) keep.push(idx[i], idx[i + 1], idx[i + 2]);
+      const r = [of(idx[i]), of(idx[i + 1]), of(idx[i + 2])];
+      const major = r[0] === r[1] || r[0] === r[2] ? r[0] : r[1] === r[2] ? r[1] : r[0];
+      if (major === region) keep.push(idx[i], idx[i + 1], idx[i + 2]);
     }
     prim.getIndices().setArray(new Uint32Array(keep));
   }
 }
 
-async function finish(doc, out, { ratio = 1 } = {}) {
-  await doc.transform(dedup(), prune({ keepAttributes: false }), weld());
-  if (ratio < 1) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.002, lockBorder: true }));
-  await doc.transform(prune());
+async function finish(doc, out, { ratio = 1, error = 0.002 } = {}) {
+  // Materials are matched by name in game, so identical-looking ones (all textures are shared) must stay apart.
+  const propertyTypes = [PropertyType.ACCESSOR, PropertyType.MESH, PropertyType.TEXTURE, PropertyType.SKIN];
+  // UVs stay even though the parts carry no textures (the game assigns shared ones); tangents go.
+  for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) for (const a of ['TANGENT', 'TEXCOORD_1']) p.setAttribute(a, null);
+  await doc.transform(dedup({ propertyTypes }), prune({ keepAttributes: true }), weld());
+  if (ratio < 1) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error, lockBorder: true }));
+  await doc.transform(prune({ keepAttributes: true }));
   // Accessors left behind by discarded animation tracks (prune keeps some of them).
   for (const acc of doc.getRoot().listAccessors()) if (acc.listParents().every((p) => p.propertyType === 'Root')) acc.dispose();
   doc.getRoot().getAsset().generator = 'chronosplit prepare-characters';
@@ -333,74 +366,160 @@ const lock = { $comment: 'Generated by tools/content/prepare-characters.mjs. Do 
   await doc.transform(resample({ tolerance: 4e-3 }));
   // The mannequin stays in the rig: it's the NPC body, recoloured per faction.
   for (const m of doc.getRoot().listMaterials()) m.setMetallicFactor(0).setRoughnessFactor(0.7);
-  lock.files.push({ role: 'rig', source: 'quaternius-universal-animation-library, quaternius-universal-animation-library-2', ...(await finish(doc, 'rig.glb')) });
+  for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) p.setAttribute('TEXCOORD_0', null);
+  lock.files.push({ role: 'rig', source: 'quaternius-universal-animation-library, quaternius-universal-animation-library-2', ...(await finish(doc, 'rig.glb', { ratio: 0.5 })) });
 }
 
 // ---------------------------------------------------------------- heads
 
 // Every part is rebound to the "Regular" body of its sex, which the outfits are made for.
 const BIND = { Male: await bindPose(find(`${OUTFITS}/Outfits/Male_Ranger.gltf`)), Female: await bindPose(find(`${OUTFITS}/Outfits/Female_Ranger.gltf`)) };
+const SEX = { Male: 'm', Female: 'f' };
+const HEAD_BONES = new Set(['Head', 'neck_01']);
+/**
+ * Body regions of the base characters, by joint (the head and the athlete parts
+ * are cut along these). The hips stay with the torso so trousers never leave a gap.
+ */
+const athleteRegion = (joint) =>
+  HEAD_BONES.has(joint) ? 'head' : /^(foot|ball)/.test(joint) ? 'feet' : /^(thigh|calf)/.test(joint) ? 'legs' : 'torso';
 
-const skin = (sex) => jpeg(find(`${OUTFIT_TEX}/Base/T_Regular_${sex}_Dark_BaseColor.png`));
+const superBody = (doc) => doc.getRoot().listMeshes().find((m) => /SuperHero|Superhero/.test(m.getName()) || m.getName().startsWith('Sphere'));
 for (const sex of ['Male', 'Female']) {
   const doc = await readGltf(find(`${BASE}/Base Characters/Godot - UE/Superhero_${sex}_FullBody.gltf`));
-  const body = doc.getRoot().listMeshes().find((m) => /SuperHero|Superhero/.test(m.getName()) || m.getName().startsWith('Sphere'));
-  keepByBones(doc, body.getName(), new Set(['Head', 'neck_01']));
+  keepRegion(doc, superBody(doc).getName(), athleteRegion, 'head');
   conformSkin(doc, lock.rigJoints);
-  rebind(doc, BIND[sex]);
-  const hairTex = (n) => jpeg(find(`${BASE}/Base Characters/Godot - UE/T_Hair_${n}_BaseColor.png`), 512);
-  simplifyMaterials(doc, { [`MI_Superhero_${sex}`]: skin(sex), MI_Hair_1: hairTex(1), MI_Hair_2: hairTex(2) });
+  conformTo(doc, BIND[sex]);
+  simplifyMaterials(doc);
   lock.files.push({ role: 'head', id: `head_${sex.toLowerCase()}`, body: sex.toLowerCase(), source: 'quaternius-universal-base-characters', ...(await finish(doc, `head_${sex.toLowerCase()}.glb`)) });
 }
 
-// ---------------------------------------------------------------- outfits
+// ---------------------------------------------------------------- base bodies
 
-const OUTFIT_LIST = [
-  ['Male_Ranger', 'outfit_ranger_m', 0.45],
-  ['Female_Ranger', 'outfit_ranger_f', 0.45],
-  ['Male_Peasant', 'outfit_peasant_m', 0.7],
-  ['Female_Peasant', 'outfit_peasant_f', 0.7],
-];
-const rangerBase = jpeg(find(`${OUTFIT_TEX}/Ranger/T_Ranger_BaseColor.png`));
-const peasantBase = jpeg(find(`${OUTFIT_TEX}/Peasant/T_Peasant_BaseColor.png`));
-for (const [src, id, ratio] of OUTFIT_LIST) {
-  const doc = await readGltf(find(`${OUTFITS}/Outfits/${src}.gltf`));
-  conformSkin(doc, lock.rigJoints);
-  simplifyMaterials(doc, { MI_Ranger: rangerBase, MI_Peasant: peasantBase, MI_Regular_Male: skin('Male'), MI_Regular_Female: skin('Female') });
-  lock.files.push({ role: 'outfit', id, body: id.endsWith('_m') ? 'male' : 'female', source: 'quaternius-modular-outfits-fantasy', ...(await finish(doc, `${id}.glb`, { ratio })) });
+// The base characters below the neck (sportswear), cut into the same regions
+// as the outfit parts so they mix with them: upper body (torso and arms),
+// legs and feet. The material is renamed so colourways can target it.
+const BASE_TEX = `${BASE}/Base Characters/Textures`;
+const ATHLETE_TEX = { Male: ['T_Superhero_Male_Dark.png', 'T_Superhero_Male_Ligh.png'], Female: ['T_Superhero_Female_Dark_BaseColor.png', 'T_Superhero_Female_Light_BaseColor.png'] };
+for (const sex of ['Male', 'Female']) {
+  for (const region of ['torso', 'legs', 'feet']) {
+    const doc = await readGltf(find(`${BASE}/Base Characters/Godot - UE/Superhero_${sex}_FullBody.gltf`));
+    const body = superBody(doc);
+    for (const m of doc.getRoot().listMeshes()) if (m !== body) m.dispose();
+    await doc.transform(prune({ keepAttributes: true }));
+    keepRegion(doc, body.getName(), athleteRegion, region);
+    conformSkin(doc, lock.rigJoints);
+    conformTo(doc, BIND[sex]);
+    body.listPrimitives()[0].getMaterial().setName(`MI_Athlete_${sex}`);
+    simplifyMaterials(doc);
+    const id = `athlete_${region}_${SEX[sex]}`;
+    lock.files.push({ role: 'part', id, body: sex.toLowerCase(), slot: region, source: 'quaternius-universal-base-characters', ...(await finish(doc, `${id}.glb`, { ratio: 0.5 })) });
+  }
 }
 
-// Alternative colourways: just the base colour texture, swapped in at runtime.
+// ---------------------------------------------------------------- outfit parts
+
+/** Modular outfit parts: [file, our slot, simplify ratio]. Any part fits any other part for the same body. */
+const PARTS = {
+  Male: [
+    ['Male_Ranger_Arms', 'ranger', 'arms', 0.6],
+    ['Male_Ranger_Body', 'ranger', 'torso', 0.6],
+    ['Male_Ranger_Legs', 'ranger', 'legs', 0.8],
+    ['Male_Ranger_Feet_Boots', 'ranger', 'feet', 0.3],
+    ['Male_Ranger_Head_Hood', 'ranger', 'hood', 0.6],
+    ['Male_Ranger_Acc_Pauldron', 'ranger', 'pauldron', 0.7],
+    ['Male_Peasant_Arms', 'peasant', 'arms', 0.6],
+    ['Male_Peasant_Body', 'peasant', 'torso', 0.7],
+    ['Male_Peasant_Legs', 'peasant', 'legs', 0.8],
+    ['Male_Peasant_Feet', 'peasant', 'feet', 0.6],
+  ],
+  Female: [
+    ['Female_Ranger_Arms', 'ranger', 'arms', 0.6],
+    ['Female_Ranger_Body', 'ranger', 'torso', 0.6],
+    ['Female_Ranger_Legs', 'ranger', 'legs', 0.8],
+    ['Female_Ranger_Feet', 'ranger', 'feet', 0.3],
+    ['Female_Ranger_Head_Hood', 'ranger', 'hood', 0.6],
+    ['Female_Ranger_Acc_Pauldrons', 'ranger', 'pauldron', 0.7],
+    ['Female_Peasant_Arms', 'peasant', 'arms', 0.5],
+    ['Female_Peasant_Body', 'peasant', 'torso', 0.7],
+    ['Female_Peasant_Legs', 'peasant', 'legs', 0.8],
+    ['Female_Peasant_Feet', 'peasant', 'feet', 0.6],
+  ],
+};
+for (const sex of ['Male', 'Female']) {
+  for (const [src, outfit, slot, ratio] of PARTS[sex]) {
+    const doc = await readGltf(find(`${OUTFITS}/Modular Parts/${src}.gltf`));
+    conformSkin(doc, lock.rigJoints);
+    conformTo(doc, BIND[sex]);
+    simplifyMaterials(doc);
+    const id = `${outfit}_${slot}_${SEX[sex]}`;
+    // The boots are very dense; let them simplify further.
+    const error = slot === 'feet' ? 0.01 : 0.002;
+    lock.files.push({ role: 'part', id, body: sex.toLowerCase(), slot, source: 'quaternius-modular-outfits-fantasy', ...(await finish(doc, `${id}.glb`, { ratio, error })) });
+  }
+}
+
+// Shared textures: base colour maps used by many parts, loaded once by the game.
+// The ID's first word names the material family it belongs to (see
+// textureFor in packages/shared/src/content/looks.ts); IDs with a further
+// word are alternative colourways.
 mkdirSync(join(OUT, 'textures'), { recursive: true });
-for (const [png, id] of [
-  ['Ranger/T_Ranger_3_BaseColor.png', 'ranger_moss'],
-  ['Peasant/T_Peasant_2_BaseColor.png', 'peasant_dusk'],
+const HAIR_TEX = `${BASE}/Hairstyles/Rigged to Head Bone/glTF (Godot -Unreal)`;
+for (const [png, id, size, source] of [
+  [`${OUTFIT_TEX}/Ranger/T_Ranger_BaseColor.png`, 'ranger', 1024, 'quaternius-modular-outfits-fantasy'],
+  [`${OUTFIT_TEX}/Ranger/T_Ranger_3_BaseColor.png`, 'ranger_moss', 1024, 'quaternius-modular-outfits-fantasy'],
+  [`${OUTFIT_TEX}/Peasant/T_Peasant_BaseColor.png`, 'peasant', 1024, 'quaternius-modular-outfits-fantasy'],
+  [`${OUTFIT_TEX}/Peasant/T_Peasant_2_BaseColor.png`, 'peasant_dusk', 1024, 'quaternius-modular-outfits-fantasy'],
+  [`${OUTFIT_TEX}/Base/T_Regular_Male_Dark_BaseColor.png`, 'skin_m', 1024, 'quaternius-modular-outfits-fantasy'],
+  [`${OUTFIT_TEX}/Base/T_Regular_Female_Dark_BaseColor.png`, 'skin_f', 1024, 'quaternius-modular-outfits-fantasy'],
+  [`${BASE_TEX}/${ATHLETE_TEX.Male[0]}`, 'athlete_m', 1024, 'quaternius-universal-base-characters'],
+  [`${BASE_TEX}/${ATHLETE_TEX.Female[0]}`, 'athlete_f', 1024, 'quaternius-universal-base-characters'],
+  [`${BASE_TEX}/${ATHLETE_TEX.Male[1]}`, 'athlete_light_m', 1024, 'quaternius-universal-base-characters'],
+  [`${BASE_TEX}/${ATHLETE_TEX.Female[1]}`, 'athlete_light_f', 1024, 'quaternius-universal-base-characters'],
+  [`${HAIR_TEX}/T_Hair_1_BaseColor.png`, 'hair_1', 512, 'quaternius-universal-base-characters'],
+  [`${HAIR_TEX}/T_Hair_2_BaseColor.png`, 'hair_2', 512, 'quaternius-universal-base-characters'],
 ]) {
-  const data = jpeg(find(`${OUTFIT_TEX}/${png}`));
+  const data = jpeg(find(png), size);
   writeFileSync(join(OUT, 'textures', `${id}.jpg`), data);
-  lock.files.push({ role: 'texture', id, source: 'quaternius-modular-outfits-fantasy', file: `characters/textures/${id}.jpg`, sha256: createHash('sha256').update(data).digest('hex').slice(0, 16), triangles: 0, bytes: data.byteLength });
+  lock.files.push({ role: 'texture', id, source, file: `characters/textures/${id}.jpg`, sha256: createHash('sha256').update(data).digest('hex').slice(0, 16), triangles: 0, bytes: data.byteLength });
   console.log(`textures/${id}.jpg ${(data.byteLength / 1024).toFixed(0)} KB`);
 }
 
 // ---------------------------------------------------------------- hair
 
-/** Hairstyles and the body they are fitted to. */
+/** Hairstyles and the body they are fitted to (eyebrows already come with the heads). */
 const HAIR = [
   ['Hair_SimpleParted', 'Male'],
   ['Hair_Buzzed', 'Male'],
   ['Hair_Beard', 'Male'],
   ['Hair_Long', 'Female'],
   ['Hair_Buns', 'Female'],
+  ['Hair_BuzzedFemale', 'Female'],
 ];
 const hairDir = `${BASE}/Hairstyles/Rigged to Head Bone/glTF (Godot -Unreal)`;
 for (const [h, sex] of HAIR) {
   const doc = await readGltf(find(`${hairDir}/${h}.gltf`));
   conformSkin(doc, lock.rigJoints);
-  rebind(doc, BIND[sex]);
-  const mats = Object.fromEntries(doc.getRoot().listMaterials().map((m) => [m.getName(), jpeg(find(`${hairDir}/T_Hair_${m.getName().endsWith('1') ? 1 : 2}_BaseColor.png`), 512)]));
-  simplifyMaterials(doc, mats);
+  conformTo(doc, BIND[sex]);
+  simplifyMaterials(doc);
   const id = h.toLowerCase();
   lock.files.push({ role: 'hair', id, body: sex.toLowerCase(), source: 'quaternius-universal-base-characters', ...(await finish(doc, `${id}.glb`, { ratio: 0.6 })) });
+}
+
+// ---------------------------------------------------------------- female mannequin (NPCs)
+
+{
+  const doc = await io.read(find(UAL2_F));
+  for (const a of doc.getRoot().listAnimations()) {
+    for (const c of a.listChannels()) c.dispose();
+    for (const smp of a.listSamplers()) smp.dispose();
+    a.dispose();
+  }
+  conformSkin(doc, lock.rigJoints);
+  conformTo(doc, await bindPose(find(UAL1)));
+  for (const m of doc.getRoot().listMaterials()) m.setMetallicFactor(0).setRoughnessFactor(0.7);
+  // Untextured: drop the UVs so their seams don't stop the simplifier.
+  for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) p.setAttribute('TEXCOORD_0', null);
+  lock.files.push({ role: 'npc', id: 'mannequin_f', body: 'female', source: 'quaternius-universal-animation-library-2', ...(await finish(doc, 'mannequin_f.glb', { ratio: 0.5 })) });
 }
 
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);

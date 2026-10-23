@@ -39,7 +39,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 | M2 | Weapons and items: 6 weapon roles (pistol, automatic, shotgun, precision, explosive, melee), weapon/health/armor pickups, 2 powerups, bot weapon choice and pickup seeking, lag compensation | **Done** |
 | M3 | Scenario primitives: doors, buttons, destructibles, trigger volumes, **traps**, WHEN → IF → DO logic (data-only interpreter), objectives, LOGIC/ENTITIES workspaces | **Done** |
 | M4 | NPCs: factions model, one enemy faction, one NPC squad archetype, encounter spawners, the co-op scenario | **Done** |
-| M5 | Rig standard, first character part library, **Character Designer**, 12 preset characters built with it, character select, looks visible to everyone in multiplayer, Team Deathmatch on factions | **In progress**: rig, parts, animation, 6 presets, character select |
+| M5 | Rig standard, first character part library, **Character Designer**, 12 preset characters built with it, character select, looks visible to everyone in multiplayer, Team Deathmatch on factions | **In progress**: rig, modular parts, animation, 14 presets, character select |
 | M6 | Multiplayer slice: hosting an editor map on the dedicated server (map transfer), 8-slot proof, staged 16/24/32 load tests, bundle splitting, §11 acceptance pass | |
 
 ## M1 — what exists
@@ -105,13 +105,13 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 
 ## M5 — what exists so far
 
-- **Rig standard and parts:** one 65-joint skeleton for two body types. Heads, hair, four outfits, two colourways and 20 animation clips come from CC0 Quaternius packs. They're prepared by `tools/content/prepare-characters.mjs` and checked by `content:check` against `content/characters.lock.json`. Details in [`CHARACTERS.md`](CHARACTERS.md).
+- **Rig standard and parts:** one 65-joint skeleton for two body types. Every character in the free CC0 Quaternius packs is used: base bodies, the Ranger and Peasant outfits as mixable parts, six hairstyles, colourways, both mannequins and 20 animation clips. They're prepared by `tools/content/prepare-characters.mjs` and checked by `content:check` against `content/characters.lock.json`. Details in [`CHARACTERS.md`](CHARACTERS.md).
 - **In game:** players, Player Bots and NPCs are animated characters instead of capsules. Animation covers:
   - locomotion matched to speed, including backpedalling and strafing;
   - aim pitch on the spine, with the weapon in the hand;
   - shot, melee and reload one-shots on the upper body;
   - death, and a dance at intermission.
-- **Looks:** six presets. The main menu has a **Character** picker; the choice is sent to the server and shown to everyone through the roster. Bots get a spread of looks.
+- **Looks:** fourteen presets mixing parts, colourways, skin and hair tints. The main menu has a **Character** picker; the choice is sent to the server and shown to everyone through the roster. Bots get a spread of looks.
 - **Viewer:** `?mode=characters` shows every look and NPC with motion and weapon controls.
 
 ## M4 — what exists

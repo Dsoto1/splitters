@@ -1,6 +1,8 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import type { Node } from '@babylonjs/core/node';
+import type { Skeleton } from '@babylonjs/core/Bones/skeleton';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { Animation } from '@babylonjs/core/Animations/animation';
@@ -10,7 +12,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
-import { PLAYER, getLook, type BodyType } from '@chronosplit/shared';
+import { PLAYER, getLook, materialTint, textureFor, type BodyType, type CharacterLook } from '@chronosplit/shared';
 
 /** Base URL of built character content (packages/client/public/characters). */
 export const CHARACTER_BASE = `${import.meta.env.BASE_URL}characters/`;
@@ -52,13 +54,14 @@ export interface CharacterInstance {
 export interface CharacterSpec {
   /** A player look (CORE_LOOKS ID). */
   look?: string;
-  /** An NPC: the mannequin in a faction colour. */
-  npc?: { color: string; scale: number };
+  /** An NPC: a mannequin in a faction colour. */
+  npc?: { color: string; scale: number; female?: boolean };
 }
 
 /**
- * Builds animated characters from the shared parts. A look is an outfit (which
- * carries the skeleton) plus a head and hair re-skinned onto that skeleton;
+ * Builds animated characters from the shared parts. A look is a set of outfit
+ * parts (the first carries the skeleton), a head and hair, all re-skinned onto
+ * that skeleton, with shared textures, colourways and tints applied;
  * the rig's animation clips are retargeted onto it by joint name. Everything
  * loads once per scene and is instanced per character.
  */
@@ -82,9 +85,10 @@ export class CharacterLibrary {
   /** Start fetching everything a spec needs (so first appearances don't hitch). */
   preload(spec: CharacterSpec): void {
     void this.load('rig.glb');
+    if (spec.npc?.female) void this.load('mannequin_f.glb');
     if (spec.look) {
       const l = getLook(spec.look);
-      for (const part of [l.outfit, l.head, l.hair]) if (part) void this.load(`${part}.glb`);
+      for (const part of [...l.parts, l.head, ...l.hair]) void this.load(`${part}.glb`);
     }
   }
 
@@ -104,8 +108,17 @@ export class CharacterLibrary {
       joints = jointMap(inst.rootNodes);
       clips = new Map(inst.animationGroups.map((g) => [g.name as Clip, g]));
       for (const g of inst.animationGroups) g.stop();
-      for (const m of holder.getChildMeshes()) {
-        meshes.push(m);
+      meshes.push(...holder.getChildMeshes());
+      if (spec.npc.female) {
+        // Swap in the female mannequin, bound to the same skeleton.
+        const female = await this.load('mannequin_f.glb');
+        // Only the geometry goes (not __root__, which holds the skeleton's nodes).
+        const male = meshes.filter((m) => m.getTotalVertices() > 0);
+        const anchor = male[0]!.parent!;
+        for (const m of male) m.dispose(true);
+        meshes.splice(0, meshes.length, ...meshes.filter((m) => !male.includes(m)), ...this.attach(female, inst.skeletons[0]!, anchor, true));
+      }
+      for (const m of meshes) {
         const mat = m.material as PBRMaterial | null;
         if (mat && mat.name.startsWith('M_Main')) mat.albedoColor = Color3.FromHexString(spec.npc.color);
         else if (mat) mat.albedoColor = new Color3(0.12, 0.13, 0.15);
@@ -115,35 +128,17 @@ export class CharacterLibrary {
       body = 'mannequin';
     } else {
       const look = getLook(spec.look);
-      const [outfitC, headC, hairC] = await Promise.all([this.load(`${look.outfit}.glb`), this.load(`${look.head}.glb`), look.hair ? this.load(`${look.hair}.glb`) : Promise.resolve(null)]);
-      // The outfit carries the skeleton; colourways need their own material copies.
-      const outfit = outfitC.instantiateModelsToScene((n) => n, look.colorway !== null, { doNotInstantiate: true });
-      for (const n of outfit.rootNodes) n.parent = holder;
-      const skeleton = outfit.skeletons[0]!;
-      joints = jointMap(outfit.rootNodes);
-      const anchor = outfit.rootNodes[0]!;
+      const [carrierC, ...rest] = await Promise.all([...look.parts, look.head, ...look.hair].map((p) => this.load(`${p}.glb`)));
+      // The first part carries the skeleton; every part shares it (all are bound to this body's pose).
+      const carrier = carrierC!.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true });
+      for (const n of carrier.rootNodes) n.parent = holder;
+      const skeleton = carrier.skeletons[0]!;
+      joints = jointMap(carrier.rootNodes);
+      const anchor = carrier.rootNodes[0]!;
       meshes.push(...holder.getChildMeshes());
-      for (const part of [headC, hairC]) {
-        if (!part) continue;
-        const inst = part.instantiateModelsToScene((n) => n, false, { doNotInstantiate: true });
-        const partRoot = inst.rootNodes[0]!;
-        for (const m of partRoot.getChildMeshes()) {
-          // Every part is bound to this body's rest pose, so it can share the outfit's skeleton.
-          if (m.skeleton) m.skeleton = skeleton;
-          m.parent = anchor;
-          meshes.push(m);
-        }
-        for (const s of inst.skeletons) s.dispose();
-        for (const n of inst.rootNodes) n.dispose(true);
-      }
-      if (look.colorway) {
-        const tex = this.colorway(look.colorway);
-        for (const m of meshes) {
-          const mat = m.material as PBRMaterial | null;
-          if (mat && /MI_(Ranger|Peasant)/.test(mat.name)) mat.albedoTexture = tex;
-        }
-      }
-      owned.push(...outfit.skeletons);
+      for (const part of rest) meshes.push(...this.attach(part, skeleton, anchor, true));
+      this.dress(meshes, look);
+      owned.push(...carrier.skeletons);
       body = look.body;
       clips = this.retarget(rig, joints, `${name}_${look.body}`, look.body);
     }
@@ -163,6 +158,37 @@ export class CharacterLibrary {
         holder.dispose(false, false);
       },
     };
+  }
+
+  /** Instance a part's meshes onto an existing skeleton and return them. */
+  private attach(part: AssetContainer, skeleton: Skeleton, anchor: Node, cloneMaterials: boolean): AbstractMesh[] {
+    const inst = part.instantiateModelsToScene((n) => n, cloneMaterials, { doNotInstantiate: true });
+    const out: AbstractMesh[] = [];
+    for (const root of inst.rootNodes) {
+      for (const m of root.getChildMeshes()) {
+        if (m.skeleton) m.skeleton = skeleton;
+        m.parent = anchor;
+        out.push(m);
+      }
+    }
+    for (const s of inst.skeletons) s.dispose();
+    for (const n of inst.rootNodes) n.dispose(true);
+    return out;
+  }
+
+  /** Shared textures, colourways and skin/hair tints for a look's (cloned) materials. */
+  private dress(meshes: AbstractMesh[], look: CharacterLook): void {
+    const done = new Set<PBRMaterial>();
+    for (const m of meshes) {
+      const mat = m.material as PBRMaterial | null;
+      if (!mat || done.has(mat)) continue;
+      done.add(mat);
+      const tex = textureFor(mat.name, look);
+      if (tex) mat.albedoTexture = this.texture(tex);
+      const tint = materialTint(mat.name);
+      const color = tint === 'skin' ? look.skin : tint === 'hair' ? look.hairColor : null;
+      if (color) mat.albedoColor = Color3.FromHexString(color);
+    }
   }
 
   /** Clone the rig's clips onto another skeleton's joints, correcting the hip height for that body. */
@@ -197,7 +223,7 @@ export class CharacterLibrary {
     return a;
   }
 
-  private colorway(id: string): Texture {
+  private texture(id: string): Texture {
     let t = this.textures.get(id);
     if (!t) {
       // glTF textures are not flipped vertically.

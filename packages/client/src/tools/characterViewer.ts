@@ -14,7 +14,7 @@ import { CharacterAnimator, type MotionState, type OneShot } from '../game/chara
 
 /**
  * Character viewer (team tool, `?mode=characters`): every preset look plus the
- * NPC mannequin side by side, with buttons for each animation state, aim pitch
+ * NPC mannequins in two rows (front row first), with buttons for each animation state, aim pitch
  * and held weapon, to check rig, retargeting, scale and facing.
  */
 export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCanvasElement): Promise<() => void> {
@@ -23,12 +23,17 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   const specs: (CharacterSpec & { label: string })[] = [
     ...CORE_LOOKS.map((l) => ({ look: l.id, label: l.name })),
     { npc: { color: '#d04a3a', scale: NPC_ROLE_SPECS.trooper.scale }, label: 'NPC Trooper' },
+    { npc: { color: '#d04a3a', scale: NPC_ROLE_SPECS.trooper.scale, female: true }, label: 'NPC Trooper (F)' },
     { npc: { color: '#5cc77a', scale: NPC_ROLE_SPECS.heavy.scale }, label: 'NPC Heavy' },
+    { npc: { color: '#5cc77a', scale: NPC_ROLE_SPECS.heavy.scale, female: true }, label: 'NPC Heavy (F)' },
   ];
+  // Two rows, the back one offset so every character shows.
   const spacing = 1.3;
-  const mid = ((specs.length - 1) * spacing) / 2;
+  const perRow = Math.ceil(specs.length / 2);
+  const place = (i: number) => ({ x: (i % perRow) * spacing + (i >= perRow ? spacing / 2 : 0), z: i >= perRow ? -1.6 : 0 });
+  const mid = ((perRow - 1) * spacing) / 2;
   const params = new URLSearchParams(location.search);
-  const camera = new ArcRotateCamera('cam', Number(params.get('alpha') ?? Math.PI / 2), 1.25, Number(params.get('dist') ?? 9), new Vector3(Number(params.get('x') ?? mid), 1, 0), scene);
+  const camera = new ArcRotateCamera('cam', Number(params.get('alpha') ?? Math.PI / 2), 1.25, Number(params.get('dist') ?? 12), new Vector3(Number(params.get('x') ?? mid), 1, Number(params.get('z') ?? 0)), scene);
   camera.minZ = 0.05;
   camera.wheelPrecision = 40;
   camera.attachControl(canvas, true);
@@ -48,7 +53,8 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);
       ch.root.scaling.scaleInPlace((PLAYER.height * ch.root.scaling.y) / Math.max(0.5, max.y - min.y));
       const holder = ch.root;
-      holder.position.set(i * spacing, 0, 0);
+      const p = place(i);
+      holder.position.set(p.x, 0, p.z);
       return new CharacterAnimator(scene, ch);
     }),
   );

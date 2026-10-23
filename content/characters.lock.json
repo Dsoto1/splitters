@@ -72,9 +72,9 @@
       "role": "rig",
       "source": "quaternius-universal-animation-library, quaternius-universal-animation-library-2",
       "file": "characters/rig.glb",
-      "sha256": "3561f13d5d3f5f5b",
-      "triangles": 13744,
-      "bytes": 710732
+      "sha256": "4a35f776e1825b8f",
+      "triangles": 6872,
+      "bytes": 517128
     },
     {
       "role": "head",
@@ -82,9 +82,9 @@
       "body": "male",
       "source": "quaternius-universal-base-characters",
       "file": "characters/head_male.glb",
-      "sha256": "0c3f1b755b3872c4",
-      "triangles": 4604,
-      "bytes": 307016
+      "sha256": "11b95882b04d3131",
+      "triangles": 4638,
+      "bytes": 275356
     },
     {
       "role": "head",
@@ -92,49 +92,304 @@
       "body": "female",
       "source": "quaternius-universal-base-characters",
       "file": "characters/head_female.glb",
-      "sha256": "b43bbc29b368c71e",
-      "triangles": 5318,
-      "bytes": 341792
+      "sha256": "867b40c0fcacc223",
+      "triangles": 5348,
+      "bytes": 319368
     },
     {
-      "role": "outfit",
-      "id": "outfit_ranger_m",
+      "role": "part",
+      "id": "athlete_torso_m",
       "body": "male",
-      "source": "quaternius-modular-outfits-fantasy",
-      "file": "characters/outfit_ranger_m.glb",
-      "sha256": "86e850ebddc66ed3",
-      "triangles": 17026,
-      "bytes": 1284152
+      "slot": "torso",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/athlete_torso_m.glb",
+      "sha256": "d443c5beaf9befaf",
+      "triangles": 3202,
+      "bytes": 163124
     },
     {
-      "role": "outfit",
-      "id": "outfit_ranger_f",
-      "body": "female",
-      "source": "quaternius-modular-outfits-fantasy",
-      "file": "characters/outfit_ranger_f.glb",
-      "sha256": "91f711072f33b4c6",
-      "triangles": 17076,
-      "bytes": 1296544
-    },
-    {
-      "role": "outfit",
-      "id": "outfit_peasant_m",
+      "role": "part",
+      "id": "athlete_legs_m",
       "body": "male",
-      "source": "quaternius-modular-outfits-fantasy",
-      "file": "characters/outfit_peasant_m.glb",
-      "sha256": "764ce0bb05ccb80e",
-      "triangles": 9332,
-      "bytes": 574504
+      "slot": "legs",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/athlete_legs_m.glb",
+      "sha256": "6335f2634833b74a",
+      "triangles": 1122,
+      "bytes": 68972
     },
     {
-      "role": "outfit",
-      "id": "outfit_peasant_f",
+      "role": "part",
+      "id": "athlete_feet_m",
+      "body": "male",
+      "slot": "feet",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/athlete_feet_m.glb",
+      "sha256": "e90c7d6bd503b0d5",
+      "triangles": 1172,
+      "bytes": 73564
+    },
+    {
+      "role": "part",
+      "id": "athlete_torso_f",
       "body": "female",
+      "slot": "torso",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/athlete_torso_f.glb",
+      "sha256": "ca9b6769e93ac04d",
+      "triangles": 3240,
+      "bytes": 183020
+    },
+    {
+      "role": "part",
+      "id": "athlete_legs_f",
+      "body": "female",
+      "slot": "legs",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/athlete_legs_f.glb",
+      "sha256": "80e95f1a0378a1b6",
+      "triangles": 1106,
+      "bytes": 75096
+    },
+    {
+      "role": "part",
+      "id": "athlete_feet_f",
+      "body": "female",
+      "slot": "feet",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/athlete_feet_f.glb",
+      "sha256": "b2b23cb7f09131cb",
+      "triangles": 1172,
+      "bytes": 77732
+    },
+    {
+      "role": "part",
+      "id": "ranger_arms_m",
+      "body": "male",
+      "slot": "arms",
       "source": "quaternius-modular-outfits-fantasy",
-      "file": "characters/outfit_peasant_f.glb",
-      "sha256": "ebdfa158c25f84f9",
-      "triangles": 9826,
-      "bytes": 589264
+      "file": "characters/ranger_arms_m.glb",
+      "sha256": "e21905804b7faed4",
+      "triangles": 2956,
+      "bytes": 157864
+    },
+    {
+      "role": "part",
+      "id": "ranger_torso_m",
+      "body": "male",
+      "slot": "torso",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_torso_m.glb",
+      "sha256": "99c8ba4b9bbbc7ca",
+      "triangles": 3062,
+      "bytes": 240504
+    },
+    {
+      "role": "part",
+      "id": "ranger_legs_m",
+      "body": "male",
+      "slot": "legs",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_legs_m.glb",
+      "sha256": "ace7c25cea2e9733",
+      "triangles": 972,
+      "bytes": 60572
+    },
+    {
+      "role": "part",
+      "id": "ranger_feet_m",
+      "body": "male",
+      "slot": "feet",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_feet_m.glb",
+      "sha256": "f3324d7467ff557f",
+      "triangles": 3470,
+      "bytes": 404608
+    },
+    {
+      "role": "part",
+      "id": "ranger_hood_m",
+      "body": "male",
+      "slot": "hood",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_hood_m.glb",
+      "sha256": "085b662db2e84873",
+      "triangles": 1772,
+      "bytes": 96432
+    },
+    {
+      "role": "part",
+      "id": "ranger_pauldron_m",
+      "body": "male",
+      "slot": "pauldron",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_pauldron_m.glb",
+      "sha256": "b11cebe065c5c134",
+      "triangles": 1208,
+      "bytes": 76868
+    },
+    {
+      "role": "part",
+      "id": "peasant_arms_m",
+      "body": "male",
+      "slot": "arms",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/peasant_arms_m.glb",
+      "sha256": "0fcb76128dbd226a",
+      "triangles": 3226,
+      "bytes": 165888
+    },
+    {
+      "role": "part",
+      "id": "peasant_torso_m",
+      "body": "male",
+      "slot": "torso",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/peasant_torso_m.glb",
+      "sha256": "1f21f89d7f887ff8",
+      "triangles": 2698,
+      "bytes": 162136
+    },
+    {
+      "role": "part",
+      "id": "peasant_legs_m",
+      "body": "male",
+      "slot": "legs",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/peasant_legs_m.glb",
+      "sha256": "9f726e1afc069beb",
+      "triangles": 922,
+      "bytes": 58992
+    },
+    {
+      "role": "part",
+      "id": "peasant_feet_m",
+      "body": "male",
+      "slot": "feet",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/peasant_feet_m.glb",
+      "sha256": "d49bd25e5c842612",
+      "triangles": 1552,
+      "bytes": 107012
+    },
+    {
+      "role": "part",
+      "id": "ranger_arms_f",
+      "body": "female",
+      "slot": "arms",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_arms_f.glb",
+      "sha256": "73c94f2977a2dbdd",
+      "triangles": 5102,
+      "bytes": 344504
+    },
+    {
+      "role": "part",
+      "id": "ranger_torso_f",
+      "body": "female",
+      "slot": "torso",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_torso_f.glb",
+      "sha256": "b7da8e42a15d5611",
+      "triangles": 3360,
+      "bytes": 314596
+    },
+    {
+      "role": "part",
+      "id": "ranger_legs_f",
+      "body": "female",
+      "slot": "legs",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_legs_f.glb",
+      "sha256": "7416aa3c1fcd24e9",
+      "triangles": 1056,
+      "bytes": 76584
+    },
+    {
+      "role": "part",
+      "id": "ranger_feet_f",
+      "body": "female",
+      "slot": "feet",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_feet_f.glb",
+      "sha256": "c1a2641a7fcb7c32",
+      "triangles": 3446,
+      "bytes": 403388
+    },
+    {
+      "role": "part",
+      "id": "ranger_hood_f",
+      "body": "female",
+      "slot": "hood",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_hood_f.glb",
+      "sha256": "91a6d68a70202cde",
+      "triangles": 1696,
+      "bytes": 93436
+    },
+    {
+      "role": "part",
+      "id": "ranger_pauldron_f",
+      "body": "female",
+      "slot": "pauldron",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/ranger_pauldron_f.glb",
+      "sha256": "82085910fda7d76e",
+      "triangles": 1202,
+      "bytes": 89124
+    },
+    {
+      "role": "part",
+      "id": "peasant_arms_f",
+      "body": "female",
+      "slot": "arms",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/peasant_arms_f.glb",
+      "sha256": "ef4d94d9b18287cf",
+      "triangles": 3424,
+      "bytes": 202116
+    },
+    {
+      "role": "part",
+      "id": "peasant_torso_f",
+      "body": "female",
+      "slot": "torso",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/peasant_torso_f.glb",
+      "sha256": "68a4484b06c6089d",
+      "triangles": 1740,
+      "bytes": 212440
+    },
+    {
+      "role": "part",
+      "id": "peasant_legs_f",
+      "body": "female",
+      "slot": "legs",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/peasant_legs_f.glb",
+      "sha256": "34e04fde6c905265",
+      "triangles": 1554,
+      "bytes": 75396
+    },
+    {
+      "role": "part",
+      "id": "peasant_feet_f",
+      "body": "female",
+      "slot": "feet",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/peasant_feet_f.glb",
+      "sha256": "0bf6bb4e54211958",
+      "triangles": 1552,
+      "bytes": 108424
+    },
+    {
+      "role": "texture",
+      "id": "ranger",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/textures/ranger.jpg",
+      "sha256": "16c55a3bf0210dd4",
+      "triangles": 0,
+      "bytes": 131433
     },
     {
       "role": "texture",
@@ -147,6 +402,15 @@
     },
     {
       "role": "texture",
+      "id": "peasant",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/textures/peasant.jpg",
+      "sha256": "e3815a4e3cccb7e2",
+      "triangles": 0,
+      "bytes": 94606
+    },
+    {
+      "role": "texture",
       "id": "peasant_dusk",
       "source": "quaternius-modular-outfits-fantasy",
       "file": "characters/textures/peasant_dusk.jpg",
@@ -155,14 +419,86 @@
       "bytes": 79271
     },
     {
+      "role": "texture",
+      "id": "skin_m",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/textures/skin_m.jpg",
+      "sha256": "e8400f6e435a0a33",
+      "triangles": 0,
+      "bytes": 48787
+    },
+    {
+      "role": "texture",
+      "id": "skin_f",
+      "source": "quaternius-modular-outfits-fantasy",
+      "file": "characters/textures/skin_f.jpg",
+      "sha256": "858b0696711a3081",
+      "triangles": 0,
+      "bytes": 52340
+    },
+    {
+      "role": "texture",
+      "id": "athlete_m",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/textures/athlete_m.jpg",
+      "sha256": "6cd389fad5de36cc",
+      "triangles": 0,
+      "bytes": 49774
+    },
+    {
+      "role": "texture",
+      "id": "athlete_f",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/textures/athlete_f.jpg",
+      "sha256": "5afc1cb518409334",
+      "triangles": 0,
+      "bytes": 51342
+    },
+    {
+      "role": "texture",
+      "id": "athlete_light_m",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/textures/athlete_light_m.jpg",
+      "sha256": "3d10ec7ba6d964e8",
+      "triangles": 0,
+      "bytes": 47490
+    },
+    {
+      "role": "texture",
+      "id": "athlete_light_f",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/textures/athlete_light_f.jpg",
+      "sha256": "1ceb582307a0d4d7",
+      "triangles": 0,
+      "bytes": 47545
+    },
+    {
+      "role": "texture",
+      "id": "hair_1",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/textures/hair_1.jpg",
+      "sha256": "c56fcd35fea9d1ce",
+      "triangles": 0,
+      "bytes": 26154
+    },
+    {
+      "role": "texture",
+      "id": "hair_2",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/textures/hair_2.jpg",
+      "sha256": "9930b2405b2e77cd",
+      "triangles": 0,
+      "bytes": 31646
+    },
+    {
       "role": "hair",
       "id": "hair_simpleparted",
       "body": "male",
       "source": "quaternius-universal-base-characters",
       "file": "characters/hair_simpleparted.glb",
-      "sha256": "8d267ae706a7963b",
+      "sha256": "e7cf85ad29cd2030",
       "triangles": 1195,
-      "bytes": 88536
+      "bytes": 62104
     },
     {
       "role": "hair",
@@ -170,9 +506,9 @@
       "body": "male",
       "source": "quaternius-universal-base-characters",
       "file": "characters/hair_buzzed.glb",
-      "sha256": "2f04ed15d94c6aaf",
+      "sha256": "fb41941db2a54eae",
       "triangles": 774,
-      "bytes": 72328
+      "bytes": 45900
     },
     {
       "role": "hair",
@@ -180,9 +516,9 @@
       "body": "male",
       "source": "quaternius-universal-base-characters",
       "file": "characters/hair_beard.glb",
-      "sha256": "e12ab3e68b6c7794",
+      "sha256": "2afa0e459bd0356c",
       "triangles": 870,
-      "bytes": 76852
+      "bytes": 50424
     },
     {
       "role": "hair",
@@ -190,9 +526,9 @@
       "body": "female",
       "source": "quaternius-universal-base-characters",
       "file": "characters/hair_long.glb",
-      "sha256": "25e972392af96b23",
+      "sha256": "8dc893fb65fe1d85",
       "triangles": 2380,
-      "bytes": 198528
+      "bytes": 166608
     },
     {
       "role": "hair",
@@ -200,9 +536,29 @@
       "body": "female",
       "source": "quaternius-universal-base-characters",
       "file": "characters/hair_buns.glb",
-      "sha256": "3d610f5ac9fa92ce",
+      "sha256": "94659412805aca1d",
       "triangles": 2620,
-      "bytes": 214368
+      "bytes": 182444
+    },
+    {
+      "role": "hair",
+      "id": "hair_buzzedfemale",
+      "body": "female",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/hair_buzzedfemale.glb",
+      "sha256": "445d36eeebd2ac09",
+      "triangles": 758,
+      "bytes": 45912
+    },
+    {
+      "role": "npc",
+      "id": "mannequin_f",
+      "body": "female",
+      "source": "quaternius-universal-animation-library-2",
+      "file": "characters/mannequin_f.glb",
+      "sha256": "ad0ad9d067a4d239",
+      "triangles": 7304,
+      "bytes": 256960
     }
   ]
 }

@@ -221,7 +221,7 @@ async function charactersFlow(browser) {
   await page.goto(`${CLIENT}/?mode=characters`);
   await page.waitForFunction(() => window.__charsReady === true, null, { timeout: 30000 });
   const n = await page.evaluate(() => window.__charAnimators.length);
-  check(n === 8, `character viewer builds every look and NPC (${n})`);
+  check(n === 18, `character viewer builds every look and NPC (${n})`);
   for (const label of ['Rifle', 'Run', 'shoot', 'Death', 'Idle']) {
     await page.click(`button:text-is("${label}")`);
     await page.waitForTimeout(300);

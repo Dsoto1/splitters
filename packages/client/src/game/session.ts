@@ -384,7 +384,8 @@ export class GameSession {
       this.slot,
       (id) => {
         const npc = this.npcLook(id);
-        return npc ? { npc: { color: npc.color, scale: npc.scale } } : { look: this.looks.get(id) };
+        // About half of each squad uses the female mannequin.
+        return npc ? { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1 } } : { look: this.looks.get(id) };
       },
       this.phase === 'intermission',
     );

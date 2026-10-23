@@ -349,11 +349,12 @@ console.log(`${check ? 'checked' : 'built  '} ${soundFiles.size} sound files`);
 // lock file records what it wrote, and this checks the shipped files against it.
 const CHAR_LOCK = join(ROOT, 'content/characters.lock.json');
 const CHAR_MODS = {
-  rig: ['clips selected, renamed and resampled', 'mannequin only'],
+  rig: ['clips selected, renamed and resampled', 'mannequin simplified'],
   head: ['cut from the base body', 'rebound to the regular body pose', 'materials simplified'],
   hair: ['rebound to the regular body pose', 'simplified', 'materials simplified'],
-  outfit: ['merged into one skinned body', 'simplified', 'materials simplified', 'textures downscaled'],
-  texture: ['alternative colourway from the pack', 'downscaled to a 1024 px JPEG'],
+  part: ['rebound to the regular body pose', 'simplified', 'materials simplified', 'textures made shared'],
+  npc: ['rebound to the rig pose', 'simplified'],
+  texture: ['downscaled to a JPEG'],
 };
 const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));
 const charFiles = new Set();
