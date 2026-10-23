@@ -82,15 +82,15 @@ describe('Team Deathmatch', () => {
     const filler = new BotFiller(match);
     filler.rebalance(8);
     const count = (id: string) => match.combatants().filter((c) => c.faction === id).length;
-    expect(count(DEFAULT_TEAMS[0].id)).toBe(4);
+    expect(count(DEFAULT_TEAMS[0]!.id)).toBe(4);
     filler.rebalance(5);
-    expect(Math.abs(count(DEFAULT_TEAMS[0].id) - count(DEFAULT_TEAMS[1].id))).toBeLessThanOrEqual(1);
+    expect(Math.abs(count(DEFAULT_TEAMS[0]!.id) - count(DEFAULT_TEAMS[1]!.id))).toBeLessThanOrEqual(1);
     void CORE_BOT_PROFILES;
   });
 
   it('warns when only one team has spawn points', () => {
     const map = tdmMap();
-    for (const e of map.entities) if (e.kind === 'spawn') e.faction = DEFAULT_TEAMS[0].id;
+    for (const e of map.entities) if (e.kind === 'spawn') e.faction = DEFAULT_TEAMS[0]!.id;
     expect(validateMap(map).some((i) => i.code === 'tdm.spawn_missing')).toBe(true);
     expect(validateMap(tdmMap()).some((i) => i.code.startsWith('tdm.'))).toBe(false);
   });

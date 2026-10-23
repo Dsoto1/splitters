@@ -5,7 +5,9 @@ import {
   PROTOCOL_VERSION,
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
+  getWeapon,
   initPhysics,
+  weaponCode,
   type BotDifficulty,
   type GameEvent,
   type MapDocument,
@@ -59,6 +61,14 @@ export class LocalTransport implements Transport {
     const rules = this.opts.rules ?? rulesForMap(this.map);
     const match = new Match(this.map, rules, Math.floor(Math.random() * 1e6));
     const me = match.addHuman(this.opts.name, this.opts.look)!;
+    // Automation hook for browser tests (give weapons, place players).
+    (window as unknown as { __match: unknown; __give: (id: string) => void }).__match = match;
+    (window as unknown as { __give: (id: string) => void }).__give = (id) => {
+      const def = getWeapon(id);
+      me.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: def.reserveMax, alt: def.alt?.max ?? 0 });
+      me.current = weaponCode(def);
+      me.raiseTicks = 0;
+    };
     new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]).rebalance(Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));
     this.queueInputs = (inputs) => match.queueInputs(me.slot, inputs);
     this.teardown = () => match.destroy();

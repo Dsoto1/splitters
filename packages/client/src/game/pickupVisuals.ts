@@ -72,7 +72,7 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     // A small cluster of the thing itself.
     for (const [x, z] of [[-0.12, 0], [0.12, 0.04], [0, -0.13]] as const) {
       if (fx.throwable === 'mine') part(CreateCylinder(`${name}_m${x}`, { diameter: 0.26, height: 0.08, tessellation: 12 }, scene), mat(scene, '#3c4038')).position.set(x, 0, z);
-      else part(CreateSphere(`${name}_g${x}`, { diameter: 0.18, segments: 8 }, scene), mat(scene, '#5e6a46')).position.set(x, 0, z);
+      else part(CreateSphere(`${name}_g${x}`, { diameter: 0.18, segments: 8 }, scene), mat(scene, THROWABLE_COLORS[fx.throwable] ?? '#5e6a46', fx.throwable === 'frag' ? 0 : 0.35)).position.set(x, 0, z);
     }
     part(CreateCylinder(`${name}_ring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ff7a3d', 0.5)).position.y = -0.3;
   } else {
@@ -81,8 +81,11 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
   return root;
 }
 
+/** Grenade colour per kind on pickups. */
+const THROWABLE_COLORS: Partial<Record<string, string>> = { frag: '#5e6a46', sticky: '#5ad24a', incendiary: '#ff7a2a', toxic: '#a8ff3a', vortex: '#b07aff' };
+
 /** Stripe colour per ammo type (pickups and MapMaker icons). */
-const AMMO_COLORS: Record<AmmoType, string> = { light: '#f2e28a', rifle: '#e8a33a', shells: '#d8483a', sniper: '#5ab4e6', explosive: '#7a8a3a', cells: '#7dffb0' };
+const AMMO_COLORS: Record<AmmoType, string> = { light: '#f2e28a', rifle: '#e8a33a', shells: '#d8483a', sniper: '#5ab4e6', explosive: '#7a8a3a', cells: '#7dffb0', fuel: '#ff7a2a', chem: '#9a5ae0' };
 
 /** Palette swatch colour for an item (MapMaker icons). */
 export function itemColor(itemId: string): string {

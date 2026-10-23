@@ -1,11 +1,13 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
+  CORE_WEAPONS,
+  type ZoneSnapshot,
   BUTTON_FIRE,
   PhysicsWorld,
   SPEED_BOOST,
   TICK_DT,
   TICK_RATE,
-  WEAPONS_BY_SLOT,
+  weaponByCode,
   DESTRUCTIBLE_SPECS,
   NPC_ROLES,
   NPC_ROLE_SPECS,
@@ -33,6 +35,7 @@ import {
 import type { AudioSystem } from '../audio/audio.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
+import { statusColor } from './arsenalVisuals.ts';
 import { InputState } from './input.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
@@ -101,6 +104,9 @@ export class GameSession {
   private taken = new Set<string>();
   /** Weapon slot the player asked for (0 = no request). */
   private wantWeapon = 0;
+  /** Ground hazards from the latest snapshot, and your own status effects. */
+  private zones: ZoneSnapshot[] = [];
+  private localStatus = 0;
   private lastWeapon = 0;
 
   // Frame timing / instrumentation.
@@ -197,7 +203,7 @@ export class GameSession {
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input };
         this.opts.onReady?.();
         break;
       }
@@ -218,6 +224,9 @@ export class GameSession {
         for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8] });
         this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr);
+        this.zones = msg.zn ?? [];
+        if (this.local) this.local.zones = this.zones;
+        this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         this.taken = new Set(msg.pk);
         // Door and crate colliders first, so reconciliation replays against the same world as the server.
         this.scenario?.apply(msg.sc);
@@ -242,12 +251,14 @@ export class GameSession {
               if (target !== undefined) this.hud.showTarget(this.hud.name(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
             } else {
               const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
-              for (const to of ev.to) this.view.addTracer(from, { x: to[0], y: to[1], z: to[2] }, this.hud.team(ev.s)?.color ?? slotColor(ev.s));
+              for (const to of ev.to) this.view.addShot(CORE_WEAPONS[ev.w], from, { x: to[0], y: to[1], z: to[2] }, this.hud.team(ev.s)?.color ?? slotColor(ev.s));
               this.view.avatarAction(ev.s, 'shoot');
             }
           } else if (ev.e === 'melee') {
             if (ev.s === this.slot && ev.hit !== null) this.hud.hit();
             if (ev.s !== this.slot) this.view.avatarAction(ev.s, 'melee');
+          } else if (ev.e === 'arc') {
+            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })));
           } else if (ev.e === 'explode') {
             this.view.explosion({ x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ev.r);
           } else if (ev.e === 'pickup') {
@@ -355,12 +366,17 @@ export class GameSession {
     const local = this.local;
 
     if (local) {
-      // Weapon selection: number keys or wheel cycling through owned weapons.
+      // Weapon selection: a number key picks that slot (again to cycle the weapons in it); the wheel steps through everything owned.
       const key = this.input.takeSlotRequest();
-      if (key && local.inventory.has(key)) this.requestWeapon(key);
+      if (key) {
+        const inSlot = local.ownedCodes().filter((code) => weaponByCode(code)?.slot === key);
+        const i = inSlot.indexOf(this.wantWeapon || local.held);
+        const next = inSlot[(i + 1) % inSlot.length];
+        if (next) this.requestWeapon(next);
+      }
       const wheel = this.input.takeWheel();
       if (wheel) {
-        const owned = local.ownedSlots();
+        const owned = local.ownedCodes();
         const i = owned.indexOf(this.wantWeapon || local.held);
         const next = owned[(((i + wheel) % owned.length) + owned.length) % owned.length];
         if (next) this.requestWeapon(next);
@@ -382,7 +398,13 @@ export class GameSession {
         if (shot) {
           this.sfx.localShot(shot.def, shot.alt);
           this.view.kick(shot.def);
-          for (const end of shot.ends) this.view.addTracer(local.eye, end, shot.def.view.tracer, 60);
+          for (const end of shot.ends) this.view.addShot(shot.def, local.eye, end, shot.def.view.tracer, 60);
+          // Recoil: the sights climb (and wander a little) with each shot.
+          const recoil = !shot.alt ? shot.def.recoil : undefined;
+          if (recoil?.kick) {
+            this.input.pitch = Math.min(1.5, this.input.pitch + recoil.kick * (0.8 + Math.random() * 0.4));
+            this.input.yaw += (Math.random() - 0.5) * recoil.kick * 0.5;
+          }
         }
       }
       this.opts.transport.sendInputs(this.outbox.splice(0));
@@ -399,7 +421,7 @@ export class GameSession {
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed });
       this.hud.setScope(zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
-      this.hud.setWeapons(WEAPONS_BY_SLOT, local.inventory, local.held, local.reloadTicks > 0, local.alive);
+      this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive);
       this.hud.setThrowable(local.throwable, local.alive);
       this.input.altTrigger = !!local.weapon?.alt;
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE);
@@ -412,6 +434,8 @@ export class GameSession {
     }
     this.view.updatePickups(this.taken, now);
     this.view.updateProjectiles(this.interp.sampleProjectiles(now));
+    this.view.updateZones(this.zones, now);
+    this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
     this.view.updateAvatars(
       poses,

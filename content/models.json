@@ -48,6 +48,22 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/quaternius-universal-animation-library-2/License.txt",
       "retrieved": "2026-10-22"
+    },
+    "kenney-space-kit": {
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-space-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-car-kit": {
+      "title": "Car Kit 3.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/car-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-car-kit/License.txt",
+      "retrieved": "2026-10-23"
     }
   },
   "models": [
@@ -149,6 +165,248 @@
       "recolor": {
         "desaturate": 0.9,
         "tint": "#6a7458"
+      }
+    },
+    {
+      "out": "weapons/pulse_pistol.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-a.glb",
+      "forward": "-z",
+      "length": 0.3
+    },
+    {
+      "out": "weapons/hand_cannon.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/Revolver_2.obj",
+      "forward": "+x",
+      "length": 0.34
+    },
+    {
+      "out": "weapons/gilded_pistol.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/Pistol_4.obj",
+      "forward": "+x",
+      "length": 0.24,
+      "recolor": {
+        "desaturate": 1,
+        "tint": "#e0b040"
+      }
+    },
+    {
+      "out": "weapons/flare_gun.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-k.glb",
+      "forward": "-z",
+      "length": 0.32
+    },
+    {
+      "out": "weapons/machine_pistol.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/SubmachineGun_3.obj",
+      "forward": "+x",
+      "length": 0.38
+    },
+    {
+      "out": "weapons/burst_rifle.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/Bullpup_1.obj",
+      "forward": "+x",
+      "length": 0.75
+    },
+    {
+      "out": "weapons/laser_rifle.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-f.glb",
+      "forward": "-z",
+      "length": 0.95
+    },
+    {
+      "out": "weapons/marksman.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/SniperRifle_3.obj",
+      "forward": "+x",
+      "length": 1.05
+    },
+    {
+      "out": "weapons/sawed_off.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/Shotgun_SawedOff.obj",
+      "forward": "+x",
+      "length": 0.55
+    },
+    {
+      "out": "weapons/auto_shotgun.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/Shotgun_3.obj",
+      "forward": "+x",
+      "length": 0.9
+    },
+    {
+      "out": "weapons/flak.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-l.glb",
+      "forward": "-z",
+      "length": 0.7
+    },
+    {
+      "out": "weapons/railgun.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-e.glb",
+      "forward": "-z",
+      "length": 1.1
+    },
+    {
+      "out": "weapons/disc_launcher.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-g.glb",
+      "forward": "-z",
+      "length": 0.85
+    },
+    {
+      "out": "weapons/bubble_blaster.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-c.glb",
+      "forward": "-z",
+      "length": 0.55,
+      "recolor": {
+        "desaturate": 0.7,
+        "tint": "#6ee06e"
+      }
+    },
+    {
+      "out": "weapons/goo_gun.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-i.glb",
+      "forward": "-z",
+      "length": 0.42,
+      "recolor": {
+        "desaturate": 0.6,
+        "tint": "#f070c8"
+      }
+    },
+    {
+      "out": "weapons/oil_slicker.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-m.glb",
+      "forward": "-z",
+      "length": 0.45,
+      "recolor": {
+        "desaturate": 0.85,
+        "tint": "#6a5a48"
+      }
+    },
+    {
+      "out": "weapons/lmg.glb",
+      "pack": "quaternius-ultimate-gun-pack",
+      "file": "OBJ/AssaultRifle2_4.obj",
+      "forward": "+x",
+      "length": 1.0
+    },
+    {
+      "out": "weapons/nailgun.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-q.glb",
+      "forward": "-z",
+      "length": 0.6
+    },
+    {
+      "out": "weapons/swarm.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-o.glb",
+      "forward": "-z",
+      "length": 0.6
+    },
+    {
+      "out": "weapons/singularity.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-r.glb",
+      "forward": "-z",
+      "length": 0.75
+    },
+    {
+      "out": "weapons/arc_caster.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-d.glb",
+      "forward": "-z",
+      "length": 0.8
+    },
+    {
+      "out": "weapons/flamethrower.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-n.glb",
+      "forward": "-z",
+      "length": 0.85
+    },
+    {
+      "out": "weapons/freeze_ray.glb",
+      "pack": "kenney-blaster-kit",
+      "file": "blaster-j.glb",
+      "forward": "-z",
+      "length": 0.45,
+      "recolor": {
+        "desaturate": 0.7,
+        "tint": "#a8e8ff"
+      }
+    },
+    {
+      "out": "vehicles/kart.glb",
+      "pack": "kenney-car-kit",
+      "file": "kart-oopi.glb",
+      "forward": "+z",
+      "length": 2.0
+    },
+    {
+      "out": "vehicles/buggy.glb",
+      "pack": "kenney-car-kit",
+      "file": "suv.glb",
+      "forward": "+z",
+      "length": 4.2,
+      "recolor": {
+        "desaturate": 0.6,
+        "tint": "#8a9a6a"
+      }
+    },
+    {
+      "out": "vehicles/speeder.glb",
+      "pack": "kenney-space-kit",
+      "file": "craft_speederA.glb",
+      "forward": "+z",
+      "length": 3.6
+    },
+    {
+      "out": "vehicles/hauler.glb",
+      "pack": "kenney-space-kit",
+      "file": "craft_cargoA.glb",
+      "forward": "+z",
+      "length": 6.0
+    },
+    {
+      "out": "turrets/mg.glb",
+      "pack": "kenney-space-kit",
+      "file": "turret_double.glb",
+      "forward": "+z",
+      "length": 1.4
+    },
+    {
+      "out": "turrets/rocket.glb",
+      "pack": "kenney-space-kit",
+      "file": "turret_single.glb",
+      "forward": "+z",
+      "length": 1.3,
+      "recolor": {
+        "desaturate": 0.5,
+        "tint": "#8a9078"
+      }
+    },
+    {
+      "out": "turrets/sentry.glb",
+      "pack": "kenney-space-kit",
+      "file": "turret_single.glb",
+      "forward": "+z",
+      "length": 1.2,
+      "recolor": {
+        "desaturate": 0.7,
+        "tint": "#c84a3a"
       }
     }
   ],

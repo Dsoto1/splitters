@@ -311,3 +311,5 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .team-size > span:nth-child(2) { flex: 1; }
 .team-size .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .team-size .stepper button { padding: 0 6px; }
+#status-tint { position: absolute; inset: 0; pointer-events: none; transition: box-shadow 0.25s; }
+#weapon-bar span i { display: block; font-style: normal; font-size: 8px; line-height: 6px; color: var(--cyan); letter-spacing: 1px; }

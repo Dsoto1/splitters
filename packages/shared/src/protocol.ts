@@ -7,7 +7,7 @@ import type { MatchRules } from './sim/rules.ts';
  * are kept compact so a binary encoding can replace JSON after measurement
  * without changing gameplay code.
  */
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 
 export type Tuple3 = [number, number, number];
 
@@ -28,18 +28,25 @@ export interface PlayerSnapshot {
   /** Armor points. */
   ar: number;
   alive: 0 | 1;
-  /** Held weapon slot (for third-person models and HUD). */
+  /** Held weapon code (see weaponCode; for third-person models and HUD). */
   w: number;
   /** Active powerups: bit 1 speed, bit 2 damage. */
   pu: number;
+  /** Knockback / slide velocity (m/s), when non-zero. */
+  vx?: number;
+  vz?: number;
+  /** Status effects (STATUS_* bits), when any. */
+  fx?: number;
   /** Bot AI state for the debug overlay; absent for humans. */
   st?: string;
 }
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */
 export interface PrivateState {
-  /** Owned weapons as [slot, magazine, reserve, second-trigger rounds]. */
-  inv: [number, number, number, number][];
+  /** Owned weapons as [weapon code, magazine, reserve, second-trigger rounds, heat % (heat weapons; 100+ = overheated)]. */
+  inv: [number, number, number, number, number?][];
+  /** Movement multiplier from status effects (slow, chill, frozen) ×1000, when not 1000. */
+  ms?: number;
   /** Carried grenades or mines as [index into THROWABLES, count]; absent = none. */
   gr?: [number, number];
   /** Ticks left on reload / weapon raise (0 = ready). */
@@ -50,12 +57,23 @@ export interface PrivateState {
   dm: number;
 }
 
+export const STATUS_BURN = 1;
+export const STATUS_POISON = 2;
+export const STATUS_SLOW = 4;
+export const STATUS_FROZEN = 8;
+export const STATUS_CHILL = 16;
+
+/** A ground hazard or field: [index into ZONE_KINDS, x, y, z, radius, seconds left]. */
+export type ZoneSnapshot = [number, number, number, number, number, number];
+
 export const POWERUP_SPEED_BIT = 1;
 export const POWERUP_DAMAGE_BIT = 2;
 
 export type GameEvent =
   /** One trigger pull: `to`/`hit` hold one entry per pellet (one for most weapons). */
   | { e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Second trigger. */ alt?: 1 }
+  /** Chain lightning: the points it jumped through, from the muzzle on. */
+  | { e: 'arc'; s: number; pts: Tuple3[] }
   /** Someone threw a grenade or mine. */
   | { e: 'throw'; s: number }
   | { e: 'melee'; s: number; hit: number | null }
@@ -98,7 +116,7 @@ export interface ScenarioSnapshot {
 
 /**
  * One NPC: [actor id, x, y, z, yaw, pitch, health %, role (index into NPC_ROLES),
- * faction (index into the map's factions), alive 0/1, held weapon slot].
+ * faction (index into the map's factions), alive 0/1, held weapon code].
  */
 export type NpcSnapshot = [number, number, number, number, number, number, number, number, number, 0 | 1, number];
 
@@ -172,6 +190,8 @@ export type ServerMessage =
       pr: [number, number, number, number, number][];
       /** IDs of pickups currently taken (waiting to respawn). */
       pk: string[];
+      /** Ground hazards and fields (oil, fire, toxic clouds, goo, singularities), when any. */
+      zn?: ZoneSnapshot[];
       /** Receiving player's private state (absent while not in the match). */
       me?: PrivateState;
       /** Scenario state changes (absent when nothing changed). */

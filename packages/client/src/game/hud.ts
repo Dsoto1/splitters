@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, NPC_ID_BASE, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
+import { CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
 import { slotColor } from './view.ts';
 import { applyCrosshair } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
@@ -206,25 +206,49 @@ export class Hud {
     this.throwEl.title = t ? (t.kind === 'mine' ? 'Proximity mines (G)' : 'Frag grenades (G)') : '';
   }
 
-  setWeapons(defs: readonly { slot: number; displayName: string; magazine: number; alt?: { label: string; ammo: string } }[], owned: ReadonlyMap<number, [number, number, number]>, held: number, reloading: boolean, alive: boolean): void {
-    const altDef = defs.find((d) => d.slot === held)?.alt;
+  /** `owned` and `held` are weapon codes; the bar shows slots 1–9, with a pip per extra weapon carried in a slot. */
+  setWeapons(owned: ReadonlyMap<number, readonly [number, number, number, number]>, held: number, reloading: boolean, alive: boolean): void {
+    const def = weaponByCode(held);
+    const altDef = def?.alt;
     const altText = alive && altDef ? (altDef.ammo === 'own' ? `RMB ${altDef.label} · ${owned.get(held)?.[2] ?? 0}` : `RMB ${altDef.label}`) : '';
     if (this.altEl.textContent !== altText) this.altEl.textContent = altText;
-    const def = defs.find((d) => d.slot === held);
     const ammo = owned.get(held);
     this.weaponName.textContent = alive && def ? def.displayName : '';
     this.ammoReserve.textContent = alive && def && ammo && def.magazine > 0 && !reloading ? String(ammo[1]) : '';
     if (!alive || !def || !ammo) this.ammoCount.textContent = '';
+    else if (def.heat) this.ammoCount.textContent = ammo[3] >= 100 ? 'OVERHEAT' : `${Math.round(ammo[3])}°`;
     else if (def.magazine === 0) this.ammoCount.textContent = '∞';
     else this.ammoCount.textContent = reloading ? 'Reloading…' : String(ammo[0]);
-    this.ammoCount.classList.toggle('reloading', reloading);
+    this.ammoCount.classList.toggle('reloading', reloading || (!!def?.heat && !!ammo && ammo[3] >= 100));
     this.ammoCount.classList.toggle('low', !!def && def.magazine > 0 && !!ammo && ammo[0] <= Math.ceil(def.magazine / 4));
     const key = `${alive}|${held}|${[...owned.keys()].join(',')}`;
     if (key === this.lastWeaponBar) return;
     this.lastWeaponBar = key;
+    const bySlot = new Map<number, string[]>();
+    for (const code of owned.keys()) {
+      const w = weaponByCode(code);
+      if (w) bySlot.set(w.slot, [...(bySlot.get(w.slot) ?? []), w.displayName]);
+    }
     this.weaponBar.innerHTML = alive
-      ? defs.map((d) => `<span class="${owned.has(d.slot) ? 'owned' : ''} ${d.slot === held ? 'held' : ''}" title="${escapeHtml(d.displayName)}">${d.slot}</span>`).join('')
+      ? [1, 2, 3, 4, 5, 6, 7, 8, 9]
+          .map((slot) => {
+            const names = bySlot.get(slot) ?? [];
+            const pips = names.length > 1 ? `<i>${'•'.repeat(Math.min(4, names.length))}</i>` : '';
+            return `<span class="${names.length ? 'owned' : ''} ${def?.slot === slot ? 'held' : ''}" title="${escapeHtml(names.join(', '))}">${slot}${pips}</span>`;
+          })
+          .join('')
       : '';
+  }
+
+  /** Full-screen edge glow while you are burning, poisoned, slowed or frozen. */
+  setStatusTint(color: string | null): void {
+    let el = document.getElementById('status-tint');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'status-tint';
+      this.root.append(el);
+    }
+    el.style.boxShadow = color ? `inset 0 0 120px 30px ${color}88` : 'none';
   }
 
   setPowerups(speedSeconds: number, damageSeconds: number): void {

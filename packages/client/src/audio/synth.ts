@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm';
+export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -304,6 +304,117 @@ function renderAlarm(): Float32Array<ArrayBuffer> {
   return finish(out);
 }
 
+/** Render `seconds` of sound sample by sample: `f(t, u, rnd)` with t in seconds and u in 0..1. */
+function render(seconds: number, seed: number, f: (t: number, u: number, rnd: () => number) => number): Float32Array<ArrayBuffer> {
+  const n = Math.ceil(seconds * SYNTH_RATE);
+  const out = new Float32Array(n);
+  const rnd = noiseSource(seed);
+  for (let i = 0; i < n; i++) out[i] = f(i / SYNTH_RATE, i / n, rnd);
+  return finish(out);
+}
+
+/** A sine oscillator whose frequency can change every sample. */
+function osc(): (freq: number) => number {
+  let phase = 0;
+  return (freq) => {
+    phase += (2 * Math.PI * freq) / SYNTH_RATE;
+    return Math.sin(phase);
+  };
+}
+
+/** Laser beam pulse: a short, bright, falling tone with a fizz (repeats fast while the beam is held). */
+function renderLaser(seed: number): Float32Array<ArrayBuffer> {
+  const o = osc();
+  const bp = new Biquad('bandpass').set(5000, 3);
+  return render(0.09, seed, (t, u, rnd) => (Math.tanh(o(2400 - 900 * u) * 2) * 0.6 + bp.run(rnd()) * 0.3) * Math.min(1, t / 0.002) * (1 - u));
+}
+
+/** Railgun: a rising charge whine that ends in a hard crack and a long metallic ring. */
+function renderRailgun(seed: number): Float32Array<ArrayBuffer> {
+  const whine = osc();
+  const ring = osc();
+  const hp = new Biquad('highpass').set(1800, 0.7);
+  return render(1.1, seed, (t, _u, rnd) => {
+    const charge = t < 0.12 ? whine(600 + 9000 * t) * (t / 0.12) * 0.35 : 0;
+    const k = t - 0.12;
+    const crack = k >= 0 ? hp.run(rnd()) * Math.exp(-k / 0.025) * 1.6 : 0;
+    const tail = k >= 0 ? ring(3100 - 400 * Math.min(1, k)) * Math.exp(-k / 0.35) * 0.45 : 0;
+    return charge + crack + tail;
+  });
+}
+
+/** Electric arc: bursts of crackling noise with a buzzing 120 Hz hum underneath. */
+function renderArc(seed: number): Float32Array<ArrayBuffer> {
+  const hum = osc();
+  const bp = new Biquad('bandpass').set(4200, 1.2);
+  let gate = 0;
+  return render(0.28, seed, (t, u, rnd) => {
+    if (rnd() > 0.985) gate = 1;
+    gate *= 0.993;
+    return (bp.run(rnd()) * 2.2 * gate + Math.tanh(hum(120) * 4) * 0.25) * (1 - u) * Math.min(1, t / 0.003);
+  });
+}
+
+/** Bubble: a wobbling upward bloop. */
+function renderBubble(seed: number): Float32Array<ArrayBuffer> {
+  const o = osc();
+  let pitch: number | null = null;
+  return render(0.22, seed, (t, u, rnd) => {
+    pitch ??= 220 + (rnd() + 1) * 60;
+    return o(pitch + 700 * u * u + 40 * Math.sin(t * 90)) * Math.sin(Math.PI * Math.min(1, u * 1.2)) * 0.9;
+  });
+}
+
+/** Splat: a wet, low thud of filtered noise (goo, oil). */
+function renderSplat(seed: number): Float32Array<ArrayBuffer> {
+  const lp = new Biquad('lowpass').set(700, 1.4);
+  const o = osc();
+  return render(0.25, seed, (t, _u, rnd) => (lp.run(rnd()) * 2.5 + o(110 - 200 * t) * 0.6) * Math.exp(-t / 0.06) * Math.min(1, t / 0.004));
+}
+
+/** Disc launch: a spinning whoosh over a deep thoom. */
+function renderDisc(seed: number): Float32Array<ArrayBuffer> {
+  const o = osc();
+  const bp = new Biquad('bandpass');
+  return render(0.5, seed, (t, _u, rnd) => {
+    bp.set(900 + 600 * Math.sin(t * 60), 4);
+    return o(70 * Math.exp(-t * 3)) * Math.exp(-t / 0.12) * 1.2 + bp.run(rnd()) * 1.8 * Math.exp(-t / 0.22) * Math.min(1, t / 0.02);
+  });
+}
+
+/** Nailgun: a sharp pneumatic tick with a short metallic ping. */
+function renderNail(seed: number): Float32Array<ArrayBuffer> {
+  const ping = osc();
+  const hp = new Biquad('highpass').set(3000, 0.8);
+  return render(0.12, seed, (t, _u, rnd) => hp.run(rnd()) * Math.exp(-t / 0.006) * 1.5 + ping(5200) * Math.exp(-t / 0.03) * 0.3);
+}
+
+/** Singularity: a deep tone falling away with a breathy roar. */
+function renderVortex(seed: number): Float32Array<ArrayBuffer> {
+  const o = osc();
+  const o2 = osc();
+  const lp = new Biquad('lowpass').set(400, 0.8);
+  return render(1.3, seed, (t, u, rnd) => (o(180 * Math.pow(0.25, u)) * 0.8 + o2(181.5 * Math.pow(0.25, u)) * 0.5 + lp.run(rnd()) * 2) * Math.min(1, t / 0.05) * (1 - u));
+}
+
+/** Freeze ray: a glassy shimmer of high partials. */
+function renderFreeze(seed: number): Float32Array<ArrayBuffer> {
+  const a = osc();
+  const b = osc();
+  const c = osc();
+  let shift: number | null = null;
+  return render(0.12, seed, (t, u, rnd) => {
+    shift ??= 1 + rnd() * 0.06;
+    return (a(3800 * shift + 200 * Math.sin(t * 80)) + b(5100 * shift) * 0.6 + c(6900 * shift) * 0.4 + rnd() * 0.05) * 0.4 * Math.min(1, t / 0.004) * (1 - u);
+  });
+}
+
+/** One puff of a flamethrower: a short roar (it repeats fast while held). */
+function renderFlamelet(seed: number): Float32Array<ArrayBuffer> {
+  const lp = new Biquad('lowpass').set(1100, 0.7);
+  return render(0.16, seed, (t, u, rnd) => lp.run(rnd()) * 3 * Math.min(1, t / 0.02) * (1 - u));
+}
+
 /** Soft-clip, normalise to a fixed peak and fade the last few ms to avoid a pop. */
 function finish(buf: Float32Array<ArrayBuffer>): Float32Array<ArrayBuffer> {
   let peak = 0;
@@ -344,5 +455,25 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
       return renderBeep();
     case 'alarm':
       return renderAlarm();
+    case 'laser':
+      return renderLaser(seed);
+    case 'railgun':
+      return renderRailgun(seed);
+    case 'arc':
+      return renderArc(seed);
+    case 'bubble':
+      return renderBubble(seed);
+    case 'splat':
+      return renderSplat(seed);
+    case 'disc':
+      return renderDisc(seed);
+    case 'nail':
+      return renderNail(seed);
+    case 'vortex':
+      return renderVortex(seed);
+    case 'freeze':
+      return renderFreeze(seed);
+    case 'flamelet':
+      return renderFlamelet(seed);
   }
 }

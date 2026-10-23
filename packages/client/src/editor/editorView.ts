@@ -20,6 +20,7 @@ import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
 import { createPropNode } from '../game/propVisuals.ts';
+import { createMountNode } from '../game/mountVisuals.ts';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 
@@ -250,11 +251,13 @@ export class EditorView {
               ? { key, node: createPickupVisual(this.scene, this.models, e.item, `edpickup_${e.id}`) }
               : e.kind === 'prop'
                 ? { key, node: createPropNode(this.scene, this.models, e, `edprop_${e.id}`, false) }
-                : { key, node: this.scenario.createNode(e, `ed_${e.id}`) };
+                : e.kind === 'mount'
+                  ? { key, node: createMountNode(this.scene, this.models, e.model, `edmount_${e.id}`) }
+                  : { key, node: this.scenario.createNode(e, `ed_${e.id}`) };
         m.key = key;
         this.markers.set(e.id, m);
       }
-      const layer = e.kind === 'prop' || e.kind === 'spawn' || e.kind === 'pickup' ? e.kind : 'logic';
+      const layer = e.kind === 'prop' || e.kind === 'spawn' || e.kind === 'pickup' ? e.kind : e.kind === 'mount' ? 'prop' : 'logic';
       m.node.setEnabled(!this.hiddenLayers.has(layer));
       if (e.kind === 'spawn') {
         m.node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);

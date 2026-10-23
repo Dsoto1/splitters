@@ -2,7 +2,9 @@
  * Pickup items (v1 spec §5.4): data only. Map pickup entities reference these
  * by content ID; respawn times can be overridden per placed pickup.
  */
-import type { AmmoType, ThrowableKind } from './weapons.ts';
+import { CORE_WEAPONS, type AmmoType, type ThrowableKind } from './weapons.ts';
+
+const weaponName = (id: string): string => CORE_WEAPONS[id]?.displayName ?? id;
 
 export type ItemEffect =
   | { kind: 'health'; amount: number }
@@ -23,6 +25,14 @@ export interface ItemDefinition {
 }
 
 const item = (id: string, displayName: string, effect: ItemEffect, respawnSeconds: number, botValue: number): ItemDefinition => ({ id: `core.${id}`, displayName, effect, respawnSeconds, botValue });
+
+/** A pickup for each weapon of the extended arsenal (`core.weapon_<name>`); power weapons respawn slower. */
+const EXTENDED_WEAPON_ITEMS: ItemDefinition[] = [
+  ['pulse_pistol', 15], ['hand_cannon', 20], ['gilded_pistol', 60], ['flare_gun', 20], ['machine_pistol', 15],
+  ['burst_rifle', 15], ['laser_rifle', 25], ['marksman', 20], ['sawed_off', 15], ['auto_shotgun', 20], ['flak', 25],
+  ['railgun', 35], ['disc_launcher', 25], ['bubble_blaster', 20], ['goo_gun', 20], ['oil_slicker', 20],
+  ['lmg', 30], ['nailgun', 20], ['swarm', 35], ['singularity', 45], ['arc_caster', 25], ['flamethrower', 25], ['freeze_ray', 25],
+].map(([name, respawn]) => item(`weapon_${name}`, weaponName(`core.${name}`), { kind: 'weapon', weapon: `core.${name}` }, respawn as number, 0.55 + Math.min(0.35, (respawn as number) / 120)));
 
 export const CORE_ITEMS: readonly ItemDefinition[] = [
   item('health_small', 'Health (Small)', { kind: 'health', amount: 25 }, 15, 0.4),
@@ -45,6 +55,13 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   item('ammo_cells', 'Energy Cells', { kind: 'ammo', ammo: 'cells' }, 15, 0.25),
   item('grenades', 'Frag Grenades', { kind: 'throwable', throwable: 'frag', count: 2 }, 20, 0.45),
   item('mines', 'Proximity Mines', { kind: 'throwable', throwable: 'mine', count: 2 }, 25, 0.4),
+  ...EXTENDED_WEAPON_ITEMS,
+  item('ammo_fuel', 'Fuel Canisters', { kind: 'ammo', ammo: 'fuel' }, 15, 0.25),
+  item('ammo_chem', 'Chem Canisters', { kind: 'ammo', ammo: 'chem' }, 15, 0.25),
+  item('sticky_grenades', 'Sticky Grenades', { kind: 'throwable', throwable: 'sticky', count: 2 }, 25, 0.45),
+  item('incendiaries', 'Incendiaries', { kind: 'throwable', throwable: 'incendiary', count: 2 }, 25, 0.45),
+  item('gas_grenades', 'Gas Grenades', { kind: 'throwable', throwable: 'toxic', count: 2 }, 25, 0.4),
+  item('vortex_grenades', 'Vortex Grenades', { kind: 'throwable', throwable: 'vortex', count: 1 }, 35, 0.5),
   item('powerup_speed', 'Speed Boost', { kind: 'powerup', powerup: 'speed', seconds: 15 }, 60, 0.6),
   item('powerup_damage', 'Double Damage', { kind: 'powerup', powerup: 'damage', seconds: 15 }, 60, 0.85),
 ];

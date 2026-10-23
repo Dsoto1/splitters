@@ -3,7 +3,7 @@ import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, TICK_DT, TICK_RATE } from '../sim/constants.ts';
 import type { ItemDefinition } from '../sim/items.ts';
 import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_THROW, type PlayerInput } from '../sim/movement.ts';
-import type { WeaponDefinition } from '../sim/weapons.ts';
+import { weaponCode, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
 import type { BotDifficulty, BotProfile } from './profile.ts';
@@ -84,6 +84,8 @@ export class BotBrain {
   private seq = 0;
   private readonly rng: () => number;
   private targetSlot: number | null = null;
+  /** Fire was held last tick (to tap semi-auto triggers). */
+  private trigger = false;
   private visibleSince = new Map<number, number>();
   private lastKnown: { pos: Vec3; tick: number } | null = null;
   private pathIndex = 0;
@@ -224,13 +226,16 @@ export class BotBrain {
     }
 
     let buttons = 0;
-    if (wantFire) buttons |= BUTTON_FIRE;
+    // Semi-auto and burst triggers need letting go between shots: tap them.
+    const mode = view.inventory.find((w) => weaponCode(w.def) === view.held)?.def.fireMode ?? 'auto';
+    if (wantFire && (mode === 'auto' || !this.trigger)) buttons |= BUTTON_FIRE;
+    this.trigger = (buttons & BUTTON_FIRE) !== 0;
     // Now and then lob a grenade at a target in throwing range.
     if (wantFire && target && (view.throwables ?? 0) > 0) {
       const d = horizontalDistance(me.pos, target.pos);
       if (d > 6 && d < 18 && this.rng() < 0.012) buttons |= BUTTON_THROW;
     }
-    const held = view.inventory.find((w) => w.def.slot === view.held);
+    const held = view.inventory.find((w) => weaponCode(w.def) === view.held);
     // Reload when empty, or top up when nothing is threatening us.
     if (held && held.def.magazine > 0 && held.reserve > 0 && (held.mag === 0 || (!target && held.mag < held.def.magazine / 2))) buttons |= BUTTON_RELOAD;
     if (this.checkStuck(view, forward !== 0 || right !== 0) || this.jumpNext) {
@@ -258,10 +263,10 @@ export class BotBrain {
       if (this.profile.tags.includes('EXPLOSIVES_FAN') && w.def.projectile) score += 0.4;
       if (w.def.kind === 'melee') score += (this.profile.meleePreference / 100) * 0.5;
       // Avoid dithering between near-equal choices.
-      if (w.def.slot === view.held) score += 0.15;
+      if (weaponCode(w.def) === view.held) score += 0.15;
       if (score > bestScore) {
         bestScore = score;
-        best = w.def.slot;
+        best = weaponCode(w.def);
       }
     }
     return best;
@@ -356,7 +361,7 @@ export class BotBrain {
     const from = eye(view.self.pos);
     const want = lookAngles(from, chest(target.pos));
     // Lobbed projectiles: aim above the target to cancel the drop over the flight time.
-    const lob = view.inventory.find((w) => w.def.slot === view.held)?.def.projectile;
+    const lob = view.inventory.find((w) => weaponCode(w.def) === view.held)?.def.projectile;
     if (lob && lob.gravity > 0) {
       const d = distance(from, chest(target.pos));
       const t = d / lob.speed;

@@ -7,6 +7,7 @@ import {
   PLAYER,
   getWeapon,
   initPhysics,
+  weaponCode,
   lookAngles,
   type GameEvent,
   type MapDocument,
@@ -44,8 +45,8 @@ class Driver {
 
 function give(c: Combatant, id: string, alt = 0): void {
   const def = getWeapon(id);
-  c.weapons.set(def.slot, { def, mag: def.magazine, reserve: def.reserveMax, alt });
-  c.current = def.slot;
+  c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: def.reserveMax, alt });
+  c.current = weaponCode(def);
   c.raiseTicks = 0;
   c.fireCooldown = 0;
 }

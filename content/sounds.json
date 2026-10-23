@@ -620,6 +620,116 @@
           "file": "Audio/impactGlass_heavy_001.ogg"
         }
       ]
+    },
+    "fire.pulse": {
+      "synth": "plasma",
+      "variants": 3,
+      "gain": 0.45,
+      "range": "far",
+      "jitter": 0.05,
+      "rate": 1.6
+    },
+    "fire.heavy": {
+      "synth": "sniper",
+      "variants": 2,
+      "gain": 0.85,
+      "range": "far",
+      "jitter": 0.05,
+      "rate": 1.25
+    },
+    "fire.flare": {
+      "synth": "launcher",
+      "variants": 2,
+      "gain": 0.6,
+      "range": "far",
+      "jitter": 0.06,
+      "rate": 1.5
+    },
+    "fire.laser": {
+      "synth": "laser",
+      "variants": 3,
+      "gain": 0.35,
+      "range": "mid",
+      "jitter": 0.04
+    },
+    "fire.flak": {
+      "synth": "shotgun",
+      "variants": 2,
+      "gain": 0.9,
+      "range": "far",
+      "jitter": 0.06,
+      "rate": 0.8
+    },
+    "fire.railgun": {
+      "synth": "railgun",
+      "variants": 2,
+      "gain": 0.9,
+      "range": "far",
+      "jitter": 0.03
+    },
+    "fire.disc": {
+      "synth": "disc",
+      "variants": 2,
+      "gain": 0.8,
+      "range": "far",
+      "jitter": 0.05
+    },
+    "fire.bubble": {
+      "synth": "bubble",
+      "variants": 3,
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.12
+    },
+    "fire.goo": {
+      "synth": "splat",
+      "variants": 3,
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.1
+    },
+    "fire.nail": {
+      "synth": "nail",
+      "variants": 3,
+      "gain": 0.45,
+      "range": "mid",
+      "jitter": 0.08
+    },
+    "fire.swarm": {
+      "synth": "launcher",
+      "variants": 2,
+      "gain": 0.75,
+      "range": "far",
+      "jitter": 0.08,
+      "rate": 1.7
+    },
+    "fire.vortex": {
+      "synth": "vortex",
+      "variants": 1,
+      "gain": 0.9,
+      "range": "far",
+      "jitter": 0.02
+    },
+    "fire.arc": {
+      "synth": "arc",
+      "variants": 3,
+      "gain": 0.55,
+      "range": "mid",
+      "jitter": 0.08
+    },
+    "fire.flame": {
+      "synth": "flamelet",
+      "variants": 3,
+      "gain": 0.4,
+      "range": "mid",
+      "jitter": 0.1
+    },
+    "fire.freeze": {
+      "synth": "freeze",
+      "variants": 3,
+      "gain": 0.35,
+      "range": "mid",
+      "jitter": 0.05
     }
   }
 }

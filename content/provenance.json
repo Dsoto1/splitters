@@ -186,6 +186,464 @@
       ]
     },
     {
+      "file": "models/weapons/pulse_pistol.glb",
+      "sha256": "1dae83e4f678ab69",
+      "triangles": 470,
+      "bytes": 54564,
+      "source": "kenney-blaster-kit/blaster-a.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/hand_cannon.glb",
+      "sha256": "da5d40023048f71c",
+      "triangles": 1252,
+      "bytes": 92760,
+      "source": "quaternius-ultimate-gun-pack/OBJ/Revolver_2.obj",
+      "title": "Ultimate Gun Pack (50+ LowPoly Guns)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/50-lowpoly-guns",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/gilded_pistol.glb",
+      "sha256": "8710c7f43e2dea42",
+      "triangles": 1320,
+      "bytes": 97068,
+      "source": "quaternius-ultimate-gun-pack/OBJ/Pistol_4.obj",
+      "title": "Ultimate Gun Pack (50+ LowPoly Guns)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/50-lowpoly-guns",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/weapons/flare_gun.glb",
+      "sha256": "69b2c27b57bb6344",
+      "triangles": 392,
+      "bytes": 45624,
+      "source": "kenney-blaster-kit/blaster-k.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/machine_pistol.glb",
+      "sha256": "fb8778915bd65596",
+      "triangles": 1566,
+      "bytes": 115348,
+      "source": "quaternius-ultimate-gun-pack/OBJ/SubmachineGun_3.obj",
+      "title": "Ultimate Gun Pack (50+ LowPoly Guns)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/50-lowpoly-guns",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/burst_rifle.glb",
+      "sha256": "41f7f631979902b7",
+      "triangles": 2782,
+      "bytes": 202304,
+      "source": "quaternius-ultimate-gun-pack/OBJ/Bullpup_1.obj",
+      "title": "Ultimate Gun Pack (50+ LowPoly Guns)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/50-lowpoly-guns",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/laser_rifle.glb",
+      "sha256": "3fab87bc52697fe8",
+      "triangles": 768,
+      "bytes": 81540,
+      "source": "kenney-blaster-kit/blaster-f.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/marksman.glb",
+      "sha256": "c40ce9f0b9354fd9",
+      "triangles": 1722,
+      "bytes": 127160,
+      "source": "quaternius-ultimate-gun-pack/OBJ/SniperRifle_3.obj",
+      "title": "Ultimate Gun Pack (50+ LowPoly Guns)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/50-lowpoly-guns",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/sawed_off.glb",
+      "sha256": "ab30ef148dea9776",
+      "triangles": 956,
+      "bytes": 72012,
+      "source": "quaternius-ultimate-gun-pack/OBJ/Shotgun_SawedOff.obj",
+      "title": "Ultimate Gun Pack (50+ LowPoly Guns)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/50-lowpoly-guns",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/auto_shotgun.glb",
+      "sha256": "3571a0bb7ad9e2e6",
+      "triangles": 978,
+      "bytes": 73020,
+      "source": "quaternius-ultimate-gun-pack/OBJ/Shotgun_3.obj",
+      "title": "Ultimate Gun Pack (50+ LowPoly Guns)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/50-lowpoly-guns",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/flak.glb",
+      "sha256": "589980fe418fc607",
+      "triangles": 450,
+      "bytes": 51828,
+      "source": "kenney-blaster-kit/blaster-l.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/railgun.glb",
+      "sha256": "eab7e78527dd3aab",
+      "triangles": 802,
+      "bytes": 84520,
+      "source": "kenney-blaster-kit/blaster-e.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/disc_launcher.glb",
+      "sha256": "5dbfa6ee54e9c1c9",
+      "triangles": 618,
+      "bytes": 66188,
+      "source": "kenney-blaster-kit/blaster-g.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/bubble_blaster.glb",
+      "sha256": "a031dc3e7d077629",
+      "triangles": 388,
+      "bytes": 40140,
+      "source": "kenney-blaster-kit/blaster-c.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/weapons/goo_gun.glb",
+      "sha256": "ddcac223798e59d6",
+      "triangles": 416,
+      "bytes": 42832,
+      "source": "kenney-blaster-kit/blaster-i.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/weapons/oil_slicker.glb",
+      "sha256": "b755974723aaa68a",
+      "triangles": 440,
+      "bytes": 44816,
+      "source": "kenney-blaster-kit/blaster-m.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/weapons/lmg.glb",
+      "sha256": "ed52858a26c05014",
+      "triangles": 1372,
+      "bytes": 100772,
+      "source": "quaternius-ultimate-gun-pack/OBJ/AssaultRifle2_4.obj",
+      "title": "Ultimate Gun Pack (50+ LowPoly Guns)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/50-lowpoly-guns",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/nailgun.glb",
+      "sha256": "48c4022e61d0f546",
+      "triangles": 602,
+      "bytes": 65804,
+      "source": "kenney-blaster-kit/blaster-q.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/swarm.glb",
+      "sha256": "948936aa1f774a76",
+      "triangles": 664,
+      "bytes": 69340,
+      "source": "kenney-blaster-kit/blaster-o.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/singularity.glb",
+      "sha256": "608450ac1ae1ece6",
+      "triangles": 524,
+      "bytes": 58428,
+      "source": "kenney-blaster-kit/blaster-r.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/arc_caster.glb",
+      "sha256": "b95a2affbedc7832",
+      "triangles": 486,
+      "bytes": 54572,
+      "source": "kenney-blaster-kit/blaster-d.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/flamethrower.glb",
+      "sha256": "3f99c53e85ea8afc",
+      "triangles": 410,
+      "bytes": 48328,
+      "source": "kenney-blaster-kit/blaster-n.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/weapons/freeze_ray.glb",
+      "sha256": "292c0853be15db55",
+      "triangles": 548,
+      "bytes": 54480,
+      "source": "kenney-blaster-kit/blaster-j.glb",
+      "title": "Blaster Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/blaster-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/vehicles/kart.glb",
+      "sha256": "9cb1cc3a87040154",
+      "triangles": 2726,
+      "bytes": 245452,
+      "source": "kenney-car-kit/kart-oopi.glb",
+      "title": "Car Kit 3.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/car-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/vehicles/buggy.glb",
+      "sha256": "dba4465670e9d8cf",
+      "triangles": 2474,
+      "bytes": 209408,
+      "source": "kenney-car-kit/suv.glb",
+      "title": "Car Kit 3.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/car-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/vehicles/speeder.glb",
+      "sha256": "1435d1c69efc1edd",
+      "triangles": 280,
+      "bytes": 19740,
+      "source": "kenney-space-kit/craft_speederA.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/vehicles/hauler.glb",
+      "sha256": "be60e1f59c110804",
+      "triangles": 264,
+      "bytes": 18164,
+      "source": "kenney-space-kit/craft_cargoA.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/turrets/mg.glb",
+      "sha256": "9d80a085034b0ac6",
+      "triangles": 876,
+      "bytes": 49400,
+      "source": "kenney-space-kit/turret_double.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/turrets/rocket.glb",
+      "sha256": "6c669f03c54c8b41",
+      "triangles": 576,
+      "bytes": 37164,
+      "source": "kenney-space-kit/turret_single.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/turrets/sentry.glb",
+      "sha256": "96b1c4009dfe1c1b",
+      "triangles": 576,
+      "bytes": 37160,
+      "source": "kenney-space-kit/turret_single.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
       "file": "sounds/explosion_0.ogg",
       "sha256": "3cb48d86dab63140",
       "bytes": 14317,

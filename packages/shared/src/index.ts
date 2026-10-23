@@ -12,6 +12,7 @@ export * from './sim/constants.ts';
 export * from './sim/physics.ts';
 export * from './sim/movement.ts';
 export * from './sim/weapons.ts';
+export * from './sim/mounts.ts';
 export * from './sim/items.ts';
 export * from './sim/rules.ts';
 export * from './sim/scenarioDefs.ts';

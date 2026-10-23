@@ -119,6 +119,9 @@ export class InputState {
 
   /** Sample movement axes and buttons for one simulation tick. */
   sample(): { forward: number; right: number; buttons: number } {
+    // Automation hook for browser tests and screenshots (no pointer lock in headless browsers).
+    const auto = (window as unknown as { __autoInput?: { forward?: number; right?: number; buttons?: number } }).__autoInput;
+    if (auto) return { forward: auto.forward ?? 0, right: auto.right ?? 0, buttons: auto.buttons ?? 0 };
     if (!this.locked) return { forward: 0, right: 0, buttons: 0 };
     const axis = (pos: string, neg: string) => (this.keys.has(pos) ? 1 : 0) - (this.keys.has(neg) ? 1 : 0);
     let buttons = 0;

@@ -311,6 +311,31 @@ async function teamsFlow(browser) {
   await page.context().close();
 }
 
+async function arsenalFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=canyon`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__give, null, { timeout: 30000 });
+  // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
+  for (const id of ['core.flamethrower', 'core.oil_slicker', 'core.laser_rifle', 'core.railgun', 'core.bubble_blaster', 'core.swarm', 'core.disc_launcher', 'core.arc_caster', 'core.goo_gun', 'core.burst_rifle']) {
+    await page.evaluate((w) => {
+      window.__give(w);
+      window.__cs.input.pitch = -0.25;
+      window.__autoInput = { buttons: 2 };
+    }, id);
+    await page.waitForTimeout(500);
+  }
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.waitForTimeout(300);
+  const zones = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('zone_')).map((n) => n.name.slice(5)));
+  check(zones.length > 0, `hazards are drawn on the ground (${[...new Set(zones)].join(', ')})`);
+  const bar = await page.evaluate(() => document.getElementById('weapon-bar').textContent);
+  check(/•/.test(bar ?? ''), `the weapon bar shows several weapons in a slot (${bar})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function designerFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1200, height: 760 } })).newPage();
   const errors = [];
@@ -384,7 +409,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, teams: teamsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, teams: teamsFlow, arsenal: arsenalFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

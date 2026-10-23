@@ -1,4 +1,4 @@
-import { PLAYER, getItem, type MapDocument, type GameEvent, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@chronosplit/shared';
+import { CORE_WEAPONS, PLAYER, getItem, type MapDocument, type GameEvent, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@chronosplit/shared';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import type { LocalPlayer } from './prediction.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -10,7 +10,7 @@ const MULTI_KILL_WINDOW = 4;
 /** Shotgun pellets that each make an impact sound (the rest would only add mush). */
 const MAX_IMPACTS_PER_SHOT = 2;
 
-const fireSound = (weaponId: string) => `fire.${weaponId.replace(/^core\./, '')}` as SoundId;
+const fireSound = (weaponId: string) => (CORE_WEAPONS[weaponId]?.view.sound ?? `fire.${weaponId.replace(/^core\./, '')}`) as SoundId;
 const tuple = (p: readonly number[]): Vec3 => ({ x: p[0]!, y: p[1]!, z: p[2]! });
 
 /**

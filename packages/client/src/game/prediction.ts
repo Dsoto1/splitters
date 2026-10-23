@@ -1,11 +1,17 @@
 import {
   BUTTON_ALT,
   BUTTON_FIRE,
+  OIL_TRACTION,
+  TICK_DT,
+  ZONE_KINDS,
+  zoneContains,
   THROWABLES,
   PLAYER,
   PhysicsWorld,
   SPEED_BOOST,
   WEAPONS_BY_SLOT,
+  weaponByCode,
+  weaponCode,
   distance,
   stepMovement,
   viewDirection,
@@ -15,9 +21,11 @@ import {
   type PrivateState,
   type Vec3,
   type WeaponDefinition,
+  type ZoneSnapshot,
 } from '@chronosplit/shared';
 
 const MAX_PENDING = 120;
+const ORDER = new Map(WEAPONS_BY_SLOT.map((w) => [w.id, weaponCode(w)]));
 
 export interface PredictedShot {
   def: WeaponDefinition;
@@ -27,7 +35,6 @@ export interface PredictedShot {
   alt?: boolean;
 }
 
-const weaponBySlot = (slot: number) => WEAPONS_BY_SLOT.find((w) => w.slot === slot);
 
 /**
  * Client-side prediction for the local player: apply each input immediately
@@ -43,10 +50,19 @@ export class LocalPlayer {
   alive = false;
   health = 100;
   armor = 0;
-  /** Held weapon slot (predicted). */
-  held = 2;
-  /** Owned weapons: slot -> [magazine, reserve, second-trigger rounds] (server values, adjusted by predicted shots). */
-  inventory = new Map<number, [number, number, number]>();
+  /** Held weapon code (predicted). */
+  held = 0;
+  /** Owned weapons: code -> [magazine, reserve, second-trigger rounds, heat %] (server values, adjusted by predicted shots). */
+  inventory = new Map<number, [number, number, number, number]>();
+  /** Movement multiplier from status effects (server value). */
+  statusSpeed = 1;
+  /** Ground hazards from the latest snapshot (oil makes movement slick). */
+  zones: readonly ZoneSnapshot[] = [];
+  /** Trigger state mirrored from the server rules (semi-auto latch, spin-up, burst). */
+  private semiLatch = false;
+  private windup = 0;
+  private burstLeft = 0;
+  private burstTimer = 0;
   /** Carried grenades or mines. */
   throwable: { kind: (typeof THROWABLES)[number]; count: number } | null = null;
   reloadTicks = 0;
@@ -69,12 +85,12 @@ export class LocalPlayer {
   }
 
   get weapon(): WeaponDefinition | undefined {
-    return weaponBySlot(this.held);
+    return weaponByCode(this.held);
   }
 
-  /** Owned slots in order (for wheel cycling and the HUD). */
-  ownedSlots(): number[] {
-    return [...this.inventory.keys()].sort((a, b) => a - b);
+  /** Owned weapon codes in slot order (for wheel cycling and number keys). */
+  ownedCodes(): number[] {
+    return WEAPONS_BY_SLOT.map((w) => ORDER.get(w.id)!).filter((code) => this.inventory.has(code));
   }
 
   /** Predict one tick. Returns the input to send and any predicted shot. */
@@ -86,6 +102,8 @@ export class LocalPlayer {
         this.held = weapon;
         this.raiseTicks = this.weapon?.raiseTicks ?? 0;
         this.reloadTicks = 0;
+        this.windup = 0;
+        this.burstLeft = 0;
       }
       this.state = this.move(this.state, input);
       if (this.fireCooldown > 0) this.fireCooldown--;
@@ -100,22 +118,59 @@ export class LocalPlayer {
 
   /** Same order as the server: move with the current boost, then count the boost down. */
   private move(state: MoveState, input: PlayerInput): MoveState {
-    const next = stepMovement(this.physics, this.collider, state, input, this.speedTicks > 0 ? SPEED_BOOST : 1);
+    const next = stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos));
     if (this.speedTicks > 0) this.speedTicks--;
     return next;
   }
 
+  private traction(pos: Vec3): number {
+    for (const z of this.zones) {
+      if (ZONE_KINDS[z[0]] === 'oil' && zoneContains('oil', { x: z[1], y: z[2], z: z[3] }, z[4], pos)) return OIL_TRACTION;
+    }
+    return 1;
+  }
+
+  /** Mirrors the server's trigger rules (semi-auto, burst, spin-up, heat) so tracers and the HUD match what will happen. */
   private predictFire(input: PlayerInput): PredictedShot | null {
     const def = this.weapon;
     const ammo = this.inventory.get(this.held);
-    if (!def || !ammo || this.fireCooldown > 0 || this.raiseTicks > 0 || this.reloadTicks > 0) return null;
+    const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
+    if (!fireDown) this.semiLatch = false;
+    if (!def || !ammo) return null;
+    if (def.windupTicks) {
+      const able = fireDown && this.raiseTicks === 0 && this.reloadTicks === 0 && ammo[3] < 100 && (def.magazine === 0 || ammo[0] > 0);
+      this.windup = able ? Math.min(def.windupTicks, this.windup + 1) : Math.max(0, this.windup - 2);
+    }
+    if (this.burstLeft > 0) {
+      if (--this.burstTimer > 0) return null;
+      if (ammo[0] === 0) {
+        this.burstLeft = 0;
+        return null;
+      }
+      ammo[0]--;
+      this.burstLeft--;
+      this.burstTimer = def.burst?.intervalTicks ?? 1;
+      return this.hitscanShot(def, input, def.pellets, def.spread, false);
+    }
+    if (this.fireCooldown > 0 || this.raiseTicks > 0 || this.reloadTicks > 0 || this.statusSpeed === 0) return null;
     let pellets = def.pellets;
     let spread = def.spread;
     let alt = false;
-    if (input.buttons & BUTTON_FIRE) {
+    if (fireDown) {
+      if (this.semiLatch || (def.windupTicks && this.windup < def.windupTicks)) return null;
       if (def.magazine > 0 && ammo[0] === 0) return null;
+      if (def.heat) {
+        if (ammo[3] >= 100) return null;
+        ammo[3] = Math.min(100, ammo[3] + def.heat.perShot * 100);
+      }
       if (def.magazine > 0) ammo[0]--;
       this.fireCooldown = def.fireIntervalTicks;
+      this.semiLatch = (def.fireMode ?? 'auto') !== 'auto';
+      if (def.fireMode === 'burst' && def.burst) {
+        this.burstLeft = def.burst.count - 1;
+        this.burstTimer = def.burst.intervalTicks;
+      }
+      if (def.windupResets) this.windup = 0;
       if (def.kind !== 'hitscan') return { def, ends: [] };
     } else if (input.buttons & BUTTON_ALT && def.alt) {
       // Mirrors the server: own-ammo triggers spend their own rounds, shared ones the magazine.
@@ -129,6 +184,10 @@ export class LocalPlayer {
       pellets = a.pellets ?? pellets;
       spread = a.spread ?? spread;
     } else return null;
+    return this.hitscanShot(def, input, pellets, spread, alt);
+  }
+
+  private hitscanShot(def: WeaponDefinition, input: PlayerInput, pellets: number, spread: number, alt: boolean): PredictedShot {
     const eye = this.eye;
     const ends: Vec3[] = [];
     for (let i = 0; i < pellets; i++) {
@@ -150,7 +209,8 @@ export class LocalPlayer {
     this.armor = server.ar;
     this.pending = this.pending.filter((i) => i.seq > ack);
     if (me) {
-      this.inventory = new Map(me.inv.map(([slot, mag, reserve, alt]) => [slot, [mag, reserve, alt ?? 0]]));
+      this.inventory = new Map(me.inv.map(([code, mag, reserve, alt, heat]) => [code, [mag, reserve, alt ?? 0, heat ?? 0]]));
+      this.statusSpeed = (me.ms ?? 1000) / 1000;
       this.throwable = me.gr ? { kind: THROWABLES[me.gr[0]] ?? 'frag', count: me.gr[1] } : null;
       this.speedTicks = me.sp;
       this.damageTicks = me.dm;
@@ -162,7 +222,7 @@ export class LocalPlayer {
     this.held = pendingSwitch ?? server.w;
 
     const before = this.state.pos;
-    this.state = { pos: { x: server.p[0], y: server.p[1], z: server.p[2] }, velY: server.vy, grounded: server.g === 1 };
+    this.state = { pos: { x: server.p[0], y: server.p[1], z: server.p[2] }, velY: server.vy, grounded: server.g === 1, ...(server.vx || server.vz ? { vx: server.vx ?? 0, vz: server.vz ?? 0 } : {}) };
     if (this.alive) {
       for (const input of this.pending) this.state = this.move(this.state, input);
     }

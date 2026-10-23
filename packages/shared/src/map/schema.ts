@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { EDGE_STYLES } from './catalog.ts';
 import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
 import { ScenarioLogic } from './logic.ts';
+import { MOUNT_MODELS } from '../sim/mounts.ts';
 
 /**
  * ChronoSplit map document, format version 6 (v2 added per-surface tile styles, v3 pickup
@@ -235,7 +236,18 @@ export const PropEntity = EntityBase.extend({
     .default(null),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity]);
+/** A turret, sentry gun or vehicle (see sim/mounts.ts). Position is the centre of its footprint on the ground. */
+export const MountEntity = EntityBase.extend({
+  kind: z.literal('mount'),
+  model: z.enum(MOUNT_MODELS),
+  yaw: Yaw,
+  /** Sentries shoot this team's enemies (null: everyone); turrets and vehicles ignore it. */
+  faction: FactionId.nullable().default(null),
+  /** Override the respawn delay after it is destroyed (null: the mount's own). */
+  respawnSeconds: z.number().min(5).max(600).nullable().default(null),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -318,6 +330,7 @@ export type DestructibleModel = (typeof DESTRUCTIBLE_MODELS)[number];
 export type EntityKind = MapEntity['kind'];
 export type EncounterEntity = z.infer<typeof EncounterEntity>;
 export type PropEntity = z.infer<typeof PropEntity>;
+export type MountEntity = z.infer<typeof MountEntity>;
 export type Faction = z.infer<typeof Faction>;
 export type MapBounds = z.infer<typeof MapBounds>;
 export type BoundaryStyle = (typeof BOUNDARY_STYLES)[number];

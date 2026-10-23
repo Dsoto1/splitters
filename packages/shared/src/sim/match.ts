@@ -3,11 +3,16 @@ import { BotBrain, type CombatantView, type PickupView } from '../bots/brain.ts'
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
-import { add, createRng, distance, horizontalDistance, normalize, scale, viewDirection, type Vec3 } from '../math.ts';
+import { add, createRng, distance, dot, horizontalDistance, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
 import { NavWorld } from '../nav/index.ts';
 import {
   POWERUP_DAMAGE_BIT,
   POWERUP_SPEED_BIT,
+  STATUS_BURN,
+  STATUS_CHILL,
+  STATUS_FROZEN,
+  STATUS_POISON,
+  STATUS_SLOW,
   type GameEvent,
   type MatchPhase,
   type NpcSnapshot,
@@ -17,6 +22,7 @@ import {
   type ScoreEntry,
   type ServerMessage,
   type Tuple3,
+  type ZoneSnapshot,
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
@@ -27,7 +33,7 @@ import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
 import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_PROFILE, NPC_ROLE_SPECS, mapFactions, mapTeams, relation } from './npc.ts';
-import { PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, getWeapon, rayCapsule, resolveHitscan, throwableWeaponId, type AltFire, type ProjectileSpec, type ThrowableKind, type WeaponDefinition } from './weapons.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
@@ -44,6 +50,9 @@ export interface WeaponState {
   reserve: number;
   /** Rounds for a second trigger with its own ammo (the rifle's underbarrel grenades). */
   alt: number;
+  /** Heat weapons: 0..1, and whether it overheated (locked until it cools right down). */
+  heat?: number;
+  overheated?: boolean;
 }
 
 export interface Combatant {
@@ -69,9 +78,9 @@ export interface Combatant {
   respawnTick: number;
   kills: number;
   deaths: number;
-  /** Owned weapons by slot. */
+  /** Owned weapons by weapon code. */
   weapons: Map<number, WeaponState>;
-  /** Slot of the held weapon. */
+  /** Code of the held weapon. */
   current: number;
   /** Carried grenades or mines (G), or none. */
   throwable: { kind: ThrowableKind; count: number } | null;
@@ -82,6 +91,21 @@ export interface Combatant {
   raiseTicks: number;
   speedTicks: number;
   damageTicks: number;
+  /** Trigger state: buttons last input, spin-up/charge, semi-auto latch, burst in progress, spread bloom. */
+  prevButtons: number;
+  windup: number;
+  semiLatch: boolean;
+  burstLeft: number;
+  burstTimer: number;
+  bloom: number;
+  /** Status effects (ticks left; chill builds 0..1 into a freeze), and who caused them (kill credit). */
+  burnTicks: number;
+  poisonTicks: number;
+  slowTicks: number;
+  chill: number;
+  frozenTicks: number;
+  statusBy: number | null;
+  statusWeapon: string;
   queue: PlayerInput[];
   lastSeq: number;
   bot?: BotBrain;
@@ -100,7 +124,28 @@ interface Projectile {
   /** Mines: stuck in place, and the tick they arm. */
   stuck?: boolean;
   armAt?: number;
+  bounces?: number;
+  /** Sticky projectiles riding on a player: whose, and where on them. */
+  stuckTo?: number;
+  stuckOffset?: Vec3;
 }
+
+/** A ground hazard or field (see ZONE_KINDS). */
+interface Zone {
+  kind: ZoneKind;
+  pos: Vec3;
+  radius: number;
+  endTick: number;
+  owner: number;
+  weapon: string;
+}
+
+const MAX_ZONES = 48;
+/** Per-tick damage of hazards and status effects. */
+const BURN_DPS = 12;
+const POISON_DPS = 9;
+const FIRE_ZONE_DPS = 14;
+const FROZEN_TICKS = Math.round(TICK_RATE * 1.4);
 
 interface PickupState {
   id: string;
@@ -147,6 +192,7 @@ export class Match {
   private pendingEvents: GameEvent[] = [];
   private readonly rng: () => number;
   private projectiles: Projectile[] = [];
+  private zones: Zone[] = [];
   private nextProjectileId = 1;
   /** Positions of everyone at recent ticks, for lag-compensated hitscan. */
   private readonly history = new Map<number, Map<number, Vec3>>();
@@ -319,8 +365,8 @@ export class Match {
       yaw,
       health: spec.health,
       alive: true,
-      weapons: new Map([[def.slot, { def, mag: def.magazine, reserve: def.reserveMax, alt: def.alt?.max ?? 0 }]]),
-      current: def.slot,
+      weapons: new Map([[weaponCode(def), { def, mag: def.magazine, reserve: def.reserveMax, alt: def.alt?.max ?? 0 }]]),
+      current: weaponCode(def),
     };
     c.bot = new BotBrain(id, NPC_PROFILE, BOT_DIFFICULTIES[e.difficulty], this.seed);
     c.bot.onSpawn(yaw);
@@ -355,6 +401,19 @@ export class Match {
       raiseTicks: 0,
       speedTicks: 0,
       damageTicks: 0,
+      prevButtons: 0,
+      windup: 0,
+      semiLatch: false,
+      burstLeft: 0,
+      burstTimer: 0,
+      bloom: 0,
+      burnTicks: 0,
+      poisonTicks: 0,
+      slowTicks: 0,
+      chill: 0,
+      frozenTicks: 0,
+      statusBy: null,
+      statusWeapon: '',
       queue: [],
       lastSeq: 0,
     };
@@ -431,6 +490,8 @@ export class Match {
       this.runBots();
       for (const c of this.actors()) this.applyInputs(c);
       this.stepProjectiles();
+      this.stepZones();
+      this.stepStatuses();
       if (this.phase === 'playing') this.scenario.step();
       if (this.phase === 'playing') this.encounters.step();
       for (const c of this.combatants()) {
@@ -524,7 +585,7 @@ export class Match {
 
       if (input.weapon && input.weapon !== c.current && c.weapons.has(input.weapon)) this.switchTo(c, input.weapon);
 
-      c.move = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul);
+      c.move = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos));
       if (c.fireCooldown > 0) c.fireCooldown--;
       if (c.throwCooldown > 0) c.throwCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
@@ -537,14 +598,42 @@ export class Match {
         if (this.phase !== 'playing') break;
       }
       const held = heldWeapon(c);
+      const def = held.def;
+      const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
+      c.prevButtons = input.buttons;
+      if (!fireDown) c.semiLatch = false;
       if (input.buttons & BUTTON_RELOAD) this.startReload(c);
-      const ready = c.fireCooldown === 0 && c.raiseTicks === 0 && c.reloadTicks === 0;
-      if (input.buttons & BUTTON_FIRE && ready) {
-        if (held.def.magazine > 0 && held.mag === 0) this.startReload(c);
-        else {
-          if (held.def.magazine > 0) held.mag--;
-          c.fireCooldown = held.def.fireIntervalTicks;
-          this.fire(c, primaryTrigger(held.def), input.viewTick ?? 0);
+      const frozen = c.frozenTicks > 0;
+      const ready = c.fireCooldown === 0 && c.raiseTicks === 0 && c.reloadTicks === 0 && !frozen;
+      // Spin-up and charge: the trigger has to be held this long first.
+      if (def.windupTicks) {
+        const able = fireDown && c.raiseTicks === 0 && c.reloadTicks === 0 && !frozen && !held.overheated && (def.magazine === 0 || held.mag > 0);
+        c.windup = able ? Math.min(def.windupTicks, c.windup + 1) : Math.max(0, c.windup - 2);
+      }
+      let fired = false;
+      if (c.burstLeft > 0) {
+        // The rest of a burst follows on its own timer.
+        if (--c.burstTimer <= 0) {
+          if (!frozen && c.reloadTicks === 0 && spendRound(held)) {
+            this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
+            fired = true;
+            c.burstLeft--;
+            c.burstTimer = def.burst?.intervalTicks ?? 1;
+          } else c.burstLeft = 0;
+        }
+      } else if (fireDown && ready && !c.semiLatch && (!def.windupTicks || c.windup >= def.windupTicks)) {
+        if (def.magazine > 0 && held.mag === 0) this.startReload(c);
+        else if (spendRound(held)) {
+          const mode = def.fireMode ?? 'auto';
+          c.fireCooldown = def.fireIntervalTicks;
+          c.semiLatch = mode !== 'auto';
+          this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
+          fired = true;
+          if (mode === 'burst' && def.burst) {
+            c.burstLeft = def.burst.count - 1;
+            c.burstTimer = def.burst.intervalTicks;
+          }
+          if (def.windupResets) c.windup = 0;
         }
       } else if (input.buttons & BUTTON_ALT && ready && held.def.alt) {
         const alt = held.def.alt;
@@ -555,7 +644,14 @@ export class Match {
           this.fire(c, altTrigger(held.def, alt), input.viewTick ?? 0);
         } else if (alt.ammo === 'shared') this.startReload(c);
       }
-      if (input.buttons & BUTTON_THROW && c.throwCooldown === 0 && c.throwable && c.throwable.count > 0) {
+      // Heat weapons cool when not firing; bloom settles.
+      for (const w of c.weapons.values()) {
+        if (!w.def.heat || (fired && w === held)) continue;
+        w.heat = Math.max(0, (w.heat ?? 0) - w.def.heat.coolPerTick);
+        if (w.heat === 0) w.overheated = false;
+      }
+      if (!fired && c.bloom > 0) c.bloom = Math.max(0, c.bloom - (def.recoil?.recover ?? 0.002));
+      if (input.buttons & BUTTON_THROW && c.throwCooldown === 0 && c.throwable && c.throwable.count > 0 && !frozen) {
         const def = THROWABLE_DEFS[c.throwable.kind];
         c.throwCooldown = def.throwIntervalTicks;
         if (--c.throwable.count === 0) c.throwable = null;
@@ -573,12 +669,15 @@ export class Match {
 
   // ---------------------------------------------------------------- weapons
 
-  private switchTo(c: Combatant, slot: number): void {
-    const w = c.weapons.get(slot);
+  private switchTo(c: Combatant, code: number): void {
+    const w = c.weapons.get(code);
     if (!w) return;
-    c.current = slot;
+    c.current = code;
     c.raiseTicks = w.def.raiseTicks;
     c.reloadTicks = 0;
+    c.windup = 0;
+    c.burstLeft = 0;
+    c.bloom = 0;
   }
 
   private startReload(c: Combatant): void {
@@ -613,8 +712,11 @@ export class Match {
   private fire(shooter: Combatant, def: Trigger, viewTick: number): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + PLAYER.eyeHeight, z: shooter.move.pos.z };
     const aim = viewDirection(shooter.yaw, shooter.pitch);
+    // Bloom from sustained fire widens the spread; each shot adds more.
+    const spread = def.spread + (def.alt ? 0 : shooter.bloom);
+    if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
     if (def.kind === 'projectile' && def.projectile) {
-      this.launch(shooter, def.projectile, def.id, 0, def.spread);
+      for (let p = 0; p < Math.max(1, def.pellets); p++) this.launch(shooter, def.projectile, def.id, 0, spread);
       if (def.alt) this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to: [], hit: [], alt: 1 });
       return;
     }
@@ -643,17 +745,98 @@ export class Match {
     const to: Tuple3[] = [];
     const hits: (number | null)[] = [];
     const bodies: number[] = [];
+    const struck: { slot: number; dir: Vec3 }[] = [];
     for (let p = 0; p < def.pellets; p++) {
-      const dir = this.spreadDir(aim, def.spread);
+      const dir = this.spreadDir(aim, spread);
       const world = this.physics.raycastHit(eye, dir, def.range);
+      if (def.pierce) {
+        // Piercing rounds go through players (not walls): everyone along the line, nearest first.
+        const wallAt = world?.dist ?? def.range;
+        const along = targets
+          .map((t) => ({ slot: t.slot, d: rayCapsule(eye, dir, t.feet) }))
+          .filter((t): t is { slot: number; d: number } => t.d !== null && t.d < wallAt)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, def.pierce + 1);
+        for (const t of along) struck.push({ slot: t.slot, dir });
+        to.push(tuple(add(eye, scale(dir, wallAt))));
+        hits.push(along[0]?.slot ?? null);
+        if (world) bodies.push(world.handle);
+        continue;
+      }
       const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
       to.push(tuple(shot.end));
       hits.push(shot.hitSlot);
-      if (shot.hitSlot === null && world) bodies.push(world.handle);
+      if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir });
+      else if (world) bodies.push(world.handle);
     }
     this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(def.alt ? { alt: 1 as const } : {}) });
-    for (const h of hits) if (h !== null) this.damage(this.actor(h)!, def.damage, shooter, def.id);
+    for (const { slot, dir } of struck) {
+      const victim = this.actor(slot)!;
+      this.damage(victim, def.damage, shooter, def.id);
+      if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
+      if (def.knockback) this.push(victim, dir, def.knockback);
+    }
     for (const b of bodies) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
+    if (def.chain && struck.length) this.chainLightning(shooter, def, struck[0]!.slot, eye);
+  }
+
+  /** Lightning jumps from the first target to the nearest enemies in reach (with a clear line), weaker each jump. */
+  private chainLightning(shooter: Combatant, def: Trigger, first: number, from: Vec3): void {
+    const chain = def.chain!;
+    const hit = new Set([first]);
+    let at = this.actor(first)!;
+    let damage = def.damage;
+    const pts: Tuple3[] = [tuple(from), tuple(chest(at.move.pos))];
+    for (let j = 0; j < chain.jumps; j++) {
+      const here = chest(at.move.pos);
+      let next: Combatant | null = null;
+      let best = chain.range;
+      for (const o of this.actors()) {
+        if (!o.alive || hit.has(o.slot) || !this.hostile(shooter, o)) continue;
+        const d = distance(here, chest(o.move.pos));
+        if (d < best && this.physics.lineOfSight(here, chest(o.move.pos))) {
+          best = d;
+          next = o;
+        }
+      }
+      if (!next) break;
+      damage *= chain.falloff;
+      hit.add(next.slot);
+      pts.push(tuple(chest(next.move.pos)));
+      this.damage(next, damage, shooter, def.id);
+      at = next;
+    }
+    this.pendingEvents.push({ e: 'arc', s: shooter.slot, pts });
+  }
+
+  /** Put a status effect on a player (kill credit for its damage goes to `by`). */
+  private applyStatus(c: Combatant, st: StatusHit, by: Combatant | null, weapon: string): void {
+    if (!c.alive || (by && by !== c && !this.hostile(by, c))) return;
+    const ticks = Math.round(st.seconds * TICK_RATE);
+    if (st.kind === 'burn') c.burnTicks = Math.max(c.burnTicks, ticks);
+    else if (st.kind === 'poison') c.poisonTicks = Math.max(c.poisonTicks, ticks);
+    else if (st.kind === 'slow') c.slowTicks = Math.max(c.slowTicks, ticks);
+    else if (c.frozenTicks === 0) {
+      c.chill = Math.min(1, c.chill + (st.amount ?? 0.1));
+      if (c.chill >= 1) {
+        c.frozenTicks = FROZEN_TICKS;
+        c.chill = 0;
+      }
+    }
+    c.statusBy = by?.slot ?? null;
+    c.statusWeapon = weapon;
+  }
+
+  /** Shove a player along `dir` (horizontal push plus a little lift). */
+  private push(c: Combatant, dir: Vec3, speed: number): void {
+    const h = Math.hypot(dir.x, dir.z) || 1;
+    c.move = { ...c.move, vx: (c.move.vx ?? 0) + (dir.x / h) * speed, vz: (c.move.vz ?? 0) + (dir.z / h) * speed, velY: Math.max(c.move.velY, speed * 0.45 + dir.y * speed * 0.5), grounded: false };
+  }
+
+  /** Ground grip at a point: oil makes it slick. */
+  private tractionAt(pos: Vec3): number {
+    for (const z of this.zones) if (z.kind === 'oil' && inZone(z, pos)) return OIL_TRACTION;
+    return 1;
   }
 
   /** Uniform random direction within a cone around `dir`. */
@@ -699,6 +882,14 @@ export class Match {
       const spec = p.spec;
       p.age++;
       const owner = this.actor(p.owner);
+      if (p.stuckTo !== undefined) {
+        // Riding on a player until the fuse runs out (it stays where they fell if they die).
+        const host = this.actor(p.stuckTo);
+        if (host?.alive) p.pos = add(host.move.pos, p.stuckOffset!);
+        if (--p.ticksLeft <= 0) this.explode(p, p.pos);
+        else keep.push(p);
+        continue;
+      }
       if (p.stuck) {
         // An armed mine waits for an enemy (or its fuse).
         const armed = this.tick >= (p.armAt ?? 0);
@@ -711,6 +902,8 @@ export class Match {
         keep.push(p);
         continue;
       }
+      if (spec.homing && owner) this.steer(p, owner, spec.homing);
+      if (spec.drag) p.vel = scale(p.vel, Math.max(0, 1 - spec.drag * TICK_DT));
       p.vel = { x: p.vel.x, y: p.vel.y - spec.gravity * TICK_DT, z: p.vel.z };
       const delta = scale(p.vel, TICK_DT);
       const len = Math.hypot(delta.x, delta.y, delta.z);
@@ -729,6 +922,21 @@ export class Match {
       }
       if (hitDist !== null) {
         const at = add(p.pos, scale(dir, Math.max(0, hitDist - 0.05)));
+        if (victim && spec.sticky === 'any') {
+          // Sticks to the player it hits and rides along until it goes off.
+          if (spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
+          if (spec.status) this.applyStatus(victim, spec.status, owner ?? null, p.weapon);
+          p.stuckTo = victim.slot;
+          p.stuckOffset = { x: at.x - victim.move.pos.x, y: Math.min(PLAYER.height, Math.max(0.3, at.y - victim.move.pos.y)), z: at.z - victim.move.pos.z };
+          keep.push(p);
+          continue;
+        }
+        if (!victim && wall && spec.sticky) {
+          p.pos = add(at, scale(wall.normal, 0.06));
+          p.stuck = true;
+          keep.push(p);
+          continue;
+        }
         if (!victim && wall && spec.mine) {
           // Mines stick to whatever they land on and arm shortly after.
           p.pos = add(at, scale(wall.normal, 0.06));
@@ -743,11 +951,13 @@ export class Match {
           const vn = p.vel.x * n.x + p.vel.y * n.y + p.vel.z * n.z;
           p.vel = scale({ x: p.vel.x - 2 * vn * n.x, y: p.vel.y - 2 * vn * n.y, z: p.vel.z - 2 * vn * n.z }, spec.bounce);
           p.pos = add(at, scale(n, 0.05));
-          if (--p.ticksLeft <= 0) this.explode(p, p.pos);
+          p.bounces = (p.bounces ?? 0) + 1;
+          if (--p.ticksLeft <= 0 || (spec.maxBounces !== undefined && p.bounces > spec.maxBounces)) this.explode(p, p.pos);
           else keep.push(p);
           continue;
         }
         if (victim && spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
+        if (victim && spec.status) this.applyStatus(victim, spec.status, owner ?? null, p.weapon);
         if (!victim && wall && spec.impactDamage) this.scenario.damageBody(wall.handle, spec.impactDamage, p.owner);
         this.explode(p, at);
         continue;
@@ -765,12 +975,137 @@ export class Match {
   private explode(p: Projectile, at: Vec3): void {
     const spec = p.spec;
     const owner = this.actor(p.owner) ?? null;
-    this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius });
-    this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.weapon, spec.selfDamageScale);
+    if (spec.splashRadius > 0) this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius });
+    if (spec.splashRadius > 0) this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.weapon, spec.selfDamageScale, spec.knockback, spec.status);
+    // Flames, flares and real explosions set oil alight.
+    if (spec.ignites || spec.splashDamage >= 30) this.ignite(at, Math.max(1, spec.splashRadius));
+    if (spec.zone) this.spawnZone(spec.zone, at, p.owner, p.weapon);
+  }
+
+  /** Swarm missiles turn toward the nearest enemy ahead of them that they can see. */
+  private steer(p: Projectile, owner: Combatant, homing: NonNullable<ProjectileSpec['homing']>): void {
+    const speed = Math.hypot(p.vel.x, p.vel.y, p.vel.z) || 1;
+    const fwd = scale(p.vel, 1 / speed);
+    let best: Vec3 | null = null;
+    let bestD = homing.range;
+    for (const c of this.actors()) {
+      if (!c.alive || c === owner || !this.hostile(owner, c)) continue;
+      const to = sub(chest(c.move.pos), p.pos);
+      const d = Math.hypot(to.x, to.y, to.z);
+      if (d > bestD || dot(to, fwd) < d * 0.3) continue;
+      if (!this.physics.lineOfSight(p.pos, chest(c.move.pos))) continue;
+      best = scale(to, 1 / d);
+      bestD = d;
+    }
+    if (!best) return;
+    const k = Math.min(1, homing.turnRate * TICK_DT);
+    p.vel = scale(normalize(add(scale(fwd, 1 - k), scale(best, k))), speed);
+  }
+
+  // ---------------------------------------------------------------- hazards and status effects
+
+  private spawnZone(spec: ZoneSpec, at: Vec3, owner: number, weapon: string): void {
+    let pos = at;
+    // Puddles and flames settle on the floor below; clouds and fields stay where they burst.
+    if (spec.kind === 'fire' || spec.kind === 'oil' || spec.kind === 'goo') {
+      const down = this.physics.raycastHit({ x: at.x, y: at.y + 0.3, z: at.z }, { x: 0, y: -1, z: 0 }, 8);
+      if (down) pos = { x: at.x, y: at.y + 0.3 - down.dist, z: at.z };
+    }
+    const endTick = this.tick + Math.round(spec.seconds * TICK_RATE);
+    // A fresh splash on top of a puddle of the same kind just tops it up.
+    const same = this.zones.find((z) => z.kind === spec.kind && distance(z.pos, pos) < spec.radius * 0.5);
+    if (same) {
+      same.endTick = Math.max(same.endTick, endTick);
+      same.owner = owner;
+      return;
+    }
+    this.zones.push({ kind: spec.kind, pos, radius: spec.radius, endTick, owner, weapon });
+    if (this.zones.length > MAX_ZONES) this.zones.shift();
+  }
+
+  /** Oil within reach of a flame or blast catches fire. */
+  private ignite(at: Vec3, reach: number): void {
+    for (const z of this.zones) {
+      if (z.kind !== 'oil' || distance(z.pos, at) > z.radius + reach) continue;
+      z.kind = 'fire';
+      z.radius *= 1.15;
+      z.endTick = this.tick + TICK_RATE * 7;
+    }
+  }
+
+  private stepZones(): void {
+    if (!this.zones.length) return;
+    const live: Zone[] = [];
+    for (const z of this.zones) {
+      if (this.tick < z.endTick) {
+        live.push(z);
+        continue;
+      }
+      if (z.kind === 'singularity') {
+        // The field collapses with a bang.
+        this.pendingEvents.push({ e: 'explode', s: z.owner, p: tuple(z.pos), r: 5 });
+        this.splash(z.pos, 5, 90, 20, this.actor(z.owner) ?? null, z.weapon, 0.6);
+        this.ignite(z.pos, 5);
+      }
+    }
+    this.zones = live;
+    // Fire spreads along oil.
+    for (const f of this.zones) if (f.kind === 'fire') this.ignite(f.pos, f.radius * 0.5);
+    for (const c of this.actors()) {
+      if (!c.alive) continue;
+      for (const z of this.zones) {
+        if (!inZone(z, c.move.pos)) continue;
+        const owner = this.actor(z.owner) ?? null;
+        switch (z.kind) {
+          case 'fire':
+            this.applyStatus(c, { kind: 'burn', seconds: 2 }, owner, z.weapon);
+            this.damage(c, FIRE_ZONE_DPS / TICK_RATE, owner, z.weapon);
+            break;
+          case 'toxic':
+            this.applyStatus(c, { kind: 'poison', seconds: 2 }, owner, z.weapon);
+            break;
+          case 'goo':
+            this.applyStatus(c, { kind: 'slow', seconds: 0.4 }, owner, z.weapon);
+            break;
+          case 'singularity': {
+            // Dragged in, harder near the middle, and lifted off the ground.
+            const to = sub(z.pos, chest(c.move.pos));
+            const d = Math.hypot(to.x, to.y, to.z) || 1;
+            const pull = 0.9 * (1 - d / z.radius) + 0.15;
+            const vx = Math.max(-14, Math.min(14, (c.move.vx ?? 0) + (to.x / d) * pull));
+            const vz = Math.max(-14, Math.min(14, (c.move.vz ?? 0) + (to.z / d) * pull));
+            c.move = { ...c.move, vx, vz, velY: Math.max(c.move.velY, to.y > 0 ? 2.5 : c.move.velY), grounded: to.y > 0 ? false : c.move.grounded };
+            break;
+          }
+          case 'oil':
+            break;
+        }
+        if (!c.alive) break;
+      }
+    }
+  }
+
+  /** Damage over time, slows wearing off, chill thawing. */
+  private stepStatuses(): void {
+    for (const c of this.actors()) {
+      if (!c.alive) continue;
+      const by = c.statusBy === null ? null : (this.actor(c.statusBy) ?? null);
+      if (c.burnTicks > 0) {
+        c.burnTicks--;
+        this.damage(c, BURN_DPS / TICK_RATE, by, c.statusWeapon);
+      }
+      if (c.alive && c.poisonTicks > 0) {
+        c.poisonTicks--;
+        this.damage(c, POISON_DPS / TICK_RATE, by, c.statusWeapon);
+      }
+      if (c.slowTicks > 0) c.slowTicks--;
+      if (c.frozenTicks > 0) c.frozenTicks--;
+      else if (c.chill > 0) c.chill = Math.max(0, c.chill - 0.45 / TICK_RATE);
+    }
   }
 
   /** Radial damage falling off from `damage` at the centre to `edge` at `radius`, blocked by walls. Also hits destructibles. */
-  private splash(at: Vec3, radius: number, damage: number, edge: number, owner: Combatant | null, weapon: string, selfScale: number): void {
+  private splash(at: Vec3, radius: number, damage: number, edge: number, owner: Combatant | null, weapon: string, selfScale: number, knockback = 0, status?: StatusHit): void {
     for (const c of this.actors()) {
       if (!c.alive) continue;
       const target = chest(c.move.pos);
@@ -778,7 +1113,10 @@ export class Match {
       if (d > radius || !this.physics.lineOfSight(at, target)) continue;
       let dmg = damage + (edge - damage) * (d / radius);
       if (owner && c === owner) dmg *= selfScale;
-      this.damage(c, dmg, owner, weapon);
+      // Knockback throws everyone (you too: disc jumps), friends included, but only enemies take damage.
+      if (knockback) this.push(c, d > 0.01 ? scale(sub(target, at), 1 / d) : { x: 0, y: 1, z: 0 }, knockback * (1 - (d / radius) * 0.6));
+      if (dmg > 0) this.damage(c, dmg, owner, weapon);
+      if (status && c.alive) this.applyStatus(c, status, owner, weapon);
     }
     const boost = owner && owner.damageTicks > 0 ? DAMAGE_BOOST : 1;
     this.scenario.splash(at, radius, damage * boost, edge * boost, owner?.slot ?? null, this.physics);
@@ -881,7 +1219,7 @@ export class Match {
       }
       case 'weapon': {
         const def = getWeapon(e.weapon);
-        const owned = c.weapons.get(def.slot);
+        const owned = c.weapons.get(weaponCode(def));
         if (owned) {
           const altMax = def.alt?.ammo === 'own' ? (def.alt.max ?? 0) : 0;
           if (owned.reserve >= def.reserveMax && owned.alt >= altMax) return false;
@@ -889,9 +1227,9 @@ export class Match {
           owned.alt = Math.min(altMax, owned.alt + (def.alt?.pickup ?? 0));
           return true;
         }
-        c.weapons.set(def.slot, { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
+        c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
         // New guns come up immediately, like most arena shooters.
-        if (def.slot > c.current) this.switchTo(c, def.slot);
+        if (def.slot > (weaponByCode(c.current)?.slot ?? 0)) this.switchTo(c, weaponCode(def));
         return true;
       }
       case 'powerup':
@@ -931,11 +1269,14 @@ export class Match {
     c.health = PLAYER.maxHealth;
     c.armor = 0;
     c.alive = true;
+    c.burnTicks = c.poisonTicks = c.slowTicks = c.frozenTicks = 0;
+    c.chill = c.bloom = c.windup = c.burstLeft = 0;
+    c.semiLatch = false;
     c.weapons = new Map();
     for (const id of this.rules.startingWeapons) {
       const def = getWeapon(id);
-      c.weapons.set(def.slot, { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
-      c.current = def.slot;
+      c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
+      c.current = weaponCode(def);
     }
     // Everyone starts with a frag grenade (TimeSplitters-style loadouts are pickups after that).
     c.throwable = this.rules.startingGrenades > 0 ? { kind: 'frag', count: this.rules.startingGrenades } : null;
@@ -962,6 +1303,7 @@ export class Match {
     this.phase = 'intermission';
     this.phaseEndTick = this.tick + this.rules.intermissionTicks;
     this.projectiles = [];
+    this.zones = [];
     if (this.teams && !outcome) {
       // Team Deathmatch: the highest team score wins; a tie at the top is a draw (logic can still name a player, whose team wins).
       const scores = [...this.teamScores()].sort((x, y) => y[1] - x[1]);
@@ -1009,6 +1351,12 @@ export class Match {
         w: c.current,
         pu: (c.speedTicks > 0 ? POWERUP_SPEED_BIT : 0) | (c.damageTicks > 0 ? POWERUP_DAMAGE_BIT : 0),
       };
+      if (c.move.vx || c.move.vz) {
+        s.vx = c.move.vx ?? 0;
+        s.vz = c.move.vz ?? 0;
+      }
+      const fx = statusBits(c);
+      if (fx) s.fx = fx;
       if (c.bot) s.st = c.bot.state;
       return s;
     });
@@ -1019,7 +1367,8 @@ export class Match {
     const c = this.slots[slot];
     if (!c) return undefined;
     return {
-      inv: [...c.weapons.values()].sort((a, b) => a.def.slot - b.def.slot).map((w) => [w.def.slot, w.mag, w.reserve, w.alt]),
+      inv: [...c.weapons.entries()].sort((a, b) => a[0] - b[0]).map(([code, w]) => (w.def.heat ? [code, w.mag, w.reserve, w.alt, Math.round((w.heat ?? 0) * 100) + (w.overheated ? 100 : 0)] : [code, w.mag, w.reserve, w.alt])),
+      ...(statusSpeed(c) !== 1 ? { ms: Math.round(statusSpeed(c) * 1000) } : {}),
       ...(c.throwable ? { gr: [THROWABLES.indexOf(c.throwable.kind), c.throwable.count] as [number, number] } : {}),
       rl: c.reloadTicks,
       rs: c.raiseTicks,
@@ -1054,6 +1403,7 @@ export class Match {
       ev: events,
       pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)]),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
+      ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
     };
@@ -1116,10 +1466,60 @@ interface Trigger {
   range: number;
   projectile?: ProjectileSpec;
   alt?: true;
+  pierce?: number;
+  chain?: WeaponDefinition['chain'];
+  status?: StatusHit;
+  knockback?: number;
+  recoil?: WeaponDefinition['recoil'];
 }
 
 function primaryTrigger(def: WeaponDefinition): Trigger {
-  return { id: def.id, kind: def.kind, damage: def.damage, pellets: def.pellets, spread: def.spread, range: def.range, ...(def.projectile ? { projectile: def.projectile } : {}) };
+  return {
+    id: def.id,
+    kind: def.kind,
+    damage: def.damage,
+    pellets: def.pellets,
+    spread: def.spread,
+    range: def.range,
+    ...(def.projectile ? { projectile: def.projectile } : {}),
+    ...(def.pierce ? { pierce: def.pierce } : {}),
+    ...(def.chain ? { chain: def.chain } : {}),
+    ...(def.status ? { status: def.status } : {}),
+    ...(def.knockback ? { knockback: def.knockback } : {}),
+    ...(def.recoil ? { recoil: def.recoil } : {}),
+  };
+}
+
+/** Use one round (or add heat) for a shot; false when the weapon can't fire. */
+function spendRound(w: WeaponState): boolean {
+  const heat = w.def.heat;
+  if (heat) {
+    if (w.overheated) return false;
+    w.heat = (w.heat ?? 0) + heat.perShot;
+    if (w.heat >= 1) {
+      w.heat = 1;
+      w.overheated = true;
+    }
+    return true;
+  }
+  if (w.def.magazine > 0) {
+    if (w.mag === 0) return false;
+    w.mag--;
+  }
+  return true;
+}
+
+/** Movement multiplier from status effects: frozen solid, chilled, slowed. */
+function statusSpeed(c: Combatant): number {
+  if (c.frozenTicks > 0) return 0;
+  return (c.slowTicks > 0 ? 0.55 : 1) * (1 - 0.6 * c.chill);
+}
+
+const inZone = (z: Zone, feet: Vec3): boolean => zoneContains(z.kind, z.pos, z.radius, feet);
+
+/** Status bits for snapshots (STATUS_*). */
+function statusBits(c: Combatant): number {
+  return (c.burnTicks > 0 ? STATUS_BURN : 0) | (c.poisonTicks > 0 ? STATUS_POISON : 0) | (c.slowTicks > 0 ? STATUS_SLOW : 0) | (c.frozenTicks > 0 ? STATUS_FROZEN : 0) | (c.chill > 0.05 ? STATUS_CHILL : 0);
 }
 
 function altTrigger(def: WeaponDefinition, alt: AltFire): Trigger {

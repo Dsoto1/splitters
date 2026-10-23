@@ -23,6 +23,8 @@ export interface RemotePose {
   grounded: boolean;
   weapon: number;
   powerups: number;
+  /** Status effect bits (STATUS_*). */
+  status: number;
   state?: string;
 }
 
@@ -107,6 +109,7 @@ export class Interpolator {
         grounded: pb.g === 1,
         weapon: pb.w,
         powerups: pb.pu,
+        status: pb.fx ?? 0,
         state: pb.st,
       });
     }

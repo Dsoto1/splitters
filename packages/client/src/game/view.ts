@@ -10,6 +10,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
+import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
@@ -22,6 +23,7 @@ import {
   angleDelta,
   POWERUP_SPEED_BIT,
   WEAPONS_BY_SLOT,
+  weaponByCode,
   getWeapon,
   type MapDocument,
   type PickupEntity,
@@ -29,6 +31,7 @@ import {
   type WeaponDefinition,
   type WorldBox,
   PROJECTILE_VISUALS,
+  type ZoneSnapshot,
 } from '@chronosplit/shared';
 import { MapStyler } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -66,6 +69,8 @@ interface Avatar {
   tag?: { mesh: Mesh; color: string };
   last?: { x: number; y: number; z: number; t: number };
   vel: { x: number; z: number };
+  /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
+  aura?: Mesh;
 }
 
 /** Characters face +Z (our yaw 0) after glTF import; fit them to the player height. */
@@ -98,6 +103,7 @@ export class GameView {
   /** Placed props by entity index (breakable ones disappear when broken). */
   private readonly props = new Map<number, TransformNode>();
   private effects: Fx[] = [];
+  private zoneVisuals!: ZoneVisuals;
   private readonly viewRoot: TransformNode;
   private viewmodel?: TransformNode;
   private viewWeapon?: string;
@@ -121,6 +127,7 @@ export class GameView {
     this.camera.inputs.clear();
     this.models = new ModelLibrary(this.scene);
     this.scenario = new ScenarioVisuals(this.scene);
+    this.zoneVisuals = new ZoneVisuals(this.scene);
     this.characters = new CharacterLibrary(this.scene);
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
@@ -298,6 +305,10 @@ export class GameView {
         for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
       }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
+      if (p.status || a.aura) {
+        a.aura ??= createAura(this.scene, a.root);
+        setAura(this.scene, a.aura, p.alive ? p.status : 0, now);
+      }
       this.setTag(a, p.alive ? allyColor(p.slot) : null);
     }
     for (const [slot, a] of this.avatars) {
@@ -328,7 +339,7 @@ export class GameView {
     a.weaponNode?.dispose();
     a.weaponNode = undefined;
     a.anim?.hold(null);
-    const def = WEAPONS_BY_SLOT.find((w) => w.slot === slot);
+    const def = weaponByCode(slot);
     if (!def) return;
     void this.models.instantiate(def.view.model, `held_${slot}`).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
@@ -435,7 +446,8 @@ export class GameView {
       const prev = p.node.position.clone();
       p.node.position.set(pos[0], pos[1], pos[2]);
       const look = PROJECTILE_VISUALS[p.look];
-      if (look === 'grenade' || look === 'frag') p.node.rotation.x += 0.3;
+      if (look && ARSENAL_LOOKS.has(look)) animateArsenalProjectile(p.node, look, now, p.node.position.subtract(prev), p.born);
+      else if (look === 'grenade' || look === 'frag') p.node.rotation.x += 0.3;
       else if (look === 'rocket') {
         // Point the rocket along its flight.
         const d = p.node.position.subtract(prev);
@@ -455,6 +467,7 @@ export class GameView {
   }
 
   private createProjectile(id: number, look: (typeof PROJECTILE_VISUALS)[number]): TransformNode {
+    if (ARSENAL_LOOKS.has(look)) return createArsenalProjectile(this.scene, id, look);
     const node = new TransformNode(`proj_${id}`, this.scene);
     const model = look === 'grenade' ? 'projectiles/grenade.glb' : look === 'frag' ? 'projectiles/frag.glb' : null;
     if (model) {
@@ -547,6 +560,36 @@ export class GameView {
     const canvas = engine.getRenderingCanvas();
     const scale = canvas ? canvas.clientWidth / w : 1;
     return { x: v.x * scale, y: v.y * scale };
+  }
+
+  /** Ground hazards and fields from the latest snapshot. */
+  updateZones(zones: readonly ZoneSnapshot[] | undefined, now: number): void {
+    this.zoneVisuals.apply(zones, now);
+  }
+
+  /** A solid beam (lasers, rails, freeze rays) that thins away. */
+  addBeam(from: Vec3, to: Vec3, color: string, width = 0.05, ttlMs = 110): void {
+    const mesh = createBeam(this.scene, from, to, color, width);
+    this.effects.push({
+      mesh,
+      born: performance.now(),
+      ttl: ttlMs,
+      update: (f) => {
+        mesh.scaling.x = mesh.scaling.z = 1 - f * 0.8;
+      },
+    });
+  }
+
+  /** Chain lightning through the points it jumped. */
+  addArc(pts: readonly Vec3[], color = '#9fd8ff'): void {
+    this.effects.push({ mesh: createArc(this.scene, pts, color), born: performance.now(), ttl: 140 });
+    this.effects.push({ mesh: createArc(this.scene, pts, '#ffffff'), born: performance.now(), ttl: 70 });
+  }
+
+  /** A shot's trail: beam weapons draw beams, everything else tracers. */
+  addShot(def: WeaponDefinition | undefined, from: Vec3, to: Vec3, color: string, ttlMs = 90): void {
+    if (def?.view.beam) this.addBeam(from, to, def.view.tracer, def.id === 'core.railgun' ? 0.09 : 0.04, def.id === 'core.railgun' ? 400 : 90);
+    else this.addTracer(from, to, color, ttlMs);
   }
 
   addTracer(from: Vec3, to: Vec3, color: string, ttlMs = 90): void {
