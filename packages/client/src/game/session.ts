@@ -1,6 +1,8 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   CORE_WEAPONS,
+  THROWABLE_DEFS,
+  predictThrow,
   mapPads,
   mountToWorld,
   viewDirection,
@@ -575,6 +577,12 @@ export class GameSession {
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2]);
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
       this.hud.setThrowable(local.throwable, local.alive);
+      // Holding G: show where the throw will go (bounces and the blast area).
+      if (this.input.throwAiming && local.alive && local.throwable && !handsBusy) {
+        const spec = THROWABLE_DEFS[local.throwable.kind].projectile;
+        const path = predictThrow(spec, local.state.pos, this.input.yaw, this.input.pitch, 0.12, (o, d, len) => this.view.raycastLevel(o, d, len));
+        this.view.throwArc.show(path, spec.mine?.triggerRadius ?? spec.splashRadius);
+      } else this.view.throwArc.hide();
       this.input.altTrigger = !!local.weapon?.alt;
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max);
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
@@ -589,6 +597,18 @@ export class GameSession {
     this.view.updateZones(this.zones, now);
     if (this.mounts) {
       const manned = this.seat ? this.mounts.mounts.get(this.seat[0]) : undefined;
+      this.hud.setVehicle(manned?.alive ? { name: manned.def.displayName, pct: manned.health } : null);
+      // Health bars over damaged vehicles and turrets in sight.
+      const cam = this.view.cameraPosition();
+      const bars: { id: number; x: number; y: number; pct: number }[] = [];
+      for (const m of this.mounts.mounts.values()) {
+        if (!m.alive || m.health >= 100 || m === manned) continue;
+        const top = { x: m.shown.pos.x, y: m.shown.pos.y + m.def.half[1] * 2 + 0.6, z: m.shown.pos.z };
+        if (Math.hypot(top.x - cam.x, top.y - cam.y, top.z - cam.z) > 50) continue;
+        const at = this.view.project(top);
+        if (at) bars.push({ id: m.index, x: at.x, y: at.y, pct: m.health });
+      }
+      this.hud.setVehicleBars(bars);
       this.view.updateMounts(this.mounts.mounts.values(), manned?.def.kind === 'turret' ? manned.index : null);
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));

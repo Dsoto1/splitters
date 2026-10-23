@@ -38,6 +38,8 @@ interface Puff {
   age: number;
   life: number;
   grow: number;
+  rise?: number;
+  base?: number;
 }
 
 /**
@@ -175,6 +177,27 @@ export class ImpactVisuals {
     this.puffs.push({ mesh: puff, age: 0, life: 0.45, grow: 0.5 * size });
   }
 
+  private readonly puffMats = new Map<string, StandardMaterial>();
+
+  /** A soft puff that grows, rises and fades (vehicle smoke and fire). */
+  puff(at: Vec3, hex: string, size: number, life: number, rise: number, glow = false): void {
+    let mat = this.puffMats.get(hex);
+    if (!mat) {
+      mat = new StandardMaterial(`puff_${hex}`, this.scene);
+      mat.diffuseColor = Color3.FromHexString(hex);
+      mat.specularColor = Color3.Black();
+      if (glow) mat.emissiveColor = Color3.FromHexString(hex);
+      mat.alpha = glow ? 0.85 : 0.55;
+      this.puffMats.set(hex, mat);
+    }
+    const mesh = CreateSphere('puff', { diameter: 1, segments: 4 }, this.scene);
+    mesh.material = mat;
+    mesh.isPickable = false;
+    mesh.position.set(at.x, at.y, at.z);
+    mesh.scaling.setAll(size * 0.3);
+    this.puffs.push({ mesh, age: 0, life, grow: size, rise, base: size * 0.3 });
+  }
+
   /** Bullet holes currently in the level (for tests). */
   get holesInLevel(): number {
     return this.holeCount;
@@ -204,7 +227,8 @@ export class ImpactVisuals {
     this.puffs = this.puffs.filter((p) => {
       p.age += dt;
       const f = p.age / p.life;
-      p.mesh.scaling.setAll(0.05 + p.grow * f);
+      p.mesh.scaling.setAll((p.base ?? 0.05) + p.grow * f);
+      if (p.rise) p.mesh.position.y += p.rise * dt;
       p.mesh.visibility = Math.max(0, 1 - f);
       if (f < 1) return true;
       p.mesh.dispose();

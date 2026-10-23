@@ -321,3 +321,11 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .team-size .stepper button { padding: 0 6px; }
 #status-tint { position: absolute; inset: 0; pointer-events: none; transition: box-shadow 0.25s; }
 #weapon-bar span i { display: block; font-style: normal; font-size: 8px; line-height: 6px; color: var(--cyan); letter-spacing: 1px; }
+
+/* Vehicle damage: your vehicle's panel, and bars over damaged vehicles nearby. */
+#vehicle-hp { position: absolute; left: 50%; bottom: 58px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 14px; background: rgba(18, 24, 39, 0.82); font: 600 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+#vehicle-hp[hidden] { display: none; }
+#vehicle-hp i { display: block; width: 220px; height: 7px; background: rgba(255, 255, 255, 0.12); }
+#vehicle-hp b, #vehicle-bars b { display: block; height: 100%; width: var(--hp, 100%); background: var(--hp-color, var(--success)); transition: width 0.2s; }
+#vehicle-bars { position: absolute; inset: 0; pointer-events: none; }
+#vehicle-bars i { position: absolute; width: 64px; height: 5px; margin-left: -32px; background: rgba(0, 0, 0, 0.55); outline: 1px solid rgba(0, 0, 0, 0.6); }

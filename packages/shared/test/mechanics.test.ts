@@ -13,6 +13,7 @@ import {
   hitZone,
   initPhysics,
   lookAngles,
+  predictThrow,
   weaponByCode,
   weaponCode,
   type GameEvent,
@@ -120,6 +121,32 @@ describe('hit zones and spread', () => {
     const hip = shots(BUTTON_FIRE);
     expect(scoped).toBe(1);
     expect(hip).toBeLessThan(0.6);
+  });
+});
+
+describe('throw arc', () => {
+  it('predicts where a frag grenade bounces and stops, matching the real throw', () => {
+    const { match, d, a } = duel([[30, 0, 4]], 'core.pistol');
+    a.throwable = { kind: 'frag', count: 1 };
+    const yaw = Math.PI / 2;
+    const pitch = 0.35;
+    const plan = predictThrow(THROWABLE_DEFS.frag.projectile, a.move.pos, yaw, pitch, 0.12, (o, dir, len) => match.physics.raycastNormal(o, dir, len));
+    expect(plan.bounces.length).toBeGreaterThan(0);
+    // Follow the real grenade until it goes off.
+    const track: { x: number; y: number; z: number }[] = [];
+    let burst: { x: number; y: number; z: number } | null = null;
+    for (let i = 0; i < 400 && !burst; i++) {
+      const ev = d.run(1, () => d.input(a, { yaw, pitch, buttons: i === 0 ? BUTTON_THROW : 0 }));
+      const nade = (match as unknown as { projectiles: { pos: { x: number; y: number; z: number } }[] }).projectiles[0];
+      if (nade) track.push({ ...nade.pos });
+      const boom = ev.find((e) => e.e === 'explode');
+      if (boom && boom.e === 'explode') burst = { x: boom.p[0], y: boom.p[1], z: boom.p[2] };
+    }
+    expect(burst).not.toBeNull();
+    expect(Math.hypot(burst!.x - plan.end.x, burst!.z - plan.end.z)).toBeLessThan(0.5);
+    // The first bounce is where the real one first turned upward.
+    const firstBounce = plan.bounces[0]!;
+    expect(track.some((p) => Math.hypot(p.x - firstBounce.x, p.y - firstBounce.y, p.z - firstBounce.z) < 0.4)).toBe(true);
   });
 });
 

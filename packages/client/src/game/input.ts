@@ -16,6 +16,8 @@ export class InputState {
   private reloadQueued = false;
   private useQueued = false;
   private throwQueued = false;
+  /** G is held: aiming a throw. */
+  throwAiming = false;
   /** Set by the session: the held weapon has a second trigger (RMB fires it instead of zooming). */
   altTrigger = false;
   /** Weapon slot requested with number keys (0 = none pending). */
@@ -36,18 +38,29 @@ export class InputState {
         if (e.code === 'Space') this.jumpQueued = true;
         if (e.code === 'KeyR') this.reloadQueued = true;
         if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
-        if (e.code === 'KeyG' && !e.repeat) this.throwQueued = true;
+        // Hold G to aim a throw (the arc shows), let go to throw.
+        if (e.code === 'KeyG' && !e.repeat) this.throwAiming = true;
         const digit = /^Digit([1-9])$/.exec(e.code);
         if (digit) this.slotRequest = Number(digit[1]);
       },
       opts,
     );
-    window.addEventListener('keyup', (e) => this.keys.delete(e.code), opts);
+    window.addEventListener(
+      'keyup',
+      (e) => {
+        this.keys.delete(e.code);
+        if (e.code === 'KeyG' && this.throwAiming) {
+          this.throwAiming = false;
+          this.throwQueued = true;
+        }
+      },
+      opts,
+    );
     window.addEventListener(
       'blur',
       () => {
         this.keys.clear();
-        this.fireDown = this.zoomDown = false;
+        this.fireDown = this.zoomDown = this.throwAiming = false;
       },
       opts,
     );

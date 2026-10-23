@@ -20,7 +20,8 @@ Jump straight into any map with `http://localhost:5173/?offline=<map>`, e.g.
 | Mouse, left / right button | Aim, fire / zoom or alt-fire |
 | 1–9 | Pick a weapon slot (press again to cycle weapons in that slot) |
 | R | Reload |
-| G | Throw grenade |
+| G | Hold to aim a grenade (the arc, bounces and blast area show), let go to throw |
+| Shift (scoped) | Hold your breath to steady the sniper scope |
 | E | Use: get in / out of vehicles and turrets, doors, switches |
 | Tab | Scoreboard |
 | F3 | Performance stats |

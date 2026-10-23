@@ -48,6 +48,7 @@ import {
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { Ragdoll } from './ragdoll.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
+import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
@@ -190,6 +191,7 @@ export class GameView {
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.blood = new BloodVisuals(this.scene, () => this.physics);
     this.impacts = new ImpactVisuals(this.scene, () => this.physics);
+    this.throwArc = new ThrowArc(this.scene);
     this.blood.enabled = bloodPreference();
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
@@ -241,6 +243,7 @@ export class GameView {
   private lastFrame = performance.now();
   private debrisBodies: { mesh: Mesh; body: ReturnType<EffectsWorld['addBody']>; born: number; shared?: boolean }[] = [];
   readonly impacts: ImpactVisuals;
+  readonly throwArc: ThrowArc;
   private corpses: Corpse[] = [];
   /** Players whose body is lying as a corpse and who haven't respawned yet. */
   private readonly lyingDead = new Set<number>();
@@ -302,6 +305,11 @@ export class GameView {
     a.flash?.setEnabled(false);
     this.corpses.push({ a, slot, born: performance.now() });
     while (this.corpses.length > MAX_CORPSES) this.disposeAvatar(this.corpses.shift()!.a);
+  }
+
+  /** Ray test against the level's static shapes (null before the map is built). */
+  raycastLevel(from: Vec3, dir: Vec3, maxDist: number): { dist: number; normal: Vec3 } | null {
+    return this.physics?.raycast(from, dir, maxDist) ?? null;
   }
 
   /** Bodies currently lying in the level (for tests). */
@@ -949,6 +957,7 @@ export class GameView {
   }
 
   private readonly mountNodes = new Map<number, TransformNode>();
+  private readonly mountSmokeAt = new Map<number, number>();
 
   /** Turrets, sentries and vehicles at their smoothed poses; turret guns follow the aim. `manned` (the turret you are gunning) is hidden, as your own body is. */
   updateMounts(mounts: Iterable<ClientMount>, manned: number | null = null): void {
@@ -960,6 +969,17 @@ export class GameView {
       }
       node.setEnabled(m.alive && m.index !== manned);
       node.position.set(m.shown.pos.x, m.shown.pos.y, m.shown.pos.z);
+      // Damaged vehicles smoke; badly damaged ones burn.
+      if (m.alive && m.health < 50) {
+        const now = performance.now();
+        const next = this.mountSmokeAt.get(m.index) ?? 0;
+        if (now >= next) {
+          this.mountSmokeAt.set(m.index, now + (m.health < 25 ? 90 : 160));
+          const top = { x: m.shown.pos.x + (Math.random() - 0.5) * m.def.half[0], y: m.shown.pos.y + m.def.half[1] * 2, z: m.shown.pos.z + (Math.random() - 0.5) * m.def.half[2] };
+          this.impacts.puff(top, m.health < 25 ? '#2a2725' : '#5d5955', 1.2, 1.6, 1.8);
+          if (m.health < 25) this.impacts.puff(top, '#ff7a1a', 0.5, 0.35, 1.5, true);
+        }
+      }
       node.rotation.y = m.shown.yaw;
       if (m.def.kind !== 'vehicle') {
         const gun = mountGun(node);

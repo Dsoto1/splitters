@@ -6,6 +6,9 @@ import { Minimap } from './minimap.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
+/** Green when healthy, amber when hurt, red when about to go. */
+const hpColor = (pct: number) => (pct > 55 ? 'var(--success)' : pct > 25 ? '#f0b429' : 'var(--danger)');
+
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const HAZARD_DEATHS: Record<string, string> = {
   'core.trap_spikes': 'was impaled',
@@ -202,11 +205,47 @@ export class Hud {
   }
 
   /** Held weapon, ammo and the owned-weapons bar. */
+  /** The vehicle you're in: its name and health (null hides the panel). */
+  setVehicle(v: { name: string; pct: number } | null): void {
+    const el = document.getElementById('vehicle-hp');
+    if (!el) return;
+    el.hidden = !v;
+    if (!v) return;
+    el.querySelector('span')!.textContent = v.name;
+    const bar = el.querySelector('b')!;
+    bar.style.setProperty('--hp', `${Math.max(0, Math.min(100, v.pct))}%`);
+    bar.style.setProperty('--hp-color', hpColor(v.pct));
+  }
+
+  /** Small health bars over damaged vehicles (screen positions in CSS px). */
+  setVehicleBars(bars: { id: number; x: number; y: number; pct: number }[]): void {
+    const root = document.getElementById('vehicle-bars');
+    if (!root) return;
+    const seen = new Set<string>();
+    for (const b of bars) {
+      const key = String(b.id);
+      seen.add(key);
+      let el = root.querySelector<HTMLElement>(`i[data-id="${key}"]`);
+      if (!el) {
+        el = document.createElement('i');
+        el.dataset.id = key;
+        el.append(document.createElement('b'));
+        root.append(el);
+      }
+      el.style.left = `${b.x}px`;
+      el.style.top = `${b.y}px`;
+      const fill = el.firstElementChild as HTMLElement;
+      fill.style.setProperty('--hp', `${b.pct}%`);
+      fill.style.setProperty('--hp-color', hpColor(b.pct));
+    }
+    for (const el of [...root.children] as HTMLElement[]) if (!seen.has(el.dataset.id ?? '')) el.remove();
+  }
+
   /** Grenade / mine count beside the ammo (reference board: the grenade icon and number). */
   setThrowable(t: { kind: string; count: number } | null, alive: boolean): void {
     const text = alive && t ? `${t.kind === 'mine' ? '◎' : '●'} ${t.count}` : '';
     if (this.throwEl.textContent !== text) this.throwEl.textContent = text;
-    this.throwEl.title = t ? (t.kind === 'mine' ? 'Proximity mines (G)' : 'Frag grenades (G)') : '';
+    this.throwEl.title = t ? (t.kind === 'mine' ? 'Proximity mines (hold G to aim, let go to throw)' : 'Grenades (hold G to aim, let go to throw)') : '';
   }
 
   /** `owned` and `held` are weapon codes; the bar shows slots 1–9, with a pip per extra weapon carried in a slot. */
