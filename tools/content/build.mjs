@@ -397,6 +397,49 @@ for (const f of existsSync(CHAR_DIR) ? readdirSync(CHAR_DIR, { recursive: true }
 }
 console.log(`checked ${charEntries.length} character files`);
 
+// ---------------------------------------------------------------- textures and props
+// Prepared by tools/content/prepare-textures.mjs and prepare-props.mjs; their
+// lock files record what they wrote, and this checks the shipped files against them.
+function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
+  const lockFile = JSON.parse(readFileSync(join(ROOT, lockPath), 'utf8'));
+  const files = new Set();
+  for (const f of lockFile.files) {
+    files.add(f.file);
+    const pack = packFor(f);
+    if (!pack) {
+      problems.push(`${f.file}: unknown pack`);
+      continue;
+    }
+    if (!existsSync(join(ROOT, pack.licenseFile))) problems.push(`${f.file}: licence file missing (${pack.licenseFile})`);
+    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
+    const path = join(ROOT, 'packages/client/public', f.file);
+    if (!existsSync(path)) problems.push(`${f.file}: missing (run ${prepare})`);
+    else if (createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${f.file}: does not match ${lockPath}`);
+    if (budgets.maxBytes && f.bytes > budgets.maxBytes) problems.push(`${f.file}: ${f.bytes} bytes exceeds budget ${budgets.maxBytes}`);
+    if (budgets.maxTriangles && f.triangles > budgets.maxTriangles) problems.push(`${f.file}: ${f.triangles} triangles exceeds budget ${budgets.maxTriangles}`);
+    ledger.assets.push({
+      file: f.file,
+      sha256: f.sha256,
+      ...(f.triangles !== undefined ? { triangles: f.triangles } : {}),
+      bytes: f.bytes,
+      source: f.asset ? `${pack.id ?? 'ambientcg'}:${f.asset}` : `${f.source}/${f.src}`,
+      title: f.asset ? `${pack.title}: ${f.asset}` : pack.title,
+      creator: pack.creator,
+      url: f.asset ? `https://ambientcg.com/view?id=${f.asset}` : pack.url,
+      license: pack.license,
+      modifications,
+    });
+  }
+  const full = join(ROOT, 'packages/client/public', dir);
+  for (const f of existsSync(full) ? readdirSync(full) : []) if (!files.has(`${dir}/${f}`)) problems.push(`${dir}/${f}: not in ${lockPath}`);
+  return lockFile.files.length;
+}
+const textureManifest = JSON.parse(readFileSync(join(ROOT, 'content/textures.json'), 'utf8'));
+const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, ['downscaled to 512 px', 'colour, normal and emission maps only'], 'node tools/content/prepare-textures.mjs');
+const propManifest = JSON.parse(readFileSync(join(ROOT, 'content/props.json'), 'utf8'));
+const propCount = checkLocked('content/props.lock.json', 'props', (f) => propManifest.packs[f.source], propManifest.budgets, ['centred, stood on the ground and scaled to metres', 'texture embedded'], 'node tools/content/prepare-props.mjs');
+console.log(`checked ${textureCount} texture files and ${propCount} props`);
+
 const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
 if (check) {
   if (!existsSync(LEDGER) || readFileSync(LEDGER, 'utf8') !== ledgerText) problems.push('content/provenance.json is out of date (run pnpm content:build)');

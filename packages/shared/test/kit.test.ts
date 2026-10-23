@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NavWorld, initNavigation } from '../src/nav/index.ts';
-import { SIDES, applyCommand, buildMapDecor, buildMapGeometry, coreCatalog, edgeChoiceAt, edgeTargetAt, mapKillY, setEdgeCommand, validateMap, type MapDocument, type Rotation, type WorldBox } from '../src/index.ts';
+import { CORE_PROPS, SIDES, applyCommand, buildMapDecor, buildMapGeometry, coreCatalog, edgeChoiceAt, edgeTargetAt, mapKillY, setEdgeCommand, validateMap, type MapDocument, type Rotation, type WorldBox } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => initNavigation());
@@ -179,5 +179,39 @@ describe('wall tool', () => {
     const back = applyCommand(doc, setEdgeCommand(doc, { cell: [0, 0, 0], side: 'E' }, 'auto') as never);
     expect(back.classicStructure.tiles[0]!.edges).toBeUndefined();
     expect(setEdgeCommand(makeMap([t('big', 'core.room_large', 0, 0, 0)]), { cell: [0, 0, 0], side: 'E' }, 'window')).toEqual({ error: 'that side is inside one piece' });
+  });
+});
+
+describe('props', () => {
+  const prop = (id: string, model: string, x: number, z: number, extra: Record<string, unknown> = {}) => ({ id, kind: 'prop' as const, model, position: [x, 0, z] as [number, number, number], yaw: 0, scale: 1, solid: true, tint: null, ...extra });
+  it('has a catalogue of real-size props in several categories', () => {
+    expect(CORE_PROPS.length).toBeGreaterThanOrEqual(140);
+    const barrel = CORE_PROPS.find((p) => p.id === 'prop.barrel')!;
+    expect(barrel.size[1]).toBeCloseTo(1.1);
+    expect(barrel.collision).not.toBeNull();
+    expect(CORE_PROPS.find((p) => p.id === 'prop.rug')!.collision).toBeNull();
+  });
+
+  it('blocks movement and bots with solid props only', () => {
+    const map = makeMap([t('r', 'core.room', 0, 0, 0)]);
+    map.entities.push(prop('p1', 'prop.crate_large', 2, 0), prop('p2', 'prop.rug', -2, 0), prop('p3', 'prop.barrel', 0, 2, { solid: false }), prop('p4', 'prop.tree', -2, -2, { scale: 2 }));
+    expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
+    const boxes = buildMapGeometry(map).filter((b) => b.kind === 'prop');
+    expect(boxes.map((b) => b.sourceId)).toEqual(['p1', 'p4']);
+    // A tree only blocks at its trunk, scaled.
+    const tree = boxes[1]!;
+    expect(tree.max[0] - tree.min[0]).toBeCloseTo(1);
+    expect(tree.max[1]).toBeCloseTo(10);
+    // Turned 45°, the collision covers the turned crate's footprint.
+    const turned = makeMap([t('r', 'core.room', 0, 0, 0)]);
+    turned.entities.push(prop('p1', 'prop.crate_large', 0, 0, { yaw: Math.PI / 4 }));
+    const b = buildMapGeometry(turned).find((x) => x.kind === 'prop')!;
+    expect(b.max[0] - b.min[0]).toBeGreaterThan(boxes[0]!.max[0] - boxes[0]!.min[0]);
+  });
+
+  it('rejects unknown prop models', () => {
+    const map = makeMap([t('r', 'core.room', 0, 0, 0)]);
+    map.entities.push(prop('p1', 'prop.nope', 0, 0));
+    expect(validateMap(map).map((i) => i.code)).toContain('prop.unknown');
   });
 });

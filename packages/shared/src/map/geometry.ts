@@ -1,8 +1,13 @@
 import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, type EdgeStyle, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, TilePlacement } from './schema.ts';
+import { getProp } from '../content/props.ts';
 
-/** `trim` boxes are visual only (baseboards, cornices, frames): never in physics or navigation. */
-export type BoxKind = 'floor' | 'wall' | 'solid' | 'trim';
+/**
+ * `trim` boxes are visual only (baseboards, cornices, frames): never in physics
+ * or navigation. `prop` boxes are the collision of placed props: physics and
+ * navigation only, the prop's model is drawn instead.
+ */
+export type BoxKind = 'floor' | 'wall' | 'solid' | 'trim' | 'prop';
 
 /** World-space axis-aligned box. Shared by physics, navigation and rendering. */
 export interface WorldBox {
@@ -222,6 +227,24 @@ export function buildMapDecor(map: MapDocument, catalog: TileCatalog = coreCatal
   return buildBoxes(map, catalog, true);
 }
 
+/** Collision of solid props: the prop's box, scaled and turned (as its axis-aligned bounds). */
+export function propBoxes(map: MapDocument): WorldBox[] {
+  const out: WorldBox[] = [];
+  for (const e of map.entities) {
+    if (e.kind !== 'prop' || !e.solid) continue;
+    const def = getProp(e.model);
+    if (!def?.collision) continue;
+    const [w, h, d] = def.collision.map((v) => v * e.scale) as [number, number, number];
+    const c = Math.abs(Math.cos(e.yaw));
+    const s = Math.abs(Math.sin(e.yaw));
+    const hx = (w * c + d * s) / 2;
+    const hz = (w * s + d * c) / 2;
+    const [x, y, z] = e.position;
+    out.push({ min: [x - hx, y, z - hz], max: [x + hx, y + h, z + hz], kind: 'prop', sourceId: e.id });
+  }
+  return out;
+}
+
 /** Lowest point anyone can stand on, minus a margin: falling past it kills. */
 export function mapKillY(boxes: readonly WorldBox[]): number {
   let low = Infinity;
@@ -263,6 +286,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
   }
 
   if (decor) return boxes;
+  boxes.push(...propBoxes(map));
   for (const placement of map.classicStructure.tiles) {
     const def = catalog.get(placement.tile);
     if (!def) continue;

@@ -67,6 +67,9 @@ import {
   setEdgeCommand,
   type EdgeStyle,
   type EdgeTarget,
+  CORE_PROPS,
+  PROP_CATEGORIES,
+  getProp,
 } from '@chronosplit/shared';
 import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
@@ -79,6 +82,7 @@ import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
+import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 
 /** Small palette icon for a pickup item, coloured by item type. */
 function itemIcon(itemId: string): string {
@@ -99,7 +103,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle };
+type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -131,6 +135,10 @@ function pickRadius(e: MapEntity): number {
       return e.model === 'wall' ? 1.5 : 0.9;
     case 'encounter':
       return Math.max(1.2, Math.min(3, e.radius));
+    case 'prop': {
+      const size = getProp(e.model)?.size ?? [1, 1, 1];
+      return Math.max(0.5, (Math.min(size[0], size[2]) * e.scale) / 2 + 0.2);
+    }
     default:
       return 0.9;
   }
@@ -162,6 +170,9 @@ export class EditorApp {
   readonly history: EditHistory;
   private tool: Tool = { kind: 'select' };
   private rotation: Rotation = 0;
+  /** Facing for the next prop placed. */
+  private propYaw = 0;
+  private readonly thumbs: ModelThumbnails;
   private spawnYaw = 0;
   private scenarioYaw = 0;
   readonly logic: LogicPanel;
@@ -194,6 +205,7 @@ export class EditorApp {
 
   constructor(private readonly host: EditorHost) {
     this.view = new EditorView(host.engine);
+    this.thumbs = new ModelThumbnails(host.engine);
     const restored = readAutosave();
     this.history = new EditHistory(restored?.map ?? newMapDocument('Untitled Map'));
     this.logic = new LogicPanel({
@@ -307,7 +319,12 @@ export class EditorApp {
       const t = b.dataset.tool;
       b.classList.toggle(
         'active',
-        (tool.kind === 'tile' && t === `tile:${tool.tile}`) || (tool.kind === 'pickup' && t === `pickup:${tool.item}`) || (tool.kind === 'scenario' && t === `scenario:${tool.key}`) || (tool.kind === 'edge' && t === `edge:${tool.style}`) || t === tool.kind,
+        (tool.kind === 'tile' && t === `tile:${tool.tile}`) ||
+          (tool.kind === 'pickup' && t === `pickup:${tool.item}`) ||
+          (tool.kind === 'scenario' && t === `scenario:${tool.key}`) ||
+          (tool.kind === 'edge' && t === `edge:${tool.style}`) ||
+          (tool.kind === 'prop' && t === `prop:${tool.model}`) ||
+          t === tool.kind,
       );
     }
     const hints: Record<Tool['kind'], string> = {
@@ -318,6 +335,7 @@ export class EditorApp {
       scenario: 'Click place · Doors, walls and lasers snap to doorways · R turn 90° · Right-click erase · L logic',
       paint: 'Click a surface to paint · Right-click resets to theme · Alt-click or I picks a style',
       edge: 'Click a wall or floor edge to build it this way · Right-click resets to auto · O cycles the style',
+      prop: 'Click place (snaps to 25 cm, hold Shift for free) · R turn 15° · Right-click erase · Esc select tool',
     };
     $('ed-hint').textContent = `${hints[tool.kind]} · RMB look · WASD/QE fly`;
     this.updateHover();
@@ -356,6 +374,12 @@ export class EditorApp {
       const id = newId('pickup');
       const name = getItem(this.tool.item)?.displayName ?? 'pickup';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'pickup', position: p, item: this.tool.item, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
+    } else if (this.tool.kind === 'prop' && this.hoverPoint) {
+      const free = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+      const p: [number, number, number] = [free ? Math.round(this.hoverPoint.x * 100) / 100 : snap(this.hoverPoint.x, 0.25), this.level * this.doc.classicStructure.levelHeight, free ? Math.round(this.hoverPoint.z * 100) / 100 : snap(this.hoverPoint.z, 0.25)];
+      const id = newId('prop');
+      const name = getProp(this.tool.model)?.displayName ?? 'prop';
+      if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p, model: this.tool.model, yaw: this.propYaw, scale: 1, solid: true, tint: null }] })) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'scenario' && this.hoverPoint) {
       const y = this.level * this.doc.classicStructure.levelHeight;
       let p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), y, snap(this.hoverPoint.z, 0.5)];
@@ -436,6 +460,9 @@ export class EditorApp {
       this.updateHover();
     } else if (this.tool.kind === 'spawn') {
       this.spawnYaw = normalizeYaw(this.spawnYaw + Math.PI / 4);
+    } else if (this.tool.kind === 'prop') {
+      this.propYaw = normalizeYaw(this.propYaw + Math.PI / 12);
+      this.toast(`Facing ${Math.round((this.propYaw * 180) / Math.PI)}°`);
     } else if (this.tool.kind === 'scenario') {
       this.scenarioYaw = normalizeYaw(this.scenarioYaw + Math.PI / 2);
       this.toast(`Facing ${Math.round((this.scenarioYaw * 180) / Math.PI)}°`);
@@ -820,11 +847,46 @@ export class EditorApp {
       $('ed-entities').append(b);
     }
 
+    this.buildPropPalette();
+
     $<HTMLInputElement>('ed-search').addEventListener('input', (e) => {
       const q = (e.target as HTMLInputElement).value.trim().toLowerCase();
       for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn, #ed-palette .mat-btn')) b.hidden = !!q && !(b.dataset.search ?? '').includes(q);
     });
     this.setTool({ kind: 'select' });
+  }
+
+  /** Props by category; thumbnails render from the real models as they scroll into view. */
+  private buildPropPalette(): void {
+    const box = $('ed-props');
+    const seen = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const img = entry.target as HTMLImageElement;
+        seen.unobserve(img);
+        void this.thumbs.get(img.dataset.file!).then((src) => (img.src = src), () => undefined);
+      }
+    });
+    for (const category of PROP_CATEGORIES) {
+      const head = document.createElement('div');
+      head.className = 'tile-cat';
+      head.textContent = category;
+      box.append(head);
+      for (const def of CORE_PROPS.filter((d) => d.category === category)) {
+        const b = document.createElement('button');
+        b.className = 'tile-btn prop-btn';
+        b.dataset.tool = `prop:${def.id}`;
+        b.dataset.search = `${def.displayName} ${def.category} prop`.toLowerCase();
+        b.title = `${def.displayName}\n${def.size.map((v) => v.toFixed(1)).join(' × ')} m${def.collision ? '' : ' · walk-through'}`;
+        const img = document.createElement('img');
+        img.alt = '';
+        img.dataset.file = def.file;
+        b.append(img, document.createTextNode(def.displayName));
+        b.addEventListener('click', () => this.setTool({ kind: 'prop', model: def.id }));
+        box.append(b);
+        seen.observe(img);
+      }
+    }
   }
 
   private buildPaintPalette(): void {
@@ -1077,7 +1139,7 @@ export class EditorApp {
       row('Height', numberInput(e.position[1], 0.25, (v) => setPos(1, v))),
       row('Z', numberInput(e.position[2], 0.5, (v) => setPos(2, v))),
     );
-    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), e.kind === 'spawn' ? 15 : 90, (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))));
+    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), e.kind === 'spawn' || e.kind === 'prop' ? 15 : 90, (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))));
 
     const toggle = (label: string, value: boolean, patch: (v: boolean) => Partial<MapEntity>) => {
       const c = document.createElement('input');
@@ -1096,6 +1158,26 @@ export class EditorApp {
     const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
     switch (e.kind) {
+      case 'prop': {
+        const model = document.createElement('select');
+        for (const category of PROP_CATEGORIES) {
+          const group = document.createElement('optgroup');
+          group.label = category;
+          for (const def of CORE_PROPS.filter((d) => d.category === category)) group.append(new Option(def.displayName, def.id, false, def.id === e.model));
+          model.append(group);
+        }
+        model.addEventListener('change', () => update('Change prop', { model: model.value }));
+        el.append(row('Model', model));
+        number('Scale', e.scale, 0.25, (v) => ({ scale: Math.max(0.25, Math.min(4, v)) }));
+        toggle('Solid', e.solid, (v) => ({ solid: v }));
+        const tint = document.createElement('input');
+        tint.type = 'color';
+        tint.value = e.tint ?? '#ffffff';
+        tint.addEventListener('change', () => update('Tint prop', { tint: tint.value.toLowerCase() === '#ffffff' ? null : tint.value.toLowerCase() }));
+        el.append(row('Tint', tint));
+        if (!getProp(e.model)?.collision) el.append(small('This prop never blocks (decoration).'));
+        break;
+      }
       case 'pickup': {
         choose('Item', CORE_ITEMS.map((it) => [it.id, it.displayName] as const), e.item, (v) => ({ item: v }));
         const def = getItem(e.item)?.respawnSeconds ?? 0;

@@ -150,3 +150,4 @@ dialog { border-top: 3px solid var(--cyan); }
 @media (max-width: 1300px) { .ed-brand { display: none; } }
 .tile-cat { grid-column: 1 / -1; margin: 8px 0 0; font: 600 10px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
 .tile-cat:first-child { margin-top: 0; }
+.prop-btn img { width: 56px; height: 56px; object-fit: contain; background: radial-gradient(circle at 50% 40%, var(--surface-3), var(--surface-1)); border-radius: 3px; }

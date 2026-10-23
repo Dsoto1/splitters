@@ -5,6 +5,7 @@ import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
+import { getProp } from '../content/props.ts';
 
 /** Editor-level selection: stable IDs only, never object references or indices. */
 export interface Selection {
@@ -291,7 +292,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {
@@ -299,7 +300,14 @@ export function entityLabel(doc: MapDocument, e: MapEntity): string {
   let kind = KIND_LABELS[e.kind];
   if (e.kind === 'trap') kind = TRAP_SPECS[e.trap].label;
   if (e.kind === 'destructible') kind = DESTRUCTIBLE_SPECS[e.model].label;
-  const same = doc.entities.filter((o) => o.kind === e.kind && (e.kind !== 'trap' || (o.kind === 'trap' && o.trap === e.trap)) && (e.kind !== 'destructible' || (o.kind === 'destructible' && o.model === e.model)));
+  if (e.kind === 'prop') kind = getProp(e.model)?.displayName ?? 'Prop';
+  const same = doc.entities.filter(
+    (o) =>
+      o.kind === e.kind &&
+      (e.kind !== 'trap' || (o.kind === 'trap' && o.trap === e.trap)) &&
+      (e.kind !== 'destructible' || (o.kind === 'destructible' && o.model === e.model)) &&
+      (e.kind !== 'prop' || (o.kind === 'prop' && o.model === e.model)),
+  );
   return `${kind} ${same.indexOf(e) + 1}`;
 }
 

@@ -27,6 +27,7 @@ export function resolveSurface(
 /** Which paintable slot a box face belongs to. Floor slabs: top face is the floor, every other face the underside. */
 export function faceSlot(box: Pick<WorldBox, 'kind'>, normal: readonly [number, number, number]): SurfaceSlot {
   if (box.kind === 'trim') return 'trim';
+  if (box.kind === 'prop') return 'solids';
   if (box.kind === 'wall') return 'walls';
   if (box.kind === 'solid') return 'solids';
   return normal[1] > 0.5 ? 'floor' : 'underside';

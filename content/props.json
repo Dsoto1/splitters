@@ -1,0 +1,1380 @@
+{
+  "$comment": "Placeable props from CC0 packs. tools/content/prepare-props.mjs normalises each model (centred, standing on y = 0, scaled to `height` metres), embeds its texture, writes packages/client/public/props, content/props.lock.json and packages/shared/src/content/props.generated.ts (sizes and collision for the simulation). collide: box = the model's bounds, trunk = a 0.5 m post, none = walk through.",
+  "packs": {
+    "kenney-survival-kit": {
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-survival-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-furniture-kit": {
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-furniture-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-graveyard-kit": {
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-graveyard-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-pirate-kit": {
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-pirate-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-space-station-kit": {
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-space-station-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-factory-kit": {
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-factory-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-mini-dungeon": {
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-mini-dungeon/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-city-kit-commercial": {
+      "title": "City Kit (Commercial) 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-city-kit-commercial/License.txt",
+      "retrieved": "2026-10-23"
+    }
+  },
+  "budgets": {
+    "maxTriangles": 6000,
+    "maxBytes": 400000
+  },
+  "props": [
+    {
+      "id": "barrel",
+      "pack": "kenney-survival-kit",
+      "src": "barrel.glb",
+      "name": "Barrel",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "barrel_open",
+      "pack": "kenney-survival-kit",
+      "src": "barrel-open.glb",
+      "name": "Open Barrel",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "crate_small",
+      "pack": "kenney-survival-kit",
+      "src": "box.glb",
+      "name": "Small Crate",
+      "category": "Crates & Barrels",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "crate_large",
+      "pack": "kenney-survival-kit",
+      "src": "box-large.glb",
+      "name": "Large Crate",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "crate_open",
+      "pack": "kenney-survival-kit",
+      "src": "box-open.glb",
+      "name": "Open Crate",
+      "category": "Crates & Barrels",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "chest",
+      "pack": "kenney-survival-kit",
+      "src": "chest.glb",
+      "name": "Chest",
+      "category": "Crates & Barrels",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "crate_bottles",
+      "pack": "kenney-pirate-kit",
+      "src": "crate-bottles.glb",
+      "name": "Bottle Crate",
+      "category": "Crates & Barrels",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "cargo_crate",
+      "pack": "kenney-pirate-kit",
+      "src": "crate.glb",
+      "name": "Cargo Crate",
+      "category": "Crates & Barrels",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "powder_keg",
+      "pack": "kenney-pirate-kit",
+      "src": "barrel.glb",
+      "name": "Powder Keg",
+      "category": "Crates & Barrels",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "cardboard_box",
+      "pack": "kenney-furniture-kit",
+      "src": "cardboardBoxClosed.glb",
+      "name": "Cardboard Box",
+      "category": "Crates & Barrels",
+      "height": 0.5,
+      "collide": "box"
+    },
+    {
+      "id": "cardboard_open",
+      "pack": "kenney-furniture-kit",
+      "src": "cardboardBoxOpen.glb",
+      "name": "Open Cardboard Box",
+      "category": "Crates & Barrels",
+      "height": 0.5,
+      "collide": "box"
+    },
+    {
+      "id": "factory_box",
+      "pack": "kenney-factory-kit",
+      "src": "box-large.glb",
+      "name": "Shipping Box",
+      "category": "Crates & Barrels",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "factory_box_long",
+      "pack": "kenney-factory-kit",
+      "src": "box-long.glb",
+      "name": "Long Shipping Box",
+      "category": "Crates & Barrels",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "container",
+      "pack": "kenney-space-station-kit",
+      "src": "container.glb",
+      "name": "Supply Container",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "container_tall",
+      "pack": "kenney-space-station-kit",
+      "src": "container-tall.glb",
+      "name": "Tall Container",
+      "category": "Crates & Barrels",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "container_wide",
+      "pack": "kenney-space-station-kit",
+      "src": "container-wide.glb",
+      "name": "Wide Container",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "dungeon_barrel",
+      "pack": "kenney-mini-dungeon",
+      "src": "barrel.glb",
+      "name": "Oak Barrel",
+      "category": "Crates & Barrels",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "dungeon_chest",
+      "pack": "kenney-mini-dungeon",
+      "src": "chest.glb",
+      "name": "Treasure Chest",
+      "category": "Crates & Barrels",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "machine",
+      "pack": "kenney-factory-kit",
+      "src": "machine-fortified.glb",
+      "name": "Heavy Machine",
+      "category": "Industrial",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "machine_window",
+      "pack": "kenney-factory-kit",
+      "src": "machine-window.glb",
+      "name": "Machine (Window)",
+      "category": "Industrial",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "hopper",
+      "pack": "kenney-factory-kit",
+      "src": "hopper-round.glb",
+      "name": "Hopper",
+      "category": "Industrial",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "hopper_tall",
+      "pack": "kenney-factory-kit",
+      "src": "hopper-high-square.glb",
+      "name": "Tall Hopper",
+      "category": "Industrial",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "piston",
+      "pack": "kenney-factory-kit",
+      "src": "piston-round.glb",
+      "name": "Piston",
+      "category": "Industrial",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "scanner",
+      "pack": "kenney-factory-kit",
+      "src": "scanner-high.glb",
+      "name": "Scanner Gate",
+      "category": "Industrial",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "conveyor",
+      "pack": "kenney-factory-kit",
+      "src": "conveyor-long.glb",
+      "name": "Conveyor",
+      "category": "Industrial",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "pipe_valve",
+      "pack": "kenney-factory-kit",
+      "src": "pipe-large-valve.glb",
+      "name": "Pipe Valve",
+      "category": "Industrial",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "pipe_glass",
+      "pack": "kenney-factory-kit",
+      "src": "pipe-glass-large.glb",
+      "name": "Glass Pipe",
+      "category": "Industrial",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "lever",
+      "pack": "kenney-factory-kit",
+      "src": "lever-double.glb",
+      "name": "Lever Panel",
+      "category": "Industrial",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "screen_panel",
+      "pack": "kenney-factory-kit",
+      "src": "screen-panel-wide.glb",
+      "name": "Control Screen",
+      "category": "Industrial",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "cone",
+      "pack": "kenney-factory-kit",
+      "src": "cone.glb",
+      "name": "Traffic Cone",
+      "category": "Industrial",
+      "height": 0.7,
+      "collide": "none"
+    },
+    {
+      "id": "warning_sign",
+      "pack": "kenney-factory-kit",
+      "src": "warning-traffic.glb",
+      "name": "Barrier",
+      "category": "Industrial",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "cog",
+      "pack": "kenney-factory-kit",
+      "src": "cog-c.glb",
+      "name": "Giant Cog",
+      "category": "Industrial",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "workbench",
+      "pack": "kenney-survival-kit",
+      "src": "workbench.glb",
+      "name": "Workbench",
+      "category": "Industrial",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "anvil",
+      "pack": "kenney-survival-kit",
+      "src": "workbench-anvil.glb",
+      "name": "Anvil",
+      "category": "Industrial",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "metal_panel",
+      "pack": "kenney-survival-kit",
+      "src": "metal-panel-screws.glb",
+      "name": "Metal Barricade",
+      "category": "Industrial",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "computer_bank",
+      "pack": "kenney-space-station-kit",
+      "src": "computer-system.glb",
+      "name": "Computer Bank",
+      "category": "Sci-Fi",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "computer_wide",
+      "pack": "kenney-space-station-kit",
+      "src": "computer-wide.glb",
+      "name": "Wide Console",
+      "category": "Sci-Fi",
+      "height": 1.3,
+      "collide": "box"
+    },
+    {
+      "id": "computer",
+      "pack": "kenney-space-station-kit",
+      "src": "computer.glb",
+      "name": "Console",
+      "category": "Sci-Fi",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "holo_table",
+      "pack": "kenney-space-station-kit",
+      "src": "table-display-planet.glb",
+      "name": "Holo Table",
+      "category": "Sci-Fi",
+      "height": 1.3,
+      "collide": "box"
+    },
+    {
+      "id": "display_table",
+      "pack": "kenney-space-station-kit",
+      "src": "table-display.glb",
+      "name": "Display Table",
+      "category": "Sci-Fi",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "space_table",
+      "pack": "kenney-space-station-kit",
+      "src": "table.glb",
+      "name": "Station Table",
+      "category": "Sci-Fi",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "space_chair",
+      "pack": "kenney-space-station-kit",
+      "src": "chair-armrest-headrest.glb",
+      "name": "Station Chair",
+      "category": "Sci-Fi",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "space_bed",
+      "pack": "kenney-space-station-kit",
+      "src": "bed-single-cover.glb",
+      "name": "Bunk",
+      "category": "Sci-Fi",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "barrier",
+      "pack": "kenney-space-station-kit",
+      "src": "structure-barrier.glb",
+      "name": "Barrier",
+      "category": "Sci-Fi",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "barrier_high",
+      "pack": "kenney-space-station-kit",
+      "src": "structure-barrier-high.glb",
+      "name": "High Barrier",
+      "category": "Sci-Fi",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "display_wall",
+      "pack": "kenney-space-station-kit",
+      "src": "display-wall-wide.glb",
+      "name": "Wall Display",
+      "category": "Sci-Fi",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "skip",
+      "pack": "kenney-space-station-kit",
+      "src": "skip-rocks.glb",
+      "name": "Ore Skip",
+      "category": "Sci-Fi",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "table",
+      "pack": "kenney-furniture-kit",
+      "src": "table.glb",
+      "name": "Table",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "table_round",
+      "pack": "kenney-furniture-kit",
+      "src": "tableRound.glb",
+      "name": "Round Table",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "table_cloth",
+      "pack": "kenney-furniture-kit",
+      "src": "tableCloth.glb",
+      "name": "Dining Table",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "chair",
+      "pack": "kenney-furniture-kit",
+      "src": "chair.glb",
+      "name": "Chair",
+      "category": "Furniture",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "chair_cushion",
+      "pack": "kenney-furniture-kit",
+      "src": "chairCushion.glb",
+      "name": "Cushioned Chair",
+      "category": "Furniture",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "desk",
+      "pack": "kenney-furniture-kit",
+      "src": "desk.glb",
+      "name": "Desk",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "desk_corner",
+      "pack": "kenney-furniture-kit",
+      "src": "deskCorner.glb",
+      "name": "Corner Desk",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "office_chair",
+      "pack": "kenney-furniture-kit",
+      "src": "chairDesk.glb",
+      "name": "Office Chair",
+      "category": "Furniture",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "bookcase",
+      "pack": "kenney-furniture-kit",
+      "src": "bookcaseOpen.glb",
+      "name": "Bookcase",
+      "category": "Furniture",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "bookcase_wide",
+      "pack": "kenney-furniture-kit",
+      "src": "bookcaseClosedWide.glb",
+      "name": "Wide Cabinet",
+      "category": "Furniture",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "sofa",
+      "pack": "kenney-furniture-kit",
+      "src": "loungeSofa.glb",
+      "name": "Sofa",
+      "category": "Furniture",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "sofa_long",
+      "pack": "kenney-furniture-kit",
+      "src": "loungeSofaLong.glb",
+      "name": "Long Sofa",
+      "category": "Furniture",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "armchair",
+      "pack": "kenney-furniture-kit",
+      "src": "loungeChair.glb",
+      "name": "Armchair",
+      "category": "Furniture",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "bed",
+      "pack": "kenney-furniture-kit",
+      "src": "bedDouble.glb",
+      "name": "Double Bed",
+      "category": "Furniture",
+      "height": 0.65,
+      "collide": "box"
+    },
+    {
+      "id": "bunk_bed",
+      "pack": "kenney-furniture-kit",
+      "src": "bedBunk.glb",
+      "name": "Bunk Bed",
+      "category": "Furniture",
+      "height": 1.7,
+      "collide": "box"
+    },
+    {
+      "id": "fridge",
+      "pack": "kenney-furniture-kit",
+      "src": "kitchenFridgeLarge.glb",
+      "name": "Fridge",
+      "category": "Furniture",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "stove",
+      "pack": "kenney-furniture-kit",
+      "src": "kitchenStove.glb",
+      "name": "Stove",
+      "category": "Furniture",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "kitchen_cabinet",
+      "pack": "kenney-furniture-kit",
+      "src": "kitchenCabinet.glb",
+      "name": "Kitchen Cabinet",
+      "category": "Furniture",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "tv",
+      "pack": "kenney-furniture-kit",
+      "src": "televisionModern.glb",
+      "name": "Television",
+      "category": "Furniture",
+      "height": 0.75,
+      "collide": "box"
+    },
+    {
+      "id": "tv_cabinet",
+      "pack": "kenney-furniture-kit",
+      "src": "cabinetTelevision.glb",
+      "name": "TV Cabinet",
+      "category": "Furniture",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "washer",
+      "pack": "kenney-furniture-kit",
+      "src": "washer.glb",
+      "name": "Washing Machine",
+      "category": "Furniture",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "bathtub",
+      "pack": "kenney-furniture-kit",
+      "src": "bathtub.glb",
+      "name": "Bathtub",
+      "category": "Furniture",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "toilet",
+      "pack": "kenney-furniture-kit",
+      "src": "toilet.glb",
+      "name": "Toilet",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "side_table",
+      "pack": "kenney-furniture-kit",
+      "src": "sideTableDrawers.glb",
+      "name": "Side Table",
+      "category": "Furniture",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "bench",
+      "pack": "kenney-furniture-kit",
+      "src": "bench.glb",
+      "name": "Bench",
+      "category": "Furniture",
+      "height": 0.45,
+      "collide": "box"
+    },
+    {
+      "id": "speaker",
+      "pack": "kenney-furniture-kit",
+      "src": "speaker.glb",
+      "name": "Speaker",
+      "category": "Furniture",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "trashcan",
+      "pack": "kenney-furniture-kit",
+      "src": "trashcan.glb",
+      "name": "Bin",
+      "category": "Furniture",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "potted_plant",
+      "pack": "kenney-furniture-kit",
+      "src": "pottedPlant.glb",
+      "name": "Potted Plant",
+      "category": "Decor",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "plant_small",
+      "pack": "kenney-furniture-kit",
+      "src": "plantSmall1.glb",
+      "name": "Small Plant",
+      "category": "Decor",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "floor_lamp",
+      "pack": "kenney-furniture-kit",
+      "src": "lampRoundFloor.glb",
+      "name": "Floor Lamp",
+      "category": "Decor",
+      "height": 1.7,
+      "collide": "none"
+    },
+    {
+      "id": "coat_rack",
+      "pack": "kenney-furniture-kit",
+      "src": "coatRackStanding.glb",
+      "name": "Coat Rack",
+      "category": "Decor",
+      "height": 1.8,
+      "collide": "none"
+    },
+    {
+      "id": "rug",
+      "pack": "kenney-furniture-kit",
+      "src": "rugRectangle.glb",
+      "name": "Rug",
+      "category": "Decor",
+      "height": 0.02,
+      "collide": "none"
+    },
+    {
+      "id": "rug_round",
+      "pack": "kenney-furniture-kit",
+      "src": "rugRound.glb",
+      "name": "Round Rug",
+      "category": "Decor",
+      "height": 0.02,
+      "collide": "none"
+    },
+    {
+      "id": "bar_stool",
+      "pack": "kenney-furniture-kit",
+      "src": "stoolBar.glb",
+      "name": "Bar Stool",
+      "category": "Furniture",
+      "height": 0.75,
+      "collide": "none"
+    },
+    {
+      "id": "parasol",
+      "pack": "kenney-city-kit-commercial",
+      "src": "detail-parasol-a.glb",
+      "name": "Parasol",
+      "category": "Decor",
+      "height": 2.6,
+      "collide": "trunk"
+    },
+    {
+      "id": "gravestone_cross",
+      "pack": "kenney-graveyard-kit",
+      "src": "gravestone-cross.glb",
+      "name": "Cross Gravestone",
+      "category": "Gothic",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "gravestone_round",
+      "pack": "kenney-graveyard-kit",
+      "src": "gravestone-round.glb",
+      "name": "Round Gravestone",
+      "category": "Gothic",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "gravestone_broken",
+      "pack": "kenney-graveyard-kit",
+      "src": "gravestone-broken.glb",
+      "name": "Broken Gravestone",
+      "category": "Gothic",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "grave",
+      "pack": "kenney-graveyard-kit",
+      "src": "grave.glb",
+      "name": "Grave",
+      "category": "Gothic",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "coffin",
+      "pack": "kenney-graveyard-kit",
+      "src": "coffin.glb",
+      "name": "Coffin",
+      "category": "Gothic",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "coffin_old",
+      "pack": "kenney-graveyard-kit",
+      "src": "coffin-old.glb",
+      "name": "Old Coffin",
+      "category": "Gothic",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "crypt",
+      "pack": "kenney-graveyard-kit",
+      "src": "crypt-small.glb",
+      "name": "Small Crypt",
+      "category": "Gothic",
+      "height": 3.2,
+      "collide": "box"
+    },
+    {
+      "id": "altar",
+      "pack": "kenney-graveyard-kit",
+      "src": "altar-stone.glb",
+      "name": "Stone Altar",
+      "category": "Gothic",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "pillar",
+      "pack": "kenney-graveyard-kit",
+      "src": "pillar-large.glb",
+      "name": "Stone Pillar",
+      "category": "Gothic",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "obelisk",
+      "pack": "kenney-graveyard-kit",
+      "src": "pillar-obelisk.glb",
+      "name": "Obelisk",
+      "category": "Gothic",
+      "height": 3.2,
+      "collide": "box"
+    },
+    {
+      "id": "cross_column",
+      "pack": "kenney-graveyard-kit",
+      "src": "cross-column.glb",
+      "name": "Cross Column",
+      "category": "Gothic",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "iron_fence",
+      "pack": "kenney-graveyard-kit",
+      "src": "iron-fence.glb",
+      "name": "Iron Fence",
+      "category": "Gothic",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "iron_fence_damaged",
+      "pack": "kenney-graveyard-kit",
+      "src": "iron-fence-damaged.glb",
+      "name": "Broken Iron Fence",
+      "category": "Gothic",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "stone_wall",
+      "pack": "kenney-graveyard-kit",
+      "src": "stone-wall.glb",
+      "name": "Low Stone Wall",
+      "category": "Gothic",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "stone_wall_damaged",
+      "pack": "kenney-graveyard-kit",
+      "src": "stone-wall-damaged.glb",
+      "name": "Crumbling Wall",
+      "category": "Gothic",
+      "height": 1.3,
+      "collide": "box"
+    },
+    {
+      "id": "lightpost",
+      "pack": "kenney-graveyard-kit",
+      "src": "lightpost-single.glb",
+      "name": "Lamp Post",
+      "category": "Gothic",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "lightpost_double",
+      "pack": "kenney-graveyard-kit",
+      "src": "lightpost-double.glb",
+      "name": "Double Lamp Post",
+      "category": "Gothic",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "lantern",
+      "pack": "kenney-graveyard-kit",
+      "src": "lantern-candle.glb",
+      "name": "Lantern",
+      "category": "Gothic",
+      "height": 0.6,
+      "collide": "none"
+    },
+    {
+      "id": "candles",
+      "pack": "kenney-graveyard-kit",
+      "src": "candle-multiple.glb",
+      "name": "Candles",
+      "category": "Gothic",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "fire_basket",
+      "pack": "kenney-graveyard-kit",
+      "src": "fire-basket.glb",
+      "name": "Fire Basket",
+      "category": "Gothic",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "urn",
+      "pack": "kenney-graveyard-kit",
+      "src": "urn-round.glb",
+      "name": "Urn",
+      "category": "Gothic",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "pumpkin",
+      "pack": "kenney-graveyard-kit",
+      "src": "pumpkin-carved.glb",
+      "name": "Carved Pumpkin",
+      "category": "Gothic",
+      "height": 0.45,
+      "collide": "none"
+    },
+    {
+      "id": "hay_bale",
+      "pack": "kenney-graveyard-kit",
+      "src": "hay-bale.glb",
+      "name": "Hay Bale",
+      "category": "Gothic",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "graveyard_bench",
+      "pack": "kenney-graveyard-kit",
+      "src": "bench.glb",
+      "name": "Stone Bench",
+      "category": "Gothic",
+      "height": 0.5,
+      "collide": "box"
+    },
+    {
+      "id": "debris",
+      "pack": "kenney-graveyard-kit",
+      "src": "debris.glb",
+      "name": "Rubble",
+      "category": "Gothic",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "tree",
+      "pack": "kenney-survival-kit",
+      "src": "tree.glb",
+      "name": "Tree",
+      "category": "Nature",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_tall",
+      "pack": "kenney-survival-kit",
+      "src": "tree-tall.glb",
+      "name": "Tall Tree",
+      "category": "Nature",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_autumn",
+      "pack": "kenney-survival-kit",
+      "src": "tree-autumn.glb",
+      "name": "Autumn Tree",
+      "category": "Nature",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine",
+      "pack": "kenney-graveyard-kit",
+      "src": "pine.glb",
+      "name": "Pine",
+      "category": "Nature",
+      "height": 6.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_crooked",
+      "pack": "kenney-graveyard-kit",
+      "src": "pine-crooked.glb",
+      "name": "Crooked Pine",
+      "category": "Nature",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "palm",
+      "pack": "kenney-pirate-kit",
+      "src": "palm-straight.glb",
+      "name": "Palm",
+      "category": "Nature",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "palm_bent",
+      "pack": "kenney-pirate-kit",
+      "src": "palm-bend.glb",
+      "name": "Leaning Palm",
+      "category": "Nature",
+      "height": 6.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "log",
+      "pack": "kenney-survival-kit",
+      "src": "tree-log.glb",
+      "name": "Log",
+      "category": "Nature",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "rock_large",
+      "pack": "kenney-survival-kit",
+      "src": "rock-a.glb",
+      "name": "Boulder",
+      "category": "Nature",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "rock_medium",
+      "pack": "kenney-survival-kit",
+      "src": "rock-b.glb",
+      "name": "Rock",
+      "category": "Nature",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "rock_small",
+      "pack": "kenney-survival-kit",
+      "src": "rock-c.glb",
+      "name": "Small Rock",
+      "category": "Nature",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "rock_flat",
+      "pack": "kenney-survival-kit",
+      "src": "rock-flat.glb",
+      "name": "Flat Rock",
+      "category": "Nature",
+      "height": 0.4,
+      "collide": "box"
+    },
+    {
+      "id": "rocks_tall",
+      "pack": "kenney-graveyard-kit",
+      "src": "rocks-tall.glb",
+      "name": "Rock Spire",
+      "category": "Nature",
+      "height": 2.4,
+      "collide": "box"
+    },
+    {
+      "id": "grass_tuft",
+      "pack": "kenney-survival-kit",
+      "src": "grass-large.glb",
+      "name": "Grass Tuft",
+      "category": "Nature",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "stump",
+      "pack": "kenney-survival-kit",
+      "src": "tree-trunk.glb",
+      "name": "Stump",
+      "category": "Nature",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "woodpile",
+      "pack": "kenney-survival-kit",
+      "src": "resource-wood.glb",
+      "name": "Woodpile",
+      "category": "Nature",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "planks_stack",
+      "pack": "kenney-survival-kit",
+      "src": "resource-planks.glb",
+      "name": "Plank Stack",
+      "category": "Nature",
+      "height": 0.5,
+      "collide": "box"
+    },
+    {
+      "id": "tent",
+      "pack": "kenney-survival-kit",
+      "src": "tent.glb",
+      "name": "Tent",
+      "category": "Medieval",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "tent_canvas",
+      "pack": "kenney-survival-kit",
+      "src": "tent-canvas.glb",
+      "name": "Canvas Shelter",
+      "category": "Medieval",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "campfire",
+      "pack": "kenney-survival-kit",
+      "src": "campfire-pit.glb",
+      "name": "Campfire",
+      "category": "Medieval",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "fence",
+      "pack": "kenney-survival-kit",
+      "src": "fence.glb",
+      "name": "Wooden Fence",
+      "category": "Medieval",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "palisade",
+      "pack": "kenney-survival-kit",
+      "src": "fence-fortified.glb",
+      "name": "Palisade",
+      "category": "Medieval",
+      "height": 1.8,
+      "collide": "box"
+    },
+    {
+      "id": "signpost",
+      "pack": "kenney-survival-kit",
+      "src": "signpost.glb",
+      "name": "Signpost",
+      "category": "Medieval",
+      "height": 2.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "bucket",
+      "pack": "kenney-survival-kit",
+      "src": "bucket.glb",
+      "name": "Bucket",
+      "category": "Medieval",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "column",
+      "pack": "kenney-mini-dungeon",
+      "src": "column.glb",
+      "name": "Column",
+      "category": "Medieval",
+      "height": 3.4,
+      "collide": "box"
+    },
+    {
+      "id": "wood_support",
+      "pack": "kenney-mini-dungeon",
+      "src": "wood-support.glb",
+      "name": "Timber Support",
+      "category": "Medieval",
+      "height": 3.2,
+      "collide": "box"
+    },
+    {
+      "id": "banner",
+      "pack": "kenney-mini-dungeon",
+      "src": "banner.glb",
+      "name": "Banner",
+      "category": "Medieval",
+      "height": 2.6,
+      "collide": "none"
+    },
+    {
+      "id": "pot",
+      "pack": "kenney-mini-dungeon",
+      "src": "pot.glb",
+      "name": "Clay Pot",
+      "category": "Medieval",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "dungeon_table",
+      "pack": "kenney-mini-dungeon",
+      "src": "table.glb",
+      "name": "Tavern Table",
+      "category": "Medieval",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "dungeon_chair",
+      "pack": "kenney-mini-dungeon",
+      "src": "chair.glb",
+      "name": "Stool",
+      "category": "Medieval",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "shield",
+      "pack": "kenney-mini-dungeon",
+      "src": "shield-round.glb",
+      "name": "Round Shield",
+      "category": "Medieval",
+      "height": 0.8,
+      "collide": "none"
+    },
+    {
+      "id": "cannon",
+      "pack": "kenney-pirate-kit",
+      "src": "cannon.glb",
+      "name": "Cannon",
+      "category": "Pirate & Coast",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "cannon_mobile",
+      "pack": "kenney-pirate-kit",
+      "src": "cannon-mobile.glb",
+      "name": "Field Cannon",
+      "category": "Pirate & Coast",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "cannonballs",
+      "pack": "kenney-pirate-kit",
+      "src": "cannon-ball.glb",
+      "name": "Cannonball",
+      "category": "Pirate & Coast",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "rowboat",
+      "pack": "kenney-pirate-kit",
+      "src": "boat-row-small.glb",
+      "name": "Rowing Boat",
+      "category": "Pirate & Coast",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "flag",
+      "pack": "kenney-pirate-kit",
+      "src": "flag-pirate.glb",
+      "name": "Flag",
+      "category": "Pirate & Coast",
+      "height": 4.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "mast",
+      "pack": "kenney-pirate-kit",
+      "src": "mast.glb",
+      "name": "Mast",
+      "category": "Pirate & Coast",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "bottle",
+      "pack": "kenney-pirate-kit",
+      "src": "bottle-large.glb",
+      "name": "Bottle",
+      "category": "Pirate & Coast",
+      "height": 0.4,
+      "collide": "none"
+    }
+  ]
+}

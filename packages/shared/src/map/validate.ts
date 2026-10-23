@@ -1,6 +1,7 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
+import { getProp } from '../content/props.ts';
 import { buildOccupancy, cellHasFloor, cellKey } from './geometry.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument } from './schema.ts';
@@ -114,6 +115,10 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   }
   if (!pickups.some((p) => getItem(p.item)?.effect.kind === 'health')) {
     issues.push({ severity: 'suggestion', code: 'pickup.no_health', message: 'no health pickups: fights will snowball' });
+  }
+
+  for (const e of map.entities) {
+    if (e.kind === 'prop' && !getProp(e.model)) issues.push({ severity: 'error', code: 'prop.unknown', message: `prop ${e.id} uses unknown model "${e.model}"`, targetId: e.id });
   }
 
   issues.push(...validateScenario(map));

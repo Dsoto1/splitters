@@ -14,7 +14,7 @@ export function loadArena(): MapDocument {
 export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns: [number, number, number][] = [[0, 0, 0]]): MapDocument {
   return {
     format: 'chronosplit.map',
-    formatVersion: 5,
+    formatVersion: 6,
     metadata: {
       id: 'test_map',
       name: 'Test',

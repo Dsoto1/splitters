@@ -32,6 +32,7 @@ import { MapStyler } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import { ScenarioVisuals } from './scenarioVisuals.ts';
+import { createPropNode } from './propVisuals.ts';
 import { CharacterLibrary, type CharacterInstance, type CharacterSpec } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -138,6 +139,7 @@ export class GameView {
     const sky = MapStyler.skyColor(doc);
     this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
+    for (const e of doc.entities) if (e.kind === 'prop') createPropNode(this.scene, this.models, e, `prop_${e.id}`);
     this.scenario.build(doc.entities);
     // Warm the model cache so first switches and pickups don't hitch.
     for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);

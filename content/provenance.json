@@ -1578,6 +1578,3343 @@
         "simplified",
         "low-detail copy of each mesh added"
       ]
+    },
+    {
+      "file": "textures/Asphalt031_color.jpg",
+      "sha256": "3c7247af9ff89325",
+      "bytes": 59092,
+      "source": "ambientcg:Asphalt031",
+      "title": "ambientCG PBR materials: Asphalt031",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Asphalt031",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Asphalt031_normal.jpg",
+      "sha256": "0699b279fd967339",
+      "bytes": 29650,
+      "source": "ambientcg:Asphalt031",
+      "title": "ambientCG PBR materials: Asphalt031",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Asphalt031",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks059_color.jpg",
+      "sha256": "2150ed686b79eda7",
+      "bytes": 50977,
+      "source": "ambientcg:Bricks059",
+      "title": "ambientCG PBR materials: Bricks059",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks059",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks059_normal.jpg",
+      "sha256": "e546822520a669ea",
+      "bytes": 53320,
+      "source": "ambientcg:Bricks059",
+      "title": "ambientCG PBR materials: Bricks059",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks059",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks076C_color.jpg",
+      "sha256": "d66acfaee7efb287",
+      "bytes": 49341,
+      "source": "ambientcg:Bricks076C",
+      "title": "ambientCG PBR materials: Bricks076C",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks076C",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks076C_normal.jpg",
+      "sha256": "a51b31193ee949fe",
+      "bytes": 67595,
+      "source": "ambientcg:Bricks076C",
+      "title": "ambientCG PBR materials: Bricks076C",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks076C",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks090_color.jpg",
+      "sha256": "4ead3b82ed90ac51",
+      "bytes": 49722,
+      "source": "ambientcg:Bricks090",
+      "title": "ambientCG PBR materials: Bricks090",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks090",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks090_normal.jpg",
+      "sha256": "1d1ac7720e489679",
+      "bytes": 29376,
+      "source": "ambientcg:Bricks090",
+      "title": "ambientCG PBR materials: Bricks090",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks090",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Carpet012_color.jpg",
+      "sha256": "0fddd3dde27a65bd",
+      "bytes": 78841,
+      "source": "ambientcg:Carpet012",
+      "title": "ambientCG PBR materials: Carpet012",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Carpet012",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Carpet012_normal.jpg",
+      "sha256": "9935eaa968866907",
+      "bytes": 84245,
+      "source": "ambientcg:Carpet012",
+      "title": "ambientCG PBR materials: Carpet012",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Carpet012",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Concrete034_color.jpg",
+      "sha256": "f68bc38b91bedd5d",
+      "bytes": 17464,
+      "source": "ambientcg:Concrete034",
+      "title": "ambientCG PBR materials: Concrete034",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Concrete034",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Concrete034_normal.jpg",
+      "sha256": "ecfcc0e4ad021923",
+      "bytes": 32346,
+      "source": "ambientcg:Concrete034",
+      "title": "ambientCG PBR materials: Concrete034",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Concrete034",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Concrete042A_color.jpg",
+      "sha256": "0bc5d5848e5d4bac",
+      "bytes": 15971,
+      "source": "ambientcg:Concrete042A",
+      "title": "ambientCG PBR materials: Concrete042A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Concrete042A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Concrete042A_normal.jpg",
+      "sha256": "e4c6fcaeb6e3fb68",
+      "bytes": 11256,
+      "source": "ambientcg:Concrete042A",
+      "title": "ambientCG PBR materials: Concrete042A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Concrete042A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/CorrugatedSteel007A_color.jpg",
+      "sha256": "7fbf363963062aa5",
+      "bytes": 6976,
+      "source": "ambientcg:CorrugatedSteel007A",
+      "title": "ambientCG PBR materials: CorrugatedSteel007A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=CorrugatedSteel007A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/CorrugatedSteel007A_normal.jpg",
+      "sha256": "6f141f6180f35371",
+      "bytes": 21684,
+      "source": "ambientcg:CorrugatedSteel007A",
+      "title": "ambientCG PBR materials: CorrugatedSteel007A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=CorrugatedSteel007A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Fabric028_color.jpg",
+      "sha256": "2d5d6615675b29ec",
+      "bytes": 54451,
+      "source": "ambientcg:Fabric028",
+      "title": "ambientCG PBR materials: Fabric028",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Fabric028",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Fabric028_normal.jpg",
+      "sha256": "d4e25f92cc080641",
+      "bytes": 32399,
+      "source": "ambientcg:Fabric028",
+      "title": "ambientCG PBR materials: Fabric028",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Fabric028",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Facade006_color.jpg",
+      "sha256": "75be5383b21eabe6",
+      "bytes": 30512,
+      "source": "ambientcg:Facade006",
+      "title": "ambientCG PBR materials: Facade006",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Facade006",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Facade006_normal.jpg",
+      "sha256": "f69f75e5d7a63ee2",
+      "bytes": 18445,
+      "source": "ambientcg:Facade006",
+      "title": "ambientCG PBR materials: Facade006",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Facade006",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Grass001_color.jpg",
+      "sha256": "cf77d8f10ce5724c",
+      "bytes": 48825,
+      "source": "ambientcg:Grass001",
+      "title": "ambientCG PBR materials: Grass001",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Grass001",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Grass001_normal.jpg",
+      "sha256": "651cb8970065996d",
+      "bytes": 67205,
+      "source": "ambientcg:Grass001",
+      "title": "ambientCG PBR materials: Grass001",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Grass001",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Gravel023_color.jpg",
+      "sha256": "aa5e45033c0956eb",
+      "bytes": 51383,
+      "source": "ambientcg:Gravel023",
+      "title": "ambientCG PBR materials: Gravel023",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Gravel023",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Gravel023_normal.jpg",
+      "sha256": "d1f3a603899a8bec",
+      "bytes": 107025,
+      "source": "ambientcg:Gravel023",
+      "title": "ambientCG PBR materials: Gravel023",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Gravel023",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Ground037_color.jpg",
+      "sha256": "1ea4da9fad9fa214",
+      "bytes": 74374,
+      "source": "ambientcg:Ground037",
+      "title": "ambientCG PBR materials: Ground037",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Ground037",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Ground037_normal.jpg",
+      "sha256": "9e73eab77d525dbd",
+      "bytes": 61345,
+      "source": "ambientcg:Ground037",
+      "title": "ambientCG PBR materials: Ground037",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Ground037",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Ground054_color.jpg",
+      "sha256": "db678bdd39980418",
+      "bytes": 24864,
+      "source": "ambientcg:Ground054",
+      "title": "ambientCG PBR materials: Ground054",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Ground054",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Ground054_normal.jpg",
+      "sha256": "23a4ba1edf57be47",
+      "bytes": 52128,
+      "source": "ambientcg:Ground054",
+      "title": "ambientCG PBR materials: Ground054",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Ground054",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Ice002_color.jpg",
+      "sha256": "4d0cffcc3933c011",
+      "bytes": 41881,
+      "source": "ambientcg:Ice002",
+      "title": "ambientCG PBR materials: Ice002",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Ice002",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Ice002_normal.jpg",
+      "sha256": "e006baea4686ebda",
+      "bytes": 10047,
+      "source": "ambientcg:Ice002",
+      "title": "ambientCG PBR materials: Ice002",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Ice002",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Lava004_color.jpg",
+      "sha256": "bc5c5e8b6750941c",
+      "bytes": 43755,
+      "source": "ambientcg:Lava004",
+      "title": "ambientCG PBR materials: Lava004",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Lava004",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Lava004_normal.jpg",
+      "sha256": "818b42d49c1bf4c2",
+      "bytes": 47386,
+      "source": "ambientcg:Lava004",
+      "title": "ambientCG PBR materials: Lava004",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Lava004",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Lava004_emission.jpg",
+      "sha256": "c8c6845d09fd3deb",
+      "bytes": 49086,
+      "source": "ambientcg:Lava004",
+      "title": "ambientCG PBR materials: Lava004",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Lava004",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Marble006_color.jpg",
+      "sha256": "16632d8837867e83",
+      "bytes": 43587,
+      "source": "ambientcg:Marble006",
+      "title": "ambientCG PBR materials: Marble006",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Marble006",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Marble006_normal.jpg",
+      "sha256": "f39c970b8023519b",
+      "bytes": 1104,
+      "source": "ambientcg:Marble006",
+      "title": "ambientCG PBR materials: Marble006",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Marble006",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Metal049A_color.jpg",
+      "sha256": "185885f290cfd4e2",
+      "bytes": 2788,
+      "source": "ambientcg:Metal049A",
+      "title": "ambientCG PBR materials: Metal049A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Metal049A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Metal049A_normal.jpg",
+      "sha256": "8e6e4f5a26ab02ec",
+      "bytes": 1131,
+      "source": "ambientcg:Metal049A",
+      "title": "ambientCG PBR materials: Metal049A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Metal049A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Metal063_color.jpg",
+      "sha256": "0fb590a63676607d",
+      "bytes": 21425,
+      "source": "ambientcg:Metal063",
+      "title": "ambientCG PBR materials: Metal063",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Metal063",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Metal063_normal.jpg",
+      "sha256": "6b17f23b33e107a6",
+      "bytes": 1101,
+      "source": "ambientcg:Metal063",
+      "title": "ambientCG PBR materials: Metal063",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Metal063",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/MetalPlates006_color.jpg",
+      "sha256": "eccb5064a105ce6a",
+      "bytes": 22829,
+      "source": "ambientcg:MetalPlates006",
+      "title": "ambientCG PBR materials: MetalPlates006",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=MetalPlates006",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/MetalPlates006_normal.jpg",
+      "sha256": "539063a991831541",
+      "bytes": 40108,
+      "source": "ambientcg:MetalPlates006",
+      "title": "ambientCG PBR materials: MetalPlates006",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=MetalPlates006",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/MetalPlates013_color.jpg",
+      "sha256": "9e46af2e132af287",
+      "bytes": 35533,
+      "source": "ambientcg:MetalPlates013",
+      "title": "ambientCG PBR materials: MetalPlates013",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=MetalPlates013",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/MetalPlates013_normal.jpg",
+      "sha256": "4bd0be6f1b5423a3",
+      "bytes": 18796,
+      "source": "ambientcg:MetalPlates013",
+      "title": "ambientCG PBR materials: MetalPlates013",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=MetalPlates013",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/MetalWalkway014_color.jpg",
+      "sha256": "5a6eb5e4ba87c4e1",
+      "bytes": 53136,
+      "source": "ambientcg:MetalWalkway014",
+      "title": "ambientCG PBR materials: MetalWalkway014",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=MetalWalkway014",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/MetalWalkway014_normal.jpg",
+      "sha256": "61bbcff476244298",
+      "bytes": 37235,
+      "source": "ambientcg:MetalWalkway014",
+      "title": "ambientCG PBR materials: MetalWalkway014",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=MetalWalkway014",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Moss002_color.jpg",
+      "sha256": "49a9c094a87dfa8b",
+      "bytes": 59247,
+      "source": "ambientcg:Moss002",
+      "title": "ambientCG PBR materials: Moss002",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Moss002",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Moss002_normal.jpg",
+      "sha256": "11e1e368f2e54a7f",
+      "bytes": 54378,
+      "source": "ambientcg:Moss002",
+      "title": "ambientCG PBR materials: Moss002",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Moss002",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Onyx015_color.jpg",
+      "sha256": "ffe137092136d5ca",
+      "bytes": 38223,
+      "source": "ambientcg:Onyx015",
+      "title": "ambientCG PBR materials: Onyx015",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Onyx015",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Onyx015_normal.jpg",
+      "sha256": "f964be01beee75c7",
+      "bytes": 1114,
+      "source": "ambientcg:Onyx015",
+      "title": "ambientCG PBR materials: Onyx015",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Onyx015",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/PaintedPlaster017_color.jpg",
+      "sha256": "5c2d8964df397ee0",
+      "bytes": 13096,
+      "source": "ambientcg:PaintedPlaster017",
+      "title": "ambientCG PBR materials: PaintedPlaster017",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=PaintedPlaster017",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/PaintedPlaster017_normal.jpg",
+      "sha256": "faa4ddc06eca364e",
+      "bytes": 68871,
+      "source": "ambientcg:PaintedPlaster017",
+      "title": "ambientCG PBR materials: PaintedPlaster017",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=PaintedPlaster017",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/PaintedWood005_color.jpg",
+      "sha256": "1d14292f915f0102",
+      "bytes": 40645,
+      "source": "ambientcg:PaintedWood005",
+      "title": "ambientCG PBR materials: PaintedWood005",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=PaintedWood005",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/PaintedWood005_normal.jpg",
+      "sha256": "7b1669ec627a1b4e",
+      "bytes": 24006,
+      "source": "ambientcg:PaintedWood005",
+      "title": "ambientCG PBR materials: PaintedWood005",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=PaintedWood005",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/PavingStones130_color.jpg",
+      "sha256": "0bdef43185d4666b",
+      "bytes": 48816,
+      "source": "ambientcg:PavingStones130",
+      "title": "ambientCG PBR materials: PavingStones130",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=PavingStones130",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/PavingStones130_normal.jpg",
+      "sha256": "04c25f64aa835308",
+      "bytes": 28790,
+      "source": "ambientcg:PavingStones130",
+      "title": "ambientCG PBR materials: PavingStones130",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=PavingStones130",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Planks037A_color.jpg",
+      "sha256": "fc62d614d3a0e52f",
+      "bytes": 30098,
+      "source": "ambientcg:Planks037A",
+      "title": "ambientCG PBR materials: Planks037A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Planks037A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Planks037A_normal.jpg",
+      "sha256": "1966cb9d9961bc2d",
+      "bytes": 19584,
+      "source": "ambientcg:Planks037A",
+      "title": "ambientCG PBR materials: Planks037A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Planks037A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Plaster001_color.jpg",
+      "sha256": "1ed8b17d57b7984c",
+      "bytes": 11017,
+      "source": "ambientcg:Plaster001",
+      "title": "ambientCG PBR materials: Plaster001",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Plaster001",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Plaster001_normal.jpg",
+      "sha256": "4f70d49688210e9b",
+      "bytes": 32689,
+      "source": "ambientcg:Plaster001",
+      "title": "ambientCG PBR materials: Plaster001",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Plaster001",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Rock064_color.jpg",
+      "sha256": "bf7ba5649094dedf",
+      "bytes": 63936,
+      "source": "ambientcg:Rock064",
+      "title": "ambientCG PBR materials: Rock064",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Rock064",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Rock064_normal.jpg",
+      "sha256": "74a5ed4d7a2664c1",
+      "bytes": 41510,
+      "source": "ambientcg:Rock064",
+      "title": "ambientCG PBR materials: Rock064",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Rock064",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/RoofingTiles008_color.jpg",
+      "sha256": "1eab3975450fc451",
+      "bytes": 22756,
+      "source": "ambientcg:RoofingTiles008",
+      "title": "ambientCG PBR materials: RoofingTiles008",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=RoofingTiles008",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/RoofingTiles008_normal.jpg",
+      "sha256": "a5ea9bc161c3afac",
+      "bytes": 40740,
+      "source": "ambientcg:RoofingTiles008",
+      "title": "ambientCG PBR materials: RoofingTiles008",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=RoofingTiles008",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/SheetMetal004_color.jpg",
+      "sha256": "58075a59b0d2b482",
+      "bytes": 17920,
+      "source": "ambientcg:SheetMetal004",
+      "title": "ambientCG PBR materials: SheetMetal004",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=SheetMetal004",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/SheetMetal004_normal.jpg",
+      "sha256": "1e8ce91912c0dc28",
+      "bytes": 64878,
+      "source": "ambientcg:SheetMetal004",
+      "title": "ambientCG PBR materials: SheetMetal004",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=SheetMetal004",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Snow015_color.jpg",
+      "sha256": "fac99757f92cc42a",
+      "bytes": 80401,
+      "source": "ambientcg:Snow015",
+      "title": "ambientCG PBR materials: Snow015",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Snow015",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Snow015_normal.jpg",
+      "sha256": "26c20f825fc588b1",
+      "bytes": 54317,
+      "source": "ambientcg:Snow015",
+      "title": "ambientCG PBR materials: Snow015",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Snow015",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Terrazzo013_color.jpg",
+      "sha256": "a800a731261402ce",
+      "bytes": 63376,
+      "source": "ambientcg:Terrazzo013",
+      "title": "ambientCG PBR materials: Terrazzo013",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Terrazzo013",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Terrazzo013_normal.jpg",
+      "sha256": "89f2a7fdeefc9e34",
+      "bytes": 1228,
+      "source": "ambientcg:Terrazzo013",
+      "title": "ambientCG PBR materials: Terrazzo013",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Terrazzo013",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles074_color.jpg",
+      "sha256": "8a870421d502f933",
+      "bytes": 31625,
+      "source": "ambientcg:Tiles074",
+      "title": "ambientCG PBR materials: Tiles074",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles074",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles074_normal.jpg",
+      "sha256": "d38c9acfd0442808",
+      "bytes": 1862,
+      "source": "ambientcg:Tiles074",
+      "title": "ambientCG PBR materials: Tiles074",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles074",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles090_color.jpg",
+      "sha256": "e76274489a2dc25d",
+      "bytes": 25882,
+      "source": "ambientcg:Tiles090",
+      "title": "ambientCG PBR materials: Tiles090",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles090",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles090_normal.jpg",
+      "sha256": "20203e8cff52b9c8",
+      "bytes": 49579,
+      "source": "ambientcg:Tiles090",
+      "title": "ambientCG PBR materials: Tiles090",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles090",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles101_color.jpg",
+      "sha256": "c68f9eab3f1475aa",
+      "bytes": 92884,
+      "source": "ambientcg:Tiles101",
+      "title": "ambientCG PBR materials: Tiles101",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles101",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles101_normal.jpg",
+      "sha256": "d538b254c28f2200",
+      "bytes": 22526,
+      "source": "ambientcg:Tiles101",
+      "title": "ambientCG PBR materials: Tiles101",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles101",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Travertine009_color.jpg",
+      "sha256": "bf9f3c2a766d0e5d",
+      "bytes": 23409,
+      "source": "ambientcg:Travertine009",
+      "title": "ambientCG PBR materials: Travertine009",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Travertine009",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Travertine009_normal.jpg",
+      "sha256": "b766d291b759c6a2",
+      "bytes": 1145,
+      "source": "ambientcg:Travertine009",
+      "title": "ambientCG PBR materials: Travertine009",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Travertine009",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Wood051_color.jpg",
+      "sha256": "d59779e79b1892a2",
+      "bytes": 21876,
+      "source": "ambientcg:Wood051",
+      "title": "ambientCG PBR materials: Wood051",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Wood051",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Wood051_normal.jpg",
+      "sha256": "e22280ed0f78d0bb",
+      "bytes": 24519,
+      "source": "ambientcg:Wood051",
+      "title": "ambientCG PBR materials: Wood051",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Wood051",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/WoodFloor041_color.jpg",
+      "sha256": "248e3638459ee193",
+      "bytes": 40795,
+      "source": "ambientcg:WoodFloor041",
+      "title": "ambientCG PBR materials: WoodFloor041",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=WoodFloor041",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/WoodFloor041_normal.jpg",
+      "sha256": "59c88fb004b83e69",
+      "bytes": 9809,
+      "source": "ambientcg:WoodFloor041",
+      "title": "ambientCG PBR materials: WoodFloor041",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=WoodFloor041",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/WoodSiding008_color.jpg",
+      "sha256": "668ce01c5a8fc2ef",
+      "bytes": 17611,
+      "source": "ambientcg:WoodSiding008",
+      "title": "ambientCG PBR materials: WoodSiding008",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=WoodSiding008",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/WoodSiding008_normal.jpg",
+      "sha256": "62174a321406f541",
+      "bytes": 57383,
+      "source": "ambientcg:WoodSiding008",
+      "title": "ambientCG PBR materials: WoodSiding008",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=WoodSiding008",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "props/barrel.glb",
+      "sha256": "baf840b019b10529",
+      "triangles": 412,
+      "bytes": 29220,
+      "source": "kenney-survival-kit/barrel.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/barrel_open.glb",
+      "sha256": "2061f22ea7d8d3e9",
+      "triangles": 380,
+      "bytes": 27252,
+      "source": "kenney-survival-kit/barrel-open.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/crate_small.glb",
+      "sha256": "c5a2b529e807fa2d",
+      "triangles": 124,
+      "bytes": 16996,
+      "source": "kenney-survival-kit/box.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/crate_large.glb",
+      "sha256": "626c376bcda568cf",
+      "triangles": 124,
+      "bytes": 17044,
+      "source": "kenney-survival-kit/box-large.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/crate_open.glb",
+      "sha256": "4adc524b9a95d8f2",
+      "triangles": 156,
+      "bytes": 18992,
+      "source": "kenney-survival-kit/box-open.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/chest.glb",
+      "sha256": "9230691f6bd18859",
+      "triangles": 322,
+      "bytes": 29124,
+      "source": "kenney-survival-kit/chest.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/crate_bottles.glb",
+      "sha256": "874b4db181b4fb04",
+      "triangles": 572,
+      "bytes": 50600,
+      "source": "kenney-pirate-kit/crate-bottles.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cargo_crate.glb",
+      "sha256": "bcec84642459cbf9",
+      "triangles": 76,
+      "bytes": 16872,
+      "source": "kenney-pirate-kit/crate.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/powder_keg.glb",
+      "sha256": "537da6112082a601",
+      "triangles": 148,
+      "bytes": 19484,
+      "source": "kenney-pirate-kit/barrel.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cardboard_box.glb",
+      "sha256": "57a02c413fdfef0b",
+      "triangles": 60,
+      "bytes": 4480,
+      "source": "kenney-furniture-kit/cardboardBoxClosed.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cardboard_open.glb",
+      "sha256": "df78f6acb0b24884",
+      "triangles": 60,
+      "bytes": 4496,
+      "source": "kenney-furniture-kit/cardboardBoxOpen.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/factory_box.glb",
+      "sha256": "7671610c32ca9546",
+      "triangles": 70,
+      "bytes": 16648,
+      "source": "kenney-factory-kit/box-large.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/factory_box_long.glb",
+      "sha256": "49c2f23ff25c7c96",
+      "triangles": 70,
+      "bytes": 16648,
+      "source": "kenney-factory-kit/box-long.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/container.glb",
+      "sha256": "e0b48398094d19d7",
+      "triangles": 88,
+      "bytes": 14092,
+      "source": "kenney-space-station-kit/container.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/container_tall.glb",
+      "sha256": "ab7e2830a04731b0",
+      "triangles": 116,
+      "bytes": 16212,
+      "source": "kenney-space-station-kit/container-tall.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/container_wide.glb",
+      "sha256": "dcf3bdd6bc4d7aa7",
+      "triangles": 116,
+      "bytes": 16324,
+      "source": "kenney-space-station-kit/container-wide.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dungeon_barrel.glb",
+      "sha256": "249f3269bfec73c4",
+      "triangles": 148,
+      "bytes": 20260,
+      "source": "kenney-mini-dungeon/barrel.glb",
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dungeon_chest.glb",
+      "sha256": "009e071bf2b55bf9",
+      "triangles": 288,
+      "bytes": 32272,
+      "source": "kenney-mini-dungeon/chest.glb",
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/machine.glb",
+      "sha256": "53b4a791e3bed316",
+      "triangles": 320,
+      "bytes": 30388,
+      "source": "kenney-factory-kit/machine-fortified.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/machine_window.glb",
+      "sha256": "8845b74b11cfe1b9",
+      "triangles": 428,
+      "bytes": 35348,
+      "source": "kenney-factory-kit/machine-window.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hopper.glb",
+      "sha256": "c3ae80ac4f763800",
+      "triangles": 144,
+      "bytes": 20936,
+      "source": "kenney-factory-kit/hopper-round.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hopper_tall.glb",
+      "sha256": "786b17520ea7608b",
+      "triangles": 120,
+      "bytes": 20192,
+      "source": "kenney-factory-kit/hopper-high-square.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/piston.glb",
+      "sha256": "6a7ab314a668d37a",
+      "triangles": 276,
+      "bytes": 35084,
+      "source": "kenney-factory-kit/piston-round.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/scanner.glb",
+      "sha256": "a5cb3ddc39d0b0df",
+      "triangles": 240,
+      "bytes": 25216,
+      "source": "kenney-factory-kit/scanner-high.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/conveyor.glb",
+      "sha256": "25020a742b361eea",
+      "triangles": 196,
+      "bytes": 23404,
+      "source": "kenney-factory-kit/conveyor-long.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pipe_valve.glb",
+      "sha256": "5d106d2ee642060b",
+      "triangles": 456,
+      "bytes": 37284,
+      "source": "kenney-factory-kit/pipe-large-valve.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pipe_glass.glb",
+      "sha256": "01509fed7847fed7",
+      "triangles": 160,
+      "bytes": 20504,
+      "source": "kenney-factory-kit/pipe-glass-large.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/lever.glb",
+      "sha256": "afa8f614deef48f0",
+      "triangles": 118,
+      "bytes": 23348,
+      "source": "kenney-factory-kit/lever-double.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/screen_panel.glb",
+      "sha256": "b4ca4bc86e1e26bf",
+      "triangles": 162,
+      "bytes": 22764,
+      "source": "kenney-factory-kit/screen-panel-wide.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cone.glb",
+      "sha256": "d3abe8dbaa09d651",
+      "triangles": 66,
+      "bytes": 17036,
+      "source": "kenney-factory-kit/cone.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/warning_sign.glb",
+      "sha256": "88f74e5368c4c58a",
+      "triangles": 176,
+      "bytes": 22972,
+      "source": "kenney-factory-kit/warning-traffic.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cog.glb",
+      "sha256": "b6dbefd76ad46b31",
+      "triangles": 160,
+      "bytes": 21172,
+      "source": "kenney-factory-kit/cog-c.glb",
+      "title": "Factory Kit 3.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/factory-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/workbench.glb",
+      "sha256": "5251484d09b66de8",
+      "triangles": 236,
+      "bytes": 23380,
+      "source": "kenney-survival-kit/workbench.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/anvil.glb",
+      "sha256": "2f095aa2a383123b",
+      "triangles": 298,
+      "bytes": 26684,
+      "source": "kenney-survival-kit/workbench-anvil.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/metal_panel.glb",
+      "sha256": "a0fd2e19b614d242",
+      "triangles": 320,
+      "bytes": 26984,
+      "source": "kenney-survival-kit/metal-panel-screws.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/computer_bank.glb",
+      "sha256": "1c20cc96be855d63",
+      "triangles": 176,
+      "bytes": 19420,
+      "source": "kenney-space-station-kit/computer-system.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/computer_wide.glb",
+      "sha256": "54983dfea679b45a",
+      "triangles": 174,
+      "bytes": 19364,
+      "source": "kenney-space-station-kit/computer-wide.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/computer.glb",
+      "sha256": "026258c2e8a81b43",
+      "triangles": 140,
+      "bytes": 17456,
+      "source": "kenney-space-station-kit/computer.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/holo_table.glb",
+      "sha256": "dcb255433a3b3c9b",
+      "triangles": 140,
+      "bytes": 19032,
+      "source": "kenney-space-station-kit/table-display-planet.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/display_table.glb",
+      "sha256": "ecd668ccfb4c0031",
+      "triangles": 240,
+      "bytes": 24524,
+      "source": "kenney-space-station-kit/table-display.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/space_table.glb",
+      "sha256": "072861a2b5dd71a0",
+      "triangles": 104,
+      "bytes": 14688,
+      "source": "kenney-space-station-kit/table.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/space_chair.glb",
+      "sha256": "f8ac1fd7b32fc85c",
+      "triangles": 142,
+      "bytes": 17344,
+      "source": "kenney-space-station-kit/chair-armrest-headrest.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/space_bed.glb",
+      "sha256": "4fc21eff2445c992",
+      "triangles": 44,
+      "bytes": 11256,
+      "source": "kenney-space-station-kit/bed-single-cover.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/barrier.glb",
+      "sha256": "20acf635db7b9e6e",
+      "triangles": 248,
+      "bytes": 33756,
+      "source": "kenney-space-station-kit/structure-barrier.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/barrier_high.glb",
+      "sha256": "90c4a6b33a4b5517",
+      "triangles": 164,
+      "bytes": 26812,
+      "source": "kenney-space-station-kit/structure-barrier-high.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/display_wall.glb",
+      "sha256": "9c9fa702f8778c5c",
+      "triangles": 96,
+      "bytes": 14460,
+      "source": "kenney-space-station-kit/display-wall-wide.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/skip.glb",
+      "sha256": "b6d3903d8aa2c977",
+      "triangles": 138,
+      "bytes": 17152,
+      "source": "kenney-space-station-kit/skip-rocks.glb",
+      "title": "Space Station Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-station-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/table.glb",
+      "sha256": "06223529f7fa03ea",
+      "triangles": 120,
+      "bytes": 5888,
+      "source": "kenney-furniture-kit/table.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/table_round.glb",
+      "sha256": "d050e6fba6fcbc9c",
+      "triangles": 80,
+      "bytes": 4732,
+      "source": "kenney-furniture-kit/tableRound.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/table_cloth.glb",
+      "sha256": "ea8a246859abc474",
+      "triangles": 144,
+      "bytes": 7716,
+      "source": "kenney-furniture-kit/tableCloth.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/chair.glb",
+      "sha256": "0a772400afd34046",
+      "triangles": 170,
+      "bytes": 7680,
+      "source": "kenney-furniture-kit/chair.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/chair_cushion.glb",
+      "sha256": "c27f95bfe2a7cefd",
+      "triangles": 198,
+      "bytes": 9528,
+      "source": "kenney-furniture-kit/chairCushion.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/desk.glb",
+      "sha256": "481e960242e37721",
+      "triangles": 198,
+      "bytes": 11044,
+      "source": "kenney-furniture-kit/desk.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/desk_corner.glb",
+      "sha256": "44afbe28c99fa859",
+      "triangles": 250,
+      "bytes": 13012,
+      "source": "kenney-furniture-kit/deskCorner.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/office_chair.glb",
+      "sha256": "5afd8582f0b63df2",
+      "triangles": 588,
+      "bytes": 27852,
+      "source": "kenney-furniture-kit/chairDesk.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bookcase.glb",
+      "sha256": "18fd14117aca2999",
+      "triangles": 320,
+      "bytes": 12656,
+      "source": "kenney-furniture-kit/bookcaseOpen.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bookcase_wide.glb",
+      "sha256": "e43361b64b6cba50",
+      "triangles": 372,
+      "bytes": 16344,
+      "source": "kenney-furniture-kit/bookcaseClosedWide.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sofa.glb",
+      "sha256": "81ba6ed0d8091d4d",
+      "triangles": 128,
+      "bytes": 7636,
+      "source": "kenney-furniture-kit/loungeSofa.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sofa_long.glb",
+      "sha256": "c116a5c35e74290c",
+      "triangles": 186,
+      "bytes": 10248,
+      "source": "kenney-furniture-kit/loungeSofaLong.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/armchair.glb",
+      "sha256": "81131c2c2784e0e3",
+      "triangles": 128,
+      "bytes": 7660,
+      "source": "kenney-furniture-kit/loungeChair.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bed.glb",
+      "sha256": "d38dc56d20cb89f9",
+      "triangles": 214,
+      "bytes": 14700,
+      "source": "kenney-furniture-kit/bedDouble.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bunk_bed.glb",
+      "sha256": "498e4a43119d3683",
+      "triangles": 466,
+      "bytes": 22868,
+      "source": "kenney-furniture-kit/bedBunk.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/fridge.glb",
+      "sha256": "51f00403faa13d89",
+      "triangles": 436,
+      "bytes": 22328,
+      "source": "kenney-furniture-kit/kitchenFridgeLarge.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stove.glb",
+      "sha256": "7081360e75553b71",
+      "triangles": 830,
+      "bytes": 39728,
+      "source": "kenney-furniture-kit/kitchenStove.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/kitchen_cabinet.glb",
+      "sha256": "9509b383311d4098",
+      "triangles": 114,
+      "bytes": 8640,
+      "source": "kenney-furniture-kit/kitchenCabinet.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tv.glb",
+      "sha256": "388c29ae86866752",
+      "triangles": 72,
+      "bytes": 4952,
+      "source": "kenney-furniture-kit/televisionModern.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tv_cabinet.glb",
+      "sha256": "926148a6b24684bc",
+      "triangles": 154,
+      "bytes": 7544,
+      "source": "kenney-furniture-kit/cabinetTelevision.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/washer.glb",
+      "sha256": "7bf7ccfcdb743e74",
+      "triangles": 720,
+      "bytes": 35520,
+      "source": "kenney-furniture-kit/washer.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bathtub.glb",
+      "sha256": "ee15514461d95427",
+      "triangles": 602,
+      "bytes": 28648,
+      "source": "kenney-furniture-kit/bathtub.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/toilet.glb",
+      "sha256": "4a557ae8615a9c16",
+      "triangles": 230,
+      "bytes": 13576,
+      "source": "kenney-furniture-kit/toilet.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/side_table.glb",
+      "sha256": "9bd4b94ffdb673ac",
+      "triangles": 194,
+      "bytes": 11360,
+      "source": "kenney-furniture-kit/sideTableDrawers.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bench.glb",
+      "sha256": "d07157f8a19536a7",
+      "triangles": 170,
+      "bytes": 7680,
+      "source": "kenney-furniture-kit/bench.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/speaker.glb",
+      "sha256": "dcf2c0d11082fd7f",
+      "triangles": 228,
+      "bytes": 11612,
+      "source": "kenney-furniture-kit/speaker.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/trashcan.glb",
+      "sha256": "f6b9c3d4f41fe1fc",
+      "triangles": 68,
+      "bytes": 5376,
+      "source": "kenney-furniture-kit/trashcan.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/potted_plant.glb",
+      "sha256": "818f685b31279fd4",
+      "triangles": 60,
+      "bytes": 5784,
+      "source": "kenney-furniture-kit/pottedPlant.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/plant_small.glb",
+      "sha256": "31d95e263c1544e2",
+      "triangles": 102,
+      "bytes": 6292,
+      "source": "kenney-furniture-kit/plantSmall1.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/floor_lamp.glb",
+      "sha256": "fe84b9d741eeec01",
+      "triangles": 76,
+      "bytes": 5132,
+      "source": "kenney-furniture-kit/lampRoundFloor.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/coat_rack.glb",
+      "sha256": "e9651f8c2d72dd31",
+      "triangles": 190,
+      "bytes": 9496,
+      "source": "kenney-furniture-kit/coatRackStanding.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rug.glb",
+      "sha256": "4803f580c629007f",
+      "triangles": 28,
+      "bytes": 2928,
+      "source": "kenney-furniture-kit/rugRectangle.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rug_round.glb",
+      "sha256": "a33be9f61526f151",
+      "triangles": 188,
+      "bytes": 8644,
+      "source": "kenney-furniture-kit/rugRound.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bar_stool.glb",
+      "sha256": "ebf2a8be5b51b6cd",
+      "triangles": 176,
+      "bytes": 8712,
+      "source": "kenney-furniture-kit/stoolBar.glb",
+      "title": "Furniture Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/parasol.glb",
+      "sha256": "8add3e63637f531c",
+      "triangles": 96,
+      "bytes": 17716,
+      "source": "kenney-city-kit-commercial/detail-parasol-a.glb",
+      "title": "City Kit (Commercial) 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/gravestone_cross.glb",
+      "sha256": "36fa2ed6f9882eb3",
+      "triangles": 222,
+      "bytes": 23816,
+      "source": "kenney-graveyard-kit/gravestone-cross.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/gravestone_round.glb",
+      "sha256": "09d60f26d6c3e009",
+      "triangles": 178,
+      "bytes": 21540,
+      "source": "kenney-graveyard-kit/gravestone-round.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/gravestone_broken.glb",
+      "sha256": "4cda2ee0bd1a1ade",
+      "triangles": 134,
+      "bytes": 20260,
+      "source": "kenney-graveyard-kit/gravestone-broken.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/grave.glb",
+      "sha256": "ce2f21bdbc939aa5",
+      "triangles": 256,
+      "bytes": 28520,
+      "source": "kenney-graveyard-kit/grave.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/coffin.glb",
+      "sha256": "a63c8795ca4f2860",
+      "triangles": 256,
+      "bytes": 28384,
+      "source": "kenney-graveyard-kit/coffin.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/coffin_old.glb",
+      "sha256": "fd86a1deb090aac8",
+      "triangles": 216,
+      "bytes": 24620,
+      "source": "kenney-graveyard-kit/coffin-old.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/crypt.glb",
+      "sha256": "9c9c125a0e928a23",
+      "triangles": 414,
+      "bytes": 35064,
+      "source": "kenney-graveyard-kit/crypt-small.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/altar.glb",
+      "sha256": "da7aa6664c4c2706",
+      "triangles": 166,
+      "bytes": 22820,
+      "source": "kenney-graveyard-kit/altar-stone.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pillar.glb",
+      "sha256": "721e0777c31a90a9",
+      "triangles": 152,
+      "bytes": 22384,
+      "source": "kenney-graveyard-kit/pillar-large.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/obelisk.glb",
+      "sha256": "99a5110f41ecfbb6",
+      "triangles": 76,
+      "bytes": 17040,
+      "source": "kenney-graveyard-kit/pillar-obelisk.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cross_column.glb",
+      "sha256": "f3959d966433d0f9",
+      "triangles": 200,
+      "bytes": 25396,
+      "source": "kenney-graveyard-kit/cross-column.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/iron_fence.glb",
+      "sha256": "2cdb75800f8b60da",
+      "triangles": 376,
+      "bytes": 35224,
+      "source": "kenney-graveyard-kit/iron-fence.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/iron_fence_damaged.glb",
+      "sha256": "b5d1176fb0c4f7c7",
+      "triangles": 336,
+      "bytes": 32808,
+      "source": "kenney-graveyard-kit/iron-fence-damaged.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stone_wall.glb",
+      "sha256": "d62d5379583ebcec",
+      "triangles": 60,
+      "bytes": 15832,
+      "source": "kenney-graveyard-kit/stone-wall.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stone_wall_damaged.glb",
+      "sha256": "d07015b0279d2580",
+      "triangles": 144,
+      "bytes": 20776,
+      "source": "kenney-graveyard-kit/stone-wall-damaged.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/lightpost.glb",
+      "sha256": "29abd108d1900787",
+      "triangles": 352,
+      "bytes": 32336,
+      "source": "kenney-graveyard-kit/lightpost-single.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/lightpost_double.glb",
+      "sha256": "a0bc329bf6578cdb",
+      "triangles": 572,
+      "bytes": 43304,
+      "source": "kenney-graveyard-kit/lightpost-double.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/lantern.glb",
+      "sha256": "f6d913fcf0e299ef",
+      "triangles": 224,
+      "bytes": 24300,
+      "source": "kenney-graveyard-kit/lantern-candle.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/candles.glb",
+      "sha256": "833f32d764f2fd3c",
+      "triangles": 162,
+      "bytes": 22904,
+      "source": "kenney-graveyard-kit/candle-multiple.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/fire_basket.glb",
+      "sha256": "618bc98407375e04",
+      "triangles": 196,
+      "bytes": 22996,
+      "source": "kenney-graveyard-kit/fire-basket.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/urn.glb",
+      "sha256": "ff0120ecc5a9849c",
+      "triangles": 230,
+      "bytes": 26688,
+      "source": "kenney-graveyard-kit/urn-round.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pumpkin.glb",
+      "sha256": "0dbc80696e502bb9",
+      "triangles": 486,
+      "bytes": 40244,
+      "source": "kenney-graveyard-kit/pumpkin-carved.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hay_bale.glb",
+      "sha256": "167f0c0887a4430f",
+      "triangles": 180,
+      "bytes": 23024,
+      "source": "kenney-graveyard-kit/hay-bale.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/graveyard_bench.glb",
+      "sha256": "2c89a5f968fc5572",
+      "triangles": 160,
+      "bytes": 22028,
+      "source": "kenney-graveyard-kit/bench.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/debris.glb",
+      "sha256": "d3befc90e6221e7c",
+      "triangles": 240,
+      "bytes": 28556,
+      "source": "kenney-graveyard-kit/debris.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree.glb",
+      "sha256": "2027679474d9c482",
+      "triangles": 226,
+      "bytes": 22988,
+      "source": "kenney-survival-kit/tree.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_tall.glb",
+      "sha256": "6a0b815adbcff7a2",
+      "triangles": 254,
+      "bytes": 24704,
+      "source": "kenney-survival-kit/tree-tall.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_autumn.glb",
+      "sha256": "1999470a0c25934a",
+      "triangles": 198,
+      "bytes": 21304,
+      "source": "kenney-survival-kit/tree-autumn.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pine.glb",
+      "sha256": "7a5f2ebcd60e7c11",
+      "triangles": 336,
+      "bytes": 32736,
+      "source": "kenney-graveyard-kit/pine.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pine_crooked.glb",
+      "sha256": "ddbecb2178cbac83",
+      "triangles": 336,
+      "bytes": 32784,
+      "source": "kenney-graveyard-kit/pine-crooked.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/palm.glb",
+      "sha256": "d4111692a9e6f62d",
+      "triangles": 338,
+      "bytes": 34252,
+      "source": "kenney-pirate-kit/palm-straight.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/palm_bent.glb",
+      "sha256": "94e9e8ff98b1c5c0",
+      "triangles": 338,
+      "bytes": 33848,
+      "source": "kenney-pirate-kit/palm-bend.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/log.glb",
+      "sha256": "501c174b69df277e",
+      "triangles": 88,
+      "bytes": 14012,
+      "source": "kenney-survival-kit/tree-log.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rock_large.glb",
+      "sha256": "d19cd79afb1ffde2",
+      "triangles": 104,
+      "bytes": 15392,
+      "source": "kenney-survival-kit/rock-a.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rock_medium.glb",
+      "sha256": "9749f3f54bcc9df7",
+      "triangles": 156,
+      "bytes": 18244,
+      "source": "kenney-survival-kit/rock-b.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rock_small.glb",
+      "sha256": "c50250f4641eb4ad",
+      "triangles": 120,
+      "bytes": 16104,
+      "source": "kenney-survival-kit/rock-c.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rock_flat.glb",
+      "sha256": "269508556c4f4ece",
+      "triangles": 274,
+      "bytes": 24876,
+      "source": "kenney-survival-kit/rock-flat.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rocks_tall.glb",
+      "sha256": "de0bdf573284afde",
+      "triangles": 364,
+      "bytes": 34056,
+      "source": "kenney-graveyard-kit/rocks-tall.glb",
+      "title": "Graveyard Kit 5.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/grass_tuft.glb",
+      "sha256": "facf5f05a1b40a02",
+      "triangles": 144,
+      "bytes": 18756,
+      "source": "kenney-survival-kit/grass-large.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stump.glb",
+      "sha256": "c8e17f1b8e2b77d9",
+      "triangles": 52,
+      "bytes": 12604,
+      "source": "kenney-survival-kit/tree-trunk.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/woodpile.glb",
+      "sha256": "1f6deb99360cb977",
+      "triangles": 64,
+      "bytes": 12560,
+      "source": "kenney-survival-kit/resource-wood.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/planks_stack.glb",
+      "sha256": "48a281e09564fbc3",
+      "triangles": 72,
+      "bytes": 14016,
+      "source": "kenney-survival-kit/resource-planks.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tent.glb",
+      "sha256": "39a393460359bc36",
+      "triangles": 124,
+      "bytes": 16676,
+      "source": "kenney-survival-kit/tent.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tent_canvas.glb",
+      "sha256": "d2c938692aed22de",
+      "triangles": 148,
+      "bytes": 17868,
+      "source": "kenney-survival-kit/tent-canvas.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/campfire.glb",
+      "sha256": "c58c6f1c2ac01a4a",
+      "triangles": 305,
+      "bytes": 26100,
+      "source": "kenney-survival-kit/campfire-pit.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/fence.glb",
+      "sha256": "fabffe6cbe864d99",
+      "triangles": 48,
+      "bytes": 12300,
+      "source": "kenney-survival-kit/fence.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/palisade.glb",
+      "sha256": "1cb667156f7a869a",
+      "triangles": 120,
+      "bytes": 17372,
+      "source": "kenney-survival-kit/fence-fortified.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/signpost.glb",
+      "sha256": "eb227063ad2f8733",
+      "triangles": 44,
+      "bytes": 11964,
+      "source": "kenney-survival-kit/signpost.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bucket.glb",
+      "sha256": "88e0965b5d51e975",
+      "triangles": 68,
+      "bytes": 12940,
+      "source": "kenney-survival-kit/bucket.glb",
+      "title": "Survival Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/survival-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/column.glb",
+      "sha256": "b2c174e5a84c630c",
+      "triangles": 104,
+      "bytes": 18648,
+      "source": "kenney-mini-dungeon/column.glb",
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/wood_support.glb",
+      "sha256": "492df08c514394a0",
+      "triangles": 104,
+      "bytes": 19056,
+      "source": "kenney-mini-dungeon/wood-support.glb",
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/banner.glb",
+      "sha256": "15de2d72976ccb2b",
+      "triangles": 200,
+      "bytes": 22944,
+      "source": "kenney-mini-dungeon/banner.glb",
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pot.glb",
+      "sha256": "0ea7ba7a3b763c47",
+      "triangles": 284,
+      "bytes": 28624,
+      "source": "kenney-mini-dungeon/pot.glb",
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dungeon_table.glb",
+      "sha256": "b6cf027e48e4578a",
+      "triangles": 150,
+      "bytes": 21548,
+      "source": "kenney-mini-dungeon/table.glb",
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dungeon_chair.glb",
+      "sha256": "8d0c396b804546ec",
+      "triangles": 208,
+      "bytes": 24588,
+      "source": "kenney-mini-dungeon/chair.glb",
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/shield.glb",
+      "sha256": "9aa4efeb068e432a",
+      "triangles": 160,
+      "bytes": 21528,
+      "source": "kenney-mini-dungeon/shield-round.glb",
+      "title": "Mini Dungeon",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cannon.glb",
+      "sha256": "ed2237e492da0cf5",
+      "triangles": 232,
+      "bytes": 25316,
+      "source": "kenney-pirate-kit/cannon.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cannon_mobile.glb",
+      "sha256": "78f5c25697c750a0",
+      "triangles": 472,
+      "bytes": 37116,
+      "source": "kenney-pirate-kit/cannon-mobile.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cannonballs.glb",
+      "sha256": "41eee94b369a7f7a",
+      "triangles": 48,
+      "bytes": 14684,
+      "source": "kenney-pirate-kit/cannon-ball.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rowboat.glb",
+      "sha256": "9e5b74509057fff3",
+      "triangles": 168,
+      "bytes": 22116,
+      "source": "kenney-pirate-kit/boat-row-small.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/flag.glb",
+      "sha256": "90d811f513f9b4d4",
+      "triangles": 144,
+      "bytes": 20432,
+      "source": "kenney-pirate-kit/flag-pirate.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/mast.glb",
+      "sha256": "54dd80dc36cfc5fc",
+      "triangles": 302,
+      "bytes": 29808,
+      "source": "kenney-pirate-kit/mast.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bottle.glb",
+      "sha256": "3fad808c954b80c4",
+      "triangles": 108,
+      "bytes": 18788,
+      "source": "kenney-pirate-kit/bottle-large.glb",
+      "title": "Pirate Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/pirate-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
     }
   ]
 }

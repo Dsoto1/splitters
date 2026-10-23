@@ -68,6 +68,7 @@ export function boxVertexData(boxes: readonly WorldBox[]): VertexData {
 export class MapStyler {
   private readonly textures = new Map<string, RawTexture>();
   private readonly materials = new Map<string, StandardMaterial>();
+  private readonly images = new Map<string, Texture>();
   private meshes: Mesh[] = [];
 
   constructor(private readonly scene: Scene) {}
@@ -78,6 +79,7 @@ export class MapStyler {
     const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
     // Trim (baseboards, cornices, frames) is drawn with the structure but never collides.
     for (const b of [...boxes, ...buildMapDecor(doc)]) {
+      if (b.kind === 'prop') continue; // drawn by the prop's model
       const tile = tiles.get(b.sourceId);
       for (const [corners, n] of boxFaces(b)) {
         const style = resolveSurface(doc, tile, faceSlot(b, n));
@@ -116,17 +118,37 @@ export class MapStyler {
     return tex;
   }
 
+  /** A scanned texture map (shared JPEG), cached per scene. */
+  private image(id: string, map: 'color' | 'normal' | 'emission'): Texture {
+    const key = `${id}_${map}`;
+    let tex = this.images.get(key);
+    if (!tex) {
+      tex = new Texture(`${import.meta.env.BASE_URL}textures/${key}.jpg`, this.scene, false, true, Texture.TRILINEAR_SAMPLINGMODE);
+      tex.anisotropicFilteringLevel = 8;
+      this.images.set(key, tex);
+    }
+    return tex;
+  }
+
   private material(style: ResolvedStyle): StandardMaterial {
     const key = styleKey(style);
     let mat = this.materials.get(key);
     if (!mat) {
       const def = style.material;
       mat = new StandardMaterial(`mat_${key}`, this.scene);
-      mat.diffuseTexture = this.texture(def);
+      if (def.texture) {
+        mat.diffuseTexture = this.image(def.texture, 'color');
+        mat.bumpTexture = this.image(def.texture, 'normal');
+        // OpenGL-convention normal maps in Babylon's left-handed space.
+        mat.invertNormalMapY = true;
+      } else mat.diffuseTexture = this.texture(def);
       mat.diffuseColor = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
       mat.specularColor = new Color3(def.shine * 0.6, def.shine * 0.6, def.shine * 0.6);
       mat.specularPower = 16 + def.shine * 96;
-      if (def.emissive) {
+      if (def.emissive && def.texture) {
+        mat.emissiveTexture = this.image(def.texture, 'emission');
+        mat.emissiveColor = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
+      } else if (def.emissive) {
         mat.emissiveTexture = this.texture(def);
         mat.emissiveColor = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
       }

@@ -52,7 +52,7 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
     g.fillRect(...rect(b));
   }
   g.fillStyle = '#8a6a3f';
-  for (const b of boxes) if (b.kind === 'solid' && b.min[1] < 1) g.fillRect(...rect(b));
+  for (const b of boxes) if ((b.kind === 'solid' || b.kind === 'prop') && b.min[1] < 1) g.fillRect(...rect(b));
   g.fillStyle = '#9fb6d8';
   for (const b of boxes) if (b.kind === 'wall' && b.min[1] < 1) g.fillRect(...rect(b));
 

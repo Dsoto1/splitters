@@ -44,7 +44,7 @@ export class Minimap {
     g.fillStyle = 'rgba(42, 58, 85, 0.95)';
     for (const b of boxes) if (b.kind === 'floor' && b.max[1] < 1) g.fillRect(...rect(b));
     g.fillStyle = 'rgba(138, 106, 63, 0.9)';
-    for (const b of boxes) if (b.kind === 'solid' && b.min[1] < 1) g.fillRect(...rect(b));
+    for (const b of boxes) if ((b.kind === 'solid' || b.kind === 'prop') && b.min[1] < 1) g.fillRect(...rect(b));
     g.fillStyle = '#9fb6d8';
     for (const b of boxes) if (b.kind === 'wall' && b.min[1] < 1) g.fillRect(...rect(b));
     this.plan = plan;

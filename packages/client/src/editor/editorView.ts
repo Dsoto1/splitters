@@ -14,11 +14,12 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
-import { DESTRUCTIBLE_SPECS, PLAYER, buildMapDecor, buildMapGeometry, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
+import { DESTRUCTIBLE_SPECS, PLAYER, buildMapDecor, buildMapGeometry, getProp, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
+import { createPropNode } from '../game/propVisuals.ts';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 
@@ -227,7 +228,9 @@ export class EditorView {
             ? this.createSpawnMarker(e.id)
             : e.kind === 'pickup'
               ? { key, node: createPickupVisual(this.scene, this.models, e.item, `edpickup_${e.id}`) }
-              : { key, node: this.scenario.createNode(e, `ed_${e.id}`) };
+              : e.kind === 'prop'
+                ? { key, node: createPropNode(this.scene, this.models, e, `edprop_${e.id}`, false) }
+                : { key, node: this.scenario.createNode(e, `ed_${e.id}`) };
         m.key = key;
         this.markers.set(e.id, m);
       }
@@ -364,6 +367,10 @@ function selectionSize(e: MapEntity): number {
       return e.trap === 'mine' ? 1.1 : e.trap === 'flames' ? 1.4 : 3.6;
     case 'destructible':
       return Math.max(DESTRUCTIBLE_SPECS[e.model].half.x, DESTRUCTIBLE_SPECS[e.model].half.z) * 2.4;
+    case 'prop': {
+      const size = getProp(e.model)?.size ?? [1, 1, 1];
+      return Math.max(size[0], size[2]) * e.scale * 1.25 + 0.2;
+    }
     default:
       return 1.1;
   }

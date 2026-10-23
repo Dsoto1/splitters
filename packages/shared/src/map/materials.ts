@@ -35,7 +35,7 @@ export type PatternId =
   | 'marble'
   | 'weave';
 
-export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Tech' | 'Paint';
+export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
 export interface MaterialDefinition {
   id: string;
@@ -51,6 +51,13 @@ export interface MaterialDefinition {
   shine: number;
   /** Glows regardless of lighting (light strips, screens). */
   emissive?: boolean;
+  /**
+   * A photographed/scanned texture set (ambientCG asset ID, CC0) used instead
+   * of the procedural pattern: textures/<id>_color.jpg, _normal.jpg and, for
+   * glowing materials, _emission.jpg. `base` is its average colour (used for
+   * minimaps and icons).
+   */
+  texture?: string;
 }
 
 const m = (id: string, displayName: string, category: MaterialCategory, pattern: PatternId, base: string, accent: string, scale: number, shine = 0.05, emissive = false): MaterialDefinition => ({
@@ -97,7 +104,54 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('proto_trim', 'Prototype Trim', 'Prototype', 'plain', '#5d636b', '#555b63', 4),
   m('brass', 'Brass', 'Metal', 'plain', '#b08d3a', '#9a7a30', 4, 0.7),
   m('stone_trim', 'Dressed Stone', 'Stone', 'noise', '#cfc8ba', '#b9b2a4', 2),
+  // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
+  t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
+  t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
+  t('pbr_plaster', 'Rough Plaster', 'Stone', 'Plaster001', '#d8d4cc', 3),
+  t('pbr_plaster_white', 'White Plaster', 'Stone', 'PaintedPlaster017', '#d2d0cb', 3),
+  t('pbr_rock', 'Mossy Rock', 'Stone', 'Rock064', '#76765a', 3),
+  t('pbr_marble_black', 'Black Marble', 'Stone', 'Marble006', '#2a2826', 3, 0.6),
+  t('pbr_onyx', 'Onyx Swirl', 'Stone', 'Onyx015', '#bdbab6', 3, 0.5),
+  t('pbr_travertine', 'Travertine', 'Stone', 'Travertine009', '#d6c4a2', 3, 0.3),
+  t('pbr_brick_red', 'Red Brick', 'Brick', 'Bricks059', '#99523e', 2.4),
+  t('pbr_brick_old', 'Old Brick', 'Brick', 'Bricks090', '#a87358', 2.4),
+  t('pbr_castle_stone', 'Mossy Castle Stone', 'Brick', 'Bricks076C', '#5e6248', 3),
+  t('pbr_floorboards', 'Old Floorboards', 'Wood', 'WoodFloor041', '#5e4430', 2),
+  t('pbr_planks', 'Barn Planks', 'Wood', 'Planks037A', '#5a4030', 2.5),
+  t('pbr_walnut', 'Walnut', 'Wood', 'Wood051', '#4a3024', 2),
+  t('pbr_siding', 'Wood Siding', 'Wood', 'WoodSiding008', '#4c3a2a', 3),
+  t('pbr_charred_wood', 'Charred Wood', 'Wood', 'PaintedWood005', '#2c2a24', 2.5),
+  t('pbr_tread_plate', 'Tread Plate', 'Metal', 'MetalPlates006', '#4a4e56', 1.5, 0.5),
+  t('pbr_rusted_plate', 'Rusted Plating', 'Metal', 'MetalPlates013', '#6a5448', 2, 0.3),
+  t('pbr_steel', 'Weathered Steel', 'Metal', 'Metal063', '#62666a', 3, 0.5),
+  t('pbr_white_panel', 'White Panel', 'Metal', 'Metal049A', '#e8e8e6', 3, 0.5),
+  t('pbr_corrugated', 'Painted Corrugated', 'Metal', 'CorrugatedSteel007A', '#8ab4c8', 2, 0.4),
+  t('pbr_walkway', 'Perforated Walkway', 'Metal', 'MetalWalkway014', '#7a4a3a', 1.5, 0.4),
+  t('pbr_space_metal', 'Starfield Metal', 'Tech', 'SheetMetal004', '#26262c', 2, 0.6),
+  t('pbr_glass_facade', 'Glass Facade', 'Tech', 'Facade006', '#5c6e78', 4, 0.8),
+  t('pbr_checker', 'Marble Checker', 'Tile', 'Tiles074', '#7a6a5a', 2, 0.6),
+  t('pbr_flagstone', 'Dark Flagstone', 'Tile', 'Tiles090', '#3e3e3c', 3, 0.2),
+  t('pbr_delft', 'Delft Tiles', 'Tile', 'Tiles101', '#c8ccea', 1.5, 0.6),
+  t('pbr_hex_paving', 'Hex Paving', 'Tile', 'PavingStones130', '#a89480', 2),
+  t('pbr_terrazzo', 'Terrazzo', 'Tile', 'Terrazzo013', '#d8ccc4', 2, 0.5),
+  t('pbr_roof', 'Clay Roof Tiles', 'Tile', 'RoofingTiles008', '#7a4a32', 2),
+  t('pbr_carpet', 'Navy Carpet', 'Fabric', 'Carpet012', '#2a3046', 2),
+  t('pbr_canvas', 'Army Canvas', 'Fabric', 'Fabric028', '#7c7a68', 2),
+  t('pbr_grass', 'Grass', 'Ground', 'Grass001', '#4a6a22', 3),
+  t('pbr_moss', 'Moss', 'Ground', 'Moss002', '#4a6a1c', 3),
+  t('pbr_forest', 'Forest Floor', 'Ground', 'Ground037', '#6a7034', 4),
+  t('pbr_gravel', 'Gravel', 'Ground', 'Gravel023', '#c4c0bc', 3),
+  t('pbr_sand', 'Desert Sand', 'Ground', 'Ground054', '#a08a64', 5),
+  t('pbr_snow', 'Snowy Ground', 'Ground', 'Snow015', '#c8ccc4', 4),
+  t('pbr_ice', 'Ice', 'Ground', 'Ice002', '#4a8a86', 3, 0.8),
+  t('pbr_asphalt', 'Asphalt', 'Ground', 'Asphalt031', '#7a7a7a', 4),
+  t('pbr_lava', 'Lava', 'Ground', 'Lava004', '#b4421c', 4, 0.2, true),
 ];
+
+/** A textured material from a scanned set (see MaterialDefinition.texture). */
+function t(id: string, displayName: string, category: MaterialCategory, texture: string, base: string, scale: number, shine = 0.08, emissive = false): MaterialDefinition {
+  return { ...m(id, displayName, category, 'plain', base, base, scale, shine, emissive), texture };
+}
 
 export interface SurfaceStyleDef {
   material: string;
@@ -115,17 +169,24 @@ export interface ThemeDefinition {
 
 export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('prototype', 'Prototype', '#85a0b8', 'proto_floor', 'proto_wall', 'proto_solid', 'proto_wall', 'proto_trim'),
-  theme('tomb', 'Desert Tomb', '#e3c48f', 'sandstone', ['sandstone', '#e8d9b8'], ['marble', '#e0c890'], ['sandstone', '#a08a66'], ['marble', '#d8b870']),
-  theme('desert', 'Desert Town', '#9cc6e8', 'sand', 'plaster', 'crate_wood', ['sandstone', '#b89c6c'], ['plaster', '#c8a878']),
-  theme('factory', 'Factory', '#6f6a64', 'grate', 'red_brick', 'hazard', 'rusty_metal', 'steel_plate'),
-  theme('lab', 'Research Lab', '#1b2633', 'white_tiles', 'scifi_panel', 'circuit', 'light_strip', 'circuit'),
-  theme('manor', 'Gothic Manor', '#2a2433', 'carpet', 'dark_wood', 'cobble', 'dark_brick', 'brass'),
-  theme('castle', 'Castle Keep', '#7d93ad', 'cobble', ['cobble', '#d8d2c4'], 'oak_planks', 'dark_wood', 'stone_trim'),
-  theme('station', 'Space Station', '#05070d', 'steel_plate', ['scifi_panel', '#c0ccd8'], 'hazard', 'circuit', ['light_strip', '#7fd8ff']),
-  theme('ruins', 'Jungle Ruins', '#a8c8a0', ['cobble', '#a4b48a'], ['sandstone', '#a8b48c'], ['marble', '#c8d0b0'], ['cobble', '#6c7a5a'], ['stone_trim', '#9aa884']),
-  theme('neon', 'Neon City', '#120b24', 'checker', 'dark_brick', 'hazard', 'circuit', ['light_strip', '#ff5ea8']),
-  theme('arctic', 'Arctic Base', '#c8dcec', ['white_tiles', '#e8f4ff'], ['steel_plate', '#dce8f0'], 'hazard', 'steel_plate', ['circuit', '#3a6a8a']),
-  theme('saloon', 'Frontier Saloon', '#f0c890', ['oak_planks', '#8a6a4a'], ['oak_planks', '#d8aa72'], 'crate_wood', 'dark_wood', 'dark_wood'),
+  theme('tomb', 'Desert Tomb', '#e3c48f', 'pbr_travertine', ['sandstone', '#e8d9b8'], ['marble', '#e0c890'], ['sandstone', '#a08a66'], ['pbr_travertine', '#d8b870']),
+  theme('desert', 'Desert Town', '#9cc6e8', 'pbr_sand', ['pbr_plaster', '#ead6ae'], 'pbr_planks', ['pbr_plaster', '#b89c6c'], 'pbr_charred_wood'),
+  theme('factory', 'Factory', '#6f6a64', 'pbr_tread_plate', 'pbr_brick_old', 'hazard', 'pbr_rusted_plate', 'pbr_steel'),
+  theme('lab', 'Research Lab', '#1b2633', 'pbr_terrazzo', 'pbr_white_panel', 'circuit', 'light_strip', 'pbr_steel'),
+  theme('manor', 'Gothic Manor', '#2a2433', 'pbr_carpet', 'pbr_walnut', 'pbr_marble_black', 'pbr_floorboards', 'brass'),
+  theme('castle', 'Castle Keep', '#7d93ad', 'pbr_flagstone', 'pbr_castle_stone', 'pbr_planks', 'pbr_floorboards', 'stone_trim'),
+  theme('station', 'Space Station', '#05070d', 'pbr_tread_plate', 'pbr_white_panel', 'hazard', 'pbr_space_metal', ['light_strip', '#7fd8ff']),
+  theme('ruins', 'Jungle Ruins', '#a8c8a0', 'pbr_moss', 'pbr_rock', ['pbr_travertine', '#c8d0b0'], 'pbr_rock', 'pbr_castle_stone'),
+  theme('neon', 'Neon City', '#120b24', 'pbr_asphalt', ['pbr_brick_red', '#8a7a9a'], 'hazard', 'pbr_concrete_dark', ['light_strip', '#ff5ea8']),
+  theme('arctic', 'Arctic Base', '#c8dcec', 'pbr_snow', 'pbr_corrugated', 'hazard', 'pbr_steel', 'pbr_white_panel'),
+  theme('saloon', 'Frontier Saloon', '#f0c890', 'pbr_floorboards', 'pbr_siding', 'crate_wood', 'pbr_planks', 'pbr_charred_wood'),
+  theme('volcano', 'Volcano Lair', '#2a0e08', ['pbr_flagstone', '#8a7a70'], ['pbr_rock', '#7a5a4a'], 'pbr_onyx', 'pbr_charred_wood', 'pbr_lava'),
+  theme('city', 'Downtown', '#a8bcd0', 'pbr_asphalt', 'pbr_glass_facade', 'pbr_concrete', 'pbr_concrete', 'pbr_steel'),
+  theme('temple', 'Marble Temple', '#f0e2c0', 'pbr_checker', 'pbr_travertine', 'pbr_marble_black', 'pbr_onyx', 'brass'),
+  theme('harbour', 'Harbour', '#9ab8cc', 'pbr_hex_paving', 'pbr_brick_old', 'pbr_planks', 'pbr_delft', 'pbr_plaster_white'),
+  theme('bunker', 'Bunker', '#5c6058', 'pbr_concrete_dark', 'pbr_concrete', 'pbr_canvas', 'pbr_steel', 'hazard'),
+  theme('forest', 'Forest Camp', '#8ab08a', 'pbr_forest', 'pbr_planks', 'pbr_rock', 'pbr_siding', 'pbr_walnut'),
+  theme('garden', 'Walled Garden', '#b8d8f0', 'pbr_grass', 'pbr_brick_red', 'pbr_hex_paving', 'pbr_brick_old', 'stone_trim'),
 ];
 
 /** Shorthand for a theme: each slot is a material name or [material, tint]. */

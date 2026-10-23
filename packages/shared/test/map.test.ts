@@ -69,7 +69,7 @@ describe('migrations', () => {
   });
 
   it('fails loudly on a gap in the chain', () => {
-    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), 6)).toThrow(MapMigrationError);
+    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), 7)).toThrow(MapMigrationError);
   });
 });
 
@@ -146,7 +146,7 @@ describe('format v2 (surface styles)', () => {
     expect(resolveSurface(arena, tile, 'walls')).toMatchObject({ material: { id: 'core.red_brick' }, tint: '#ff0000' });
     expect(resolveSurface(arena, tile, 'floor')).toMatchObject({ material: { id: 'core.proto_floor' }, tint: null });
     const tomb = { ...arena, classicStructure: { ...arena.classicStructure, theme: 'core.tomb' } };
-    expect(resolveSurface(tomb, undefined, 'floor').material.id).toBe('core.sandstone');
+    expect(resolveSurface(tomb, undefined, 'floor').material.id).toBe('core.pbr_travertine');
     expect(faceSlot({ kind: 'floor' }, [0, 1, 0])).toBe('floor');
     expect(faceSlot({ kind: 'floor' }, [0, -1, 0])).toBe('underside');
     expect(faceSlot({ kind: 'wall' }, [1, 0, 0])).toBe('walls');

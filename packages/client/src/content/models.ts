@@ -18,10 +18,11 @@ export class ModelLibrary {
 
   constructor(private readonly scene: Scene) {}
 
+  /** `path` is relative to public/models, or to public itself for placeable props ("props/…"). */
   load(path: string): Promise<AssetContainer> {
     let p = this.containers.get(path);
     if (!p) {
-      p = LoadAssetContainerAsync(`${MODEL_BASE}${path}`, this.scene);
+      p = LoadAssetContainerAsync(path.startsWith('props/') ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`, this.scene);
       this.containers.set(path, p);
     }
     return p;

@@ -170,6 +170,8 @@ export function materialPixels(def: MaterialDefinition, size = 128): Uint8Array 
 
 /** Palette thumbnail as a data URL (DOM only; GPU textures use the raw pixels). */
 export function materialThumbnail(def: MaterialDefinition, tint: string | null = null, size = 48): string {
+  // Scanned sets show their own photo (the tint shows on the map).
+  if (def.texture) return `${import.meta.env.BASE_URL}textures/${def.texture}_color.jpg`;
   const px = materialPixels(def, size);
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;

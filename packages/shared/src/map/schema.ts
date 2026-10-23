@@ -3,8 +3,9 @@ import { EDGE_STYLES } from './catalog.ts';
 import { ScenarioLogic } from './logic.ts';
 
 /**
- * ChronoSplit map document, format version 5 (v2 added per-surface tile styles, v3 pickup
- * entities, v4 scenario entities and logic, v5 factions and NPC encounters).
+ * ChronoSplit map document, format version 6 (v2 added per-surface tile styles, v3 pickup
+ * entities, v4 scenario entities and logic, v5 factions and NPC encounters, v6 per-side
+ * wall styles, trim and props).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -13,7 +14,7 @@ import { ScenarioLogic } from './logic.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 5;
+export const MAP_FORMAT_VERSION = 6;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -217,7 +218,23 @@ export const EncounterEntity = EntityBase.extend({
   difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity]);
+/** A placed prop (furniture, crates, trees, machines…) from the prop catalog. Position is the centre of its footprint on the floor. */
+export const PropEntity = EntityBase.extend({
+  kind: z.literal('prop'),
+  model: ContentId,
+  /** Free rotation in radians (MapMaker snaps to 15°). */
+  yaw: Yaw,
+  scale: z.number().min(0.25).max(4).default(1),
+  /** Collides with players, shots and bots (if the prop has a collision box at all). */
+  solid: z.boolean().default(true),
+  tint: z
+    .string()
+    .regex(/^#[0-9a-f]{6}$/)
+    .nullable()
+    .default(null),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -257,6 +274,7 @@ export type TrapActivation = (typeof TRAP_ACTIVATIONS)[number];
 export type DestructibleModel = (typeof DESTRUCTIBLE_MODELS)[number];
 export type EntityKind = MapEntity['kind'];
 export type EncounterEntity = z.infer<typeof EncounterEntity>;
+export type PropEntity = z.infer<typeof PropEntity>;
 export type Faction = z.infer<typeof Faction>;
 export type NpcRole = (typeof NPC_ROLES)[number];
 export type SquadOrder = (typeof SQUAD_ORDERS)[number];

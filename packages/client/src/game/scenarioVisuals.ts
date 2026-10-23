@@ -26,7 +26,7 @@ import {
  * show the same thing. `apply` animates them from replicated state.
  */
 
-type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup'>;
+type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop'>;
 export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap'];
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
