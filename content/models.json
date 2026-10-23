@@ -64,6 +64,22 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/kenney-car-kit/License.txt",
       "retrieved": "2026-10-23"
+    },
+    "quaternius-bestiary-dungeon-monsters": {
+      "title": "Bestiary - Dungeon Monsters Kit [Standard]",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/bestiary-dungeon-monsters-kit",
+      "license": "LicenseRef-Quaternius-QAL-1.0",
+      "licenseFile": "assets-src/quaternius-bestiary-dungeon-monsters/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "quaternius-modular-scifi-megakit": {
+      "title": "Modular SciFi MegaKit [Standard]",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-sci-fi-megakit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-modular-scifi-megakit/License.txt",
+      "retrieved": "2026-10-23"
     }
   },
   "models": [
