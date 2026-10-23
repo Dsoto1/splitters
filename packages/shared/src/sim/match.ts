@@ -668,9 +668,10 @@ export class Match {
         hazards,
         orderGoal,
         allies,
-        noises,
-        shotAt: c.shotAt ?? null,
-        mounts,
+        // Focused bots (flag carriers) also ignore distant gunfire and near misses: they keep running.
+        noises: aware < Infinity ? undefined : noises,
+        shotAt: aware < Infinity ? null : (c.shotAt ?? null),
+        mounts: aware < Infinity ? undefined : mounts,
         seat: c.mount ? this.seatView(c) : null,
         squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
       });
