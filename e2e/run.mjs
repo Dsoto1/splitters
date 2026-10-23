@@ -278,7 +278,8 @@ async function canyonFlow(browser) {
   const p = await page.evaluate(() => window.__editor.view.project({ x: 0, y: 0, z: 0 }));
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
-  await page.waitForTimeout(700);
+  // Hold until the hill has grown (headless frame rates vary), at most 6 s.
+  await page.waitForFunction(() => Math.max(...window.__editor.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).map((m) => m.getBoundingInfo().boundingBox.maximumWorld.y)) > 0.5, null, { timeout: 6000 }).catch(() => {});
   await page.mouse.up();
   const peak = await page.evaluate(() => Math.max(...window.__editor.doc.terrain.heights));
   check(peak > 50, `raise brush builds a hill (${peak} cm)`);
@@ -332,6 +333,42 @@ async function arsenalFlow(browser) {
   check(zones.length > 0, `hazards are drawn on the ground (${[...new Set(zones)].join(', ')})`);
   const bar = await page.evaluate(() => document.getElementById('weapon-bar').textContent);
   check(/•/.test(bar ?? ''), `the weapon bar shows several weapons in a slot (${bar})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+async function vehiclesFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=canyon`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: 30000 });
+  const mounts = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => /^mount_[0-9]+$/.test(n.name)).length);
+  check(mounts >= 9, `canyon's vehicles and turrets are drawn (${mounts})`);
+  // Walk up to the buggy outside our base, press E once, and drive.
+  await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const z = me.faction === 'tide' ? 60 : -60;
+    me.move = { pos: { x: -14, y: 0.3, z: z - (z > 0 ? -3 : 3) }, velY: 0, grounded: false };
+    window.__autoInput = { buttons: 0 };
+  });
+  await page.waitForTimeout(500);
+  const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
+  check(/Drive the Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
+  await page.waitForFunction(() => !!window.__match.slots[window.__cs.slot].mount, null, { timeout: 5000 }).catch(() => {});
+  const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
+  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
+  // Headless frame rates vary: wait for the drive rather than a fixed time.
+  await page
+    .waitForFunction((s) => { const p = window.__match.slots[window.__cs.slot].move.pos; return Math.hypot(p.x - s.x, p.z - s.z) > 8; }, start, { timeout: 10000 })
+    .catch(() => {});
+  const after = await page.evaluate(() => ({ seat: window.__match.slots[window.__cs.slot].mount?.seat, pos: window.__match.slots[window.__cs.slot].move.pos, hud: document.getElementById('weapon-name')?.textContent }));
+  check(after.seat === 0, `you are in the driver's seat (${after.seat})`);
+  check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
+  await page.waitForFunction(() => !window.__match.slots[window.__cs.slot].mount, null, { timeout: 5000 }).catch(() => {});
+  check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -409,7 +446,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, teams: teamsFlow, arsenal: arsenalFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, teams: teamsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

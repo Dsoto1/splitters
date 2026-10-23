@@ -113,3 +113,31 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     ...(vx || vz ? { vx, vz } : {}),
   };
 }
+
+/** A jump pad as movement sees it. */
+export interface JumpPad {
+  pos: Vec3;
+  /** Launch velocity: up, and along the pad's facing. */
+  vy: number;
+  vx: number;
+  vz: number;
+}
+
+export const PAD_RADIUS = 1.1;
+
+/** The jump pads of a map (shared by the server and client prediction so both launch the same). */
+export function mapPads(entities: readonly { kind: string; position: [number, number, number]; yaw?: number; power?: number; push?: number }[]): JumpPad[] {
+  return entities
+    .filter((e) => e.kind === 'pad')
+    .map((e) => ({ pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, vy: e.power ?? 14, vx: Math.sin(e.yaw ?? 0) * (e.push ?? 6), vz: Math.cos(e.yaw ?? 0) * (e.push ?? 6) }));
+}
+
+/** Launch off a pad you are standing on (after moving). */
+export function applyPads(pads: readonly JumpPad[], state: MoveState): MoveState {
+  if (!pads.length || !state.grounded) return state;
+  for (const p of pads) {
+    if (Math.hypot(state.pos.x - p.pos.x, state.pos.z - p.pos.z) > PAD_RADIUS || Math.abs(state.pos.y - p.pos.y) > 0.6) continue;
+    return { ...state, velY: p.vy, grounded: false, ...(p.vx || p.vz ? { vx: quantize(p.vx), vz: quantize(p.vz) } : {}) };
+  }
+  return state;
+}

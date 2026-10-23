@@ -224,6 +224,7 @@ export const SCENARIO_PALETTE = [
   { key: 'door', label: 'Door', search: 'door auto sliding gate' },
   { key: 'door_locked', label: 'Locked Door', search: 'door locked key gate vault' },
   { key: 'button', label: 'Button', search: 'button switch lever press use' },
+  { key: 'pad', label: 'Jump Pad', search: 'jump pad launch bounce boost trampoline' },
   { key: 'crate', label: 'Crate', search: 'crate box destructible break cover' },
   { key: 'barrel', label: 'Explosive Barrel', search: 'barrel explosive destructible red boom' },
   { key: 'wall', label: 'Breakable Wall', search: 'wall breakable destructible breach' },
@@ -253,6 +254,8 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: key === 'door_locked', auto: key === 'door' };
     case 'button':
       return { id: newId('button'), kind: 'button', ...base, label: 'Press', once: false, cooldownSeconds: 1, startEnabled: true };
+    case 'pad':
+      return { id: newId('pad'), kind: 'pad', ...base, power: 14, push: 6 };
     case 'crate':
     case 'barrel':
     case 'wall':
@@ -303,7 +306,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {

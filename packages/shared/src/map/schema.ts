@@ -247,7 +247,15 @@ export const MountEntity = EntityBase.extend({
   respawnSeconds: z.number().min(5).max(600).nullable().default(null),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity]);
+/** A jump pad: stepping on it throws you up (`power` m/s) and along its facing (`push` m/s). */
+export const PadEntity = EntityBase.extend({
+  kind: z.literal('pad'),
+  yaw: Yaw,
+  power: z.number().min(2).max(40).default(14),
+  push: z.number().min(0).max(40).default(6),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -331,6 +339,7 @@ export type EntityKind = MapEntity['kind'];
 export type EncounterEntity = z.infer<typeof EncounterEntity>;
 export type PropEntity = z.infer<typeof PropEntity>;
 export type MountEntity = z.infer<typeof MountEntity>;
+export type PadEntity = z.infer<typeof PadEntity>;
 export type Faction = z.infer<typeof Faction>;
 export type MapBounds = z.infer<typeof MapBounds>;
 export type BoundaryStyle = (typeof BOUNDARY_STYLES)[number];

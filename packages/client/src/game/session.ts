@@ -1,6 +1,9 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   CORE_WEAPONS,
+  mapPads,
+  mountToWorld,
+  viewDirection,
   type ZoneSnapshot,
   BUTTON_FIRE,
   PhysicsWorld,
@@ -35,6 +38,7 @@ import {
 import type { AudioSystem } from '../audio/audio.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
+import { MountState } from './mountState.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState } from './input.ts';
 import { Interpolator } from './interpolation.ts';
@@ -106,6 +110,9 @@ export class GameSession {
   private wantWeapon = 0;
   /** Ground hazards from the latest snapshot, and your own status effects. */
   private zones: ZoneSnapshot[] = [];
+  /** Turrets, sentries and vehicles, and your seat in one: [mount entity index, seat, gun heat %]. */
+  private mounts?: MountState;
+  private seat: [number, number, number] | null = null;
   private localStatus = 0;
   private lastWeapon = 0;
 
@@ -198,7 +205,9 @@ export class GameSession {
         this.sfx.joined();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
         this.local = new LocalPlayer(physics);
+        this.local.pads = mapPads(loaded.map.entities);
         this.scenario = new ScenarioState(loaded.map, physics);
+        this.mounts = new MountState(loaded.map, physics);
         this.scenario.apply(msg.sc);
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
@@ -225,6 +234,8 @@ export class GameSession {
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8] });
         this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr);
         this.zones = msg.zn ?? [];
+        this.mounts?.apply(msg.mt);
+        this.seat = msg.me?.mo ?? null;
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         this.taken = new Set(msg.pk);
@@ -330,10 +341,18 @@ export class GameSession {
       return `${map.logic.timers[t[0]]?.name ?? 'Timer'} ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
     }));
 
-    // Use prompt for the button or door in front of the player.
+    // Use prompt: get out, get in, or the button or door in front of the player.
     const target = local.alive ? pickUsable(map, local.eye, this.input.yaw, this.input.pitch, (i) => sc.usable(i)) : null;
     const e = target === null ? undefined : map.entities[target];
-    if (e?.kind === 'button') this.hud.setPrompt(sc.state(target!)?.[0] === 0 ? 'Not working' : e.label || 'Press', sc.state(target!)?.[0] === 0);
+    const enter = local.alive && !this.seat ? this.mounts?.enterable(local.state.pos) : null;
+    if (local.alive && this.seat) {
+      const m = this.mounts?.mounts.get(this.seat[0]);
+      this.hud.setPrompt(`Get out of the ${m?.def.displayName ?? 'vehicle'}`);
+    } else if (enter) {
+      const seat = enter.mount.def.seats[enter.seat]!;
+      const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';
+      this.hud.setPrompt(`${verb} the ${enter.mount.def.displayName}`);
+    } else if (e?.kind === 'button') this.hud.setPrompt(sc.state(target!)?.[0] === 0 ? 'Not working' : e.label || 'Press', sc.state(target!)?.[0] === 0);
     else if (e?.kind === 'door') {
       const [open, locked] = sc.state(target!) ?? [0, 0];
       this.hud.setPrompt(locked ? 'Locked' : open > 50 ? 'Close' : 'Open', locked === 1);
@@ -411,17 +430,37 @@ export class GameSession {
       this.sfx.localWeapon(local);
       this.opts.audio.setListener(local.eye, this.input.yaw, this.input.pitch);
 
-      const weapon = local.alive ? local.weapon : undefined;
+      // Seated: the camera rides the vehicle (drivers watch from behind it); seat guns replace your own weapon.
+      this.mounts?.smooth(dt);
+      const ride = local.alive && this.seat ? this.mounts?.mounts.get(this.seat[0]) : undefined;
+      const seatDef = ride?.def.seats[this.seat?.[1] ?? 0];
+      const seatGun = seatDef?.weapon ? CORE_WEAPONS[seatDef.weapon] : undefined;
+      const handsBusy = !!seatDef && (seatDef.role === 'driver' || !!seatDef.weapon);
+      local.seatGun = seatGun ?? null;
+      local.unarmed = seatDef?.role === 'driver' && !seatGun;
+      const weapon = local.alive && !handsBusy ? local.weapon : undefined;
       const zoomed = !!weapon?.view.zoomFov && this.input.zooming && local.raiseTicks === 0 && local.reloadTicks === 0;
       const fov = zoomed ? weapon!.view.zoomFov! : DEFAULT_FOV;
       this.input.sensitivityScale = fov / DEFAULT_FOV;
-      this.view.setCamera(local.eye, this.input.yaw, this.input.pitch, fov);
+      if (ride && seatDef) {
+        const feet = mountToWorld(ride.shown.pos, ride.shown.yaw, seatDef.offset);
+        const eye = { x: feet.x, y: feet.y + PLAYER.eyeHeight, z: feet.z };
+        if (seatDef.role === 'driver' && ride.def.kind === 'vehicle') {
+          // The chase camera swings round behind the vehicle as it turns (the mouse can still look about).
+          const d = Math.atan2(Math.sin(ride.shown.yaw - this.input.yaw), Math.cos(ride.shown.yaw - this.input.yaw));
+          this.input.yaw += d * Math.min(1, dt * 2.5);
+          const back = viewDirection(this.input.yaw, this.input.pitch - 0.25);
+          const dist = 4 + ride.def.half[2] * 1.5;
+          this.view.setCamera({ x: eye.x - back.x * dist, y: eye.y - back.y * dist + 1, z: eye.z - back.z * dist }, this.input.yaw, this.input.pitch - 0.15, DEFAULT_FOV);
+        } else this.view.setCamera(eye, this.input.yaw, this.input.pitch, DEFAULT_FOV);
+      } else this.view.setCamera(local.eye, this.input.yaw, this.input.pitch, fov);
       this.view.setViewmodel(weapon);
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, (weapon.reloadTicks - local.reloadTicks) / 10) : 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed });
       this.hud.setScope(zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
-      this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive);
+      if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2]);
+      else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
       this.hud.setThrowable(local.throwable, local.alive);
       this.input.altTrigger = !!local.weapon?.alt;
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE);
@@ -435,6 +474,7 @@ export class GameSession {
     this.view.updatePickups(this.taken, now);
     this.view.updateProjectiles(this.interp.sampleProjectiles(now));
     this.view.updateZones(this.zones, now);
+    if (this.mounts) this.view.updateMounts(this.mounts.mounts.values());
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
     this.view.updateAvatars(
@@ -451,6 +491,7 @@ export class GameSession {
         const theirs = id < NPC_ID_BASE ? this.hud.team(id) : undefined;
         return mine && theirs && mine.id === theirs.id ? mine.color : null;
       },
+      this.mounts?.riders(),
     );
     this.sfx.remoteSteps(poses);
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot);

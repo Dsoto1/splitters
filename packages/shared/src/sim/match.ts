@@ -3,7 +3,8 @@ import { BotBrain, type CombatantView, type PickupView } from '../bots/brain.ts'
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
-import { add, createRng, distance, dot, horizontalDistance, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
+import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
+import { getMountDef, mountToWorld, type MountDef, type SeatDef, type SeatRole } from './mounts.ts';
 import { NavWorld } from '../nav/index.ts';
 import {
   POWERUP_DAMAGE_BIT,
@@ -23,10 +24,11 @@ import {
   type ServerMessage,
   type Tuple3,
   type ZoneSnapshot,
+  type MountSnapshot,
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
-import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_THROW, BUTTON_USE, sanitizeInput, stepMovement, type MoveState, type PlayerInput } from './movement.ts';
+import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_THROW, BUTTON_USE, applyPads, mapPads, sanitizeInput, stepMovement, type JumpPad, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
 import { Scenario } from './scenario.ts';
@@ -53,6 +55,42 @@ export interface WeaponState {
   /** Heat weapons: 0..1, and whether it overheated (locked until it cools right down). */
   heat?: number;
   overheated?: boolean;
+  /** Mounted guns: the tick it last fired (they cool when idle, manned or not). */
+  firedTick?: number;
+}
+
+/** A turret, sentry or vehicle in play (see mounts.ts). */
+interface MountRt {
+  /** Index of its map entity (snapshots refer to it). */
+  index: number;
+  def: MountDef;
+  home: { pos: Vec3; yaw: number };
+  pos: Vec3;
+  yaw: number;
+  velY: number;
+  /** Signed speed along the heading (vehicles). */
+  speed: number;
+  push: { x: number; z: number };
+  /** Where the gunner (or the sentry) is aiming. */
+  aimYaw: number;
+  aimPitch: number;
+  health: number;
+  alive: boolean;
+  respawnAt: number;
+  respawnTicks: number;
+  /** Occupant per seat (actor slot), or null. */
+  seats: (number | null)[];
+  /** Mounted gun per seat. */
+  guns: (WeaponState | null)[];
+  body: RAPIER.Collider;
+  probe: RAPIER.Collider | null;
+  faction: string | null;
+  /** The driver's controls this tick. */
+  drive: { forward: number; right: number };
+  cooldown: number;
+  /** Who damaged it last (credit for the explosion). */
+  lastHitBy: number | null;
+  runOver: Map<number, number>;
 }
 
 export interface Combatant {
@@ -109,6 +147,8 @@ export interface Combatant {
   queue: PlayerInput[];
   lastSeq: number;
   bot?: BotBrain;
+  /** Seat in a turret or vehicle: mount index (into Match.mounts) and seat. */
+  mount?: { index: number; seat: number };
 }
 
 interface Projectile {
@@ -193,6 +233,10 @@ export class Match {
   private readonly rng: () => number;
   private projectiles: Projectile[] = [];
   private zones: Zone[] = [];
+  private readonly pads: JumpPad[];
+  private readonly mounts: MountRt[] = [];
+  /** Collider handle -> mount, so shots and blasts can hurt vehicles. */
+  private readonly mountBodies = new Map<number, MountRt>();
   private nextProjectileId = 1;
   /** Positions of everyone at recent ticks, for lag-compensated hitscan. */
   private readonly history = new Map<number, Map<number, Vec3>>();
@@ -221,6 +265,12 @@ export class Match {
       if (!item) continue;
       this.pickups.push({ id: e.id, item, pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, respawnTicks: Math.round((e.respawnSeconds ?? item.respawnSeconds) * TICK_RATE), availableAt: 0, enabled: true });
     }
+    map.entities.forEach((e, index) => {
+      if (e.kind !== 'mount') return;
+      const def = getMountDef(e.model);
+      if (def) this.addMount(index, def, { x: e.position[0], y: e.position[1], z: e.position[2] }, e.yaw, e.faction, e.respawnSeconds);
+    });
+    this.pads = mapPads(map.entities);
     this.phaseEndTick = this.roundEndTick();
     const match = this;
     this.scenario = new Scenario(map, this.physics, {
@@ -462,6 +512,7 @@ export class Match {
   remove(slot: number): void {
     const c = this.slots[slot];
     if (!c) return;
+    this.leaveMount(c, false);
     this.physics.removeCollider(c.collider);
     this.slots[slot] = null;
   }
@@ -489,6 +540,7 @@ export class Match {
     } else {
       this.runBots();
       for (const c of this.actors()) this.applyInputs(c);
+      this.stepMounts();
       this.stepProjectiles();
       this.stepZones();
       this.stepStatuses();
@@ -585,7 +637,21 @@ export class Match {
 
       if (input.weapon && input.weapon !== c.current && c.weapons.has(input.weapon)) this.switchTo(c, input.weapon);
 
-      c.move = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos));
+      const seat = c.mount ? this.seatOf(c) : null;
+      if (seat) {
+        // In a turret or vehicle: no walking. Drivers steer; gunners' aim stays within the gun's arc.
+        const m = this.mounts[c.mount!.index]!;
+        if (seat.role === 'driver') m.drive = { forward: input.forward, right: input.right };
+        if (seat.arc !== undefined) {
+          const d = Math.atan2(Math.sin(c.yaw - m.yaw), Math.cos(c.yaw - m.yaw));
+          c.yaw = m.yaw + Math.max(-seat.arc, Math.min(seat.arc, d));
+        }
+        c.pitch = Math.max(-0.5, Math.min(0.75, c.pitch));
+        if (seat.weapon) {
+          m.aimYaw = c.yaw;
+          m.aimPitch = c.pitch;
+        }
+      } else c.move = applyPads(this.pads, stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos)));
       if (c.fireCooldown > 0) c.fireCooldown--;
       if (c.throwCooldown > 0) c.throwCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
@@ -594,17 +660,23 @@ export class Match {
       if (c.reloadTicks > 0 && --c.reloadTicks === 0) this.finishReload(c);
 
       if (input.buttons & BUTTON_USE) {
-        this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
+        // Get out, get in, or use whatever you are looking at.
+        if (c.mount) this.leaveMount(c, true);
+        else if (!this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
         if (this.phase !== 'playing') break;
       }
-      const held = heldWeapon(c);
+      // Seated: the seat's gun if it has one; drivers without one can't shoot; passengers use their own.
+      const seatNow = c.mount ? this.seatOf(c) : null;
+      const gun = seatNow?.weapon ? this.mounts[c.mount!.index]!.guns[c.mount!.seat]! : null;
+      const unarmed = seatNow?.role === 'driver' && !gun;
+      const held = gun ?? heldWeapon(c);
       const def = held.def;
       const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
       c.prevButtons = input.buttons;
       if (!fireDown) c.semiLatch = false;
       if (input.buttons & BUTTON_RELOAD) this.startReload(c);
       const frozen = c.frozenTicks > 0;
-      const ready = c.fireCooldown === 0 && c.raiseTicks === 0 && c.reloadTicks === 0 && !frozen;
+      const ready = c.fireCooldown === 0 && (gun ? true : c.raiseTicks === 0) && c.reloadTicks === 0 && !frozen && !unarmed;
       // Spin-up and charge: the trigger has to be held this long first.
       if (def.windupTicks) {
         const able = fireDown && c.raiseTicks === 0 && c.reloadTicks === 0 && !frozen && !held.overheated && (def.magazine === 0 || held.mag > 0);
@@ -644,14 +716,15 @@ export class Match {
           this.fire(c, altTrigger(held.def, alt), input.viewTick ?? 0);
         } else if (alt.ammo === 'shared') this.startReload(c);
       }
-      // Heat weapons cool when not firing; bloom settles.
+      if (fired && gun) gun.firedTick = this.tick;
+      // Heat weapons cool when not firing (mounted guns cool in stepMounts); bloom settles.
       for (const w of c.weapons.values()) {
         if (!w.def.heat || (fired && w === held)) continue;
         w.heat = Math.max(0, (w.heat ?? 0) - w.def.heat.coolPerTick);
         if (w.heat === 0) w.overheated = false;
       }
       if (!fired && c.bloom > 0) c.bloom = Math.max(0, c.bloom - (def.recoil?.recover ?? 0.002));
-      if (input.buttons & BUTTON_THROW && c.throwCooldown === 0 && c.throwable && c.throwable.count > 0 && !frozen) {
+      if (input.buttons & BUTTON_THROW && c.throwCooldown === 0 && c.throwable && c.throwable.count > 0 && !frozen && !unarmed && !gun) {
         const def = THROWABLE_DEFS[c.throwable.kind];
         c.throwCooldown = def.throwIntervalTicks;
         if (--c.throwable.count === 0) c.throwable = null;
@@ -659,7 +732,9 @@ export class Match {
         this.pendingEvents.push({ e: 'throw', s: c.slot });
       }
 
-      if (!c.npc) this.collectPickups(c);
+      if (c.mount) {
+        // Seated players ride along; nothing else to do this input.
+      } else if (!c.npc) this.collectPickups(c);
       // NPCs never run dry: their reserve refills.
       else if (held.reserve < held.def.magazine) held.reserve = held.def.reserveMax;
       if (c.move.pos.y < this.killY) this.kill(c, null, 'core.fall');
@@ -738,7 +813,7 @@ export class Match {
       }
       this.pendingEvents.push({ e: 'melee', s: shooter.slot, hit });
       if (hit !== null) this.damage(this.actor(hit)!, def.damage, shooter, def.id);
-      else if (body !== null) this.scenario.damageBody(body, this.boosted(shooter, def.damage), shooter.slot);
+      else if (body !== null && !this.damageMountBody(body, this.boosted(shooter, def.damage), shooter)) this.scenario.damageBody(body, this.boosted(shooter, def.damage), shooter.slot);
       return;
     }
 
@@ -776,7 +851,7 @@ export class Match {
       if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
       if (def.knockback) this.push(victim, dir, def.knockback);
     }
-    for (const b of bodies) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
+    for (const b of bodies) if (!this.damageMountBody(b, this.boosted(shooter, def.damage), shooter)) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
     if (def.chain && struck.length) this.chainLightning(shooter, def, struck[0]!.slot, eye);
   }
 
@@ -958,7 +1033,7 @@ export class Match {
         }
         if (victim && spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
         if (victim && spec.status) this.applyStatus(victim, spec.status, owner ?? null, p.weapon);
-        if (!victim && wall && spec.impactDamage) this.scenario.damageBody(wall.handle, spec.impactDamage, p.owner);
+        if (!victim && wall && spec.impactDamage && !this.damageMountBody(wall.handle, spec.impactDamage, owner ?? null)) this.scenario.damageBody(wall.handle, spec.impactDamage, p.owner);
         this.explode(p, at);
         continue;
       }
@@ -1000,6 +1075,256 @@ export class Match {
     if (!best) return;
     const k = Math.min(1, homing.turnRate * TICK_DT);
     p.vel = scale(normalize(add(scale(fwd, 1 - k), scale(best, k))), speed);
+  }
+
+  // ---------------------------------------------------------------- turrets, sentries and vehicles
+
+  private addMount(index: number, def: MountDef, pos: Vec3, yaw: number, faction: string | null, respawnSeconds: number | null): void {
+    const half = { x: def.half[0], y: def.half[1], z: def.half[2] };
+    const body = this.physics.createBox({ x: pos.x, y: pos.y + half.y, z: pos.z }, half, yaw);
+    const probe = def.vehicle ? this.physics.createVehicleProbe(Math.min(half.x, half.z) * 0.95) : null;
+    const m: MountRt = {
+      index,
+      def,
+      home: { pos: { ...pos }, yaw },
+      pos: { ...pos },
+      yaw,
+      velY: 0,
+      speed: 0,
+      push: { x: 0, z: 0 },
+      aimYaw: yaw,
+      aimPitch: 0,
+      health: def.health,
+      alive: true,
+      respawnAt: 0,
+      respawnTicks: Math.round((respawnSeconds ?? def.respawnSeconds) * TICK_RATE),
+      seats: def.seats.map(() => null),
+      guns: def.seats.map((seat) => (seat.weapon ? { def: getWeapon(seat.weapon), mag: 0, reserve: 0, alt: 0, heat: 0 } : null)),
+      body,
+      probe,
+      faction,
+      drive: { forward: 0, right: 0 },
+      cooldown: 0,
+      lastHitBy: null,
+      runOver: new Map(),
+    };
+    this.mounts.push(m);
+    this.mountBodies.set(body.handle, m);
+  }
+
+  private seatOf(c: Combatant): SeatDef | null {
+    if (!c.mount) return null;
+    return this.mounts[c.mount.index]?.def.seats[c.mount.seat] ?? null;
+  }
+
+  /** Where a seat's occupant stands right now. */
+  private seatFeet(m: MountRt, seat: number): Vec3 {
+    return mountToWorld(m.pos, m.yaw, m.def.seats[seat]!.offset);
+  }
+
+  /** Climb into the nearest turret or vehicle in reach with a free seat (driver first, then gunner, then passengers). */
+  private enterMount(c: Combatant): boolean {
+    let best: MountRt | null = null;
+    let bestD = Infinity;
+    for (const m of this.mounts) {
+      if (!m.alive || !m.def.seats.length || !m.seats.includes(null)) continue;
+      const d = horizontalDistance(m.pos, c.move.pos);
+      if (d <= m.def.enterRadius && Math.abs(m.pos.y - c.move.pos.y) < 2.5 && d < bestD) {
+        best = m;
+        bestD = d;
+      }
+    }
+    if (!best) return false;
+    const order: SeatRole[] = ['driver', 'gunner', 'passenger'];
+    let seat = -1;
+    for (const role of order) {
+      seat = best.def.seats.findIndex((s, i) => s.role === role && best!.seats[i] === null);
+      if (seat >= 0) break;
+    }
+    if (seat < 0) return false;
+    best.seats[seat] = c.slot;
+    c.mount = { index: this.mounts.indexOf(best), seat };
+    c.move = { pos: this.seatFeet(best, seat), velY: 0, grounded: true };
+    c.reloadTicks = 0;
+    c.windup = 0;
+    c.burstLeft = 0;
+    this.pendingEvents.push({ e: 'mount', s: c.slot, m: best.index, seat });
+    return true;
+  }
+
+  /** Get out (beside the mount, where there is room), or just free the seat (death, leaving the match). */
+  leaveMount(c: Combatant, step: boolean): void {
+    if (!c.mount) return;
+    const m = this.mounts[c.mount.index];
+    const seat = c.mount.seat;
+    c.mount = undefined;
+    if (!m) return;
+    m.seats[seat] = null;
+    if (m.def.seats[seat]?.role === 'driver') m.drive = { forward: 0, right: 0 };
+    this.pendingEvents.push({ e: 'mount', s: c.slot, m: m.index, seat: -1 });
+    if (!step) return;
+    const [hx, , hz] = m.def.half;
+    for (const o of [[-(hx + 0.9), 0, 0], [hx + 0.9, 0, 0], [0, 0, -(hz + 0.9)], [0, 0, hz + 0.9]] as const) {
+      const spot = mountToWorld(m.pos, m.yaw, o);
+      // Room to stand: nothing solid from the knees to above the head (a ray starting inside a wall hits at once).
+      if (this.physics.raycastHit({ x: spot.x, y: spot.y + 0.4, z: spot.z }, { x: 0, y: 1, z: 0 }, PLAYER.height)) continue;
+      c.move = { pos: { x: spot.x, y: spot.y + 0.3, z: spot.z }, velY: 0, grounded: false };
+      return;
+    }
+    c.move = { pos: { x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z }, velY: 0, grounded: false };
+  }
+
+  /** Damage whatever mount owns this collider; false when it isn't one. */
+  private damageMountBody(handle: number, amount: number, attacker: Combatant | null): boolean {
+    const m = this.mountBodies.get(handle);
+    if (!m) return false;
+    this.damageMount(m, amount, attacker);
+    return true;
+  }
+
+  private damageMount(m: MountRt, amount: number, attacker: Combatant | null): void {
+    if (!m.alive || this.phase !== 'playing' || amount <= 0) return;
+    m.health -= amount;
+    if (attacker) m.lastHitBy = attacker.slot;
+    if (m.health <= 0) this.destroyMount(m);
+  }
+
+  /** It blows up: everyone aboard is thrown out into the blast; it comes back at home later. */
+  private destroyMount(m: MountRt): void {
+    m.alive = false;
+    m.health = 0;
+    m.respawnAt = this.tick + m.respawnTicks;
+    const aboard = m.seats.map((slot) => (slot === null ? undefined : this.actor(slot))).filter((c): c is Combatant => !!c);
+    for (const c of aboard) this.leaveMount(c, true);
+    this.physics.setBoxEnabled(m.body, false);
+    this.physics.commit();
+    const at = { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z };
+    this.pendingEvents.push({ e: 'explode', s: m.lastHitBy ?? -1, p: tuple(at), r: m.def.blast.radius });
+    const by = m.lastHitBy === null ? null : (this.actor(m.lastHitBy) ?? null);
+    this.splash(at, m.def.blast.radius, m.def.blast.damage, m.def.blast.damage * 0.2, by, 'core.wreck', 1, 6);
+  }
+
+  private respawnMount(m: MountRt): void {
+    m.alive = true;
+    m.health = m.def.health;
+    m.pos = { ...m.home.pos };
+    m.yaw = m.aimYaw = m.home.yaw;
+    m.aimPitch = 0;
+    m.speed = m.velY = 0;
+    m.push = { x: 0, z: 0 };
+    m.lastHitBy = null;
+    for (const g of m.guns) if (g) g.heat = 0;
+    this.physics.setBoxEnabled(m.body, true);
+    this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
+  }
+
+  private stepMounts(): void {
+    for (const m of this.mounts) {
+      if (!m.alive) {
+        if (this.phase === 'playing' && this.tick >= m.respawnAt) this.respawnMount(m);
+        continue;
+      }
+      // Mounted guns cool whenever they are not firing.
+      for (const g of m.guns) {
+        if (!g?.def.heat || g.firedTick === this.tick) continue;
+        g.heat = Math.max(0, (g.heat ?? 0) - g.def.heat.coolPerTick);
+        if (g.heat === 0) g.overheated = false;
+      }
+      if (m.def.vehicle) this.driveVehicle(m);
+      if (m.def.sentry) this.runSentry(m);
+      // Riders move with it.
+      m.seats.forEach((slot, seat) => {
+        const c = slot === null ? undefined : this.actor(slot);
+        if (c?.alive) c.move = { pos: this.seatFeet(m, seat), velY: 0, grounded: true };
+      });
+    }
+    // Moved bodies must be in place before this tick's shots and sight checks.
+    if (this.mounts.length) this.physics.commit();
+  }
+
+  /**
+   * Arcade driving: throttle toward a target speed, steer harder the faster
+   * you go, slide along walls (a crash halves your speed), fall with gravity,
+   * and run down anyone in the way.
+   */
+  private driveVehicle(m: MountRt): void {
+    const v = m.def.vehicle!;
+    const { forward, right } = m.drive;
+    const target = forward > 0 ? v.maxSpeed * forward : forward < 0 ? -v.reverseSpeed * -forward : 0;
+    const braking = target === 0 || Math.sign(target) !== Math.sign(m.speed);
+    const rate = (target === 0 ? v.accel * (v.hover ? 0.35 : 0.8) : braking ? v.accel * 1.8 : v.accel) * TICK_DT;
+    m.speed += Math.max(-rate, Math.min(rate, target - m.speed));
+    const grip = Math.min(1, Math.abs(m.speed) / 5);
+    m.yaw += right * v.turnRate * TICK_DT * grip * (m.speed >= 0 ? 1 : -1);
+    m.velY -= PLAYER.gravity * TICK_DT;
+    const dir = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
+    const delta = { x: (dir.x * m.speed + m.push.x) * TICK_DT, y: m.velY * TICK_DT, z: (dir.z * m.speed + m.push.z) * TICK_DT };
+    const moved = this.physics.moveVehicle(m.probe!, m.body, m.pos, delta);
+    if (moved.grounded && m.velY < 0) m.velY = 0;
+    if (moved.blocked > 0.6 && Math.abs(m.speed) > 4) m.speed *= 0.5;
+    m.pos = moved.feet;
+    const decay = moved.grounded ? 0.9 : 0.99;
+    m.push = { x: m.push.x * decay, z: m.push.z * decay };
+    this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
+    if (m.pos.y < this.killY) {
+      this.destroyMount(m);
+      return;
+    }
+    // Running people over.
+    if (Math.abs(m.speed) < 5) return;
+    const driverSlot = m.seats[m.def.seats.findIndex((s) => s.role === 'driver')] ?? null;
+    const driver = driverSlot === null ? null : (this.actor(driverSlot) ?? null);
+    for (const c of this.actors()) {
+      if (!c.alive || m.seats.includes(c.slot) || (m.runOver.get(c.slot) ?? 0) > this.tick) continue;
+      const rel = { x: c.move.pos.x - m.pos.x, z: c.move.pos.z - m.pos.z };
+      const lx = rel.x * Math.cos(m.yaw) - rel.z * Math.sin(m.yaw);
+      const lz = rel.x * Math.sin(m.yaw) + rel.z * Math.cos(m.yaw);
+      if (Math.abs(lx) > m.def.half[0] + PLAYER.radius || Math.abs(lz) > m.def.half[2] + PLAYER.radius || Math.abs(c.move.pos.y - m.pos.y) > 1.5) continue;
+      if (driver && driver !== c && !this.hostile(driver, c)) continue;
+      m.runOver.set(c.slot, this.tick + 30);
+      this.push(c, { x: dir.x + (lx >= 0 ? 1 : -1) * Math.cos(m.yaw) * 0.6, y: 0.4, z: dir.z - (lx >= 0 ? 1 : -1) * Math.sin(m.yaw) * 0.6 }, Math.abs(m.speed) * 0.8);
+      this.damage(c, Math.abs(m.speed) * 5, driver, 'core.roadkill');
+    }
+  }
+
+  /** Sentries turn toward the nearest enemy they can see and fire while lined up. */
+  private runSentry(m: MountRt): void {
+    const spec = m.def.sentry!;
+    const muzzle = { x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z };
+    let target: Combatant | null = null;
+    let bestD = spec.range;
+    for (const c of this.actors()) {
+      if (!c.alive) continue;
+      if (m.faction !== null && relation(this.factions, m.faction, c.faction) !== 'enemy') continue;
+      const d = distance(muzzle, chest(c.move.pos));
+      if (d < bestD && this.physics.lineOfSight(muzzle, chest(c.move.pos))) {
+        bestD = d;
+        target = c;
+      }
+    }
+    if (m.cooldown > 0) m.cooldown--;
+    if (!target) return;
+    const want = lookAngles(muzzle, chest(target.move.pos));
+    const dy = Math.atan2(Math.sin(want.yaw - m.aimYaw), Math.cos(want.yaw - m.aimYaw));
+    const turn = spec.turnRate * TICK_DT;
+    m.aimYaw += Math.max(-turn, Math.min(turn, dy));
+    m.aimPitch += Math.max(-turn, Math.min(turn, want.pitch - m.aimPitch));
+    if (Math.abs(dy) > 0.12 || m.cooldown > 0) return;
+    const def = getWeapon(spec.weapon);
+    m.cooldown = def.fireIntervalTicks;
+    const dir = this.spreadDir(viewDirection(m.aimYaw, m.aimPitch), def.spread);
+    const world = this.physics.raycastHit(muzzle, dir, def.range);
+    const targets = this.actors()
+      .filter((c) => c.alive && (m.faction === null || relation(this.factions, m.faction, c.faction) === 'enemy'))
+      .map((c) => ({ slot: c.slot, feet: c.move.pos }));
+    const shot = resolveHitscan(muzzle, dir, def.range, world && world.handle !== m.body.handle ? world.dist : null, targets);
+    this.pendingEvents.push({ e: 'shot', s: -1, w: def.id, from: tuple(muzzle), to: [tuple(shot.end)], hit: [shot.hitSlot] });
+    if (shot.hitSlot !== null) this.damage(this.actor(shot.hitSlot)!, def.damage, null, def.id);
+  }
+
+  /** Mounts for snapshots (see MountSnapshot). */
+  mountSnapshots(): MountSnapshot[] {
+    return this.mounts.map((m) => [m.index, r3(m.pos.x), r3(m.pos.y), r3(m.pos.z), r3(m.yaw), r3(m.aimYaw), r3(m.aimPitch), Math.ceil((Math.max(0, m.health) / m.def.health) * 100), m.alive ? 1 : 0, ...m.seats.map((s) => s ?? -1)]);
   }
 
   // ---------------------------------------------------------------- hazards and status effects
@@ -1119,6 +1444,12 @@ export class Match {
       if (status && c.alive) this.applyStatus(c, status, owner, weapon);
     }
     const boost = owner && owner.damageTicks > 0 ? DAMAGE_BOOST : 1;
+    for (const m of this.mounts) {
+      if (!m.alive) continue;
+      const centre = { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z };
+      const d = Math.max(0, distance(at, centre) - Math.min(m.def.half[0], m.def.half[2]));
+      if (d <= radius) this.damageMount(m, (damage + (edge - damage) * (d / radius)) * boost, owner);
+    }
     this.scenario.splash(at, radius, damage * boost, edge * boost, owner?.slot ?? null, this.physics);
   }
 
@@ -1143,6 +1474,7 @@ export class Match {
   }
 
   private kill(victim: Combatant, killer: Combatant | null, weapon: string): void {
+    this.leaveMount(victim, false);
     victim.alive = false;
     victim.health = 0;
     this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon });
@@ -1369,6 +1701,7 @@ export class Match {
     return {
       inv: [...c.weapons.entries()].sort((a, b) => a[0] - b[0]).map(([code, w]) => (w.def.heat ? [code, w.mag, w.reserve, w.alt, Math.round((w.heat ?? 0) * 100) + (w.overheated ? 100 : 0)] : [code, w.mag, w.reserve, w.alt])),
       ...(statusSpeed(c) !== 1 ? { ms: Math.round(statusSpeed(c) * 1000) } : {}),
+      ...(c.mount ? { mo: [this.mounts[c.mount.index]!.index, c.mount.seat, Math.round((this.mounts[c.mount.index]!.guns[c.mount.seat]?.heat ?? 0) * 100)] as [number, number, number] } : {}),
       ...(c.throwable ? { gr: [THROWABLES.indexOf(c.throwable.kind), c.throwable.count] as [number, number] } : {}),
       rl: c.reloadTicks,
       rs: c.raiseTicks,
@@ -1403,6 +1736,7 @@ export class Match {
       ev: events,
       pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)]),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
+      ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),

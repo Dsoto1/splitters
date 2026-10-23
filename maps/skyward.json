@@ -1,0 +1,531 @@
+{
+  "format": "chronosplit.map",
+  "formatVersion": 8,
+  "metadata": {
+    "id": "skyward",
+    "name": "Skyward Yard",
+    "author": "ChronoSplit",
+    "description": "Floating decks in open space, joined by jump pads. Ride the pads up to the towers and the high perches (railgun north, heavy armour south); fall off and you are gone. Homage to the classic arena in the sky.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 2,
+      "max": 8
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.station",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.platform",
+        "x": -2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.platform",
+        "x": -2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.platform",
+        "x": -2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.platform",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.platform",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.platform",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.platform",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.platform",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.platform",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.platform",
+        "x": 1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.platform",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.platform_rail",
+        "x": -5,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.platform_rail",
+        "x": 5,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": -4,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": 4,
+        "z": 2,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "pad_020",
+      "position": [
+        -18,
+        0,
+        0
+      ],
+      "kind": "pad",
+      "yaw": -1.5707963267948966,
+      "power": 14,
+      "push": 17.5
+    },
+    {
+      "id": "pad_021",
+      "position": [
+        18,
+        0,
+        0
+      ],
+      "kind": "pad",
+      "yaw": 1.5707963267948966,
+      "power": 14,
+      "push": 17.5
+    },
+    {
+      "id": "pad_022",
+      "position": [
+        0,
+        0,
+        10
+      ],
+      "kind": "pad",
+      "yaw": 0,
+      "power": 18,
+      "push": 15
+    },
+    {
+      "id": "pad_023",
+      "position": [
+        0,
+        0,
+        -10
+      ],
+      "kind": "pad",
+      "yaw": 3.141592653589793,
+      "power": 18,
+      "push": 15
+    },
+    {
+      "id": "prop_024",
+      "position": [
+        -6,
+        0,
+        4
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_025",
+      "position": [
+        6,
+        0,
+        -4
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_026",
+      "position": [
+        8,
+        0,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_027",
+      "position": [
+        -8,
+        0,
+        -6
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_028",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.metal_panel",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_029",
+      "position": [
+        -12,
+        0,
+        -6
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_030",
+      "position": [
+        12,
+        0,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_031",
+      "position": [
+        -12,
+        0,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_032",
+      "position": [
+        12,
+        0,
+        -6
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_033",
+      "position": [
+        0,
+        0,
+        -6
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_034",
+      "position": [
+        0,
+        0,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_035",
+      "position": [
+        -40,
+        4,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_036",
+      "position": [
+        40,
+        4,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "pickup_037",
+      "position": [
+        0,
+        8,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_038",
+      "position": [
+        0,
+        8,
+        -32
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_039",
+      "position": [
+        0,
+        0,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_040",
+      "position": [
+        -40,
+        4,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_plasma",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_041",
+      "position": [
+        40,
+        4,
+        -2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_disc_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_042",
+      "position": [
+        -12,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_043",
+      "position": [
+        12,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_044",
+      "position": [
+        -4,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_045",
+      "position": [
+        4,
+        0,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_046",
+      "position": [
+        -6,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_047",
+      "position": [
+        6,
+        0,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_cells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_048",
+      "position": [
+        0,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.powerup_damage",
+      "respawnSeconds": null
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": null,
+  "teamSetup": null,
+  "dependencies": []
+}

@@ -1,0 +1,187 @@
+/**
+ * A small kit for map build scripts: the same edit commands MapMaker issues
+ * (place tile, wall style, entities, theme, metadata, terrain, boundary),
+ * wrapped so a map reads like a floor plan. Every script ends with `save()`,
+ * which loads the result back through the schema, validates it (and its
+ * navmesh) and writes maps/<id>.json.
+ *
+ * Grid: cell (x, y) is centred on world (x × 8, y × 8); level z is z × 4 m up.
+ */
+import { writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import {
+  EditHistory,
+  addSpawnCommand,
+  buildMapGeometry,
+  fitBounds,
+  initPhysics,
+  loadMap,
+  mapTeams,
+  mapTerrainMesh,
+  newMapDocument,
+  placeTileCommand,
+  serializeMap,
+  setEdgeCommand,
+  setThemeCommand,
+  validateMap,
+  type BoundaryStyle,
+  type EdgeStyle,
+  type MapDocument,
+  type MapEntity,
+  type MountModel,
+  type Rotation,
+  type Side,
+  type TerrainData,
+} from '@chronosplit/shared';
+import { NavWorld, initNavigation, validateNavigation } from '@chronosplit/shared/match';
+
+type V3 = [number, number, number];
+/** Any entity without its ID (one per kind, so object literals are checked against the right kind). */
+type NewEntity = MapEntity extends infer E ? (E extends MapEntity ? Omit<E, 'id'> & { id?: string } : never) : never;
+
+export class MapBuilder {
+  readonly history: EditHistory;
+  private counter = 0;
+  private readonly pending: MapEntity[] = [];
+
+  constructor(
+    readonly id: string,
+    name: string,
+  ) {
+    const doc0 = newMapDocument(name, new Date('2026-10-23T00:00:00.000Z'));
+    this.history = new EditHistory({ ...doc0, classicStructure: { ...doc0.classicStructure, tiles: [] }, entities: [] });
+  }
+
+  get doc(): MapDocument {
+    return this.history.doc;
+  }
+
+  /** Stable IDs, so rebuilding a map produces the same file. */
+  newId(prefix: string): string {
+    return `${prefix}_${String(++this.counter).padStart(3, '0')}`;
+  }
+
+  private run(label: string, command: Parameters<EditHistory['execute']>[1]): void {
+    this.history.execute(label, command);
+  }
+
+  /** Place a tile (`kind` without the `core.` prefix) at cell x, y on level z. */
+  tile(kind: string, x: number, y: number, z = 0, rotation: Rotation = 0): this {
+    const r = placeTileCommand(this.doc, `core.${kind}`, x, y, z, rotation);
+    if ('error' in r) throw new Error(`${this.id}: ${kind} at ${x},${y},${z}: ${r.error}`);
+    this.run('Place tile', { kind: 'addTiles', tiles: [{ ...r.placement, id: this.newId('tile') }] });
+    return this;
+  }
+
+  /** Fill a rectangle of cells with one tile kind. */
+  fill(kind: string, x0: number, y0: number, x1: number, y1: number, z = 0, rotation: Rotation = 0): this {
+    for (let x = Math.min(x0, x1); x <= Math.max(x0, x1); x++) for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) this.tile(kind, x, y, z, rotation);
+    return this;
+  }
+
+  /** Build one side of a cell in a wall style (door, window, arch, half, railing, open, high…). */
+  edge(x: number, y: number, z: number, side: Side, style: EdgeStyle): this {
+    const cmd = setEdgeCommand(this.doc, { cell: [x, y, z], side }, style);
+    if ('error' in cmd) throw new Error(`${this.id}: edge ${x},${y},${z}:${side}: ${cmd.error}`);
+    this.run('Wall', cmd);
+    return this;
+  }
+
+  /** Queue an entity (added in one step at save, like a MapMaker paste). */
+  add(e: NewEntity): this {
+    this.pending.push({ ...e, id: e.id ?? this.newId(e.kind) } as MapEntity);
+    return this;
+  }
+
+  spawn(at: V3, yaw: number, team: string | null = null): this {
+    const { command } = addSpawnCommand(at, yaw);
+    const spawn = (command as { entities: MapEntity[] }).entities[0]!;
+    this.pending.push({ ...spawn, id: this.newId('spawn'), faction: team } as MapEntity);
+    return this;
+  }
+
+  /** A pickup by item name (`core.` added), e.g. `weapon_railgun`, `health_large`. */
+  pickup(item: string, at: V3, respawnSeconds: number | null = null): this {
+    return this.add({ kind: 'pickup', item: `core.${item}`, position: at, respawnSeconds });
+  }
+
+  /** A prop by name (`prop.` added). */
+  prop(model: string, at: V3, yaw = 0, scale = 1, solid = true): this {
+    return this.add({ kind: 'prop', model: `prop.${model}`, position: at, yaw, scale, solid, tint: null });
+  }
+
+  breakable(model: 'crate' | 'barrel' | 'glass' | 'boards' | 'gas' | 'generator' | 'wall', at: V3, yaw = 0): this {
+    return this.add({ kind: 'destructible', model, position: at, yaw, health: null, explosiveOnly: false });
+  }
+
+  mount(model: MountModel, at: V3, yaw = 0, team: string | null = null): this {
+    return this.add({ kind: 'mount', model, position: at, yaw, faction: team, respawnSeconds: null });
+  }
+
+  /** A jump pad throwing you `power` m/s up and `push` m/s along `yaw`. */
+  pad(at: V3, yaw: number, power = 14, push = 6): this {
+    return this.add({ kind: 'pad', position: at, yaw, power, push });
+  }
+
+  theme(theme: string): this {
+    this.run('Change theme', setThemeCommand(this.doc, `core.${theme}`));
+    return this;
+  }
+
+  terrain(t: TerrainData): this {
+    this.run('Terrain', { kind: 'setTerrain', before: this.doc.terrain, after: t });
+    return this;
+  }
+
+  /** Walls round the play area: fitted round everything built (`margin` m out), or an explicit rectangle. */
+  bounds(style: BoundaryStyle, margin = 4, rect?: { min: [number, number]; max: [number, number] }, height = 8): this {
+    this.flush();
+    const fit = rect ?? fitBounds(this.doc, margin);
+    if (!fit) throw new Error(`${this.id}: nothing to fit a boundary round`);
+    this.run('Boundary', { kind: 'setBounds', before: this.doc.bounds, after: { min: fit.min, max: fit.max, style, height } });
+    return this;
+  }
+
+  teams(sizes: number[]): this {
+    this.run('Teams', { kind: 'setTeamSetup', before: this.doc.teamSetup, after: { sizes } });
+    return this;
+  }
+
+  /** The map's team IDs (Embers, Tide, Verdant…) for team spawns. */
+  teamIds(count = 2): string[] {
+    return mapTeams(this.doc, count).map((t) => t.id);
+  }
+
+  meta(m: { description: string; modes: ('core.deathmatch' | 'core.tdm' | 'core.coop')[]; players: [number, number] }): this {
+    this.run('Edit map', {
+      kind: 'setMetadata',
+      before: this.doc.metadata,
+      after: { id: this.id, author: 'ChronoSplit', description: m.description, recommendedPlayers: { min: m.players[0], max: m.players[1] }, supportedModes: m.modes },
+    });
+    return this;
+  }
+
+  private flush(): void {
+    if (!this.pending.length) return;
+    this.run('Add entities', { kind: 'addEntities', entities: this.pending.splice(0) });
+  }
+
+  /**
+   * Validate (schema, rules and the navmesh: every spawn and pickup reachable)
+   * and write maps/<id>.json. Warnings are printed; errors stop the build.
+   */
+  async save(): Promise<void> {
+    this.flush();
+    const loaded = loadMap(JSON.parse(serializeMap(this.doc)));
+    if (!loaded.ok) throw new Error(`${this.id}: map does not load: ${JSON.stringify(loaded.issues)}`);
+    await Promise.all([initPhysics(), initNavigation()]);
+    const nav = NavWorld.build(buildMapGeometry(loaded.map), mapTerrainMesh(loaded.map));
+    const issues = [...validateMap(loaded.map), ...validateNavigation(loaded.map, nav)];
+    nav.destroy();
+    for (const i of issues) console.log(`${this.id}: ${i.severity.padEnd(10)} ${i.code} ${i.message}`);
+    if (issues.some((i) => i.severity === 'error')) process.exit(1);
+    const out = fileURLToPath(new URL(`../../../../maps/${this.id}.json`, import.meta.url));
+    writeFileSync(out, serializeMap(loaded.map));
+    console.log(`${this.id}: wrote ${out} (${this.doc.classicStructure.tiles.length} tiles, ${this.doc.entities.length} entities, ${issues.length} notes)`);
+  }
+}

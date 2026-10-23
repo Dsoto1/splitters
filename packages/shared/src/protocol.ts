@@ -47,6 +47,8 @@ export interface PrivateState {
   inv: [number, number, number, number, number?][];
   /** Movement multiplier from status effects (slow, chill, frozen) ×1000, when not 1000. */
   ms?: number;
+  /** Seated in a mount: [map entity index, seat, mounted gun heat %]. */
+  mo?: [number, number, number];
   /** Carried grenades or mines as [index into THROWABLES, count]; absent = none. */
   gr?: [number, number];
   /** Ticks left on reload / weapon raise (0 = ready). */
@@ -63,6 +65,12 @@ export const STATUS_SLOW = 4;
 export const STATUS_FROZEN = 8;
 export const STATUS_CHILL = 16;
 
+/**
+ * A turret, sentry or vehicle: [map entity index, x, y, z, yaw, aim yaw, aim
+ * pitch, health %, alive 0/1, ...occupant slot per seat (-1 = empty)].
+ */
+export type MountSnapshot = number[];
+
 /** A ground hazard or field: [index into ZONE_KINDS, x, y, z, radius, seconds left]. */
 export type ZoneSnapshot = [number, number, number, number, number, number];
 
@@ -74,6 +82,8 @@ export type GameEvent =
   | { e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Second trigger. */ alt?: 1 }
   /** Chain lightning: the points it jumped through, from the muzzle on. */
   | { e: 'arc'; s: number; pts: Tuple3[] }
+  /** Someone got into a seat (seat ≥ 0) or out of one (seat -1); `m` is the mount's map entity index. */
+  | { e: 'mount'; s: number; m: number; seat: number }
   /** Someone threw a grenade or mine. */
   | { e: 'throw'; s: number }
   | { e: 'melee'; s: number; hit: number | null }
@@ -192,6 +202,8 @@ export type ServerMessage =
       pk: string[];
       /** Ground hazards and fields (oil, fire, toxic clouds, goo, singularities), when any. */
       zn?: ZoneSnapshot[];
+      /** Turrets, sentries and vehicles, when the map has any. */
+      mt?: MountSnapshot[];
       /** Receiving player's private state (absent while not in the match). */
       me?: PrivateState;
       /** Scenario state changes (absent when nothing changed). */

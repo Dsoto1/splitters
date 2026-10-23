@@ -90,6 +90,37 @@ export class PhysicsWorld {
     this.dirty = true;
   }
 
+  /** Move and turn a box (vehicles, turning turrets). */
+  setBoxPose(collider: RAPIER.Collider, center: Vec3, yaw: number): void {
+    collider.setTranslation(center);
+    collider.setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) });
+    this.dirty = true;
+  }
+
+  /** A probe capsule that carries a vehicle over the ground (it collides with the world only, never players). */
+  createVehicleProbe(radius: number): RAPIER.Collider {
+    const desc = RAPIER.ColliderDesc.capsule(Math.max(0.05, 0.5 - radius * 0.2), radius).setCollisionGroups(PLAYER_COLLIDER_GROUPS);
+    return this.world.createCollider(desc);
+  }
+
+  /**
+   * Move a vehicle probe (its base at `feet`) by `delta`, sliding along the
+   * world and climbing gentle slopes, ignoring the vehicle's own body.
+   */
+  moveVehicle(probe: RAPIER.Collider, body: RAPIER.Collider, feet: Vec3, delta: Vec3): { feet: Vec3; grounded: boolean; blocked: number } {
+    const shape = probe.shape as RAPIER.Capsule;
+    const centerY = shape.halfHeight + shape.radius;
+    const lift = 0.05;
+    probe.setTranslation({ x: feet.x, y: feet.y + lift + centerY, z: feet.z });
+    this.controller.computeColliderMovement(probe, { x: delta.x, y: delta.y - lift, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, WORLD_ONLY_QUERY, (c) => c.handle !== body.handle);
+    const m = this.controller.computedMovement();
+    const next = { x: feet.x + m.x, y: feet.y + lift + m.y, z: feet.z + m.z };
+    probe.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
+    const want = Math.hypot(delta.x, delta.z);
+    const got = Math.hypot(m.x, m.z);
+    return { feet: next, grounded: this.controller.computedGrounded(), blocked: want > 1e-6 ? 1 - got / want : 0 };
+  }
+
   setBoxEnabled(collider: RAPIER.Collider, enabled: boolean): void {
     if (collider.isEnabled() === enabled) return;
     collider.setEnabled(enabled);

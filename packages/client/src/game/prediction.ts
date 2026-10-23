@@ -2,6 +2,8 @@ import {
   BUTTON_ALT,
   BUTTON_FIRE,
   OIL_TRACTION,
+  applyPads,
+  type JumpPad,
   TICK_DT,
   ZONE_KINDS,
   zoneContains,
@@ -54,6 +56,14 @@ export class LocalPlayer {
   held = 0;
   /** Owned weapons: code -> [magazine, reserve, second-trigger rounds, heat %] (server values, adjusted by predicted shots). */
   inventory = new Map<number, [number, number, number, number]>();
+  /** The map's jump pads (launches are predicted like the server's). */
+  pads: JumpPad[] = [];
+  /** Seated in a turret or vehicle: the server moves you, so movement isn't predicted. */
+  mounted = false;
+  /** The seat's gun (set by the session while seated), its heat, and whether the seat can't shoot at all (driving). */
+  seatGun: WeaponDefinition | null = null;
+  private seatAmmo: [number, number, number, number] = [0, 0, 0, 0];
+  unarmed = false;
   /** Movement multiplier from status effects (server value). */
   statusSpeed = 1;
   /** Ground hazards from the latest snapshot (oil makes movement slick). */
@@ -105,7 +115,7 @@ export class LocalPlayer {
         this.windup = 0;
         this.burstLeft = 0;
       }
-      this.state = this.move(this.state, input);
+      if (!this.mounted) this.state = this.move(this.state, input);
       if (this.fireCooldown > 0) this.fireCooldown--;
       if (this.raiseTicks > 0) this.raiseTicks--;
       if (this.reloadTicks > 0) this.reloadTicks--;
@@ -118,7 +128,7 @@ export class LocalPlayer {
 
   /** Same order as the server: move with the current boost, then count the boost down. */
   private move(state: MoveState, input: PlayerInput): MoveState {
-    const next = stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos));
+    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos)));
     if (this.speedTicks > 0) this.speedTicks--;
     return next;
   }
@@ -132,11 +142,11 @@ export class LocalPlayer {
 
   /** Mirrors the server's trigger rules (semi-auto, burst, spin-up, heat) so tracers and the HUD match what will happen. */
   private predictFire(input: PlayerInput): PredictedShot | null {
-    const def = this.weapon;
-    const ammo = this.inventory.get(this.held);
+    const def = this.seatGun ?? this.weapon;
+    const ammo = this.seatGun ? this.seatAmmo : this.inventory.get(this.held);
     const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
     if (!fireDown) this.semiLatch = false;
-    if (!def || !ammo) return null;
+    if (!def || !ammo || this.unarmed) return null;
     if (def.windupTicks) {
       const able = fireDown && this.raiseTicks === 0 && this.reloadTicks === 0 && ammo[3] < 100 && (def.magazine === 0 || ammo[0] > 0);
       this.windup = able ? Math.min(def.windupTicks, this.windup + 1) : Math.max(0, this.windup - 2);
@@ -152,7 +162,7 @@ export class LocalPlayer {
       this.burstTimer = def.burst?.intervalTicks ?? 1;
       return this.hitscanShot(def, input, def.pellets, def.spread, false);
     }
-    if (this.fireCooldown > 0 || this.raiseTicks > 0 || this.reloadTicks > 0 || this.statusSpeed === 0) return null;
+    if (this.fireCooldown > 0 || (this.raiseTicks > 0 && !this.seatGun) || this.reloadTicks > 0 || this.statusSpeed === 0) return null;
     let pellets = def.pellets;
     let spread = def.spread;
     let alt = false;
@@ -211,6 +221,8 @@ export class LocalPlayer {
     if (me) {
       this.inventory = new Map(me.inv.map(([code, mag, reserve, alt, heat]) => [code, [mag, reserve, alt ?? 0, heat ?? 0]]));
       this.statusSpeed = (me.ms ?? 1000) / 1000;
+      this.mounted = !!me.mo;
+      this.seatAmmo = [0, 0, 0, me.mo?.[2] ?? 0];
       this.throwable = me.gr ? { kind: THROWABLES[me.gr[0]] ?? 'frag', count: me.gr[1] } : null;
       this.speedTicks = me.sp;
       this.damageTicks = me.dm;
@@ -223,7 +235,7 @@ export class LocalPlayer {
 
     const before = this.state.pos;
     this.state = { pos: { x: server.p[0], y: server.p[1], z: server.p[2] }, velY: server.vy, grounded: server.g === 1, ...(server.vx || server.vz ? { vx: server.vx ?? 0, vz: server.vz ?? 0 } : {}) };
-    if (this.alive) {
+    if (this.alive && !this.mounted) {
       for (const input of this.pending) this.state = this.move(this.state, input);
     }
     const err = distance(before, this.state.pos);

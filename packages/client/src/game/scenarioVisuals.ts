@@ -27,7 +27,7 @@ import {
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad'];
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
 interface Visual {
@@ -151,7 +151,33 @@ export class ScenarioVisuals {
         return this.trap(name, e);
       case 'encounter':
         return this.encounter(name, e);
+      case 'pad':
+        return this.pad(name);
     }
+  }
+
+  /** Jump pad: a glowing ring on a dark plate with a chevron pointing where it throws you. */
+  private pad(name: string): Visual {
+    const root = new TransformNode(name, this.scene);
+    const plate = CreateCylinder(`${name}_plate`, { diameter: 2.2, height: 0.12, tessellation: 24 }, this.scene);
+    plate.parent = root;
+    plate.position.y = 0.06;
+    plate.material = this.mat('padPlate', '#2a2f3a');
+    const ring = CreateCylinder(`${name}_ring`, { diameter: 1.8, height: 0.14, tessellation: 24 }, this.scene);
+    ring.parent = root;
+    ring.position.y = 0.07;
+    ring.material = this.mat('padGlow', '#36d6ff', { emissive: 1 });
+    const core = CreateCylinder(`${name}_core`, { diameter: 1.4, height: 0.16, tessellation: 24 }, this.scene);
+    core.parent = root;
+    core.position.y = 0.08;
+    core.material = this.mat('padCore', '#1a2a3a', { emissive: 0.2 });
+    for (const [i, z] of [0.1, 0.45].entries()) {
+      const a = this.box(`${name}_chev${i}a`, root, [0.12, 0.05, 0.5], [-0.17, 0.18, z], this.mat('padGlow', '#36d6ff', { emissive: 1 }));
+      a.rotation.y = -0.7;
+      const b = this.box(`${name}_chev${i}b`, root, [0.12, 0.05, 0.5], [0.17, 0.18, z], this.mat('padGlow', '#36d6ff', { emissive: 1 }));
+      b.rotation.y = 0.7;
+    }
+    return { root };
   }
 
   /** Faction colours for encounter markers (MapMaker). */

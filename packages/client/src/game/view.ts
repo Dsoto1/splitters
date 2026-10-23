@@ -10,6 +10,8 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
+import { createMountNode, mountGun } from './mountVisuals.ts';
+import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
@@ -260,7 +262,7 @@ export class GameView {
    * Update remote player and NPC avatars from interpolated poses. Each one is
    * a capsule until its character model has loaded, then an animated character.
    */
-  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => CharacterSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null): void {
+  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => CharacterSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set()): void {
     const now = performance.now();
     const seen = new Set<number>();
     for (const p of poses) {
@@ -293,11 +295,12 @@ export class GameView {
       const glowColor = p.powerups & POWERUP_DAMAGE_BIT ? '#c03cff' : p.powerups & POWERUP_SPEED_BIT ? '#36d6ff' : null;
       a.mat.emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
       if (a.anim) {
-        const speed = Math.hypot(a.vel.x, a.vel.z);
+        // Riders stand still in their seats, however fast the vehicle goes.
+        const speed = seated.has(p.slot) ? 0 : Math.hypot(a.vel.x, a.vel.z);
         a.anim.update(Math.min(0.1, dt), {
           speed,
           moveAngle: speed > 0.3 ? angleDelta(p.yaw, Math.atan2(a.vel.x, a.vel.z)) : 0,
-          airborne: !p.grounded,
+          airborne: !p.grounded && !seated.has(p.slot),
           alive: p.alive,
           pitch: p.pitch,
           celebrate: celebrate && p.alive,
@@ -560,6 +563,26 @@ export class GameView {
     const canvas = engine.getRenderingCanvas();
     const scale = canvas ? canvas.clientWidth / w : 1;
     return { x: v.x * scale, y: v.y * scale };
+  }
+
+  private readonly mountNodes = new Map<number, TransformNode>();
+
+  /** Turrets, sentries and vehicles at their smoothed poses; turret guns follow the aim. */
+  updateMounts(mounts: Iterable<ClientMount>): void {
+    for (const m of mounts) {
+      let node = this.mountNodes.get(m.index);
+      if (!node) {
+        node = createMountNode(this.scene, this.models, m.model, `mount_${m.index}`);
+        this.mountNodes.set(m.index, node);
+      }
+      node.setEnabled(m.alive);
+      node.position.set(m.shown.pos.x, m.shown.pos.y, m.shown.pos.z);
+      node.rotation.y = m.shown.yaw;
+      if (m.def.kind !== 'vehicle') {
+        const gun = mountGun(node);
+        if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
+      }
+    }
   }
 
   /** Ground hazards and fields from the latest snapshot. */

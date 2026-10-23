@@ -77,6 +77,10 @@ import {
   TERRAIN_SURFACES,
   applyBrush,
   fitBounds,
+  CORE_WEAPONS,
+  MOUNT_DEFS,
+  MOUNT_MODELS,
+  type MountModel,
   MAX_TEAMS,
   TEAM_PRESETS,
   teamLayoutLabel,
@@ -125,7 +129,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' };
+type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -135,6 +139,7 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   generator: '<rect x="8" y="20" width="40" height="26" rx="2" fill="#5a6066"/><rect x="12" y="24" width="14" height="10" fill="#e3b021"/><circle cx="37" cy="33" r="6" fill="#3a3f48"/><rect x="14" y="12" width="6" height="8" fill="#5a6066"/>',
   door: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#3fd26b"/>',
   door_locked: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#e0412f"/><rect x="23" y="34" width="10" height="9" rx="1" fill="#e0412f"/><path d="M25 34v-3a3 3 0 0 1 6 0v3" stroke="#e0412f" stroke-width="2" fill="none"/>',
+  pad: '<ellipse cx="28" cy="42" rx="20" ry="7" fill="#2a2f3a"/><ellipse cx="28" cy="41" rx="15" ry="5" fill="#36d6ff"/><path d="M20 30l8-10 8 10M20 22l8-10 8 10" stroke="#36d6ff" stroke-width="3" fill="none"/>',
   button: '<rect x="24" y="24" width="8" height="26" fill="#3a3f48"/><rect x="17" y="12" width="22" height="16" rx="2" fill="#c9ccd2"/><circle cx="28" cy="20" r="5" fill="#3fd26b"/>',
   crate: '<rect x="12" y="14" width="32" height="32" fill="#9a6b3d"/><path d="M12 14L44 46M12 18h32M12 42h32" stroke="#6e4a28" stroke-width="3"/>',
   barrel: '<rect x="16" y="10" width="24" height="38" rx="5" fill="#c23b2a"/><rect x="16" y="16" width="24" height="4" fill="#f2c14e"/><rect x="16" y="38" width="24" height="4" fill="#f2c14e"/>',
@@ -164,6 +169,10 @@ function pickRadius(e: MapEntity): number {
     case 'prop': {
       const size = getProp(e.model)?.size ?? [1, 1, 1];
       return Math.max(0.5, (Math.min(size[0], size[2]) * e.scale) / 2 + 0.2);
+    }
+    case 'mount': {
+      const half = MOUNT_DEFS[e.model].half;
+      return Math.max(0.8, Math.min(half[0], half[2]) + 0.2);
     }
     default:
       return 0.9;
@@ -355,7 +364,7 @@ export class EditorApp {
     else if (tool.kind === 'edge' || tool.kind === 'tile') this.showPane('tiles');
     else if (tool.kind === 'prop') this.showPane('props');
     else if (tool.kind === 'terrain') this.showPane('terrain');
-    else if (tool.kind === 'spawn' || tool.kind === 'pickup' || tool.kind === 'scenario') this.showPane('entities');
+    else if (tool.kind === 'spawn' || tool.kind === 'pickup' || tool.kind === 'scenario' || tool.kind === 'mount') this.showPane('entities');
     if (tool.kind !== 'terrain') {
       this.terrainHover = null;
       this.view.setBrushRing(null, 0, 0, 0);
@@ -371,6 +380,7 @@ export class EditorApp {
           (tool.kind === 'scenario' && t === `scenario:${tool.key}`) ||
           (tool.kind === 'edge' && t === `edge:${tool.style}`) ||
           (tool.kind === 'prop' && t === `prop:${tool.model}`) ||
+          (tool.kind === 'mount' && t === `mount:${tool.model}`) ||
           (tool.kind === 'terrain' && t === `terrain:${this.terrainBrush}`) ||
           t === tool.kind,
       );
@@ -384,6 +394,7 @@ export class EditorApp {
       paint: 'Click a surface to paint · Right-click resets to theme · Alt-click or I picks a style',
       edge: 'Click a wall or floor edge to build it this way · Right-click resets to auto · O cycles the style',
       prop: 'Click place (snaps to 25 cm, hold Shift for free) · R turn 15° · Right-click erase · Esc select tool',
+      mount: 'Click place · R turn 15° · Right-click erase · players get in and out with E',
       terrain: 'Hold left to sculpt or paint · [ ] brush size · Shift inverts raise/lower · T cycles brushes',
     };
     $('ed-hint').textContent = `${hints[tool.kind]} · RMB look · WASD/QE fly`;
@@ -429,6 +440,11 @@ export class EditorApp {
       const id = newId('prop');
       const name = getProp(this.tool.model)?.displayName ?? 'prop';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p, model: this.tool.model, yaw: this.propYaw, scale: 1, solid: true, tint: null }] })) this.setSelection({ tiles: [], entities: [id] });
+    } else if (this.tool.kind === 'mount' && this.hoverPoint) {
+      const p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), this.hoverPoint.y, snap(this.hoverPoint.z, 0.5)];
+      const id = newId('mount');
+      const def = MOUNT_DEFS[this.tool.model];
+      if (this.run(`Place ${def.displayName}`, { kind: 'addEntities', entities: [{ id, kind: 'mount', position: p, model: this.tool.model, yaw: this.propYaw, faction: null, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'scenario' && this.hoverPoint) {
       const y = this.level * this.doc.classicStructure.levelHeight;
       let p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), y, snap(this.hoverPoint.z, 0.5)];
@@ -509,7 +525,7 @@ export class EditorApp {
       this.updateHover();
     } else if (this.tool.kind === 'spawn') {
       this.spawnYaw = normalizeYaw(this.spawnYaw + Math.PI / 4);
-    } else if (this.tool.kind === 'prop') {
+    } else if (this.tool.kind === 'prop' || this.tool.kind === 'mount') {
       this.propYaw = normalizeYaw(this.propYaw + Math.PI / 12);
       this.toast(`Facing ${Math.round((this.propYaw * 180) / Math.PI)}°`);
     } else if (this.tool.kind === 'scenario') {
@@ -931,6 +947,7 @@ export class EditorApp {
     }
 
     this.buildPropPalette();
+    this.buildMountPalette();
     this.buildTerrainPalette();
 
     // Palette tabs (after the reference board): one group of tools at a time; search looks across all of them.
@@ -1148,6 +1165,25 @@ export class EditorApp {
       $('ed-tr-strength-v').textContent = `${Math.round(this.brushStrength * 100)}%`;
     });
     this.syncTerrainUi();
+  }
+
+  /** Vehicles and turrets in the Entities tab, with thumbnails from their models. */
+  private buildMountPalette(): void {
+    const box = $('ed-mounts');
+    for (const id of MOUNT_MODELS) {
+      const def = MOUNT_DEFS[id];
+      const b = document.createElement('button');
+      b.className = 'tile-btn prop-btn';
+      b.dataset.tool = `mount:${id}`;
+      b.dataset.search = `${def.displayName} ${def.kind} vehicle turret mount seats`.toLowerCase();
+      b.title = `${def.displayName}: ${def.blurb}\n${def.seats.length} seat${def.seats.length === 1 ? '' : 's'}`;
+      const img = document.createElement('img');
+      img.alt = '';
+      void this.thumbs.get(def.model).then((src) => (img.src = src), () => undefined);
+      b.append(img, document.createTextNode(`${def.displayName}${def.seats.length ? ` · ${def.seats.length}` : ''}`));
+      b.addEventListener('click', () => this.setTool({ kind: 'mount', model: id }));
+      box.append(b);
+    }
   }
 
   /** Props by category; thumbnails render from the real models as they scroll into view. */
@@ -1583,6 +1619,25 @@ export class EditorApp {
         choose('Skill', [['easy', 'easy'], ['normal', 'normal'], ['hard', 'hard']], e.difficulty, (v) => ({ difficulty: v as typeof e.difficulty }));
         toggle('Active at start', e.startActive, (v) => ({ startActive: v }));
         el.append(small(`${e.roster.trooper + e.roster.gunner + e.roster.heavy} in the first wave, then ${e.reinforcements} reinforcements (+${e.perPlayer} per extra player). Factions are edited in the Logic panel (L).`));
+        break;
+      }
+      case 'pad':
+        number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
+        number('Launch up (m/s)', e.power, 1, (v) => ({ power: Math.max(2, Math.min(40, v)) }));
+        number('Push forward (m/s)', e.push, 1, (v) => ({ push: Math.max(0, Math.min(40, v)) }));
+        el.append(small(`About ${((e.power * e.power) / (2 * 20)).toFixed(1)} m high and ${((e.push * 2 * e.power) / 20).toFixed(0)} m along, landing level. The arrows point the way it throws you.`));
+        break;
+      case 'mount': {
+        const def = MOUNT_DEFS[e.model];
+        choose('Type', MOUNT_MODELS.map((m) => [m, MOUNT_DEFS[m].displayName] as const), e.model, (v) => ({ model: v as MountModel }));
+        number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
+        if (def.kind === 'sentry') {
+          const teams = mapTeams(doc, MAX_TEAMS);
+          choose('Team', [['', 'Nobody (shoots everyone)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));
+        }
+        number('Respawn (s)', e.respawnSeconds ?? def.respawnSeconds, 5, (v) => ({ respawnSeconds: Math.max(5, Math.min(600, v)) }));
+        const seats = def.seats.length ? def.seats.map((s) => `${s.label}${s.weapon ? ` (${CORE_WEAPONS[s.weapon]?.displayName})` : ''}`).join(', ') : 'none: it fires on its own';
+        el.append(small(`${def.blurb}. Seats: ${seats}. Health ${def.health}. Players get in and out with E.`));
         break;
       }
       case 'spawn': {

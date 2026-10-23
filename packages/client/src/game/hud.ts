@@ -207,7 +207,23 @@ export class Hud {
   }
 
   /** `owned` and `held` are weapon codes; the bar shows slots 1–9, with a pip per extra weapon carried in a slot. */
-  setWeapons(owned: ReadonlyMap<number, readonly [number, number, number, number]>, held: number, reloading: boolean, alive: boolean): void {
+  /** Riding as a passenger or gunner: the seat's gun (heat) instead of your own. */
+  setMountedGun(name: string, heat: number): void {
+    this.weaponName.textContent = name;
+    this.ammoReserve.textContent = '';
+    this.ammoCount.textContent = heat >= 100 ? 'OVERHEAT' : `${heat}°`;
+    this.ammoCount.classList.toggle('reloading', heat >= 100);
+    this.altEl.textContent = '';
+  }
+
+  setWeapons(owned: ReadonlyMap<number, readonly [number, number, number, number]>, held: number, reloading: boolean, alive: boolean, driving = false): void {
+    if (driving) {
+      this.weaponName.textContent = 'Driving';
+      this.ammoCount.textContent = '';
+      this.ammoReserve.textContent = '';
+      this.altEl.textContent = '';
+      return;
+    }
     const def = weaponByCode(held);
     const altDef = def?.alt;
     const altText = alive && altDef ? (altDef.ammo === 'own' ? `RMB ${altDef.label} · ${owned.get(held)?.[2] ?? 0}` : `RMB ${altDef.label}`) : '';
