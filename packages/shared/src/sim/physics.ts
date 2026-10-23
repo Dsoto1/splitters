@@ -52,6 +52,7 @@ export class PhysicsWorld {
       const desc = RAPIER.ColliderDesc.cuboid(hx, hy, hz)
         .setTranslation(b.min[0] + hx, b.min[1] + hy, b.min[2] + hz)
         .setCollisionGroups(WORLD_COLLIDER_GROUPS);
+      if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
       this.world.createCollider(desc);
     }
     this.controller = this.world.createCharacterController(CONTROLLER_OFFSET);

@@ -1,4 +1,16 @@
-import { TERRAIN_MATERIALS, buildMapGeometry, mapTeams, vertexY, type MapDocument, type TerrainData } from '@chronosplit/shared';
+import { TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@chronosplit/shared';
+
+/** Fill a box's top-down outline (turned boxes as a quad). */
+export function fillBox(g: CanvasRenderingContext2D, b: WorldBox, px: (x: number) => number, py: (z: number) => number): void {
+  if (!b.yaw) {
+    g.fillRect(px(b.min[0]), py(b.max[2]), px(b.max[0]) - px(b.min[0]), py(b.min[2]) - py(b.max[2]));
+    return;
+  }
+  g.beginPath();
+  for (const [x, z] of boxFootprint(b)) g.lineTo(px(x), py(z));
+  g.closePath();
+  g.fill();
+}
 
 /** Top-down ground colours for terrain materials. */
 const GROUND_COLORS: Record<(typeof TERRAIN_MATERIALS)[number], [number, number, number]> = {
@@ -84,17 +96,16 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
   }
 
   if (map.terrain) drawTerrainPlan(g, map.terrain, px, py, s);
-  const rect = (b: { min: number[]; max: number[] }) => [px(b.min[0]!), py(b.max[2]!), (b.max[0]! - b.min[0]!) * s, (b.max[2]! - b.min[2]!) * s] as const;
   const floors = boxes.filter((b) => b.kind === 'floor').sort((a, b) => a.max[1] - b.max[1]);
   for (const b of floors) {
     const upper = b.max[1] > 1;
     g.fillStyle = upper ? 'rgba(79, 107, 255, 0.28)' : '#2a3a55';
-    g.fillRect(...rect(b));
+    fillBox(g, b, px, py);
   }
   g.fillStyle = '#8a6a3f';
-  for (const b of boxes) if ((b.kind === 'solid' || b.kind === 'prop') && b.min[1] < 1) g.fillRect(...rect(b));
+  for (const b of boxes) if ((b.kind === 'solid' || b.kind === 'prop') && b.min[1] < 1) fillBox(g, b, px, py);
   g.fillStyle = '#9fb6d8';
-  for (const b of boxes) if (b.kind === 'wall' && b.min[1] < 1) g.fillRect(...rect(b));
+  for (const b of boxes) if (b.kind === 'wall' && b.min[1] < 1) fillBox(g, b, px, py);
 
   // Spawns in team colours (cyan when shared), pickups as small green squares.
   const teams = mapTeams(map);

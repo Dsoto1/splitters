@@ -5,11 +5,31 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, coreMaterials, coreThemes, vertexY, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TilePlacement, type WorldBox } from '@chronosplit/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TilePlacement, type WorldBox } from '@chronosplit/shared';
 import { materialPixels } from './materials/patterns.ts';
 
-/** Faces of an axis-aligned box: corners (clockwise from outside, Babylon's front face) and outward normal. */
-function boxFaces(b: WorldBox): [number[][], [number, number, number]][] {
+/**
+ * Faces of a box: corners (clockwise from outside, Babylon's front face),
+ * outward normal, and the corners before any turn (texture coordinates are
+ * laid out on those, so a turned wall's bricks run along it).
+ */
+type Face = [corners: number[][], normal: [number, number, number], flat: number[][], flatNormal: [number, number, number]];
+function boxFaces(b: WorldBox): Face[] {
+  const faces = axisFaces(b);
+  if (!b.yaw) return faces.map(([c, n]) => [c, n, c, n]);
+  const cx = (b.min[0] + b.max[0]) / 2;
+  const cz = (b.min[2] + b.max[2]) / 2;
+  const turn = (p: number[]) => {
+    const [x, z] = yawXZ(p[0]! - cx, p[2]! - cz, b.yaw!);
+    return [cx + x, p[1]!, cz + z];
+  };
+  return faces.map(([c, n]) => {
+    const [nx, nz] = yawXZ(n[0], n[2], b.yaw!);
+    return [c.map(turn), [nx, n[1], nz], c, n];
+  });
+}
+
+function axisFaces(b: WorldBox): [number[][], [number, number, number]][] {
   const [x0, y0, z0] = b.min;
   const [x1, y1, z1] = b.max;
   return [
@@ -29,16 +49,17 @@ class FaceBuffer {
   indices: number[] = [];
 
   /** Add one face with UVs in world metres divided by the material's repeat size. */
-  add(corners: number[][], n: readonly [number, number, number], uvScale: number): void {
+  /** `flat`/`fn`: the face before any turn, whose two axes perpendicular to the normal lay out the texture. */
+  add(corners: number[][], n: readonly [number, number, number], uvScale: number, flat: number[][] = corners, fn: readonly [number, number, number] = n): void {
     const base = this.positions.length / 3;
-    for (const c of corners) {
+    corners.forEach((c, i) => {
+      const f = flat[i]!;
       this.positions.push(c[0]!, c[1]!, c[2]!);
       this.normals.push(n[0], n[1], n[2]);
-      // Project onto the two axes perpendicular to the normal.
-      const u = n[0] !== 0 ? c[2]! : c[0]!;
-      const v = n[1] !== 0 ? c[2]! : c[1]!;
+      const u = fn[0] !== 0 ? f[2]! : f[0]!;
+      const v = fn[1] !== 0 ? f[2]! : f[1]!;
       this.uvs.push(u * uvScale, v * uvScale);
-    }
+    });
     this.indices.push(base, base + 2, base + 1, base, base + 3, base + 2);
   }
 
@@ -55,7 +76,7 @@ class FaceBuffer {
 /** Plain vertex data for a set of boxes (ghost previews, outlines). */
 export function boxVertexData(boxes: readonly WorldBox[]): VertexData {
   const buf = new FaceBuffer();
-  for (const b of boxes) for (const [corners, n] of boxFaces(b)) buf.add(corners, n, 0.5);
+  for (const b of boxes) for (const [corners, n, flat, fn] of boxFaces(b)) buf.add(corners, n, 0.5, flat, fn);
   return buf.toVertexData();
 }
 
@@ -82,12 +103,12 @@ export class MapStyler {
     for (const b of [...boxes, ...buildMapDecor(doc)]) {
       if (b.kind === 'prop' || b.kind === 'barrier') continue; // drawn by the prop's model / invisible
       const tile = tiles.get(b.sourceId);
-      for (const [corners, n] of boxFaces(b)) {
+      for (const [corners, n, flat, fn] of boxFaces(b)) {
         const style = resolveSurface(doc, tile, faceSlot(b, n));
         const key = styleKey(style);
         let g = groups.get(key);
         if (!g) groups.set(key, (g = { style, buf: new FaceBuffer() }));
-        g.buf.add(corners, n, 1 / style.material.scale);
+        g.buf.add(corners, n, 1 / style.material.scale, flat, fn);
       }
     }
     this.buildTerrain(doc, name);

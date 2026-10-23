@@ -158,6 +158,8 @@ export function newMapDocument(name = 'Untitled Map', now: Date = new Date()): M
     factions: [],
     logic: emptyLogic(),
     terrain: null,
+    bounds: null,
+    teamSetup: null,
     dependencies: [],
   };
 }

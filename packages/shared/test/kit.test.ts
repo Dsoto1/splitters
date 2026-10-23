@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NavWorld, initNavigation } from '../src/nav/index.ts';
-import { CORE_PROPS, SIDES, applyCommand, buildMapDecor, buildMapGeometry, coreCatalog, edgeChoiceAt, edgeTargetAt, mapKillY, setEdgeCommand, validateMap, type MapDocument, type Rotation, type WorldBox } from '../src/index.ts';
+import { CORE_PROPS, SIDES, TILE_CATEGORIES, applyCommand, boxBounds, fitBounds, rotateXZ, yawXZ, buildMapDecor, buildMapGeometry, coreCatalog, edgeChoiceAt, edgeTargetAt, mapKillY, setEdgeCommand, validateMap, type MapDocument, type Rotation, type WorldBox } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => initNavigation());
@@ -9,6 +9,15 @@ type Tile = MapDocument['classicStructure']['tiles'][number];
 const t = (id: string, tile: string, x: number, y: number, z: number, rotation: Rotation = 0, edges?: Tile['edges']): Tile => ({ id, tile, x, y, z, rotation, ...(edges ? { edges } : {}) });
 const inside = (boxes: readonly WorldBox[], p: [number, number, number]) => boxes.some((b) => b.min.every((v, i) => p[i]! >= v - 1e-6) && b.max.every((v, i) => p[i]! <= v + 1e-6));
 const walls = (boxes: readonly WorldBox[]) => boxes.filter((b) => b.kind === 'wall');
+/** Point-in-box that honours turned boxes. */
+const insideTurned = (boxes: readonly WorldBox[], p: [number, number, number]) =>
+  boxes.some((b) => {
+    const cx = (b.min[0] + b.max[0]) / 2;
+    const cz = (b.min[2] + b.max[2]) / 2;
+    const [lx, lz] = yawXZ(p[0] - cx, p[2] - cz, -(b.yaw ?? 0));
+    const q = [cx + lx, p[1], cz + lz];
+    return b.min.every((v, i) => q[i]! >= v - 1e-6) && b.max.every((v, i) => q[i]! <= v + 1e-6);
+  });
 
 describe('building kit', () => {
   it('every tile builds in every rotation, inside its own cells, with somewhere to stand', () => {
@@ -23,7 +32,9 @@ describe('building kit', () => {
         const reach = (Math.max(...xs.map(Math.abs)) + 0.5) * 8 + 1e-6;
         for (const b of boxes) for (const v of [...b.min, ...b.max]) expect(Number.isFinite(v)).toBe(true);
         for (const b of boxes) {
-          expect(Math.max(Math.abs(b.min[0]), Math.abs(b.max[0]), Math.abs(b.min[2]), Math.abs(b.max[2])), `${def.id} r${rotation}`).toBeLessThanOrEqual(reach);
+          // Turned pieces of curves overlap their neighbours by a few centimetres.
+          const { min, max } = boxBounds(b);
+          expect(Math.max(Math.abs(min[0]), Math.abs(max[0]), Math.abs(min[2]), Math.abs(max[2])), `${def.id} r${rotation}`).toBeLessThanOrEqual(reach + (b.yaw ? 0.1 : 0));
         }
       }
     }
@@ -32,7 +43,7 @@ describe('building kit', () => {
   it('has a broad palette: at least 34 pieces across every category', () => {
     const all = coreCatalog.all();
     expect(all.length).toBeGreaterThanOrEqual(34);
-    expect(new Set(all.map((d) => d.category)).size).toBe(6);
+    expect(new Set(all.map((d) => d.category)).size).toBe(TILE_CATEGORIES.length);
   });
 
   it('builds no walls inside a multi-cell piece', () => {
@@ -213,5 +224,57 @@ describe('props', () => {
     const map = makeMap([t('r', 'core.room', 0, 0, 0)]);
     map.entities.push(prop('p1', 'prop.nope', 0, 0));
     expect(validateMap(map).map((i) => i.code)).toContain('prop.unknown');
+  });
+
+  it('rounded corners: the curve meets the straight walls, blocks the corner, and bots walk round it', () => {
+    for (const rotation of [0, 1, 2, 3] as Rotation[]) {
+      // A medium round corner with a room joined on each straight side, everything turned together.
+      const turn = (x: number, z: number) => rotateXZ(x, z, rotation);
+      const [sx, sy] = turn(0, -1);
+      const [wx, wy] = turn(-1, 0);
+      const map = makeMap([t('c', 'core.round_corner_m', 0, 0, 0, rotation), t('s', 'core.room', sx, sy, 0), t('w', 'core.room', wx, wy, 0)], [[sx * 8, 0, sy * 8]]);
+      expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
+      const boxes = buildMapGeometry(map);
+      // On the curve (radius 15.75 from the piece's outer corner, at 45°) there is wall.
+      const d = 15.75 / Math.SQRT2;
+      const [cx, cz] = turn(-4 + d, -4 + d);
+      expect(insideTurned(walls(boxes), [cx, 1.7, cz]), `r${rotation} curve`).toBe(true);
+      // Just inside the curve is open floor.
+      const [ix, iz] = turn(-4 + d - 1, -4 + d - 1);
+      expect(insideTurned(boxes.filter((b) => b.kind !== 'floor'), [ix, 1.7, iz]), `r${rotation} inside`).toBe(false);
+      const nav = NavWorld.build(boxes);
+      expect(nav.findPath({ x: sx * 8, y: 0, z: sy * 8 }, { x: wx * 8, y: 0, z: wy * 8 }), `r${rotation} path`).not.toBeNull();
+      nav.destroy();
+    }
+  });
+
+  it('curved trim is drawn but never collides', () => {
+    const map = makeMap([t('c', 'core.round_corner_s', 0, 0, 0)]);
+    expect(buildMapGeometry(map).some((b) => b.kind === 'trim')).toBe(false);
+    expect(buildMapDecor(map).filter((b) => b.yaw !== undefined).length).toBeGreaterThan(10);
+  });
+
+  it('high and towering walls reach 2 and 4 storeys; the fence is see-through bars', () => {
+    const at = (style: 'high' | 'tower' | 'fence') => walls(buildMapGeometry(makeMap([t('r', 'core.room', 0, 0, 0, 0, { '0,0,0:N': style })])));
+    expect(Math.max(...at('high').map((b) => b.max[1]))).toBeCloseTo(8);
+    expect(Math.max(...at('tower').map((b) => b.max[1]))).toBeCloseTo(16);
+    const fence = at('fence');
+    expect(inside(fence, [0.5, 1, 3.9])).toBe(false); // between posts, between rails
+    expect(inside(fence, [0, 1.5, 3.95])).toBe(true); // a post
+  });
+
+  it('the map boundary fits round the map and nothing walks through it', () => {
+    const base = makeMap([t('a', 'core.yard', 0, 0, 0), t('b', 'core.yard', 1, 0, 0)]);
+    const fit = fitBounds(base, 2)!;
+    expect(fit).toEqual({ min: [-6, -6], max: [14, 6] });
+    for (const style of ['invisible', 'wall', 'fence'] as const) {
+      const map = { ...base, bounds: { ...fit, style, height: 6 } };
+      expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
+      const boxes = buildMapGeometry(map);
+      // Just outside the line there is always something solid, all the way up.
+      expect(inside(boxes, [-6.5, 1, 0]), style).toBe(true);
+      expect(inside(boxes, [-6.5, 40, 0]), style).toBe(true);
+      expect(boxes.some((b) => b.kind === 'wall' && b.sourceId === '__bounds')).toBe(style !== 'invisible');
+    }
   });
 });

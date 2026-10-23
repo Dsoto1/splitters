@@ -14,7 +14,7 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, Rotation, TerrainData, Vec3, WorldBox } from '@chronosplit/shared';
-import { DESTRUCTIBLE_SPECS, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
+import { DESTRUCTIBLE_SPECS, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -168,9 +168,25 @@ export class EditorView {
     const sky = MapStyler.skyColor(doc).scale(0.45);
     this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
     this.setGrid(doc, level);
+    this.setBoundsOutline(doc);
     this.setEntities(doc, level, showAll, new Set());
     // Trim is pickable too, so it can be painted.
     return [...boxes, ...buildMapDecor(visible)];
+  }
+
+  private boundsLine?: LinesMesh;
+
+  /** The map boundary as an orange outline at floor and wall-top height. */
+  private setBoundsOutline(doc: MapDocument): void {
+    this.boundsLine?.dispose();
+    this.boundsLine = undefined;
+    const b = doc.bounds;
+    if (!b) return;
+    const loop = (y: number) => [new Vector3(b.min[0], y, b.min[1]), new Vector3(b.max[0], y, b.min[1]), new Vector3(b.max[0], y, b.max[1]), new Vector3(b.min[0], y, b.max[1]), new Vector3(b.min[0], y, b.min[1])];
+    const posts = [[b.min[0], b.min[1]], [b.max[0], b.min[1]], [b.max[0], b.max[1]], [b.min[0], b.max[1]]].map(([x, z]) => [new Vector3(x, 0.05, z), new Vector3(x, 6, z)]);
+    this.boundsLine = CreateLineSystem('bounds', { lines: [loop(0.08), loop(6), ...posts] }, this.scene);
+    this.boundsLine.color = new Color3(1, 0.55, 0.1);
+    this.boundsLine.isPickable = false;
   }
 
   private setGrid(doc: MapDocument, level: number): void {
@@ -333,7 +349,7 @@ export class EditorView {
     }
   }
 
-  /** Highlight one face of a box (paint hover); null hides it. */
+  /** Highlight one face of a box (paint hover); `normal` is in the box's own frame. Null hides it. */
   setFaceHighlight(box: WorldBox | null, normal: readonly [number, number, number] | null): void {
     if (!box || !normal) {
       this.faceHighlight?.setEnabled(false);
@@ -352,7 +368,10 @@ export class EditorView {
     const pos = center.map((c, i) => (i === axis ? c + (normal[i]! * size[i]!) / 2 : c));
     this.faceHighlight.setEnabled(true);
     this.faceHighlight.scaling.set(scale[0]!, scale[1]!, scale[2]!);
-    this.faceHighlight.position.set(pos[0]!, pos[1]!, pos[2]!);
+    // Turned boxes: offset the highlight from the centre in the box's frame, then turn it.
+    const [ox, oz] = yawXZ(pos[0]! - center[0]!, pos[2]! - center[2]!, box.yaw ?? 0);
+    this.faceHighlight.position.set(center[0]! + ox, pos[1]!, center[2]! + oz);
+    this.faceHighlight.rotation.y = box.yaw ?? 0;
   }
 
   /** Redraw only the terrain (live preview while a brush is dragged). */

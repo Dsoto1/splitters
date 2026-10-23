@@ -1,4 +1,4 @@
-import { buildMapGeometry, newMapDocument, type TileDefinition } from '@chronosplit/shared';
+import { boxFootprint, buildMapGeometry, newMapDocument, type TileDefinition } from '@chronosplit/shared';
 
 const FILL = { floor: '#5b616b', wall: '#d9d6cf', solid: '#d98b3a', trim: '#d9d6cf', prop: '#d98b3a', barrier: '#00000000' } as const;
 
@@ -23,6 +23,10 @@ export function tileIcon(def: TileDefinition): string {
       const w = (b.max[0] - b.min[0]) * s;
       const h = (b.max[2] - b.min[2]) * s;
       const opacity = b.kind === 'solid' ? 0.45 + Math.min(1, b.max[1] / 4) * 0.55 : b.kind === 'floor' ? Math.min(1, 0.55 + Math.max(0, b.max[1] + 0.5) / 8) : 1;
+      if (b.yaw) {
+        const pts = boxFootprint(b).map(([px, pz]) => `${((px - x0) * s).toFixed(1)},${((z1 - pz) * s).toFixed(1)}`).join(' ');
+        return `<polygon points="${pts}" fill="${FILL[b.kind]}" fill-opacity="${opacity.toFixed(2)}" stroke="${FILL[b.kind]}" stroke-width="0.6"/>`;
+      }
       return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.6, w).toFixed(1)}" height="${Math.max(0.6, h).toFixed(1)}" fill="${FILL[b.kind]}" fill-opacity="${opacity.toFixed(2)}"/>`;
     })
     .join('');

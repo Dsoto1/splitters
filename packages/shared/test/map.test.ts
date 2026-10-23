@@ -69,7 +69,7 @@ describe('migrations', () => {
   });
 
   it('fails loudly on a gap in the chain', () => {
-    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), 8)).toThrow(MapMigrationError);
+    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), 9)).toThrow(MapMigrationError);
   });
 });
 

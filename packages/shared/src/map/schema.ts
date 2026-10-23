@@ -6,7 +6,7 @@ import { ScenarioLogic } from './logic.ts';
 /**
  * ChronoSplit map document, format version 6 (v2 added per-surface tile styles, v3 pickup
  * entities, v4 scenario entities and logic, v5 factions and NPC encounters, v6 per-side
- * wall styles, trim and props, v7 terrain).
+ * wall styles, trim and props, v7 terrain, v8 map boundary and team setup).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -15,7 +15,7 @@ import { ScenarioLogic } from './logic.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 7;
+export const MAP_FORMAT_VERSION = 8;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -262,6 +262,27 @@ export const Terrain = z
   .refine((t) => t.heights.length === t.cols * t.rows, 'terrain needs cols × rows heights')
   .refine((t) => t.materials.length === (t.cols - 1) * (t.rows - 1), 'terrain needs a material for every cell');
 
+/**
+ * The play area's edge: walls round a rectangle (world X/Z), so creators can
+ * fence a map in with one setting. `invisible` walls stop players and shots
+ * without being drawn; `wall` and `fence` are built in the theme's walls.
+ */
+export const BOUNDARY_STYLES = ['invisible', 'wall', 'fence'] as const;
+export const MapBounds = z
+  .object({
+    min: z.tuple([z.number().finite(), z.number().finite()]),
+    max: z.tuple([z.number().finite(), z.number().finite()]),
+    style: z.enum(BOUNDARY_STYLES).default('invisible'),
+    /** Wall height above the lowest floor (m); invisible walls always reach high enough. */
+    height: z.number().min(1).max(60).default(8),
+  })
+  .refine((b) => b.max[0] - b.min[0] >= 4 && b.max[1] - b.min[1] >= 4, 'the boundary must be at least 4 m across');
+
+/** Recommended team layout for team modes: players per team, 2–8 teams (e.g. [2, 2, 2, 12]). */
+export const TeamSetup = z.object({
+  sizes: z.array(z.number().int().min(1).max(16)).min(2).max(8),
+});
+
 export const MapDocument = z.object({
   format: z.literal(MAP_FORMAT),
   formatVersion: z.literal(MAP_FORMAT_VERSION),
@@ -274,6 +295,10 @@ export const MapDocument = z.object({
   logic: ScenarioLogic.default({ variables: [], timers: [], objectives: [], rules: [] }),
   /** Outdoor terrain (grass, dirt, stone… with hills and cliffs), or none. */
   terrain: Terrain.nullable().default(null),
+  /** Walls round the play area, or none. */
+  bounds: MapBounds.nullable().default(null),
+  /** Recommended teams for team modes, or none (two even teams). */
+  teamSetup: TeamSetup.nullable().default(null),
   /** Content packs this map needs, beyond the always-present core pack. */
   dependencies: z.array(z.object({ pack: ContentId, version: z.string() })).default([]),
 });
@@ -294,6 +319,9 @@ export type EntityKind = MapEntity['kind'];
 export type EncounterEntity = z.infer<typeof EncounterEntity>;
 export type PropEntity = z.infer<typeof PropEntity>;
 export type Faction = z.infer<typeof Faction>;
+export type MapBounds = z.infer<typeof MapBounds>;
+export type BoundaryStyle = (typeof BOUNDARY_STYLES)[number];
+export type TeamSetup = z.infer<typeof TeamSetup>;
 export type NpcRole = (typeof NPC_ROLES)[number];
 export type SquadOrder = (typeof SQUAD_ORDERS)[number];
 export type Relation = (typeof RELATIONS)[number];

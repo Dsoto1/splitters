@@ -33,7 +33,7 @@ export interface TilePort {
  * creators per side in MapMaker, so the same room can have windows, arches,
  * half walls or no wall at all.
  */
-export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'window', 'windows', 'slit', 'half', 'railing', 'open'] as const;
+export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'window', 'windows', 'slit', 'half', 'railing', 'high', 'tower', 'fence', 'open'] as const;
 export type EdgeStyle = (typeof EDGE_STYLES)[number];
 
 export const EDGE_STYLE_LABELS: Record<EdgeStyle, string> = {
@@ -47,17 +47,24 @@ export const EDGE_STYLE_LABELS: Record<EdgeStyle, string> = {
   slit: 'Firing slit',
   half: 'Half wall',
   railing: 'Railing',
+  high: 'High wall (2 storeys)',
+  tower: 'Towering wall (4 storeys)',
+  fence: 'Tall fence',
   open: 'No wall',
 };
 
 /** Palette groups in MapMaker (after the reference board's tile browser). */
-export const TILE_CATEGORIES = ['Rooms', 'Large', 'Corridors', 'Vertical', 'Open', 'Special'] as const;
+export const TILE_CATEGORIES = ['Rooms', 'Large', 'Curves', 'Corridors', 'Vertical', 'Open', 'Special'] as const;
 export type TileCategory = (typeof TILE_CATEGORIES)[number];
 
 /** Axis-aligned box in tile-local metres: X/Z relative to the cell centre, Y relative to the tile's base floor. */
 export interface LocalBox {
   min: readonly [number, number, number];
   max: readonly [number, number, number];
+  /** Turn about the box's vertical centre line (radians, like `WorldBox.yaw`). */
+  yaw?: number;
+  /** What the box is built as (default `solid`; curved walls use `wall` so they take the walls' paint, `trim` is visual only). */
+  kind?: 'solid' | 'wall' | 'floor' | 'trim';
 }
 
 export interface TileDefinition {
@@ -83,6 +90,8 @@ export interface TileDefinition {
    * their own: the neighbour's doorway is the opening.
    */
   edgeDefault?: EdgeStyle;
+  /** Per-side defaults that override `edgeDefault`, keyed like placement edges ("dx,dy,dz:S", local frame). */
+  edgeDefaults?: Readonly<Record<string, EdgeStyle>>;
   /** Partial floors (balconies, ledges, bridge decks), painted like floors. Local frame, like solids. */
   extraFloors?: readonly LocalBox[];
   /** One line for the MapMaker tooltip. */
@@ -161,6 +170,222 @@ function descending(edge: number, x0: number, x1: number, n: number, top: number
 function rail(x0: number, z0: number, x1: number, z1: number, y = 0): LocalBox {
   const t = 0.06;
   return x0 === x1 ? box(x0 - t, y, Math.min(z0, z1), x0 + t, y + 1, Math.max(z0, z1)) : box(Math.min(x0, x1), y, z0 - t, Math.max(x0, x1), y + 1, z0 + t);
+}
+
+// ---------------------------------------------------------------- curves
+
+/**
+ * A curved wall as a run of short turned boxes: centre (cx, cz), radius to the
+ * middle of the wall, from angle a0 to a1 (radians; 0 = +x/east, π/2 = +z/north),
+ * in `n` pieces from y0 to y1. Each piece overlaps its neighbours slightly so
+ * the curve has no cracks.
+ */
+function arc(cx: number, cz: number, r: number, a0: number, a1: number, n: number, y0: number, y1: number, t: number = TILE_DIMENSIONS.wallThickness, kind: LocalBox['kind'] = 'wall'): LocalBox[] {
+  const out: LocalBox[] = [];
+  const step = (a1 - a0) / n;
+  const len = 2 * r * Math.sin(Math.abs(step) / 2) + Math.min(0.08, t * 0.3);
+  for (let i = 0; i < n; i++) {
+    const a = a0 + (i + 0.5) * step;
+    const mx = cx + r * Math.cos(a);
+    const mz = cz + r * Math.sin(a);
+    out.push({ min: [mx - len / 2, y0, mz - t / 2], max: [mx + len / 2, y1, mz + t / 2], yaw: -(a + Math.PI / 2), kind });
+  }
+  return out;
+}
+
+/** Pieces per radian for curves: about one every 1.2 m along the wall. */
+const pieces = (r: number, sweep: number) => Math.max(4, Math.round((r * Math.abs(sweep)) / 1.2));
+
+/**
+ * Baseboard and cornice trim along both faces of a curved wall, matching the
+ * trim on straight walls so curves and straight pieces read as one building.
+ */
+function arcTrim(cx: number, cz: number, r: number, a0: number, a1: number, height = 4): LocalBox[] {
+  const t = TILE_DIMENSIONS.wallThickness;
+  const n = pieces(r, a1 - a0);
+  return [-1, 1].flatMap((side) => [
+    ...arc(cx, cz, r + side * (t / 2 + 0.02), a0, a1, n, 0, 0.16, 0.04, 'trim'),
+    ...arc(cx, cz, r + side * (t / 2 + 0.035), a0, a1, n, height - 0.2, height, 0.07, 'trim'),
+  ]);
+}
+
+/**
+ * A curved arcade: pillars with arched openings between them (3.2 m high,
+ * lintel above), `bays` openings along the arc.
+ */
+function arcade(cx: number, cz: number, r: number, a0: number, a1: number, bays: number, height = 4): LocalBox[] {
+  const out: LocalBox[] = [];
+  const pillar = 0.9 / r; // 0.9 m of arc per pillar
+  const bay = (a1 - a0 - pillar * (bays + 1)) / bays;
+  let a = a0;
+  for (let i = 0; i <= bays; i++) {
+    out.push(...arc(cx, cz, r, a, a + pillar, 1, 0, height, 0.6));
+    a += pillar;
+    if (i === bays) break;
+    const n = pieces(r, bay);
+    out.push(...arc(cx, cz, r, a, a + bay, n, 3.2, height));
+    // A shallow curve under the lintel: two steps of trim make the opening read as an arch.
+    out.push(...arc(cx, cz, r, a, a + bay * 0.18, 1, 2.85, 3.2, 0.5, 'trim'), ...arc(cx, cz, r, a + bay * 0.82, a + bay, 1, 2.85, 3.2, 0.5, 'trim'));
+    out.push(...arc(cx, cz, r, a + bay * 0.18, a + bay * 0.32, 1, 3.05, 3.2, 0.5, 'trim'), ...arc(cx, cz, r, a + bay * 0.68, a + bay * 0.82, 1, 3.05, 3.2, 0.5, 'trim'));
+    a += bay;
+  }
+  return out;
+}
+
+const HALF_PI = Math.PI / 2;
+
+/** Outer sides of an n × n corner piece left open (north row and east column), so the curve is the only wall. */
+function openNorthEast(n: number): Record<string, EdgeStyle> {
+  const out: Record<string, EdgeStyle> = {};
+  for (let i = 0; i < n; i++) {
+    out[`${i},${n - 1},0:N`] = 'open';
+    out[`${n - 1},${i},0:E`] = 'open';
+  }
+  return out;
+}
+
+/** Ports on the south row and west column of an n × n corner piece: where it joins the rest of the building. */
+function southWestPorts(n: number): TilePort[] {
+  const out: TilePort[] = [];
+  for (let i = 0; i < n; i++) out.push({ side: 'S', level: 0, cell: [i, 0] }, { side: 'W', level: 0, cell: [0, i] });
+  return out;
+}
+
+/**
+ * Rounded corners, small (1 cell), medium (2 × 2) and large (3 × 3): a
+ * quarter-circle wall from the south-east corner to the north-west corner,
+ * centred on the south-west corner. Inside it is a room with a rounded
+ * corner; from outside it is a building's rounded corner. The ends meet the
+ * straight walls of neighbouring rooms exactly.
+ */
+function roundCorners(): TileDefinition[] {
+  const sizes = [
+    ['s', 'Small', 1],
+    ['m', 'Medium', 2],
+    ['l', 'Large', 3],
+  ] as const;
+  return sizes.flatMap(([key, label, n]) => {
+    const r = n * 8 - TILE_DIMENSIONS.wallThickness / 2;
+    const common = {
+      category: 'Curves' as const,
+      cells: footprint(n, n),
+      floors: [0],
+      ports: southWestPorts(n),
+      edgeDefaults: openNorthEast(n),
+    };
+    return [
+      {
+        ...common,
+        id: `core.round_corner_${key}`,
+        displayName: `Round Corner (${label})`,
+        blurb: 'A curved wall turning the corner: a rounded room inside, a rounded building outside',
+        solids: [...arc(-4, -4, r, 0, HALF_PI, pieces(r, HALF_PI), 0, 4), ...arcTrim(-4, -4, r, 0, HALF_PI)],
+      },
+      {
+        ...common,
+        id: `core.round_arcade_${key}`,
+        displayName: `Round Arcade (${label})`,
+        blurb: 'A curved colonnade of arches: a cloister inside, a portico outside',
+        solids: arcade(-4, -4, r, 0, HALF_PI, n * 2 + 1),
+      },
+      {
+        ...common,
+        id: `core.round_half_${key}`,
+        displayName: `Round Low Wall (${label})`,
+        blurb: 'A curved waist-high wall: cover, a garden edge or a balcony parapet',
+        solids: [...arc(-4, -4, r, 0, HALF_PI, pieces(r, HALF_PI), 0, 1.1), ...arc(-4, -4, r, 0, HALF_PI, pieces(r, HALF_PI), 1.1, 1.18, 0.6, 'trim')],
+      },
+    ];
+  });
+}
+
+/** A round tower room: a full circle of wall in a 2 × 2 footprint, a doorway south and windows round it. */
+function roundTower(): TileDefinition {
+  const r = 7.5;
+  const door = 1.6 / r; // half the doorway angle
+  const win = 0.75 / r;
+  const south = -HALF_PI;
+  const solids: LocalBox[] = [];
+  // Wall runs between the doorway (south) and three windows (east, north, west).
+  const openings = [south, 0, HALF_PI, Math.PI];
+  for (let i = 0; i < 4; i++) {
+    const a = openings[i]! + (i === 0 ? door : win);
+    const b = (i === 3 ? south + 2 * Math.PI : openings[i + 1]!) - (i === 3 ? door : win);
+    solids.push(...arc(4, 4, r, a, b, pieces(r, b - a), 0, 4), ...arcTrim(4, 4, r, a, b));
+  }
+  solids.push(...arc(4, 4, r, south - door, south + door, 3, 3.2, 4));
+  for (const a of [0, HALF_PI, Math.PI]) solids.push(...arc(4, 4, r, a - win, a + win, 2, 0, 1), ...arc(4, 4, r, a - win, a + win, 2, 2.4, 4));
+  return {
+    id: 'core.round_tower',
+    category: 'Curves',
+    displayName: 'Round Tower',
+    blurb: '2 × 2 open ground with a round room in the middle: doorway south, windows round it',
+    cells: footprint(2, 2),
+    floors: [0],
+    ports: perimeterPorts(2, 2),
+    open: true,
+    edgeDefault: 'open',
+    solids,
+  };
+}
+
+/** A quarter-circle corridor from the south doorway round to the west doorway. */
+function curvedCorridor(): TileDefinition {
+  const solids = [
+    ...arc(-4, -4, 2.25, 0, HALF_PI, 4, 0, 4),
+    ...arc(-4, -4, 5.75, 0, HALF_PI, 8, 0, 4),
+    ...arcTrim(-4, -4, 2.25, 0, HALF_PI),
+    ...arcTrim(-4, -4, 5.75, 0, HALF_PI),
+  ];
+  return {
+    id: 'core.corridor_curve',
+    category: 'Curves',
+    displayName: 'Curved Corridor',
+    blurb: 'A corridor sweeping round the corner from the south doorway to the west one',
+    cells: [[0, 0, 0]],
+    floors: [0],
+    ports: [{ side: 'S', level: 0 }, { side: 'W', level: 0 }],
+    solids,
+  };
+}
+
+/** Balconies jutting out from an upper doorway (on their south side) over the open air. */
+function balconies(): TileDefinition[] {
+  const rails = [rail(-3.94, -1.5, 3.94, -1.5), rail(-3.94, -4, -3.94, -1.5), rail(3.94, -4, 3.94, -1.5)];
+  // Round balcony: a half-disc floor (in strips under the rail) and a curved railing.
+  const R = 3.5;
+  const strips: LocalBox[] = [];
+  for (let j = 0; j < 7; j++) {
+    const z0 = -4 + j * 0.5;
+    const w = Math.sqrt(Math.max(0, R * R - (z0 + 4) * (z0 + 4)));
+    strips.push(box(-w, -0.3, z0, w, 0, z0 + 0.5));
+  }
+  return [
+    {
+      id: 'core.balcony',
+      category: 'Curves',
+      displayName: 'Balcony',
+      blurb: 'A railed ledge 2.5 m deep off an upper doorway (on its south side); place it on the level above the ground',
+      cells: [[0, 0, 0]],
+      floors: [],
+      ports: [{ side: 'S', level: 0 }],
+      edgeDefault: 'open',
+      extraFloors: [box(-4, -0.3, -4, 4, 0, -1.5)],
+      solids: rails,
+    },
+    {
+      id: 'core.balcony_round',
+      category: 'Curves',
+      displayName: 'Round Balcony',
+      blurb: 'A half-round railed balcony off an upper doorway (on its south side)',
+      cells: [[0, 0, 0]],
+      floors: [],
+      ports: [{ side: 'S', level: 0 }],
+      edgeDefault: 'open',
+      extraFloors: strips,
+      solids: [...arc(0, -4, R - 0.1, 0, Math.PI, 10, 0, 1.05, 0.12, 'solid'), ...arc(0, -4, R - 0.1, 0, Math.PI, 10, 0.95, 1.08, 0.16, 'trim')],
+    },
+  ];
 }
 
 export const CORE_TILES: readonly TileDefinition[] = [
@@ -574,6 +799,10 @@ export const CORE_TILES: readonly TileDefinition[] = [
     open: true,
     solids: [box(-3, 0, 2, -2, 3.2, 3), box(2, 0, 2, 3, 1.4, 3), box(-3, 0, -3, -2, 0.8, -2), box(0.5, 0, -2.5, 3.2, 0.9, -1.4)],
   },
+  ...roundCorners(),
+  roundTower(),
+  curvedCorridor(),
+  ...balconies(),
   // ---------------------------------------------------------------- special
   {
     id: 'core.pit',

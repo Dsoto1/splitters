@@ -18,6 +18,52 @@ export interface WorldBox {
   kind: BoxKind;
   /** Placement that produced this box, for editor focus and debugging. */
   sourceId: string;
+  /**
+   * Turn about the vertical axis through the box centre (radians; see
+   * `yawXZ`). min/max then give the box's size and centre before turning.
+   * Curved walls, arches and balconies are built from turned boxes.
+   */
+  yaw?: number;
+}
+
+/** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
+export function yawXZ(x: number, z: number, yaw: number): [number, number] {
+  const c = Math.cos(yaw);
+  const s = Math.sin(yaw);
+  return [x * c + z * s, -x * s + z * c];
+}
+
+/** A box's 8 corners in world space; corner i has bit0 → max x, bit1 → max y, bit2 → max z (in the box's own frame). */
+export function boxCorners(b: Pick<WorldBox, 'min' | 'max' | 'yaw'>): [number, number, number][] {
+  const cx = (b.min[0] + b.max[0]) / 2;
+  const cz = (b.min[2] + b.max[2]) / 2;
+  const out: [number, number, number][] = [];
+  for (let i = 0; i < 8; i++) {
+    const x = i & 1 ? b.max[0] : b.min[0];
+    const y = i & 2 ? b.max[1] : b.min[1];
+    const z = i & 4 ? b.max[2] : b.min[2];
+    if (!b.yaw) out.push([x, y, z]);
+    else {
+      const [rx, rz] = yawXZ(x - cx, z - cz, b.yaw);
+      out.push([cx + rx, y, cz + rz]);
+    }
+  }
+  return out;
+}
+
+/** A box's outline seen from above, as four (x, z) corners in order round the edge. */
+export function boxFootprint(b: Pick<WorldBox, 'min' | 'max' | 'yaw'>): [number, number][] {
+  const c = boxCorners(b);
+  return [c[0]!, c[1]!, c[5]!, c[4]!].map((p) => [p[0], p[2]] as [number, number]);
+}
+
+/** World-axis bounds of a (possibly turned) box. */
+export function boxBounds(b: Pick<WorldBox, 'min' | 'max' | 'yaw'>): { min: [number, number, number]; max: [number, number, number] } {
+  if (!b.yaw) return { min: [...b.min], max: [...b.max] };
+  const f = boxFootprint(b);
+  const xs = f.map((p) => p[0]);
+  const zs = f.map((p) => p[1]);
+  return { min: [Math.min(...xs), b.min[1], Math.min(...zs)], max: [Math.max(...xs), b.max[1], Math.max(...zs)] };
 }
 
 export interface CellOccupant {
@@ -109,7 +155,7 @@ export function resolveEdge(cells: Map<string, CellOccupant>, x: number, y: numb
   if (there && there.placement === here.placement) return 'none';
   const choice = (occ: CellOccupant | undefined, s: Side) => occ?.placement.edges?.[edgeKey(occ.local, localSide(s, occ.placement.rotation))];
   const picked = choice(here, side) ?? choice(there, OPPOSITE[side]);
-  const fallback = here.def.edgeDefault ?? 'wall';
+  const fallback = here.def.edgeDefaults?.[edgeKey(here.local, localSide(side, here.placement.rotation))] ?? here.def.edgeDefault ?? 'wall';
   const openish = fallback === 'open' || fallback === 'railing';
   let style: EdgeStyle = picked ?? 'auto';
   if (style === 'auto') {
@@ -147,6 +193,17 @@ export function edgeSegments(style: ResolvedEdge, half: number, height: number):
       return [[-half, half, 0, 1.1, t]];
     case 'railing':
       return [[-half, half, 0, 1, 0.12]];
+    case 'high':
+      return [[-half, half, 0, height * 2, t]];
+    case 'tower':
+      return [[-half, half, 0, height * 4, t]];
+    case 'fence': {
+      // Posts every metre and three rails: 3 m high, see-through, stops players and blocks most shots' paths only at the bars.
+      const out: [number, number, number, number, number][] = [];
+      for (let u = -half; u <= half + 1e-6; u += 1) out.push([Math.max(-half, u - 0.06), Math.min(half, u + 0.06), 0, 3, 0.12]);
+      out.push([-half, half, 0.05, 0.2, 0.1], [-half, half, 1.45, 1.6, 0.1], [-half, half, 2.85, 3, 0.1]);
+      return out;
+    }
   }
 }
 
@@ -198,6 +255,13 @@ function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, n
     case 'half':
       base(-half, half);
       out.push([-half, half, 1.1, 1.18, 0.04]);
+      return out;
+    case 'high':
+    case 'tower':
+      base(-half, half);
+      out.push([-half, half, height * (style === 'high' ? 2 : 4) - 0.2, height * (style === 'high' ? 2 : 4), 0.07]);
+      return out;
+    case 'fence':
       return out;
     case 'railing':
       // Posts every 2 m and a top rail.
@@ -301,9 +365,24 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     }
   }
 
-  if (decor) return boxes;
+  if (decor) {
+    // Trim on curved pieces (it never collides).
+    for (const placement of map.classicStructure.tiles) {
+      const def = catalog.get(placement.tile);
+      for (const solid of def?.solids ?? []) {
+        if (solid.kind === 'trim') boxes.push(rotateLocalBox(solid, placement.rotation, placement.x * cellSize, placement.z * levelHeight, placement.y * cellSize, placement.id, 'trim'));
+      }
+    }
+    return boxes;
+  }
   boxes.push(...propBoxes(map));
   if (map.terrain) boxes.push(...terrainBoundary(map.terrain));
+  if (map.bounds) {
+    let floorY = Infinity;
+    for (const b of boxes) if (b.kind === 'floor') floorY = Math.min(floorY, b.max[1]);
+    if (map.terrain) floorY = Math.min(floorY, map.terrain.baseY + Math.min(...map.terrain.heights) / 100);
+    boxes.push(...boundaryBoxes(map.bounds, Number.isFinite(floorY) ? floorY : 0));
+  }
   for (const placement of map.classicStructure.tiles) {
     const def = catalog.get(placement.tile);
     if (!def) continue;
@@ -311,9 +390,88 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     const cz = placement.y * cellSize;
     const baseY = placement.z * levelHeight;
     for (const f of def.extraFloors ?? []) boxes.push(rotateLocalBox(f, placement.rotation, cx, baseY, cz, placement.id, 'floor'));
-    for (const solid of def.solids ?? []) boxes.push(rotateLocalBox(solid, placement.rotation, cx, baseY, cz, placement.id, 'solid'));
+    for (const solid of def.solids ?? []) if (solid.kind !== 'trim') boxes.push(rotateLocalBox(solid, placement.rotation, cx, baseY, cz, placement.id, solid.kind ?? 'solid'));
   }
   return boxes;
+}
+
+/**
+ * Walls round the map boundary. Visible walls and fences stand just inside the
+ * rectangle; above them (and for invisible boundaries, all the way) an
+ * invisible barrier reaches 60 m up so nothing is thrown or jumped out.
+ */
+export function boundaryBoxes(bounds: NonNullable<MapDocument['bounds']>, floorY = 0): WorldBox[] {
+  const [x0, z0] = bounds.min;
+  const [x1, z1] = bounds.max;
+  const out: WorldBox[] = [];
+  const id = '__bounds';
+  const t = TILE_DIMENSIONS.wallThickness;
+  const visible = bounds.style === 'invisible' ? 0 : bounds.height;
+  const y0 = floorY - 20;
+  // Invisible barrier outside the line, from deep below to high above.
+  out.push(
+    { min: [x0 - 1, y0, z0 - 1], max: [x0, floorY + 60, z1 + 1], kind: 'barrier', sourceId: id },
+    { min: [x1, y0, z0 - 1], max: [x1 + 1, floorY + 60, z1 + 1], kind: 'barrier', sourceId: id },
+    { min: [x0, y0, z0 - 1], max: [x1, floorY + 60, z0], kind: 'barrier', sourceId: id },
+    { min: [x0, y0, z1], max: [x1, floorY + 60, z1 + 1], kind: 'barrier', sourceId: id },
+  );
+  if (!visible) return out;
+  const top = floorY + visible;
+  if (bounds.style === 'wall') {
+    out.push(
+      { min: [x0, floorY - 2, z0], max: [x0 + t, top, z1], kind: 'wall', sourceId: id },
+      { min: [x1 - t, floorY - 2, z0], max: [x1, top, z1], kind: 'wall', sourceId: id },
+      { min: [x0 + t, floorY - 2, z0], max: [x1 - t, top, z0 + t], kind: 'wall', sourceId: id },
+      { min: [x0 + t, floorY - 2, z1 - t], max: [x1 - t, top, z1], kind: 'wall', sourceId: id },
+    );
+    return out;
+  }
+  // Fence: posts every 2 m and three rails along each side.
+  const sides: [number, number, number, number][] = [
+    [x0, z0, x1, z0],
+    [x0, z1, x1, z1],
+    [x0, z0, x0, z1],
+    [x1, z0, x1, z1],
+  ];
+  for (const [ax, az, bx, bz] of sides) {
+    const alongX = az === bz;
+    const len = alongX ? bx - ax : bz - az;
+    const n = Math.max(1, Math.round(len / 2));
+    for (let i = 0; i <= n; i++) {
+      const u = (alongX ? ax : az) + (len * i) / n;
+      out.push(alongX ? { min: [u - 0.08, floorY - 0.5, az - 0.08], max: [u + 0.08, top, az + 0.08], kind: 'wall', sourceId: id } : { min: [ax - 0.08, floorY - 0.5, u - 0.08], max: [ax + 0.08, top, u + 0.08], kind: 'wall', sourceId: id });
+    }
+    for (const y of [0.15, visible / 2, visible - 0.15]) {
+      out.push(alongX ? { min: [ax, floorY + y - 0.07, az - 0.05], max: [bx, floorY + y + 0.07, az + 0.05], kind: 'wall', sourceId: id } : { min: [ax - 0.05, floorY + y - 0.07, az], max: [ax + 0.05, floorY + y + 0.07, bz], kind: 'wall', sourceId: id });
+    }
+  }
+  return out;
+}
+
+/** A rectangle round everything built (tiles, entities and terrain), `margin` metres out: the "fit to map" boundary. */
+export function fitBounds(map: MapDocument, margin = 4, catalog: TileCatalog = coreCatalog): { min: [number, number]; max: [number, number] } | null {
+  let [x0, z0, x1, z1] = [Infinity, Infinity, -Infinity, -Infinity];
+  const grow = (x: number, z: number) => {
+    x0 = Math.min(x0, x);
+    z0 = Math.min(z0, z);
+    x1 = Math.max(x1, x);
+    z1 = Math.max(z1, z);
+  };
+  for (const b of buildBoxes({ ...map, bounds: null }, catalog, false)) {
+    if (b.kind === 'barrier') continue;
+    const { min, max } = boxBounds(b);
+    grow(min[0], min[2]);
+    grow(max[0], max[2]);
+  }
+  for (const e of map.entities) grow(e.position[0], e.position[2]);
+  if (map.terrain) {
+    const t = map.terrain;
+    grow(t.origin[0], t.origin[1]);
+    grow(t.origin[0] + (t.cols - 1) * t.spacing, t.origin[1] + (t.rows - 1) * t.spacing);
+  }
+  if (!Number.isFinite(x0)) return null;
+  const snap = (v: number) => Math.round(v * 2) / 2;
+  return { min: [snap(x0 - margin), snap(z0 - margin)], max: [snap(x1 + margin), snap(z1 + margin)] };
 }
 
 /**
@@ -335,6 +493,13 @@ function sideBox(side: Side, cx: number, cz: number, half: number, u0: number, u
 }
 
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
+  if (box.yaw) {
+    // Turned boxes keep their size; the centre turns with the tile and the yaw adds the tile's quarter turns.
+    const hx = (box.max[0] - box.min[0]) / 2;
+    const hz = (box.max[2] - box.min[2]) / 2;
+    const [mx, mz] = rotateXZ((box.min[0] + box.max[0]) / 2, (box.min[2] + box.max[2]) / 2, rotation);
+    return { min: [cx + mx - hx, baseY + box.min[1], cz + mz - hz], max: [cx + mx + hx, baseY + box.max[1], cz + mz + hz], kind, sourceId, yaw: box.yaw + (rotation % 4) * (Math.PI / 2) };
+  }
   const [ax, az] = rotateXZ(box.min[0], box.min[2], rotation);
   const [bx, bz] = rotateXZ(box.max[0], box.max[2], rotation);
   return {
@@ -360,11 +525,7 @@ export function boxesToTriangles(boxes: readonly WorldBox[]): { positions: Float
     [4, 5, 7, 6], // +z
   ];
   boxes.forEach((b, i) => {
-    for (let c = 0; c < 8; c++) {
-      positions[(i * 8 + c) * 3] = c & 1 ? b.max[0] : b.min[0];
-      positions[(i * 8 + c) * 3 + 1] = c & 2 ? b.max[1] : b.min[1];
-      positions[(i * 8 + c) * 3 + 2] = c & 4 ? b.max[2] : b.min[2];
-    }
+    boxCorners(b).forEach((p, c) => positions.set(p, (i * 8 + c) * 3));
     faces.forEach((f, fi) => {
       const o = i * 36 + fi * 6;
       const base = i * 8;

@@ -65,6 +65,16 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     seen.add(item.id);
   }
 
+  if (map.bounds) {
+    const { min, max } = map.bounds;
+    for (const e of map.entities) {
+      const [x, , z] = e.position;
+      if (x < min[0] || x > max[0] || z < min[1] || z > max[1]) {
+        issues.push({ severity: e.kind === 'spawn' ? 'error' : 'warning', code: 'bounds.outside', message: `${e.kind} ${e.id} is outside the map boundary`, targetId: e.id });
+      }
+    }
+  }
+
   const { cells, overlaps, unknownTiles } = buildOccupancy(map, catalog);
   for (const t of unknownTiles) {
     issues.push({ severity: 'error', code: 'tile.unknown', message: `unknown tile "${t.tile}"`, targetId: t.id });

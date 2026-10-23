@@ -1,5 +1,5 @@
 import type { ScenarioLogic } from '../map/logic.ts';
-import type { Faction, MapDocument, MapEntity, TilePlacement } from '../map/schema.ts';
+import type { Faction, MapBounds, MapDocument, MapEntity, TeamSetup, TilePlacement } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
 
 /**
@@ -21,6 +21,8 @@ export type EditCommand =
   | { kind: 'setFactions'; before: Faction[]; after: Faction[] }
   /** Terrain is replaced whole: one brush stroke = one undo step. */
   | { kind: 'setTerrain'; before: TerrainData | null; after: TerrainData | null }
+  | { kind: 'setBounds'; before: MapBounds | null; after: MapBounds | null }
+  | { kind: 'setTeamSetup'; before: TeamSetup | null; after: TeamSetup | null }
   | { kind: 'batch'; commands: EditCommand[] };
 
 export class CommandError extends Error {}
@@ -76,6 +78,10 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       return { ...doc, factions: cmd.after };
     case 'setTerrain':
       return { ...doc, terrain: cmd.after };
+    case 'setBounds':
+      return { ...doc, bounds: cmd.after };
+    case 'setTeamSetup':
+      return { ...doc, teamSetup: cmd.after };
     case 'batch':
       return cmd.commands.reduce(applyCommand, doc);
   }
@@ -105,6 +111,10 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setFactions', before: cmd.after, after: cmd.before };
     case 'setTerrain':
       return { kind: 'setTerrain', before: cmd.after, after: cmd.before };
+    case 'setBounds':
+      return { kind: 'setBounds', before: cmd.after, after: cmd.before };
+    case 'setTeamSetup':
+      return { kind: 'setTeamSetup', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -128,6 +138,8 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
       return cmd.before === cmd.after;
     case 'setLogic':
     case 'setFactions':
+    case 'setBounds':
+    case 'setTeamSetup':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':
       return cmd.commands.every(isEmptyCommand);

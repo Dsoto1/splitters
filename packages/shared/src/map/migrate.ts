@@ -20,6 +20,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [5, (doc) => ({ ...doc })],
   // v6 -> v7: optional outdoor `terrain` (absent = none).
   [6, (doc) => ({ ...doc })],
+  // v7 -> v8: optional map `bounds` and `teamSetup` (absent = none).
+  [7, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

@@ -77,3 +77,34 @@ small and exact.
   winding dirt trail, boulder fields from scaled rock props, and a bunker
   base at each end with stairs to a railed roof. Open it from the MapMaker
   templates to remix it.
+
+## Curves, balconies, tall walls and the boundary (format v8)
+
+Boxes can be turned about the vertical axis (`WorldBox.yaw`), in physics, the
+navmesh, rendering (texture runs along the turned face), MapMaker picking and
+the top-down plans. Curves are runs of short turned boxes that overlap by a
+few centimetres, with baseboard and cornice trim on both faces, so they sit
+in the same themes and paint slots as straight walls.
+
+- **Round Corner (S / M / L)**: a quarter-circle wall over 1, 2 × 2 or
+  3 × 3 cells, centred on the piece's south-west corner. Its ends meet the
+  straight walls of neighbouring rooms exactly. From inside it is a room with
+  a rounded corner; from outside, a building's rounded corner. Join rooms on
+  its south and west sides; its north and east sides are left open.
+- **Round Arcade (S / M / L)**: the same curve as a colonnade of arches
+  (cloister inside, portico outside). **Round Low Wall** is the waist-high
+  version.
+- **Round Tower**: a round room in a 2 × 2 patch of open ground, doorway
+  south, windows round it. **Curved Corridor** sweeps from a south doorway
+  round to a west one.
+- **Balcony** and **Round Balcony**: railed ledges off an upper doorway on
+  their south side; place them a level up beside a room's upper floor.
+- **Wall styles** (Walls & Openings tool): High wall (2 storeys), Towering
+  wall (4 storeys) and Tall fence (3 m bars you can see and shoot through),
+  next to the earlier doors, windows, arches and railings.
+- **Boundary** (Map properties): None, Invisible walls, Solid walls or Tall
+  fence round a rectangle. Choosing a style fits it round everything built,
+  4 m out; "Fit to map" refits; the edges and height can be typed in. An
+  invisible barrier always reaches 60 m up, so nothing is thrown or jumped
+  out. MapMaker shows it as an orange outline, and spawns outside it are an
+  error.

@@ -76,7 +76,9 @@ import {
   TERRAIN_MATERIAL_LABELS,
   TERRAIN_SURFACES,
   applyBrush,
+  fitBounds,
   mapTerrainMesh,
+  type BoundaryStyle,
   newTerrain,
   paintSlopes,
   terrainHeightAt,
@@ -642,7 +644,7 @@ export class EditorApp {
       this.view.setGhost(this.doc, null, null, 0, true);
       return;
     }
-    this.view.setFaceHighlight(this.hoverFace?.box ?? null, this.hoverFace?.normal ?? null);
+    this.view.setFaceHighlight(this.hoverFace?.box ?? null, this.hoverFace?.localNormal ?? null);
     if (this.tool.kind === 'paint') {
       const target = this.paintTarget();
       $('ed-target').textContent = target ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}` : '';
@@ -946,6 +948,44 @@ export class EditorApp {
       for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn, #ed-palette .mat-btn')) b.hidden = !!q && !(b.dataset.search ?? '').includes(q);
     });
     this.setTool({ kind: 'select' });
+  }
+
+  // ---------------------------------------------------------------- boundary
+
+  /** Map properties: walls round the play area, fitted to the map in one click. */
+  private renderBoundsPanel(el: HTMLElement): void {
+    const doc = this.doc;
+    const head = document.createElement('h3');
+    head.textContent = 'Boundary';
+    el.append(head);
+    const b = doc.bounds;
+    const style = document.createElement('select');
+    style.id = 'ed-bounds-style';
+    for (const [v, label] of [['', 'None'], ['invisible', 'Invisible walls'], ['wall', 'Solid walls'], ['fence', 'Tall fence']] as const) style.append(new Option(label, v, false, (b?.style ?? '') === v));
+    const set = (label: string, after: MapDocument['bounds']) => this.run(label, { kind: 'setBounds', before: this.doc.bounds, after });
+    style.addEventListener('change', () => {
+      if (!style.value) return set('Remove boundary', null);
+      const fit = b ?? fitBounds(this.doc, 4);
+      if (!fit) return this.toast('Build something first: the boundary fits round the map', true);
+      set('Set boundary', { min: fit.min, max: fit.max, style: style.value as BoundaryStyle, height: b?.height ?? 8 });
+    });
+    el.append(row('Walls', style));
+    if (b) {
+      const fitBtn = button('Fit to map', () => {
+        const fit = fitBounds(this.doc, 4);
+        if (fit) set('Fit boundary', { ...b, ...fit });
+      });
+      fitBtn.id = 'ed-bounds-fit';
+      const edge = (label: string, v: number, patch: (v: number) => Partial<NonNullable<MapDocument['bounds']>>) => row(label, numberInput(v, 1, (n) => set('Move boundary', { ...b, ...patch(n) })));
+      el.append(
+        edge('West (X)', b.min[0], (v) => ({ min: [Math.min(v, b.max[0] - 4), b.min[1]] })),
+        edge('East (X)', b.max[0], (v) => ({ max: [Math.max(v, b.min[0] + 4), b.max[1]] })),
+        edge('South (Z)', b.min[1], (v) => ({ min: [b.min[0], Math.min(v, b.max[1] - 4)] })),
+        edge('North (Z)', b.max[1], (v) => ({ max: [b.max[0], Math.max(v, b.min[1] + 4)] })),
+      );
+      if (b.style !== 'invisible') el.append(edge('Height (m)', b.height, (v) => ({ height: Math.max(1, Math.min(60, v)) })));
+      el.append(fitBtn, small('Nothing gets past the boundary: players, bots, shots or grenades. The orange outline shows it in MapMaker.'));
+    } else el.append(small('Fence the map in: pick a style and the boundary fits round everything you have built.'));
   }
 
   // ---------------------------------------------------------------- terrain
@@ -1311,6 +1351,7 @@ export class EditorApp {
       for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
       theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
       el.append(row('Theme', theme), small('The theme is the default look; painted surfaces keep their own style.'));
+      this.renderBoundsPanel(el);
       return;
     }
     if (tiles.length === 1 && entities.length === 0) {
@@ -1766,6 +1807,8 @@ function escapeHtml(s: string): string {
 function edgeIcon(style: EdgeStyle): string {
   if (style === 'auto') return '<svg viewBox="0 0 56 56"><rect x="4" y="14" width="48" height="30" fill="none" stroke="#8ea2c0" stroke-dasharray="3 3"/><text x="28" y="34" text-anchor="middle" font-size="12" fill="#8ea2c0">AUTO</text></svg>';
   const pieces = style === 'open' ? [] : edgeSegments(style, 4, 4);
-  const rects = pieces.map(([u0, u1, y0, y1, t]) => `<rect x="${(4 + (u0 + 4) * 6).toFixed(1)}" y="${(48 - y1 * 8.5).toFixed(1)}" width="${((u1 - u0) * 6).toFixed(1)}" height="${((y1 - y0) * 8.5).toFixed(1)}" fill="${t < 0.3 ? '#8ea2c0' : '#d9d6cf'}"/>`);
+  // Tall styles are drawn squeezed so the whole height fits.
+  const k = 34 / Math.max(4, ...pieces.map((p) => p[3]));
+  const rects = pieces.map(([u0, u1, y0, y1, t]) => `<rect x="${(4 + (u0 + 4) * 6).toFixed(1)}" y="${(48 - y1 * k).toFixed(1)}" width="${((u1 - u0) * 6).toFixed(1)}" height="${((y1 - y0) * k).toFixed(1)}" fill="${t < 0.3 ? '#8ea2c0' : '#d9d6cf'}"/>`);
   return `<svg viewBox="0 0 56 56" aria-hidden="true"><rect x="4" y="48" width="48" height="3" fill="#5b616b"/>${rects.join('')}</svg>`;
 }
