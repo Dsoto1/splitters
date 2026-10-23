@@ -93,22 +93,36 @@ function terrainStyle(material: TerrainMaterial): ResolvedStyle {
 }
 
 export class MapStyler {
-  private readonly textures = new Map<string, RawTexture>();
-  private readonly materials = new Map<string, StandardMaterial>();
-  private readonly images = new Map<string, Texture>();
+  private readonly textures: Map<string, RawTexture>;
+  private readonly materials: Map<string, StandardMaterial>;
+  private readonly images: Map<string, Texture>;
   private meshes: Mesh[] = [];
   private terrainMeshes: Mesh[] = [];
 
-  constructor(private readonly scene: Scene) {}
+  /** `share`: reuse another styler's textures and materials (a second mesh set in the same scene, e.g. MapMaker's ghosted levels). */
+  constructor(
+    private readonly scene: Scene,
+    share?: MapStyler,
+  ) {
+    this.textures = share?.textures ?? new Map();
+    this.materials = share?.materials ?? new Map();
+    this.images = share?.images ?? new Map();
+  }
 
   build(doc: MapDocument, boxes: readonly WorldBox[], name = 'map'): Mesh[] {
+    // Trim (baseboards, cornices, frames) is drawn with the structure but never collides.
+    this.buildBoxes(doc, [...boxes, ...buildMapDecor(doc)], name);
+    this.buildTerrain(doc, name);
+    return this.meshes;
+  }
+
+  /** Style exactly these boxes (no trim, no terrain), replacing this styler's previous box meshes. */
+  buildBoxes(doc: MapDocument, boxes: readonly WorldBox[], name = 'map'): Mesh[] {
     for (const m of this.meshes) m.dispose();
     const tiles = new Map<string, TilePlacement>(doc.classicStructure.tiles.map((t) => [t.id, t]));
     const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
-    // Trim (baseboards, cornices, frames) is drawn with the structure but never collides.
-    const all = [...boxes, ...buildMapDecor(doc)];
-    for (let i = 0; i < all.length; i++) {
-      const raw = all[i]!;
+    for (let i = 0; i < boxes.length; i++) {
+      const raw = boxes[i]!;
       if (raw.kind === 'prop' || raw.kind === 'barrier') continue; // drawn by the prop's model / invisible
       // Overlapping pieces would put two faces in exactly the same place, which flicker as
       // they fight for depth: grow each box by its own tiny amount (1-5 mm) so one always wins.
@@ -125,7 +139,6 @@ export class MapStyler {
         g.buf.add(corners, n, 1 / style.material.scale, flat, fn);
       }
     }
-    this.buildTerrain(doc, name);
     this.meshes = [...groups.entries()].map(([key, g]) => {
       const mesh = new Mesh(`${name}_${key}`, this.scene);
       g.buf.toVertexData().applyToMesh(mesh);

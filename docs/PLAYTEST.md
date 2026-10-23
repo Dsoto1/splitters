@@ -162,6 +162,13 @@ Arcade and MapMaker:
 
 ## 10. MapMaker
 
+- [ ] Layout: top-bar workspaces **Build / Entities / Logic / Environment / Test** swap the palette's sub-tabs; tile cards show 3D thumbnails; a hover card by the pointer names the piece (size, theme, connectors). Check it at 1280×720 too.
+- [ ] Tool bar over the view: **Select (V)**, **Place (P)**, **Erase (X)**, **Paint (B)**, **Walls (O)**, **Terrain (T)**, then **Rotate (R)** and **Delete (Del)**. The lit tool and the line under the bar say what the mouse buttons do.
+- [ ] **Erase:** hover anything and it is outlined red and named in the bottom bar; a click deletes it. Try a tile, a prop, a pickup, a door, an NPC squad, a water pool and a rock on a hillside (`canyon` template). Ctrl+Z brings each back in one step. Right-click still erases while placing, even if the mouse wobbles a little.
+- [ ] **Select** (outlined cyan) something and press Delete or Backspace, or the bar's Delete.
+- [ ] **Rotate** (R or the bar button) turns the selection, or the piece you are about to place (a toast shows the angle).
+- [ ] **Level strip** (left of the view): ▲ Up / ▼ Down, Page Up / Page Down, or click a level. A toast says which level you are editing, its grid turns cyan and the other levels are ghosted. Erasing on Level 1 never touches the ground floor; **Show all (H)** shows the levels above too.
+- [ ] **Entities → NPCs**: Trooper, Gunner, Heavy, Squad, Hunter Squad, Reinforced Squad and Allied Militia. Pick one, click the map, change it in the inspector; TEST and fight them (the militia follows you).
 - [ ] **Curves** tab: small / medium / large round corners and arcades, half-round rooms, round tower, curved corridor, balconies. Rotate them and connect them to the regular rooms with no gaps.
 - [ ] Wall styles: **High** (2 storeys), **Tower** (4 storeys), **Fence**.
 - [ ] **Boundary** panel: fit a boundary around the map, change its style (invisible / wall / fence) and height; you can't walk out of it in TEST.

@@ -1,6 +1,6 @@
 # Turrets, sentries and vehicles
 
-Place them from MapMaker's Entities tab (Vehicles & Turrets). Players walk
+Place them from MapMaker's Entities → Vehicles tab. Players walk
 up and press **E** to get in (driver first, then gunner, then passengers) and
 **E** again to get out. The definitions are data in
 `packages/shared/src/sim/mounts.ts`. Models come from Kenney Space Kit and

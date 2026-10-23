@@ -14,6 +14,12 @@ import {
   rotateCommand,
   serializeMap,
   tileAt,
+  NPC_PALETTE,
+  MILITIA_FACTION,
+  PLAYERS_FACTION,
+  mapFactions,
+  placeNpcCommand,
+  relation,
   type EditCommand,
   type MapDocument,
 } from '../src/index.ts';
@@ -187,5 +193,33 @@ describe('painting', () => {
     expect(h.doc.classicStructure.theme).toBe('core.factory');
     while (h.canUndo) h.undo();
     expect(h.doc).toEqual(doc);
+  });
+});
+
+describe('NPC palette', () => {
+  it('every entry places one valid encounter on the right side in one undo step', () => {
+    for (const entry of NPC_PALETTE) {
+      const doc = newMapDocument('NPCs');
+      const r = unwrap(placeNpcCommand(doc, entry.key, [4, 0, 2], 0));
+      const history = new EditHistory(doc);
+      history.execute(r.label, r.command);
+      const e = history.doc.entities.find((x) => x.id === r.id);
+      if (e?.kind !== 'encounter') throw new Error(`${entry.key} placed no encounter`);
+      expect(e.roster).toEqual(entry.roster);
+      expect(e.order).toBe(entry.order);
+      // The map still loads (schema-valid) and the squad's faction exists on the expected side.
+      expect(loadMap(JSON.parse(serializeMap(history.doc))).ok).toBe(true);
+      const factions = mapFactions(history.doc);
+      expect(factions.some((f) => f.id === e.faction)).toBe(true);
+      expect(relation(factions, e.faction, PLAYERS_FACTION)).toBe(entry.ally ? 'ally' : 'enemy');
+      history.undo();
+      expect(history.doc).toBe(doc);
+    }
+  });
+
+  it('allies reuse a friendly faction the map already has', () => {
+    const doc = { ...newMapDocument('NPCs'), factions: [{ id: 'syndicate', name: 'Syndicate', color: '#d04a3a', relations: {} }, MILITIA_FACTION] };
+    const r = unwrap(placeNpcCommand(doc, 'militia', [0, 0, 0], 0));
+    expect(r.command.kind).toBe('addEntities');
   });
 });

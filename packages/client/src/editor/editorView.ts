@@ -7,7 +7,7 @@ import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 // Side-effect import: registers scene.createPickingRay.
-import '@babylonjs/core/Culling/ray';
+import { Ray } from '@babylonjs/core/Culling/ray';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
@@ -60,7 +60,17 @@ export class EditorView {
   private markers = new Map<string, EntityMarker>();
   private readonly models: ModelLibrary;
   private readonly scenario: ScenarioVisuals;
-  private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'hover' | 'spawn' | 'spawnSel' | 'visor' | 'face', StandardMaterial>;
+  private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'hover' | 'spawn' | 'spawnSel' | 'visor' | 'face' | 'erase' | 'pick' | 'eraseFill' | 'pickFill', StandardMaterial>;
+  /** Draws the levels other than the one being edited, ghosted. */
+  private readonly dimStyler: MapStyler;
+  /** Marker root node -> entity id, for picking entities by their meshes. */
+  private readonly nodeEntity = new Map<TransformNode, string>();
+  /** Hover highlight (erase: red, select: cyan) and what it was built for. */
+  private pickBoxes: Mesh[] = [];
+  private mapMeshes: Mesh[] = [];
+  private dimMeshes: Mesh[] = [];
+  private gizmo?: LinesMesh;
+  private pickKey = '';
 
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
@@ -76,6 +86,7 @@ export class EditorView {
     hemi.groundColor = new Color3(0.3, 0.3, 0.32);
     new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene).intensity = 0.5;
     this.styler = new MapStyler(this.scene);
+    this.dimStyler = new MapStyler(this.scene, this.styler);
     this.backdrop = new BackdropVisuals(this.scene, this.styler);
     this.models = new ModelLibrary(this.scene);
     this.foliage = new FoliageVisuals(this.scene, this.models);
@@ -102,6 +113,10 @@ export class EditorView {
       spawnSel: flat('spawnSel', '#ffb03b'),
       visor: flat('visorMat', '#1c1f26'),
       face: flat('faceHi', '#ffb03b', 0.35),
+      erase: flat('eraseHi', '#ff4d4d', 1, true),
+      pick: flat('pickHi', '#00d1ff', 1, true),
+      eraseFill: flat('eraseFill', '#ff4d4d', 0.22),
+      pickFill: flat('pickFill', '#00d1ff', 0.12),
     };
     this.applyCamera();
   }
@@ -169,12 +184,22 @@ export class EditorView {
 
   // ---------- content ----------
 
-  /** Rebuild map meshes. Tiles above the active level are hidden unless showAll. */
+  /**
+   * Rebuild map meshes. Tiles above the active level are hidden unless showAll;
+   * every level but the active one is drawn ghosted, so the floor being edited stands out.
+   */
   setMap(doc: MapDocument, level: number, showAll: boolean): WorldBox[] {
     const visibleTiles = showAll ? doc.classicStructure.tiles : doc.classicStructure.tiles.filter((t) => t.z <= level);
     const visible = { ...doc, classicStructure: { ...doc.classicStructure, tiles: visibleTiles } };
     const boxes = buildMapGeometry(visible);
-    this.styler.build(visible, boxes, 'edmap');
+    const drawn = [...boxes, ...buildMapDecor(visible)];
+    const { levelHeight } = doc.classicStructure;
+    const onLevel = (b: WorldBox) => Math.floor((b.min[1] + 0.3) / levelHeight) === level;
+    this.mapMeshes = this.styler.buildBoxes(visible, drawn.filter(onLevel), 'edmap');
+    this.styler.buildTerrain(doc, 'edmap');
+    this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn.filter((b) => !onLevel(b)), 'edmapdim');
+    for (const m of this.dimMeshes) m.visibility = 0.4;
+    this.applyTileLayer();
     this.backdrop.build(doc, boxes);
     // Regrow plants only when the ground or what stands on it changed.
     const foliageKey = doc.terrain ? `${doc.terrain.heights.length}:${boxes.length}` : '';
@@ -187,7 +212,7 @@ export class EditorView {
     this.setBoundsOutline(doc);
     this.setEntities(doc, level, showAll, new Set());
     // Trim is pickable too, so it can be painted.
-    return [...boxes, ...buildMapDecor(visible)];
+    return drawn;
   }
 
   private boundsLine?: LinesMesh;
@@ -217,9 +242,19 @@ export class EditorView {
       lines.push([new Vector3(v, y, lo), new Vector3(v, y, hi)], [new Vector3(lo, y, v), new Vector3(hi, y, v)]);
     }
     this.grid = CreateLineSystem('grid', { lines }, this.scene);
-    this.grid.color = new Color3(0.45, 0.5, 0.58);
-    this.grid.alpha = 0.6;
+    // The level being edited: its grid in the selection cyan.
+    this.grid.color = Color3.FromHexString('#00d1ff');
+    this.grid.alpha = 0.55;
     this.grid.isPickable = false;
+    this.grid.setEnabled(this.gridVisible);
+  }
+
+  private gridVisible = true;
+
+  /** Top bar Grid: show or hide the level grid. */
+  setGridVisible(on: boolean): void {
+    this.gridVisible = on;
+    this.grid?.setEnabled(on);
   }
 
   /** Spawn markers and pickup previews for entities on visible levels; selected ones are highlighted. */
@@ -257,6 +292,7 @@ export class EditorView {
       const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null, color: e.kind === 'encounter' ? factionColor(e.faction) : e.kind === 'flag' ? this.scenario.teamColor(e.team) : null });
       let m = this.markers.get(e.id);
       if (m && m.key !== key) {
+        this.nodeEntity.delete(m.node);
         m.node.dispose(false, false);
         m.ring?.dispose();
         m = undefined;
@@ -274,6 +310,7 @@ export class EditorView {
                   : { key, node: this.scenario.createNode(e, `ed_${e.id}`) };
         m.key = key;
         this.markers.set(e.id, m);
+        this.nodeEntity.set(m.node, e.id);
       }
       const layer = e.kind === 'prop' || e.kind === 'spawn' || e.kind === 'pickup' ? e.kind : e.kind === 'mount' ? 'prop' : 'logic';
       m.node.setEnabled(!this.hiddenLayers.has(layer));
@@ -299,6 +336,7 @@ export class EditorView {
     }
     for (const [id, m] of this.markers) {
       if (!seen.has(id)) {
+        this.nodeEntity.delete(m.node);
         m.node.dispose(false, false);
         m.ring?.dispose();
         this.markers.delete(id);
@@ -314,6 +352,109 @@ export class EditorView {
     visor.material = this.mat.visor;
     m.isPickable = false;
     return { key: 'spawn', node: m };
+  }
+
+  /** Map layers: the Tiles box hides the built structure (not the terrain). */
+  applyTileLayer(): void {
+    const on = !this.hiddenLayers.has('tile');
+    for (const m of [...this.mapMeshes, ...this.dimMeshes]) m.setEnabled(on);
+  }
+
+  /** Move gizmo at the selection: X red, Y green, Z blue, drawn over everything. Null hides it. */
+  setGizmo(at: Vec3 | null): void {
+    this.gizmo?.dispose();
+    this.gizmo = undefined;
+    if (!at) return;
+    const o = new Vector3(at.x, at.y + 0.05, at.z);
+    const arm = (d: Vector3) => {
+      const tip = o.add(d.scale(3));
+      const side = Math.abs(d.y) > 0.5 ? new Vector3(0.25, 0, 0) : new Vector3(0, 0.25, 0);
+      const back = tip.subtract(d.scale(0.5));
+      return [[o, tip], [tip, back.add(side)], [tip, back.subtract(side)]];
+    };
+    const axes = [new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)];
+    const colours = [new Color4(1, 0.3, 0.3, 1), new Color4(0.3, 1, 0.4, 1), new Color4(0.3, 0.55, 1, 1)];
+    const lines: Vector3[][] = [];
+    const colors: Color4[][] = [];
+    axes.forEach((d, i) => {
+      for (const seg of arm(d)) {
+        lines.push(seg);
+        colors.push([colours[i]!, colours[i]!]);
+      }
+    });
+    this.gizmo = CreateLineSystem('gizmo', { lines, colors }, this.scene);
+    this.gizmo.isPickable = false;
+    this.gizmo.renderingGroupId = 1;
+  }
+
+  /** The entity is drawn right now (on a shown level and in a shown layer). */
+  entityShown(id: string): boolean {
+    return this.markers.get(id)?.node.isEnabled() ?? false;
+  }
+
+  /** Entity under a ray, by its drawn meshes: every visible entity hit, nearest first. */
+  pickEntities(origin: Vec3, dir: Vec3): { id: string; distance: number }[] {
+    const ray = new Ray(new Vector3(origin.x, origin.y, origin.z), new Vector3(dir.x, dir.y, dir.z), 10000);
+    const owner = (mesh: { parent: unknown }): string | undefined => {
+      for (let n = mesh.parent as TransformNode | null; n; n = n.parent as TransformNode | null) {
+        const id = this.nodeEntity.get(n);
+        if (id) return id;
+      }
+      return undefined;
+    };
+    const hits = this.scene.multiPickWithRay(ray, (m) => m.isEnabled() && m.isVisible && (this.nodeEntity.has(m as unknown as TransformNode) || owner(m) !== undefined)) ?? [];
+    const best = new Map<string, number>();
+    for (const h of hits) {
+      if (!h.hit || !h.pickedMesh) continue;
+      const id = this.nodeEntity.get(h.pickedMesh as unknown as TransformNode) ?? owner(h.pickedMesh);
+      if (id && (best.get(id) ?? Infinity) > h.distance) best.set(id, h.distance);
+    }
+    return [...best].map(([id, distance]) => ({ id, distance })).sort((a, b) => a.distance - b.distance);
+  }
+
+  /**
+   * Outline what the pointer would act on: red for the Erase tool, cyan for Select.
+   * Tiles get a box per cell; entities a box round their drawn model.
+   */
+  setPickHighlight(doc: MapDocument, target: { kind: 'tile' | 'entity'; id: string } | null, style: 'erase' | 'pick', revision: number): void {
+    const key = target ? `${target.kind}:${target.id}:${style}:${revision}` : '';
+    if (key === this.pickKey) return;
+    this.pickKey = key;
+    for (const b of this.pickBoxes) b.dispose();
+    this.pickBoxes = [];
+    if (!target) return;
+    const add = (min: Vector3, max: Vector3) => {
+      const size = max.subtract(min);
+      // A wire cage and a see-through fill, so the target reads at any distance.
+      for (const mat of style === 'erase' ? [this.mat.erase, this.mat.eraseFill] : [this.mat.pick, this.mat.pickFill]) {
+        const box = CreateBox('pickHi', { width: Math.max(0.2, size.x), height: Math.max(0.2, size.y), depth: Math.max(0.2, size.z) }, this.scene);
+        box.position = min.add(max).scale(0.5);
+        box.material = mat;
+        box.isPickable = false;
+        this.pickBoxes.push(box);
+      }
+    };
+    const { cellSize, levelHeight } = doc.classicStructure;
+    if (target.kind === 'tile') {
+      const t = doc.classicStructure.tiles.find((x) => x.id === target.id);
+      for (const [x, y, z] of (t && placementCells(t)) ?? []) {
+        const c = new Vector3(x * cellSize, z * levelHeight + levelHeight / 2, y * cellSize);
+        const h = new Vector3(cellSize / 2 - 0.05, levelHeight / 2 - 0.05, cellSize / 2 - 0.05);
+        add(c.subtract(h), c.add(h));
+      }
+      return;
+    }
+    const e = doc.entities.find((x) => x.id === target.id);
+    if (!e) return;
+    const node = this.markers.get(e.id)?.node;
+    const bounds = node?.getHierarchyBoundingVectors(true);
+    if (bounds && Number.isFinite(bounds.min.x) && Number.isFinite(bounds.max.x)) {
+      const pad = new Vector3(0.08, 0.08, 0.08);
+      add(bounds.min.subtract(pad), bounds.max.add(pad));
+    } else {
+      const r = selectionSize(e) / 2;
+      add(new Vector3(e.position[0] - r, e.position[1], e.position[2] - r), new Vector3(e.position[0] + r, e.position[1] + 1.2, e.position[2] + r));
+    }
   }
 
   setHoverCell(doc: MapDocument, cell: [number, number, number] | null): void {

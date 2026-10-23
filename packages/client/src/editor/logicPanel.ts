@@ -33,6 +33,8 @@ export interface LogicPanelHost {
   commitFactions(label: string, after: Faction[]): void;
   /** Select and frame an entity in the 3D view. */
   focusEntity(id: string): void;
+  /** The panel opened or closed (the top bar's workspace tabs follow it). */
+  openChanged?(open: boolean): void;
 }
 
 /** Event a new rule listens for when created from a selected entity. */
@@ -85,6 +87,7 @@ export class LogicPanel {
 
   /** The top bar's Build / Logic tabs follow the panel. */
   private syncTabs(): void {
+    if (this.host.openChanged) return this.host.openChanged(this.isOpen);
     document.getElementById('ed-build-btn')?.classList.toggle('on', !this.isOpen);
     document.getElementById('ed-logic-btn')?.classList.toggle('on', this.isOpen);
   }

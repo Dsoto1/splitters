@@ -39,9 +39,21 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
   - bottom left: your portrait with health and armour bars;
   - bottom right: the weapon with magazine and reserve ammo;
   - centre: a target name and health bar after a hit.
-- **MapMaker** (`src/editor/`): brand bar with Build / Logic tabs and a theme picker; the palette has
-  Tiles / Props / Entities / Paint tabs (search looks across all of them); the right panel opens on
-  Map properties: a plan preview, size, map layers (props, spawns, pickups, logic) and settings.
+- **MapMaker** (`src/editor/`), laid out after the board's build and logic views:
+  - **Top bar:** map name, file actions (icons), undo/redo, the validation pill, the workspace tabs
+    **Build / Entities / Logic / Environment / Test**, then Grid, Snap and Theme, bots, skill and ▶ TEST.
+  - **Palette** (320 px; 300 px at 1400 px and below): the workspace's sub-tabs (Build: Tiles, Advanced,
+    Terrain, Props; Entities: NPCs, Gameplay, Vehicles, Scenario; Environment: Paint, Plants, Terrain),
+    a search box that looks across every pane, and categories of cards three to a row. Tile cards show
+    3D thumbnails rendered from the real pieces (`ModelThumbnails.getTile`), props from their models.
+  - **Right panel:** Map properties (plan preview, name, theme, size, players, mode, map layers, then
+    backdrop, blood and boundary), or the inspector for the selection.
+  - **Over the view:** a tool bar (Select, Place, Erase, Paint, Walls, Terrain, Rotate, Delete; icon, name
+    and key on each, the active tool lit cyan, Place green, Erase red), a one-line hint for the active tool,
+    a level strip (Level N / Ground / Basement, up and down), a hover card by the pointer (name, size,
+    theme, connectors) and an X/Y/Z gizmo on the selection. Select outlines its target in cyan, Erase in
+    red; the level being edited has a cyan grid and the others are drawn ghosted.
+  - Below 1100 px the right panel folds away and the palette narrows.
 - **Options**: crosshair styles (cross, dot, circle, chevron, gap) and colours (`src/game/crosshair.ts`).
 - **Weapon icons** in the kill feed and the character loadout are rendered side-on from the weapons'
   own models (`src/frontend/weaponIcons.ts`, `modelThumbs.ts`); MapMaker prop thumbnails the same way.

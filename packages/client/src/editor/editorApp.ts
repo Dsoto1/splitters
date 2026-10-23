@@ -123,6 +123,8 @@ import {
   type TerrainBrush,
   type TerrainData,
   type TerrainMaterial,
+  NPC_PALETTE,
+  placeNpcCommand,
 } from '@chronosplit/shared';
 import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
@@ -162,7 +164,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -195,6 +197,50 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'water:acid': '<rect x="6" y="24" width="44" height="22" fill="#8aff3a" fill-opacity=".85"/><circle cx="18" cy="32" r="3" fill="#d8ffb0"/><circle cx="34" cy="38" r="2" fill="#d8ffb0"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#d8ffb0" stroke-width="2" fill="none"/>',
   'water:swamp': '<rect x="6" y="24" width="44" height="22" fill="#5a6a32"/><path d="M14 24q2-10 4-14M38 24q-1-9 2-13" stroke="#6fbf4a" stroke-width="2" fill="none"/>',
 };
+
+/** Scenario palette entries shown under Entities → Gameplay (game-mode objects) rather than Scenario. */
+const GAMEPLAY_OBJECTS: ReadonlySet<string> = new Set(['flag', 'hill']);
+
+/** Tools that put something new into the map (the toolbar's Place button lights up for them). */
+const PLACING: ReadonlySet<Tool['kind']> = new Set(['tile', 'spawn', 'pickup', 'scenario', 'prop', 'mount', 'scatter', 'npc']);
+
+/** Display name of a level: Ground, Level 1, Basement… */
+export function levelName(level: number): string {
+  if (level === 0) return 'Ground';
+  if (level > 0) return `Level ${level}`;
+  return level === -1 ? 'Basement' : `Basement ${-level}`;
+}
+
+/** Toolbar icons (24×24, drawn in the button's text colour). */
+const TOOL_ICONS: Record<string, string> = {
+  select: '<path d="M6 3l13 7-5.6 1.6L16.5 19l-2.6 1.2-3.1-7.3L6 17z" fill="currentColor"/>',
+  place: '<rect x="3.5" y="3.5" width="17" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v9M7.5 12h9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+  erase: '<path d="M14.5 4.2l5.3 5.3a1.5 1.5 0 0 1 0 2.1L12 19.4H7.6l-3.4-3.4a1.5 1.5 0 0 1 0-2.1l8.2-8.2a1.5 1.5 0 0 1 2.1 0z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.8 9.8l5.4 5.4" stroke="currentColor" stroke-width="2"/><path d="M12 19.4h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  rotate: '<path d="M19 12a7 7 0 1 1-2.1-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M19.5 3.5v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+  paint: '<path d="M4 15.5l8.5-8.5 5 5-8.5 8.5H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M13.5 6l2.5-2.5 5 5L18.5 11" fill="none" stroke="currentColor" stroke-width="2"/>',
+  edge: '<path d="M3 5h18v14H3zM3 9.7h18M3 14.3h18M9 5v4.7M15 5v4.7M6 9.7v4.6M12 9.7v4.6M18 9.7v4.6M9 14.3V19M15 14.3V19" fill="none" stroke="currentColor" stroke-width="1.7"/>',
+  terrain: '<path d="M2.5 19l6-10 4 6 2.5-3.5 6.5 7.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="17" cy="6" r="2" fill="currentColor"/>',
+  delete: '<path d="M5 7h14M10 7V4.5h4V7M7 7l1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10.5 10.5v6M13.5 10.5v6" stroke="currentColor" stroke-width="1.6"/>',
+};
+
+/** Palette thumbnails for the NPC entries: soldiers drawn with their weapon. */
+function npcIcon(key: string): string {
+  const soldier = (x: number, y: number, s: number, color: string, gun: 'rifle' | 'shotgun' | 'launcher') => {
+    const g = gun === 'rifle' ? `<rect x="${x + 4 * s}" y="${y + 9 * s}" width="${13 * s}" height="${2 * s}" fill="#2a2f3a"/>` : gun === 'shotgun' ? `<rect x="${x + 4 * s}" y="${y + 8.5 * s}" width="${9 * s}" height="${3.4 * s}" rx="${s}" fill="#5a4030"/>` : `<rect x="${x + 2 * s}" y="${y + 7 * s}" width="${13 * s}" height="${5 * s}" rx="${2 * s}" fill="#3a3f48"/>`;
+    return `<circle cx="${x}" cy="${y}" r="${4 * s}" fill="${color}"/><rect x="${x - 5 * s}" y="${y + 4.5 * s}" width="${10 * s}" height="${13 * s}" rx="${3 * s}" fill="${color}"/><rect x="${x - 3 * s}" y="${y - 2 * s}" width="${6 * s}" height="${2 * s}" fill="#1c1f26"/>${g}`;
+  };
+  const red = '#d04a3a';
+  const body: Record<string, string> = {
+    trooper: soldier(24, 14, 1.6, red, 'rifle'),
+    gunner: soldier(24, 14, 1.6, '#c9612f', 'shotgun'),
+    heavy: soldier(24, 13, 1.9, '#9b3428', 'launcher'),
+    squad: soldier(14, 20, 1.1, red, 'rifle') + soldier(40, 20, 1.1, '#c9612f', 'shotgun') + soldier(27, 14, 1.25, red, 'rifle'),
+    hunters: soldier(13, 20, 1.05, red, 'rifle') + soldier(41, 20, 1.05, '#9b3428', 'launcher') + soldier(27, 13, 1.2, red, 'rifle') + '<path d="M44 6l6 6-6 6" stroke="#ffb347" stroke-width="3" fill="none"/>',
+    waves: soldier(17, 20, 1.1, red, 'rifle') + soldier(35, 20, 1.1, red, 'rifle') + '<path d="M44 30a8 8 0 1 0 2-10" stroke="#ffb347" stroke-width="2.5" fill="none"/><path d="M47 14v6h-6" stroke="#ffb347" stroke-width="2.5" fill="none"/>',
+    militia: soldier(16, 20, 1.1, '#5cc77a', 'rifle') + soldier(38, 20, 1.1, '#5cc77a', 'shotgun') + '<path d="M27 4l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V7z" fill="#00d1ff" fill-opacity=".85"/>',
+  };
+  return `<svg viewBox="0 0 56 56"><ellipse cx="28" cy="50" rx="20" ry="4" fill="#000" fill-opacity=".25"/>${body[key] ?? body.trooper}</svg>`;
+}
 
 /** How close (m) a click must be to an entity's position to select it. */
 function pickRadius(e: MapEntity): number {
@@ -260,18 +306,33 @@ export class EditorApp {
   private propYaw = 0;
   private readonly thumbs: ModelThumbnails;
   private showPane: (pane: string) => void = () => {};
+  /** Palette workspace: build, entities or environment. */
+  private paletteWs = 'build';
   private spawnYaw = 0;
   private scenarioYaw = 0;
   readonly logic: LogicPanel;
   private level = 0;
   private showAll = false;
+  /** The last placing tool, so the toolbar's Place button can pick it up again. */
+  private lastPlace: Tool | null = null;
+  /** Style the Walls tool builds with. */
+  private edgeStyle: EdgeStyle = 'window';
+  /** Top bar Snap: 'normal' keeps each tool's own step (50 cm, props 25 cm). */
+  private snapMode: 'fine' | 'normal' | 'coarse' | 'off' = 'normal';
+  private snapStep(normal: number): number {
+    return { fine: 0.25, normal, coarse: 1, off: 0.01 }[this.snapMode];
+  }
+  /** Last pointer position over the view, for the hover card. */
+  private pointerAt: { x: number; y: number } | null = null;
+  /** Pointer ray, for picking what is under the cursor. */
+  private ray: { origin: Vec3; dir: Vec3 } | null = null;
   private selection: Selection = emptySelection();
   private hoverPoint: Vec3 | null = null;
   /** The hover point is on the terrain (nearer than the level plane). */
   private hoverOnTerrain = false;
   private hoverCell: [number, number, number] | null = null;
   private drag: DragState | null = null;
-  private looking: { x: number; y: number; moved: boolean; button: number } | null = null;
+  private looking: { x: number; y: number; moved: boolean; travel: number; button: number } | null = null;
   private keys = new Set<string>();
   private issues: ValidationIssue[] = [];
   private navIssues: ValidationIssue[] = [];
@@ -311,6 +372,7 @@ export class EditorApp {
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
       commitFactions: (label, after) => this.run(label, { kind: 'setFactions', before: this.doc.factions, after }),
       focusEntity: (id) => this.focusEntity(id),
+      openChanged: () => this.syncWorkspaceTabs(),
     });
     this.buildPalette();
     this.bindUi();
@@ -366,7 +428,7 @@ export class EditorApp {
       this.renderedShowAll = this.showAll;
       this.updateSelectionVisuals();
       this.updateCounts();
-      $('ed-level').textContent = String(this.level);
+      this.renderLevels();
     }
     if (docChanged) {
       this.renderedRevision = rev;
@@ -375,6 +437,7 @@ export class EditorApp {
         entities: this.selection.entities.filter((id) => this.doc.entities.some((e) => e.id === id)),
       };
       this.updateSelectionVisuals();
+      this.syncToolbar();
       this.validate();
       this.renderInspector();
       this.updateTopBar();
@@ -413,11 +476,11 @@ export class EditorApp {
 
   private setTool(tool: Tool): void {
     this.tool = tool;
-    if (tool.kind === 'paint') this.showPane('paint');
-    else if (tool.kind === 'edge' || tool.kind === 'tile') this.showPane('tiles');
-    else if (tool.kind === 'prop' || tool.kind === 'scatter') this.showPane('props');
-    else if (tool.kind === 'terrain') this.showPane('terrain');
-    else if (tool.kind === 'spawn' || tool.kind === 'pickup' || tool.kind === 'scenario' || tool.kind === 'mount') this.showPane('entities');
+    if (PLACING.has(tool.kind)) this.lastPlace = tool;
+    if (tool.kind === 'edge') this.edgeStyle = tool.style;
+    const pane: Partial<Record<Tool['kind'], string>> = { npc: 'npcs', paint: 'paint', edge: 'advanced', tile: 'tiles', prop: 'props', scatter: 'plants', terrain: 'terrain', spawn: 'entities', pickup: 'entities', scenario: 'scenario', mount: 'vehicles' };
+    if (tool.kind === 'scenario' && GAMEPLAY_OBJECTS.has(tool.key)) this.showPane('entities');
+    else if (pane[tool.kind]) this.showPane(pane[tool.kind]!);
     if (tool.kind !== 'terrain') {
       this.terrainHover = null;
       this.view.setBrushRing(null, 0, 0, 0);
@@ -436,40 +499,137 @@ export class EditorApp {
           (tool.kind === 'mount' && t === `mount:${tool.model}`) ||
           (tool.kind === 'scatter' && t === `scatter:${tool.set}`) ||
           (tool.kind === 'terrain' && t === `terrain:${this.terrainBrush}`) ||
+          (tool.kind === 'npc' && t === `npc:${tool.key}`) ||
+          (t === 'place' && PLACING.has(tool.kind)) ||
           t === tool.kind,
       );
     }
-    const hints: Record<Tool['kind'], string> = {
-      select: 'Click select · Shift add · Drag move · Del delete · Ctrl+D duplicate · R rotate · F focus',
-      tile: 'Click place · R rotate · Right-click erase · PgUp/PgDn level · Esc select tool',
-      spawn: 'Click place spawn · R turn 45° · Right-click erase · Esc select tool',
-      pickup: 'Click place pickup · Right-click erase · Esc select tool',
-      scenario: 'Click place · Doors, walls and lasers snap to doorways · R turn 90° · Right-click erase · L logic',
-      paint: 'Click a surface to paint · Right-click resets to theme · Alt-click or I picks a style',
-      edge: 'Click a wall or floor edge to build it this way · Right-click resets to auto · O cycles the style',
-      prop: 'Click place (snaps to 25 cm, hold Shift for free) · R turn 15° · Right-click erase · Esc select tool',
-      mount: 'Click place · R turn 15° · Right-click erase · players get in and out with E',
-      terrain: 'Hold left to sculpt or paint · [ ] brush size · Shift inverts raise/lower · T cycles brushes',
-      scatter: 'Click to plant a patch · Alt-click clears that kind of plant · [ ] brush size · Right-click erase one',
+    $('ed-tb-place-what').textContent = this.lastPlace ? this.toolName(this.lastPlace) : '';
+    const hints: Record<Tool['kind'], [string, string]> = {
+      select: ['Select', 'Left-click picks what is outlined in cyan · Shift+click adds · drag moves · Del deletes · R rotates · Ctrl+D duplicates'],
+      erase: ['Erase', 'Left-click deletes what is outlined in red: tiles on this level, props, NPCs, items, doors, traps, blocks, water… · Ctrl+Z brings it back'],
+      tile: ['Place', 'Left-click places the green piece · R rotates it · right-click erases · PgUp/PgDn changes level'],
+      spawn: ['Place', 'Left-click places a player spawn · R turns it 45° · right-click erases'],
+      pickup: ['Place', 'Left-click places the pickup · right-click erases'],
+      scenario: ['Place', 'Left-click places it (doors, walls and lasers snap to doorways) · R turns it 90° · right-click erases · L opens Logic'],
+      npc: ['Place', 'Left-click drops the NPCs here · R turns them · edit soldiers, faction and orders in the inspector · right-click erases'],
+      paint: ['Paint', 'Left-click paints a surface · right-click resets it to the theme · Alt-click or I picks a style up'],
+      edge: ['Walls', 'Left-click a wall or floor edge to build it this way · right-click resets it · O cycles the style'],
+      prop: ['Place', 'Left-click places the prop (25 cm snap, Shift for free) · R turns it 15° · right-click erases'],
+      mount: ['Place', 'Left-click places it · R turns it 15° · right-click erases · players get in and out with E'],
+      terrain: ['Terrain', 'Hold left to sculpt or paint · [ ] brush size · Shift inverts raise/lower · T cycles brushes'],
+      scatter: ['Place', 'Left-click plants a patch · Alt-click clears that kind of plant · [ ] brush size · right-click erases one'],
     };
-    $('ed-hint').textContent = `${hints[tool.kind]} · RMB look · WASD/QE fly`;
+    const [name, hint] = hints[tool.kind];
+    const what = PLACING.has(tool.kind) ? `: ${this.toolName(tool)}` : tool.kind === 'edge' ? `: ${EDGE_STYLE_LABELS[tool.style]}` : '';
+    const hintEl = $('ed-toolhint');
+    hintEl.className = `tool-${tool.kind === 'erase' ? 'erase' : PLACING.has(tool.kind) ? 'place' : 'other'}`;
+    hintEl.innerHTML = `<b>${escapeHtml(name + what)}</b> ${escapeHtml(hint)}`;
+    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · Esc: Select tool';
     this.updateHover();
+  }
+
+  /** What a placing tool puts down, for the toolbar and hints. */
+  private toolName(tool: Tool): string {
+    switch (tool.kind) {
+      case 'tile':
+        return coreCatalog.get(tool.tile)?.displayName ?? tool.tile;
+      case 'spawn':
+        return 'Player Spawn';
+      case 'pickup':
+        return getItem(tool.item)?.displayName ?? 'Pickup';
+      case 'scenario':
+        return SCENARIO_PALETTE.find((x) => x.key === tool.key)?.label ?? 'Object';
+      case 'prop':
+        return getProp(tool.model)?.displayName ?? 'Prop';
+      case 'mount':
+        return MOUNT_DEFS[tool.model].displayName;
+      case 'scatter':
+        return SCATTER_SETS[tool.set].label;
+      case 'npc':
+        return NPC_PALETTE.find((x) => x.key === tool.key)?.label ?? 'NPC';
+      default:
+        return '';
+    }
   }
 
   private setSelection(sel: Selection): void {
     this.selection = sel;
     this.updateSelectionVisuals();
     this.renderInspector();
+    this.syncToolbar();
   }
 
   private updateSelectionVisuals(offset?: [number, number, number], bad = false): void {
     this.view.setOutlines(this.doc, this.selection.tiles, offset, bad);
     this.view.setEntities(this.doc, this.level, this.showAll, new Set(this.selection.entities));
+    this.view.setGizmo(offset ? null : this.selectionCenter());
   }
 
-  private setLevel(level: number): void {
-    this.level = Math.max(-16, Math.min(16, level));
+  private setLevel(level: number, quiet = false): void {
+    const next = Math.max(-16, Math.min(16, level));
+    if (next === this.level) {
+      if (!quiet && next !== level) this.toast(`${levelName(next)} is as far as levels go`);
+      return;
+    }
+    this.level = next;
+    if (!quiet) this.toast(`Now editing ${levelName(next)} (${next * this.doc.classicStructure.levelHeight} m)`);
+    this.renderLevels();
     this.updateHover();
+  }
+
+  /** Levels with something on them: tiles occupying them and entities standing on them. */
+  private levelContents(): Map<number, number> {
+    const counts = new Map<number, number>();
+    const bump = (l: number) => counts.set(l, (counts.get(l) ?? 0) + 1);
+    for (const t of this.doc.classicStructure.tiles) for (const l of new Set((placementCells(t) ?? [[0, 0, t.z]]).map((c) => c[2]))) bump(l);
+    for (const e of this.doc.entities) if (!this.onTerrain(e)) bump(this.entityLevel(e));
+    return counts;
+  }
+
+  /** The level strip: every level in use plus the ones either side of the current one, top first. */
+  private renderLevels(): void {
+    const counts = this.levelContents();
+    const used = [...counts.keys(), this.level - 1, this.level, this.level + 1, 0];
+    const hi = Math.min(16, Math.max(...used));
+    const lo = Math.max(-16, Math.min(...used));
+    const list = $('ed-level-list');
+    list.replaceChildren();
+    for (let l = hi; l >= lo; l--) {
+      const b = document.createElement('button');
+      b.className = `lv-btn${l === this.level ? ' on' : ''}${counts.has(l) ? ' used' : ''}`;
+      b.dataset.level = String(l);
+      b.title = `${levelName(l)}: ${l * this.doc.classicStructure.levelHeight} m · ${counts.get(l) ?? 0} things on it`;
+      b.innerHTML = `<span>${escapeHtml(levelName(l))}</span><small>${counts.get(l) ?? ''}</small>`;
+      b.addEventListener('click', () => this.setLevel(l));
+      list.append(b);
+    }
+    $('ed-level').textContent = levelName(this.level);
+    $<HTMLButtonElement>('ed-level-up').disabled = this.level >= 16;
+    $<HTMLButtonElement>('ed-level-down').disabled = this.level <= -16;
+    $('ed-level-name-bottom').textContent = `${levelName(this.level)} · ${this.level * this.doc.classicStructure.levelHeight} m`;
+  }
+
+  /** The level an entity stands on (things a little below a floor, like props bedded into ground, count as on it). */
+  private entityLevel(e: MapEntity): number {
+    return Math.floor((e.position[1] + 0.5) / this.doc.classicStructure.levelHeight);
+  }
+
+  /** Standing on the terrain rather than a floor: reachable from any level. */
+  private onTerrain(e: MapEntity): boolean {
+    const t = this.doc.terrain;
+    if (!t) return false;
+    const y = terrainHeightAt(t, e.position[0], e.position[2]);
+    return y !== null && Math.abs(e.position[1] - y) < 1;
+  }
+
+  /** Whether the pointer may act on this entity from the current level. */
+  private reachable(e: MapEntity): boolean {
+    if (this.showAll || this.onTerrain(e)) return true;
+    const h = this.doc.classicStructure.levelHeight;
+    const bottom = e.position[1];
+    const top = bottom + ('size' in e ? e.size[1] : e.kind === 'prop' ? (getProp(e.model)?.size[1] ?? 1) * e.scale : 2);
+    return top >= this.level * h - 0.5 && bottom < (this.level + 1) * h - 0.1;
   }
 
   private placeAtHover(): void {
@@ -481,30 +641,30 @@ export class EditorApp {
       const name = coreCatalog.get(this.tool.tile)?.displayName ?? this.tool.tile;
       this.run(`Place ${name}`, { kind: 'addTiles', tiles: [placement] });
     } else if (this.tool.kind === 'spawn' && this.hoverPoint) {
-      const p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), this.level * this.doc.classicStructure.levelHeight, snap(this.hoverPoint.z, 0.5)];
+      const p: [number, number, number] = [snap(this.hoverPoint.x, this.snapStep(0.5)), this.level * this.doc.classicStructure.levelHeight, snap(this.hoverPoint.z, this.snapStep(0.5))];
       const { command, id } = addSpawnCommand(p, this.spawnYaw);
       if (this.run('Place spawn', command)) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'pickup' && this.hoverPoint) {
-      const p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), this.level * this.doc.classicStructure.levelHeight, snap(this.hoverPoint.z, 0.5)];
+      const p: [number, number, number] = [snap(this.hoverPoint.x, this.snapStep(0.5)), this.level * this.doc.classicStructure.levelHeight, snap(this.hoverPoint.z, this.snapStep(0.5))];
       const id = newId('pickup');
       const name = getItem(this.tool.item)?.displayName ?? 'pickup';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'pickup', position: p, item: this.tool.item, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'prop' && this.hoverPoint) {
       const free = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
-      const p: [number, number, number] = [free ? Math.round(this.hoverPoint.x * 100) / 100 : snap(this.hoverPoint.x, 0.25), this.level * this.doc.classicStructure.levelHeight, free ? Math.round(this.hoverPoint.z * 100) / 100 : snap(this.hoverPoint.z, 0.25)];
+      const p: [number, number, number] = [free ? Math.round(this.hoverPoint.x * 100) / 100 : snap(this.hoverPoint.x, this.snapStep(0.25)), this.level * this.doc.classicStructure.levelHeight, free ? Math.round(this.hoverPoint.z * 100) / 100 : snap(this.hoverPoint.z, this.snapStep(0.25))];
       // On the terrain, bedded into the slope rather than at the level's height.
       if (this.hoverOnTerrain && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model: this.tool.model, position: p, yaw: this.propYaw, scale: 1 }) ?? p[1];
       const id = newId('prop');
       const name = getProp(this.tool.model)?.displayName ?? 'prop';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p, model: this.tool.model, yaw: this.propYaw, scale: 1, solid: true, tint: null }] })) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'mount' && this.hoverPoint) {
-      const p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), this.hoverPoint.y, snap(this.hoverPoint.z, 0.5)];
+      const p: [number, number, number] = [snap(this.hoverPoint.x, this.snapStep(0.5)), this.hoverPoint.y, snap(this.hoverPoint.z, this.snapStep(0.5))];
       const id = newId('mount');
       const def = MOUNT_DEFS[this.tool.model];
       if (this.run(`Place ${def.displayName}`, { kind: 'addEntities', entities: [{ id, kind: 'mount', position: p, model: this.tool.model, yaw: this.propYaw, faction: null, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'scenario' && this.hoverPoint) {
       const y = this.level * this.doc.classicStructure.levelHeight;
-      let p: [number, number, number] = [snap(this.hoverPoint.x, 0.5), y, snap(this.hoverPoint.z, 0.5)];
+      let p: [number, number, number] = [snap(this.hoverPoint.x, this.snapStep(0.5)), y, snap(this.hoverPoint.z, this.snapStep(0.5))];
       let yaw = this.scenarioYaw;
       if (snapsToDoorway(this.tool.key)) {
         const d = snapToDoorway(this.hoverPoint.x, this.hoverPoint.z, this.doc.classicStructure.cellSize);
@@ -514,14 +674,31 @@ export class EditorApp {
       const entity = newScenarioEntity(this.tool.key, p, yaw, this.doc);
       const label = SCENARIO_PALETTE.find((x) => x.key === (this.tool as { key: string }).key)?.label ?? 'object';
       if (this.run(`Place ${label}`, { kind: 'addEntities', entities: [entity] })) this.setSelection({ tiles: [], entities: [entity.id] });
+    } else if (this.tool.kind === 'npc' && this.hoverPoint) {
+      const y = this.hoverOnTerrain ? Math.round(this.hoverPoint.y * 100) / 100 : this.level * this.doc.classicStructure.levelHeight;
+      const r = placeNpcCommand(this.doc, this.tool.key, [snap(this.hoverPoint.x, this.snapStep(0.5)), y, snap(this.hoverPoint.z, this.snapStep(0.5))], this.scenarioYaw);
+      if ('error' in r) return this.toast(r.error, true);
+      if (this.run(`Place ${r.label}`, r.command)) this.setSelection({ tiles: [], entities: [r.id] });
     }
   }
 
   private eraseAtHover(): void {
     const hit = this.pick();
-    if (!hit) return;
+    if (!hit) return this.toast(`Nothing to erase here on ${levelName(this.level)}`, true);
     const sel = hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : { tiles: [], entities: [hit.id] };
-    this.run(hit.kind === 'tile' ? 'Erase tile' : `Erase ${this.doc.entities.find((e) => e.id === hit.id)?.kind ?? 'item'}`, deleteCommand(this.doc, sel));
+    const name = this.targetName(hit);
+    if (this.run(`Erase ${name}`, deleteCommand(this.doc, sel))) this.toast(`Erased ${name} · Ctrl+Z to undo`);
+  }
+
+  /** Display name of a pick target. */
+  private targetName(hit: { kind: 'tile' | 'entity'; id: string }): string {
+    if (hit.kind === 'tile') {
+      const t = this.doc.classicStructure.tiles.find((x) => x.id === hit.id);
+      return coreCatalog.get(t?.tile ?? '')?.displayName ?? 'tile';
+    }
+    const e = this.doc.entities.find((x) => x.id === hit.id);
+    if (!e) return 'item';
+    return e.kind === 'spawn' ? 'Player Spawn' : e.kind === 'pickup' ? (getItem(e.item)?.displayName ?? 'pickup') : entityLabel(this.doc, e);
   }
 
   /** Tile and surface slot under the cursor in paint mode. */
@@ -559,29 +736,56 @@ export class EditorApp {
     this.toast(`Picked ${s.material.displayName}${s.tint ? ` tinted ${s.tint}` : ''}`);
   }
 
-  /** What is under the cursor at the active level: spawns win over tiles. */
+  /**
+   * What is under the cursor, for Select and Erase. The nearest thing the
+   * pointer ray actually hits wins: an entity's drawn model, a free block or
+   * water, or a tile's walls and floors. Tiles must be on the current level;
+   * entities on it, or standing on the terrain (any level). Failing a hit, an
+   * entity near the pointer, then the tile in the hovered cell.
+   */
   private pick(): { kind: 'tile' | 'entity'; id: string } | null {
-    const p = this.hoverPoint;
-    if (!p) return null;
-    const { levelHeight } = this.doc.classicStructure;
-    let best: { id: string; d: number } | null = null;
-    for (const e of this.doc.entities) {
-      if (Math.floor((e.position[1] + 0.01) / levelHeight) !== this.level) continue;
-      const d = Math.hypot(e.position[0] - p.x, e.position[2] - p.z);
-      if (d < pickRadius(e) && (!best || d < best.d)) best = { id: e.id, d };
+    const byId = new Map(this.doc.entities.map((e) => [e.id, e]));
+    const ok = (e: MapEntity | undefined): e is MapEntity => !!e && this.reachable(e) && this.view.entityShown(e.id);
+    const tilesHere = new Set(this.doc.classicStructure.tiles.filter((t) => (placementCells(t) ?? []).some((c) => c[2] === this.level)).map((t) => t.id));
+    let best: { kind: 'tile' | 'entity'; id: string; d: number } | null = null;
+    const ray = this.ray;
+    if (ray) {
+      const ent = this.view.pickEntities(ray.origin, ray.dir).find((h) => ok(byId.get(h.id)));
+      if (ent) best = { kind: 'entity', id: ent.id, d: ent.distance };
+      const boxes = this.visibleBoxes.filter((b) => b.kind !== 'barrier' && (tilesHere.has(b.sourceId) || ok(byId.get(b.sourceId))));
+      const hit = raycastBoxes(ray.origin, ray.dir, boxes);
+      // A model a hair behind the box it stands in still counts (crates in a doorway, props on a floor).
+      if (hit && (!best || hit.distance < best.d - 0.05)) best = { kind: tilesHere.has(hit.box.sourceId) ? 'tile' : 'entity', id: hit.box.sourceId, d: hit.distance };
     }
-    if (best) return { kind: 'entity', id: best.id };
+    if (best?.kind === 'entity') return best;
+    const p = this.hoverPoint;
+    if (p) {
+      let near: { id: string; d: number } | null = null;
+      for (const e of this.doc.entities) {
+        if (!ok(e)) continue;
+        const d = Math.hypot(e.position[0] - p.x, e.position[2] - p.z);
+        if (d < pickRadius(e) && (!near || d < near.d)) near = { id: e.id, d };
+      }
+      // Flat markers (zones, squads, pads) on the floor under the pointer win over the floor itself.
+      if (near && (!best || best.kind === 'tile')) return { kind: 'entity', id: near.id };
+    }
+    if (best) return best;
     const cell = this.hoverCell;
-    const tile = cell && tileAt(this.doc, cell[0], cell[1], cell[2]);
+    const tile = cell && tileAt(this.doc, cell[0], cell[1], this.level);
     return tile ? { kind: 'tile', id: tile.id } : null;
   }
 
   private rotate(): void {
     if (this.tool.kind === 'tile') {
       this.rotation = ((this.rotation + 1) % 4) as Rotation;
+      this.toast(`${this.toolName(this.tool)} turned to ${this.rotation * 90}°`);
       this.updateHover();
     } else if (this.tool.kind === 'spawn') {
       this.spawnYaw = normalizeYaw(this.spawnYaw + Math.PI / 4);
+      this.toast(`Facing ${Math.round((this.spawnYaw * 180) / Math.PI)}°`);
+    } else if (this.tool.kind === 'npc') {
+      this.scenarioYaw = normalizeYaw(this.scenarioYaw + Math.PI / 2);
+      this.toast(`Facing ${Math.round((this.scenarioYaw * 180) / Math.PI)}°`);
     } else if (this.tool.kind === 'prop' || this.tool.kind === 'mount') {
       this.propYaw = normalizeYaw(this.propYaw + Math.PI / 12);
       this.toast(`Facing ${Math.round((this.propYaw * 180) / Math.PI)}°`);
@@ -590,6 +794,8 @@ export class EditorApp {
       this.toast(`Facing ${Math.round((this.scenarioYaw * 180) / Math.PI)}°`);
     } else if (this.selection.tiles.length || this.selection.entities.length) {
       this.run('Rotate', rotateCommand(this.doc, this.selection));
+    } else {
+      this.toast('Rotate turns the selection, or the piece you are placing: select something first', true);
     }
   }
 
@@ -604,7 +810,7 @@ export class EditorApp {
   }
 
   private deleteSelection(): void {
-    if (!this.selection.tiles.length && !this.selection.entities.length) return;
+    if (!this.selection.tiles.length && !this.selection.entities.length) return this.toast('Nothing selected: click something with Select (V) first, or use Erase (X)', true);
     const n = this.selection.tiles.length + this.selection.entities.length;
     if (this.run(n > 1 ? `Delete ${n} items` : 'Delete', deleteCommand(this.doc, this.selection))) this.setSelection(emptySelection());
   }
@@ -659,6 +865,8 @@ export class EditorApp {
 
   private updatePointer(clientX: number, clientY: number): void {
     const { cellSize, levelHeight } = this.doc.classicStructure;
+    this.ray = this.view.pointerRay(clientX, clientY);
+    this.pointerAt = { x: clientX, y: clientY };
     this.hoverPoint = this.view.pickPlane(clientX, clientY, this.level * levelHeight);
     const t = this.stroke?.now ?? this.doc.terrain;
     this.terrainHover = null;
@@ -692,6 +900,75 @@ export class EditorApp {
   }
 
   private updateHover(): void {
+    this.updateHoverTarget();
+    this.updateHoverCard();
+  }
+
+  /**
+   * Hover card next to the pointer (reference board): the piece about to be
+   * placed, or what Select / Erase would act on, with its size, theme and connectors.
+   */
+  private updateHoverCard(): void {
+    const tip = $('ed-tip');
+    const at = this.pointerAt;
+    const lines: string[] = [];
+    let title = '';
+    let tone = '';
+    const themeName = coreThemes.get(this.doc.classicStructure.theme)?.displayName ?? this.doc.classicStructure.theme;
+    const tileLines = (def: TileDefinition, rotation: number) => {
+      const span = (i: 0 | 1 | 2) => Math.max(...def.cells.map((c) => c[i])) - Math.min(...def.cells.map((c) => c[i])) + 1;
+      return [`Size: ${span(0)} × ${span(1)} × ${span(2)}`, `Theme: ${themeName}`, `Connectors: ${def.ports.length}`, `Rotation: ${rotation * 90}°`];
+    };
+    if (at && !this.drag && !this.looking) {
+      if (this.tool.kind === 'tile' && this.hoverCell) {
+        const def = coreCatalog.get(this.tool.tile);
+        if (def) {
+          title = def.displayName;
+          lines.push(...tileLines(def, this.rotation), `${levelName(this.level)} · cell ${this.hoverCell[0]}, ${this.hoverCell[1]}`);
+          tone = 'place';
+        }
+      } else if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
+        const hit = this.pick();
+        if (hit) {
+          title = this.targetName(hit);
+          tone = this.tool.kind === 'erase' ? 'erase' : 'pick';
+          if (hit.kind === 'tile') {
+            const t = this.doc.classicStructure.tiles.find((x) => x.id === hit.id);
+            const def = t && coreCatalog.get(t.tile);
+            if (t && def) lines.push(...tileLines(def, t.rotation), levelName(t.z));
+          } else {
+            const e = this.doc.entities.find((x) => x.id === hit.id);
+            if (e?.kind === 'encounter') lines.push(`${e.roster.trooper + e.roster.gunner + e.roster.heavy} soldiers · ${mapFactions(this.doc).find((f) => f.id === e.faction)?.name ?? e.faction}`, `Order: ${e.order}`);
+            else if (e?.kind === 'prop') lines.push(`Prop · scale ${e.scale}×`, (getProp(e.model)?.size ?? [1, 1, 1]).map((v) => (v * e.scale).toFixed(1)).join(' × ') + ' m');
+            if (e) lines.push(`Height ${e.position[1].toFixed(1)} m`);
+          }
+          lines.push(this.tool.kind === 'erase' ? 'Click to erase' : 'Click to select');
+        }
+      }
+    }
+    tip.hidden = !title;
+    if (!title || !at) return;
+    tip.className = `tone-${tone}`;
+    tip.innerHTML = `<b>${escapeHtml(title)}</b>${lines.map((l) => `<span>${escapeHtml(l)}</span>`).join('')}`;
+    // Beside the pointer, kept inside the window.
+    const w = tip.offsetWidth;
+    const h = tip.offsetHeight;
+    const viewRight = $('ed-right').offsetParent ? $('ed-right').getBoundingClientRect().left : window.innerWidth;
+    tip.style.left = `${at.x + 18 + w > viewRight - 8 ? Math.max(0, at.x - 18 - w) : at.x + 18}px`;
+    tip.style.top = `${Math.min(window.innerHeight - h - 44, at.y + 18)}px`;
+  }
+
+  private updateHoverTarget(): void {
+    if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
+      const target = this.drag || this.looking ? null : this.pick();
+      this.view.setPickHighlight(this.doc, target, this.tool.kind === 'erase' ? 'erase' : 'pick', this.history.revision);
+      $('ed-target').textContent = target ? `${this.tool.kind === 'erase' ? 'Erase' : 'Select'}: ${this.targetName(target)}` : '';
+      this.view.setFaceHighlight(null, null);
+      this.view.setHoverCell(this.doc, null);
+      this.view.setGhost(this.doc, null, null, 0, true);
+      return;
+    }
+    this.view.setPickHighlight(this.doc, null, 'pick', 0);
     if (this.tool.kind === 'scatter') {
       const p = this.hoverPoint;
       this.view.setBrushRing(p ? this.doc.terrain : null, p?.x ?? 0, p?.z ?? 0, this.brushRadius, '#6fdc6a');
@@ -740,7 +1017,7 @@ export class EditorApp {
       $('ed-target').textContent = target ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}` : '';
     } else $('ed-target').textContent = '';
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
-    this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' ? cell : null);
+    this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
       const ok = checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok;
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);
@@ -753,7 +1030,7 @@ export class EditorApp {
     const d = this.drag;
     if (!d || !this.hoverPoint || !this.hoverCell) return;
     const cellOffset: [number, number] = [this.hoverCell[0] - d.startCell[0], this.hoverCell[1] - d.startCell[1]];
-    const freeOffset: [number, number] = [snap(this.hoverPoint.x - d.startPoint.x, 0.5), snap(this.hoverPoint.z - d.startPoint.z, 0.5)];
+    const freeOffset: [number, number] = [snap(this.hoverPoint.x - d.startPoint.x, this.snapStep(0.5)), snap(this.hoverPoint.z - d.startPoint.z, this.snapStep(0.5))];
     d.cellOffset = cellOffset;
     d.freeOffset = freeOffset;
     if (this.selection.tiles.length) {
@@ -785,12 +1062,21 @@ export class EditorApp {
       if (this.looking) {
         const dx = e.movementX;
         const dy = e.movementY;
-        if (Math.abs(dx) + Math.abs(dy) > 0) this.looking.moved = true;
+        // A right-click that wobbles a few pixels is still a click (erase), not a look.
+        this.looking.travel += Math.abs(dx) + Math.abs(dy);
+        if (this.looking.travel > 6) this.looking.moved = true;
         if (this.looking.button === 2) this.view.look(dx * LOOK_SENSITIVITY, -dy * LOOK_SENSITIVITY);
         else this.view.fly(0, -dx * 0.05, dy * 0.05);
         return;
       }
-      if (e.target !== canvas() && !this.drag) return;
+      if (e.target !== canvas() && !this.drag) {
+        // Off the view (over a panel): no hover card.
+        if (this.pointerAt) {
+          this.pointerAt = null;
+          $('ed-tip').hidden = true;
+        }
+        return;
+      }
       this.updatePointer(e.clientX, e.clientY);
       if (this.drag) {
         if (Math.hypot(e.clientX - this.drag.pointerX, e.clientY - this.drag.pointerY) > 4) this.drag.moved = true;
@@ -802,7 +1088,7 @@ export class EditorApp {
       (document.activeElement as HTMLElement | null)?.blur?.();
       this.updatePointer(e.clientX, e.clientY);
       if (e.button === 2 || e.button === 1) {
-        this.looking = { x: e.clientX, y: e.clientY, moved: false, button: e.button };
+        this.looking = { x: e.clientX, y: e.clientY, moved: false, travel: 0, button: e.button };
         canvas().setPointerCapture(e.pointerId);
         return;
       }
@@ -811,6 +1097,7 @@ export class EditorApp {
       if (this.tool.kind === 'edge') return this.edgeAtHover(this.tool.style);
       if (this.tool.kind === 'terrain') return this.startStroke(e.shiftKey);
       if (this.tool.kind === 'scatter') return this.scatterAtHover(this.tool.set, e.altKey);
+      if (this.tool.kind === 'erase') return this.eraseAtHover();
       if (this.tool.kind !== 'select') return this.placeAtHover();
       const hit = this.pick();
       if (!hit) {
@@ -840,7 +1127,7 @@ export class EditorApp {
         } else if (wasClick && this.tool.kind === 'edge') {
           this.updatePointer(e.clientX, e.clientY);
           this.edgeAtHover('auto');
-        } else if (wasClick && this.tool.kind !== 'select' && this.tool.kind !== 'terrain') {
+        } else if (wasClick && this.tool.kind !== 'select' && this.tool.kind !== 'terrain' && this.tool.kind !== 'erase') {
           this.updatePointer(e.clientX, e.clientY);
           this.eraseAtHover();
         }
@@ -908,13 +1195,15 @@ export class EditorApp {
           this.setTerrainBrush(TERRAIN_BRUSHES[i]!);
           break;
         }
-        case 'KeyO': {
-          // Wall tool; pressed again, cycle through the styles.
-          const styles = EDGE_STYLES.filter((x) => x !== 'auto');
-          const next = this.tool.kind === 'edge' ? styles[(styles.indexOf(this.tool.style as (typeof styles)[number]) + 1) % styles.length]! : 'window';
-          this.setTool({ kind: 'edge', style: next });
+        case 'KeyO':
+          this.wallsTool(this.tool.kind === 'edge');
           break;
-        }
+        case 'KeyX':
+          this.setTool({ kind: 'erase' });
+          break;
+        case 'KeyP':
+          this.placeTool();
+          break;
         case 'KeyI':
           if (this.tool.kind === 'paint') this.pickStyleAtHover();
           break;
@@ -924,8 +1213,7 @@ export class EditorApp {
           this.setTool({ kind: 'select' });
           break;
         case 'KeyH':
-          this.showAll = !this.showAll;
-          $<HTMLInputElement>('ed-showall').checked = this.showAll;
+          this.setShowAll(!this.showAll);
           break;
         case 'Delete':
         case 'Backspace':
@@ -964,13 +1252,106 @@ export class EditorApp {
 
   // ---------------------------------------------------------------- UI
 
+  /** Walls & Openings tool; `cycle` moves on to the next style. */
+  private wallsTool(cycle: boolean): void {
+    const styles = EDGE_STYLES.filter((x) => x !== 'auto');
+    const now = this.tool.kind === 'edge' ? this.tool.style : this.edgeStyle;
+    const next = cycle ? styles[(styles.indexOf(now as (typeof styles)[number]) + 1) % styles.length]! : now;
+    this.setTool({ kind: 'edge', style: next });
+  }
+
+  /** Pick the last placed piece up again, or point at the palette. */
+  private placeTool(): void {
+    if (this.lastPlace) return this.setTool(this.lastPlace);
+    this.showPane('tiles');
+    this.toast('Pick a piece, prop, item or NPC from the palette on the left to place it');
+  }
+
+  private setShowAll(on: boolean): void {
+    this.showAll = on;
+    $<HTMLInputElement>('ed-showall').checked = on;
+    this.toast(on ? 'Showing every level (the others ghosted)' : `Showing ${levelName(this.level)} and below`);
+  }
+
+  /** The always-visible tool bar over the view: modes, then actions, each with its key. */
+  private buildToolbar(): void {
+    const bar = $('ed-toolbar');
+    const add = (id: string, icon: string, label: string, key: string, title: string, onClick: () => void, tool?: string) => {
+      const b = document.createElement('button');
+      b.id = id;
+      b.className = 'tb-btn';
+      if (tool) b.dataset.tool = tool;
+      b.title = `${title} (${key})`;
+      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${TOOL_ICONS[icon]}</svg><span class="tb-label">${label}</span>${id === 'ed-tb-place' ? '<small id="ed-tb-place-what"></small>' : ''}<kbd>${key}</kbd>`;
+      b.addEventListener('click', () => {
+        onClick();
+        b.blur();
+      });
+      bar.append(b);
+      return b;
+    };
+    add('ed-tb-select', 'select', 'Select', 'V', 'Select, move and edit things', () => this.setTool({ kind: 'select' }), 'select');
+    add('ed-tb-place', 'place', 'Place', 'P', 'Place the last piece you picked from the palette', () => this.placeTool(), 'place');
+    add('ed-tb-erase', 'erase', 'Erase', 'X', 'Erase: click anything to delete it', () => this.setTool({ kind: 'erase' }), 'erase');
+    add('ed-tb-paint', 'paint', 'Paint', 'B', 'Paint surfaces', () => this.setTool({ kind: 'paint' }), 'paint');
+    add('ed-tb-walls', 'edge', 'Walls', 'O', 'Walls & openings: doors, windows, arches on any side', () => this.wallsTool(false), 'edge');
+    add('ed-tb-terrain', 'terrain', 'Terrain', 'T', 'Sculpt and paint the terrain', () => this.setTerrainBrush(this.terrainBrush), 'terrain');
+    const sep = document.createElement('span');
+    sep.className = 'tb-sep';
+    bar.append(sep);
+    add('ed-tb-rotate', 'rotate', 'Rotate', 'R', 'Rotate the selection, or the piece you are placing', () => this.rotate());
+    add('ed-tb-delete', 'delete', 'Delete', 'Del', 'Delete the selection', () => this.deleteSelection());
+    this.syncToolbar();
+  }
+
+  /** Selection actions are only live with something selected. */
+  private syncToolbar(): void {
+    const has = this.selection.tiles.length + this.selection.entities.length > 0;
+    $<HTMLButtonElement>('ed-tb-delete').disabled = !has;
+  }
+
+  /** NPCs tab: lone soldiers and squads, each a preconfigured encounter. */
+  private buildNpcPalette(): void {
+    const box = $('ed-npcs');
+    for (const entry of NPC_PALETTE) {
+      const b = document.createElement('button');
+      b.className = 'tile-btn';
+      b.dataset.tool = `npc:${entry.key}`;
+      b.dataset.search = `${entry.label} ${entry.search}`.toLowerCase();
+      b.title = `${entry.label}: ${entry.blurb}`;
+      b.innerHTML = `${npcIcon(entry.key)}${escapeHtml(entry.label)}`;
+      b.addEventListener('click', () => this.setTool({ kind: 'npc', key: entry.key }));
+      box.append(b);
+    }
+  }
+
+  /**
+   * Top-bar workspaces (reference board): Build, Entities and Environment
+   * pick the palette's sub-tabs; Logic opens the rules panel; Test plays the map.
+   */
+  private setWorkspace(ws: string): void {
+    if (ws === 'test') return this.test();
+    if (ws === 'logic') {
+      if (!this.logic.isOpen) this.logic.open();
+      return;
+    }
+    if (this.logic.isOpen) this.logic.close();
+    const first: Record<string, string> = { build: 'tiles', entities: 'npcs', environment: 'paint' };
+    this.paletteWs = ws;
+    this.showPane(first[ws] ?? 'tiles');
+    if (ws === 'environment' && (this.selection.tiles.length || this.selection.entities.length)) this.setSelection(emptySelection());
+    if (ws === 'environment') document.getElementById('ed-backdrop-head')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+
+  /** Light the top bar's workspace tab: Logic while its panel is open, else the palette's workspace. */
+  private syncWorkspaceTabs(): void {
+    const on = this.logic?.isOpen ? 'logic' : this.paletteWs;
+    for (const b of document.querySelectorAll<HTMLElement>('#ed-modes .tab')) b.classList.toggle('on', b.dataset.ws === on);
+  }
+
   private buildPalette(): void {
-    const tools = $('ed-tools');
-    const selectBtn = button('Select (V)', () => this.setTool({ kind: 'select' }));
-    selectBtn.dataset.tool = 'select';
-    const paintBtn = button('Paint (B)', () => this.setTool({ kind: 'paint' }));
-    paintBtn.dataset.tool = 'paint';
-    tools.append(selectBtn, paintBtn);
+    this.buildToolbar();
+    this.buildNpcPalette();
     this.buildPaintPalette();
 
     const tiles = $('ed-tiles');
@@ -1005,7 +1386,8 @@ export class EditorApp {
       b.dataset.search = `${entry.label} ${entry.search}`.toLowerCase();
       b.innerHTML = `<svg viewBox="0 0 56 56">${SCENARIO_ICONS[entry.key]}</svg>${escapeHtml(entry.label)}`;
       b.addEventListener('click', () => this.setTool({ kind: 'scenario', key: entry.key }));
-      $('ed-scenario').append(b);
+      // Game-mode objects sit with the spawns and pickups; the rest are scenario pieces.
+      $(GAMEPLAY_OBJECTS.has(entry.key) ? 'ed-entities' : 'ed-scenario').append(b);
     }
     for (const item of CORE_ITEMS) {
       const b = document.createElement('button');
@@ -1022,16 +1404,32 @@ export class EditorApp {
     this.buildMountPalette();
     this.buildTerrainPalette();
 
-    // Palette tabs (after the reference board): one group of tools at a time; search looks across all of them.
+    // Palette (after the reference board): the top bar's workspace picks a row of sub-tabs, a sub-tab one pane;
+    // search looks across all of them.
     const tabs = $('ed-pal-tabs');
     const showPane = (pane: string) => {
-      for (const b of tabs.querySelectorAll<HTMLElement>('.tab')) b.classList.toggle('on', b.dataset.pane === pane);
+      // Stay in the current workspace if it has this pane, else move to the first one that does.
+      const all = [...tabs.querySelectorAll<HTMLElement>('.tab')];
+      const btn = all.find((b) => b.dataset.pane === pane && b.dataset.ws === this.paletteWs) ?? all.find((b) => b.dataset.pane === pane);
+      if (!btn) return;
+      this.paletteWs = btn.dataset.ws!;
+      for (const b of all) {
+        b.hidden = b.dataset.ws !== this.paletteWs;
+        b.classList.toggle('on', b === btn);
+      }
       for (const p of document.querySelectorAll<HTMLElement>('#ed-palette .ed-pane')) p.hidden = p.dataset.pane !== pane;
+      this.syncWorkspaceTabs();
     };
     this.showPane = showPane;
     tabs.addEventListener('click', (e) => {
-      const pane = (e.target as HTMLElement).dataset.pane;
-      if (pane) showPane(pane);
+      const b = (e.target as HTMLElement).closest<HTMLElement>('.tab');
+      if (!b?.dataset.pane) return;
+      this.paletteWs = b.dataset.ws!;
+      showPane(b.dataset.pane);
+    });
+    $('ed-modes').addEventListener('click', (e) => {
+      const ws = (e.target as HTMLElement).closest<HTMLElement>('.tab')?.dataset.ws;
+      if (ws) this.setWorkspace(ws);
     });
 
     $<HTMLInputElement>('ed-search').addEventListener('input', (e) => {
@@ -1086,6 +1484,7 @@ export class EditorApp {
   /** What surrounds the map: sky, distant scenery, ground past the border and haze (the theme's unless set). */
   private renderBackdropPanel(el: HTMLElement): void {
     const head = document.createElement('h3');
+    head.id = 'ed-backdrop-head';
     head.textContent = 'Backdrop';
     el.append(head);
     const own = this.doc.backdrop;
@@ -1494,12 +1893,39 @@ export class EditorApp {
     if (this.paintStyle.tint) $<HTMLInputElement>('ed-tint-custom').value = this.paintStyle.tint;
   }
 
+  private thumbObserver?: IntersectionObserver;
+  private readonly thumbLoaders = new WeakMap<Element, () => Promise<string>>();
+
+  /** Render a palette thumbnail the first time its card scrolls into view. */
+  private lazyThumb(slot: HTMLElement, load: () => Promise<string>): void {
+    this.thumbObserver ??= new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        this.thumbObserver!.unobserve(entry.target);
+        const loader = this.thumbLoaders.get(entry.target);
+        void loader?.().then(
+          (src) => {
+            const img = document.createElement('img');
+            img.alt = '';
+            img.src = src;
+            entry.target.replaceChildren(img);
+          },
+          () => undefined,
+        );
+      }
+    });
+    this.thumbLoaders.set(slot, load);
+    this.thumbObserver.observe(slot);
+  }
+
   private paletteButton(def: TileDefinition): HTMLButtonElement {
     const b = document.createElement('button');
     b.className = 'tile-btn';
     b.dataset.tool = `tile:${def.id}`;
     b.dataset.search = `${def.displayName} ${def.id} ${def.category} ${def.blurb ?? ''}`.toLowerCase();
-    b.innerHTML = `${tileIcon(def)}${def.displayName}`;
+    // The top-down icon stands in until the 3D thumbnail of the real piece has rendered.
+    b.innerHTML = `<span class="thumb">${tileIcon(def)}</span><span class="lbl">${escapeHtml(def.displayName)}</span>`;
+    this.lazyThumb(b.querySelector<HTMLElement>('.thumb')!, () => this.thumbs.getTile(def));
     const size = (() => {
       const span = (i: 0 | 1 | 2) => Math.max(...def.cells.map((c) => c[i])) - Math.min(...def.cells.map((c) => c[i])) + 1;
       return `${span(0)} × ${span(1)} × ${span(2)}`;
@@ -1531,12 +1957,10 @@ export class EditorApp {
       this.toast(`Imported ${r.map.metadata.name}`);
     });
     $('ed-test').addEventListener('click', () => this.test());
-    $('ed-logic-btn').addEventListener('click', () => this.logic.toggle());
-    $('ed-build-btn').addEventListener('click', () => this.logic.close());
     $('ed-status').addEventListener('click', () => $('ed-issues').scrollIntoView({ behavior: 'smooth' }));
     $('ed-level-up').addEventListener('click', () => this.setLevel(this.level + 1));
     $('ed-level-down').addEventListener('click', () => this.setLevel(this.level - 1));
-    $<HTMLInputElement>('ed-showall').addEventListener('change', (e) => (this.showAll = (e.target as HTMLInputElement).checked));
+    $<HTMLInputElement>('ed-showall').addEventListener('change', (e) => this.setShowAll((e.target as HTMLInputElement).checked));
 
     const name = $<HTMLInputElement>('ed-name');
     name.addEventListener('change', () => {
@@ -1550,6 +1974,13 @@ export class EditorApp {
     const bots = $<HTMLSelectElement>('ed-bots');
     for (let i = 0; i <= 15; i++) bots.append(new Option(`${i} bot${i === 1 ? "" : "s"}`, String(i), i === 3, i === 3));
 
+    $('ed-grid').addEventListener('click', () => {
+      const on = !$('ed-grid').classList.contains('on');
+      $('ed-grid').classList.toggle('on', on);
+      $('ed-grid').setAttribute('aria-pressed', String(on));
+      this.view.setGridVisible(on);
+    });
+    $<HTMLSelectElement>('ed-snap').addEventListener('change', (e) => (this.snapMode = (e.target as HTMLSelectElement).value as typeof this.snapMode));
     const theme = $<HTMLSelectElement>('ed-theme');
     for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id));
     theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
@@ -1591,35 +2022,25 @@ export class EditorApp {
       plan.height = 148;
       drawMapPlan(plan, doc);
       el.append(plan);
+      const name = document.createElement('input');
+      name.type = 'text';
+      name.id = 'ed-prop-name';
+      name.value = doc.metadata.name;
+      name.maxLength = 80;
+      name.addEventListener('change', () => {
+        const v = name.value.trim().slice(0, 80) || 'Untitled Map';
+        if (v !== this.doc.metadata.name) this.run('Rename map', { kind: 'setMetadata', before: { name: this.doc.metadata.name }, after: { name: v } });
+      });
+      el.append(row('Name', name));
+      const theme = document.createElement('select');
+      for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
+      theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
+      el.append(row('Theme', theme));
       const occupied = doc.classicStructure.tiles.flatMap((t) => placementCells(t) ?? []);
       if (occupied.length) {
         const span = (i: 0 | 1 | 2) => Math.max(...occupied.map((c) => c[i])) - Math.min(...occupied.map((c) => c[i])) + 1;
         el.append(row('Size', text(`${span(0)} × ${span(1)} cells · ${span(2)} level${span(2) === 1 ? '' : 's'}`)));
       }
-      const layersHead = document.createElement('h3');
-      layersHead.textContent = 'Map layers';
-      const layers = document.createElement('div');
-      layers.className = 'ed-layers';
-      for (const [key, label] of [['prop', 'Props'], ['spawn', 'Spawn points'], ['pickup', 'Pickups'], ['logic', 'Logic & traps']] as const) {
-        const box = document.createElement('input');
-        box.type = 'checkbox';
-        box.checked = !this.view.hiddenLayers.has(key);
-        box.addEventListener('change', () => {
-          if (box.checked) this.view.hiddenLayers.delete(key);
-          else this.view.hiddenLayers.add(key);
-          this.updateSelectionVisuals();
-        });
-        const lab = document.createElement('label');
-        lab.append(box, document.createTextNode(label));
-        layers.append(lab);
-      }
-      el.append(layersHead, layers);
-      const desc = document.createElement('textarea');
-      desc.rows = 3;
-      desc.value = doc.metadata.description;
-      desc.placeholder = 'Description';
-      desc.addEventListener('change', () => this.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
-      el.append(desc);
       const rp = doc.metadata.recommendedPlayers;
       const setPlayers = (min: number, max: number) =>
         this.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(32, min)), max: Math.max(1, Math.min(32, max)) } } });
@@ -1642,10 +2063,34 @@ export class EditorApp {
       if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
       if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim') this.renderTeamSetup(el);
-      const theme = document.createElement('select');
-      for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
-      theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
-      el.append(row('Theme', theme), small('The theme is the default look; painted surfaces keep their own style.'));
+      const layersHead = document.createElement('h3');
+      layersHead.id = 'ed-layers-head';
+      layersHead.textContent = 'Map layers';
+      const layers = document.createElement('div');
+      layers.className = 'ed-layers';
+      for (const [key, label] of [['tile', 'Tiles'], ['prop', 'Props'], ['pickup', 'Pickups'], ['logic', 'Logic & traps'], ['spawn', 'Spawn points']] as const) {
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.dataset.layer = key;
+        box.checked = !this.view.hiddenLayers.has(key);
+        box.addEventListener('change', () => {
+          if (box.checked) this.view.hiddenLayers.delete(key);
+          else this.view.hiddenLayers.add(key);
+          this.view.applyTileLayer();
+          this.updateSelectionVisuals();
+        });
+        const lab = document.createElement('label');
+        lab.append(box, document.createTextNode(label));
+        layers.append(lab);
+      }
+      el.append(layersHead, layers);
+      const desc = document.createElement('textarea');
+      desc.rows = 3;
+      desc.value = doc.metadata.description;
+      desc.placeholder = 'Description';
+      desc.addEventListener('change', () => this.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
+      el.append(desc);
+
       this.renderBackdropPanel(el);
       this.renderBloodPanel(el);
       if (doc.terrain && doc.entities.some((e) => e.kind === 'prop')) {
@@ -2041,7 +2486,7 @@ export class EditorApp {
     this.history.reset(doc);
     this.savedRevision = this.history.revision;
     this.selection = emptySelection();
-    this.setLevel(0);
+    this.setLevel(0, true);
     this.view.focus({ x: 0, y: 0, z: 0 });
     this.refresh(true);
     writeAutosave(doc);
