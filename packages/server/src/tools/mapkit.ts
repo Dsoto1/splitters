@@ -43,6 +43,7 @@ import {
   type ScenarioLogic,
   type Side,
   type TerrainData,
+  type ValidationIssue,
 } from '@chronosplit/shared';
 import { NavWorld, initNavigation, validateNavigation } from '@chronosplit/shared/match';
 
@@ -198,11 +199,11 @@ export class MapBuilder {
     return mapTeams(this.doc, count).map((t) => t.id);
   }
 
-  meta(m: { description: string; modes: ('core.deathmatch' | 'core.tdm' | 'core.coop')[]; players: [number, number] }): this {
+  meta(m: { description: string; modes: ('core.deathmatch' | 'core.tdm' | 'core.coop')[]; players: [number, number]; author?: string }): this {
     this.run('Edit map', {
       kind: 'setMetadata',
       before: this.doc.metadata,
-      after: { id: this.id, author: 'ChronoSplit', description: m.description, recommendedPlayers: { min: m.players[0], max: m.players[1] }, supportedModes: m.modes },
+      after: { id: this.id, author: m.author ?? 'ChronoSplit', description: m.description, recommendedPlayers: { min: m.players[0], max: m.players[1] }, supportedModes: m.modes },
     });
     return this;
   }
@@ -214,9 +215,11 @@ export class MapBuilder {
 
   /**
    * Validate (schema, rules and the navmesh: every spawn and pickup reachable)
-   * and write maps/<id>.json. Warnings are printed; errors stop the build.
+   * and write maps/<id>.json (or maps/<dir>/<id>.json). Warnings are printed;
+   * errors stop the build, or with `exitOnError: false` skip the write and are
+   * returned with the other issues.
    */
-  async save(): Promise<void> {
+  async save(o: { dir?: string; exitOnError?: boolean; quiet?: boolean } = {}): Promise<ValidationIssue[]> {
     this.flush();
     // Props on the terrain are bedded into the slope under them (no floating corners).
     const settled = applyCommand(this.doc, settlePropsCommand(this.doc));
@@ -229,10 +232,14 @@ export class MapBuilder {
     physics.free();
     const issues = [...validateMap(loaded.map), ...validateNavigation(loaded.map, nav)];
     nav.destroy();
-    for (const i of issues) console.log(`${this.id}: ${i.severity.padEnd(10)} ${i.code} ${i.message}`);
-    if (issues.some((i) => i.severity === 'error')) process.exit(1);
-    const out = fileURLToPath(new URL(`../../../../maps/${this.id}.json`, import.meta.url));
+    if (!o.quiet) for (const i of issues) console.log(`${this.id}: ${i.severity.padEnd(10)} ${i.code} ${i.message}`);
+    if (issues.some((i) => i.severity === 'error')) {
+      if (o.exitOnError === false) return issues;
+      process.exit(1);
+    }
+    const out = fileURLToPath(new URL(`../../../../maps/${o.dir ? `${o.dir}/` : ''}${this.id}.json`, import.meta.url));
     writeFileSync(out, serializeMap(loaded.map));
-    console.log(`${this.id}: wrote ${out} (${this.doc.classicStructure.tiles.length} tiles, ${this.doc.entities.length} entities, ${issues.length} notes)`);
+    if (!o.quiet) console.log(`${this.id}: wrote ${out} (${this.doc.classicStructure.tiles.length} tiles, ${this.doc.entities.length} entities, ${issues.length} notes)`);
+    return issues;
   }
 }

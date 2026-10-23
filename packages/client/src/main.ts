@@ -45,6 +45,23 @@ const OFFLINE_MAPS = { arena: arenaJson, vault: vaultJson, outpost: outpostJson,
 type OfflineMap = keyof typeof OFFLINE_MAPS;
 /** Every map file shipped in maps/ (loaded up front; they are small). */
 const EXTRA_MAPS = import.meta.glob<unknown>('../../../maps/*.json', { eager: true, import: 'default' });
+/** Maps converted from TimeSplitters MapMaker saves: their own chunk, and their own "Imported" group in the Arcade. */
+const importedMaps = (): Promise<Record<string, unknown>> => import('./importedMaps.ts').then((m) => m.IMPORTED_MAPS);
+
+/** Arcade entries for a set of map files, from each map's own metadata, by name. */
+function arcadeEntries(files: Record<string, unknown>, group?: string): ArcadeMap[] {
+  return Object.entries(files)
+    .flatMap(([path, json]): ArcadeMap[] => {
+      const key = path.replace(/^.*\/|\.json$/g, '');
+      if (key in OFFLINE_MAPS) return [];
+      const r = loadMap(json);
+      if (!r.ok) return [];
+      const modes = r.map.metadata.supportedModes.filter((m): m is GameMode => m === 'core.deathmatch' || m === 'core.tdm' || m === 'core.coop');
+      const blurb = r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? '';
+      return [{ key, map: r.map, blurb, modes: modes.length ? modes : ['core.deathmatch'], bots: Math.max(3, Math.min(11, r.map.metadata.recommendedPlayers.max - 1)), ...(group ? { group } : {}) }];
+    })
+    .sort((a, b) => a.map.metadata.name.localeCompare(b.map.metadata.name));
+}
 
 /** The built-in maps the Arcade offers, with the modes each supports. */
 function arcadeMaps(): ArcadeMap[] {
@@ -52,16 +69,6 @@ function arcadeMaps(): ArcadeMap[] {
     const r = loadMap(OFFLINE_MAPS[key]);
     return r.ok ? [{ key, map: r.map, blurb, modes, bots }] : [];
   };
-  // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata.
-  const extra = Object.entries(EXTRA_MAPS).flatMap(([path, json]): ArcadeMap[] => {
-    const key = path.replace(/^.*\/|\.json$/g, '');
-    if (key in OFFLINE_MAPS) return [];
-    const r = loadMap(json);
-    if (!r.ok) return [];
-    const modes = r.map.metadata.supportedModes.filter((m): m is GameMode => m === 'core.deathmatch' || m === 'core.tdm' || m === 'core.coop');
-    const blurb = r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? '';
-    return [{ key, map: r.map, blurb, modes: modes.length ? modes : ['core.deathmatch'], bots: Math.max(3, Math.min(11, r.map.metadata.recommendedPlayers.max - 1)) }];
-  });
   return [
     ...entry('canyon', 'Outdoor canyon: two bases, boulder fields, hills and a ridge ledge.', ['core.tdm', 'core.deathmatch'], 9),
     ...entry('citadel', 'Castle keep: a two-storey atrium, roof terraces, every weapon.', ['core.deathmatch', 'core.tdm'], 7),
@@ -69,7 +76,8 @@ function arcadeMaps(): ArcadeMap[] {
     ...entry('arena', 'Graybox loop around a pillar hall, with an upper floor.', ['core.deathmatch', 'core.tdm'], 5),
     ...entry('vault', 'Doors, traps and a vault to crack.', ['core.deathmatch'], 3),
     ...entry('outpost', 'Take the outpost from the Syndicate with a militia escort.', ['core.coop'], 2),
-    ...extra.sort((a, b) => a.map.metadata.name.localeCompare(b.map.metadata.name)),
+    // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata.
+    ...arcadeEntries(EXTRA_MAPS),
   ];
 }
 
@@ -114,7 +122,13 @@ class App {
       this.menuScene = new MenuScene(this.engine);
       this.portraits = new PortraitRenderer(this.engine);
       setWeaponIconSource(new ModelThumbnails(this.engine));
-      this.front = new FrontEnd($('menu'), arcadeMaps(), {
+      const maps = arcadeMaps();
+      // Imported maps join the end of the list once their chunk has loaded (the menu does not wait for them).
+      void importedMaps().then(
+        (files) => maps.push(...arcadeEntries(files, 'Imported')),
+        (e: unknown) => console.warn('imported maps failed to load', e),
+      );
+      this.front = new FrontEnd($('menu'), maps, {
         openEditor: () => void this.openEditor(),
         openDesigner: (look) => void this.openDesigner(look),
         playLocal: (map, rules, bots, skill) => this.playLocal(map, rules, bots, skill),
@@ -191,7 +205,7 @@ class App {
   /** Quick start from a URL (?offline=sandgate): the map's own mode and a default bot count. */
   async playOffline(which: string = 'arena'): Promise<void> {
     await this.init();
-    const json = which in OFFLINE_MAPS ? OFFLINE_MAPS[which as OfflineMap] : EXTRA_MAPS[`../../../maps/${which}.json`];
+    const json = which in OFFLINE_MAPS ? OFFLINE_MAPS[which as OfflineMap] : (EXTRA_MAPS[`../../../maps/${which}.json`] ?? (await importedMaps())[`../../../maps/imported/${which}.json`]);
     if (!json) return void this.showMenu(`No map called ${which}`);
     const arena = loadMap(json);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');
