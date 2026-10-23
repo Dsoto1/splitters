@@ -75,6 +75,15 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       else part(CreateSphere(`${name}_g${x}`, { diameter: 0.18, segments: 8 }, scene), mat(scene, THROWABLE_COLORS[fx.throwable] ?? '#5e6a46', fx.throwable === 'frag' ? 0 : 0.35)).position.set(x, 0, z);
     }
     part(CreateCylinder(`${name}_ring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ff7a3d', 0.5)).position.y = -0.3;
+  } else if (fx.kind === 'jetpack') {
+    // Twin tanks on a back plate, with nozzles and a glow underneath.
+    part(CreateBox(`${name}_jpplate`, { width: 0.5, height: 0.55, depth: 0.08 }, scene), mat(scene, '#3a3f48')).position.z = -0.12;
+    for (const x of [-0.13, 0.13]) {
+      part(CreateCylinder(`${name}_jptank${x}`, { diameter: 0.2, height: 0.55, tessellation: 12 }, scene), mat(scene, '#c9ccd2')).position.set(x, 0.02, 0);
+      part(CreateCylinder(`${name}_jpcap${x}`, { diameter: 0.21, height: 0.08, tessellation: 12 }, scene), mat(scene, '#ff7a2a', 0.4)).position.set(x, 0.3, 0);
+      part(CreateCylinder(`${name}_jpnoz${x}`, { diameterTop: 0.1, diameterBottom: 0.16, height: 0.1, tessellation: 10 }, scene), mat(scene, '#2a2d33')).position.set(x, -0.3, 0);
+    }
+    part(CreateCylinder(`${name}_jpglow`, { diameter: 0.6, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ff9a3d', 0.7)).position.y = -0.42;
   } else {
     part(CreateSphere(`${name}_pu`, { diameter: 0.5, segments: 12 }, scene), mat(scene, fx.powerup === 'speed' ? '#36d6ff' : '#c03cff', 0.9));
   }
@@ -104,5 +113,7 @@ export function itemColor(itemId: string): string {
       return '#ffb03b';
     case 'powerup':
       return fx.powerup === 'speed' ? '#36d6ff' : '#c03cff';
+    case 'jetpack':
+      return '#ff9a3d';
   }
 }

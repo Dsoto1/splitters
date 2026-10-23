@@ -1282,6 +1282,17 @@
       "modifications": []
     },
     {
+      "file": "sounds/pickup.jetpack_0.ogg",
+      "sha256": "8c204ca94eb722d3",
+      "bytes": 21442,
+      "source": "kenney-sci-fi-sounds/Audio/doorOpen_001.ogg",
+      "title": "Sci-Fi Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
       "file": "characters/rig.glb",
       "sha256": "b80969a2c2e92913",
       "triangles": 6872,
@@ -6273,6 +6284,1011 @@
       "title": "Nature Kit 2.1",
       "creator": "Kenney",
       "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/castle_tower.glb",
+      "sha256": "f071b9e38f9ea7b2",
+      "triangles": 176,
+      "bytes": 19272,
+      "source": "kenney-castle-kit/tower-square.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/castle_tower_round.glb",
+      "sha256": "5b04fee5fe4d934a",
+      "triangles": 68,
+      "bytes": 12944,
+      "source": "kenney-castle-kit/tower-hexagon-base.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/castle_gate.glb",
+      "sha256": "a9f9017dcc25e9b5",
+      "triangles": 146,
+      "bytes": 16564,
+      "source": "kenney-castle-kit/gate.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/castle_wall.glb",
+      "sha256": "ee8aa62d4bd350b3",
+      "triangles": 178,
+      "bytes": 19260,
+      "source": "kenney-castle-kit/wall.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/castle_wall_door.glb",
+      "sha256": "ac79f084647316a5",
+      "triangles": 500,
+      "bytes": 29768,
+      "source": "kenney-castle-kit/wall-doorway.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/castle_wall_corner.glb",
+      "sha256": "d2c046acdbcd8205",
+      "triangles": 168,
+      "bytes": 18392,
+      "source": "kenney-castle-kit/wall-corner.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/castle_wall_half.glb",
+      "sha256": "96a1400fe89c0463",
+      "triangles": 126,
+      "bytes": 16464,
+      "source": "kenney-castle-kit/wall-half.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/castle_stairs.glb",
+      "sha256": "00dca552db170347",
+      "triangles": 104,
+      "bytes": 14872,
+      "source": "kenney-castle-kit/stairs-stone.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/drawbridge.glb",
+      "sha256": "ebcae7c79355d284",
+      "triangles": 40,
+      "bytes": 11404,
+      "source": "kenney-castle-kit/bridge-draw.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/portcullis.glb",
+      "sha256": "80c821bf3e797baf",
+      "triangles": 190,
+      "bytes": 20952,
+      "source": "kenney-castle-kit/metal-gate.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/catapult.glb",
+      "sha256": "e2e54522de64215d",
+      "triangles": 928,
+      "bytes": 64164,
+      "source": "kenney-castle-kit/siege-catapult.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/ballista.glb",
+      "sha256": "95ae5a774c5d58b9",
+      "triangles": 676,
+      "bytes": 50176,
+      "source": "kenney-castle-kit/siege-ballista.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/battering_ram.glb",
+      "sha256": "287cc42d3e6a7dab",
+      "triangles": 1112,
+      "bytes": 74324,
+      "source": "kenney-castle-kit/siege-ram.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/siege_tower.glb",
+      "sha256": "de0667dc09426329",
+      "triangles": 1598,
+      "bytes": 103940,
+      "source": "kenney-castle-kit/siege-tower.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/trebuchet.glb",
+      "sha256": "dcbb340750bfc850",
+      "triangles": 1326,
+      "bytes": 87108,
+      "source": "kenney-castle-kit/siege-trebuchet.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/catapult_wrecked.glb",
+      "sha256": "a16eac2a8b518796",
+      "triangles": 842,
+      "bytes": 55208,
+      "source": "kenney-castle-kit/siege-catapult-demolished.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/banner_long.glb",
+      "sha256": "8aab7d263330cc9c",
+      "triangles": 68,
+      "bytes": 12636,
+      "source": "kenney-castle-kit/flag-banner-long.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pennant.glb",
+      "sha256": "68a71a7779436372",
+      "triangles": 118,
+      "bytes": 17064,
+      "source": "kenney-castle-kit/flag-pennant.glb",
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/fountain.glb",
+      "sha256": "7b9f9ad898f14967",
+      "triangles": 1628,
+      "bytes": 97896,
+      "source": "kenney-fantasy-town-kit/fountain-round-detail.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/fountain_square.glb",
+      "sha256": "5d46bacf61e84dfa",
+      "triangles": 334,
+      "bytes": 31708,
+      "source": "kenney-fantasy-town-kit/fountain-square-detail.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stall.glb",
+      "sha256": "176d0e30cc9f03e5",
+      "triangles": 270,
+      "bytes": 27076,
+      "source": "kenney-fantasy-town-kit/stall-red.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stall_green.glb",
+      "sha256": "88665da1c7964673",
+      "triangles": 322,
+      "bytes": 29312,
+      "source": "kenney-fantasy-town-kit/stall-green.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stall_bench.glb",
+      "sha256": "58207c29ecd95184",
+      "triangles": 180,
+      "bytes": 21544,
+      "source": "kenney-fantasy-town-kit/stall-bench.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cart.glb",
+      "sha256": "2f7c6b161673144f",
+      "triangles": 416,
+      "bytes": 35252,
+      "source": "kenney-fantasy-town-kit/cart.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cart_high.glb",
+      "sha256": "52930fb02767fc7e",
+      "triangles": 836,
+      "bytes": 56752,
+      "source": "kenney-fantasy-town-kit/cart-high.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/windmill.glb",
+      "sha256": "be2a0104af3621e5",
+      "triangles": 732,
+      "bytes": 57804,
+      "source": "kenney-fantasy-town-kit/windmill.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/watermill.glb",
+      "sha256": "4377aeb6bdf17619",
+      "triangles": 600,
+      "bytes": 43380,
+      "source": "kenney-fantasy-town-kit/watermill.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/water_wheel.glb",
+      "sha256": "b2778bc9ab1d9905",
+      "triangles": 192,
+      "bytes": 22700,
+      "source": "kenney-fantasy-town-kit/wheel.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/lantern_post.glb",
+      "sha256": "c42d524cb876e702",
+      "triangles": 158,
+      "bytes": 21080,
+      "source": "kenney-fantasy-town-kit/lantern.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/banner_red.glb",
+      "sha256": "a4ad02a58c48ae99",
+      "triangles": 98,
+      "bytes": 18588,
+      "source": "kenney-fantasy-town-kit/banner-red.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/banner_green.glb",
+      "sha256": "4e38324019965161",
+      "triangles": 102,
+      "bytes": 18744,
+      "source": "kenney-fantasy-town-kit/banner-green.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hedge_large.glb",
+      "sha256": "2cdc5715fdff50db",
+      "triangles": 90,
+      "bytes": 17988,
+      "source": "kenney-fantasy-town-kit/hedge-large.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hedge.glb",
+      "sha256": "3d09f6ec72d17aed",
+      "triangles": 54,
+      "bytes": 16016,
+      "source": "kenney-fantasy-town-kit/hedge.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hedge_gate.glb",
+      "sha256": "6ca69c5cc7393fea",
+      "triangles": 76,
+      "bytes": 17376,
+      "source": "kenney-fantasy-town-kit/hedge-gate.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/town_fence.glb",
+      "sha256": "4f74c1114a18f574",
+      "triangles": 84,
+      "bytes": 16972,
+      "source": "kenney-fantasy-town-kit/fence.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stone_pillar_town.glb",
+      "sha256": "0472906eeda71301",
+      "triangles": 124,
+      "bytes": 19484,
+      "source": "kenney-fantasy-town-kit/pillar-stone.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/wood_stairs.glb",
+      "sha256": "3fff3de9c1e6c117",
+      "triangles": 568,
+      "bytes": 42176,
+      "source": "kenney-fantasy-town-kit/stairs-wood-handrail.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/awning.glb",
+      "sha256": "8b097dee95bfc509",
+      "triangles": 68,
+      "bytes": 16920,
+      "source": "kenney-fantasy-town-kit/overhang.glb",
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/locomotive.glb",
+      "sha256": "fddc7ee7c5f6674e",
+      "triangles": 1666,
+      "bytes": 103964,
+      "source": "kenney-train-kit/train-locomotive-a.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/diesel.glb",
+      "sha256": "749667b8aeddffa0",
+      "triangles": 1426,
+      "bytes": 87880,
+      "source": "kenney-train-kit/train-diesel-a.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tram.glb",
+      "sha256": "d32a3a7a7cf675eb",
+      "triangles": 1332,
+      "bytes": 84644,
+      "source": "kenney-train-kit/train-tram-classic.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/subway_car.glb",
+      "sha256": "bb425bd73af4c756",
+      "triangles": 1228,
+      "bytes": 79564,
+      "source": "kenney-train-kit/train-electric-subway-a.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/container_car_red.glb",
+      "sha256": "a3fb214c5752a898",
+      "triangles": 926,
+      "bytes": 67320,
+      "source": "kenney-train-kit/train-carriage-container-red.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/container_car_blue.glb",
+      "sha256": "beaaefc85fcd1761",
+      "triangles": 926,
+      "bytes": 67324,
+      "source": "kenney-train-kit/train-carriage-container-blue.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tank_car.glb",
+      "sha256": "8e1b64ac7c9dd374",
+      "triangles": 830,
+      "bytes": 59436,
+      "source": "kenney-train-kit/train-carriage-tank-large.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/coal_car.glb",
+      "sha256": "099b4611a6b6f8eb",
+      "triangles": 868,
+      "bytes": 63076,
+      "source": "kenney-train-kit/train-carriage-coal.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/lumber_car.glb",
+      "sha256": "da62bb0b165fd410",
+      "triangles": 854,
+      "bytes": 62452,
+      "source": "kenney-train-kit/train-carriage-lumber.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/flatbed_car.glb",
+      "sha256": "93154f3600d8018e",
+      "triangles": 754,
+      "bytes": 56020,
+      "source": "kenney-train-kit/train-carriage-flatbed.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rail_track.glb",
+      "sha256": "602eb79abba0cdc3",
+      "triangles": 68,
+      "bytes": 18432,
+      "source": "kenney-train-kit/track-single-detailed.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rail_track_wide.glb",
+      "sha256": "0831d8d13ff20514",
+      "triangles": 124,
+      "bytes": 22328,
+      "source": "kenney-train-kit/track-detailed.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/shelf_boxes.glb",
+      "sha256": "5323d5991efa7e95",
+      "triangles": 240,
+      "bytes": 28032,
+      "source": "kenney-mini-market/shelf-boxes.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/shelf_bags.glb",
+      "sha256": "e6a4f35c23233394",
+      "triangles": 708,
+      "bytes": 37068,
+      "source": "kenney-mini-market/shelf-bags.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/shelf_end.glb",
+      "sha256": "79c4e584898ffb4a",
+      "triangles": 186,
+      "bytes": 24320,
+      "source": "kenney-mini-market/shelf-end.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/freezer.glb",
+      "sha256": "bf00b63c686d1ae4",
+      "triangles": 180,
+      "bytes": 20136,
+      "source": "kenney-mini-market/freezer.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/freezers_upright.glb",
+      "sha256": "583b2044161f7a96",
+      "triangles": 156,
+      "bytes": 18584,
+      "source": "kenney-mini-market/freezers-standing.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/checkout.glb",
+      "sha256": "138311fd1f9c0233",
+      "triangles": 203,
+      "bytes": 21572,
+      "source": "kenney-mini-market/cash-register.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/shopping_cart.glb",
+      "sha256": "95d67c9c13fdc18e",
+      "triangles": 384,
+      "bytes": 30000,
+      "source": "kenney-mini-market/shopping-cart.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/fruit_display.glb",
+      "sha256": "224f01c016a003cf",
+      "triangles": 650,
+      "bytes": 51744,
+      "source": "kenney-mini-market/display-fruit.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bread_display.glb",
+      "sha256": "4e6f39f0bfb82005",
+      "triangles": 362,
+      "bytes": 32892,
+      "source": "kenney-mini-market/display-bread.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bottle_return.glb",
+      "sha256": "0c17de94d1b65938",
+      "triangles": 324,
+      "bytes": 28880,
+      "source": "kenney-mini-market/bottle-return.glb",
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/saw_blade.glb",
+      "sha256": "37234391deb5ce91",
+      "triangles": 128,
+      "bytes": 21080,
+      "source": "kenney-platformer-kit/saw.glb",
+      "title": "Platformer Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/platformer-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/spike_block.glb",
+      "sha256": "71c73b56286584de",
+      "triangles": 116,
+      "bytes": 20316,
+      "source": "kenney-platformer-kit/spike-block.glb",
+      "title": "Platformer Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/platformer-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/conveyor_belt.glb",
+      "sha256": "b5db46b40243c664",
+      "triangles": 364,
+      "bytes": 31192,
+      "source": "kenney-platformer-kit/conveyor-belt.glb",
+      "title": "Platformer Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/platformer-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/metal_crate.glb",
+      "sha256": "062896e70c07b25c",
+      "triangles": 428,
+      "bytes": 39420,
+      "source": "kenney-platformer-kit/crate-strong.glb",
+      "title": "Platformer Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/platformer-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/big_pipe.glb",
+      "sha256": "b85614618c3a3f49",
+      "triangles": 216,
+      "bytes": 23848,
+      "source": "kenney-platformer-kit/pipe.glb",
+      "title": "Platformer Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/platformer-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/spring.glb",
+      "sha256": "fadc781bcc1baa27",
+      "triangles": 356,
+      "bytes": 37640,
+      "source": "kenney-platformer-kit/spring.glb",
+      "title": "Platformer Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/platformer-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/lever_platform.glb",
+      "sha256": "c5e0f54e115c7edd",
+      "triangles": 134,
+      "bytes": 24136,
+      "source": "kenney-platformer-kit/lever.glb",
+      "title": "Platformer Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/platformer-kit",
       "license": "CC0-1.0",
       "modifications": [
         "centred, stood on the ground and scaled to metres",

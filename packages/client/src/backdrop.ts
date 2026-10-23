@@ -134,6 +134,13 @@ export class BackdropVisuals {
       const b = ((i + 1) % per.length) * n;
       for (let r = 0; r < n - 1; r++) indices.push(a + r, a + r + 1, b + r + 1, a + r, b + r + 1, b + r);
     }
+    // Without terrain, the ground also runs under the map itself (just below the lowest floor), so gaps between tiles show ground, not sky.
+    if (!t && !water) {
+      const c = positions.length / 3;
+      positions.push(area.centre[0], area.floor - 0.05, area.centre[1]);
+      uvs.push(area.centre[0] / scale, area.centre[1] / scale);
+      for (let i = 0; i < per.length; i++) indices.push(c, i * n, ((i + 1) % per.length) * n);
+    }
     const mesh = new Mesh('backdrop_ground', this.scene);
     const vd = new VertexData();
     vd.positions = positions;

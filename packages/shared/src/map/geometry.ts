@@ -24,6 +24,8 @@ export interface WorldBox {
    * Curved walls, arches and balconies are built from turned boxes.
    */
   yaw?: number;
+  /** Material for every face (free blocks), instead of the theme's. */
+  surface?: { material: string; tint: string | null };
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -319,6 +321,33 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   return out;
 }
 
+/**
+ * Free blocks as world boxes. Solid blocks are level geometry; the others
+ * (breakable, crumble, trapdoor) belong to the scenario runtime, which turns
+ * their colliders on and off (ask for them with `dynamic`).
+ */
+export function blockBoxes(map: MapDocument, dynamic = false): WorldBox[] {
+  const out: WorldBox[] = [];
+  for (const e of map.entities) {
+    if (e.kind !== 'block' || (e.behaviour !== 'solid') !== dynamic) continue;
+    out.push(blockBox(e));
+  }
+  return out;
+}
+
+export function blockBox(e: Extract<MapEntity, { kind: 'block' }>): WorldBox {
+  const [x, y, z] = e.position;
+  const [w, h, d] = e.size;
+  return {
+    min: [x - w / 2, y, z - d / 2],
+    max: [x + w / 2, y + h, z + d / 2],
+    kind: 'floor',
+    sourceId: e.id,
+    ...(e.yaw ? { yaw: e.yaw } : {}),
+    ...(e.material ? { surface: { material: e.material, tint: e.tint } } : {}),
+  };
+}
+
 /** The terrain's collision mesh, if the map has terrain. */
 export function mapTerrainMesh(map: MapDocument): { positions: Float32Array; indices: Uint32Array } | null {
   return map.terrain ? terrainTriangles(map.terrain) : null;
@@ -376,6 +405,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     return boxes;
   }
   boxes.push(...propBoxes(map));
+  boxes.push(...blockBoxes(map));
   if (map.terrain) boxes.push(...terrainBoundary(map.terrain));
   if (map.bounds) {
     let floorY = Infinity;

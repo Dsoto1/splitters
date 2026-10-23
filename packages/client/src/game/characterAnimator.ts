@@ -313,11 +313,11 @@ export class CharacterAnimator {
       const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
       const down = new Vector3(0, -1, 0);
       if (grip.style === 'long') {
-        solveArm(space, arms.r, point(gripped.pos, gripped.rot, grip.grip), pos(arms.r.upper).add(outward.scale(0.35)).add(down.scale(0.3)), w);
+        solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, grip.grip), scale), pos(arms.r.upper).add(outward.scale(0.35)).add(down.scale(0.3)), w);
         closeHand(space, arms.r, w);
       } else closeHand(space, arms.r, w);
       if (grip.support) {
-        solveArm(space, arms.l, point(gripped.pos, gripped.rot, grip.support), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
+        solveArm(space, arms.l, palmOnGrip(arms.l, point(gripped.pos, gripped.rot, grip.support), scale), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
         closeHand(space, arms.l, w * 0.7);
       }
     }
@@ -358,10 +358,10 @@ export class CharacterAnimator {
     const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
     const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
     const w = this.ik;
-    solveArm(space, arms.r, point(grip.grip), pos(arms.r.upper).add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), w);
+    solveArm(space, arms.r, palmOnGrip(arms.r, point(grip.grip), scale), pos(arms.r.upper).add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), w);
     closeHand(space, arms.r, w);
     if (grip.support) {
-      solveArm(space, arms.l, point(grip.support), pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
+      solveArm(space, arms.l, palmOnGrip(arms.l, point(grip.support), scale), pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
       closeHand(space, arms.l, w * 0.7);
     }
   }
@@ -420,6 +420,25 @@ const refreshArm = (arm: Arm) => {
   arm.lower.computeWorldMatrix(true);
   arm.hand.computeWorldMatrix(true);
 };
+
+/** Half the thickness of a gun's grip (m): the palm rests this far from the grip's centre line, so closed fingers wrap round it. */
+const GRIP_RADIUS = 0.034;
+
+/** Where to put a palm so the grip point sits inside the closed hand rather than in the palm itself. */
+function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number): Vector3 {
+  return gripPoint.subtract(palmSideWorld(arm).scale(GRIP_RADIUS * scale));
+}
+
+/** Unit vector out of the palm (the side the fingers close toward), in world space. */
+function palmSideWorld(arm: Arm): Vector3 {
+  for (const n of [arm.hand, arm.knuckle, arm.index, arm.pinky, arm.thumb]) n.computeWorldMatrix(true);
+  const wrist = arm.hand.getAbsolutePosition();
+  const forward = arm.knuckle.getAbsolutePosition().subtract(wrist).normalize();
+  const across = arm.index.getAbsolutePosition().subtract(arm.pinky.getAbsolutePosition()).normalize();
+  const towardThumb = arm.thumb.getAbsolutePosition().subtract(wrist);
+  const side = towardThumb.subtract(forward.scale(Vector3.Dot(towardThumb, forward))).subtract(across.scale(Vector3.Dot(towardThumb, across)));
+  return side.lengthSquared() > 1e-10 ? side.normalize() : Vector3.Zero();
+}
 
 /** World position of a hand's palm centre. */
 function palmWorld(arm: Arm): Vector3 {

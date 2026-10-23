@@ -15,6 +15,9 @@ const HAZARD_DEATHS: Record<string, string> = {
   'core.trap_laser': 'was sliced by a laser',
   'core.barrel': 'was caught in a barrel blast',
   'core.fall': 'fell',
+  'core.lava': 'melted in lava',
+  'core.acid': 'dissolved in acid',
+  'core.drown': 'drowned',
 };
 const weaponLabel = (id: string) => CORE_WEAPONS[id]?.displayName ?? (id === 'core.barrel' ? 'Barrel' : '✕');
 
@@ -267,11 +270,17 @@ export class Hud {
     el.style.boxShadow = color ? `inset 0 0 120px 30px ${color}88` : 'none';
   }
 
-  setPowerups(speedSeconds: number, damageSeconds: number): void {
+  setPowerups(speedSeconds: number, damageSeconds: number, jetFuel: number | null = null): void {
     const parts: string[] = [];
+    // Jetpack fuel as a little gauge: ten blocks.
+    if (jetFuel !== null) {
+      const n = Math.round(jetFuel * 10);
+      parts.push(`<span style="color:#ffa040">JETPACK ${'▮'.repeat(n)}<span style="opacity:.3">${'▮'.repeat(10 - n)}</span></span>`);
+    }
     if (damageSeconds > 0) parts.push(`<span style="color:#d77bff">DOUBLE DAMAGE ${Math.ceil(damageSeconds)}</span>`);
     if (speedSeconds > 0) parts.push(`<span style="color:#5fe0ff">SPEED ${Math.ceil(speedSeconds)}</span>`);
-    this.powerups.innerHTML = parts.join('');
+    const html = parts.join('');
+    if (html !== this.powerups.innerHTML) this.powerups.innerHTML = html;
   }
 
   pickup(text: string): void {

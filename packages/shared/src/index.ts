@@ -12,6 +12,7 @@ export * from './map/validate.ts';
 export * from './sim/constants.ts';
 export * from './sim/physics.ts';
 export * from './sim/movement.ts';
+export * from './sim/liquids.ts';
 export * from './sim/weapons.ts';
 export * from './sim/mounts.ts';
 export * from './sim/items.ts';

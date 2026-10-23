@@ -1,7 +1,7 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { BotBrain, type CombatantView, type PickupView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
-import { buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
+import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
 import { getMountDef, mountToWorld, type MountDef, type SeatDef, type SeatRole } from './mounts.ts';
@@ -11,6 +11,8 @@ import {
   POWERUP_SPEED_BIT,
   STATUS_BURN,
   STATUS_CHILL,
+  FX_JET,
+  FX_SWIM,
   STATUS_FROZEN,
   STATUS_POISON,
   STATUS_SLOW,
@@ -30,6 +32,7 @@ import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
 import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_THROW, BUTTON_USE, applyPads, mapPads, padLandings, sanitizeInput, stepMovement, type JumpPad, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
+import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
@@ -138,6 +141,10 @@ export interface Combatant {
   bloom: number;
   /** Status effects (ticks left; chill builds 0..1 into a freeze), and who caused them (kill credit). */
   burnTicks: number;
+  /** Jetpack fuel units (see JET), or null without a jetpack. */
+  jetFuel: number | null;
+  /** Ticks spent with your head under water (drowning starts after BREATH_SECONDS). */
+  breath: number;
   poisonTicks: number;
   slowTicks: number;
   chill: number;
@@ -234,6 +241,7 @@ export class Match {
   private projectiles: Projectile[] = [];
   private zones: Zone[] = [];
   private readonly pads: JumpPad[];
+  private readonly liquids: LiquidBox[];
   private readonly mounts: MountRt[] = [];
   /** Collider handle -> mount, so shots and blasts can hurt vehicles. */
   private readonly mountBodies = new Map<number, MountRt>();
@@ -253,7 +261,7 @@ export class Match {
     this.killY = mapKillY(this.geometry, map);
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map));
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true)], mapTerrainMesh(map), padLandings(mapPads(map.entities), this.physics));
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), padLandings(mapPads(map.entities), this.physics));
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -271,6 +279,7 @@ export class Match {
       if (def) this.addMount(index, def, { x: e.position[0], y: e.position[1], z: e.position[2] }, e.yaw, e.faction, e.respawnSeconds);
     });
     this.pads = mapPads(map.entities);
+    this.liquids = mapLiquids(map.entities);
     this.phaseEndTick = this.roundEndTick();
     const match = this;
     this.scenario = new Scenario(map, this.physics, {
@@ -458,6 +467,8 @@ export class Match {
       burstTimer: 0,
       bloom: 0,
       burnTicks: 0,
+      jetFuel: null,
+      breath: 0,
       poisonTicks: 0,
       slowTicks: 0,
       chill: 0,
@@ -651,7 +662,10 @@ export class Match {
           m.aimYaw = c.yaw;
           m.aimPitch = c.pitch;
         }
-      } else c.move = applyPads(this.pads, stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos)));
+      } else {
+        c.move = applyPads(this.pads, stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn }));
+        if (c.jetFuel !== null) c.jetFuel = stepJetFuel(c.jetFuel, !!c.move.jet);
+      }
       if (c.fireCooldown > 0) c.fireCooldown--;
       if (c.throwCooldown > 0) c.throwCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
@@ -1410,6 +1424,17 @@ export class Match {
     }
   }
 
+  /** Lava and acid burn while you stand in them; staying under water too long drowns you. */
+  private stepLiquid(c: Combatant): void {
+    if (!this.liquids.length) return;
+    const p = c.move.pos;
+    const feet = liquidAt(this.liquids, { x: p.x, y: p.y + 0.1, z: p.z });
+    if (feet && LIQUID_SPECS[feet.liquid].dps > 0) this.damage(c, LIQUID_SPECS[feet.liquid].dps / TICK_RATE, null, `core.${feet.liquid}`);
+    const head = liquidAt(this.liquids, { x: p.x, y: p.y + PLAYER.eyeHeight, z: p.z });
+    c.breath = head ? c.breath + 1 : 0;
+    if (c.alive && c.breath > BREATH_SECONDS * TICK_RATE) this.damage(c, 10 / TICK_RATE, null, 'core.drown');
+  }
+
   /** Damage over time, slows wearing off, chill thawing. */
   private stepStatuses(): void {
     for (const c of this.actors()) {
@@ -1423,6 +1448,7 @@ export class Match {
         c.poisonTicks--;
         this.damage(c, POISON_DPS / TICK_RATE, by, c.statusWeapon);
       }
+      if (c.alive) this.stepLiquid(c);
       if (c.slowTicks > 0) c.slowTicks--;
       if (c.frozenTicks > 0) c.frozenTicks--;
       else if (c.chill > 0) c.chill = Math.max(0, c.chill - 0.45 / TICK_RATE);
@@ -1564,6 +1590,10 @@ export class Match {
         if (def.slot > (weaponByCode(c.current)?.slot ?? 0)) this.switchTo(c, weaponCode(def));
         return true;
       }
+      case 'jetpack':
+        if (c.jetFuel === JET.max) return false;
+        c.jetFuel = JET.max;
+        return true;
       case 'powerup':
         if (e.powerup === 'speed') c.speedTicks = e.seconds * TICK_RATE;
         else c.damageTicks = e.seconds * TICK_RATE;
@@ -1602,6 +1632,8 @@ export class Match {
     c.armor = 0;
     c.alive = true;
     c.burnTicks = c.poisonTicks = c.slowTicks = c.frozenTicks = 0;
+    c.jetFuel = null;
+    c.breath = 0;
     c.chill = c.bloom = c.windup = c.burstLeft = 0;
     c.semiLatch = false;
     c.weapons = new Map();
@@ -1707,6 +1739,7 @@ export class Match {
       rs: c.raiseTicks,
       sp: c.speedTicks,
       dm: c.damageTicks,
+      ...(c.jetFuel !== null ? { jp: c.jetFuel } : {}),
     };
   }
 
@@ -1853,7 +1886,7 @@ const inZone = (z: Zone, feet: Vec3): boolean => zoneContains(z.kind, z.pos, z.r
 
 /** Status bits for snapshots (STATUS_*). */
 function statusBits(c: Combatant): number {
-  return (c.burnTicks > 0 ? STATUS_BURN : 0) | (c.poisonTicks > 0 ? STATUS_POISON : 0) | (c.slowTicks > 0 ? STATUS_SLOW : 0) | (c.frozenTicks > 0 ? STATUS_FROZEN : 0) | (c.chill > 0.05 ? STATUS_CHILL : 0);
+  return (c.move.jet ? FX_JET : 0) | (c.move.swim ? FX_SWIM : 0) | (c.burnTicks > 0 ? STATUS_BURN : 0) | (c.poisonTicks > 0 ? STATUS_POISON : 0) | (c.slowTicks > 0 ? STATUS_SLOW : 0) | (c.frozenTicks > 0 ? STATUS_FROZEN : 0) | (c.chill > 0.05 ? STATUS_CHILL : 0);
 }
 
 function altTrigger(def: WeaponDefinition, alt: AltFire): Trigger {

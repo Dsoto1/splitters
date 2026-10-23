@@ -102,8 +102,9 @@ for (const sx of [-8, 8]) {
   const d = Math.sign(sx);
   // Plaza cover and spire dressing.
   m.prop('barrier', [X - d * 10, 0, -3]).prop('barrier', [X - d * 10, 0, 3]).prop('cargo_crate', [X - d * 7, 0, 9], 0.4);
-  m.prop('flag', [X - d * 2.5, 12, -11], d > 0 ? -P : P, 1, false).prop('screen_panel', [X, 4, 3], Math.PI).prop('computer_bank', [X + d * 2.2, 0, 2.5], -d * P);
-  m.prop('holo_table', [X, 8, -1]).prop('space_chair', [X - d * 2, 4, 2]).prop('container_wide', [X + d * 2.5, 0, -6]);
+  // Spire furniture stands against the outer wall, clear of the stairwell doorways (north and south).
+  m.prop('flag', [X - d * 2.5, 12, -11], d > 0 ? -P : P, 1, false).prop('screen_panel', [X + d * 3, 4, 0], -d * P).prop('computer_bank', [X + d * 2.2, 0, 2.5], -d * P);
+  m.prop('holo_table', [X + d * 2.4, 8, 0]).prop('space_chair', [X + d * 1.6, 4, 1.6]).prop('container_wide', [X + d * 2.5, 0, -6]);
 }
 
 m.meta({

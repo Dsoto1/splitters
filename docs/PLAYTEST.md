@@ -58,6 +58,7 @@ distinct, reloads (or overheats), and that the recoil feels right.
 - [ ] `core.goo_gun`: goo splats that slow anyone standing in them. `core.flare_gun`: flares stick where they land and set fires.
 - [ ] `core.oil_slicker`: oil slicks you slide on; its right-click igniter (or `core.flamethrower` / `core.flare_gun`) sets the oil alight.
 - [ ] `core.swarm`: homing rockets. `core.singularity`: pulls players in.
+- [ ] Pistols: hands wrap round the grip (no fingers through the slide), in first person and on other players.
 - [ ] Shotguns: `core.sawed_off`, `core.auto_shotgun`. Pistols: `core.hand_cannon` (big kick), `core.gilded_pistol`, `core.machine_pistol`.
 - [ ] Status effects show as a tint on screen: burning, poisoned, slowed, frozen.
 - [ ] Grenades (G): sticky, incendiary, toxic and vortex grenades from pickups.
@@ -69,24 +70,34 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 
 - [ ] `canyon` (Rockfall Canyon): the west ledge, the stairs up to each base roof, the ruins on the east side.
 - [ ] `skyward`: jump pads throw you up to the next platform and you land on it.
+- [ ] `sky_islands`: see section 4.
 - [ ] `ridge_camp`, `twin_spires`, `lantern_quarter`, `frost_basin`, `felicity_yard`, `jungle_steps`,
       `reactor`, `gallows_yard`, `bottling`, `step_temple`, `silo_complex`.
 - [ ] Bots move around each map and don't stand stuck against walls.
 
-## 4. Scenery
+## 4. Set pieces (`?offline=sky_islands`)
+
+- [ ] Cross a crumbling stepping-stone bridge: each stone shakes, then drops; it comes back a few seconds later.
+- [ ] Step on a trapdoor over the lava (west island): it swings away and you fall in; lava hurts fast; climb the steps in the corner to get out.
+- [ ] Swim in the centre pond: you sink slowly, hold jump to rise, jump at the surface to climb out; the view goes blue under water; stay under 15 s and you start drowning.
+- [ ] Grab a jetpack (north or south island): hold jump in the air to fly; the HUD gauge drains and refills; others see your flame.
+- [ ] Shoot a breakable plank block apart; it comes back later.
+- [ ] Ride the jump pad on the centre island up to the sky platform.
+
+## 5. Scenery
 
 - [ ] Look past the border on a few maps: a photo sky, ground carrying on, distant scenery fading into haze (mesas on `canyon`/`sandgate`, snowy peaks on `frost_basin`, mountains on `bottling`, a city on `reactor`/`lantern_quarter`, jungle round `step_temple`, a starfield on `skyward`).
 - [ ] Sunset, dusk and night maps are lit to match (warm and low, or dim and blue).
 - [ ] Grass and flowers grow on the canyon floor; they don't poke through floors, and never hide a crouching player.
 - [ ] Frame rate stays smooth when you look across a grassy field (F3 shows it).
 
-## 5. Teams (Arcade)
+## 6. Teams (Arcade)
 
 - [ ] Arcade → pick a map → set 3 or more team rows with different sizes (try 2,2,2,2,2,2,12).
 - [ ] The score bar and Tab scoreboard show every team in its colour.
 - [ ] Teams are filled to the sizes you set; teammates don't take damage from you (if friendly fire is off).
 
-## 6. MapMaker
+## 7. MapMaker
 
 - [ ] **Curves** tab: small / medium / large round corners and arcades, half-round rooms, round tower, curved corridor, balconies. Rotate them and connect them to the regular rooms with no gaps.
 - [ ] Wall styles: **High** (2 storeys), **Tower** (4 storeys), **Fence**.
@@ -96,6 +107,8 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] Terrain tab: paint grass/dirt/stone, raise and lower hills, undo a stroke.
 - [ ] Terrain tab → Plants: paint Overgrown and Bare patches; **Plants follow the ground** resets them.
 - [ ] Props tab → Scatter brush: plant a pine forest, bushes and flowers; Alt-click clears; one undo per click.
+- [ ] Entities tab: place a Sky Block high up, a Crumbling Floor, a Trapdoor, Water and Lava; resize them in the inspector; TEST them.
+- [ ] Props tab: the new Castle & Siege, Town & Market, Trains & Rail, Shop and Industrial sets.
 - [ ] Map properties → Backdrop: switch sky, scenery, ground beyond and haze; the view updates at once.
 - [ ] Open one of the new maps as a template, change something, TEST, return with F5.
 

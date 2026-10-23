@@ -12,7 +12,9 @@ import { fileURLToPath } from 'node:url';
 import {
   EditHistory,
   addSpawnCommand,
+  blockBoxes,
   buildMapGeometry,
+  propBoxes,
   fitBounds,
   initPhysics,
   PhysicsWorld,
@@ -129,6 +131,29 @@ export class MapBuilder {
     return this.add({ kind: 'pad', position: at, yaw, power, push });
   }
 
+  /** A free block (`size` [x, thickness, z], base at `at`): solid, breakable, crumble or trapdoor. */
+  block(at: V3, size: V3, behaviour: 'solid' | 'breakable' | 'crumble' | 'trapdoor' = 'solid', o: { material?: string; tint?: string; yaw?: number; delay?: number; respawn?: number | null; health?: number; trigger?: 'step' | 'logic'; id?: string } = {}): this {
+    return this.add({
+      kind: 'block',
+      position: at,
+      size,
+      yaw: o.yaw ?? 0,
+      material: o.material ? `core.${o.material}` : null,
+      tint: o.tint ?? null,
+      behaviour,
+      trigger: o.trigger ?? 'step',
+      delaySeconds: o.delay ?? (behaviour === 'trapdoor' ? 0.15 : 0.8),
+      respawnSeconds: o.respawn === undefined ? 8 : o.respawn,
+      health: o.health ?? 120,
+      ...(o.id ? { id: o.id } : {}),
+    });
+  }
+
+  /** A body of liquid with its floor at `at` and `size` [x, depth, z]. */
+  water(at: V3, size: V3, liquid: 'water' | 'lava' | 'acid' | 'swamp' = 'water'): this {
+    return this.add({ kind: 'water', position: at, size, liquid });
+  }
+
   theme(theme: string): this {
     this.run('Change theme', setThemeCommand(this.doc, `core.${theme}`));
     return this;
@@ -189,7 +214,7 @@ export class MapBuilder {
     await Promise.all([initPhysics(), initNavigation()]);
     const geometry = buildMapGeometry(loaded.map);
     const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
-    const nav = NavWorld.build(geometry, mapTerrainMesh(loaded.map), padLandings(mapPads(loaded.map.entities), physics));
+    const nav = NavWorld.build([...geometry, ...propBoxes(loaded.map, true), ...blockBoxes(loaded.map, true)], mapTerrainMesh(loaded.map), padLandings(mapPads(loaded.map.entities), physics));
     physics.free();
     const issues = [...validateMap(loaded.map), ...validateNavigation(loaded.map, nav)];
     nav.destroy();

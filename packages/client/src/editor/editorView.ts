@@ -246,6 +246,7 @@ export class EditorView {
     const factions = mapFactions(doc);
     const factionColor = (id: string) => factions.find((f) => f.id === id)?.color ?? '#888888';
     this.scenario.factionColor = factionColor;
+    this.scenario.surface = (m, t) => this.styler.surfaceMaterial(doc, m, t);
     const teams = mapTeams(doc, MAX_TEAMS);
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;

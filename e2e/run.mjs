@@ -341,6 +341,45 @@ async function sceneryFlow(browser) {
   await page.context().close();
 }
 
+async function setpiecesFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=sky_islands`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: 30000 });
+  await page.waitForTimeout(1000);
+  const drawn = await page.evaluate(() => {
+    const ms = window.__cs.view.scene.meshes;
+    return { blocks: ms.filter((m) => /^sc_block_.*_body$/.test(m.name)).length, liquids: ms.filter((m) => /_surface$/.test(m.name)).length };
+  });
+  check(drawn.blocks >= 20 && drawn.liquids === 2, `Sky Islands draws its crumbling stones, trapdoors and cover (${drawn.blocks}) and its pond and lava (${drawn.liquids})`);
+  // Stand on the first crumbling stone north of the centre: it gives way.
+  const stone = await page.evaluate(() => {
+    const m = window.__match;
+    const e = m.map.entities.find((x) => x.kind === 'block' && x.behaviour === 'crumble');
+    const me = m.slots[window.__cs.slot];
+    for (const c of m.slots) if (c && c !== me) c.alive = false;
+    window.__pin = setInterval(() => { me.health = 100; }, 50);
+    me.move = { pos: { x: e.position[0], y: e.position[1] + e.size[1] + 0.3, z: e.position[2] }, velY: 0, grounded: false };
+    return e.id;
+  });
+  await page.waitForFunction((id) => window.__match.scenario.destructibleAlive(id) === false, stone, { timeout: 6000 }).catch(() => {});
+  check(await page.evaluate((id) => window.__match.scenario.destructibleAlive(id) === false, stone), 'a crumbling stone gives way under you');
+  // Swim: drop into the pond; the view goes under water.
+  await page.evaluate(() => { const me = window.__match.slots[window.__cs.slot]; me.move = { pos: { x: 0, y: 0.6, z: 0 }, velY: 0, grounded: false }; });
+  await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.swim === true, null, { timeout: 5000 }).catch(() => {});
+  const under = await page.evaluate(() => ({ swim: window.__match.slots[window.__cs.slot].move.swim === true, fog: window.__cs.view.scene.fogDensity }));
+  check(under.swim && under.fog > 0.05, `you swim in the pond and the view hazes under water (fog ${under.fog.toFixed(3)})`);
+  // Jetpack: fly up while holding jump.
+  await page.evaluate(() => { const me = window.__match.slots[window.__cs.slot]; me.move = { pos: { x: 8, y: 3, z: 8 }, velY: 0, grounded: true }; me.jetFuel = 720; window.__autoInput = { buttons: 1 }; });
+  await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.pos.y > 7, null, { timeout: 8000 }).catch(() => {});
+  const fly = await page.evaluate(() => ({ y: window.__match.slots[window.__cs.slot].move.pos.y, hud: document.getElementById('powerups')?.textContent ?? '' }));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  check(fly.y > 7 && /JETPACK/.test(fly.hud), `the jetpack flies you up (${fly.y.toFixed(1)} m) with a fuel gauge on the HUD`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function teamsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
@@ -403,7 +442,7 @@ async function vehiclesFlow(browser) {
     me.move = { pos: { x: -14, y: 0.3, z: z - (z > 0 ? -3 : 3) }, velY: 0, grounded: false };
     window.__autoInput = { buttons: 0 };
   });
-  await page.waitForTimeout(500);
+  await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: 8000 }).catch(() => {});
   const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
   check(/Drive the Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
   await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
@@ -515,7 +554,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, teams: teamsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, teams: teamsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

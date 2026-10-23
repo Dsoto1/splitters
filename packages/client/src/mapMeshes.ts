@@ -109,8 +109,10 @@ export class MapStyler {
     for (const b of [...boxes, ...buildMapDecor(doc)]) {
       if (b.kind === 'prop' || b.kind === 'barrier') continue; // drawn by the prop's model / invisible
       const tile = tiles.get(b.sourceId);
+      // Free blocks carry their own material on every face.
+      const own = b.surface ? { material: coreMaterials.get(b.surface.material), tint: b.surface.tint } : null;
       for (const [corners, n, flat, fn] of boxFaces(b)) {
-        const style = resolveSurface(doc, tile, faceSlot(b, n));
+        const style = own?.material ? (own as ResolvedStyle) : resolveSurface(doc, tile, faceSlot(b, n));
         const key = styleKey(style);
         let g = groups.get(key);
         if (!g) groups.set(key, (g = { style, buf: new FaceBuffer() }));
@@ -187,6 +189,12 @@ export class MapStyler {
       mesh.freezeWorldMatrix();
       this.terrainMeshes.push(mesh);
     }
+  }
+
+  /** A library material with a tint (null: the theme's solids), for blocks drawn outside the level mesh. */
+  surfaceMaterial(doc: MapDocument, material: string | null, tint: string | null): StandardMaterial {
+    const def = material ? coreMaterials.get(material) : undefined;
+    return this.material(def ? { material: def, tint } : resolveSurface(doc, undefined, 'solids'));
   }
 
   /** The material terrain of this kind is drawn in (the backdrop's ground uses it too). */

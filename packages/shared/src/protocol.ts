@@ -57,6 +57,8 @@ export interface PrivateState {
   /** Remaining inputs of speed / damage boost. */
   sp: number;
   dm: number;
+  /** Jetpack fuel units (see JET); absent without a jetpack. */
+  jp?: number;
 }
 
 export const STATUS_BURN = 1;
@@ -64,6 +66,9 @@ export const STATUS_POISON = 2;
 export const STATUS_SLOW = 4;
 export const STATUS_FROZEN = 8;
 export const STATUS_CHILL = 16;
+/** Not statuses, but carried in the same bits for drawing: jetpack firing, swimming. */
+export const FX_JET = 32;
+export const FX_SWIM = 64;
 
 /**
  * A turret, sentry or vehicle: [map entity index, x, y, z, yaw, aim yaw, aim

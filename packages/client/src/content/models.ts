@@ -28,10 +28,14 @@ export class ModelLibrary {
     return p;
   }
 
-  /** A new instance of the model under its own root node. */
-  async instantiate(path: string, name: string): Promise<TransformNode> {
+  /**
+   * A new copy of the model under its own root node. With `instanced`, its
+   * meshes are GPU instances of the first copy (one draw call for all of
+   * them; materials can't then differ per copy).
+   */
+  async instantiate(path: string, name: string, instanced = false): Promise<TransformNode> {
     const container = await this.load(path);
-    const entries = container.instantiateModelsToScene((n) => `${name}_${n}`, false, { doNotInstantiate: true });
+    const entries = container.instantiateModelsToScene((n) => `${name}_${n}`, false, { doNotInstantiate: !instanced });
     const root = new TransformNode(name, this.scene);
     for (const node of entries.rootNodes) node.parent = root;
     for (const m of root.getChildMeshes()) m.isPickable = false;

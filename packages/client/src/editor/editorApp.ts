@@ -72,6 +72,9 @@ import {
   getProp,
   placementCells,
   TERRAIN_BRUSHES,
+  BLOCK_BEHAVIOURS,
+  LIQUIDS,
+  LIQUID_SPECS,
   SCATTER_SETS,
   SCATTER_SET_IDS,
   scatterProps,
@@ -173,6 +176,14 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'trap:mine': '<ellipse cx="28" cy="38" rx="14" ry="5" fill="#3b4033"/><circle cx="28" cy="34" r="3" fill="#ff2a2a"/>',
   encounter: '<ellipse cx="28" cy="44" rx="20" ry="6" fill="#d04a3a" fill-opacity=".25" stroke="#d04a3a" stroke-width="2"/><rect x="26" y="6" width="2.5" height="36" fill="#3a3f48"/><rect x="28.5" y="6" width="12" height="8" fill="#d04a3a"/><circle cx="17" cy="30" r="5" fill="#d04a3a"/><rect x="13" y="34" width="8" height="10" rx="3" fill="#d04a3a"/><circle cx="38" cy="30" r="5" fill="#d04a3a"/><rect x="34" y="34" width="8" height="10" rx="3" fill="#d04a3a"/>',
   'trap:laser': '<rect x="8" y="10" width="4" height="38" fill="#2a2d33"/><rect x="44" y="10" width="4" height="38" fill="#2a2d33"/><path d="M12 18h32M12 26h32M12 34h32M12 42h32" stroke="#ff2040" stroke-width="2"/>',
+  'block:solid': '<path d="M8 26l20-10 20 10-20 10z" fill="#c9ccd2"/><path d="M8 26v6l20 10v-6z" fill="#8a8f98"/><path d="M48 26v6L28 42v-6z" fill="#6c7076"/><path d="M14 12q4-4 8 0M34 8q4-4 8 0" stroke="#7fd8ff" stroke-width="2" fill="none"/>',
+  'block:crumble': '<path d="M8 22l20-10 20 10-20 10z" fill="#c9a36b"/><path d="M8 22v6l20 10v-6z" fill="#8a6a3f"/><path d="M48 22v6L28 38v-6z" fill="#6e5230"/><path d="M18 20l6 4-3 5M34 16l-4 6 5 3" stroke="#ffb03b" stroke-width="2" fill="none"/><rect x="14" y="44" width="5" height="5" fill="#8a6a3f"/><rect x="30" y="47" width="4" height="4" fill="#8a6a3f"/>',
+  'block:trapdoor': '<rect x="6" y="20" width="44" height="6" fill="#6c7076"/><path d="M14 26l2 22h6l-2-22z" fill="#9a6b3d"/><rect x="22" y="20" width="20" height="6" fill="#1c1f26"/><path d="M28 32v10m-5-5l5 5 5-5" stroke="#ff5a4f" stroke-width="3" fill="none"/>',
+  'block:breakable': '<path d="M8 26l20-10 20 10-20 10z" fill="#b9bec6"/><path d="M8 26v6l20 10v-6z" fill="#7c828a"/><path d="M48 26v6L28 42v-6z" fill="#5e636b"/><path d="M20 22l8 3 6-5M28 25v8" stroke="#2a2d33" stroke-width="2" fill="none"/>',
+  'water:water': '<rect x="6" y="24" width="44" height="22" fill="#3f8fb0" fill-opacity=".8"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#bfe6f5" stroke-width="2" fill="none"/>',
+  'water:lava': '<rect x="6" y="24" width="44" height="22" fill="#ff5a1a"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#ffd34d" stroke-width="2" fill="none"/><circle cx="20" cy="34" r="3" fill="#ffd34d"/>',
+  'water:acid': '<rect x="6" y="24" width="44" height="22" fill="#8aff3a" fill-opacity=".85"/><circle cx="18" cy="32" r="3" fill="#d8ffb0"/><circle cx="34" cy="38" r="2" fill="#d8ffb0"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#d8ffb0" stroke-width="2" fill="none"/>',
+  'water:swamp': '<rect x="6" y="24" width="44" height="22" fill="#5a6a32"/><path d="M14 24q2-10 4-14M38 24q-1-9 2-13" stroke="#6fbf4a" stroke-width="2" fill="none"/>',
 };
 
 /** How close (m) a click must be to an entity's position to select it. */
@@ -196,6 +207,9 @@ function pickRadius(e: MapEntity): number {
       const half = MOUNT_DEFS[e.model].half;
       return Math.max(0.8, Math.min(half[0], half[2]) + 0.2);
     }
+    case 'block':
+    case 'water':
+      return Math.max(0.8, Math.min(e.size[0], e.size[2]) / 2);
     default:
       return 0.9;
   }
@@ -1716,6 +1730,37 @@ export class EditorApp {
         if (spec.blast) el.append(small('Explodes when destroyed.'));
         break;
       }
+      case 'block': {
+        number('Width (X)', e.size[0], 0.5, (v) => ({ size: [clamp(v, 0.2, 64), e.size[1], e.size[2]] }));
+        number('Thickness', e.size[1], 0.25, (v) => ({ size: [e.size[0], clamp(v, 0.1, 32), e.size[2]] }));
+        number('Depth (Z)', e.size[2], 0.5, (v) => ({ size: [e.size[0], e.size[1], clamp(v, 0.2, 64)] }));
+        const labels: Record<(typeof BLOCK_BEHAVIOURS)[number], string> = { solid: 'Solid (sky block)', breakable: 'Breakable (shoot it)', crumble: 'Crumbles when stood on', trapdoor: 'Trapdoor (drops away)' };
+        choose('Behaviour', BLOCK_BEHAVIOURS.map((b) => [b, labels[b]] as const), e.behaviour, (v) => ({ behaviour: v as typeof e.behaviour }));
+        const mats = document.createElement('select');
+        mats.append(new Option("Theme's solid material", '', false, e.material === null));
+        for (const m of coreMaterials.all()) mats.append(new Option(m.displayName, m.id, false, m.id === e.material));
+        mats.addEventListener('change', () => update('Block material', { material: mats.value || null }));
+        el.append(row('Material', mats));
+        if (e.behaviour === 'crumble' || e.behaviour === 'trapdoor') {
+          choose('Set off by', [['step', 'someone standing on it'], ['logic', 'logic only (destroy action)']], e.trigger, (v) => ({ trigger: v as typeof e.trigger }));
+          number('Delay (s)', e.delaySeconds, 0.1, (v) => ({ delaySeconds: clamp(v, 0, 10) }));
+        }
+        if (e.behaviour === 'breakable') number('Health', e.health, 10, (v) => ({ health: clamp(v, 1, 5000) }));
+        if (e.behaviour !== 'solid') {
+          toggle('Comes back', e.respawnSeconds !== null, (v) => ({ respawnSeconds: v ? 8 : null }));
+          if (e.respawnSeconds !== null) number('Back after (s)', e.respawnSeconds, 1, (v) => ({ respawnSeconds: clamp(v, 1, 600) }));
+        }
+        el.append(small(e.behaviour === 'solid' ? 'Part of the level: walk on it anywhere, at any height.' : 'Drawn with a coloured lip so players can learn what it does.'));
+        break;
+      }
+      case 'water':
+        number('Width (X)', e.size[0], 1, (v) => ({ size: [clamp(v, 0.5, 512), e.size[1], e.size[2]] }));
+        number('Depth (deep)', e.size[1], 0.25, (v) => ({ size: [e.size[0], clamp(v, 0.2, 64), e.size[2]] }));
+        number('Length (Z)', e.size[2], 1, (v) => ({ size: [e.size[0], e.size[1], clamp(v, 0.5, 512)] }));
+        choose('Liquid', LIQUIDS.map((l) => [l, LIQUID_SPECS[l].label] as const), e.liquid, (v) => ({ liquid: v as typeof e.liquid }));
+        el.append(small(e.liquid === 'water' ? 'Deeper than 1 m you swim (hold jump to rise). Stay under 15 s and you start drowning.' : e.liquid === 'swamp' ? 'Slows everyone right down.' : `Hurts ${LIQUID_SPECS[e.liquid].dps} a second while you stand in it.`));
+        el.append(small('Its surface is at Height + Depth: sink it into a pit or a dip in the terrain.'));
+        break;
       case 'zone':
         number('Width (X)', e.size[0], 0.5, (v) => ({ size: [clamp(v, 0.5, 64), e.size[1], e.size[2]] }));
         number('Height', e.size[1], 0.5, (v) => ({ size: [e.size[0], clamp(v, 0.5, 32), e.size[2]] }));

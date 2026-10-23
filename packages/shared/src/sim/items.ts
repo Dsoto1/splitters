@@ -13,7 +13,9 @@ export type ItemEffect =
   | { kind: 'ammo'; ammo?: AmmoType }
   | { kind: 'throwable'; throwable: ThrowableKind; count: number }
   | { kind: 'weapon'; weapon: string }
-  | { kind: 'powerup'; powerup: 'speed' | 'damage'; seconds: number };
+  | { kind: 'powerup'; powerup: 'speed' | 'damage'; seconds: number }
+  /** A jetpack: hold jump in the air to fly; fuel recharges while you don't. Lost when you die. */
+  | { kind: 'jetpack' };
 
 export interface ItemDefinition {
   id: string;
@@ -64,6 +66,7 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   item('vortex_grenades', 'Vortex Grenades', { kind: 'throwable', throwable: 'vortex', count: 1 }, 35, 0.5),
   item('powerup_speed', 'Speed Boost', { kind: 'powerup', powerup: 'speed', seconds: 15 }, 60, 0.6),
   item('powerup_damage', 'Double Damage', { kind: 'powerup', powerup: 'damage', seconds: 15 }, 60, 0.85),
+  item('jetpack', 'Jetpack', { kind: 'jetpack' }, 45, 0.6),
 ];
 
 const byId = new Map(CORE_ITEMS.map((i) => [i.id, i]));

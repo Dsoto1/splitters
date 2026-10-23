@@ -164,12 +164,23 @@ export interface Breakable {
   explosiveOnly: boolean;
   blast?: { radius: number; damage: number; edge: number };
   blocksPaths: boolean;
+  /** Shots and blasts can break it (crumbling floors and trapdoors can't be shot away). */
+  shootable?: boolean;
+}
+
+/** A free block's box (centre, half size, turn). */
+export function blockOBox(e: Extract<MapEntity, { kind: 'block' }>): OBox {
+  const [w, h, d] = e.size;
+  return { center: { x: e.position[0], y: e.position[1] + h / 2, z: e.position[2] }, half: { x: w / 2, y: h / 2, z: d / 2 }, yaw: e.yaw };
 }
 
 export function breakableOf(e: MapEntity): Breakable | null {
   if (e.kind === 'destructible') {
     const spec = DESTRUCTIBLE_SPECS[e.model];
     return { box: destructibleBox(e), health: e.health ?? spec.health, explosiveOnly: e.explosiveOnly, ...(spec.blast ? { blast: spec.blast } : {}), blocksPaths: !!spec.blocksPaths };
+  }
+  if (e.kind === 'block' && e.behaviour !== 'solid') {
+    return { box: blockOBox(e), health: e.health, explosiveOnly: false, blocksPaths: false, shootable: e.behaviour === 'breakable' };
   }
   if (e.kind === 'prop' && isBreakableProp(e)) {
     const def = getProp(e.model)!;

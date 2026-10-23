@@ -72,6 +72,46 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/kenney-nature-kit/License.txt",
       "retrieved": "2026-10-23"
+    },
+    "kenney-castle-kit": {
+      "title": "Castle Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/castle-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-castle-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-fantasy-town-kit": {
+      "title": "Fantasy Town Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-fantasy-town-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-train-kit": {
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-train-kit/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-mini-market": {
+      "title": "Mini Market",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/mini-market",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-mini-market/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "kenney-platformer-kit": {
+      "title": "Platformer Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/platformer-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-platformer-kit/License.txt",
+      "retrieved": "2026-10-23"
     }
   },
   "budgets": {
@@ -2244,6 +2284,609 @@
       "category": "Rocks & Wood",
       "height": 4.0,
       "collide": "box"
+    },
+    {
+      "id": "castle_tower",
+      "pack": "kenney-castle-kit",
+      "src": "tower-square.glb",
+      "name": "Castle Tower",
+      "category": "Castle & Siege",
+      "height": 9.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_tower_round",
+      "pack": "kenney-castle-kit",
+      "src": "tower-hexagon-base.glb",
+      "name": "Round Tower Base",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_gate",
+      "pack": "kenney-castle-kit",
+      "src": "gate.glb",
+      "name": "Castle Gate",
+      "category": "Castle & Siege",
+      "height": 6.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_wall",
+      "pack": "kenney-castle-kit",
+      "src": "wall.glb",
+      "name": "Castle Wall",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_wall_door",
+      "pack": "kenney-castle-kit",
+      "src": "wall-doorway.glb",
+      "name": "Wall Doorway",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_wall_corner",
+      "pack": "kenney-castle-kit",
+      "src": "wall-corner.glb",
+      "name": "Wall Corner",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_wall_half",
+      "pack": "kenney-castle-kit",
+      "src": "wall-half.glb",
+      "name": "Low Castle Wall",
+      "category": "Castle & Siege",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_stairs",
+      "pack": "kenney-castle-kit",
+      "src": "stairs-stone.glb",
+      "name": "Stone Stairs",
+      "category": "Castle & Siege",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "drawbridge",
+      "pack": "kenney-castle-kit",
+      "src": "bridge-draw.glb",
+      "name": "Drawbridge",
+      "category": "Castle & Siege",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "portcullis",
+      "pack": "kenney-castle-kit",
+      "src": "metal-gate.glb",
+      "name": "Portcullis",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "catapult",
+      "pack": "kenney-castle-kit",
+      "src": "siege-catapult.glb",
+      "name": "Catapult",
+      "category": "Castle & Siege",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "ballista",
+      "pack": "kenney-castle-kit",
+      "src": "siege-ballista.glb",
+      "name": "Ballista",
+      "category": "Castle & Siege",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "battering_ram",
+      "pack": "kenney-castle-kit",
+      "src": "siege-ram.glb",
+      "name": "Battering Ram",
+      "category": "Castle & Siege",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "siege_tower",
+      "pack": "kenney-castle-kit",
+      "src": "siege-tower.glb",
+      "name": "Siege Tower",
+      "category": "Castle & Siege",
+      "height": 9.0,
+      "collide": "box"
+    },
+    {
+      "id": "trebuchet",
+      "pack": "kenney-castle-kit",
+      "src": "siege-trebuchet.glb",
+      "name": "Trebuchet",
+      "category": "Castle & Siege",
+      "height": 7.0,
+      "collide": "box"
+    },
+    {
+      "id": "catapult_wrecked",
+      "pack": "kenney-castle-kit",
+      "src": "siege-catapult-demolished.glb",
+      "name": "Wrecked Catapult",
+      "category": "Castle & Siege",
+      "height": 1.5,
+      "collide": "box"
+    },
+    {
+      "id": "banner_long",
+      "pack": "kenney-castle-kit",
+      "src": "flag-banner-long.glb",
+      "name": "Long Banner",
+      "category": "Castle & Siege",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pennant",
+      "pack": "kenney-castle-kit",
+      "src": "flag-pennant.glb",
+      "name": "Pennant",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "fountain",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "fountain-round-detail.glb",
+      "name": "Fountain",
+      "category": "Town & Market",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "fountain_square",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "fountain-square-detail.glb",
+      "name": "Square Fountain",
+      "category": "Town & Market",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "stall",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "stall-red.glb",
+      "name": "Market Stall",
+      "category": "Town & Market",
+      "height": 2.8,
+      "collide": "box"
+    },
+    {
+      "id": "stall_green",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "stall-green.glb",
+      "name": "Green Stall",
+      "category": "Town & Market",
+      "height": 2.8,
+      "collide": "box"
+    },
+    {
+      "id": "stall_bench",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "stall-bench.glb",
+      "name": "Stall Bench",
+      "category": "Town & Market",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "cart",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "cart.glb",
+      "name": "Cart",
+      "category": "Town & Market",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "cart_high",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "cart-high.glb",
+      "name": "Hay Cart",
+      "category": "Town & Market",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "windmill",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "windmill.glb",
+      "name": "Windmill",
+      "category": "Town & Market",
+      "height": 11.0,
+      "collide": "box"
+    },
+    {
+      "id": "watermill",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "watermill.glb",
+      "name": "Watermill",
+      "category": "Town & Market",
+      "height": 6.0,
+      "collide": "box"
+    },
+    {
+      "id": "water_wheel",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "wheel.glb",
+      "name": "Water Wheel",
+      "category": "Town & Market",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "lantern_post",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "lantern.glb",
+      "name": "Lantern Post",
+      "category": "Town & Market",
+      "height": 2.6,
+      "collide": "trunk"
+    },
+    {
+      "id": "banner_red",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "banner-red.glb",
+      "name": "Red Banner",
+      "category": "Town & Market",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "banner_green",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "banner-green.glb",
+      "name": "Green Banner",
+      "category": "Town & Market",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "hedge_large",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "hedge-large.glb",
+      "name": "Tall Hedge",
+      "category": "Town & Market",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "hedge",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "hedge.glb",
+      "name": "Hedge",
+      "category": "Town & Market",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "hedge_gate",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "hedge-gate.glb",
+      "name": "Hedge Gate",
+      "category": "Town & Market",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "town_fence",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "fence.glb",
+      "name": "Town Fence",
+      "category": "Town & Market",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "stone_pillar_town",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "pillar-stone.glb",
+      "name": "Stone Pillar",
+      "category": "Town & Market",
+      "height": 3.2,
+      "collide": "box"
+    },
+    {
+      "id": "wood_stairs",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "stairs-wood-handrail.glb",
+      "name": "Wooden Stairs",
+      "category": "Town & Market",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "awning",
+      "pack": "kenney-fantasy-town-kit",
+      "src": "overhang.glb",
+      "name": "Awning",
+      "category": "Town & Market",
+      "height": 1.0,
+      "collide": "none"
+    },
+    {
+      "id": "locomotive",
+      "pack": "kenney-train-kit",
+      "src": "train-locomotive-a.glb",
+      "name": "Steam Locomotive",
+      "category": "Trains & Rail",
+      "height": 4.2,
+      "collide": "box"
+    },
+    {
+      "id": "diesel",
+      "pack": "kenney-train-kit",
+      "src": "train-diesel-a.glb",
+      "name": "Diesel Engine",
+      "category": "Trains & Rail",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "tram",
+      "pack": "kenney-train-kit",
+      "src": "train-tram-classic.glb",
+      "name": "Tram",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "subway_car",
+      "pack": "kenney-train-kit",
+      "src": "train-electric-subway-a.glb",
+      "name": "Subway Car",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "container_car_red",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-container-red.glb",
+      "name": "Container Car (Red)",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "container_car_blue",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-container-blue.glb",
+      "name": "Container Car (Blue)",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "tank_car",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-tank-large.glb",
+      "name": "Tank Car",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "coal_car",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-coal.glb",
+      "name": "Coal Car",
+      "category": "Trains & Rail",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "lumber_car",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-lumber.glb",
+      "name": "Lumber Car",
+      "category": "Trains & Rail",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "flatbed_car",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-flatbed.glb",
+      "name": "Flatbed Car",
+      "category": "Trains & Rail",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "rail_track",
+      "pack": "kenney-train-kit",
+      "src": "track-single-detailed.glb",
+      "name": "Rail Track",
+      "category": "Trains & Rail",
+      "height": 0.25,
+      "collide": "none"
+    },
+    {
+      "id": "rail_track_wide",
+      "pack": "kenney-train-kit",
+      "src": "track-detailed.glb",
+      "name": "Double Track",
+      "category": "Trains & Rail",
+      "height": 0.25,
+      "collide": "none"
+    },
+    {
+      "id": "shelf_boxes",
+      "pack": "kenney-mini-market",
+      "src": "shelf-boxes.glb",
+      "name": "Shop Shelf",
+      "category": "Shop",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "shelf_bags",
+      "pack": "kenney-mini-market",
+      "src": "shelf-bags.glb",
+      "name": "Snack Shelf",
+      "category": "Shop",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "shelf_end",
+      "pack": "kenney-mini-market",
+      "src": "shelf-end.glb",
+      "name": "Shelf End",
+      "category": "Shop",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "freezer",
+      "pack": "kenney-mini-market",
+      "src": "freezer.glb",
+      "name": "Chest Freezer",
+      "category": "Shop",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "freezers_upright",
+      "pack": "kenney-mini-market",
+      "src": "freezers-standing.glb",
+      "name": "Drinks Fridges",
+      "category": "Shop",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "checkout",
+      "pack": "kenney-mini-market",
+      "src": "cash-register.glb",
+      "name": "Checkout",
+      "category": "Shop",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "shopping_cart",
+      "pack": "kenney-mini-market",
+      "src": "shopping-cart.glb",
+      "name": "Shopping Cart",
+      "category": "Shop",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "fruit_display",
+      "pack": "kenney-mini-market",
+      "src": "display-fruit.glb",
+      "name": "Fruit Display",
+      "category": "Shop",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "bread_display",
+      "pack": "kenney-mini-market",
+      "src": "display-bread.glb",
+      "name": "Bread Display",
+      "category": "Shop",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "bottle_return",
+      "pack": "kenney-mini-market",
+      "src": "bottle-return.glb",
+      "name": "Bottle Return",
+      "category": "Shop",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "saw_blade",
+      "pack": "kenney-platformer-kit",
+      "src": "saw.glb",
+      "name": "Saw Blade",
+      "category": "Industrial",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "spike_block",
+      "pack": "kenney-platformer-kit",
+      "src": "spike-block.glb",
+      "name": "Spike Block",
+      "category": "Industrial",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "conveyor_belt",
+      "pack": "kenney-platformer-kit",
+      "src": "conveyor-belt.glb",
+      "name": "Conveyor Belt",
+      "category": "Industrial",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "metal_crate",
+      "pack": "kenney-platformer-kit",
+      "src": "crate-strong.glb",
+      "name": "Metal Crate",
+      "category": "Industrial",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "big_pipe",
+      "pack": "kenney-platformer-kit",
+      "src": "pipe.glb",
+      "name": "Big Pipe",
+      "category": "Industrial",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "spring",
+      "pack": "kenney-platformer-kit",
+      "src": "spring.glb",
+      "name": "Spring",
+      "category": "Industrial",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "lever_platform",
+      "pack": "kenney-platformer-kit",
+      "src": "lever.glb",
+      "name": "Floor Lever",
+      "category": "Industrial",
+      "height": 0.8,
+      "collide": "none"
     }
   ]
 }

@@ -7,6 +7,10 @@ import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder'
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import '@babylonjs/core/Rendering/edgesRenderer';
+import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
+import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
+import type { Material } from '@babylonjs/core/Materials/material';
 import {
   BUTTON,
   DESTRUCTIBLE_SPECS,
@@ -16,8 +20,17 @@ import {
   TRAP_SPECS,
   TRAP_SPENT,
   TRAP_WARNING,
+  type Liquid,
   type MapEntity,
 } from '@chronosplit/shared';
+
+/** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */
+export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: number; depthAlpha: number; shine: number; flow: number }> = {
+  water: { color: '#3f8fb0', glow: 0.08, alpha: 0.62, depthAlpha: 0.28, shine: 0.8, flow: 0.02 },
+  swamp: { color: '#5a6a32', glow: 0.05, alpha: 0.88, depthAlpha: 0.55, shine: 0.25, flow: 0.006 },
+  acid: { color: '#8aff3a', glow: 0.45, alpha: 0.78, depthAlpha: 0.4, shine: 0.5, flow: 0.015 },
+  lava: { color: '#ff5a1a', glow: 1, alpha: 0.97, depthAlpha: 0.85, shine: 0.2, flow: 0.01 },
+};
 
 /**
  * Procedural models for scenario entities: doors, buttons, crates, barrels,
@@ -27,7 +40,7 @@ import {
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water'];
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
 interface Visual {
@@ -153,8 +166,141 @@ export class ScenarioVisuals {
         return this.encounter(name, e);
       case 'pad':
         return this.pad(name);
+      case 'block':
+        return this.block(name, e);
+      case 'water':
+        return this.water(name, e);
     }
   }
+
+  /** Materials for free blocks (the map's library materials; set by the game and MapMaker views). */
+  surface: ((material: string | null, tint: string | null) => Material) | null = null;
+
+  /**
+   * A free block that can go away: breakable, crumbling or a trapdoor (solid
+   * blocks are part of the level mesh, so only MapMaker draws those here, as
+   * a pick target). Crumbling blocks shake when stood on, then drop and break
+   * up; trapdoors swing down on their hinge; all come back when respawned.
+   */
+  private block(name: string, e: Extract<MapEntity, { kind: 'block' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    if (e.behaviour === 'solid' && !this.opts.editor) return { root };
+    const [w, h, d] = e.size;
+    // Trapdoors hinge on their -X edge.
+    const hinge = new TransformNode(`${name}_hinge`, this.scene);
+    hinge.parent = root;
+    hinge.position.x = e.behaviour === 'trapdoor' ? -w / 2 : 0;
+    const body = CreateBox(`${name}_body`, { width: w, height: h, depth: d }, this.scene);
+    body.parent = hinge;
+    body.position.set(e.behaviour === 'trapdoor' ? w / 2 : 0, h / 2, 0);
+    body.material = this.surface?.(e.material, e.tint) ?? this.mat('block', '#8a8f98');
+    // A coloured lip tells the behaviour apart: amber crumbles, red drops away, grey breaks.
+    const lip = e.behaviour === 'crumble' ? '#ffb03b' : e.behaviour === 'trapdoor' ? '#ff5a4f' : e.behaviour === 'breakable' ? '#c9ccd2' : null;
+    if (lip) {
+      // A thin frame round the top edge, so the surface itself still shows its material.
+      const t = Math.min(0.12, w / 6, d / 6);
+      const lipMat = this.mat(`lip${lip}`, lip, { emissive: 0.35 });
+      for (const [sx, sz, px, pz] of [[w + 0.02, t, 0, d / 2 - t / 2], [w + 0.02, t, 0, -d / 2 + t / 2], [t, d + 0.02, w / 2 - t / 2, 0], [t, d + 0.02, -w / 2 + t / 2, 0]] as const) {
+        const strip = CreateBox(`${name}_lip`, { width: sx, height: 0.03, depth: sz }, this.scene);
+        strip.parent = body;
+        strip.position.set(px, h / 2 + 0.012, pz);
+        strip.material = lipMat;
+      }
+    }
+    // Solid blocks are already in the level mesh: in MapMaker this copy is only an invisible pick target.
+    if (e.behaviour === 'solid') {
+      body.visibility = 0;
+      return { root };
+    }
+    let gone = 0;
+    return {
+      root,
+      update: (a, b, now, dt) => {
+        if (a > 0) {
+          gone = 0;
+          hinge.setEnabled(true);
+          hinge.rotation.z = 0;
+          body.scaling.setAll(1);
+          // Giving way: a nervous shake.
+          const shake = b ? 0.035 : 0;
+          body.position.set((e.behaviour === 'trapdoor' ? w / 2 : 0) + Math.sin(now * 0.07) * shake, h / 2 - (b ? 0.02 : 0), Math.cos(now * 0.09) * shake);
+          return;
+        }
+        gone += dt;
+        if (e.behaviour === 'trapdoor') hinge.rotation.z = -Math.min(Math.PI / 2, gone * 7);
+        else {
+          body.position.y = h / 2 - gone * gone * 9;
+          body.scaling.setAll(Math.max(0.01, 1 - gone * 1.4));
+        }
+        hinge.setEnabled(gone < (e.behaviour === 'trapdoor' ? 2.5 : 0.75));
+      },
+    };
+  }
+
+  /** Water, lava, acid or swamp: a rippling surface over a tinted volume. */
+  private water(name: string, e: Extract<MapEntity, { kind: 'water' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const [w, h, d] = e.size;
+    const look = LIQUID_LOOKS[e.liquid];
+    const surface = CreateGround(`${name}_surface`, { width: w, height: d, subdivisions: 1 }, this.scene);
+    surface.parent = root;
+    surface.position.y = h - 0.03;
+    surface.material = this.liquidMat(e.liquid, w, d);
+    const body = CreateBox(`${name}_body`, { width: w - 0.02, height: h - 0.06, depth: d - 0.02, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
+    body.parent = root;
+    body.position.y = h / 2 - 0.03;
+    body.material = this.mat(`liquidBody${e.liquid}`, look.color, { emissive: look.glow * 0.6, alpha: look.depthAlpha });
+    return { root };
+  }
+
+  private liquidMat(liquid: Liquid, w: number, d: number): StandardMaterial {
+    const look = LIQUID_LOOKS[liquid];
+    const m = new StandardMaterial(`liquid_${liquid}_${this.mats.size}`, this.scene);
+    const tex = this.ripples();
+    const t = tex.clone();
+    t.uScale = w / 6;
+    t.vScale = d / 6;
+    m.diffuseTexture = t;
+    m.diffuseColor = Color3.FromHexString(look.color);
+    m.emissiveColor = Color3.FromHexString(look.color).scale(look.glow);
+    m.specularColor = new Color3(look.shine, look.shine, look.shine);
+    m.specularPower = 96;
+    m.alpha = look.alpha;
+    m.backFaceCulling = false;
+    this.flowing.push({ tex: t, speed: look.flow });
+    this.mats.set(m.name, m);
+    return m;
+  }
+
+  /** A soft ripple pattern, made once and scrolled per liquid. */
+  private ripples(): Texture {
+    if (this.rippleTex) return this.rippleTex;
+    const n = 128;
+    const px = new Uint8Array(n * n * 4);
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
+        const a = (x / n) * Math.PI * 2;
+        const b = (y / n) * Math.PI * 2;
+        const v = 0.5 + 0.18 * Math.sin(a * 3 + Math.sin(b * 2) * 1.5) + 0.14 * Math.sin(b * 5 + Math.cos(a * 2) * 2) + 0.08 * Math.sin((a + b) * 7);
+        const i = (y * n + x) * 4;
+        px[i] = px[i + 1] = px[i + 2] = Math.round(Math.max(0, Math.min(1, 0.72 + (v - 0.5) * 0.9)) * 255);
+        px[i + 3] = 255;
+      }
+    }
+    this.rippleTex = RawTexture.CreateRGBATexture(px, n, n, this.scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+    this.rippleTex.wrapU = this.rippleTex.wrapV = Texture.WRAP_ADDRESSMODE;
+    this.scene.onBeforeRenderObservable.add(() => {
+      const dt = this.scene.getEngine().getDeltaTime() / 1000;
+      for (const f of this.flowing) {
+        f.tex.uOffset = (f.tex.uOffset + dt * f.speed) % 1;
+        f.tex.vOffset = (f.tex.vOffset + dt * f.speed * 0.6) % 1;
+      }
+    });
+    return this.rippleTex;
+  }
+
+  private rippleTex: RawTexture | null = null;
+  private flowing: { tex: Texture; speed: number }[] = [];
 
   /** Jump pad: a glowing ring on a dark plate with a chevron pointing where it throws you. */
   private pad(name: string): Visual {

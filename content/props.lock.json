@@ -1600,6 +1600,542 @@
       "triangles": 219,
       "bytes": 11588,
       "sha256": "542890831cb4e363"
+    },
+    {
+      "file": "props/castle_tower.glb",
+      "source": "kenney-castle-kit",
+      "src": "tower-square.glb",
+      "triangles": 176,
+      "bytes": 19272,
+      "sha256": "f071b9e38f9ea7b2"
+    },
+    {
+      "file": "props/castle_tower_round.glb",
+      "source": "kenney-castle-kit",
+      "src": "tower-hexagon-base.glb",
+      "triangles": 68,
+      "bytes": 12944,
+      "sha256": "5b04fee5fe4d934a"
+    },
+    {
+      "file": "props/castle_gate.glb",
+      "source": "kenney-castle-kit",
+      "src": "gate.glb",
+      "triangles": 146,
+      "bytes": 16564,
+      "sha256": "a9f9017dcc25e9b5"
+    },
+    {
+      "file": "props/castle_wall.glb",
+      "source": "kenney-castle-kit",
+      "src": "wall.glb",
+      "triangles": 178,
+      "bytes": 19260,
+      "sha256": "ee8aa62d4bd350b3"
+    },
+    {
+      "file": "props/castle_wall_door.glb",
+      "source": "kenney-castle-kit",
+      "src": "wall-doorway.glb",
+      "triangles": 500,
+      "bytes": 29768,
+      "sha256": "ac79f084647316a5"
+    },
+    {
+      "file": "props/castle_wall_corner.glb",
+      "source": "kenney-castle-kit",
+      "src": "wall-corner.glb",
+      "triangles": 168,
+      "bytes": 18392,
+      "sha256": "d2c046acdbcd8205"
+    },
+    {
+      "file": "props/castle_wall_half.glb",
+      "source": "kenney-castle-kit",
+      "src": "wall-half.glb",
+      "triangles": 126,
+      "bytes": 16464,
+      "sha256": "96a1400fe89c0463"
+    },
+    {
+      "file": "props/castle_stairs.glb",
+      "source": "kenney-castle-kit",
+      "src": "stairs-stone.glb",
+      "triangles": 104,
+      "bytes": 14872,
+      "sha256": "00dca552db170347"
+    },
+    {
+      "file": "props/drawbridge.glb",
+      "source": "kenney-castle-kit",
+      "src": "bridge-draw.glb",
+      "triangles": 40,
+      "bytes": 11404,
+      "sha256": "ebcae7c79355d284"
+    },
+    {
+      "file": "props/portcullis.glb",
+      "source": "kenney-castle-kit",
+      "src": "metal-gate.glb",
+      "triangles": 190,
+      "bytes": 20952,
+      "sha256": "80c821bf3e797baf"
+    },
+    {
+      "file": "props/catapult.glb",
+      "source": "kenney-castle-kit",
+      "src": "siege-catapult.glb",
+      "triangles": 928,
+      "bytes": 64164,
+      "sha256": "e2e54522de64215d"
+    },
+    {
+      "file": "props/ballista.glb",
+      "source": "kenney-castle-kit",
+      "src": "siege-ballista.glb",
+      "triangles": 676,
+      "bytes": 50176,
+      "sha256": "95ae5a774c5d58b9"
+    },
+    {
+      "file": "props/battering_ram.glb",
+      "source": "kenney-castle-kit",
+      "src": "siege-ram.glb",
+      "triangles": 1112,
+      "bytes": 74324,
+      "sha256": "287cc42d3e6a7dab"
+    },
+    {
+      "file": "props/siege_tower.glb",
+      "source": "kenney-castle-kit",
+      "src": "siege-tower.glb",
+      "triangles": 1598,
+      "bytes": 103940,
+      "sha256": "de0667dc09426329"
+    },
+    {
+      "file": "props/trebuchet.glb",
+      "source": "kenney-castle-kit",
+      "src": "siege-trebuchet.glb",
+      "triangles": 1326,
+      "bytes": 87108,
+      "sha256": "dcbb340750bfc850"
+    },
+    {
+      "file": "props/catapult_wrecked.glb",
+      "source": "kenney-castle-kit",
+      "src": "siege-catapult-demolished.glb",
+      "triangles": 842,
+      "bytes": 55208,
+      "sha256": "a16eac2a8b518796"
+    },
+    {
+      "file": "props/banner_long.glb",
+      "source": "kenney-castle-kit",
+      "src": "flag-banner-long.glb",
+      "triangles": 68,
+      "bytes": 12636,
+      "sha256": "8aab7d263330cc9c"
+    },
+    {
+      "file": "props/pennant.glb",
+      "source": "kenney-castle-kit",
+      "src": "flag-pennant.glb",
+      "triangles": 118,
+      "bytes": 17064,
+      "sha256": "68a71a7779436372"
+    },
+    {
+      "file": "props/fountain.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "fountain-round-detail.glb",
+      "triangles": 1628,
+      "bytes": 97896,
+      "sha256": "7b9f9ad898f14967"
+    },
+    {
+      "file": "props/fountain_square.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "fountain-square-detail.glb",
+      "triangles": 334,
+      "bytes": 31708,
+      "sha256": "5d46bacf61e84dfa"
+    },
+    {
+      "file": "props/stall.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "stall-red.glb",
+      "triangles": 270,
+      "bytes": 27076,
+      "sha256": "176d0e30cc9f03e5"
+    },
+    {
+      "file": "props/stall_green.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "stall-green.glb",
+      "triangles": 322,
+      "bytes": 29312,
+      "sha256": "88665da1c7964673"
+    },
+    {
+      "file": "props/stall_bench.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "stall-bench.glb",
+      "triangles": 180,
+      "bytes": 21544,
+      "sha256": "58207c29ecd95184"
+    },
+    {
+      "file": "props/cart.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "cart.glb",
+      "triangles": 416,
+      "bytes": 35252,
+      "sha256": "2f7c6b161673144f"
+    },
+    {
+      "file": "props/cart_high.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "cart-high.glb",
+      "triangles": 836,
+      "bytes": 56752,
+      "sha256": "52930fb02767fc7e"
+    },
+    {
+      "file": "props/windmill.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "windmill.glb",
+      "triangles": 732,
+      "bytes": 57804,
+      "sha256": "be2a0104af3621e5"
+    },
+    {
+      "file": "props/watermill.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "watermill.glb",
+      "triangles": 600,
+      "bytes": 43380,
+      "sha256": "4377aeb6bdf17619"
+    },
+    {
+      "file": "props/water_wheel.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "wheel.glb",
+      "triangles": 192,
+      "bytes": 22700,
+      "sha256": "b2778bc9ab1d9905"
+    },
+    {
+      "file": "props/lantern_post.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "lantern.glb",
+      "triangles": 158,
+      "bytes": 21080,
+      "sha256": "c42d524cb876e702"
+    },
+    {
+      "file": "props/banner_red.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "banner-red.glb",
+      "triangles": 98,
+      "bytes": 18588,
+      "sha256": "a4ad02a58c48ae99"
+    },
+    {
+      "file": "props/banner_green.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "banner-green.glb",
+      "triangles": 102,
+      "bytes": 18744,
+      "sha256": "4e38324019965161"
+    },
+    {
+      "file": "props/hedge_large.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "hedge-large.glb",
+      "triangles": 90,
+      "bytes": 17988,
+      "sha256": "2cdc5715fdff50db"
+    },
+    {
+      "file": "props/hedge.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "hedge.glb",
+      "triangles": 54,
+      "bytes": 16016,
+      "sha256": "3d09f6ec72d17aed"
+    },
+    {
+      "file": "props/hedge_gate.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "hedge-gate.glb",
+      "triangles": 76,
+      "bytes": 17376,
+      "sha256": "6ca69c5cc7393fea"
+    },
+    {
+      "file": "props/town_fence.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "fence.glb",
+      "triangles": 84,
+      "bytes": 16972,
+      "sha256": "4f74c1114a18f574"
+    },
+    {
+      "file": "props/stone_pillar_town.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "pillar-stone.glb",
+      "triangles": 124,
+      "bytes": 19484,
+      "sha256": "0472906eeda71301"
+    },
+    {
+      "file": "props/wood_stairs.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "stairs-wood-handrail.glb",
+      "triangles": 568,
+      "bytes": 42176,
+      "sha256": "3fff3de9c1e6c117"
+    },
+    {
+      "file": "props/awning.glb",
+      "source": "kenney-fantasy-town-kit",
+      "src": "overhang.glb",
+      "triangles": 68,
+      "bytes": 16920,
+      "sha256": "8b097dee95bfc509"
+    },
+    {
+      "file": "props/locomotive.glb",
+      "source": "kenney-train-kit",
+      "src": "train-locomotive-a.glb",
+      "triangles": 1666,
+      "bytes": 103964,
+      "sha256": "fddc7ee7c5f6674e"
+    },
+    {
+      "file": "props/diesel.glb",
+      "source": "kenney-train-kit",
+      "src": "train-diesel-a.glb",
+      "triangles": 1426,
+      "bytes": 87880,
+      "sha256": "749667b8aeddffa0"
+    },
+    {
+      "file": "props/tram.glb",
+      "source": "kenney-train-kit",
+      "src": "train-tram-classic.glb",
+      "triangles": 1332,
+      "bytes": 84644,
+      "sha256": "d32a3a7a7cf675eb"
+    },
+    {
+      "file": "props/subway_car.glb",
+      "source": "kenney-train-kit",
+      "src": "train-electric-subway-a.glb",
+      "triangles": 1228,
+      "bytes": 79564,
+      "sha256": "bb425bd73af4c756"
+    },
+    {
+      "file": "props/container_car_red.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-container-red.glb",
+      "triangles": 926,
+      "bytes": 67320,
+      "sha256": "a3fb214c5752a898"
+    },
+    {
+      "file": "props/container_car_blue.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-container-blue.glb",
+      "triangles": 926,
+      "bytes": 67324,
+      "sha256": "beaaefc85fcd1761"
+    },
+    {
+      "file": "props/tank_car.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-tank-large.glb",
+      "triangles": 830,
+      "bytes": 59436,
+      "sha256": "8e1b64ac7c9dd374"
+    },
+    {
+      "file": "props/coal_car.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-coal.glb",
+      "triangles": 868,
+      "bytes": 63076,
+      "sha256": "099b4611a6b6f8eb"
+    },
+    {
+      "file": "props/lumber_car.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-lumber.glb",
+      "triangles": 854,
+      "bytes": 62452,
+      "sha256": "da62bb0b165fd410"
+    },
+    {
+      "file": "props/flatbed_car.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-flatbed.glb",
+      "triangles": 754,
+      "bytes": 56020,
+      "sha256": "93154f3600d8018e"
+    },
+    {
+      "file": "props/rail_track.glb",
+      "source": "kenney-train-kit",
+      "src": "track-single-detailed.glb",
+      "triangles": 68,
+      "bytes": 18432,
+      "sha256": "602eb79abba0cdc3"
+    },
+    {
+      "file": "props/rail_track_wide.glb",
+      "source": "kenney-train-kit",
+      "src": "track-detailed.glb",
+      "triangles": 124,
+      "bytes": 22328,
+      "sha256": "0831d8d13ff20514"
+    },
+    {
+      "file": "props/shelf_boxes.glb",
+      "source": "kenney-mini-market",
+      "src": "shelf-boxes.glb",
+      "triangles": 240,
+      "bytes": 28032,
+      "sha256": "5323d5991efa7e95"
+    },
+    {
+      "file": "props/shelf_bags.glb",
+      "source": "kenney-mini-market",
+      "src": "shelf-bags.glb",
+      "triangles": 708,
+      "bytes": 37068,
+      "sha256": "e6a4f35c23233394"
+    },
+    {
+      "file": "props/shelf_end.glb",
+      "source": "kenney-mini-market",
+      "src": "shelf-end.glb",
+      "triangles": 186,
+      "bytes": 24320,
+      "sha256": "79c4e584898ffb4a"
+    },
+    {
+      "file": "props/freezer.glb",
+      "source": "kenney-mini-market",
+      "src": "freezer.glb",
+      "triangles": 180,
+      "bytes": 20136,
+      "sha256": "bf00b63c686d1ae4"
+    },
+    {
+      "file": "props/freezers_upright.glb",
+      "source": "kenney-mini-market",
+      "src": "freezers-standing.glb",
+      "triangles": 156,
+      "bytes": 18584,
+      "sha256": "583b2044161f7a96"
+    },
+    {
+      "file": "props/checkout.glb",
+      "source": "kenney-mini-market",
+      "src": "cash-register.glb",
+      "triangles": 203,
+      "bytes": 21572,
+      "sha256": "138311fd1f9c0233"
+    },
+    {
+      "file": "props/shopping_cart.glb",
+      "source": "kenney-mini-market",
+      "src": "shopping-cart.glb",
+      "triangles": 384,
+      "bytes": 30000,
+      "sha256": "95d67c9c13fdc18e"
+    },
+    {
+      "file": "props/fruit_display.glb",
+      "source": "kenney-mini-market",
+      "src": "display-fruit.glb",
+      "triangles": 650,
+      "bytes": 51744,
+      "sha256": "224f01c016a003cf"
+    },
+    {
+      "file": "props/bread_display.glb",
+      "source": "kenney-mini-market",
+      "src": "display-bread.glb",
+      "triangles": 362,
+      "bytes": 32892,
+      "sha256": "4e6f39f0bfb82005"
+    },
+    {
+      "file": "props/bottle_return.glb",
+      "source": "kenney-mini-market",
+      "src": "bottle-return.glb",
+      "triangles": 324,
+      "bytes": 28880,
+      "sha256": "0c17de94d1b65938"
+    },
+    {
+      "file": "props/saw_blade.glb",
+      "source": "kenney-platformer-kit",
+      "src": "saw.glb",
+      "triangles": 128,
+      "bytes": 21080,
+      "sha256": "37234391deb5ce91"
+    },
+    {
+      "file": "props/spike_block.glb",
+      "source": "kenney-platformer-kit",
+      "src": "spike-block.glb",
+      "triangles": 116,
+      "bytes": 20316,
+      "sha256": "71c73b56286584de"
+    },
+    {
+      "file": "props/conveyor_belt.glb",
+      "source": "kenney-platformer-kit",
+      "src": "conveyor-belt.glb",
+      "triangles": 364,
+      "bytes": 31192,
+      "sha256": "b5db46b40243c664"
+    },
+    {
+      "file": "props/metal_crate.glb",
+      "source": "kenney-platformer-kit",
+      "src": "crate-strong.glb",
+      "triangles": 428,
+      "bytes": 39420,
+      "sha256": "062896e70c07b25c"
+    },
+    {
+      "file": "props/big_pipe.glb",
+      "source": "kenney-platformer-kit",
+      "src": "pipe.glb",
+      "triangles": 216,
+      "bytes": 23848,
+      "sha256": "b85614618c3a3f49"
+    },
+    {
+      "file": "props/spring.glb",
+      "source": "kenney-platformer-kit",
+      "src": "spring.glb",
+      "triangles": 356,
+      "bytes": 37640,
+      "sha256": "fadc781bcc1baa27"
+    },
+    {
+      "file": "props/lever_platform.glb",
+      "source": "kenney-platformer-kit",
+      "src": "lever.glb",
+      "triangles": 134,
+      "bytes": 24136,
+      "sha256": "c5e0f54e115c7edd"
     }
   ]
 }

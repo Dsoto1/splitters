@@ -2,6 +2,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 import type { Vec3 } from '../math.ts';
 import { PLAYER, TICK_DT, quantize } from './constants.ts';
 import type { PhysicsWorld } from './physics.ts';
+import { JET, LIQUID_SPECS, SWIM_DEPTH, liquidAt, type LiquidBox } from './liquids.ts';
 
 export const BUTTON_JUMP = 1;
 export const BUTTON_FIRE = 2;
@@ -42,6 +43,16 @@ export interface MoveState {
    */
   vx?: number;
   vz?: number;
+  /** The jetpack fired this tick (for fuel and the flame). */
+  jet?: boolean;
+  /** Swimming this tick. */
+  swim?: boolean;
+}
+
+/** What else shapes a step: liquids to swim or wade in, and whether a jetpack has fuel. */
+export interface MoveEnv {
+  liquids?: readonly LiquidBox[];
+  jet?: boolean;
 }
 
 export const emptyInput = (seq = 0): PlayerInput => ({ seq, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0 });
@@ -67,7 +78,7 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
  * output is quantised so a client replaying the same inputs from a server
  * snapshot reproduces the server result exactly.
  */
-export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, state: MoveState, input: PlayerInput, speedScale = 1, dt: number = TICK_DT, traction = 1): MoveState {
+export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, state: MoveState, input: PlayerInput, speedScale = 1, dt: number = TICK_DT, traction = 1, env: MoveEnv = {}): MoveState {
   // Horizontal wish velocity in the yaw frame (see viewDirection for axes).
   const sin = Math.sin(input.yaw);
   const cos = Math.cos(input.yaw);
@@ -78,8 +89,12 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     wx /= wl;
     wz /= wl;
   }
-  wx *= PLAYER.runSpeed * speedScale;
-  wz *= PLAYER.runSpeed * speedScale;
+  // In liquid: swimming once it's up to your chest, wading before that.
+  const chest = env.liquids?.length ? liquidAt(env.liquids, { x: state.pos.x, y: state.pos.y + SWIM_DEPTH, z: state.pos.z }) : null;
+  const feet = chest ?? (env.liquids?.length ? liquidAt(env.liquids, { x: state.pos.x, y: state.pos.y + 0.1, z: state.pos.z }) : null);
+  const wet = chest ? LIQUID_SPECS[chest.liquid].swim : feet ? LIQUID_SPECS[feet.liquid].wade : 1;
+  wx *= PLAYER.runSpeed * speedScale * wet;
+  wz *= PLAYER.runSpeed * speedScale * wet;
 
   // Push velocity. On a slick surface (traction < 1) running feeds momentum instead of moving you directly, so you slide.
   let vx = state.vx ?? 0;
@@ -92,8 +107,22 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   }
 
   let velY = state.velY;
-  if (state.grounded && input.buttons & BUTTON_JUMP) velY = PLAYER.jumpSpeed;
-  velY -= PLAYER.gravity * dt;
+  const jump = (input.buttons & BUTTON_JUMP) !== 0;
+  let jet = false;
+  if (chest) {
+    // Swimming: you sink slowly, water drags, jump swims up; near the surface it hops you out.
+    velY -= PLAYER.gravity * 0.15 * dt;
+    velY *= Math.pow(0.9, dt * 60);
+    if (jump) velY = state.pos.y + SWIM_DEPTH + 0.35 > chest.max.y ? Math.max(velY, 4.6) : Math.min(velY + 14 * dt, 3.2);
+  } else {
+    if (state.grounded && jump) velY = PLAYER.jumpSpeed;
+    else if (jump && env.jet && !state.grounded) {
+      // Jetpack: thrust while jump is held in the air.
+      velY = Math.min(velY + (JET.accel + PLAYER.gravity) * dt, Math.max(velY, JET.maxUp));
+      jet = true;
+    }
+    velY -= PLAYER.gravity * dt;
+  }
 
   const desiredY = velY * dt;
   const moved = physics.moveCharacter(collider, state.pos, { x: (wx + vx) * dt, y: desiredY, z: (wz + vz) * dt });
@@ -111,6 +140,8 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     velY: quantize(velY),
     grounded,
     ...(vx || vz ? { vx, vz } : {}),
+    ...(jet ? { jet } : {}),
+    ...(chest ? { swim: true } : {}),
   };
 }
 

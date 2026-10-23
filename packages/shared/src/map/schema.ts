@@ -256,7 +256,45 @@ export const PadEntity = EntityBase.extend({
   push: z.number().min(0).max(40).default(6),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity]);
+/**
+ * A free block: a box of any size, at any height (sky platforms, stepping
+ * stones, ledges), in any material. Position is the centre of its base.
+ * solid: plain level geometry. breakable: shoot or blow it apart.
+ * crumble: gives way `delaySeconds` after someone stands on it.
+ * trapdoor: drops away at once when stood on (or only when logic says, with
+ * trigger "logic"). Broken, crumbled and dropped blocks come back after
+ * `respawnSeconds` (null: never).
+ */
+export const BLOCK_BEHAVIOURS = ['solid', 'breakable', 'crumble', 'trapdoor'] as const;
+export const BlockEntity = EntityBase.extend({
+  kind: z.literal('block'),
+  size: z.tuple([z.number().min(0.2).max(64), z.number().min(0.1).max(32), z.number().min(0.2).max(64)]).default([4, 0.5, 4]),
+  yaw: Yaw,
+  /** A material from the library (null: the theme's solid material). */
+  material: ContentId.nullable().default(null),
+  tint: z
+    .string()
+    .regex(/^#[0-9a-f]{6}$/)
+    .nullable()
+    .default(null),
+  behaviour: z.enum(BLOCK_BEHAVIOURS).default('solid'),
+  /** step: stepping on it sets off a crumble or trapdoor; logic: only a rule's "destroy" does. */
+  trigger: z.enum(['step', 'logic']).default('step'),
+  delaySeconds: z.number().min(0).max(10).default(0.8),
+  respawnSeconds: z.number().min(1).max(600).nullable().default(8),
+  /** Breakable blocks: hit points. */
+  health: z.number().min(1).max(5000).default(120),
+});
+
+/** A body of liquid (position: centre of its floor). Water is swum in; lava and acid hurt; swamp slows you down. */
+export const LIQUIDS = ['water', 'lava', 'acid', 'swamp'] as const;
+export const WaterEntity = EntityBase.extend({
+  kind: z.literal('water'),
+  size: z.tuple([z.number().min(0.5).max(512), z.number().min(0.2).max(64), z.number().min(0.5).max(512)]).default([8, 2, 8]),
+  liquid: z.enum(LIQUIDS).default('water'),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -354,6 +392,10 @@ export type EncounterEntity = z.infer<typeof EncounterEntity>;
 export type PropEntity = z.infer<typeof PropEntity>;
 export type MountEntity = z.infer<typeof MountEntity>;
 export type PadEntity = z.infer<typeof PadEntity>;
+export type BlockEntity = z.infer<typeof BlockEntity>;
+export type WaterEntity = z.infer<typeof WaterEntity>;
+export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
+export type Liquid = (typeof LIQUIDS)[number];
 export type Faction = z.infer<typeof Faction>;
 export type MapBounds = z.infer<typeof MapBounds>;
 export type BoundaryStyle = (typeof BOUNDARY_STYLES)[number];

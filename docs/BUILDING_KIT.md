@@ -134,3 +134,5 @@ shows up in the Arcade and as a MapMaker template automatically.
 ## Backdrops and plants
 
 Skies, distant scenery, ground past the border, terrain plants and the scatter brush are covered in [SCENERY.md](SCENERY.md).
+
+Free blocks (sky platforms, crumbling floors, trapdoors), liquids and the jetpack are in [SET_PIECES.md](SET_PIECES.md); size limits in [MAP_BUDGETS.md](MAP_BUDGETS.md).

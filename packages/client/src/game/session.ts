@@ -21,6 +21,8 @@ import {
   type NpcSnapshot,
   type PlayerSnapshot,
   buildMapGeometry,
+  mapLiquids,
+  JET,
   getItem,
   loadMap,
   pickUsable,
@@ -206,6 +208,7 @@ export class GameSession {
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
         this.local = new LocalPlayer(physics);
         this.local.pads = mapPads(loaded.map.entities);
+        this.local.liquids = mapLiquids(loaded.map.entities);
         this.scenario = new ScenarioState(loaded.map, physics);
         this.mounts = new MountState(loaded.map, physics);
         this.scenario.apply(msg.sc);
@@ -463,7 +466,7 @@ export class GameSession {
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
       this.hud.setThrowable(local.throwable, local.alive);
       this.input.altTrigger = !!local.weapon?.alt;
-      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE);
+      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max);
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
       this.updateScenarioHud(local, now);
     }

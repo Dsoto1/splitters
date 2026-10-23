@@ -10,16 +10,18 @@ import type { ModelLibrary } from '../content/models.ts';
  * A placed prop: its model (loaded in the background) under a root that takes
  * the entity's position, turn and scale. Tinted props get their own copies of
  * the materials; untinted ones share them. Props never move, so their world
- * matrices are frozen once the model is in.
+ * matrices are frozen once the model is in. In the game (`instanced`)
+ * untinted props are GPU instances, so big maps stay cheap to draw.
  */
-export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true): TransformNode {
+export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true, instanced = false): TransformNode {
   const root = new TransformNode(name, scene);
   root.position.set(e.position[0], e.position[1], e.position[2]);
   root.rotation.y = e.yaw;
   root.scaling.setAll(e.scale);
   const def = getProp(e.model);
   if (!def) return root;
-  void models.instantiate(def.file, `${name}_model`).then((node) => {
+  // Untinted copies of the same prop share one draw call; tinted ones need their own materials.
+  void models.instantiate(def.file, `${name}_model`, instanced && !e.tint).then((node) => {
     if (root.isDisposed()) return node.dispose();
     node.parent = root;
     for (const m of node.getChildMeshes()) {

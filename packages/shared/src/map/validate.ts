@@ -2,10 +2,10 @@ import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { getProp } from '../content/props.ts';
-import { buildOccupancy, cellHasFloor, cellKey } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, yawXZ } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
-import { MapDocument } from './schema.ts';
+import { MapDocument, type MapEntity } from './schema.ts';
 import { validateScenario } from './validateScenario.ts';
 
 export type IssueSeverity = 'error' | 'warning' | 'suggestion';
@@ -93,9 +93,15 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
       }
     }
   }
-  if (map.classicStructure.tiles.length === 0 && !map.terrain) {
+  const blocks = map.entities.filter((e) => e.kind === 'block');
+  for (const b of blocks) {
+    if (b.kind === 'block' && b.material && !coreMaterials.get(b.material)) issues.push({ severity: 'error', code: 'material.unknown', message: `block ${b.id} uses unknown material "${b.material}"`, targetId: b.id });
+  }
+  if (map.classicStructure.tiles.length === 0 && !map.terrain && blocks.length === 0) {
     issues.push({ severity: 'error', code: 'tile.none', message: 'map has no structural tiles' });
   }
+
+  issues.push(...budgetIssues(map));
 
   const spawns = map.entities.filter((e) => e.kind === 'spawn');
   if (spawns.length === 0) {
@@ -117,7 +123,9 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     const occ = cells.get(cellKey(gx, gy, gz));
     const ground = map.terrain ? terrainHeightAt(map.terrain, x, z) : null;
     const onTerrain = ground !== null && Math.abs(ground - y) < 1.5;
-    if (!onTerrain && (!occ || !cellHasFloor(occ))) {
+    // Standing on a free block (its top within reach of the spawn's feet).
+    const onBlock = blocks.some((b) => b.kind === 'block' && Math.abs(b.position[1] + b.size[1] - y) < 1 && pointOnBlock(b, x, z));
+    if (!onTerrain && !onBlock && (!occ || !cellHasFloor(occ))) {
       issues.push({ severity: 'warning', code: 'spawn.no_floor', message: `spawn ${s.id} is not above a tile floor`, targetId: s.id });
     }
   }
@@ -145,4 +153,50 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
 /** Serialise with stable key order and trailing newline so map files diff cleanly. */
 export function serializeMap(map: MapDocument): string {
   return `${JSON.stringify(map, null, 2)}\n`;
+}
+
+/** Whether (x, z) is over a block's (turned) footprint. */
+function pointOnBlock(b: Extract<MapEntity, { kind: 'block' }>, x: number, z: number): boolean {
+  const [lx, lz] = yawXZ(x - b.position[0], z - b.position[2], -b.yaw);
+  return Math.abs(lx) <= b.size[0] / 2 && Math.abs(lz) <= b.size[2] / 2;
+}
+
+/**
+ * Soft limits that keep a map smooth in a browser on an ordinary laptop
+ * (see docs/MAP_BUDGETS.md). Going over is allowed but warned about.
+ */
+export const MAP_BUDGETS = {
+  /** Playable footprint across (m). */
+  footprint: 400,
+  tiles: 1500,
+  props: 1500,
+  /** Different prop models (each is a download and a set of draw calls). */
+  propModels: 80,
+  blocks: 600,
+  /** Breakable, crumbling and trapdoor blocks (each is simulated and sent to players). */
+  dynamicBlocks: 150,
+  liquids: 32,
+  /** Gameplay pieces that think every tick: doors, traps, zones, squads, mounts, pads. */
+  active: 300,
+} as const;
+
+function budgetIssues(map: MapDocument): ValidationIssue[] {
+  const out: ValidationIssue[] = [];
+  const over = (code: string, n: number, max: number, what: string) => {
+    if (n > max) out.push({ severity: 'warning', code: `budget.${code}`, message: `${n} ${what} (budget ${max}): the map may run slowly on ordinary laptops` });
+  };
+  const e = map.entities;
+  const props = e.filter((x) => x.kind === 'prop');
+  over('tiles', map.classicStructure.tiles.length, MAP_BUDGETS.tiles, 'tiles');
+  over('props', props.length, MAP_BUDGETS.props, 'props');
+  over('prop_models', new Set(props.map((x) => x.model)).size, MAP_BUDGETS.propModels, 'different prop models');
+  over('blocks', e.filter((x) => x.kind === 'block').length, MAP_BUDGETS.blocks, 'blocks');
+  over('dynamic_blocks', e.filter((x) => x.kind === 'block' && x.behaviour !== 'solid').length, MAP_BUDGETS.dynamicBlocks, 'breakable, crumbling or trapdoor blocks');
+  over('liquids', e.filter((x) => x.kind === 'water').length, MAP_BUDGETS.liquids, 'bodies of water, lava, acid or swamp');
+  over('active', e.filter((x) => ['door', 'trap', 'zone', 'encounter', 'mount', 'pad', 'button'].includes(x.kind)).length, MAP_BUDGETS.active, 'doors, traps, zones, squads, vehicles, pads and buttons');
+  const xs = e.map((x) => x.position[0]);
+  const zs = e.map((x) => x.position[2]);
+  const span = xs.length ? Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) : 0;
+  over('footprint', Math.round(span), MAP_BUDGETS.footprint, 'm across');
+  return out;
 }

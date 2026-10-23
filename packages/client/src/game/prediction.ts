@@ -4,6 +4,9 @@ import {
   OIL_TRACTION,
   applyPads,
   type JumpPad,
+  type LiquidBox,
+  JET,
+  stepJetFuel,
   TICK_DT,
   ZONE_KINDS,
   zoneContains,
@@ -58,6 +61,9 @@ export class LocalPlayer {
   inventory = new Map<number, [number, number, number, number]>();
   /** The map's jump pads (launches are predicted like the server's). */
   pads: JumpPad[] = [];
+  liquids: LiquidBox[] = [];
+  /** Jetpack fuel units (see JET), or null without a jetpack. */
+  jetFuel: number | null = null;
   /** Seated in a turret or vehicle: the server moves you, so movement isn't predicted. */
   mounted = false;
   /** The seat's gun (set by the session while seated), its heat, and whether the seat can't shoot at all (driving). */
@@ -128,7 +134,9 @@ export class LocalPlayer {
 
   /** Same order as the server: move with the current boost, then count the boost down. */
   private move(state: MoveState, input: PlayerInput): MoveState {
-    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos)));
+    const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
+    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet }));
+    if (this.jetFuel !== null) this.jetFuel = stepJetFuel(this.jetFuel, !!next.jet);
     if (this.speedTicks > 0) this.speedTicks--;
     return next;
   }
@@ -226,6 +234,7 @@ export class LocalPlayer {
       this.throwable = me.gr ? { kind: THROWABLES[me.gr[0]] ?? 'frag', count: me.gr[1] } : null;
       this.speedTicks = me.sp;
       this.damageTicks = me.dm;
+      this.jetFuel = me.jp ?? null;
       this.reloadTicks = Math.max(0, me.rl - this.pending.length);
       this.raiseTicks = Math.max(0, me.rs - this.pending.length);
     }

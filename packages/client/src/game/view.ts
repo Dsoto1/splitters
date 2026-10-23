@@ -36,11 +36,16 @@ import {
   type WorldBox,
   PROJECTILE_VISUALS,
   type ZoneSnapshot,
+  FX_JET,
+  liquidAt,
+  mapLiquids,
+  type Liquid,
+  type LiquidBox,
 } from '@chronosplit/shared';
 import { MapStyler } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
-import { ScenarioVisuals } from './scenarioVisuals.ts';
+import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
 import { CharacterLibrary, type CharacterInstance, type CharacterSpec } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
@@ -75,6 +80,7 @@ interface Avatar {
   vel: { x: number; z: number };
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
   aura?: Mesh;
+  jet?: Mesh;
 }
 
 /** Characters face +Z (our yaw 0) after glTF import; fit them to the player height. */
@@ -157,10 +163,12 @@ export class GameView {
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);
     new BackdropVisuals(this.scene, styler).build(doc, boxes);
+    this.liquids = mapLiquids(doc.entities);
+    this.scenario.surface = (m, t) => styler.surfaceMaterial(doc, m, t);
     void this.foliage.grow(doc.terrain, boxes, doc.metadata.id);
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     doc.entities.forEach((e, i) => {
-      if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`));
+      if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`, true, true));
     });
     this.scenario.build(doc.entities);
     // Warm the model cache so first switches and pickups don't hitch.
@@ -168,12 +176,45 @@ export class GameView {
     void this.models.load('projectiles/grenade.glb');
   }
 
+  /** A jetpack flame (a glowing cone pointing down behind the shoulders). */
+  private createJetFlame(parent: TransformNode): Mesh {
+    const flame = CreateCylinder('jetFlame', { diameterTop: 0.22, diameterBottom: 0.02, height: 0.8, tessellation: 10 }, this.scene);
+    flame.parent = parent;
+    flame.position.set(0, 0.75, -0.28);
+    flame.material = glow(this.scene, 'jetFlameMat', '#ffa040');
+    flame.isPickable = false;
+    return flame;
+  }
+
+  /** Under the surface of a liquid the view is hazed in its colour (the backdrop's haze comes back on the way out). */
+  private updateUnderwater(): void {
+    const l = this.liquids.length ? liquidAt(this.liquids, this.camera.position) : null;
+    const kind = l?.liquid ?? null;
+    if (kind === this.underLiquid) return;
+    if (this.underLiquid === null) this.dryFog = { mode: this.scene.fogMode, color: this.scene.fogColor.clone(), density: this.scene.fogDensity };
+    this.underLiquid = kind;
+    if (kind) {
+      this.scene.fogMode = 2;
+      this.scene.fogColor = Color3.FromHexString(LIQUID_LOOKS[kind].color).scale(0.6);
+      this.scene.fogDensity = kind === 'water' ? 0.09 : 0.5;
+    } else if (this.dryFog) {
+      this.scene.fogMode = this.dryFog.mode;
+      this.scene.fogColor = this.dryFog.color;
+      this.scene.fogDensity = this.dryFog.density;
+    }
+  }
+
+  private liquids: LiquidBox[] = [];
+  private underLiquid: Liquid | null = null;
+  private dryFog: { mode: number; color: Color3; density: number } | null = null;
+
   setCamera(eye: Vec3, yaw: number, pitch: number, fov: number): void {
     this.camera.position.set(eye.x, eye.y, eye.z);
     // Babylon: rotation.y is yaw (0 = +Z), positive rotation.x looks down.
     this.camera.rotation.set(-pitch, yaw, 0);
     this.camera.fov = fov;
     this.foliage.update(this.camera.position);
+    this.updateUnderwater();
   }
 
   // ---------------------------------------------------------------- viewmodel
@@ -319,6 +360,13 @@ export class GameView {
       if (p.status || a.aura) {
         a.aura ??= createAura(this.scene, a.root);
         setAura(this.scene, a.aura, p.alive ? p.status : 0, now);
+      }
+      // Jetpack firing: a flickering flame from the back.
+      const jetting = p.alive && (p.status & FX_JET) !== 0;
+      if (jetting || a.jet) {
+        a.jet ??= this.createJetFlame(a.root);
+        a.jet.setEnabled(jetting);
+        if (jetting) a.jet.scaling.set(1, 0.8 + Math.random() * 0.5, 1);
       }
       this.setTag(a, p.alive ? allyColor(p.slot) : null);
     }

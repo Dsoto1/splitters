@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { PhysicsWorld, buildMapGeometry, initPhysics, loadMap, mapPads, mapTerrainMesh, padLandings } from '@chronosplit/shared';
+import { PhysicsWorld, blockBoxes, buildMapGeometry, propBoxes, initPhysics, loadMap, mapPads, mapTerrainMesh, padLandings } from '@chronosplit/shared';
 import { NavWorld, initNavigation, validateNavigation } from '@chronosplit/shared/match';
 
 /** Usage: pnpm validate-map <map.json> — prints creator-facing issues; exits 1 on errors. */
@@ -17,7 +17,7 @@ const issues = [...result.issues];
 if (result.ok) {
   const geometry = buildMapGeometry(result.map);
   const physics = new PhysicsWorld(geometry, mapTerrainMesh(result.map));
-  const nav = NavWorld.build(geometry, mapTerrainMesh(result.map), padLandings(mapPads(result.map.entities), physics));
+  const nav = NavWorld.build([...geometry, ...propBoxes(result.map, true), ...blockBoxes(result.map, true)], mapTerrainMesh(result.map), padLandings(mapPads(result.map.entities), physics));
   physics.free();
   issues.push(...validateNavigation(result.map, nav));
   nav.destroy();

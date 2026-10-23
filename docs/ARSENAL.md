@@ -98,3 +98,7 @@ singularity).
 - **Movement.** `MoveState.vx/vz` is a push velocity (knockback, pulls,
   slides) that dies away on the ground. Client prediction replays it with the
   server's status speed and the oil under your feet.
+
+## Jetpack
+
+Not a weapon but a pickup (`core.jetpack`): hold jump in the air to fly, with fuel that refills while you are not thrusting. See [SET_PIECES.md](SET_PIECES.md).

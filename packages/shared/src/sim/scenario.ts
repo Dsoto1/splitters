@@ -1,4 +1,4 @@
-import { SQUAD_ORDERS, type ButtonEntity, type DestructibleEntity, type DoorEntity, type MapDocument, type MapEntity, type SquadOrder, type TrapEntity, type ZoneEntity } from '../map/schema.ts';
+import { SQUAD_ORDERS, type BlockEntity, type ButtonEntity, type DestructibleEntity, type DoorEntity, type MapDocument, type MapEntity, type SquadOrder, type TrapEntity, type ZoneEntity } from '../map/schema.ts';
 import { OBJECTIVE_STATES, type CompareOp, type EventType, type LogicAction, type LogicCondition, type ObjectiveState } from '../map/logic.ts';
 import { distance, viewDirection, type Vec3 } from '../math.ts';
 import { TRAP_ACTIVE, TRAP_ENABLED, TRAP_SPENT, TRAP_WARNING, type GameEvent, type ScenarioSnapshot } from '../protocol.ts';
@@ -70,6 +70,8 @@ interface DestructibleRt {
   health: number;
   max: number;
   alive: boolean;
+  /** Free blocks: what sets them off, when they were stood on, and when they come back. */
+  block?: { e: BlockEntity; triggeredAt: number | null; respawnAt: number | null };
 }
 
 interface ZoneRt {
@@ -186,6 +188,13 @@ export class Scenario {
           this.bodies.setSolid(i, true);
           break;
         }
+        case 'block': {
+          const b = breakableOf(e);
+          if (!b) break;
+          this.destructibles.set(i, { i, id: e.id, b, health: b.health, max: b.health, alive: true, block: { e, triggeredAt: null, respawnAt: null } });
+          this.bodies.setSolid(i, true);
+          break;
+        }
         case 'zone':
           this.zones.set(i, { i, e, enabled: e.startEnabled, inside: new Set(), satisfied: false });
           break;
@@ -198,6 +207,7 @@ export class Scenario {
           break;
         case 'spawn':
         case 'encounter':
+        case 'water':
           break;
       }
     });
@@ -222,11 +232,40 @@ export class Scenario {
       this.fire('match_start', null, null);
     }
     this.stepDoors(tick);
+    this.stepBlocks(tick);
     this.stepZones();
     this.stepTraps(tick);
     this.stepTimers(tick);
     this.stepSequences(tick);
     this.bodies.commit();
+  }
+
+  /** Crumbling floors and trapdoors give way when stood on; broken blocks come back when nobody is in the way. */
+  private stepBlocks(tick: number): void {
+    let actors: readonly { slot: number; alive: boolean; pos: Vec3 }[] | null = null;
+    for (const d of this.destructibles.values()) {
+      const k = d.block;
+      if (!k) continue;
+      const e = k.e;
+      if (d.alive) {
+        if (k.triggeredAt === null && e.trigger === 'step' && (e.behaviour === 'crumble' || e.behaviour === 'trapdoor')) {
+          actors ??= this.host.actors().filter((a) => a.alive);
+          const top = d.b.box.center.y + d.b.box.half.y;
+          const on = actors.find((a) => a.pos.y >= top - 0.2 && a.pos.y <= top + 0.4 && pointInOBox({ ...d.b.box, half: { ...d.b.box.half, y: 50 } }, a.pos, 0.3));
+          if (on) k.triggeredAt = tick;
+        }
+        if (k.triggeredAt !== null && tick >= k.triggeredAt + Math.round(e.delaySeconds * TICK_RATE)) this.destroy(d, null);
+      } else if (k.respawnAt !== null && tick >= k.respawnAt) {
+        actors ??= this.host.actors().filter((a) => a.alive);
+        // Wait until nobody would be stuck inside it.
+        if (actors.some((a) => pointInOBox(d.b.box, { ...a.pos, y: a.pos.y + 0.9 }, 0.5))) continue;
+        d.alive = true;
+        d.health = d.max;
+        k.triggeredAt = null;
+        k.respawnAt = null;
+        this.bodies.setSolid(d.i, true);
+      }
+    }
   }
 
   private stepDoors(tick: number): void {
@@ -456,7 +495,7 @@ export class Scenario {
   }
 
   private damageDestructible(d: DestructibleRt, amount: number, explosive: boolean, instigator: number | null): void {
-    if (!d.alive || (d.b.explosiveOnly && !explosive)) return;
+    if (!d.alive || (d.b.explosiveOnly && !explosive) || d.b.shootable === false) return;
     d.health -= amount;
     if (d.health <= 0) this.destroy(d, instigator);
   }
@@ -465,6 +504,7 @@ export class Scenario {
     if (!d.alive) return;
     d.alive = false;
     d.health = 0;
+    if (d.block?.e.respawnSeconds) d.block.respawnAt = this.host.tick + Math.round(d.block.e.respawnSeconds * TICK_RATE);
     this.bodies.setSolid(d.i, false);
     this.bodies.commit();
     this.host.emit({ e: 'broken', i: d.i });
@@ -700,7 +740,8 @@ export class Scenario {
     const out: [number, number, number][] = [];
     for (const d of this.doors.values()) out.push([d.i, Math.round(d.open * 100), d.locked ? 1 : 0]);
     for (const b of this.buttons.values()) out.push([b.i, b.enabled && !(b.e.once && b.used) ? 1 : 0, tick < b.litUntil ? 1 : 0]);
-    for (const d of this.destructibles.values()) out.push([d.i, d.alive ? Math.max(1, Math.ceil((d.health / d.max) * 100)) : 0, 0]);
+    // Blocks also say whether they are giving way (shaking).
+    for (const d of this.destructibles.values()) out.push([d.i, d.alive ? Math.max(1, Math.ceil((d.health / d.max) * 100)) : 0, d.alive && d.block?.triggeredAt != null ? 1 : 0]);
     for (const z of this.zones.values()) out.push([z.i, z.enabled ? 1 : 0, z.inside.size]);
     for (const t of this.traps.values()) {
       const flags = (t.enabled ? TRAP_ENABLED : 0) | (t.active ? TRAP_ACTIVE : 0) | (t.armedAt !== null ? TRAP_WARNING : 0) | (t.spent ? TRAP_SPENT : 0);

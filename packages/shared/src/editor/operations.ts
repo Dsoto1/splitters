@@ -3,7 +3,7 @@ import { buildOccupancy, cellKey, edgeKey, localSide, rotateXZ } from '../map/ge
 import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind } from '../map/schema.ts';
+import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
 
@@ -240,6 +240,14 @@ export const SCENARIO_PALETTE = [
   { key: 'trap:crusher', label: 'Crusher', search: 'trap crusher ceiling piston hazard' },
   { key: 'trap:mine', label: 'Proximity Mine', search: 'trap mine explosive proximity hazard' },
   { key: 'trap:laser', label: 'Laser Fence', search: 'trap laser beam fence tripwire hazard' },
+  { key: 'block:solid', label: 'Sky Block', search: 'block sky platform floating box stepping stone ledge solid' },
+  { key: 'block:crumble', label: 'Crumbling Floor', search: 'block crumble crumbling platform give way collapse falling floor' },
+  { key: 'block:trapdoor', label: 'Trapdoor', search: 'block trapdoor trap door fall drop pit floor hatch' },
+  { key: 'block:breakable', label: 'Breakable Block', search: 'block breakable destructible platform shoot' },
+  { key: 'water:water', label: 'Water', search: 'water pool lake river swim liquid' },
+  { key: 'water:lava', label: 'Lava', search: 'lava magma liquid hazard burn' },
+  { key: 'water:acid', label: 'Acid', search: 'acid toxic liquid hazard pool' },
+  { key: 'water:swamp', label: 'Swamp', search: 'swamp mud bog marsh liquid slow' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
@@ -285,6 +293,18 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
         startActive: true,
         difficulty: 'normal',
       };
+    case 'block:solid':
+    case 'block:crumble':
+    case 'block:trapdoor':
+    case 'block:breakable': {
+      const behaviour = key.slice(6) as BlockBehaviour;
+      return { id: newId('block'), kind: 'block', position, yaw: 0, size: [4, 0.5, 4], material: null, tint: null, behaviour, trigger: 'step', delaySeconds: behaviour === 'trapdoor' ? 0.15 : 0.8, respawnSeconds: 8, health: 120 };
+    }
+    case 'water:water':
+    case 'water:lava':
+    case 'water:acid':
+    case 'water:swamp':
+      return { id: newId(key.slice(6)), kind: 'water', position, size: [8, 1.2, 8], liquid: key.slice(6) as Liquid };
     default: {
       const trap = key.slice(5) as TrapKind;
       const d = TRAP_SPECS[trap].defaults;
@@ -307,7 +327,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {

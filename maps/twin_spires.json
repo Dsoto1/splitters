@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 9,
   "metadata": {
     "id": "twin_spires",
     "name": "Twin Spires",
@@ -1333,13 +1333,13 @@
     {
       "id": "prop_123",
       "position": [
-        -64,
+        -67,
         4,
-        3
+        0
       ],
       "kind": "prop",
       "model": "prop.screen_panel",
-      "yaw": 3.141592653589793,
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1361,9 +1361,9 @@
     {
       "id": "prop_125",
       "position": [
-        -64,
+        -66.4,
         8,
-        -1
+        0
       ],
       "kind": "prop",
       "model": "prop.holo_table",
@@ -1375,9 +1375,9 @@
     {
       "id": "prop_126",
       "position": [
-        -62,
+        -65.6,
         4,
-        2
+        1.6
       ],
       "kind": "prop",
       "model": "prop.space_chair",
@@ -1459,13 +1459,13 @@
     {
       "id": "prop_132",
       "position": [
-        64,
+        67,
         4,
-        3
+        0
       ],
       "kind": "prop",
       "model": "prop.screen_panel",
-      "yaw": 3.141592653589793,
+      "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1487,9 +1487,9 @@
     {
       "id": "prop_134",
       "position": [
-        64,
+        66.4,
         8,
-        -1
+        0
       ],
       "kind": "prop",
       "model": "prop.holo_table",
@@ -1501,9 +1501,9 @@
     {
       "id": "prop_135",
       "position": [
-        62,
+        65.6,
         4,
-        2
+        1.6
       ],
       "kind": "prop",
       "model": "prop.space_chair",
@@ -1536,6 +1536,7 @@
   },
   "terrain": null,
   "bounds": null,
+  "backdrop": null,
   "teamSetup": {
     "sizes": [
       8,
