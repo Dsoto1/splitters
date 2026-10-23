@@ -359,7 +359,8 @@ const CHAR_MODS = {
 };
 const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));
 const charFiles = new Set();
-for (const f of charLock.files) {
+const charEntries = charLock.files;
+for (const f of charEntries) {
   charFiles.add(f.file);
   const packIds = f.source.split(/,\s*/);
   const packs = packIds.map((id) => manifest.packs[id]);
@@ -386,7 +387,7 @@ for (const f of charLock.files) {
     creator: [...new Set(packs.map((p) => p.creator))].join(', '),
     url: packs.map((p) => p.url).join(' '),
     license: [...new Set(packs.map((p) => p.license))].join(', '),
-    modifications: CHAR_MODS[f.role] ?? [],
+    modifications: [...(CHAR_MODS[f.role] ?? []), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : [])],
   });
 }
 const CHAR_DIR = join(ROOT, 'packages/client/public/characters');
@@ -394,7 +395,7 @@ for (const f of existsSync(CHAR_DIR) ? readdirSync(CHAR_DIR, { recursive: true }
   const rel = `characters/${String(f).replaceAll('\\', '/')}`;
   if (/\.(glb|jpg|png)$/.test(rel) && !charFiles.has(rel)) problems.push(`${rel}: not in content/characters.lock.json`);
 }
-console.log(`checked ${charLock.files.length} character files`);
+console.log(`checked ${charEntries.length} character files`);
 
 const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
 if (check) {

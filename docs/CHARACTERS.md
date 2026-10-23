@@ -140,6 +140,16 @@ Your own view shows your look's arms holding the viewmodel:
 To fit a new weapon, read the grip, support and butt positions off a side view
 of the model, then check them in `?mode=characters`.
 
+## Level of detail
+
+Every character file except the first-person arms carries a low-detail copy of
+each mesh (`<name>_lod`, about 30% of the triangles, same skin and materials). It's
+added by `prepare-characters.mjs` and recorded as `lodTriangles` in the lock
+file. The game registers each copy as a Babylon LOD level of its mesh and draws
+it beyond 18 m (`LOD_DISTANCE`). In the viewer from 30 m, 253k triangles drop to
+90k. The copies live in the same file because separate low-detail files loaded
+in the background were seen to stall in the browser.
+
 ## Tools
 
 - `?mode=characters`: viewer with every look and the male and female NPC
@@ -155,8 +165,8 @@ of the model, then check them in `?mode=characters`.
 
 ## Known gaps
 
-- Triangle counts are high for a 32-player shooter: a full ranger is about 19k
-  with head and hair. LODs, or a further simplification pass, come before large lobbies.
+- The ranger boots barely simplify (their texture seams stop the simplifier),
+  so a distant full ranger is still about 7.5k triangles.
 - More outfits and era costumes on the same rig. The free pack editions hold
   only the Ranger and Peasant outfits; the other ten are in the paid Source
   editions.

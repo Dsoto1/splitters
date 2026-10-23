@@ -1,6 +1,7 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { Node } from '@babylonjs/core/node';
 import type { Skeleton } from '@babylonjs/core/Bones/skeleton';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -13,6 +14,9 @@ import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
 import { PLAYER, firstPersonArms, getLook, materialTint, textureFor, type BodyType, type CharacterLook } from '@chronosplit/shared';
+
+/** Beyond this camera distance (metres) characters draw their low-detail meshes. */
+export const LOD_DISTANCE = 18;
 
 /** Base URL of built character content (packages/client/public/characters). */
 export const CHARACTER_BASE = `${import.meta.env.BASE_URL}characters/`;
@@ -145,6 +149,19 @@ export class CharacterLibrary {
       body = look.body;
       clips = this.retarget(rig, joints, `${name}_${look.body}`, look.body);
     }
+    // Each mesh's low-detail copy (`<name>_lod`, in the same file) is drawn beyond LOD_DISTANCE.
+    const low = meshes.filter((m) => /_lod(_primitive\d+)?$/.test(m.name));
+    for (const m of low) {
+      const full = meshes.find((o) => o.name === m.name.replace(/_lod(_primitive\d+)?$/, '$1') && !low.includes(o)) as Mesh | undefined;
+      if (!full || spec.armsOnly) {
+        m.dispose();
+        continue;
+      }
+      if (m.material && m.material !== full.material) m.material.dispose();
+      m.material = full.material;
+      full.addLODLevel(LOD_DISTANCE, m as Mesh);
+    }
+    meshes.splice(0, meshes.length, ...meshes.filter((m) => !m.isDisposed()));
     for (const m of meshes) {
       m.isPickable = false;
       m.alwaysSelectAsActiveMesh = true;

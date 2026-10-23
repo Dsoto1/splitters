@@ -113,6 +113,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
   - death, and a dance at intermission.
 - **Looks:** fourteen presets mixing parts, colourways, skin and hair tints. The main menu has a **Character** picker; the choice is sent to the server and shown to everyone through the roster. Bots get a spread of looks.
 - **Character Designer:** main menu → **Design…**. Players pick a body, parts by slot, hair and hair colour, colourways and skin tone, with a live animated preview. Looks are saved locally and travel to other players as short validated IDs (see [`CHARACTERS.md`](CHARACTERS.md#character-designer)).
+- **Level of detail:** every character mesh has a low-detail copy (about 30% of the triangles) in the same file, drawn beyond 18 m.
 - **First-person arms:** your own look's arms (or bare arms under sportswear) hold the viewmodel, with the hands IK'd onto its grip and support points.
 - **Viewer:** `?mode=characters` shows every look and NPC with motion and weapon controls.
 - **Team Deathmatch** (`core.tdm`):

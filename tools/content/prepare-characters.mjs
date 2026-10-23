@@ -32,7 +32,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Document, NodeIO, PropertyType } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { dedup, prune, resample, simplify, weld } from '@gltf-transform/functions';
+import { compactPrimitive, dedup, prune, resample, simplify, simplifyPrimitive, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -290,7 +290,10 @@ function keepRegion(doc, meshName, regionOf, region) {
   }
 }
 
-async function finish(doc, out, { ratio = 1, error = 0.002 } = {}) {
+/** Triangle share of the low-detail versions the game draws for distant characters. */
+const LOD_RATIO = 0.3;
+
+async function finish(doc, out, { ratio = 1, error = 0.002, lod = true } = {}) {
   // Materials are matched by name in game, so identical-looking ones (all textures are shared) must stay apart.
   const propertyTypes = [PropertyType.ACCESSOR, PropertyType.MESH, PropertyType.TEXTURE, PropertyType.SKIN];
   // UVs stay even though the parts carry no textures (the game assigns shared ones); tangents go.
@@ -298,15 +301,53 @@ async function finish(doc, out, { ratio = 1, error = 0.002 } = {}) {
   await doc.transform(dedup({ propertyTypes }), prune({ keepAttributes: true }), weld());
   if (ratio < 1) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error, lockBorder: true }));
   await doc.transform(prune({ keepAttributes: true }));
+  const fullTris = triangles(doc);
+  if (lod) addLowDetail(doc);
   // Accessors left behind by discarded animation tracks (prune keeps some of them).
   for (const acc of doc.getRoot().listAccessors()) if (acc.listParents().every((p) => p.propertyType === 'Root')) acc.dispose();
   doc.getRoot().getAsset().generator = 'chronosplit prepare-characters';
   const glb = await io.writeBinary(doc);
   writeFileSync(join(OUT, out), glb);
+  const lodTris = triangles(doc) - fullTris;
+  console.log(`${out.padEnd(28)} ${String(fullTris).padStart(6)} tris ${lod ? `(+${lodTris} low-detail)` : ''} ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
+  return { file: `characters/${out}`, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: fullTris, ...(lod ? { lodTriangles: lodTris } : {}), bytes: glb.byteLength };
+}
+
+function triangles(doc) {
   let tris = 0;
   for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) tris += p.getIndices().getCount() / 3;
-  console.log(`${out.padEnd(28)} ${String(tris).padStart(6)} tris ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
-  return { file: `characters/${out}`, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: tris, bytes: glb.byteLength };
+  return tris;
+}
+
+/**
+ * Add a low-detail copy of every mesh to the same file, as a sibling node
+ * named `<node>_lod` on the same skin and materials. The game draws it for
+ * distant characters, so it loads with the part and needs no request of its own.
+ */
+function addLowDetail(doc) {
+  const scene = doc.getRoot().listScenes()[0];
+  for (const node of doc.getRoot().listNodes()) {
+    const mesh = node.getMesh();
+    if (!mesh) continue;
+    const low = doc.createMesh(`${mesh.getName()}_lod`);
+    for (const prim of mesh.listPrimitives()) {
+      const p = doc.createPrimitive().setMode(prim.getMode()).setMaterial(prim.getMaterial());
+      for (const sem of prim.listSemantics()) p.setAttribute(sem, prim.getAttribute(sem).clone());
+      p.setIndices(prim.getIndices().clone());
+      // Borders unlocked: seams between parts don't show at the distances these are drawn.
+      simplifyPrimitive(p, { simplifier: MeshoptSimplifier, ratio: LOD_RATIO, error: 0.04, lockBorder: false });
+      compactPrimitive(p);
+      low.addPrimitive(p);
+    }
+    const lodNode = doc
+      .createNode(`${node.getName()}_lod`)
+      .setMesh(low)
+      .setSkin(node.getSkin())
+      .setTranslation(node.getTranslation())
+      .setRotation(node.getRotation())
+      .setScale(node.getScale());
+    (node.getParentNode() ?? scene).addChild(lodNode);
+  }
 }
 
 await MeshoptSimplifier.ready;
@@ -434,7 +475,7 @@ for (const sex of ['Male', 'Female']) {
   body.listPrimitives()[0].getMaterial().setName(`MI_Athlete_${sex}`);
   simplifyMaterials(doc);
   const id = `athlete_fparms_${SEX[sex]}`;
-  lock.files.push({ role: 'fparms', id, body: sex.toLowerCase(), source: 'quaternius-universal-base-characters', ...(await finish(doc, `${id}.glb`, { ratio: 0.6 })) });
+  lock.files.push({ role: 'fparms', id, body: sex.toLowerCase(), source: 'quaternius-universal-base-characters', ...(await finish(doc, `${id}.glb`, { ratio: 0.6, lod: false })) });
 }
 
 // ---------------------------------------------------------------- outfit parts
