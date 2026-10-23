@@ -108,3 +108,25 @@ in the same themes and paint slots as straight walls.
   invisible barrier always reaches 60 m up, so nothing is thrown or jumped
   out. MapMaker shows it as an orange outline, and spawns outside it are an
   error.
+
+## Jump pads
+
+A **Jump Pad** (Entities tab, Scenario & Traps) throws whoever steps on it
+up (`power`, m/s) and along its arrows (`push`, m/s). The inspector shows
+roughly how high and how far that is. Launches are predicted on the client
+like any other movement. Each pad's flight is traced to where it lands and
+added to the navmesh as a one-way link, so bots ride pads too, and ledges
+reachable only by pad count as reachable for map validation.
+
+## Scripted maps (`packages/server/src/tools/mapkit.ts`)
+
+`MapBuilder` wraps the MapMaker's edit commands for map build scripts:
+- `tile`, `fill` and `edge`;
+- `spawn`, `pickup`, `prop`, `breakable`, `mount` and `pad`;
+- `theme`, `terrain`, `bounds`, `teams` and `meta`;
+- `save`, which validates the map and its navmesh and writes `maps/<id>.json`.
+
+The homage maps are built this way, one script each in
+`packages/server/src/tools/maps/`; run one with
+`npx tsx src/tools/maps/<id>.ts` in `packages/server`. Every map in `maps/`
+shows up in the Arcade and as a MapMaker template automatically.

@@ -373,6 +373,24 @@ async function vehiclesFlow(browser) {
   await page.context().close();
 }
 
+/** Every homage map (and any other map without a flow of its own) starts a match cleanly. */
+async function mapsFlow(browser) {
+  const { readdirSync } = await import('node:fs');
+  const covered = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
+  const ids = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !covered.has(id));
+  for (const id of ids) {
+    const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(`${CLIENT}/?offline=${id}`);
+    const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 40000 }).then(() => true, () => false);
+    await page.waitForTimeout(1500);
+    const alive = ok && (await page.evaluate(() => window.__cs.local.alive && window.__cs.local.state.pos.y > -5));
+    check(ok && alive && errors.length === 0, `${id}: match starts and you spawn on solid ground${errors.length ? ` (${errors.join('; ')})` : ''}`);
+    await page.context().close();
+  }
+}
+
 async function designerFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1200, height: 760 } })).newPage();
   const errors = [];
@@ -446,7 +464,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, teams: teamsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, teams: teamsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {
