@@ -347,10 +347,12 @@ async function sceneryFlow(browser) {
   p = await at(20, 20);
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
-  await page.waitForTimeout(1500);
+  // Hold until the hill stands at least 1.5 m tall (headless frame rates vary), at most 8 s.
+  await page.waitForFunction(() => Math.max(...window.__editor.doc.terrain.heights) > 150 || window.__editor.stroke?.now && Math.max(...window.__editor.stroke.now.heights) > 150, null, { timeout: 8000 }).catch(() => {});
   await page.mouse.up();
   await clickTool(page, '[data-tool="scatter:rocks"]');
-  p = await at(24, 20);
+  p = await at(18, 18);
+  await page.mouse.move(p.x, p.y);
   await page.mouse.click(p.x, p.y);
   const rocks = await page.evaluate(() => {
     const doc = window.__editor.doc;

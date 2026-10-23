@@ -3,3 +3,5 @@ dist/
 *.log
 .vite/
 .cache/
+*.gci
+*.GCI
