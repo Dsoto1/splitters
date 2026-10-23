@@ -24,6 +24,8 @@ import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('bottling', 'Bottling Plant');
 m.theme('factory');
+// The original sat in a mountain dam: grey peaks under an overcast sky.
+m.backdrop('overcast', 'mountains', 'gravel', 0.55);
 const P = Math.PI / 2;
 /** World position of cell (x, y) on level z, plus an offset in metres. */
 const at = (x: number, y: number, z = 0, dx = 0, dy = 0): [number, number, number] => [x * 8 + dx, z * 4, y * 8 + dy];

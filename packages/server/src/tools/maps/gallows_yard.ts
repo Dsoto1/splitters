@@ -25,6 +25,7 @@ import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('gallows_yard', 'Gallows Yard');
 m.theme('castle');
+m.backdrop('dusk', 'forest', 'grass', 0.6);
 const [embers, tide] = m.teamIds() as [string, string];
 const P = Math.PI / 2;
 

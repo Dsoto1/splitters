@@ -17,6 +17,8 @@ import type { MapDocument, MapEntity, Rotation, TerrainData, Vec3, WorldBox } fr
 import { DESTRUCTIBLE_SPECS, MAX_TEAMS, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
+import { BackdropVisuals } from '../backdrop.ts';
+import { FoliageVisuals } from '../foliage.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
 import { createPropNode } from '../game/propVisuals.ts';
@@ -44,6 +46,10 @@ export class EditorView {
   yaw = 0;
   pitch = -0.9;
   private readonly styler: MapStyler;
+  private readonly backdrop: BackdropVisuals;
+  private readonly foliage: FoliageVisuals;
+  private foliageTerrain: MapDocument['terrain'] = null;
+  private foliageKey = '';
   private faceHighlight?: Mesh;
   private brushRing?: LinesMesh;
   private grid?: LinesMesh;
@@ -63,14 +69,17 @@ export class EditorView {
     this.camera = new FreeCamera('editorCam', new Vector3(0, 22, -18), this.scene);
     this.camera.inputs.clear();
     this.camera.minZ = 0.1;
-    this.camera.maxZ = 2000;
+    this.camera.maxZ = 4000;
     this.camera.fov = 1.0;
     const hemi = new HemisphericLight('hemi', new Vector3(0.3, 1, 0.2), this.scene);
     hemi.intensity = 0.8;
     hemi.groundColor = new Color3(0.3, 0.3, 0.32);
     new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene).intensity = 0.5;
     this.styler = new MapStyler(this.scene);
+    this.backdrop = new BackdropVisuals(this.scene, this.styler);
     this.models = new ModelLibrary(this.scene);
+    this.foliage = new FoliageVisuals(this.scene, this.models);
+    this.scene.onBeforeRenderObservable.add(() => this.foliage.update(this.camera.position));
     this.scenario = new ScenarioVisuals(this.scene, { editor: true });
 
     const flat = (name: string, hex: string, alpha = 1, wire = false) => {
@@ -166,8 +175,14 @@ export class EditorView {
     const visible = { ...doc, classicStructure: { ...doc.classicStructure, tiles: visibleTiles } };
     const boxes = buildMapGeometry(visible);
     this.styler.build(visible, boxes, 'edmap');
-    const sky = MapStyler.skyColor(doc).scale(0.45);
-    this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
+    this.backdrop.build(doc, boxes);
+    // Regrow plants only when the ground or what stands on it changed.
+    const foliageKey = doc.terrain ? `${doc.terrain.heights.length}:${boxes.length}` : '';
+    if (doc.terrain !== this.foliageTerrain || foliageKey !== this.foliageKey) {
+      this.foliageTerrain = doc.terrain;
+      this.foliageKey = foliageKey;
+      void this.foliage.grow(doc.terrain, boxes, doc.metadata.id);
+    }
     this.setGrid(doc, level);
     this.setBoundsOutline(doc);
     this.setEntities(doc, level, showAll, new Set());

@@ -1,6 +1,7 @@
 import type { ScenarioLogic } from '../map/logic.ts';
 import type { Faction, MapBounds, MapDocument, MapEntity, TeamSetup, TilePlacement } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
+import type { Backdrop } from '../map/backdrop.ts';
 
 /**
  * Editor mutations as invertible commands (v1 spec §8.9). Commands carry the
@@ -23,6 +24,7 @@ export type EditCommand =
   | { kind: 'setTerrain'; before: TerrainData | null; after: TerrainData | null }
   | { kind: 'setBounds'; before: MapBounds | null; after: MapBounds | null }
   | { kind: 'setTeamSetup'; before: TeamSetup | null; after: TeamSetup | null }
+  | { kind: 'setBackdrop'; before: Backdrop | null; after: Backdrop | null }
   | { kind: 'batch'; commands: EditCommand[] };
 
 export class CommandError extends Error {}
@@ -82,6 +84,8 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       return { ...doc, bounds: cmd.after };
     case 'setTeamSetup':
       return { ...doc, teamSetup: cmd.after };
+    case 'setBackdrop':
+      return { ...doc, backdrop: cmd.after };
     case 'batch':
       return cmd.commands.reduce(applyCommand, doc);
   }
@@ -115,6 +119,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setBounds', before: cmd.after, after: cmd.before };
     case 'setTeamSetup':
       return { kind: 'setTeamSetup', before: cmd.after, after: cmd.before };
+    case 'setBackdrop':
+      return { kind: 'setBackdrop', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -140,6 +146,7 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setFactions':
     case 'setBounds':
     case 'setTeamSetup':
+    case 'setBackdrop':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':
       return cmd.commands.every(isEmptyCommand);

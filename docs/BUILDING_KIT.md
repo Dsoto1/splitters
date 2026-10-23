@@ -130,3 +130,7 @@ The homage maps are built this way, one script each in
 `packages/server/src/tools/maps/`; run one with
 `npx tsx src/tools/maps/<id>.ts` in `packages/server`. Every map in `maps/`
 shows up in the Arcade and as a MapMaker template automatically.
+
+## Backdrops and plants
+
+Skies, distant scenery, ground past the border, terrain plants and the scatter brush are covered in [SCENERY.md](SCENERY.md).

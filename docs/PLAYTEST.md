@@ -73,13 +73,20 @@ props, walls you can see through, spots you get stuck, items you can't reach.
       `reactor`, `gallows_yard`, `bottling`, `step_temple`, `silo_complex`.
 - [ ] Bots move around each map and don't stand stuck against walls.
 
-## 4. Teams (Arcade)
+## 4. Scenery
+
+- [ ] Look past the border on a few maps: a photo sky, ground carrying on, distant scenery fading into haze (mesas on `canyon`/`sandgate`, snowy peaks on `frost_basin`, mountains on `bottling`, a city on `reactor`/`lantern_quarter`, jungle round `step_temple`, a starfield on `skyward`).
+- [ ] Sunset, dusk and night maps are lit to match (warm and low, or dim and blue).
+- [ ] Grass and flowers grow on the canyon floor; they don't poke through floors, and never hide a crouching player.
+- [ ] Frame rate stays smooth when you look across a grassy field (F3 shows it).
+
+## 5. Teams (Arcade)
 
 - [ ] Arcade → pick a map → set 3 or more team rows with different sizes (try 2,2,2,2,2,2,12).
 - [ ] The score bar and Tab scoreboard show every team in its colour.
 - [ ] Teams are filled to the sizes you set; teammates don't take damage from you (if friendly fire is off).
 
-## 5. MapMaker
+## 6. MapMaker
 
 - [ ] **Curves** tab: small / medium / large round corners and arcades, half-round rooms, round tower, curved corridor, balconies. Rotate them and connect them to the regular rooms with no gaps.
 - [ ] Wall styles: **High** (2 storeys), **Tower** (4 storeys), **Fence**.
@@ -87,6 +94,9 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] **Teams** panel: set team sizes; TEST fills the teams with bots.
 - [ ] Place a buggy, a turret, a sentry and a jump pad; TEST and use each one.
 - [ ] Terrain tab: paint grass/dirt/stone, raise and lower hills, undo a stroke.
+- [ ] Terrain tab → Plants: paint Overgrown and Bare patches; **Plants follow the ground** resets them.
+- [ ] Props tab → Scatter brush: plant a pine forest, bushes and flowers; Alt-click clears; one undo per click.
+- [ ] Map properties → Backdrop: switch sky, scenery, ground beyond and haze; the view updates at once.
 - [ ] Open one of the new maps as a template, change something, TEST, return with F5.
 
 ## Reporting

@@ -27,7 +27,10 @@ import {
   setEdgeCommand,
   setThemeCommand,
   validateMap,
+  type BackdropGround,
   type BoundaryStyle,
+  type SceneryId,
+  type SkyId,
   type EdgeStyle,
   type MapDocument,
   type MapEntity,
@@ -142,6 +145,12 @@ export class MapBuilder {
     const fit = rect ?? fitBounds(this.doc, margin);
     if (!fit) throw new Error(`${this.id}: nothing to fit a boundary round`);
     this.run('Boundary', { kind: 'setBounds', before: this.doc.bounds, after: { min: fit.min, max: fit.max, style, height } });
+    return this;
+  }
+
+  /** Sky, distant scenery, ground past the border and haze (otherwise the theme's). */
+  backdrop(sky: SkyId, scenery: SceneryId, ground: BackdropGround, haze = 0.5): this {
+    this.run('Backdrop', { kind: 'setBackdrop', before: this.doc.backdrop, after: { sky, scenery, ground, haze } });
     return this;
   }
 

@@ -172,3 +172,8 @@ dialog { border-top: 3px solid var(--cyan); }
 label.check { display: flex; align-items: center; gap: 6px; color: var(--muted); margin: 8px 0; font-size: 12px; }
 label.stack > span { float: right; color: var(--text, #e8edf5); }
 button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
+
+/* Plant cover levels: one row of segmented buttons. */
+.seg { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin-bottom: 6px; }
+.seg button { padding: 5px 2px; font-size: 10px; text-transform: none; letter-spacing: 0; }
+.seg button.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: rgba(0, 209, 255, 0.12); }

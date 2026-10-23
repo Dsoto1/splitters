@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 9,
   "metadata": {
     "id": "gallows_yard",
     "name": "Gallows Yard",
@@ -1606,6 +1606,12 @@
     ],
     "style": "invisible",
     "height": 8
+  },
+  "backdrop": {
+    "sky": "dusk",
+    "scenery": "forest",
+    "ground": "grass",
+    "haze": 0.6
   },
   "teamSetup": {
     "sizes": [

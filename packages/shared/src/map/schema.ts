@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { EDGE_STYLES } from './catalog.ts';
 import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
+import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
 import { ScenarioLogic } from './logic.ts';
 import { MOUNT_MODELS } from '../sim/mounts.ts';
 
@@ -16,7 +17,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 8;
+export const MAP_FORMAT_VERSION = 9;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -278,8 +279,11 @@ export const Terrain = z
     heights: z.array(z.number().int().min(-5000).max(20000)),
     materials: z.array(z.number().int().min(0).max(TERRAIN_MATERIALS.length - 1)),
     boundary: z.boolean().default(true),
+    /** Plant cover per cell, 0 (bare) to 4 (lush, with bushes); empty = chosen from each cell's material. */
+    foliage: z.array(z.number().int().min(0).max(4)).default([]),
   })
   .refine((t) => t.heights.length === t.cols * t.rows, 'terrain needs cols × rows heights')
+  .refine((t) => t.foliage.length === 0 || t.foliage.length === (t.cols - 1) * (t.rows - 1), 'terrain foliage needs a value for every cell')
   .refine((t) => t.materials.length === (t.cols - 1) * (t.rows - 1), 'terrain needs a material for every cell');
 
 /**
@@ -297,6 +301,14 @@ export const MapBounds = z
     height: z.number().min(1).max(60).default(8),
   })
   .refine((b) => b.max[0] - b.min[0] >= 4 && b.max[1] - b.min[1] >= 4, 'the boundary must be at least 4 m across');
+
+/** Sky, distant scenery, ground past the border and haze (see backdrop.ts). */
+export const BackdropSchema = z.object({
+  sky: z.enum(SKY_IDS),
+  scenery: z.enum(SCENERY_IDS),
+  ground: z.enum(BACKDROP_GROUNDS),
+  haze: z.number().min(0).max(1).default(0.5),
+});
 
 /** Recommended team layout for team modes: players per team, 2–8 teams (e.g. [2, 2, 2, 12]). */
 export const TeamSetup = z.object({
@@ -317,6 +329,8 @@ export const MapDocument = z.object({
   terrain: Terrain.nullable().default(null),
   /** Walls round the play area, or none. */
   bounds: MapBounds.nullable().default(null),
+  /** What surrounds the play area, or none (the theme's backdrop). */
+  backdrop: BackdropSchema.nullable().default(null),
   /** Recommended teams for team modes, or none (two even teams). */
   teamSetup: TeamSetup.nullable().default(null),
   /** Content packs this map needs, beyond the always-present core pack. */

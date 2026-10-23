@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 9,
   "metadata": {
     "id": "step_temple",
     "name": "Step Temple",
@@ -1772,6 +1772,12 @@
   },
   "terrain": null,
   "bounds": null,
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "forest",
+    "ground": "moss",
+    "haze": 0.55
+  },
   "teamSetup": null,
   "dependencies": []
 }

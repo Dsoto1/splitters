@@ -51,6 +51,20 @@ export interface TerrainData {
   materials: number[];
   /** Invisible walls round the edge keep players and grenades in. */
   boundary: boolean;
+  /** Plant cover per cell, 0–4 (see FOLIAGE_LEVELS); empty = from each cell's material. */
+  foliage: number[];
+}
+
+/** Plant cover levels painted with MapMaker's foliage brush. Drawn only: plants never block movement or shots. */
+export const FOLIAGE_LEVELS = ['Bare', 'Sparse', 'Grassy', 'Lush', 'Overgrown'] as const;
+
+/** Cover a cell gets when the map hasn't painted any. */
+const MATERIAL_FOLIAGE: Record<TerrainMaterial, number> = { grass: 2, moss: 1, dirt: 0, mud: 0, sand: 0, gravel: 0, stone: 0, snow: 0 };
+
+/** Plant cover (0–4) of terrain cell `i`. */
+export function cellFoliage(t: TerrainData, i: number): number {
+  if (t.foliage.length) return t.foliage[i] ?? 0;
+  return MATERIAL_FOLIAGE[TERRAIN_MATERIALS[t.materials[i] ?? 0] ?? 'grass'];
 }
 
 export function newTerrain(sizeMetres: number, spacing = 2, centre: [number, number] = [0, 0], material: TerrainMaterial = 'grass'): TerrainData {
@@ -64,6 +78,7 @@ export function newTerrain(sizeMetres: number, spacing = 2, centre: [number, num
     heights: new Array(n * n).fill(0),
     materials: new Array((n - 1) * (n - 1)).fill(TERRAIN_MATERIALS.indexOf(material)),
     boundary: true,
+    foliage: [],
   };
 }
 
@@ -163,7 +178,7 @@ export function terrainRaycast(t: TerrainData, origin: Vec3, dir: Vec3, maxDist 
   return null;
 }
 
-export const TERRAIN_BRUSHES = ['raise', 'lower', 'smooth', 'flatten', 'roughen', 'paint'] as const;
+export const TERRAIN_BRUSHES = ['raise', 'lower', 'smooth', 'flatten', 'roughen', 'paint', 'foliage'] as const;
 export type TerrainBrush = (typeof TERRAIN_BRUSHES)[number];
 
 export interface BrushStroke {
@@ -177,6 +192,8 @@ export interface BrushStroke {
   target?: number;
   /** Paint: the material to lay. */
   material?: TerrainMaterial;
+  /** Foliage: the plant cover to lay (0 bare … 4 overgrown). */
+  level?: number;
   /** Roughen: seed for the noise. */
   seed?: number;
 }
@@ -208,6 +225,19 @@ export function applyBrush(t: TerrainData, s: BrushStroke): TerrainData {
       }
     }
     return { ...t, materials };
+  }
+  if (s.brush === 'foliage') {
+    // The first stroke turns the automatic cover (from each cell's material) into a painted layer.
+    const foliage = t.foliage.length ? t.foliage.slice() : t.materials.map((_, i) => cellFoliage(t, i));
+    const level = Math.max(0, Math.min(4, Math.round(s.level ?? 2)));
+    for (let r = r0; r < Math.min(r1, t.rows - 1); r++) {
+      for (let c = c0; c < Math.min(c1, t.cols - 1); c++) {
+        const x = t.origin[0] + (c + 0.5) * t.spacing;
+        const z = t.origin[1] + (r + 0.5) * t.spacing;
+        if (Math.hypot(x - s.x, z - s.z) <= s.radius) foliage[r * (t.cols - 1) + c] = level;
+      }
+    }
+    return { ...t, foliage };
   }
   for (let r = r0; r <= r1; r++) {
     for (let c = c0; c <= c1; c++) {

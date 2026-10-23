@@ -5453,6 +5453,971 @@
         "centred, stood on the ground and scaled to metres",
         "texture embedded"
       ]
+    },
+    {
+      "file": "props/oak.glb",
+      "sha256": "289a4027c24a3cfa",
+      "triangles": 196,
+      "bytes": 10792,
+      "source": "kenney-nature-kit/tree_oak.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/oak_dark.glb",
+      "sha256": "53c5d932f9438049",
+      "triangles": 196,
+      "bytes": 10796,
+      "source": "kenney-nature-kit/tree_oak_dark.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/oak_autumn.glb",
+      "sha256": "883ddd280cce381c",
+      "triangles": 196,
+      "bytes": 10788,
+      "source": "kenney-nature-kit/tree_oak_fall.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_round.glb",
+      "sha256": "0ae9f93dc2be0b1e",
+      "triangles": 114,
+      "bytes": 7100,
+      "source": "kenney-nature-kit/tree_default.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_round_dark.glb",
+      "sha256": "347e71f30e6498dd",
+      "triangles": 114,
+      "bytes": 7104,
+      "source": "kenney-nature-kit/tree_default_dark.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_round_autumn.glb",
+      "sha256": "58d19a58e477b00a",
+      "triangles": 228,
+      "bytes": 12392,
+      "source": "kenney-nature-kit/tree_default_fall.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_fat.glb",
+      "sha256": "38bfd36f3a5346fb",
+      "triangles": 50,
+      "bytes": 4400,
+      "source": "kenney-nature-kit/tree_fat.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_detailed.glb",
+      "sha256": "b45c1c7f2d76804c",
+      "triangles": 402,
+      "bytes": 23024,
+      "source": "kenney-nature-kit/tree_detailed.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_cone.glb",
+      "sha256": "ee6cd2dba69dcf04",
+      "triangles": 132,
+      "bytes": 8160,
+      "source": "kenney-nature-kit/tree_cone.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_plateau.glb",
+      "sha256": "99d5197496cbb028",
+      "triangles": 215,
+      "bytes": 11992,
+      "source": "kenney-nature-kit/tree_plateau.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_thin.glb",
+      "sha256": "7c5147eb6c6474bb",
+      "triangles": 228,
+      "bytes": 12616,
+      "source": "kenney-nature-kit/tree_thin.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_blocks.glb",
+      "sha256": "b3ce5a56d3a376c3",
+      "triangles": 132,
+      "bytes": 7588,
+      "source": "kenney-nature-kit/tree_blocks.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/tree_small.glb",
+      "sha256": "1ee009354adb6df5",
+      "triangles": 62,
+      "bytes": 5056,
+      "source": "kenney-nature-kit/tree_small.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pine_tall.glb",
+      "sha256": "794c028c8c6e19c0",
+      "triangles": 134,
+      "bytes": 8048,
+      "source": "kenney-nature-kit/tree_pineTallA_detailed.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pine_tall_b.glb",
+      "sha256": "8cb9f643c8268979",
+      "triangles": 154,
+      "bytes": 8604,
+      "source": "kenney-nature-kit/tree_pineTallC_detailed.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pine_round.glb",
+      "sha256": "6c032cf8ea0d47d7",
+      "triangles": 206,
+      "bytes": 11252,
+      "source": "kenney-nature-kit/tree_pineRoundC.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pine_small.glb",
+      "sha256": "c8e1b8304853c10d",
+      "triangles": 164,
+      "bytes": 9456,
+      "source": "kenney-nature-kit/tree_pineSmallA.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pine_ground.glb",
+      "sha256": "06d735bc921d9259",
+      "triangles": 82,
+      "bytes": 4864,
+      "source": "kenney-nature-kit/tree_pineGroundA.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/palm_tall.glb",
+      "sha256": "038e1d2cb799dcc4",
+      "triangles": 336,
+      "bytes": 15612,
+      "source": "kenney-nature-kit/tree_palmDetailedTall.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/palm_short.glb",
+      "sha256": "713d7b31334aafa1",
+      "triangles": 336,
+      "bytes": 15616,
+      "source": "kenney-nature-kit/tree_palmDetailedShort.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bush.glb",
+      "sha256": "298ec361adae263f",
+      "triangles": 32,
+      "bytes": 3280,
+      "source": "kenney-nature-kit/plant_bush.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bush_large.glb",
+      "sha256": "9b6b1727af3e481f",
+      "triangles": 60,
+      "bytes": 4732,
+      "source": "kenney-nature-kit/plant_bushLarge.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bush_leafy.glb",
+      "sha256": "7352dc18a67947df",
+      "triangles": 104,
+      "bytes": 7380,
+      "source": "kenney-nature-kit/plant_bushDetailed.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bush_small.glb",
+      "sha256": "0dd4553f217d269a",
+      "triangles": 16,
+      "bytes": 2424,
+      "source": "kenney-nature-kit/plant_bushSmall.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/bush_cone.glb",
+      "sha256": "476ca8aaddcee9ee",
+      "triangles": 30,
+      "bytes": 2964,
+      "source": "kenney-nature-kit/plant_bushTriangle.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/fern.glb",
+      "sha256": "6a70160ddf80d5b2",
+      "triangles": 32,
+      "bytes": 2596,
+      "source": "kenney-nature-kit/plant_flatTall.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/plant_low.glb",
+      "sha256": "21a738866ad1a734",
+      "triangles": 44,
+      "bytes": 2880,
+      "source": "kenney-nature-kit/plant_flatShort.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/grass_tall.glb",
+      "sha256": "fab7ed995c7608db",
+      "triangles": 224,
+      "bytes": 13312,
+      "source": "kenney-nature-kit/grass_large.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/grass_patch.glb",
+      "sha256": "68e3c004afa1749d",
+      "triangles": 132,
+      "bytes": 8332,
+      "source": "kenney-nature-kit/grass.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/grass_leafy.glb",
+      "sha256": "1acc60febf6f5809",
+      "triangles": 144,
+      "bytes": 10172,
+      "source": "kenney-nature-kit/grass_leafsLarge.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/flower_red.glb",
+      "sha256": "c56d0b7d33239020",
+      "triangles": 76,
+      "bytes": 5496,
+      "source": "kenney-nature-kit/flower_redA.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/flower_yellow.glb",
+      "sha256": "13e32fb9e99a99ec",
+      "triangles": 76,
+      "bytes": 5504,
+      "source": "kenney-nature-kit/flower_yellowA.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/flower_purple.glb",
+      "sha256": "61ded1fe3008f67f",
+      "triangles": 76,
+      "bytes": 5500,
+      "source": "kenney-nature-kit/flower_purpleA.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/mushrooms.glb",
+      "sha256": "eb5713f571c232f5",
+      "triangles": 144,
+      "bytes": 10784,
+      "source": "kenney-nature-kit/mushroom_redGroup.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/mushroom_tall.glb",
+      "sha256": "9e51b0a155981020",
+      "triangles": 48,
+      "bytes": 4848,
+      "source": "kenney-nature-kit/mushroom_tanTall.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cactus_tall.glb",
+      "sha256": "d9c6de211e4a7f21",
+      "triangles": 122,
+      "bytes": 6908,
+      "source": "kenney-nature-kit/cactus_tall.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cactus.glb",
+      "sha256": "4cf700cab5cdc100",
+      "triangles": 116,
+      "bytes": 6400,
+      "source": "kenney-nature-kit/cactus_short.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/corn.glb",
+      "sha256": "6d2b50fc0403bf44",
+      "triangles": 186,
+      "bytes": 12376,
+      "source": "kenney-nature-kit/crops_cornStageD.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/wheat.glb",
+      "sha256": "e540fa3ffe154d2c",
+      "triangles": 360,
+      "bytes": 21788,
+      "source": "kenney-nature-kit/crops_wheatStageB.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hanging_moss.glb",
+      "sha256": "075bf73281bdd3d0",
+      "triangles": 52,
+      "bytes": 3504,
+      "source": "kenney-nature-kit/hanging_moss.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/lily.glb",
+      "sha256": "ff096412c36d8463",
+      "triangles": 86,
+      "bytes": 6464,
+      "source": "kenney-nature-kit/lily_large.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/boulder_round.glb",
+      "sha256": "199790c55ac00bfb",
+      "triangles": 80,
+      "bytes": 5804,
+      "source": "kenney-nature-kit/rock_largeA.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/boulder_jagged.glb",
+      "sha256": "d06db27bd11cce66",
+      "triangles": 80,
+      "bytes": 6304,
+      "source": "kenney-nature-kit/rock_largeD.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/boulder_flat.glb",
+      "sha256": "95db7e06898a3ca0",
+      "triangles": 73,
+      "bytes": 5952,
+      "source": "kenney-nature-kit/rock_largeF.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rock_spire_tall.glb",
+      "sha256": "344aa5def5e34a41",
+      "triangles": 172,
+      "bytes": 10200,
+      "source": "kenney-nature-kit/rock_tallB.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stone_pillar.glb",
+      "sha256": "7ef85541a754d87d",
+      "triangles": 136,
+      "bytes": 8340,
+      "source": "kenney-nature-kit/stone_tallA.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stones.glb",
+      "sha256": "4239d8a1255112a0",
+      "triangles": 16,
+      "bytes": 2004,
+      "source": "kenney-nature-kit/stone_smallA.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stump_old.glb",
+      "sha256": "1826e7c87d31dcbf",
+      "triangles": 120,
+      "bytes": 6912,
+      "source": "kenney-nature-kit/stump_oldTall.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/stump_cut.glb",
+      "sha256": "8d82ee51057fa712",
+      "triangles": 96,
+      "bytes": 6256,
+      "source": "kenney-nature-kit/stump_roundDetailed.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/log_big.glb",
+      "sha256": "f8afdaaa9cb27e6b",
+      "triangles": 96,
+      "bytes": 6000,
+      "source": "kenney-nature-kit/log_large.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/log_stack.glb",
+      "sha256": "4ed7d2352d7caf3f",
+      "triangles": 310,
+      "bytes": 14768,
+      "source": "kenney-nature-kit/log_stackLarge.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/campfire_stones.glb",
+      "sha256": "34a396dc7820d27a",
+      "triangles": 264,
+      "bytes": 12308,
+      "source": "kenney-nature-kit/campfire_stones.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cliff.glb",
+      "sha256": "471087adf84df026",
+      "triangles": 12,
+      "bytes": 2200,
+      "source": "kenney-nature-kit/cliff_block_rock.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cliff_corner.glb",
+      "sha256": "be745695c0e04639",
+      "triangles": 12,
+      "bytes": 1744,
+      "source": "kenney-nature-kit/cliff_corner_rock.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/cliff_steps.glb",
+      "sha256": "542890831cb4e363",
+      "triangles": 219,
+      "bytes": 11588,
+      "source": "kenney-nature-kit/cliff_steps_rock.glb",
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "skies/clear.jpg",
+      "sha256": "4ba9d3b02f1b3acf",
+      "bytes": 37359,
+      "source": "clear/kloofendal_43d_clear_puresky.jpg",
+      "title": "Kloofendal 43d Clear (Pure Sky)",
+      "creator": "Greg Zaal",
+      "url": "https://polyhaven.com/a/kloofendal_43d_clear_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
+    },
+    {
+      "file": "skies/cloudy.jpg",
+      "sha256": "d5d822457dae38e4",
+      "bytes": 94695,
+      "source": "cloudy/kloofendal_48d_partly_cloudy_puresky.jpg",
+      "title": "Kloofendal 48d Partly Cloudy (Pure Sky)",
+      "creator": "Greg Zaal, Jarod Guest",
+      "url": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
+    },
+    {
+      "file": "skies/overcast.jpg",
+      "sha256": "c40593a804639538",
+      "bytes": 44652,
+      "source": "overcast/kloofendal_overcast_puresky.jpg",
+      "title": "Kloofendal Overcast (Pure Sky)",
+      "creator": "Greg Zaal",
+      "url": "https://polyhaven.com/a/kloofendal_overcast_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
+    },
+    {
+      "file": "skies/misty.jpg",
+      "sha256": "13fc704f4f209d19",
+      "bytes": 24341,
+      "source": "misty/kloofendal_misty_morning_puresky.jpg",
+      "title": "Kloofendal Misty Morning (Pure Sky)",
+      "creator": "Greg Zaal",
+      "url": "https://polyhaven.com/a/kloofendal_misty_morning_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
+    },
+    {
+      "file": "skies/sunrise.jpg",
+      "sha256": "007da4022cc36b1c",
+      "bytes": 32747,
+      "source": "sunrise/qwantani_sunrise_puresky.jpg",
+      "title": "Qwantani Sunrise (Pure Sky)",
+      "creator": "Greg Zaal, Jarod Guest",
+      "url": "https://polyhaven.com/a/qwantani_sunrise_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
+    },
+    {
+      "file": "skies/sunset.jpg",
+      "sha256": "3b31b1c4c0e83afa",
+      "bytes": 34699,
+      "source": "sunset/qwantani_sunset_puresky.jpg",
+      "title": "Qwantani Sunset (Pure Sky)",
+      "creator": "Greg Zaal, Jarod Guest",
+      "url": "https://polyhaven.com/a/qwantani_sunset_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
+    },
+    {
+      "file": "skies/dusk.jpg",
+      "sha256": "ae4012f22859cae4",
+      "bytes": 30409,
+      "source": "dusk/qwantani_dusk_2_puresky.jpg",
+      "title": "Qwantani Dusk 2 (Pure Sky)",
+      "creator": "Greg Zaal, Jarod Guest",
+      "url": "https://polyhaven.com/a/qwantani_dusk_2_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
+    },
+    {
+      "file": "skies/night.jpg",
+      "sha256": "48662ad8dcb74364",
+      "bytes": 45562,
+      "source": "night/qwantani_night_puresky.jpg",
+      "title": "Qwantani Night (Pure Sky)",
+      "creator": "Greg Zaal, Jarod Guest",
+      "url": "https://polyhaven.com/a/qwantani_night_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
+    },
+    {
+      "file": "skies/storm.jpg",
+      "sha256": "6c10ed186e84d362",
+      "bytes": 52908,
+      "source": "storm/wasteland_clouds_puresky.jpg",
+      "title": "Wasteland Clouds (Pure Sky)",
+      "creator": "Jarod Guest, Sergej Majboroda",
+      "url": "https://polyhaven.com/a/wasteland_clouds_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
+    },
+    {
+      "file": "skies/snowy.jpg",
+      "sha256": "15d0a190448ab8e7",
+      "bytes": 34498,
+      "source": "snowy/snow_field_puresky.jpg",
+      "title": "Snow Field (Pure Sky)",
+      "creator": "Jarod Guest, Sergej Majboroda",
+      "url": "https://polyhaven.com/a/snow_field_puresky",
+      "license": "CC0-1.0",
+      "modifications": [
+        "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
+        "colour graded where content/skies.json gives a grade (night)"
+      ]
     }
   ]
 }

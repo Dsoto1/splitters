@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 9,
   "metadata": {
     "id": "bottling",
     "name": "Bottling Plant",
@@ -1651,6 +1651,12 @@
   },
   "terrain": null,
   "bounds": null,
+  "backdrop": {
+    "sky": "overcast",
+    "scenery": "mountains",
+    "ground": "gravel",
+    "haze": 0.55
+  },
   "teamSetup": null,
   "dependencies": []
 }

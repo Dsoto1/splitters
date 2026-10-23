@@ -11,6 +11,8 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun } from './mountVisuals.ts';
+import { BackdropVisuals } from '../backdrop.ts';
+import { FoliageVisuals } from '../foliage.ts';
 import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -107,6 +109,7 @@ export class GameView {
   private effects: Fx[] = [];
   private zoneVisuals!: ZoneVisuals;
   private readonly viewRoot: TransformNode;
+  private readonly foliage: FoliageVisuals;
   private viewmodel?: TransformNode;
   private viewWeapon?: string;
   /** Your own character's arms in first person, gripping the viewmodel. */
@@ -125,12 +128,15 @@ export class GameView {
     this.scene.skipPointerMovePicking = true;
     this.camera = new FreeCamera('camera', new Vector3(0, 10, -10), this.scene);
     this.camera.minZ = 0.03;
+    // Far enough for the backdrop's distant scenery.
+    this.camera.maxZ = 4000;
     this.camera.fov = DEFAULT_FOV;
     this.camera.inputs.clear();
     this.models = new ModelLibrary(this.scene);
     this.scenario = new ScenarioVisuals(this.scene);
     this.zoneVisuals = new ZoneVisuals(this.scene);
     this.characters = new CharacterLibrary(this.scene);
+    this.foliage = new FoliageVisuals(this.scene, this.models);
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
     hemi.intensity = 0.8;
@@ -148,9 +154,10 @@ export class GameView {
   }
 
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
-    new MapStyler(this.scene).build(doc, boxes);
-    const sky = MapStyler.skyColor(doc);
-    this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
+    const styler = new MapStyler(this.scene);
+    styler.build(doc, boxes);
+    new BackdropVisuals(this.scene, styler).build(doc, boxes);
+    void this.foliage.grow(doc.terrain, boxes, doc.metadata.id);
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     doc.entities.forEach((e, i) => {
       if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`));
@@ -166,6 +173,7 @@ export class GameView {
     // Babylon: rotation.y is yaw (0 = +Z), positive rotation.x looks down.
     this.camera.rotation.set(-pitch, yaw, 0);
     this.camera.fov = fov;
+    this.foliage.update(this.camera.position);
   }
 
   // ---------------------------------------------------------------- viewmodel

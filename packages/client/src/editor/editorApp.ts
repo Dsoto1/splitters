@@ -72,6 +72,21 @@ import {
   getProp,
   placementCells,
   TERRAIN_BRUSHES,
+  SCATTER_SETS,
+  SCATTER_SET_IDS,
+  scatterProps,
+  type ScatterSetId,
+  BACKDROP_GROUNDS,
+  SCENERY_IDS,
+  SCENERY_LABELS,
+  SKIES,
+  SKY_IDS,
+  resolveBackdrop,
+  type Backdrop,
+  type BackdropGround,
+  type SceneryId,
+  type SkyId,
+  FOLIAGE_LEVELS,
   TERRAIN_MATERIALS,
   TERRAIN_MATERIAL_LABELS,
   TERRAIN_SURFACES,
@@ -136,7 +151,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel };
+type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -248,6 +263,7 @@ export class EditorApp {
   private paintScope: PaintScope = 'surface';
   private terrainBrush: TerrainBrush = 'raise';
   private terrainMaterial: TerrainMaterial = 'dirt';
+  private foliageLevel = 3;
   private brushRadius = 8;
   private brushStrength = 0.5;
   /** Ground point under the pointer for the terrain tool. */
@@ -369,7 +385,7 @@ export class EditorApp {
     this.tool = tool;
     if (tool.kind === 'paint') this.showPane('paint');
     else if (tool.kind === 'edge' || tool.kind === 'tile') this.showPane('tiles');
-    else if (tool.kind === 'prop') this.showPane('props');
+    else if (tool.kind === 'prop' || tool.kind === 'scatter') this.showPane('props');
     else if (tool.kind === 'terrain') this.showPane('terrain');
     else if (tool.kind === 'spawn' || tool.kind === 'pickup' || tool.kind === 'scenario' || tool.kind === 'mount') this.showPane('entities');
     if (tool.kind !== 'terrain') {
@@ -388,6 +404,7 @@ export class EditorApp {
           (tool.kind === 'edge' && t === `edge:${tool.style}`) ||
           (tool.kind === 'prop' && t === `prop:${tool.model}`) ||
           (tool.kind === 'mount' && t === `mount:${tool.model}`) ||
+          (tool.kind === 'scatter' && t === `scatter:${tool.set}`) ||
           (tool.kind === 'terrain' && t === `terrain:${this.terrainBrush}`) ||
           t === tool.kind,
       );
@@ -403,6 +420,7 @@ export class EditorApp {
       prop: 'Click place (snaps to 25 cm, hold Shift for free) · R turn 15° · Right-click erase · Esc select tool',
       mount: 'Click place · R turn 15° · Right-click erase · players get in and out with E',
       terrain: 'Hold left to sculpt or paint · [ ] brush size · Shift inverts raise/lower · T cycles brushes',
+      scatter: 'Click to plant a patch · Alt-click clears that kind of plant · [ ] brush size · Right-click erase one',
     };
     $('ed-hint').textContent = `${hints[tool.kind]} · RMB look · WASD/QE fly`;
     this.updateHover();
@@ -638,12 +656,21 @@ export class EditorApp {
   }
 
   private updateHover(): void {
+    if (this.tool.kind === 'scatter') {
+      const p = this.hoverPoint;
+      this.view.setBrushRing(p ? this.doc.terrain : null, p?.x ?? 0, p?.z ?? 0, this.brushRadius, '#6fdc6a');
+      $('ed-target').textContent = p ? `${SCATTER_SETS[this.tool.set].label} · radius ${this.brushRadius} m` : '';
+      this.view.setFaceHighlight(null, null);
+      this.view.setHoverCell(this.doc, null);
+      this.view.setGhost(this.doc, null, null, 0, true);
+      return;
+    }
     if (this.tool.kind === 'terrain') {
       const h = this.terrainHover;
       const t = this.stroke?.now ?? this.doc.terrain;
-      const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff' };
+      const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff', foliage: '#6fdc6a' };
       this.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.brushRadius, colors[this.terrainBrush]);
-      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : this.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.brushRadius} m` : '';
+      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : this.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.foliageLevel]}` : this.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.brushRadius} m` : '';
       this.view.setFaceHighlight(null, null);
       this.view.setHoverCell(this.doc, null);
       this.view.setGhost(this.doc, null, null, 0, true);
@@ -747,6 +774,7 @@ export class EditorApp {
       if (this.tool.kind === 'paint') return e.altKey ? this.pickStyleAtHover() : this.paintAtHover(false);
       if (this.tool.kind === 'edge') return this.edgeAtHover(this.tool.style);
       if (this.tool.kind === 'terrain') return this.startStroke(e.shiftKey);
+      if (this.tool.kind === 'scatter') return this.scatterAtHover(this.tool.set, e.altKey);
       if (this.tool.kind !== 'select') return this.placeAtHover();
       const hit = this.pick();
       if (!hit) {
@@ -869,13 +897,13 @@ export class EditorApp {
           break;
         case 'PageUp':
         case 'BracketRight':
-          if (this.tool.kind === 'terrain' && e.code === 'BracketRight') this.setBrushRadius(this.brushRadius + 2);
+          if ((this.tool.kind === 'terrain' || this.tool.kind === 'scatter') && e.code === 'BracketRight') this.setBrushRadius(this.brushRadius + 2);
           else if (e.shiftKey) this.nudge(0, 0, 1);
           else this.setLevel(this.level + 1);
           break;
         case 'PageDown':
         case 'BracketLeft':
-          if (this.tool.kind === 'terrain' && e.code === 'BracketLeft') this.setBrushRadius(this.brushRadius - 2);
+          if ((this.tool.kind === 'terrain' || this.tool.kind === 'scatter') && e.code === 'BracketLeft') this.setBrushRadius(this.brushRadius - 2);
           else if (e.shiftKey) this.nudge(0, 0, -1);
           else this.setLevel(this.level - 1);
           break;
@@ -953,6 +981,7 @@ export class EditorApp {
       $('ed-entities').append(b);
     }
 
+    this.buildScatterPalette();
     this.buildPropPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
@@ -1016,6 +1045,45 @@ export class EditorApp {
     el.append(buttons, small(`${total} players in all${total > 32 ? ' (a match holds 32: the biggest teams will be short)' : ''}. Bots fill every team to its size in TEST and the Arcade.`));
   }
 
+  // ---------------------------------------------------------------- backdrop
+
+  /** What surrounds the map: sky, distant scenery, ground past the border and haze (the theme's unless set). */
+  private renderBackdropPanel(el: HTMLElement): void {
+    const head = document.createElement('h3');
+    head.textContent = 'Backdrop';
+    el.append(head);
+    const own = this.doc.backdrop;
+    const b = resolveBackdrop(this.doc);
+    const set = (label: string, after: Backdrop | null) => this.run(label, { kind: 'setBackdrop', before: this.doc.backdrop, after });
+    const patch = (p: Partial<Backdrop>) => set('Change backdrop', { ...b, ...p });
+    const select = (id: string, options: readonly (readonly [string, string])[], value: string, change: (v: string) => void) => {
+      const sel = document.createElement('select');
+      sel.id = id;
+      for (const [v, label] of options) sel.append(new Option(label, v, false, v === value));
+      sel.addEventListener('change', () => change(sel.value));
+      return sel;
+    };
+    el.append(
+      row('Sky', select('ed-bd-sky', SKY_IDS.map((id) => [id, SKIES.get(id)?.name ?? id] as const), b.sky, (v) => patch({ sky: v as SkyId }))),
+      row('Scenery', select('ed-bd-scenery', SCENERY_IDS.map((id) => [id, SCENERY_LABELS[id]] as const), b.scenery, (v) => patch({ scenery: v as SceneryId }))),
+      row(
+        'Ground beyond',
+        select('ed-bd-ground', BACKDROP_GROUNDS.map((g) => [g, g === 'water' ? 'Water' : g === 'none' ? 'None (open sky)' : TERRAIN_MATERIAL_LABELS[g]] as const), b.ground, (v) => patch({ ground: v as BackdropGround })),
+      ),
+    );
+    const haze = document.createElement('input');
+    haze.type = 'range';
+    haze.min = '0';
+    haze.max = '100';
+    haze.step = '5';
+    haze.value = String(Math.round(b.haze * 100));
+    haze.id = 'ed-bd-haze';
+    haze.addEventListener('change', () => patch({ haze: Number(haze.value) / 100 }));
+    el.append(row('Haze', haze));
+    if (own) el.append(button('Use the theme\'s backdrop', () => set('Theme backdrop', null)));
+    el.append(small(own ? 'Drawn only: nothing out there blocks players or shots.' : "Following the theme. Change anything to give this map its own."));
+  }
+
   // ---------------------------------------------------------------- boundary
 
   /** Map properties: walls round the play area, fitted to the map in one click. */
@@ -1060,12 +1128,15 @@ export class EditorApp {
     this.terrainBrush = brush;
     this.setTool({ kind: 'terrain' });
     for (const b of document.querySelectorAll<HTMLElement>('[data-ground]')) b.classList.toggle('active', brush === 'paint' && b.dataset.ground === this.terrainMaterial);
+    for (const b of document.querySelectorAll<HTMLElement>('[data-foliage]')) b.classList.toggle('active', brush === 'foliage' && Number(b.dataset.foliage) === this.foliageLevel);
   }
 
   private setBrushRadius(r: number): void {
     this.brushRadius = Math.max(2, Math.min(40, r));
-    $<HTMLInputElement>('ed-tr-radius').value = String(this.brushRadius);
-    $('ed-tr-radius-v').textContent = `${this.brushRadius} m`;
+    for (const id of ['ed-tr-radius', 'ed-sc-radius']) {
+      $<HTMLInputElement>(id).value = String(this.brushRadius);
+      $(`${id}-v`).textContent = `${this.brushRadius} m`;
+    }
     this.updateHover();
   }
 
@@ -1084,9 +1155,9 @@ export class EditorApp {
     if (!h) return;
     const rate = this.brushStrength;
     const strength = this.terrainBrush === 'raise' || this.terrainBrush === 'lower' ? rate * 6 * dt : this.terrainBrush === 'roughen' ? rate * 1.5 * dt : Math.min(1, rate * 8 * dt);
-    s.now = applyBrush(s.now, { brush: this.terrainBrush, x: h.x, z: h.z, radius: this.brushRadius, strength, target: s.target, material: this.terrainMaterial, seed: s.seed });
+    s.now = applyBrush(s.now, { brush: this.terrainBrush, x: h.x, z: h.z, radius: this.brushRadius, strength, target: s.target, material: this.terrainMaterial, level: this.foliageLevel, seed: s.seed });
     this.view.previewTerrain({ ...this.doc, terrain: s.now });
-    if (this.terrainBrush !== 'paint') {
+    if (this.terrainBrush !== 'paint' && this.terrainBrush !== 'foliage') {
       const y = terrainHeightAt(s.now, h.x, h.z);
       if (y !== null) this.terrainHover = { ...h, y };
     }
@@ -1097,7 +1168,7 @@ export class EditorApp {
     const s = this.stroke;
     if (!s) return;
     this.stroke = null;
-    const label = this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : `Terrain ${this.terrainBrush}`;
+    const label = this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : this.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.foliageLevel]}` : `Terrain ${this.terrainBrush}`;
     if (s.now !== s.before) this.run(label, { kind: 'setTerrain', before: s.before, after: s.now });
   }
 
@@ -1124,6 +1195,7 @@ export class EditorApp {
       flatten: '<path d="M6 36 L18 30 L38 30 L50 38V50H6Z" fill="#8fbf5a"/><path d="M12 22h32" stroke="#c7a6ff" stroke-width="3"/>',
       roughen: '<path d="M6 40 L12 32 L17 38 L23 26 L29 36 L35 28 L41 37 L50 30V50H6Z" fill="#7d8a5a"/>',
       paint: '<rect x="8" y="30" width="40" height="18" fill="#c9a36b"/><path d="M34 8l10 10-14 14-10-10z" fill="#dfe6ee"/><path d="M20 22l10 10-6 4-8-8z" fill="#8fbf5a"/>',
+      foliage: '<rect x="6" y="40" width="44" height="10" fill="#8a6a3f"/><path d="M12 42 Q14 26 18 18 Q18 30 20 42Z M22 42 Q26 22 30 12 Q30 28 31 42Z M33 42 Q37 28 44 22 Q40 32 40 42Z" fill="#6fbf4a"/><circle cx="18" cy="16" r="3" fill="#ff6a8a"/>',
     };
     const brushes = $('ed-tr-brushes');
     for (const brush of TERRAIN_BRUSHES) {
@@ -1150,6 +1222,22 @@ export class EditorApp {
       });
       grounds.append(b);
     }
+    const levels = $('ed-tr-foliage');
+    FOLIAGE_LEVELS.forEach((label, level) => {
+      const b = document.createElement('button');
+      b.dataset.foliage = String(level);
+      b.dataset.search = `plants foliage grass flowers bushes ${label}`.toLowerCase();
+      b.textContent = label;
+      b.title = ['No plants', 'A few tufts of grass', 'Grass and the odd flower', 'Thick grass, flowers and shrubs', 'Long grass, flowers and bushes'][level]!;
+      b.addEventListener('click', () => {
+        this.foliageLevel = level;
+        this.setTerrainBrush('foliage');
+      });
+      levels.append(b);
+    });
+    $('ed-tr-foliage-auto').addEventListener('click', () => {
+      if (this.doc.terrain?.foliage.length) this.setTerrain('Plants follow the ground', { ...this.doc.terrain, foliage: [] });
+    });
     $('ed-tr-new').addEventListener('click', () => {
       const size = Number($<HTMLSelectElement>('ed-tr-new-size').value);
       const ground = $<HTMLSelectElement>('ed-tr-new-ground').value as TerrainMaterial;
@@ -1194,6 +1282,47 @@ export class EditorApp {
   }
 
   /** Props by category; thumbnails render from the real models as they scroll into view. */
+  /** Plant a patch of the set round the pointer, or (clear) remove that set's props there. One undo step either way. */
+  private scatterAtHover(set: ScatterSetId, clear: boolean): void {
+    const p = this.hoverPoint;
+    if (!p) return;
+    const r = this.brushRadius;
+    const label = SCATTER_SETS[set].label;
+    if (clear) {
+      const models = new Set<string>(SCATTER_SETS[set].models.map(([m]) => m));
+      const gone = this.doc.entities.filter((e) => e.kind === 'prop' && models.has(e.model) && Math.hypot(e.position[0] - p.x, e.position[2] - p.z) <= r);
+      if (gone.length) this.run(`Clear ${label}`, { kind: 'removeEntities', entities: gone });
+      return;
+    }
+    const plants = scatterProps(this.doc, set, p.x, p.z, r, this.level * this.doc.classicStructure.levelHeight, (Math.random() * 2 ** 31) | 0);
+    if (!plants.length) return this.toast('No room here: the patch is already full', true);
+    this.run(`Scatter ${label}`, { kind: 'addEntities', entities: plants.map((e) => ({ ...e, id: newId('prop') })) });
+  }
+
+  private buildScatterPalette(): void {
+    const box = $('ed-scatter');
+    const icons: Record<ScatterSetId, string> = {
+      forest: '<path d="M14 46 L22 14 L30 46Z M28 46 L36 8 L44 46Z" fill="#3f6b3a"/>',
+      woods: '<circle cx="20" cy="22" r="11" fill="#5f9a46"/><circle cx="37" cy="26" r="10" fill="#4f8a3c"/><rect x="18" y="30" width="4" height="16" fill="#7a5232"/><rect x="35" y="32" width="4" height="14" fill="#7a5232"/>',
+      autumn: '<circle cx="20" cy="22" r="11" fill="#d98a2f"/><circle cx="37" cy="26" r="10" fill="#c9562c"/><rect x="18" y="30" width="4" height="16" fill="#7a5232"/><rect x="35" y="32" width="4" height="14" fill="#7a5232"/>',
+      jungle: '<path d="M28 46 Q27 26 30 14" stroke="#7a5232" stroke-width="3" fill="none"/><path d="M30 14 Q16 10 10 22 M30 14 Q44 8 48 22 M30 14 Q24 2 14 6 M30 14 Q38 2 46 8" stroke="#3f8a3c" stroke-width="4" fill="none"/>',
+      bushes: '<circle cx="18" cy="36" r="9" fill="#5f9a46"/><circle cx="32" cy="32" r="12" fill="#4f8a3c"/><circle cx="44" cy="38" r="7" fill="#6aa84f"/>',
+      meadow: '<path d="M10 46 Q12 32 14 26 M20 46 Q22 30 26 22 M34 46 Q34 34 38 26 M44 46 Q46 34 48 30" stroke="#6fbf4a" stroke-width="3" fill="none"/><circle cx="14" cy="24" r="4" fill="#ff6a8a"/><circle cx="26" cy="20" r="4" fill="#ffd34d"/><circle cx="38" cy="24" r="4" fill="#b98aff"/>',
+      desert: '<path d="M26 46V14a4 4 0 0 1 8 0V46Z M26 30h-6V20a3 3 0 0 1 6 0 M34 26h6V16a3 3 0 0 0-6 0" fill="#5e8f4a"/><rect x="6" y="44" width="44" height="4" fill="#d9b77a"/>',
+      rocks: '<path d="M8 46 L14 32 L26 28 L32 36 L30 46Z" fill="#8a8d92"/><path d="M30 46 L36 30 L46 32 L50 46Z" fill="#6c7076"/>',
+    };
+    for (const id of SCATTER_SET_IDS) {
+      const b = document.createElement('button');
+      b.className = 'tile-btn';
+      b.dataset.tool = `scatter:${id}`;
+      b.dataset.search = `${SCATTER_SETS[id].label} scatter plants trees vegetation brush`.toLowerCase();
+      b.innerHTML = `<svg viewBox="0 0 56 56">${icons[id]}</svg>${SCATTER_SETS[id].label}`;
+      b.addEventListener('click', () => this.setTool({ kind: 'scatter', set: id }));
+      box.append(b);
+    }
+    $<HTMLInputElement>('ed-sc-radius').addEventListener('input', (e) => this.setBrushRadius(Number((e.target as HTMLInputElement).value)));
+  }
+
   private buildPropPalette(): void {
     const box = $('ed-props');
     const seen = new IntersectionObserver((entries) => {
@@ -1437,6 +1566,7 @@ export class EditorApp {
       for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
       theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
       el.append(row('Theme', theme), small('The theme is the default look; painted surfaces keep their own style.'));
+      this.renderBackdropPanel(el);
       this.renderBoundsPanel(el);
       return;
     }

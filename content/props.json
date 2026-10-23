@@ -64,6 +64,14 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/kenney-city-kit-commercial/License.txt",
       "retrieved": "2026-10-23"
+    },
+    "kenney-nature-kit": {
+      "title": "Nature Kit 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-nature-kit/License.txt",
+      "retrieved": "2026-10-23"
     }
   },
   "budgets": {
@@ -1349,7 +1357,7 @@
       "pack": "kenney-survival-kit",
       "src": "tree.glb",
       "name": "Tree",
-      "category": "Nature",
+      "category": "Trees",
       "height": 5.0,
       "collide": "trunk"
     },
@@ -1358,7 +1366,7 @@
       "pack": "kenney-survival-kit",
       "src": "tree-tall.glb",
       "name": "Tall Tree",
-      "category": "Nature",
+      "category": "Trees",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -1367,7 +1375,7 @@
       "pack": "kenney-survival-kit",
       "src": "tree-autumn.glb",
       "name": "Autumn Tree",
-      "category": "Nature",
+      "category": "Trees",
       "height": 5.0,
       "collide": "trunk"
     },
@@ -1376,7 +1384,7 @@
       "pack": "kenney-graveyard-kit",
       "src": "pine.glb",
       "name": "Pine",
-      "category": "Nature",
+      "category": "Trees",
       "height": 6.5,
       "collide": "trunk"
     },
@@ -1385,7 +1393,7 @@
       "pack": "kenney-graveyard-kit",
       "src": "pine-crooked.glb",
       "name": "Crooked Pine",
-      "category": "Nature",
+      "category": "Trees",
       "height": 6.0,
       "collide": "trunk"
     },
@@ -1394,7 +1402,7 @@
       "pack": "kenney-pirate-kit",
       "src": "palm-straight.glb",
       "name": "Palm",
-      "category": "Nature",
+      "category": "Trees",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -1403,7 +1411,7 @@
       "pack": "kenney-pirate-kit",
       "src": "palm-bend.glb",
       "name": "Leaning Palm",
-      "category": "Nature",
+      "category": "Trees",
       "height": 6.5,
       "collide": "trunk"
     },
@@ -1412,7 +1420,7 @@
       "pack": "kenney-survival-kit",
       "src": "tree-log.glb",
       "name": "Log",
-      "category": "Nature",
+      "category": "Rocks & Wood",
       "height": 0.6,
       "collide": "box",
       "breakable": {
@@ -1425,7 +1433,7 @@
       "pack": "kenney-survival-kit",
       "src": "rock-a.glb",
       "name": "Boulder",
-      "category": "Nature",
+      "category": "Rocks & Wood",
       "height": 1.4,
       "collide": "box"
     },
@@ -1434,7 +1442,7 @@
       "pack": "kenney-survival-kit",
       "src": "rock-b.glb",
       "name": "Rock",
-      "category": "Nature",
+      "category": "Rocks & Wood",
       "height": 1.0,
       "collide": "box"
     },
@@ -1443,7 +1451,7 @@
       "pack": "kenney-survival-kit",
       "src": "rock-c.glb",
       "name": "Small Rock",
-      "category": "Nature",
+      "category": "Rocks & Wood",
       "height": 0.7,
       "collide": "box"
     },
@@ -1452,7 +1460,7 @@
       "pack": "kenney-survival-kit",
       "src": "rock-flat.glb",
       "name": "Flat Rock",
-      "category": "Nature",
+      "category": "Rocks & Wood",
       "height": 0.4,
       "collide": "box"
     },
@@ -1461,7 +1469,7 @@
       "pack": "kenney-graveyard-kit",
       "src": "rocks-tall.glb",
       "name": "Rock Spire",
-      "category": "Nature",
+      "category": "Rocks & Wood",
       "height": 2.4,
       "collide": "box"
     },
@@ -1470,7 +1478,7 @@
       "pack": "kenney-survival-kit",
       "src": "grass-large.glb",
       "name": "Grass Tuft",
-      "category": "Nature",
+      "category": "Plants & Flowers",
       "height": 0.5,
       "collide": "none"
     },
@@ -1479,7 +1487,7 @@
       "pack": "kenney-survival-kit",
       "src": "tree-trunk.glb",
       "name": "Stump",
-      "category": "Nature",
+      "category": "Rocks & Wood",
       "height": 0.6,
       "collide": "box",
       "breakable": {
@@ -1492,7 +1500,7 @@
       "pack": "kenney-survival-kit",
       "src": "resource-wood.glb",
       "name": "Woodpile",
-      "category": "Nature",
+      "category": "Rocks & Wood",
       "height": 0.8,
       "collide": "box",
       "breakable": {
@@ -1505,7 +1513,7 @@
       "pack": "kenney-survival-kit",
       "src": "resource-planks.glb",
       "name": "Plank Stack",
-      "category": "Nature",
+      "category": "Rocks & Wood",
       "height": 0.5,
       "collide": "box",
       "breakable": {
@@ -1741,6 +1749,501 @@
       "category": "Pirate & Coast",
       "height": 0.4,
       "collide": "none"
+    },
+    {
+      "id": "oak",
+      "pack": "kenney-nature-kit",
+      "src": "tree_oak.glb",
+      "name": "Oak",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "oak_dark",
+      "pack": "kenney-nature-kit",
+      "src": "tree_oak_dark.glb",
+      "name": "Dark Oak",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "oak_autumn",
+      "pack": "kenney-nature-kit",
+      "src": "tree_oak_fall.glb",
+      "name": "Autumn Oak",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_round",
+      "pack": "kenney-nature-kit",
+      "src": "tree_default.glb",
+      "name": "Round Tree",
+      "category": "Trees",
+      "height": 5.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_round_dark",
+      "pack": "kenney-nature-kit",
+      "src": "tree_default_dark.glb",
+      "name": "Dark Round Tree",
+      "category": "Trees",
+      "height": 5.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_round_autumn",
+      "pack": "kenney-nature-kit",
+      "src": "tree_default_fall.glb",
+      "name": "Autumn Round Tree",
+      "category": "Trees",
+      "height": 5.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_fat",
+      "pack": "kenney-nature-kit",
+      "src": "tree_fat.glb",
+      "name": "Bushy Tree",
+      "category": "Trees",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_detailed",
+      "pack": "kenney-nature-kit",
+      "src": "tree_detailed.glb",
+      "name": "Leafy Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_cone",
+      "pack": "kenney-nature-kit",
+      "src": "tree_cone.glb",
+      "name": "Cone Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_plateau",
+      "pack": "kenney-nature-kit",
+      "src": "tree_plateau.glb",
+      "name": "Flat-top Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_thin",
+      "pack": "kenney-nature-kit",
+      "src": "tree_thin.glb",
+      "name": "Thin Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_blocks",
+      "pack": "kenney-nature-kit",
+      "src": "tree_blocks.glb",
+      "name": "Blocky Tree",
+      "category": "Trees",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_small",
+      "pack": "kenney-nature-kit",
+      "src": "tree_small.glb",
+      "name": "Sapling",
+      "category": "Trees",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_tall",
+      "pack": "kenney-nature-kit",
+      "src": "tree_pineTallA_detailed.glb",
+      "name": "Tall Pine",
+      "category": "Trees",
+      "height": 11.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_tall_b",
+      "pack": "kenney-nature-kit",
+      "src": "tree_pineTallC_detailed.glb",
+      "name": "Tall Pine B",
+      "category": "Trees",
+      "height": 10.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_round",
+      "pack": "kenney-nature-kit",
+      "src": "tree_pineRoundC.glb",
+      "name": "Round Pine",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_small",
+      "pack": "kenney-nature-kit",
+      "src": "tree_pineSmallA.glb",
+      "name": "Small Pine",
+      "category": "Trees",
+      "height": 3.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_ground",
+      "pack": "kenney-nature-kit",
+      "src": "tree_pineGroundA.glb",
+      "name": "Low Pine",
+      "category": "Trees",
+      "height": 2.2,
+      "collide": "none"
+    },
+    {
+      "id": "palm_tall",
+      "pack": "kenney-nature-kit",
+      "src": "tree_palmDetailedTall.glb",
+      "name": "Tall Palm",
+      "category": "Trees",
+      "height": 9.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "palm_short",
+      "pack": "kenney-nature-kit",
+      "src": "tree_palmDetailedShort.glb",
+      "name": "Short Palm",
+      "category": "Trees",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "bush",
+      "pack": "kenney-nature-kit",
+      "src": "plant_bush.glb",
+      "name": "Bush",
+      "category": "Plants & Flowers",
+      "height": 1.1,
+      "collide": "none"
+    },
+    {
+      "id": "bush_large",
+      "pack": "kenney-nature-kit",
+      "src": "plant_bushLarge.glb",
+      "name": "Large Bush",
+      "category": "Plants & Flowers",
+      "height": 1.6,
+      "collide": "none"
+    },
+    {
+      "id": "bush_leafy",
+      "pack": "kenney-nature-kit",
+      "src": "plant_bushDetailed.glb",
+      "name": "Leafy Bush",
+      "category": "Plants & Flowers",
+      "height": 1.2,
+      "collide": "none"
+    },
+    {
+      "id": "bush_small",
+      "pack": "kenney-nature-kit",
+      "src": "plant_bushSmall.glb",
+      "name": "Small Bush",
+      "category": "Plants & Flowers",
+      "height": 0.7,
+      "collide": "none"
+    },
+    {
+      "id": "bush_cone",
+      "pack": "kenney-nature-kit",
+      "src": "plant_bushTriangle.glb",
+      "name": "Cone Bush",
+      "category": "Plants & Flowers",
+      "height": 1.4,
+      "collide": "none"
+    },
+    {
+      "id": "fern",
+      "pack": "kenney-nature-kit",
+      "src": "plant_flatTall.glb",
+      "name": "Fern",
+      "category": "Plants & Flowers",
+      "height": 0.9,
+      "collide": "none"
+    },
+    {
+      "id": "plant_low",
+      "pack": "kenney-nature-kit",
+      "src": "plant_flatShort.glb",
+      "name": "Low Plant",
+      "category": "Plants & Flowers",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "grass_tall",
+      "pack": "kenney-nature-kit",
+      "src": "grass_large.glb",
+      "name": "Tall Grass",
+      "category": "Plants & Flowers",
+      "height": 0.7,
+      "collide": "none"
+    },
+    {
+      "id": "grass_patch",
+      "pack": "kenney-nature-kit",
+      "src": "grass.glb",
+      "name": "Grass Patch",
+      "category": "Plants & Flowers",
+      "height": 0.35,
+      "collide": "none"
+    },
+    {
+      "id": "grass_leafy",
+      "pack": "kenney-nature-kit",
+      "src": "grass_leafsLarge.glb",
+      "name": "Leafy Grass",
+      "category": "Plants & Flowers",
+      "height": 0.6,
+      "collide": "none"
+    },
+    {
+      "id": "flower_red",
+      "pack": "kenney-nature-kit",
+      "src": "flower_redA.glb",
+      "name": "Red Flowers",
+      "category": "Plants & Flowers",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "flower_yellow",
+      "pack": "kenney-nature-kit",
+      "src": "flower_yellowA.glb",
+      "name": "Yellow Flowers",
+      "category": "Plants & Flowers",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "flower_purple",
+      "pack": "kenney-nature-kit",
+      "src": "flower_purpleA.glb",
+      "name": "Purple Flowers",
+      "category": "Plants & Flowers",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "mushrooms",
+      "pack": "kenney-nature-kit",
+      "src": "mushroom_redGroup.glb",
+      "name": "Mushrooms",
+      "category": "Plants & Flowers",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "mushroom_tall",
+      "pack": "kenney-nature-kit",
+      "src": "mushroom_tanTall.glb",
+      "name": "Tall Mushroom",
+      "category": "Plants & Flowers",
+      "height": 0.6,
+      "collide": "none"
+    },
+    {
+      "id": "cactus_tall",
+      "pack": "kenney-nature-kit",
+      "src": "cactus_tall.glb",
+      "name": "Tall Cactus",
+      "category": "Plants & Flowers",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "cactus",
+      "pack": "kenney-nature-kit",
+      "src": "cactus_short.glb",
+      "name": "Cactus",
+      "category": "Plants & Flowers",
+      "height": 1.4,
+      "collide": "trunk"
+    },
+    {
+      "id": "corn",
+      "pack": "kenney-nature-kit",
+      "src": "crops_cornStageD.glb",
+      "name": "Corn",
+      "category": "Plants & Flowers",
+      "height": 2.2,
+      "collide": "none"
+    },
+    {
+      "id": "wheat",
+      "pack": "kenney-nature-kit",
+      "src": "crops_wheatStageB.glb",
+      "name": "Wheat",
+      "category": "Plants & Flowers",
+      "height": 1.1,
+      "collide": "none"
+    },
+    {
+      "id": "hanging_moss",
+      "pack": "kenney-nature-kit",
+      "src": "hanging_moss.glb",
+      "name": "Hanging Moss",
+      "category": "Plants & Flowers",
+      "height": 1.5,
+      "collide": "none"
+    },
+    {
+      "id": "lily",
+      "pack": "kenney-nature-kit",
+      "src": "lily_large.glb",
+      "name": "Lily Pad",
+      "category": "Plants & Flowers",
+      "height": 0.05,
+      "collide": "none"
+    },
+    {
+      "id": "boulder_round",
+      "pack": "kenney-nature-kit",
+      "src": "rock_largeA.glb",
+      "name": "Round Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "boulder_jagged",
+      "pack": "kenney-nature-kit",
+      "src": "rock_largeD.glb",
+      "name": "Jagged Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "boulder_flat",
+      "pack": "kenney-nature-kit",
+      "src": "rock_largeF.glb",
+      "name": "Flat Boulder",
+      "category": "Rocks & Wood",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "rock_spire_tall",
+      "pack": "kenney-nature-kit",
+      "src": "rock_tallB.glb",
+      "name": "Tall Rock",
+      "category": "Rocks & Wood",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "stone_pillar",
+      "pack": "kenney-nature-kit",
+      "src": "stone_tallA.glb",
+      "name": "Stone Pillar",
+      "category": "Rocks & Wood",
+      "height": 3.5,
+      "collide": "box"
+    },
+    {
+      "id": "stones",
+      "pack": "kenney-nature-kit",
+      "src": "stone_smallA.glb",
+      "name": "Stones",
+      "category": "Rocks & Wood",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "stump_old",
+      "pack": "kenney-nature-kit",
+      "src": "stump_oldTall.glb",
+      "name": "Old Stump",
+      "category": "Rocks & Wood",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "stump_cut",
+      "pack": "kenney-nature-kit",
+      "src": "stump_roundDetailed.glb",
+      "name": "Cut Stump",
+      "category": "Rocks & Wood",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "log_big",
+      "pack": "kenney-nature-kit",
+      "src": "log_large.glb",
+      "name": "Big Log",
+      "category": "Rocks & Wood",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "log_stack",
+      "pack": "kenney-nature-kit",
+      "src": "log_stackLarge.glb",
+      "name": "Log Stack",
+      "category": "Rocks & Wood",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "campfire_stones",
+      "pack": "kenney-nature-kit",
+      "src": "campfire_stones.glb",
+      "name": "Stone Campfire",
+      "category": "Rocks & Wood",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "cliff",
+      "pack": "kenney-nature-kit",
+      "src": "cliff_block_rock.glb",
+      "name": "Cliff Block",
+      "category": "Rocks & Wood",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "cliff_corner",
+      "pack": "kenney-nature-kit",
+      "src": "cliff_corner_rock.glb",
+      "name": "Cliff Corner",
+      "category": "Rocks & Wood",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "cliff_steps",
+      "pack": "kenney-nature-kit",
+      "src": "cliff_steps_rock.glb",
+      "name": "Cliff Steps",
+      "category": "Rocks & Wood",
+      "height": 4.0,
+      "collide": "box"
     }
   ]
 }

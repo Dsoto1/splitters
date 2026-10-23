@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 9,
   "metadata": {
     "id": "frost_basin",
     "name": "Frost Basin",
@@ -49314,9 +49314,11 @@
       5,
       5
     ],
-    "boundary": true
+    "boundary": true,
+    "foliage": []
   },
   "bounds": null,
+  "backdrop": null,
   "teamSetup": {
     "sizes": [
       8,

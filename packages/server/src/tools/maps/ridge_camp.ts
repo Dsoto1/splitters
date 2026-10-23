@@ -21,6 +21,7 @@ import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('ridge_camp', 'Ridge Camp');
 m.theme('castle');
+m.backdrop('sunrise', 'mountains', 'grass', 0.5);
 const P = Math.PI / 2;
 
 // ---------------------------------------------------------------- floor (z0)

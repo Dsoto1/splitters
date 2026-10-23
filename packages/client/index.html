@@ -93,6 +93,10 @@
           <div id="ed-edges" class="tiles"></div>
         </div>
         <div class="ed-pane" data-pane="props" hidden>
+          <h3>Scatter brush</h3>
+          <div id="ed-scatter" class="tiles"></div>
+          <label class="stack">Brush size <span id="ed-sc-radius-v">8 m</span><input id="ed-sc-radius" type="range" min="2" max="40" step="1" value="8" /></label>
+          <div class="ed-note">Click to plant a patch · Alt-click clears that kind of plant · [ ] resize</div>
           <h3>Props</h3>
           <div id="ed-props" class="tiles"></div>
         </div>
@@ -123,6 +127,9 @@
             <div class="sub-h">Ground paint</div>
             <div id="ed-tr-materials" class="mats"></div>
             <button id="ed-tr-cliffs">Paint steep slopes as stone</button>
+            <div class="sub-h">Plants</div>
+            <div id="ed-tr-foliage" class="seg"></div>
+            <button id="ed-tr-foliage-auto" title="Forget painted plants: grass grows on grass and moss, the rest stays bare">Plants follow the ground</button>
             <label class="check"><input id="ed-tr-boundary" type="checkbox" checked /> Invisible walls round the edge</label>
             <button id="ed-tr-remove" class="danger">Remove terrain</button>
           </div>

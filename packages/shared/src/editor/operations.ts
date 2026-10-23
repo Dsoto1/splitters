@@ -160,6 +160,7 @@ export function newMapDocument(name = 'Untitled Map', now: Date = new Date()): M
     terrain: null,
     bounds: null,
     teamSetup: null,
+    backdrop: null,
     dependencies: [],
   };
 }

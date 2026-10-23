@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 9,
   "metadata": {
     "id": "canyon",
     "name": "Rockfall Canyon",
@@ -30907,9 +30907,11 @@
       2,
       2
     ],
-    "boundary": true
+    "boundary": true,
+    "foliage": []
   },
   "bounds": null,
+  "backdrop": null,
   "teamSetup": null,
   "dependencies": []
 }

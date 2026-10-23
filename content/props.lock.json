@@ -1160,6 +1160,446 @@
       "triangles": 108,
       "bytes": 18788,
       "sha256": "3fad808c954b80c4"
+    },
+    {
+      "file": "props/oak.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_oak.glb",
+      "triangles": 196,
+      "bytes": 10792,
+      "sha256": "289a4027c24a3cfa"
+    },
+    {
+      "file": "props/oak_dark.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_oak_dark.glb",
+      "triangles": 196,
+      "bytes": 10796,
+      "sha256": "53c5d932f9438049"
+    },
+    {
+      "file": "props/oak_autumn.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_oak_fall.glb",
+      "triangles": 196,
+      "bytes": 10788,
+      "sha256": "883ddd280cce381c"
+    },
+    {
+      "file": "props/tree_round.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_default.glb",
+      "triangles": 114,
+      "bytes": 7100,
+      "sha256": "0ae9f93dc2be0b1e"
+    },
+    {
+      "file": "props/tree_round_dark.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_default_dark.glb",
+      "triangles": 114,
+      "bytes": 7104,
+      "sha256": "347e71f30e6498dd"
+    },
+    {
+      "file": "props/tree_round_autumn.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_default_fall.glb",
+      "triangles": 228,
+      "bytes": 12392,
+      "sha256": "58d19a58e477b00a"
+    },
+    {
+      "file": "props/tree_fat.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_fat.glb",
+      "triangles": 50,
+      "bytes": 4400,
+      "sha256": "38bfd36f3a5346fb"
+    },
+    {
+      "file": "props/tree_detailed.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_detailed.glb",
+      "triangles": 402,
+      "bytes": 23024,
+      "sha256": "b45c1c7f2d76804c"
+    },
+    {
+      "file": "props/tree_cone.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_cone.glb",
+      "triangles": 132,
+      "bytes": 8160,
+      "sha256": "ee6cd2dba69dcf04"
+    },
+    {
+      "file": "props/tree_plateau.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_plateau.glb",
+      "triangles": 215,
+      "bytes": 11992,
+      "sha256": "99d5197496cbb028"
+    },
+    {
+      "file": "props/tree_thin.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_thin.glb",
+      "triangles": 228,
+      "bytes": 12616,
+      "sha256": "7c5147eb6c6474bb"
+    },
+    {
+      "file": "props/tree_blocks.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_blocks.glb",
+      "triangles": 132,
+      "bytes": 7588,
+      "sha256": "b3ce5a56d3a376c3"
+    },
+    {
+      "file": "props/tree_small.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_small.glb",
+      "triangles": 62,
+      "bytes": 5056,
+      "sha256": "1ee009354adb6df5"
+    },
+    {
+      "file": "props/pine_tall.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_pineTallA_detailed.glb",
+      "triangles": 134,
+      "bytes": 8048,
+      "sha256": "794c028c8c6e19c0"
+    },
+    {
+      "file": "props/pine_tall_b.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_pineTallC_detailed.glb",
+      "triangles": 154,
+      "bytes": 8604,
+      "sha256": "8cb9f643c8268979"
+    },
+    {
+      "file": "props/pine_round.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_pineRoundC.glb",
+      "triangles": 206,
+      "bytes": 11252,
+      "sha256": "6c032cf8ea0d47d7"
+    },
+    {
+      "file": "props/pine_small.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_pineSmallA.glb",
+      "triangles": 164,
+      "bytes": 9456,
+      "sha256": "c8e1b8304853c10d"
+    },
+    {
+      "file": "props/pine_ground.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_pineGroundA.glb",
+      "triangles": 82,
+      "bytes": 4864,
+      "sha256": "06d735bc921d9259"
+    },
+    {
+      "file": "props/palm_tall.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_palmDetailedTall.glb",
+      "triangles": 336,
+      "bytes": 15612,
+      "sha256": "038e1d2cb799dcc4"
+    },
+    {
+      "file": "props/palm_short.glb",
+      "source": "kenney-nature-kit",
+      "src": "tree_palmDetailedShort.glb",
+      "triangles": 336,
+      "bytes": 15616,
+      "sha256": "713d7b31334aafa1"
+    },
+    {
+      "file": "props/bush.glb",
+      "source": "kenney-nature-kit",
+      "src": "plant_bush.glb",
+      "triangles": 32,
+      "bytes": 3280,
+      "sha256": "298ec361adae263f"
+    },
+    {
+      "file": "props/bush_large.glb",
+      "source": "kenney-nature-kit",
+      "src": "plant_bushLarge.glb",
+      "triangles": 60,
+      "bytes": 4732,
+      "sha256": "9b6b1727af3e481f"
+    },
+    {
+      "file": "props/bush_leafy.glb",
+      "source": "kenney-nature-kit",
+      "src": "plant_bushDetailed.glb",
+      "triangles": 104,
+      "bytes": 7380,
+      "sha256": "7352dc18a67947df"
+    },
+    {
+      "file": "props/bush_small.glb",
+      "source": "kenney-nature-kit",
+      "src": "plant_bushSmall.glb",
+      "triangles": 16,
+      "bytes": 2424,
+      "sha256": "0dd4553f217d269a"
+    },
+    {
+      "file": "props/bush_cone.glb",
+      "source": "kenney-nature-kit",
+      "src": "plant_bushTriangle.glb",
+      "triangles": 30,
+      "bytes": 2964,
+      "sha256": "476ca8aaddcee9ee"
+    },
+    {
+      "file": "props/fern.glb",
+      "source": "kenney-nature-kit",
+      "src": "plant_flatTall.glb",
+      "triangles": 32,
+      "bytes": 2596,
+      "sha256": "6a70160ddf80d5b2"
+    },
+    {
+      "file": "props/plant_low.glb",
+      "source": "kenney-nature-kit",
+      "src": "plant_flatShort.glb",
+      "triangles": 44,
+      "bytes": 2880,
+      "sha256": "21a738866ad1a734"
+    },
+    {
+      "file": "props/grass_tall.glb",
+      "source": "kenney-nature-kit",
+      "src": "grass_large.glb",
+      "triangles": 224,
+      "bytes": 13312,
+      "sha256": "fab7ed995c7608db"
+    },
+    {
+      "file": "props/grass_patch.glb",
+      "source": "kenney-nature-kit",
+      "src": "grass.glb",
+      "triangles": 132,
+      "bytes": 8332,
+      "sha256": "68e3c004afa1749d"
+    },
+    {
+      "file": "props/grass_leafy.glb",
+      "source": "kenney-nature-kit",
+      "src": "grass_leafsLarge.glb",
+      "triangles": 144,
+      "bytes": 10172,
+      "sha256": "1acc60febf6f5809"
+    },
+    {
+      "file": "props/flower_red.glb",
+      "source": "kenney-nature-kit",
+      "src": "flower_redA.glb",
+      "triangles": 76,
+      "bytes": 5496,
+      "sha256": "c56d0b7d33239020"
+    },
+    {
+      "file": "props/flower_yellow.glb",
+      "source": "kenney-nature-kit",
+      "src": "flower_yellowA.glb",
+      "triangles": 76,
+      "bytes": 5504,
+      "sha256": "13e32fb9e99a99ec"
+    },
+    {
+      "file": "props/flower_purple.glb",
+      "source": "kenney-nature-kit",
+      "src": "flower_purpleA.glb",
+      "triangles": 76,
+      "bytes": 5500,
+      "sha256": "61ded1fe3008f67f"
+    },
+    {
+      "file": "props/mushrooms.glb",
+      "source": "kenney-nature-kit",
+      "src": "mushroom_redGroup.glb",
+      "triangles": 144,
+      "bytes": 10784,
+      "sha256": "eb5713f571c232f5"
+    },
+    {
+      "file": "props/mushroom_tall.glb",
+      "source": "kenney-nature-kit",
+      "src": "mushroom_tanTall.glb",
+      "triangles": 48,
+      "bytes": 4848,
+      "sha256": "9e51b0a155981020"
+    },
+    {
+      "file": "props/cactus_tall.glb",
+      "source": "kenney-nature-kit",
+      "src": "cactus_tall.glb",
+      "triangles": 122,
+      "bytes": 6908,
+      "sha256": "d9c6de211e4a7f21"
+    },
+    {
+      "file": "props/cactus.glb",
+      "source": "kenney-nature-kit",
+      "src": "cactus_short.glb",
+      "triangles": 116,
+      "bytes": 6400,
+      "sha256": "4cf700cab5cdc100"
+    },
+    {
+      "file": "props/corn.glb",
+      "source": "kenney-nature-kit",
+      "src": "crops_cornStageD.glb",
+      "triangles": 186,
+      "bytes": 12376,
+      "sha256": "6d2b50fc0403bf44"
+    },
+    {
+      "file": "props/wheat.glb",
+      "source": "kenney-nature-kit",
+      "src": "crops_wheatStageB.glb",
+      "triangles": 360,
+      "bytes": 21788,
+      "sha256": "e540fa3ffe154d2c"
+    },
+    {
+      "file": "props/hanging_moss.glb",
+      "source": "kenney-nature-kit",
+      "src": "hanging_moss.glb",
+      "triangles": 52,
+      "bytes": 3504,
+      "sha256": "075bf73281bdd3d0"
+    },
+    {
+      "file": "props/lily.glb",
+      "source": "kenney-nature-kit",
+      "src": "lily_large.glb",
+      "triangles": 86,
+      "bytes": 6464,
+      "sha256": "ff096412c36d8463"
+    },
+    {
+      "file": "props/boulder_round.glb",
+      "source": "kenney-nature-kit",
+      "src": "rock_largeA.glb",
+      "triangles": 80,
+      "bytes": 5804,
+      "sha256": "199790c55ac00bfb"
+    },
+    {
+      "file": "props/boulder_jagged.glb",
+      "source": "kenney-nature-kit",
+      "src": "rock_largeD.glb",
+      "triangles": 80,
+      "bytes": 6304,
+      "sha256": "d06db27bd11cce66"
+    },
+    {
+      "file": "props/boulder_flat.glb",
+      "source": "kenney-nature-kit",
+      "src": "rock_largeF.glb",
+      "triangles": 73,
+      "bytes": 5952,
+      "sha256": "95db7e06898a3ca0"
+    },
+    {
+      "file": "props/rock_spire_tall.glb",
+      "source": "kenney-nature-kit",
+      "src": "rock_tallB.glb",
+      "triangles": 172,
+      "bytes": 10200,
+      "sha256": "344aa5def5e34a41"
+    },
+    {
+      "file": "props/stone_pillar.glb",
+      "source": "kenney-nature-kit",
+      "src": "stone_tallA.glb",
+      "triangles": 136,
+      "bytes": 8340,
+      "sha256": "7ef85541a754d87d"
+    },
+    {
+      "file": "props/stones.glb",
+      "source": "kenney-nature-kit",
+      "src": "stone_smallA.glb",
+      "triangles": 16,
+      "bytes": 2004,
+      "sha256": "4239d8a1255112a0"
+    },
+    {
+      "file": "props/stump_old.glb",
+      "source": "kenney-nature-kit",
+      "src": "stump_oldTall.glb",
+      "triangles": 120,
+      "bytes": 6912,
+      "sha256": "1826e7c87d31dcbf"
+    },
+    {
+      "file": "props/stump_cut.glb",
+      "source": "kenney-nature-kit",
+      "src": "stump_roundDetailed.glb",
+      "triangles": 96,
+      "bytes": 6256,
+      "sha256": "8d82ee51057fa712"
+    },
+    {
+      "file": "props/log_big.glb",
+      "source": "kenney-nature-kit",
+      "src": "log_large.glb",
+      "triangles": 96,
+      "bytes": 6000,
+      "sha256": "f8afdaaa9cb27e6b"
+    },
+    {
+      "file": "props/log_stack.glb",
+      "source": "kenney-nature-kit",
+      "src": "log_stackLarge.glb",
+      "triangles": 310,
+      "bytes": 14768,
+      "sha256": "4ed7d2352d7caf3f"
+    },
+    {
+      "file": "props/campfire_stones.glb",
+      "source": "kenney-nature-kit",
+      "src": "campfire_stones.glb",
+      "triangles": 264,
+      "bytes": 12308,
+      "sha256": "34a396dc7820d27a"
+    },
+    {
+      "file": "props/cliff.glb",
+      "source": "kenney-nature-kit",
+      "src": "cliff_block_rock.glb",
+      "triangles": 12,
+      "bytes": 2200,
+      "sha256": "471087adf84df026"
+    },
+    {
+      "file": "props/cliff_corner.glb",
+      "source": "kenney-nature-kit",
+      "src": "cliff_corner_rock.glb",
+      "triangles": 12,
+      "bytes": 1744,
+      "sha256": "be745695c0e04639"
+    },
+    {
+      "file": "props/cliff_steps.glb",
+      "source": "kenney-nature-kit",
+      "src": "cliff_steps_rock.glb",
+      "triangles": 219,
+      "bytes": 11588,
+      "sha256": "542890831cb4e363"
     }
   ]
 }

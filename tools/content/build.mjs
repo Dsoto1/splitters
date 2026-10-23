@@ -438,7 +438,12 @@ const textureManifest = JSON.parse(readFileSync(join(ROOT, 'content/textures.jso
 const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, ['downscaled to 512 px', 'colour, normal and emission maps only'], 'node tools/content/prepare-textures.mjs');
 const propManifest = JSON.parse(readFileSync(join(ROOT, 'content/props.json'), 'utf8'));
 const propCount = checkLocked('content/props.lock.json', 'props', (f) => propManifest.packs[f.source], propManifest.budgets, ['centred, stood on the ground and scaled to metres', 'texture embedded'], 'node tools/content/prepare-props.mjs');
-console.log(`checked ${textureCount} texture files and ${propCount} props`);
+const skyManifest = JSON.parse(readFileSync(join(ROOT, 'content/skies.json'), 'utf8'));
+const skyPacks = Object.fromEntries(
+  skyManifest.skies.map((s) => [s.id, { title: s.title, creator: s.authors, url: `https://polyhaven.com/a/${s.source}`, license: skyManifest.license, licenseFile: 'assets-src/polyhaven/License.txt' }]),
+);
+const skyCount = checkLocked('content/skies.lock.json', 'skies', (f) => skyPacks[f.source], { maxBytes: 400000 }, ['tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG', 'colour graded where content/skies.json gives a grade (night)'], 'node tools/content/prepare-skies.mjs');
+console.log(`checked ${textureCount} texture files, ${propCount} props and ${skyCount} skies`);
 
 const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
 if (check) {

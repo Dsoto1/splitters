@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 9,
   "metadata": {
     "id": "reactor",
     "name": "Reactor",
@@ -1375,6 +1375,12 @@
     ],
     "style": "invisible",
     "height": 8
+  },
+  "backdrop": {
+    "sky": "cloudy",
+    "scenery": "city",
+    "ground": "gravel",
+    "haze": 0.5
   },
   "teamSetup": {
     "sizes": [

@@ -5,7 +5,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TilePlacement, type WorldBox } from '@chronosplit/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type TilePlacement, type WorldBox } from '@chronosplit/shared';
 import { materialPixels } from './materials/patterns.ts';
 
 /**
@@ -86,6 +86,12 @@ export function boxVertexData(boxes: readonly WorldBox[]): VertexData {
  * mesh, so draw calls scale with the number of distinct looks, not tiles.
  * Textures and materials are cached per scene.
  */
+function terrainStyle(material: TerrainMaterial): ResolvedStyle {
+  const def = coreMaterials.get(TERRAIN_SURFACES[material]) ?? coreMaterials.get('core.proto_floor')!;
+  // Gravel's photo texture is near white in daylight; darken it so it reads as ground, not snow.
+  return { material: def, tint: material === 'gravel' ? '#8f877b' : null };
+}
+
 export class MapStyler {
   private readonly textures = new Map<string, RawTexture>();
   private readonly materials = new Map<string, StandardMaterial>();
@@ -149,9 +155,8 @@ export class MapStyler {
     });
     for (const [m, cells] of byMaterial) {
       const material = TERRAIN_MATERIALS[m] ?? 'grass';
-      const def = coreMaterials.get(TERRAIN_SURFACES[material]) ?? coreMaterials.get('core.proto_floor')!;
-      // Gravel's photo texture is near white in daylight; darken it so it reads as ground, not snow.
-      const style: ResolvedStyle = { material: def, tint: material === 'gravel' ? '#8f877b' : null };
+      const style = terrainStyle(material);
+      const def = style.material;
       const positions: number[] = [];
       const normals: number[] = [];
       const uvs: number[] = [];
@@ -182,6 +187,16 @@ export class MapStyler {
       mesh.freezeWorldMatrix();
       this.terrainMeshes.push(mesh);
     }
+  }
+
+  /** The material terrain of this kind is drawn in (the backdrop's ground uses it too). */
+  groundMaterial(material: TerrainMaterial): StandardMaterial {
+    return this.material(terrainStyle(material));
+  }
+
+  /** Metres per repeat of that ground's texture. */
+  groundScale(material: TerrainMaterial): number {
+    return terrainStyle(material).material.scale;
   }
 
   /** Sky colour of the map's theme. */

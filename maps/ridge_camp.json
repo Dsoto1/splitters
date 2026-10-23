@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 9,
   "metadata": {
     "id": "ridge_camp",
     "name": "Ridge Camp",
@@ -1370,6 +1370,12 @@
     ],
     "style": "invisible",
     "height": 8
+  },
+  "backdrop": {
+    "sky": "sunrise",
+    "scenery": "mountains",
+    "ground": "grass",
+    "haze": 0.5
   },
   "teamSetup": null,
   "dependencies": []

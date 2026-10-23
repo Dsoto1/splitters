@@ -22,6 +22,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [6, (doc) => ({ ...doc })],
   // v7 -> v8: optional map `bounds` and `teamSetup` (absent = none).
   [7, (doc) => ({ ...doc })],
+  // v8 -> v9: optional `backdrop` (absent = the theme's) and terrain `foliage` (absent = from each cell's material).
+  [8, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

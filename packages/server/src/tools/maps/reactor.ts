@@ -34,6 +34,7 @@ import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('reactor', 'Reactor');
 m.theme('factory');
+m.backdrop('cloudy', 'city', 'gravel', 0.5);
 const [embers, tide] = m.teamIds() as [string, string];
 const P = Math.PI / 2;
 

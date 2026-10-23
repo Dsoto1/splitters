@@ -14,7 +14,8 @@ The authoritative per-file list is generated at `content/provenance.json` (`pnpm
 | Kenney — Blaster Kit 2.1 | CC0 1.0 | Grenade launcher (recoloured blaster-h), grenade projectile |
 | Kenney — Sci-Fi Sounds, Impact Sounds, RPG Audio, Interface Sounds, Voiceover Pack: Fighter | CC0 1.0 | Explosions, impacts, footsteps, reloads, pickups, UI cues, announcer (see AUDIO.md) |
 | Quaternius — Universal Base Characters, Modular Character Outfits – Fantasy, Universal Animation Library 1 + 2 (free Standard editions) | CC0 1.0 | Player, bot and NPC characters: every base body, outfit part, hairstyle, colourway and mannequin in the free editions, plus 20 animation clips (see CHARACTERS.md) |
-| Kenney — Survival Kit, Furniture Kit, Graveyard Kit 5.0, Pirate Kit, Space Station Kit, Factory Kit 3.0, Mini Dungeon, City Kit (Commercial) 2.1 | CC0 1.0 | 145 placeable props (crates, barrels, furniture, machines, consoles, gravestones, trees, rocks, tents, cannons…), see `content/props.json` |
+| Kenney — Survival Kit, Furniture Kit, Graveyard Kit 5.0, Pirate Kit, Space Station Kit, Factory Kit 3.0, Mini Dungeon, City Kit (Commercial) 2.1, Nature Kit 2.1 | CC0 1.0 | 200 placeable props, including 55 trees, bushes, flowers, grass and rocks from the Nature Kit that also grow as terrain plants (see SCENERY.md) (crates, barrels, furniture, machines, consoles, gravestones, trees, rocks, tents, cannons…), see `content/props.json` |
+| Poly Haven — 10 pure-sky photographs (Greg Zaal, Jarod Guest, Sergej Majboroda) | CC0 1.0 | Sky backdrops, see `content/skies.json` and SCENERY.md |
 | ambientCG (Lennart Demes) — 41 photographed/scanned material sets | CC0 1.0 | Wall, floor and trim materials and the themes built from them, see `content/textures.json` |
 | Chakra Petch (Cadson Demak) and Barlow (Jeremy Tribby), via the `@fontsource` npm packages | SIL Open Font License 1.1 | UI type: Chakra Petch for headings, buttons and HUD numbers; Barlow for body text (see UI.md) |
 
