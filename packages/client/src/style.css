@@ -123,7 +123,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 
 /* Character select */
 .characters .tabs { margin-left: 8px; }
-.char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; width: min(820px, 62vw); margin-top: 18px; max-height: calc(100% - 290px); overflow-y: auto; padding: 3px; }
+.char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; width: min(900px, 64vw); margin-top: 18px; max-height: calc(100% - 290px); overflow-y: auto; padding: 10px; background: var(--glass); border: 1px solid var(--line); }
 .char-tile { position: relative; aspect-ratio: 1; padding: 0; overflow: hidden; border-radius: 3px; background: linear-gradient(160deg, #2a3a55, #121827 70%); border: 1px solid var(--line); text-transform: none; }
 .char-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .char-tile span { position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 5px; font: 600 11px var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; background: linear-gradient(0deg, rgba(8, 11, 19, 0.92), rgba(8, 11, 19, 0)); text-align: left; }
@@ -132,7 +132,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .char-tile.new { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--cyan); border-style: dashed; }
 .char-tile.new b { font: 700 38px var(--font-display); line-height: 1; }
 .char-tile.new span { position: static; background: none; text-align: center; }
-.char-info { position: absolute; left: 44px; bottom: 64px; width: min(820px, 62vw); display: grid; grid-template-columns: 110px 1fr auto auto; gap: 18px; align-items: center; padding: 14px; }
+.char-info { position: absolute; left: 44px; bottom: 64px; width: min(900px, 64vw); display: grid; grid-template-columns: 110px 1fr auto auto; gap: 18px; align-items: center; padding: 14px; }
 .char-info > img { width: 110px; height: 110px; border-radius: 4px; background: linear-gradient(160deg, #2a3a55, #121827); }
 .char-info h3 { margin: 0 0 4px; font: 700 26px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
 .char-info p { margin: 0 0 8px; color: var(--muted); font-size: 14px; max-width: 360px; }

@@ -1,7 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
@@ -10,6 +10,7 @@ import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CharacterLibrary } from '../content/characters.ts';
+import { CharacterAnimator } from '../game/characterAnimator.ts';
 
 const SIZE = 256;
 
@@ -37,6 +38,8 @@ export class PortraitRenderer {
     this.camera = new FreeCamera('portraitCam', new Vector3(0, 1.6, 1), this.scene);
     this.camera.fov = 0.42;
     this.camera.minZ = 0.02;
+    // The texture is square: never take the aspect ratio from the screen (that squashed faces).
+    this.camera.freezeProjectionMatrix(Matrix.PerspectiveFovLH(this.camera.fov, 1, 0.02, 50, engine.isNDCHalfZRange));
     const hemi = new HemisphericLight('portraitHemi', new Vector3(0, 1, 0.5), this.scene);
     hemi.intensity = 0.7;
     hemi.groundColor = new Color3(0.12, 0.14, 0.2);
@@ -61,8 +64,13 @@ export class PortraitRenderer {
 
   private async render(look: string): Promise<string> {
     const ch = await this.lib.create({ look }, 'portrait');
+    const anim = new CharacterAnimator(this.scene, ch);
     try {
-      // Bind pose is fine: the frame shows only the head and shoulders.
+      // Settle into the idle stance (arms down) rather than the bind T-pose.
+      for (let i = 0; i < 8; i++) {
+        anim.update(0.1, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0.05, celebrate: false });
+        this.scene.render();
+      }
       ch.root.computeWorldMatrix(true);
       for (const n of ch.root.getDescendants(false)) (n as TransformNode).computeWorldMatrix?.(true);
       const head = ch.joints.get('Head');
@@ -71,10 +79,14 @@ export class PortraitRenderer {
       this.camera.position.copyFrom(at.add(new Vector3(0.22, 0.04, 0.85)));
       this.camera.setTarget(at.add(new Vector3(0, -0.06, 0)));
 
-      // Textures (shared JPEGs) load asynchronously: wait for them, up to a few seconds.
+      // Textures load and shaders compile asynchronously: wait until every mesh is drawable.
       const textures = ch.meshes.flatMap((m) => (m.material ? m.material.getActiveTextures() : []));
-      const deadline = performance.now() + 4000;
-      while (textures.some((t) => !t.isReady()) && performance.now() < deadline) await new Promise((r) => setTimeout(r, 50));
+      const deadline = performance.now() + 20000;
+      const ready = () => textures.every((t) => t.isReady()) && ch.meshes.every((m) => m.isReady(true));
+      while (!ready() && performance.now() < deadline) {
+        this.scene.render();
+        await new Promise((r) => setTimeout(r, 50));
+      }
 
       const rtt = new RenderTargetTexture('portraitRT', SIZE, this.scene, false);
       rtt.activeCamera = this.camera;
@@ -93,7 +105,7 @@ export class PortraitRenderer {
       if (!pixels) throw new Error('portrait render failed');
       return toDataUrl(pixels, SIZE);
     } finally {
-      ch.dispose();
+      anim.dispose(); // also disposes the character
     }
   }
 

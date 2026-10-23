@@ -102,6 +102,8 @@ export class CharacterLibrary {
     const rig = await this.load('rig.glb');
     const holder = new TransformNode(name, this.scene);
     const meshes: AbstractMesh[] = [];
+    /** Which file each mesh came from (0 = the carrier), for pairing low-detail copies. */
+    const partOf = new Map<AbstractMesh, number>();
     const owned: { dispose(): void }[] = [];
     let joints: Map<string, TransformNode>;
     let clips: Map<Clip, AnimationGroup>;
@@ -143,7 +145,11 @@ export class CharacterLibrary {
       joints = jointMap(carrier.rootNodes);
       const anchor = carrier.rootNodes[0]!;
       meshes.push(...holder.getChildMeshes());
-      for (const part of rest) meshes.push(...this.attach(part, skeleton, anchor, true));
+      rest.forEach((part, i) => {
+        const attached = this.attach(part, skeleton, anchor, true);
+        for (const m of attached) partOf.set(m, i + 1);
+        meshes.push(...attached);
+      });
       this.dress(meshes, look);
       owned.push(...carrier.skeletons);
       body = look.body;
@@ -152,7 +158,8 @@ export class CharacterLibrary {
     // Each mesh's low-detail copy (`<name>_lod`, in the same file) is drawn beyond LOD_DISTANCE.
     const low = meshes.filter((m) => /_lod(_primitive\d+)?$/.test(m.name));
     for (const m of low) {
-      const full = meshes.find((o) => o.name === m.name.replace(/_lod(_primitive\d+)?$/, '$1') && !low.includes(o)) as Mesh | undefined;
+      // Pair within the same part: different parts can share mesh names (the athlete top and the head do).
+      const full = meshes.find((o) => o.name === m.name.replace(/_lod(_primitive\d+)?$/, '$1') && !low.includes(o) && (partOf.get(o) ?? 0) === (partOf.get(m) ?? 0)) as Mesh | undefined;
       if (!full || spec.armsOnly) {
         m.dispose();
         continue;

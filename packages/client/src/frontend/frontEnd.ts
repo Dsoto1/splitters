@@ -135,6 +135,7 @@ export class FrontEnd {
     this.screen = screen;
     this.hovered = null;
     this.scene.setLook(this.look);
+    this.scene.setShot(screen === 'home' ? 'home' : 'side');
     this.body.replaceChildren(this.build(screen));
     this.footerHints.replaceChildren(...this.hints(screen));
     if (screen === 'home') (this.body.querySelector('.nav button.on') as HTMLButtonElement | null)?.focus({ preventScroll: true });

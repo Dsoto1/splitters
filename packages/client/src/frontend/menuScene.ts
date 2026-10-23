@@ -28,6 +28,9 @@ export class MenuScene {
   private look = '';
   private token = 0;
   private t = 0;
+  /** Camera framing: hero right of centre (home) or far right, full length (screens with a big left panel). */
+  private framing = { x: -1.05, tx: -0.62, y: 1.3, ty: 1.02, z: 3.3 };
+  private goal = { ...this.framing };
   private readonly state: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0.08, celebrate: false };
 
   constructor(engine: AbstractEngine) {
@@ -128,12 +131,20 @@ export class MenuScene {
     });
   }
 
+  /** Where the hero stands on screen: beside the home menu, or pushed right of a wide panel. */
+  setShot(shot: 'home' | 'side'): void {
+    this.goal = shot === 'home' ? { x: -1.05, tx: -0.62, y: 1.3, ty: 1.02, z: 3.3 } : { x: -2.3, tx: -1.85, y: 1.15, ty: 0.95, z: 4.4 };
+  }
+
   frame(dt: number): void {
     this.t += dt;
-    // Slow drift, framing the hero right of centre (the menu sits on the left).
+    const f = this.framing;
+    const k = 1 - Math.exp(-dt * 4);
+    for (const key of ['x', 'tx', 'y', 'ty', 'z'] as const) f[key] += (this.goal[key] - f[key]) * k;
+    // Slow drift around the current framing.
     const sway = Math.sin(this.t * 0.25);
-    this.camera.position.set(-1.05 + sway * 0.15, 1.3 + Math.sin(this.t * 0.17) * 0.04, 3.3);
-    this.camera.setTarget(new Vector3(-0.62 + sway * 0.08, 1.02, 0));
+    this.camera.position.set(f.x + sway * 0.15, f.y + Math.sin(this.t * 0.17) * 0.04, f.z);
+    this.camera.setTarget(new Vector3(f.tx + sway * 0.08, f.ty, 0));
     this.state.pitch = 0.06 + Math.sin(this.t * 0.6) * 0.03;
     this.anim?.update(dt, this.state);
     this.scene.render();
