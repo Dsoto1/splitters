@@ -30,7 +30,7 @@ import {
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
-import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_THROW, BUTTON_USE, applyPads, mapPads, padLandings, sanitizeInput, stepMovement, type JumpPad, type MoveState, type PlayerInput } from './movement.ts';
+import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapPads, padLandings, sanitizeInput, stepMovement, type JumpPad, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
@@ -38,7 +38,7 @@ import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
 import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_PROFILE, NPC_ROLE_SPECS, mapFactions, mapTeams, relation } from './npc.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, zoneMultiplier, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
@@ -139,6 +139,8 @@ export interface Combatant {
   burstLeft: number;
   burstTimer: number;
   bloom: number;
+  /** Horizontal speed over the last tick (m/s), for movement spread. */
+  moveSpeed: number;
   /** Status effects (ticks left; chill builds 0..1 into a freeze), and who caused them (kill credit). */
   burnTicks: number;
   /** Jetpack fuel units (see JET), or null without a jetpack. */
@@ -461,6 +463,7 @@ export class Match {
       speedTicks: 0,
       damageTicks: 0,
       prevButtons: 0,
+      moveSpeed: 0,
       windup: 0,
       semiLatch: false,
       burstLeft: 0,
@@ -663,7 +666,9 @@ export class Match {
           m.aimPitch = c.pitch;
         }
       } else {
+        const was = c.move.pos;
         c.move = applyPads(this.pads, stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn }));
+        c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / TICK_DT;
         if (c.jetFuel !== null) c.jetFuel = stepJetFuel(c.jetFuel, !!c.move.jet);
       }
       if (c.fireCooldown > 0) c.fireCooldown--;
@@ -801,8 +806,10 @@ export class Match {
   private fire(shooter: Combatant, def: Trigger, viewTick: number): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + PLAYER.eyeHeight, z: shooter.move.pos.z };
     const aim = viewDirection(shooter.yaw, shooter.pitch);
-    // Bloom from sustained fire widens the spread; each shot adds more.
-    const spread = def.spread + (def.alt ? 0 : shooter.bloom);
+    // Bloom from sustained fire widens the spread; each shot adds more. So does
+    // shooting on the run or in the air; aiming down a scope tightens it, and a
+    // scoped rifle fired from the hip is a guess.
+    const spread = aimSpread(shooter, def, def.spread + (def.alt ? 0 : shooter.bloom) + movementSpread(shooter, def));
     if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
     if (def.kind === 'projectile' && def.projectile) {
       for (let p = 0; p < Math.max(1, def.pellets); p++) this.launch(shooter, def.projectile, def.id, 0, spread);
@@ -833,8 +840,10 @@ export class Match {
 
     const to: Tuple3[] = [];
     const hits: (number | null)[] = [];
+    const zones: number[] = [];
     const bodies: number[] = [];
-    const struck: { slot: number; dir: Vec3 }[] = [];
+    const struck: { slot: number; dir: Vec3; zone: HitZone }[] = [];
+    const feetOf = (slot: number) => targets.find((t) => t.slot === slot)!.feet;
     for (let p = 0; p < def.pellets; p++) {
       const dir = this.spreadDir(aim, spread);
       const world = this.physics.raycastHit(eye, dir, def.range);
@@ -846,22 +855,25 @@ export class Match {
           .filter((t): t is { slot: number; d: number } => t.d !== null && t.d < wallAt)
           .sort((a, b) => a.d - b.d)
           .slice(0, def.pierce + 1);
-        for (const t of along) struck.push({ slot: t.slot, dir });
+        for (const t of along) struck.push({ slot: t.slot, dir, zone: hitZone(feetOf(t.slot), eye.y + dir.y * t.d) });
         to.push(tuple(add(eye, scale(dir, wallAt))));
         hits.push(along[0]?.slot ?? null);
+        zones.push(along[0] ? hitZone(feetOf(along[0].slot), eye.y + dir.y * along[0].d) : 0);
         if (world) bodies.push(world.handle);
         continue;
       }
       const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
       to.push(tuple(shot.end));
       hits.push(shot.hitSlot);
-      if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir });
+      const zone = shot.hitSlot !== null ? hitZone(feetOf(shot.hitSlot), shot.end.y) : 0;
+      zones.push(zone);
+      if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir, zone });
       else if (world) bodies.push(world.handle);
     }
-    this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(def.alt ? { alt: 1 as const } : {}) });
-    for (const { slot, dir } of struck) {
+    this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(zones.some((z) => z) ? { z: zones } : {}), ...(def.alt ? { alt: 1 as const } : {}) });
+    for (const { slot, dir, zone } of struck) {
       const victim = this.actor(slot)!;
-      this.damage(victim, def.damage, shooter, def.id);
+      this.damage(victim, def.damage * zoneMultiplier(zone, def.headshot), shooter, def.id, zone === 1);
       if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
       if (def.knockback) this.push(victim, dir, def.knockback);
     }
@@ -1484,7 +1496,7 @@ export class Match {
   }
 
   /** Apply damage through armor and the attacker's damage boost. */
-  private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string): void {
+  private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string, head = false): void {
     if (!victim.alive || this.phase !== 'playing') return;
     // No friendly fire; hazards (no attacker) and your own grenades still hurt.
     if (attacker && attacker !== victim && !this.hostile(attacker, victim)) return;
@@ -1496,14 +1508,14 @@ export class Match {
       dmg -= absorbed;
     }
     victim.health -= dmg;
-    if (victim.health <= 0) this.kill(victim, attacker === victim ? null : attacker, weapon);
+    if (victim.health <= 0) this.kill(victim, attacker === victim ? null : attacker, weapon, head);
   }
 
-  private kill(victim: Combatant, killer: Combatant | null, weapon: string): void {
+  private kill(victim: Combatant, killer: Combatant | null, weapon: string, head = false): void {
     this.leaveMount(victim, false);
     victim.alive = false;
     victim.health = 0;
-    this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon });
+    this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon, ...(head ? { hs: 1 as const } : {}) });
     // Only players score; NPC kills of players count as the player's death.
     if (killer && !killer.npc) killer.kills++;
     if (victim.npc) {
@@ -1838,6 +1850,23 @@ interface Trigger {
   status?: StatusHit;
   knockback?: number;
   recoil?: WeaponDefinition['recoil'];
+  headshot?: number;
+}
+
+/** Extra spread from moving and jumping (radians); multi-pellet guns already spray, so they care less. */
+function movementSpread(c: Combatant, def: Trigger): number {
+  if (def.kind === 'melee') return 0;
+  const k = def.pellets > 1 ? 0.35 : 1;
+  const run = Math.min(1, c.moveSpeed / PLAYER.runSpeed);
+  return (run > 0.25 ? 0.014 * run : 0) * k + (c.move.grounded ? 0 : 0.035 * k);
+}
+
+/** Scoped: a third of the spread. Scope weapons fired unscoped: a wide no-scope cone (NPCs aim their own way). */
+function aimSpread(c: Combatant, def: Trigger, spread: number): number {
+  const w = getWeapon(def.id);
+  if (!w.view.zoomFov || def.alt || c.npc) return spread;
+  if (c.prevButtons & BUTTON_ZOOM) return spread * 0.35;
+  return spread + (w.view.zoomFov < 0.5 ? 0.05 : 0.012);
 }
 
 function primaryTrigger(def: WeaponDefinition): Trigger {
@@ -1854,6 +1883,7 @@ function primaryTrigger(def: WeaponDefinition): Trigger {
     ...(def.status ? { status: def.status } : {}),
     ...(def.knockback ? { knockback: def.knockback } : {}),
     ...(def.recoil ? { recoil: def.recoil } : {}),
+    ...(def.headshot !== undefined ? { headshot: def.headshot } : {}),
   };
 }
 

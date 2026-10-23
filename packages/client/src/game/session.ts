@@ -39,6 +39,7 @@ import {
 } from '@chronosplit/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
+import { BULLET_SPEED } from './impactVisuals.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
@@ -50,7 +51,7 @@ import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
 import { ScenarioState } from './scenarioState.ts';
 import type { Transport } from './transport.ts';
-import { DEFAULT_FOV, GameView, slotColor } from './view.ts';
+import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 
 export interface SessionOptions {
   engine: AbstractEngine;
@@ -130,6 +131,10 @@ export class GameSession {
   private lastCorrections = 0;
   private correctionsPerSec = 0;
   private bytesInAt = 0;
+  /** Scope sway state and breath (1 full). */
+  private sway = { x: 0, y: 0, t: 0 };
+  private breath = 1;
+  private breathSpent = false;
   private kibPerSec = 0;
 
   constructor(private readonly opts: SessionOptions) {
@@ -169,6 +174,21 @@ export class GameSession {
       { signal },
     );
     this.sfx.bloodOn = () => this.view.blood.on;
+    // Bodies: stay all match, or sink away after a while.
+    const bodiesSel = $('bodies-setting') as HTMLSelectElement;
+    bodiesSel.value = this.view.bodies;
+    bodiesSel.addEventListener(
+      'change',
+      () => {
+        this.view.bodies = bodiesSel.value === 'fade' ? 'fade' : 'stay';
+        try {
+          localStorage.setItem(BODIES_PREF_KEY, this.view.bodies);
+        } catch {
+          // Private windows: the setting lasts for this match.
+        }
+      },
+      { signal },
+    );
     bindFullscreenButton($('pause-fullscreen') as HTMLButtonElement, signal);
     document.addEventListener('pointerlockchange', () => this.updatePause(), { signal });
     // A second Esc (the first one releases the pointer) leaves. In fullscreen the
@@ -187,6 +207,32 @@ export class GameSession {
       (m) => this.onMessage(m),
       (reason) => this.exit(reason),
     );
+  }
+
+  /**
+   * Scoped sway: the sights drift in a slow figure of eight, and the drift
+   * moves your real aim. Holding Shift steadies it while your breath lasts;
+   * run out and it sways harder until you've recovered.
+   */
+  private updateScopeSway(dt: number, zoomed: boolean): void {
+    const holding = zoomed && this.input.held('ShiftLeft') && !this.breathSpent;
+    this.breath = Math.max(0, Math.min(1, this.breath + (holding ? -dt / 3.5 : dt / 4)));
+    if (this.breath === 0) this.breathSpent = true;
+    if (this.breathSpent && this.breath > 0.5) this.breathSpent = false;
+    this.hud.setBreath(this.breath, this.breathSpent);
+    if (!zoomed) {
+      this.sway = { x: 0, y: 0, t: 0 };
+      return;
+    }
+    const amp = 0.0035 * (holding ? 0.12 : this.breathSpent ? 2.2 : 1);
+    const t = (this.sway.t += dt);
+    const x = (Math.sin(t * 0.9) + Math.sin(t * 2.1) * 0.3) * amp;
+    const y = Math.sin(t * 1.4) * amp * 0.75;
+    // Apply only the change, so your own aiming adds on top.
+    this.input.yaw += x - this.sway.x;
+    this.input.pitch += y - this.sway.y;
+    this.sway.x = x;
+    this.sway.y = y;
   }
 
   private updatePause(): void {
@@ -282,24 +328,37 @@ export class GameSession {
           this.sfx.event(ev, posesNow, performance.now());
           if (ev.e === 'shot') {
             const def = CORE_WEAPONS[ev.w];
-            ev.hit.forEach((victim, i) => {
-              const to = ev.to[i] ?? ev.to[0];
-              if (victim === null || victim === undefined || !to) return;
-              const d = { x: to[0] - ev.from[0], y: to[1] - ev.from[1], z: to[2] - ev.from[2] };
-              const len = Math.hypot(d.x, d.y, d.z) || 1;
-              const dir = { x: d.x / len, y: d.y / len, z: d.z / len };
-              const strength = Math.min(2.5, Math.max(0.6, (def?.damage ?? 20) / 25));
-              this.view.blood.hit({ x: to[0], y: to[1], z: to[2] }, dir, strength);
-              this.view.pushPlayer(victim, { x: dir.x * 2.5 * strength, y: 0.8, z: dir.z * 2.5 * strength });
+            const mine = ev.s === this.slot;
+            const eye = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
+            const muzzle = mine ? null : this.view.muzzleOf(ev.s);
+            const color = def?.view.tracer ?? '#ffd36b';
+            const strength = Math.min(2.5, Math.max(0.6, (def?.damage ?? 20) / 25));
+            ev.to.forEach((t, i) => {
+              const to = { x: t[0], y: t[1], z: t[2] };
+              const victim = ev.hit[i] ?? null;
+              const zone = ev.z?.[i] ?? 0;
+              if (victim !== null) {
+                const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
+                const len = Math.hypot(d.x, d.y, d.z) || 1;
+                this.view.pushPlayer(victim, { x: (d.x / len) * 2.5 * strength, y: zone === 1 ? 1.4 : 0.8, z: (d.z / len) * 2.5 * strength });
+              }
+              // Your own rounds are already in the air (drawn when you fired); only your hits land here.
+              if (mine) {
+                // Land the hit when your round gets there (it left the muzzle about one round trip ago).
+                const dist = Math.hypot(to.x - eye.x, to.y - eye.y, to.z - eye.z);
+                if (victim !== null) window.setTimeout(() => this.view.landRound({ eye, to, victim, zone, strength }), Math.max(0, (dist / BULLET_SPEED) * 1000 - 40));
+                return;
+              }
+              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def });
             });
-            if (ev.s === this.slot) {
-              if (ev.hit.some((h) => h !== null)) this.hud.hit();
+            if (mine) {
+              const hits = ev.hit.filter((h) => h !== null).length;
+              if (hits) this.hud.hit(ev.z?.some((z, i) => z === 1 && ev.hit[i] !== null) ?? false);
               const target = ev.hit.find((h): h is number => h !== null && h !== undefined);
               if (target !== undefined) this.hud.showTarget(this.hud.name(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
             } else {
-              const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
-              for (const to of ev.to) this.view.addShot(CORE_WEAPONS[ev.w], from, { x: to[0], y: to[1], z: to[2] }, ev.s < 0 ? (CORE_WEAPONS[ev.w]?.view.tracer ?? '#ffd36b') : (this.hud.team(ev.s)?.color ?? slotColor(ev.s)));
               this.view.avatarAction(ev.s, 'shoot');
+              if (def && def.kind !== 'melee') this.view.remoteFlash(ev.s);
             }
           } else if (ev.e === 'melee') {
             if (ev.s === this.slot && ev.hit !== null) this.hud.hit();
@@ -321,14 +380,17 @@ export class GameSession {
           } else if (ev.e === 'pickup') {
             if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
           } else if (ev.e === 'kill') {
-            this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot);
+            this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs);
             const at = this.view.chestOf(ev.victim);
             if (at) this.view.blood.kill(at);
+            if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2);
+            if (ev.hs && ev.killer === this.slot) this.hud.headshot();
           } else if (ev.e === 'round_end') {
             this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
             this.outcome = ev.outcome ?? null;
           } else if (ev.e === 'round_start') {
             this.outcome = null;
+            this.view.clearCorpses();
             this.npcInfo.clear();
           } else if (ev.e === 'msg') {
             this.hud.showMessage(ev.text, ev.secs);
@@ -465,7 +527,9 @@ export class GameSession {
         if (shot) {
           this.sfx.localShot(shot.def, shot.alt);
           this.view.kick(shot.def);
-          for (const end of shot.ends) this.view.addShot(shot.def, local.eye, end, shot.def.view.tracer, 60);
+          const muzzle = this.view.localMuzzle();
+          const strength = Math.min(2.5, Math.max(0.6, shot.def.damage / 25));
+          for (const end of shot.ends) this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true });
           // Recoil: the sights climb (and wander a little) with each shot.
           const recoil = !shot.alt ? shot.def.recoil : undefined;
           if (recoil?.kick) {
@@ -506,6 +570,7 @@ export class GameSession {
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, (weapon.reloadTicks - local.reloadTicks) / 10) : 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed });
       this.hud.setScope(zoomed);
+      this.updateScopeSway(dt, zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2]);
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);

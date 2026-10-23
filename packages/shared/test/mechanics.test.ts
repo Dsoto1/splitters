@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   BUTTON_FIRE,
+  BUTTON_ZOOM,
   BUTTON_THROW,
   CORE_ITEMS,
   DEFAULT_DEATHMATCH_RULES,
@@ -9,6 +10,7 @@ import {
   THROWABLE_DEFS,
   WEAPONS_BY_SLOT,
   getWeapon,
+  hitZone,
   initPhysics,
   lookAngles,
   weaponByCode,
@@ -72,6 +74,55 @@ function duel(targets: [number, number, number][], weaponId: string) {
   return { match, d, a, others, aim };
 }
 
+describe('hit zones and spread', () => {
+  it('splits a body into head, torso and legs', () => {
+    const feet = { x: 0, y: 2, z: 0 };
+    expect(hitZone(feet, 2 + 1.7)).toBe(1);
+    expect(hitZone(feet, 2 + 1.1)).toBe(0);
+    expect(hitZone(feet, 2 + 0.4)).toBe(2);
+  });
+
+  it('a scoped sniper head shot kills outright and is called a headshot; leg hits do less', () => {
+    const { match, d, a, others } = duel([[30, 0, 4]], 'core.sniper');
+    const target = others[0]!;
+    const head = lookAngles(eye(a.move.pos), { x: target.move.pos.x, y: target.move.pos.y + 1.68, z: target.move.pos.z });
+    const ev = d.run(3, () => d.input(a, { yaw: head.yaw, pitch: head.pitch, buttons: BUTTON_FIRE | BUTTON_ZOOM }));
+    const shot = ev.find((e) => e.e === 'shot');
+    expect(shot && shot.e === 'shot' && shot.z?.[0]).toBe(1);
+    expect(ev.some((e) => e.e === 'kill' && e.hs === 1)).toBe(true);
+    void match;
+
+    const legs = duel([[12, 0, 4]], 'core.rifle');
+    const t2 = legs.others[0]!;
+    const low = lookAngles(eye(legs.a.move.pos), { x: t2.move.pos.x, y: t2.move.pos.y + 0.45, z: t2.move.pos.z });
+    legs.d.run(1, () => legs.d.input(legs.a, { yaw: low.yaw, pitch: low.pitch, buttons: BUTTON_FIRE }));
+    expect(100 - t2.health).toBeCloseTo(getWeapon('core.rifle').damage * 0.75, 5);
+  });
+
+  it('a sniper rifle fired from the hip sprays; through the scope it is dead on', () => {
+    const shots = (buttons: number) => {
+      const { d, aim, a, others } = duel([[30, 0, 4]], 'core.sniper');
+      let hits = 0;
+      let fired = 0;
+      for (let i = 0; i < 12; i++) {
+        heldWeapon(a).mag = 5;
+        const ev = d.run(80, () => aim({ buttons }));
+        hits += ev.filter((e) => e.e === 'shot' && e.hit[0] !== null).length;
+        fired += ev.filter((e) => e.e === 'shot').length;
+        // Keep the target standing so every shot counts.
+        others[0]!.health = 100;
+        others[0]!.alive = true;
+        d.run(1, () => aim());
+      }
+      return hits / Math.max(1, fired);
+    };
+    const scoped = shots(BUTTON_FIRE | BUTTON_ZOOM);
+    const hip = shots(BUTTON_FIRE);
+    expect(scoped).toBe(1);
+    expect(hip).toBeLessThan(0.6);
+  });
+});
+
 describe('extended arsenal', () => {
   it('has 30+ weapons, every one with a model, a pickup and sane numbers; slots hold several', () => {
     expect(WEAPONS_BY_SLOT.length).toBeGreaterThanOrEqual(30);
@@ -107,11 +158,12 @@ describe('extended arsenal', () => {
     expect(first).toBeGreaterThanOrEqual(0);
     expect(lmg.match.tick).toBeGreaterThan(getWeapon('core.lmg').windupTicks!);
     const { d, others, aim } = duel([[10, 0, 4], [16, 0, 4], [22, 0, 4]], 'core.railgun');
-    const ev = d.run(getWeapon('core.railgun').windupTicks! - 2, () => aim({ buttons: BUTTON_FIRE }));
+    // Scoped in (the railgun fired from the hip sprays).
+    const ev = d.run(getWeapon('core.railgun').windupTicks! - 2, () => aim({ buttons: BUTTON_FIRE | BUTTON_ZOOM }));
     expect(ev.some((e) => e.e === 'shot')).toBe(false);
-    d.run(4, () => aim({ buttons: BUTTON_FIRE }));
-    // One shot through all three, 90 damage each.
-    expect(others.filter((o) => o.health <= 10).length).toBe(3);
+    d.run(4, () => aim({ buttons: BUTTON_FIRE | BUTTON_ZOOM }));
+    // One shot through all three: 90 damage each, less where it passes at leg height.
+    expect(others.filter((o) => o.health <= 100 - 90 * 0.75).length).toBe(3);
   });
 
   it('the laser overheats and locks until it has cooled right down', () => {

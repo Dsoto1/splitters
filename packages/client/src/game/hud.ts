@@ -294,6 +294,13 @@ export class Hud {
     this.scope.hidden = !on;
   }
 
+  /** Breath meter under the scope (spent: it has to recover before you can hold again). */
+  setBreath(breath: number, spent: boolean): void {
+    if (this.scope.hidden) return;
+    this.scope.style.setProperty('--breath', `${Math.round(breath * 100)}%`);
+    this.scope.classList.toggle('spent', spent);
+  }
+
   setStatus(phase: MatchPhase, timeLeft: number, alive: boolean, winner: string | null, outcome: 'victory' | 'defeat' | null = null): void {
     const m = Math.floor(timeLeft / 60);
     const s = String(timeLeft % 60).padStart(2, '0');
@@ -302,7 +309,7 @@ export class Hud {
     else this.banner.textContent = alive ? '' : 'Respawning…';
   }
 
-  kill(killer: number | null, victim: number, weapon: string, localSlot: number): void {
+  kill(killer: number | null, victim: number, weapon: string, localSlot: number, headshot = false): void {
     const line = document.createElement('div');
     const color = (slot: number | null) => (slot === null ? '#ccc' : (this.team(slot)?.color ?? slotColor(slot)));
     const name = (slot: number | null) => `<span style="color:${color(slot)}">${escapeHtml(this.name(slot))}</span>`;
@@ -315,6 +322,7 @@ export class Hud {
       label.replaceWith(icon);
     }
     if (killer === localSlot || victim === localSlot) line.style.outline = '1px solid rgba(255,255,255,0.5)';
+    if (headshot && killer !== null) line.insertAdjacentHTML('beforeend', ' <b class="hs" title="Headshot">✛</b>');
     this.feed.prepend(line);
     while (this.feed.children.length > 5) this.feed.lastChild?.remove();
     window.setTimeout(() => line.remove(), 5000);
@@ -360,10 +368,21 @@ export class Hud {
     this.marker.querySelector('span')!.textContent = `${Math.round(at.dist)} m`;
   }
 
-  hit(): void {
+  /** Hit confirmation on the crosshair (red and longer for a head hit). */
+  hit(head = false): void {
     this.hitmarker.classList.add('on');
+    this.hitmarker.classList.toggle('head', head);
     clearTimeout(this.hitTimer);
-    this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on'), 60);
+    this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on', 'head'), head ? 140 : 70);
+  }
+
+  /** "HEADSHOT" call-out for a kill you made with a head hit. */
+  headshot(): void {
+    const el = document.getElementById('headshot');
+    if (!el) return;
+    el.classList.remove('on');
+    void el.offsetWidth;
+    el.classList.add('on');
   }
 
   renderScoreboard(visible: boolean, scores: ScoreEntry[], localSlot: number): void {

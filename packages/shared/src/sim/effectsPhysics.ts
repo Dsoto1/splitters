@@ -56,6 +56,13 @@ export class EffectsWorld {
     return hit ? { dist: hit.timeOfImpact, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z } } : null;
   }
 
+  /** First ragdoll body along a ray (a corpse in the way of a shot): the body, distance and surface normal. */
+  raycastRagdoll(from: Vec3, dir: Vec3, maxDist: number): { body: RAPIER.RigidBody; dist: number; normal: Vec3 } | null {
+    const hit = this.world.castRayAndGetNormal(new RAPIER.Ray(from, dir), maxDist, true, undefined, groups(0xffff, GROUP_RAGDOLL));
+    const body = hit?.collider.parent();
+    return hit && body ? { body, dist: hit.timeOfImpact, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z } } : null;
+  }
+
   /** A dynamic body. Debris bumps into debris; ragdoll parts only into the level (their joints hold them together). */
   addBody(shape: EffectShape, pos: Vec3, rot: Quat, layer: EffectLayer, o: { vel?: Vec3; spin?: Vec3; density?: number } = {}): RAPIER.RigidBody {
     const body = this.world.createRigidBody(

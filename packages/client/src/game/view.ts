@@ -47,9 +47,9 @@ import {
 } from '@chronosplit/shared';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { Ragdoll } from './ragdoll.ts';
+import { ImpactVisuals } from './impactVisuals.ts';
+import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 
-/** Bodies tumbling at once; older ones freeze where they lie. */
-const MAX_RAGDOLLS = 12;
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
 import { MapStyler } from '../mapMeshes.ts';
@@ -94,7 +94,34 @@ interface Avatar {
   /** Physics body after death (until the next spawn). */
   ragdoll?: Ragdoll;
   wasAlive?: boolean;
+  /** The held weapon and its muzzle in the weapon's own space (for tracers and flashes). */
+  muzzle?: { node: TransformNode; local: Vector3 };
+  /** Muzzle flash shown until this time. */
+  flashUntil?: number;
+  flash?: Mesh;
 }
+
+/** A body left where it fell: stays all match, or sinks away after a while (player setting). */
+interface Corpse {
+  a: Avatar;
+  slot: number;
+  born: number;
+}
+
+export const BODIES_PREF_KEY = 'cs.bodies';
+export type BodiesSetting = 'stay' | 'fade';
+export function bodiesPreference(): BodiesSetting {
+  try {
+    return localStorage.getItem(BODIES_PREF_KEY) === 'fade' ? 'fade' : 'stay';
+  } catch {
+    return 'stay';
+  }
+}
+/** Bodies kept at once (the oldest goes when another falls). */
+const MAX_CORPSES = 32;
+/** "Fade" setting: seconds a body lies there, then seconds it takes to sink away. */
+const CORPSE_STAY = 30;
+const CORPSE_SINK = 3;
 
 /** Characters face +Z (our yaw 0) after glTF import; fit them to the player height. */
 const MODEL_YAW = 0;
@@ -140,6 +167,11 @@ export class GameView {
   private bobPhase = 0;
   private readonly flash: Mesh;
   private flashUntil = 0;
+  /** The ambient light, briefly brightened by your own shots (a real point light costs every pixel). */
+  private hemi?: HemisphericLight;
+  private hemiBase = 0.8;
+  private hemiLit = false;
+  private readonly brass: StandardMaterial;
 
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
@@ -157,21 +189,23 @@ export class GameView {
     this.characters = new CharacterLibrary(this.scene);
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.blood = new BloodVisuals(this.scene, () => this.physics);
+    this.impacts = new ImpactVisuals(this.scene, () => this.physics);
     this.blood.enabled = bloodPreference();
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
     hemi.intensity = 0.8;
     hemi.groundColor = new Color3(0.35, 0.33, 0.3);
+    this.hemi = hemi;
     const sun = new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene);
     sun.intensity = 0.6;
 
     this.viewRoot = new TransformNode('viewRoot', this.scene);
     this.viewRoot.parent = this.camera;
-    this.flash = CreateSphere('muzzleFlash', { diameter: 0.09, segments: 6 }, this.scene);
-    this.flash.material = glow(this.scene, 'flashMat', '#ffd27a');
+    this.flash = createStarFlash(this.scene, 'muzzleFlash', 0.32);
     this.flash.renderingGroupId = 1;
-    this.flash.isPickable = false;
-    this.flash.setEnabled(false);
+    this.brass = new StandardMaterial('brassMat', this.scene);
+    this.brass.diffuseColor = new Color3(0.78, 0.6, 0.22);
+    this.brass.specularColor = new Color3(0.9, 0.8, 0.5);
   }
 
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
@@ -205,8 +239,12 @@ export class GameView {
   /** How hard each recently hit player was pushed (shots and blasts), for the ragdoll's throw. */
   private readonly pushes = new Map<number, { v: Vec3; t: number }>();
   private lastFrame = performance.now();
-  private debrisBodies: { mesh: Mesh; body: ReturnType<EffectsWorld['addBody']>; born: number }[] = [];
-  private ragdolls: { slot: number; at: number }[] = [];
+  private debrisBodies: { mesh: Mesh; body: ReturnType<EffectsWorld['addBody']>; born: number; shared?: boolean }[] = [];
+  readonly impacts: ImpactVisuals;
+  private corpses: Corpse[] = [];
+  /** Players whose body is lying as a corpse and who haven't respawned yet. */
+  private readonly lyingDead = new Set<number>();
+  bodies: BodiesSetting = bodiesPreference();
 
   /** Remember a push on a player (from a hit or a blast) so their ragdoll flies the right way if it kills them. */
   pushPlayer(slot: number, v: Vec3): void {
@@ -251,15 +289,98 @@ export class GameView {
     } catch {
       a.ragdoll = undefined;
     }
-    // Only so many bodies tumble at once; the oldest settle where they lie.
-    this.ragdolls = [...this.ragdolls.filter((r) => r.slot !== slot), { slot, at: performance.now() }];
-    while (this.ragdolls.length > MAX_RAGDOLLS) {
-      const old = this.avatars.get(this.ragdolls.shift()!.slot);
-      if (old?.ragdoll) {
-        old.ragdoll.dispose();
-        old.ragdoll = undefined;
-      }
+  }
+
+  /** The fallen body becomes a corpse that outlives the player's respawn. */
+  private toCorpse(slot: number, a: Avatar): void {
+    this.avatars.delete(slot);
+    this.lyingDead.add(slot);
+    a.tag?.mesh.dispose(false, true);
+    a.tag = undefined;
+    a.aura?.setEnabled(false);
+    a.jet?.setEnabled(false);
+    a.flash?.setEnabled(false);
+    this.corpses.push({ a, slot, born: performance.now() });
+    while (this.corpses.length > MAX_CORPSES) this.disposeAvatar(this.corpses.shift()!.a);
+  }
+
+  /** Bodies currently lying in the level (for tests). */
+  corpseCount(): number {
+    return this.corpses.length;
+  }
+
+  /** Remove every body (a new round). */
+  clearCorpses(): void {
+    for (const c of this.corpses) this.disposeAvatar(c.a);
+    this.corpses = [];
+    this.lyingDead.clear();
+  }
+
+  // ---------------------------------------------------------------- shots
+
+  /** World position of your own gun's muzzle (the viewmodel), or null while it isn't shown. */
+  localMuzzle(): Vec3 | null {
+    if (!this.viewmodel || !this.viewRoot.isEnabled(false)) return null;
+    this.viewRoot.computeWorldMatrix(true);
+    const p = Vector3.TransformCoordinates(new Vector3(0, 0.02, this.muzzleZ + 0.02), this.viewRoot.getWorldMatrix());
+    return { x: p.x, y: p.y, z: p.z };
+  }
+
+  /** World position of a remote player's muzzle, or null when their gun isn't drawn. */
+  muzzleOf(slot: number): Vec3 | null {
+    const m = this.avatars.get(slot)?.muzzle;
+    if (!m || m.node.isDisposed()) return null;
+    m.node.computeWorldMatrix(true);
+    const p = Vector3.TransformCoordinates(m.local, m.node.getWorldMatrix());
+    return { x: p.x, y: p.y, z: p.z };
+  }
+
+  /**
+   * Draw one round of a shot: it leaves the muzzle, flies to where the game
+   * says it landed, and then the target reacts: blood on a body (strength by
+   * damage, more on a head), or a hole, sparks and dust on a wall. Bodies
+   * lying in the way take the hit too and are knocked about.
+   */
+  shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean }): void {
+    if (o.def?.view.beam) {
+      this.addShot(o.def, o.muzzle ?? o.eye, o.to, o.color);
+      this.landRound(o);
+      return;
     }
+    this.impacts.fire(o.muzzle ?? { x: o.eye.x, y: o.eye.y - 0.1, z: o.eye.z }, o.to, o.color, () => this.landRound(o), o.local ? 1.5 : 0);
+  }
+
+  /** What happens where a round lands (see shotVisual). */
+  landRound(o: { eye: Vec3; to: Vec3; victim: number | null; zone: number; strength: number }): void {
+    const d = { x: o.to.x - o.eye.x, y: o.to.y - o.eye.y, z: o.to.z - o.eye.z };
+    const len = Math.hypot(d.x, d.y, d.z) || 1;
+    const dir = { x: d.x / len, y: d.y / len, z: d.z / len };
+    // A corpse in the line of fire.
+    const body = this.physics?.raycastRagdoll(o.eye, dir, len);
+    if (body) {
+      const at = { x: o.eye.x + dir.x * body.dist, y: o.eye.y + dir.y * body.dist, z: o.eye.z + dir.z * body.dist };
+      body.body.applyImpulseAtPoint({ x: dir.x * 9 * o.strength, y: dir.y * 9 * o.strength + 1, z: dir.z * 9 * o.strength }, at, true);
+      this.blood.hit(at, dir, o.strength);
+    }
+    if (o.victim !== null) {
+      this.blood.hit(o.to, dir, o.zone === 1 ? o.strength * 1.8 : o.strength);
+      return;
+    }
+    const wall = this.impacts.surfaceHit(o.eye, o.to);
+    if (wall) this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4));
+  }
+
+  /** A brief muzzle flash on a remote player's gun. */
+  remoteFlash(slot: number): void {
+    const a = this.avatars.get(slot);
+    if (!a?.muzzle) return;
+    a.flash ??= this.createFlash(a.root.name);
+    a.flashUntil = performance.now() + 55;
+    kickFlash(a.flash, 1);
+  }
+
+  private createFlash(name: string): Mesh {
+    return createStarFlash(this.scene, `${name}_flash`, 0.55);
   }
 
   /** Step the effects physics and everything riding on it. */
@@ -267,13 +388,41 @@ export class GameView {
     const now = performance.now();
     const dt = Math.min(0.1, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
+    this.impacts.update(dt);
+    // Remote muzzle flashes follow the guns.
+    for (const a of this.avatars.values()) {
+      if (!a.flash) continue;
+      const on = now < (a.flashUntil ?? 0) && !!a.muzzle;
+      a.flash.setEnabled(on);
+      if (on && a.muzzle) {
+        a.muzzle.node.computeWorldMatrix(true);
+        a.flash.position.copyFrom(Vector3.TransformCoordinates(a.muzzle.local, a.muzzle.node.getWorldMatrix()));
+      }
+    }
     if (this.physics) {
       this.physics.step(dt);
       for (const a of this.avatars.values()) a.ragdoll?.update();
+      this.corpses = this.corpses.filter((c) => {
+        if (!c.a.ragdoll?.resting) c.a.ragdoll?.update();
+        if (this.bodies !== 'fade') return true;
+        const age = (now - c.born) / 1000 - CORPSE_STAY;
+        if (age <= 0) return true;
+        if (age >= CORPSE_SINK) {
+          this.disposeAvatar(c.a);
+          return false;
+        }
+        // Sink into the ground: the ragdoll lets go and the body slides down.
+        if (c.a.ragdoll) {
+          c.a.ragdoll.dispose();
+          c.a.ragdoll = undefined;
+        }
+        c.a.root.position.y -= dt * 0.5;
+        return true;
+      });
       this.debrisBodies = this.debrisBodies.filter((d) => {
         const age = (now - d.born) / 1000;
         if (age > DEBRIS_LIFE) {
-          d.mesh.material?.dispose();
+          if (!d.shared) d.mesh.material?.dispose();
           d.mesh.dispose();
           this.physics!.remove(d.body);
           return false;
@@ -390,7 +539,34 @@ export class GameView {
   /** Recoil kick and muzzle flash for a predicted shot. */
   kick(def: WeaponDefinition): void {
     this.kickAmount = Math.min(1, this.kickAmount + (def.kind === 'melee' ? 0.9 : def.pellets > 1 || def.projectile ? 1 : 0.45));
-    if (def.kind !== 'melee') this.flashUntil = performance.now() + 50;
+    if (def.kind === 'melee' || def.view.beam) return;
+    this.flashUntil = performance.now() + 45;
+    kickFlash(this.flash, def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1);
+    if (def.kind === 'hitscan' && def.ammo) this.ejectCasing(def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1);
+  }
+
+  /** A spent case flips out of the right side of your gun and rattles on the floor. */
+  private ejectCasing(size: number): void {
+    if (!this.physics || !this.viewmodel) return;
+    this.viewRoot.computeWorldMatrix(true);
+    const m = this.viewRoot.getWorldMatrix();
+    const at = Vector3.TransformCoordinates(new Vector3(0.04, 0.05, this.muzzleZ * 0.35), m);
+    const right = Vector3.TransformNormal(new Vector3(1, 0, 0), m).normalize();
+    const up = Vector3.TransformNormal(new Vector3(0, 1, 0), m).normalize();
+    const back = Vector3.TransformNormal(new Vector3(0, 0, -1), m).normalize();
+    const v = right.scale(2.2 + Math.random()).add(up.scale(1.6 + Math.random())).add(back.scale(0.6));
+    const shell = CreateCylinder('casing', { height: 0.03 * size, diameter: 0.011 * size, tessellation: 6 }, this.scene);
+    shell.material = this.brass;
+    shell.isPickable = false;
+    shell.position.copyFrom(at);
+    const body = this.physics.addBody({ kind: 'box', half: { x: 0.006 * size, y: 0.015 * size, z: 0.006 * size } }, at, { x: 0, y: 0, z: 0, w: 1 }, 'debris', { vel: v, spin: { x: Math.random() * 20, y: Math.random() * 20, z: 15 }, density: 2 });
+    this.debrisBodies.push({ mesh: shell, body, born: performance.now(), shared: true });
+    while (this.debrisBodies.filter((d) => d.shared).length > 40) {
+      const i = this.debrisBodies.findIndex((d) => d.shared);
+      const d = this.debrisBodies.splice(i, 1)[0]!;
+      d.mesh.dispose();
+      this.physics.remove(d.body);
+    }
   }
 
   /** Position the viewmodel: offset, bob while moving, recoil, and dips for raising/reloading. */
@@ -413,9 +589,13 @@ export class GameView {
     this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
     const flashing = performance.now() < this.flashUntil;
     this.flash.setEnabled(flashing);
+    // The map may set its own light level, so the base is whatever it is between shots.
+    if (this.hemi && !this.hemiLit) this.hemiBase = this.hemi.intensity;
+    if (this.hemi) this.hemi.intensity = this.hemiBase * (flashing ? 1.18 : 1);
+    this.hemiLit = flashing;
     if (flashing) {
       this.flash.parent = this.viewRoot;
-      this.flash.position.set(0, 0.02, this.muzzleZ + 0.03);
+      this.flash.position.set(0, 0.02, this.muzzleZ + 0.08);
     }
   }
 
@@ -431,6 +611,9 @@ export class GameView {
     for (const p of poses) {
       if (p.slot === localSlot) continue;
       seen.add(p.slot);
+      // Their body is lying as a corpse; they come back as a new avatar when they respawn.
+      if (p.alive) this.lyingDead.delete(p.slot);
+      else if (this.lyingDead.has(p.slot) && !this.avatars.has(p.slot)) continue;
       let a = this.avatars.get(p.slot);
       const want = spec(p.slot);
       const key = JSON.stringify(want);
@@ -453,7 +636,13 @@ export class GameView {
       }
       a.last = { x: p.x, y: p.y, z: p.z, t: now };
       // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
-      if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) this.startRagdoll(p.slot, a);
+      if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) {
+        this.startRagdoll(p.slot, a);
+        if (a.ragdoll) {
+          this.toCorpse(p.slot, a);
+          continue;
+        }
+      }
       if (p.alive && a.ragdoll) {
         a.ragdoll.dispose();
         a.ragdoll = undefined;
@@ -521,11 +710,15 @@ export class GameView {
     a.weaponSlot = slot;
     a.weaponNode?.dispose();
     a.weaponNode = undefined;
+    a.muzzle = undefined;
     a.anim?.hold(null);
     const def = weaponByCode(slot);
     if (!def) return;
     void this.models.instantiate(def.view.model, `held_${slot}`).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
+      // The muzzle is the front of the gun along its forward axis, measured before it's put in a hand.
+      const { min, max } = node.getHierarchyBoundingVectors(true);
+      a.muzzle = { node, local: new Vector3(0, (min.y + max.y) / 2 + (max.y - min.y) * 0.2, max.z) };
       if (a.anim) {
         a.anim.hold(node, def.view.hold);
         return;
@@ -580,6 +773,9 @@ export class GameView {
   }
 
   private disposeAvatar(a: Avatar): void {
+    // The flash texture is shared by every flash: dispose the material, never the texture.
+    a.flash?.material?.dispose();
+    a.flash?.dispose();
     a.ragdoll?.dispose();
     a.anim?.dispose();
     a.weaponNode?.dispose();
@@ -826,6 +1022,7 @@ export class GameView {
 
   dispose(): void {
     this.blood.dispose();
+    this.impacts.dispose();
     this.scene.dispose();
     this.physics?.free();
     this.physics = null;

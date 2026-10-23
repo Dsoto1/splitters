@@ -141,6 +141,11 @@ export class Ragdoll {
     }
   }
 
+  /** Every part has come to rest (physics put them to sleep): no need to re-pose the skeleton. */
+  get resting(): boolean {
+    return this.parts.every((p) => p.body.isSleeping());
+  }
+
   dispose(): void {
     for (const p of this.parts) this.world.remove(p.body);
     this.parts.length = 0;

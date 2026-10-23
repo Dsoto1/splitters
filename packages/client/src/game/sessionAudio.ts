@@ -128,12 +128,12 @@ export class SessionAudio {
         let impacts = 0;
         // Bodies: one meaty hit per victim (a shotgun blast is one big hit, not nine little ones), heavier for big damage.
         const def = getWeapon(ev.w);
-        const perVictim = new Map<number, { at: Tuple3; pellets: number }>();
+        const perVictim = new Map<number, { at: Tuple3; pellets: number; head: boolean }>();
         ev.to.forEach((to, i) => {
           const hit = ev.hit[i];
           if (hit !== null && hit !== undefined) {
             const v = perVictim.get(hit);
-            perVictim.set(hit, { at: v?.at ?? to, pellets: (v?.pellets ?? 0) + 1 });
+            perVictim.set(hit, { at: v?.at ?? to, pellets: (v?.pellets ?? 0) + 1, head: (v?.head ?? false) || ev.z?.[i] === 1 });
             return;
           }
           if (impacts >= MAX_IMPACTS_PER_SHOT) return;
@@ -141,7 +141,7 @@ export class SessionAudio {
           this.audio.play('impact.world', { at: tuple(to) });
         });
         for (const [victim, v] of perVictim) {
-          const heavy = def.damage * v.pellets >= 45;
+          const heavy = v.head || def.damage * v.pellets >= 45;
           const at = victim === me ? undefined : tuple(v.at);
           this.audio.play(heavy ? 'impact.heavy' : 'impact.body', { at, gain: victim === me ? 0.6 : 1 });
           this.audio.play('impact.thud', { at, gain: 0.8 });

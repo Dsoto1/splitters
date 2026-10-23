@@ -173,6 +173,11 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .xh-col { width: 26px; height: 26px; padding: 0; border-radius: 50%; }
 #hitmarker { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; opacity: 0; border: 2px solid var(--danger); transform: rotate(45deg); transition: opacity 0.15s; }
 #hitmarker.on { opacity: 1; transition: none; }
+#hitmarker.head { border-color: #ff2a2a; border-width: 3px; width: 38px; height: 38px; margin: -19px 0 0 -19px; }
+#headshot { position: absolute; left: 50%; top: 38%; transform: translateX(-50%); font: 700 italic 26px var(--font-display); letter-spacing: 0.12em; color: #ff3b3b; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8); opacity: 0; pointer-events: none; }
+#headshot.on { animation: headshot-pop 0.9s ease-out; }
+@keyframes headshot-pop { 0% { opacity: 0; transform: translateX(-50%) scale(1.6); } 12% { opacity: 1; transform: translateX(-50%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
+#feed .hs { color: #ff4b4b; margin-left: 4px; }
 #weapon-bar { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
 #weapon-bar span { min-width: 30px; padding: 3px 10px; background: rgba(18, 24, 39, 0.8); color: #56647c; font: 600 12px var(--font-display); text-align: center; clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); }
 #weapon-bar span.owned { color: var(--fg); }
@@ -181,10 +186,13 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #pickup-msg { position: absolute; left: 50%; top: 64%; transform: translateX(-50%); padding: 6px 14px 6px 12px; background: linear-gradient(90deg, rgba(18, 24, 39, 0.92), rgba(18, 24, 39, 0.7)); border-left: 3px solid var(--success); font: 600 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; opacity: 0; transition: opacity 0.3s; }
 #pickup-msg::before { content: '+ '; color: var(--success); }
 #pickup-msg.on { opacity: 1; transition: none; }
-#scope { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, transparent 0 32vh, rgba(0, 0, 0, 0.92) 32.5vh); }
-#scope::before, #scope::after { content: ''; position: absolute; background: rgba(0, 0, 0, 0.8); }
-#scope::before { left: 50%; top: 18vh; bottom: 18vh; width: 1px; }
-#scope::after { top: 50%; left: calc(50% - 32vh); right: calc(50% - 32vh); height: 1px; }
+#scope { position: absolute; inset: 0; animation: scope-in 0.16s ease-out; }
+#scope svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#scope-breath { position: absolute; left: 50%; bottom: 9vh; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font: 600 11px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.55); }
+#scope-breath i { display: block; width: 120px; height: 3px; background: rgba(255, 255, 255, 0.15); }
+#scope-breath i::after { content: ''; display: block; height: 100%; width: var(--breath, 100%); background: var(--cyan); }
+#scope.spent #scope-breath i::after { background: var(--danger); }
+@keyframes scope-in { from { opacity: 0; transform: scale(1.15); } to { opacity: 1; transform: none; } }
 #scoreboard { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); min-width: min(480px, 92vw); background: rgba(18, 24, 39, 0.94); border: 1px solid var(--line); border-top: 3px solid var(--cyan); padding: 12px 16px; font-family: var(--font-display); }
 #scoreboard table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 #scoreboard th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12px; }

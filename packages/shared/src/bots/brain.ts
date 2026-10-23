@@ -2,7 +2,7 @@ import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles,
 import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, TICK_DT, TICK_RATE } from '../sim/constants.ts';
 import type { ItemDefinition } from '../sim/items.ts';
-import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_THROW, type PlayerInput } from '../sim/movement.ts';
+import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_THROW, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { weaponCode, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
@@ -227,8 +227,11 @@ export class BotBrain {
 
     let buttons = 0;
     // Semi-auto and burst triggers need letting go between shots: tap them.
-    const mode = view.inventory.find((w) => weaponCode(w.def) === view.held)?.def.fireMode ?? 'auto';
+    const heldDef = view.inventory.find((w) => weaponCode(w.def) === view.held)?.def;
+    const mode = heldDef?.fireMode ?? 'auto';
     if (wantFire && (mode === 'auto' || !this.trigger)) buttons |= BUTTON_FIRE;
+    // Scoped weapons are fired through the scope (they spray from the hip).
+    if (wantFire && heldDef?.view.zoomFov && !heldDef.alt) buttons |= BUTTON_ZOOM;
     this.trigger = (buttons & BUTTON_FIRE) !== 0;
     // Now and then lob a grenade at a target in throwing range.
     if (wantFire && target && (view.throwables ?? 0) > 0) {

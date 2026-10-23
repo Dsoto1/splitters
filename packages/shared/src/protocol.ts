@@ -84,7 +84,7 @@ export const POWERUP_DAMAGE_BIT = 2;
 
 export type GameEvent =
   /** One trigger pull: `to`/`hit` hold one entry per pellet (one for most weapons). */
-  | { e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Second trigger. */ alt?: 1 }
+  | { e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Body zone per hit (0 body, 1 head, 2 legs), parallel to `hit`. */ z?: number[]; /** Second trigger. */ alt?: 1 }
   /** Chain lightning: the points it jumped through, from the muzzle on. */
   | { e: 'arc'; s: number; pts: Tuple3[] }
   /** Someone got into a seat (seat ≥ 0) or out of one (seat -1); `m` is the mount's map entity index. */
@@ -94,7 +94,7 @@ export type GameEvent =
   | { e: 'melee'; s: number; hit: number | null }
   | { e: 'explode'; s: number; p: Tuple3; r: number }
   | { e: 'pickup'; s: number; id: string; item: string }
-  | { e: 'kill'; killer: number | null; victim: number; weapon: string }
+  | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit. */ hs?: 1 }
   | { e: 'spawn'; s: number }
   /** `outcome` is set when a co-op mission ends (victory or defeat). */
   | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null }

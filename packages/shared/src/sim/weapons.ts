@@ -217,6 +217,8 @@ export interface WeaponDefinition {
   status?: StatusHit;
   /** Hitscan push on the target (m/s). */
   knockback?: number;
+  /** Damage multiplier for a head hit (default HEAD_MULTIPLIER; 1 for weapons that don't care where they land). */
+  headshot?: number;
   recoil?: Recoil;
   /** AI: 0..1 general preference and the distance band (m) it is best at. */
   botDesirability: number;
@@ -331,6 +333,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     reloadTicks: 110,
     raiseTicks: 25,
     ammo: 'sniper',
+    headshot: 3,
     botDesirability: 0.6,
     botRange: [18, 120],
     view: { model: 'weapons/sniper.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4, hold: { style: 'long', grip: [0, -0.04, -0.29], support: [0, -0.005, 0.02], shoulder: [0, -0.05, -0.57] } },
@@ -792,6 +795,24 @@ export interface ShotResult {
  * Resolve a hitscan shot: the nearest of the first static surface and any
  * target capsule wins. `worldDistance` is the result of a static raycast (null = nothing within range).
  */
+/** Where a shot landed on a body: 0 torso and arms, 1 head, 2 legs. */
+export type HitZone = 0 | 1 | 2;
+/** Head hits hurt double (sniper rifles more); leg hits a bit less. */
+export const HEAD_MULTIPLIER = 2;
+export const LEG_MULTIPLIER = 0.75;
+
+/** The body zone at height `y` on a player standing at `feet` (`height` tall). */
+export function hitZone(feet: Vec3, y: number, height: number = PLAYER.height): HitZone {
+  const up = y - feet.y;
+  if (up >= height - 0.32) return 1;
+  if (up < height * 0.47) return 2;
+  return 0;
+}
+
+export function zoneMultiplier(zone: HitZone, headshot: number = HEAD_MULTIPLIER): number {
+  return zone === 1 ? headshot : zone === 2 ? LEG_MULTIPLIER : 1;
+}
+
 export function resolveHitscan(origin: Vec3, dir: Vec3, range: number, worldDistance: number | null, targets: readonly ShotTarget[]): ShotResult {
   let distance = worldDistance ?? range;
   let hitSlot: number | null = null;
