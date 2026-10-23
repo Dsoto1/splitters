@@ -10,8 +10,8 @@
  *
  * The airstrike: press the button, the alarm sounds three times, at +5 s the
  * eight blast doors (six bunker doors, two culvert mouths) lock shut, and at
- * +6 s 104 buried charges go off at once: every 4 m across the yard, along
- * the canal floor, under the bridge deck and on top of the crate stacks.
+ * +6 s 110 buried charges go off at once: every 4 m across the yard, along
+ * the canal floor, in the bridge deck and on top of everything climbable.
  * Anyone outside dies; walls and doors keep the blasts out of the bunkers and
  * tunnels. The doors unlock at +8 s and the button comes back after 60 s.
  *
@@ -23,9 +23,9 @@
  *   y3        ^   H   H   H   H   H   ^        H front hall (z0) under the sniper gallery (z1); ^ stairs down to the tunnels
  *                 D       D       D            D blast doors onto the yard
  *   y2        |   .   .   r   .   .   |        . yard (z0): c crate stacks, w low walls, r ruins
- *   y1        |   .   c   .   .   w   |        | tunnels (z-1) under the flanks, roofed over
+ *   y1        |   .   c   .   w   .   |        | tunnels (z-1) under the flanks, roofed over
  *   y0        J]  ~   ~   B   ~   ~  [J        ~ dry canal (z-1, jump pads back up), B bridge (z0), J] culverts with blast doors
- *   y-1       |   w   .   .   c   .   |
+ *   y-1       |   .   w   .   c   .   |
  *   y-2       |   .   .   r   .   .   |
  *                 D       D       D
  *   y-3       v   H   H   H   H   H   v
