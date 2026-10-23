@@ -4,6 +4,7 @@ import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { installEnvironmentBrdf } from './content/brdf.ts';
 
 export type RendererKind = 'WebGPU' | 'WebGL2';
 
@@ -48,6 +49,7 @@ export async function createEngine(canvas: HTMLCanvasElement): Promise<{ engine:
         touchedCanvas = true;
         const engine = new WebGPUEngine(canvas, { antialias: true, stencil: true, powerPreference: 'high-performance' });
         await engine.initAsync();
+        engine.onNewSceneAddedObservable.add(installEnvironmentBrdf);
         if (forced === 'webgpu' || (await webgpuSurvives(engine))) return { engine, kind: 'WebGPU', canvas };
         engine.dispose();
         note = 'WebGPU device was lost during startup; using WebGL2';
@@ -64,6 +66,8 @@ export async function createEngine(canvas: HTMLCanvasElement): Promise<{ engine:
   const engine = new Engine(canvas, true, { stencil: true, powerPreference: 'high-performance' }, true);
   // Reverse depth spreads depth precision far more evenly from near to far, so distant walls don't flicker.
   engine.useReverseDepthBuffer = true;
+  // Every scene's PBR materials share a BRDF table that needs no GPU pre-pass (see content/brdf.ts).
+  engine.onNewSceneAddedObservable.add(installEnvironmentBrdf);
   return { engine, kind: 'WebGL2', canvas, note };
 }
 

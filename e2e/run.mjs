@@ -5,8 +5,10 @@ import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium } from 'playwright';
 
-const CLIENT = 'http://localhost:4173';
-const SERVER_PORT = 7787;
+// E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
+const CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? '4173';
+const CLIENT = `http://localhost:${CLIENT_PORT}`;
+const SERVER_PORT = +(process.env.E2E_SERVER_PORT ?? 7787);
 const procs = [];
 let failures = 0;
 
@@ -716,6 +718,70 @@ async function designerFlow(browser) {
   await page.context().close();
 }
 
+/**
+ * WebGPU on a software adapter (SwiftShader). It renders, but can't present
+ * to a headless canvas, so webgpuShim.js swaps the canvas for an offscreen
+ * texture. Regression check for characters drawn as flat white silhouettes
+ * (PBR's energy-conservation term divided by a zero BRDF table): a portrait
+ * must show shaded, coloured pixels, and every PBR material must use the
+ * scene's pass-free BRDF table (content/brdf.ts).
+ */
+async function webgpuFlow() {
+  const browser = await chromium.launch({
+    args: ['--enable-unsafe-webgpu', '--enable-features=Vulkan', '--use-vulkan=swiftshader', '--use-webgpu-adapter=swiftshader', '--disable-vulkan-surface', '--ignore-gpu-blocklist'],
+  });
+  try {
+    const context = await browser.newContext({ viewport: { width: 480, height: 270 } });
+    await context.addInitScript({ path: new URL('./webgpuShim.js', import.meta.url).pathname });
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('console', (m) => /WebGPU (uncaptured error|context lost)/.test(m.text()) && errors.push(m.text()));
+    await page.goto(`${CLIENT}/favicon.ico`).catch(() => {});
+    if (!(await page.evaluate(async () => !!(await navigator.gpu?.requestAdapter())))) {
+      console.log('SKIP webgpu: no WebGPU adapter in this browser');
+      return;
+    }
+    await page.goto(`${CLIENT}/?renderer=webgpu`);
+    await page.waitForFunction(() => window.__front, null, { timeout: 60000 });
+    check(await page.evaluate(() => window.__front.portraits.scene.getEngine().isWebGPU), 'the menu runs on WebGPU');
+    const src = await page.evaluate(() => window.__front.portraits.get(window.__front.look));
+    const px = await page.evaluate(async (url) => {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const c = document.createElement('canvas');
+      c.width = img.width;
+      c.height = img.height;
+      const g = c.getContext('2d');
+      g.drawImage(img, 0, 0);
+      const d = g.getImageData(0, 0, c.width, c.height).data;
+      let opaque = 0, white = 0, sum = 0, sum2 = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] < 200) continue;
+        opaque++;
+        if (d[i] > 245 && d[i + 1] > 245 && d[i + 2] > 245) white++;
+        const l = (d[i] + d[i + 1] + d[i + 2]) / 3;
+        sum += l;
+        sum2 += l * l;
+      }
+      const mean = sum / Math.max(1, opaque);
+      return { opaque, white, mean: Math.round(mean), sd: Math.round(Math.sqrt(Math.max(0, sum2 / Math.max(1, opaque) - mean * mean))) };
+    }, src);
+    check(px.opaque > 4000 && px.white < px.opaque * 0.1 && px.sd > 12 && px.mean < 220, `WebGPU portrait is a shaded character, not a white silhouette (${JSON.stringify(px)})`);
+    const lut = await page.evaluate(() =>
+      [window.__front.portraits.scene, ...window.__front.portraits.scene.getEngine().scenes].every((s) => {
+        const t = s.environmentBRDFTexture;
+        return t?.name === 'envBrdfRgbd' && t.isRGBD && s.materials.every((m) => m.getClassName() !== 'PBRMaterial' || m._environmentBRDFTexture === t);
+      }),
+    );
+    check(lut, 'every scene and PBR material uses the pass-free BRDF table');
+    check(errors.length === 0, `no page or WebGPU errors (${errors.join('; ')})`);
+  } finally {
+    await browser.close();
+  }
+}
+
 async function charactersFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
@@ -754,14 +820,14 @@ async function onlineFlow(browser) {
 }
 
 try {
-  start('pnpm', ['--filter', '@chronosplit/client', 'exec', 'vite', 'preview', '--port', '4173', '--strictPort']);
+  start('pnpm', ['--filter', '@chronosplit/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
   start('pnpm', ['--filter', '@chronosplit/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1' });
   await waitForHttp(CLIENT);
   await sleep(1500);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, webgpu: webgpuFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {
