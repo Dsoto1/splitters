@@ -151,7 +151,7 @@ m.prop('lumber_car', [51, 0, -1.5], P).prop('tank_car', [59, 0, -1.5], P).prop('
 // ---------------------------------------------------------------- yard cover
 // Stacks of cargo to hop over and round (one crate high to jump on, scaled-up crates to hide behind).
 m.prop('cargo_crate', [20, 0, 18], 0.2).prop('cargo_crate', [21.5, 0, 14.5], 0.1, 1.6);
-m.prop('factory_box', [60, 0, 17], -0.2).prop('cargo_crate', [58.5, 0, 14.5], -0.1, 1.6);
+m.prop('factory_box', [61, 0, 18.5], -0.2).prop('cargo_crate', [58.5, 0, 14.5], -0.1, 1.6);
 m.prop('factory_box_long', [36, 0, 12], 0).prop('crate_large', [46, 0, 10], P);
 m.prop('container_tall', [25, 0, 31.5], 0.3).prop('container', [23.4, 0, 33.2]);
 m.prop('container_tall', [55, 0, 24.5], -0.3).prop('container', [56.6, 0, 22.8]);
@@ -168,7 +168,7 @@ m.prop('conveyor', [40, 0, 58]).prop('crate_small', [44.5, 0, 58.6]).prop('cardb
 // ---------------------------------------------------------------- pit, culvert and sheds
 m.prop('machine', [34.5, -4, 23.5]).prop('crate_large', [31, -4, 33.5], P).prop('cargo_crate', [46.5, -4, 33.5], P);
 m.prop('pipe_valve', [50.5, -4, 21.5]).prop('factory_box_long', [44.5, -4, 21], 0);
-m.prop('big_pipe', [27, -4, 8], 0).prop('pipe_valve', [49, -4, 5.2]);
+m.prop('big_pipe', [27, -4, 8], 0).prop('pipe_valve', [49, -4, 5.6]);
 // West shed: the lamp room's workbenches; upstairs the signal levers.
 m.prop('workbench', [-2.5, 0, 50.5]).prop('anvil', [-1, 0, 50.5]).prop('crate_large', [10, 0, 50.5], P);
 m.prop('lever', [-2, 4, 41]).prop('screen_panel', [10, 4, 50.5], 0);
