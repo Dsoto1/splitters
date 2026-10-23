@@ -40,6 +40,7 @@ import {
   type MapEntity,
   type MountModel,
   type Rotation,
+  type ScenarioLogic,
   type Side,
   type TerrainData,
 } from '@chronosplit/shared';
@@ -154,6 +155,12 @@ export class MapBuilder {
   /** A body of liquid with its floor at `at` and `size` [x, depth, z]. */
   water(at: V3, size: V3, liquid: 'water' | 'lava' | 'acid' | 'swamp' = 'water'): this {
     return this.add({ kind: 'water', position: at, size, liquid });
+  }
+
+  /** Scenario logic: variables, timers, objectives and WHEN -> IF -> DO rules (docs/SCENARIO.md). Replaces any set before. */
+  logic(logic: ScenarioLogic): this {
+    this.run('Logic', { kind: 'setLogic', before: this.doc.logic, after: logic });
+    return this;
   }
 
   theme(theme: string): this {
