@@ -543,6 +543,8 @@ export class Match {
       c.look = lookForBot(c.slot);
       c.bot = new BotBrain(c.slot, profile, difficulty, this.seed);
       c.bot.onSpawn(c.yaw);
+      // Bots choose routes from the navmesh's sample places: build them now, not mid-match.
+      this.nav.places();
     }
     return c;
   }
@@ -628,6 +630,14 @@ export class Match {
     const coop = this.rules.mode === 'core.coop';
     const mounts = this.mounts.length ? this.mountViews(actors) : undefined;
     const noises = this.noises.length ? this.noises : undefined;
+    // Living members of each side (a bot finds itself in its own list and skips it).
+    const factionViews = new Map<string, CombatantView[]>();
+    for (const o of actors) {
+      if (!o.alive || o.faction === null) continue;
+      let list = factionViews.get(o.faction);
+      if (!list) factionViews.set(o.faction, (list = []));
+      list.push(views.get(o.slot)!);
+    }
     for (const c of actors) {
       if (!c.bot) continue;
       const hostiles = actors.filter((o) => o.alive && this.hostile(c, o));
@@ -640,7 +650,7 @@ export class Match {
         continue;
       }
       const orderGoal = npc ? this.encounters.goalFor(c.slot) : coop ? this.coopGoal(c, hostiles) : (this.mode?.botGoal(c, hostiles) ?? null);
-      const allies = c.faction === null ? undefined : actors.filter((o) => o !== c && o.alive && o.faction === c.faction).map((o) => views.get(o.slot)!);
+      const allies = c.faction === null ? undefined : factionViews.get(c.faction);
       const input = c.bot.think({
         tick: this.tick,
         self: views.get(c.slot)!,

@@ -79,7 +79,7 @@ export interface BotWorldView {
    * instead of roaming, and wait within `radius` of it.
    */
   orderGoal?: { pos: Vec3; radius: number } | null;
-  /** Living friendly actors (teammates, squadmates). */
+  /** Living friendly actors (teammates, squadmates); may include the bot itself. */
   allies?: readonly CombatantView[];
   /** Recent gunfire and explosions. */
   noises?: readonly NoiseView[];
@@ -377,7 +377,7 @@ export class BotBrain {
           threat: threatEye,
           radius: this.state === 'retreat' ? 9 : 8,
           preferred: advance ? Math.max(6, dist - 8) : this.preferredRange(view),
-          avoid: view.allies?.map((a) => a.pos),
+          avoid: view.allies?.filter((a) => a.slot !== me.slot).map((a) => a.pos),
           away: this.state === 'retreat',
           rng: this.rng,
         });
@@ -1197,6 +1197,7 @@ export class BotBrain {
     let px = 0;
     let pz = 0;
     for (const a of view.allies) {
+      if (a.slot === view.self.slot) continue;
       const dx = me.x - a.pos.x;
       const dz = me.z - a.pos.z;
       const d = Math.hypot(dx, dz);

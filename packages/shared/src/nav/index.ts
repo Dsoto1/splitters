@@ -103,21 +103,26 @@ export class NavWorld {
   places(): readonly Vec3[] {
     if (this.placeCache) return this.placeCache;
     const [pos, idx] = getNavMeshPositionsAndIndices(this.navMesh);
-    const best = new Map<string, { p: Vec3; d: number }>();
+    const best = new Map<number, { p: Vec3; d: number }>();
     for (let t = 0; t + 2 < idx.length; t += 3) {
       const a = idx[t]! * 3;
       const b = idx[t + 1]! * 3;
       const c = idx[t + 2]! * 3;
-      const p = { x: (pos[a]! + pos[b]! + pos[c]!) / 3, y: (pos[a + 1]! + pos[b + 1]! + pos[c + 1]!) / 3, z: (pos[a + 2]! + pos[b + 2]! + pos[c + 2]!) / 3 };
-      const cx = Math.floor(p.x / PLACE_CELL);
-      const cz = Math.floor(p.z / PLACE_CELL);
-      const key = `${cx},${Math.floor(p.y / 2.5)},${cz}`;
-      // Keep the sample nearest the cell's centre.
-      const d = Math.hypot(p.x - (cx + 0.5) * PLACE_CELL, p.z - (cz + 0.5) * PLACE_CELL);
-      const prev = best.get(key);
-      if (!prev || d < prev.d) best.set(key, { p, d });
+      const centre = { x: (pos[a]! + pos[b]! + pos[c]!) / 3, y: (pos[a + 1]! + pos[b + 1]! + pos[c + 1]!) / 3, z: (pos[a + 2]! + pos[b + 2]! + pos[c + 2]!) / 3 };
+      // Big triangles (box maps) span several cells: sample toward their corners too.
+      const big = Math.max(Math.abs(pos[a]! - pos[b]!), Math.abs(pos[a + 2]! - pos[b + 2]!), Math.abs(pos[a]! - pos[c]!), Math.abs(pos[a + 2]! - pos[c + 2]!)) > PLACE_CELL;
+      for (const v of big ? [-1, a, b, c] : [-1]) {
+        const p = v < 0 ? centre : { x: centre.x + (pos[v]! - centre.x) * 0.7, y: centre.y + (pos[v + 1]! - centre.y) * 0.7, z: centre.z + (pos[v + 2]! - centre.z) * 0.7 };
+        const cx = Math.floor(p.x / PLACE_CELL);
+        const cz = Math.floor(p.z / PLACE_CELL);
+        const key = ((cx + 2048) * 4096 + (cz + 2048)) * 256 + (Math.floor(p.y / 2.5) + 128);
+        // Keep the sample nearest the cell's centre.
+        const d = Math.hypot(p.x - (cx + 0.5) * PLACE_CELL, p.z - (cz + 0.5) * PLACE_CELL);
+        const prev = best.get(key);
+        if (!prev || d < prev.d) best.set(key, { p, d });
+      }
     }
-    this.placeCache = [...best.entries()].sort((x, y) => (x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0)).map(([, v]) => v.p);
+    this.placeCache = [...best.entries()].sort((x, y) => x[0] - y[0]).map(([, v]) => v.p);
     return this.placeCache;
   }
 
