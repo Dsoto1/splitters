@@ -193,7 +193,7 @@ export const TrapEntity = EntityBase.extend({
 export const FactionId = z.string().regex(/^[a-z0-9_]{2,32}$/, 'faction IDs are 2-32 chars of [a-z0-9_]');
 export const PLAYERS_FACTION = 'players';
 
-export const NPC_ROLES = ['trooper', 'gunner', 'heavy'] as const;
+export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper'] as const;
 export const SQUAD_ORDERS = ['hold', 'attack', 'defend', 'patrol', 'follow'] as const;
 
 /**
@@ -206,7 +206,8 @@ export const EncounterEntity = EntityBase.extend({
   yaw: Yaw,
   faction: FactionId.default('syndicate'),
   roster: z
-    .object({ trooper: z.number().int().min(0).max(16), gunner: z.number().int().min(0).max(16), heavy: z.number().int().min(0).max(16) })
+    // Snipers came later: optional, so older maps (and code building rosters) need not mention them.
+    .object({ trooper: z.number().int().min(0).max(16), gunner: z.number().int().min(0).max(16), heavy: z.number().int().min(0).max(16), sniper: z.number().int().min(0).max(16).optional() })
     .default({ trooper: 2, gunner: 1, heavy: 0 }),
   activeCap: z.number().int().min(1).max(32).default(4),
   reinforcements: z.number().int().min(0).max(500).default(0),

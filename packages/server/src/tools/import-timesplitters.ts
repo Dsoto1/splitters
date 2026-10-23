@@ -463,7 +463,8 @@ function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds
     const ends: { cell: [number, number]; side: Side }[] = [];
     if (cells.length === 1) for (const s of SIDES) ends.push({ cell: [cells[0]!.x, cells[0]!.y], side: s });
     else {
-      const [a, b] = cells as [{ x: number; y: number }, { x: number; y: number }];
+      const a = cells[0]!;
+      const b = cells[1]!;
       const dir = SIDES.find((s) => SIDE_DIRS[s][0] === b.x - a.x && SIDE_DIRS[s][1] === b.y - a.y)!;
       ends.push({ cell: [a.x, a.y], side: OPP[dir] }, { cell: [b.x, b.y], side: dir });
     }

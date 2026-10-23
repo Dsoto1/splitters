@@ -1,5 +1,5 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
-import { BotBrain, type CombatantView, type PickupView } from '../bots/brain.ts';
+import { BotBrain, type CombatantView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
@@ -39,7 +39,7 @@ import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
 import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
-import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_PROFILE, NPC_ROLE_SPECS, mapFactions, mapTeams, relation } from './npc.ts';
+import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, relation } from './npc.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, zoneMultiplier, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -162,6 +162,8 @@ export interface Combatant {
   mount?: { index: number; seat: number };
   /** Movement multiplier set by an objective mode (flag carriers are slower); absent = 1. */
   modeSpeed?: number;
+  /** Bots: the last shot that hit or passed close (for taking cover). */
+  shotAt?: { tick: number; from: Vec3 };
 }
 
 interface Projectile {
@@ -258,6 +260,8 @@ export class Match {
   lastAiMs = 0;
   /** Objective rules (Capture the Flag, King of the Hill, Elimination); null in other modes. */
   readonly mode: ModeLogic | null;
+  /** Recent gunfire and explosions, for bots' hearing. */
+  private noises: NoiseView[] = [];
 
   /** Requires initPhysics() and initNavigation() to have resolved. */
   constructor(
@@ -458,7 +462,7 @@ export class Match {
       weapons: new Map([[weaponCode(def), { def, mag: def.magazine, reserve: def.reserveMax, alt: def.alt?.max ?? 0 }]]),
       current: weaponCode(def),
     };
-    c.bot = new BotBrain(id, NPC_PROFILE, BOT_DIFFICULTIES[e.difficulty], this.seed);
+    c.bot = new BotBrain(id, NPC_ROLE_PROFILES[role], BOT_DIFFICULTIES[e.difficulty], this.seed);
     c.bot.onSpawn(yaw);
     this.npcs.set(id, c);
     return id;
@@ -539,6 +543,8 @@ export class Match {
       c.look = lookForBot(c.slot);
       c.bot = new BotBrain(c.slot, profile, difficulty, this.seed);
       c.bot.onSpawn(c.yaw);
+      // Bots choose routes from the navmesh's sample places: build them now, not mid-match.
+      this.nav.places();
     }
     return c;
   }
@@ -600,6 +606,7 @@ export class Match {
     this.recordHistory();
     const events = this.pendingEvents;
     this.pendingEvents = [];
+    this.noteCombat(events);
     return events;
   }
 
@@ -621,6 +628,16 @@ export class Match {
       if (away.length) teamRoam.set(t.id, away);
     }
     const coop = this.rules.mode === 'core.coop';
+    const mounts = this.mounts.length ? this.mountViews(actors) : undefined;
+    const noises = this.noises.length ? this.noises : undefined;
+    // Living members of each side (a bot finds itself in its own list and skips it).
+    const factionViews = new Map<string, CombatantView[]>();
+    for (const o of actors) {
+      if (!o.alive || o.faction === null) continue;
+      let list = factionViews.get(o.faction);
+      if (!list) factionViews.set(o.faction, (list = []));
+      list.push(views.get(o.slot)!);
+    }
     for (const c of actors) {
       if (!c.bot) continue;
       const hostiles = actors.filter((o) => o.alive && this.hostile(c, o));
@@ -633,6 +650,7 @@ export class Match {
         continue;
       }
       const orderGoal = npc ? this.encounters.goalFor(c.slot) : coop ? this.coopGoal(c, hostiles) : (this.mode?.botGoal(c, hostiles) ?? null);
+      const allies = c.faction === null ? undefined : factionViews.get(c.faction);
       const input = c.bot.think({
         tick: this.tick,
         self: views.get(c.slot)!,
@@ -643,14 +661,72 @@ export class Match {
         pickups: npc ? npcPickups : pickups,
         inventory: [...c.weapons.values()].map((w) => ({ def: w.def, mag: w.mag, reserve: w.reserve })),
         throwables: c.throwable?.count ?? 0,
+        throwable: c.throwable?.kind ?? null,
         held: c.current,
+        reloading: c.reloadTicks > 0,
         blockers,
         hazards,
         orderGoal,
+        allies,
+        // Focused bots (flag carriers) also ignore distant gunfire and near misses: they keep running.
+        noises: aware < Infinity ? undefined : noises,
+        shotAt: aware < Infinity ? null : (c.shotAt ?? null),
+        mounts: aware < Infinity ? undefined : mounts,
+        seat: c.mount ? this.seatView(c) : null,
+        squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
       });
       c.queue.push(input);
     }
     this.lastAiMs = performance.now() - t0;
+  }
+
+  /** Turrets and vehicles as bots see them (built once per tick). */
+  private mountViews(actors: readonly Combatant[]): MountView[] {
+    const humans = actors.filter((a) => a.kind === 'human' && a.alive);
+    return this.mounts.map((m) => ({
+      index: m.index,
+      kind: m.def.kind,
+      pos: m.pos,
+      yaw: m.yaw,
+      health: Math.max(0, m.health) / m.def.health,
+      alive: m.alive,
+      enterRadius: m.def.enterRadius,
+      seats: m.def.seats.map((s, i) => ({ role: s.role, free: m.seats[i] === null, ...(s.weapon ? { weapon: getWeapon(s.weapon) } : {}), ...(s.arc !== undefined ? { arc: s.arc } : {}) })),
+      ...(m.def.vehicle ? { maxSpeed: m.def.vehicle.maxSpeed } : {}),
+      humanNear: humans.some((h) => horizontalDistance(h.move.pos, m.pos) < 35),
+    }));
+  }
+
+  private seatView(c: Combatant): SeatView | null {
+    const m = this.mounts[c.mount!.index];
+    const seat = m?.def.seats[c.mount!.seat];
+    if (!m || !seat) return null;
+    const gun = m.guns[c.mount!.seat];
+    return { mount: m.index, seat: c.mount!.seat, role: seat.role, ...(gun ? { weapon: gun.def } : {}), ...(seat.arc !== undefined ? { arc: seat.arc } : {}), heat: gun?.heat ?? 0, overheated: gun?.overheated ?? false };
+  }
+
+  /**
+   * What bots hear and feel this tick: gunfire and explosions become noises
+   * (kept for a second), and shots passing close to (or hitting) someone mark
+   * them as under fire, with where it came from.
+   */
+  private noteCombat(events: readonly GameEvent[]): void {
+    this.noises = this.noises.filter((n) => this.tick - n.tick < TICK_RATE);
+    for (const ev of events) {
+      if (ev.e === 'explode') this.noises.push({ pos: { x: ev.p[0], y: ev.p[1], z: ev.p[2] }, tick: this.tick, by: ev.s, range: 60 });
+      if (ev.e !== 'shot' || ev.s < 0) continue;
+      const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
+      this.noises.push({ pos: from, tick: this.tick, by: ev.s, range: 45 });
+      const shooter = this.actor(ev.s);
+      const end = ev.to[0];
+      if (!shooter || !end) continue;
+      const to = { x: end[0], y: end[1], z: end[2] };
+      for (const c of this.actors()) {
+        if (!c.bot || !c.alive || !this.hostile(shooter, c)) continue;
+        if (ev.hit.includes(c.slot) || segmentDistance(chest(c.move.pos), from, to) < 1.6) c.shotAt = { tick: this.tick, from };
+      }
+    }
+    if (this.noises.length > 48) this.noises.splice(0, this.noises.length - 48);
   }
 
   /**
@@ -1843,7 +1919,20 @@ export class Match {
 }
 
 function toView(c: Combatant): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive };
+  const v: CombatantView = { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive };
+  const stance = stanceOf(c.move);
+  if (stance) v.stance = stance;
+  if (c.kind === 'human') v.human = true;
+  if (c.mount) v.mounted = true;
+  return v;
+}
+
+/** Distance from point p to the segment a-b. */
+function segmentDistance(p: Vec3, a: Vec3, b: Vec3): number {
+  const ab = sub(b, a);
+  const len2 = dot(ab, ab);
+  const t = len2 > 1e-9 ? Math.max(0, Math.min(1, dot(sub(p, a), ab) / len2)) : 0;
+  return distance(p, add(a, scale(ab, t)));
 }
 
 const BOT_NAMES = ['Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash', 'Nub', 'Quill'];

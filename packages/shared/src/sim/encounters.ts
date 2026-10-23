@@ -4,6 +4,7 @@ import { NPC_ROLES, type EncounterEntity, type MapDocument, type NpcRole, type S
 import { horizontalDistance, type Vec3 } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { TICK_RATE } from './constants.ts';
+import { rosterCount } from './npc.ts';
 
 /** What the encounter system needs from the match. */
 export interface EncounterHost {
@@ -73,7 +74,7 @@ export class Encounters {
     const r = this.list.get(id);
     if (!r || r.active) return;
     const extraPlayers = Math.max(0, this.host.players().length - 1);
-    const roster = NPC_ROLES.flatMap((role) => Array<NpcRole>(r.e.roster[role]).fill(role));
+    const roster = NPC_ROLES.flatMap((role) => Array<NpcRole>(rosterCount(r.e.roster, role)).fill(role));
     if (!roster.length) roster.push('trooper');
     r.queue = roster;
     r.budget = r.spawned + roster.length + r.e.reinforcements + r.e.perPlayer * extraPlayers;
@@ -216,6 +217,21 @@ export class Encounters {
         return best ? { pos: ring(best, 2.5), radius: 3 } : { pos: ring(home, 1.5), radius: 1.5 };
       }
     }
+  }
+
+  /**
+   * Bounding overwatch for attacking squads: grunts pair up and take turns,
+   * one moving up to the next cover while its partner holds and covers.
+   * Null when the member isn't part of that (other orders, heavies, snipers).
+   */
+  squadFor(npcId: number, role: NpcRole): { advance: boolean } | null {
+    const r = this.byNpc.get(npcId);
+    if (!r || r.order !== 'attack' || (role !== 'trooper' && role !== 'gunner')) return null;
+    const grunts = r.members.filter((m) => this.host.npc(m)?.alive);
+    if (grunts.length < 2) return { advance: true };
+    const index = grunts.indexOf(npcId);
+    const phase = Math.floor(this.host.tick / (TICK_RATE * 3)) % 2;
+    return { advance: index % 2 === phase };
   }
 
   /** Bookkeeping when a member dies: logic events and the cleared check. */

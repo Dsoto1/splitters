@@ -1,12 +1,19 @@
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3 } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
-import { PLAYER, TICK_DT, TICK_RATE } from '../sim/constants.ts';
+import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import type { ItemDefinition } from '../sim/items.ts';
-import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_THROW, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
-import { weaponCode, type WeaponDefinition } from '../sim/weapons.ts';
+import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
+import { THROWABLE_DEFS, weaponCode, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
-import type { BotDifficulty, BotProfile } from './profile.ts';
+import { AimModel, type AimContext, type AimSolution } from './aim.ts';
+import { findCover, stillCovered, type CoverSpot } from './cover.ts';
+import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
+import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
+import { fanPoints, isDoorway, solveThrow, turnAngle } from './tactics.ts';
+import { freshDrive, inArc, steer, turretFor, vehicleFor, type DriveState, type MountView, type SeatView } from './vehicles.ts';
+
+export type { MountView, SeatView } from './vehicles.ts';
 
 export interface CombatantView {
   slot: number;
@@ -16,6 +23,12 @@ export interface CombatantView {
   health: number;
   armor: number;
   alive: boolean;
+  /** Crouching (1) or prone (2); absent when standing. */
+  stance?: Stance;
+  /** A human player (bots leave vehicles to them). */
+  human?: boolean;
+  /** Sitting in a turret or vehicle. */
+  mounted?: boolean;
 }
 
 export interface PickupView {
@@ -31,6 +44,15 @@ export interface InventoryView {
   reserve: number;
 }
 
+/** Something heard: gunfire or an explosion, and who made it (actor ID, -1 for nobody). */
+export interface NoiseView {
+  pos: Vec3;
+  tick: number;
+  by: number;
+  /** Loudness: how far away it can be heard (m). */
+  range: number;
+}
+
 /** Everything a bot may read. Bots get no more information than this. */
 export interface BotWorldView {
   tick: number;
@@ -42,9 +64,12 @@ export interface BotWorldView {
   pickups: readonly PickupView[];
   /** The bot's own weapons and the slot it is holding. */
   inventory: readonly InventoryView[];
-  /** Grenades or mines carried. */
+  /** Grenades or mines carried, and which. */
   throwables?: number;
+  throwable?: ThrowableKind | null;
   held: number;
+  /** Reloading right now. */
+  reloading?: boolean;
   /** Closed doors bots can't open and intact breakable walls: paths through them are treated as unreachable. */
   blockers?: readonly Aabb[];
   /** Traps that are dangerous right now: bots wait at the edge instead of walking in. */
@@ -54,24 +79,53 @@ export interface BotWorldView {
    * instead of roaming, and wait within `radius` of it.
    */
   orderGoal?: { pos: Vec3; radius: number } | null;
+  /** Living friendly actors (teammates, squadmates); may include the bot itself. */
+  allies?: readonly CombatantView[];
+  /** Recent gunfire and explosions. */
+  noises?: readonly NoiseView[];
+  /** A shot passed close by (or hit): when, and from where. */
+  shotAt?: { tick: number; from: Vec3 } | null;
+  /** Turrets and vehicles on the map. */
+  mounts?: readonly MountView[];
+  /** The seat the bot is in, if any. */
+  seat?: SeatView | null;
+  /** Squad tactics (NPCs): advance now (bounding) or hold and cover the one that is. */
+  squad?: { advance: boolean } | null;
 }
 
-export type BotState = 'roam' | 'engage' | 'chase' | 'retreat' | 'dead';
-
-const eye = (p: Vec3): Vec3 => ({ x: p.x, y: p.y + PLAYER.eyeHeight, z: p.z });
-const chest = (p: Vec3): Vec3 => ({ x: p.x, y: p.y + PLAYER.height * 0.6, z: p.z });
+export type BotState = 'roam' | 'advance' | 'engage' | 'cover' | 'chase' | 'investigate' | 'retreat' | 'hold' | 'mount' | 'mounted' | 'dead';
 
 const SIGHT_RANGE = 60;
 const HEARING_RANGE = 6;
 const FOV_COS = Math.cos((110 / 2) * (Math.PI / 180));
 const STUCK_WINDOW_TICKS = TICK_RATE;
 const PATH_REFRESH_TICKS = TICK_RATE / 2;
+/** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
+const DECIDE_TICKS = 6;
+/** Visibility of crouched and prone targets at range (they are harder to spot). */
+const STANCE_SIGHT = [1, 0.8, 0.55] as const;
+
+interface CornerCheck {
+  start: number;
+  until: number;
+  points: Vec3[];
+  /** The corner or doorway being checked. */
+  corner: Vec3;
+}
+
+interface ThrowPlan {
+  yaw: number;
+  pitch: number;
+  until: number;
+}
 
 /**
  * Player Bot brain. Produces a PlayerInput every tick, exactly like a human
- * client, so bots obey the same movement/weapon rules. Layers (v1 spec §7.3):
- * perception (staggered), tactical state choice, navigation, combat aim, and
- * humanisation via reaction delay, aim error and turn-rate limits.
+ * client, so bots obey the same movement/weapon rules. Layers: perception
+ * (staggered, sight and hearing), tactical decisions (~10 Hz: cover, peeking,
+ * retreating, grenades, turrets and vehicles), navigation (routes through
+ * the map, checking corners and clearing rooms on the way), and human-like
+ * aim (aim.ts) with reaction time and trigger discipline.
  */
 export class BotBrain {
   state: BotState = 'roam';
@@ -83,22 +137,52 @@ export class BotBrain {
 
   private seq = 0;
   private readonly rng: () => number;
+  private readonly aim: AimModel;
+  private readonly memory = new MapMemory();
   private targetSlot: number | null = null;
-  /** Fire was held last tick (to tap semi-auto triggers). */
-  private trigger = false;
   private visibleSince = new Map<number, number>();
   private lastKnown: { pos: Vec3; tick: number } | null = null;
+  /** A noise worth checking out. */
+  private heard: { pos: Vec3; tick: number } | null = null;
   private pathIndex = 0;
   private roamGoal: Vec3 | null = null;
+  private via: Vec3 | null = null;
   private lastPathTick = -Infinity;
-  private aimErrYaw = 0;
-  private aimErrPitch = 0;
   private strafeDir = 1;
   private nextStrafeFlip = 0;
   private yaw = 0;
   private pitch = 0;
   private stuckCheck: { tick: number; pos: Vec3 } | null = null;
   private jumpNext = false;
+  private lastPos: Vec3 | null = null;
+  private speed = 0;
+  private lastHealth = 100;
+  private hurtTick = -Infinity;
+  private underFireTick = -Infinity;
+  private threatFrom: Vec3 | null = null;
+  // Cover and peeking.
+  private cover: CoverSpot | null = null;
+  private nextCoverSearch = 0;
+  private peekPhase: 'hide' | 'peek' = 'hide';
+  private phaseUntil = 0;
+  private peeks = 0;
+  // Corners and rooms.
+  private pie: CornerCheck | null = null;
+  /** After a corner check: sweep the room once through (points empty until past the corner). */
+  private clearing: { corner: Vec3; yaw: number; points: Vec3[]; start: number; until: number } | null = null;
+  private readonly checked = new Map<string, number>();
+  private scanUntil = 0;
+  private scanYaw = 0;
+  // Grenades.
+  private throwPlan: ThrowPlan | null = null;
+  private nextThrow = 0;
+  // Turrets and vehicles.
+  private mountPlan: { index: number; until: number; drive: boolean } | null = null;
+  private drive: DriveState = freshDrive();
+  private mountedSince = 0;
+  private lastTargetTick = -Infinity;
+  private useLatch = false;
+  private lastUseTick = -Infinity;
 
   constructor(
     readonly slot: number,
@@ -107,6 +191,7 @@ export class BotBrain {
     seed: number,
   ) {
     this.rng = createRng(seed * 7919 + slot);
+    this.aim = new AimModel(this.rng, difficulty, profile);
   }
 
   /** Enemy currently targeted (actor ID), if any. */
@@ -117,6 +202,11 @@ export class BotBrain {
   /** Where an enemy was last seen, and when. */
   get lastSeen(): { pos: Vec3; tick: number } | null {
     return this.lastKnown;
+  }
+
+  /** The cover spot the bot is using, if any (debug and tests). */
+  get coverSpot(): CoverSpot | null {
+    return this.cover;
   }
 
   /** A squadmate saw an enemy here: go and look, unless already fighting. */
@@ -133,11 +223,26 @@ export class BotBrain {
     this.targetSlot = null;
     this.visibleSince.clear();
     this.lastKnown = null;
+    this.heard = null;
     this.path = [];
     this.goal = null;
     this.roamGoal = null;
+    this.via = null;
     this.stuckCheck = null;
+    this.cover = null;
+    this.pie = null;
+    this.clearing = null;
+    this.checked.clear();
+    this.throwPlan = null;
+    this.mountPlan = null;
+    this.memory.clear();
+    this.aim.reset();
+    this.lastPos = null;
+    this.lastHealth = 100;
+    this.hurtTick = this.underFireTick = -Infinity;
   }
+
+  // ------------------------------------------------------------------ main loop
 
   think(view: BotWorldView): PlayerInput {
     const seq = ++this.seq;
@@ -146,115 +251,795 @@ export class BotBrain {
       this.state = 'dead';
       return { seq, forward: 0, right: 0, yaw: this.yaw, pitch: this.pitch, buttons: 0 };
     }
+    // Own movement and pain.
+    this.speed = this.lastPos ? Math.min(20, horizontalDistance(me.pos, this.lastPos) / TICK_DT) : 0;
+    this.lastPos = { ...me.pos };
+    if (me.health < this.lastHealth) this.hurtTick = view.tick;
+    this.lastHealth = me.health;
+    if (view.shotAt && view.tick - view.shotAt.tick <= 1) {
+      this.underFireTick = view.shotAt.tick;
+      this.threatFrom = { x: view.shotAt.from.x, y: view.shotAt.from.y - PLAYER.eyeHeight, z: view.shotAt.from.z };
+    }
 
     const interval = this.difficulty.perceptionIntervalTicks;
     if ((view.tick + this.slot) % interval === 0) this.perceive(view);
 
     const target = this.targetSlot === null ? undefined : view.others.find((o) => o.slot === this.targetSlot && o.alive);
     if (this.targetSlot !== null && !target) this.targetSlot = null;
+    if (target) this.lastTargetTick = view.tick;
 
-    this.chooseState(view, target);
+    const ctx = this.aimContext(view);
+    this.aim.track(ctx, target ? { slot: target.slot, pos: target.pos, stance: target.stance } : null);
 
+    if (view.seat) return this.thinkMounted(view, seq, target, ctx);
+    this.useLatch = false;
+    if (this.mountPlan && view.tick >= this.mountPlan.until) this.mountPlan = null;
+
+    if ((view.tick + this.slot) % DECIDE_TICKS === 0) this.decide(view, target);
+    // Whatever the last decision was, it needs what it was about.
+    if ((this.state === 'chase' && !this.lastKnown) || (this.state === 'investigate' && !this.heard) || (this.state === 'hold' && !view.orderGoal) || this.state === 'dead' || this.state === 'mounted') this.state = 'advance';
+    if (this.state === 'mount' && !this.mountPlan) this.state = 'advance';
+
+    return this.act(view, seq, target, ctx);
+  }
+
+  private aimContext(view: BotWorldView): AimContext {
+    const me = view.self;
+    const stance = me.stance ?? 0;
+    const def = this.heldDef(view);
+    return {
+      tick: view.tick,
+      eye: { x: me.pos.x, y: me.pos.y + STANCES[stance].eye, z: me.pos.z },
+      speed: this.speed,
+      airborne: false,
+      stance,
+      steady: !!(def?.view.zoomFov && !def.alt),
+      weapon: def,
+    };
+  }
+
+  private heldDef(view: BotWorldView): WeaponDefinition | undefined {
+    return this.heldWeapon(view)?.def;
+  }
+
+  /** Low on health by this bot's standards. */
+  private hurt(view: BotWorldView): boolean {
+    return view.self.health < (this.profile.selfPreservation / 100) * PLAYER.maxHealth * 0.6;
+  }
+
+  private get berserker(): boolean {
+    return hasTag(this.profile, 'BERSERKER');
+  }
+
+  /** How tactically this bot plays (difficulty × personality), 0..1. */
+  private get tactical(): number {
+    return this.difficulty.tactics * (0.35 + (this.profile.tacticalAwareness / 100) * 0.9);
+  }
+
+  private preferredRange(view: BotWorldView): number {
+    const def = this.heldDef(view);
+    const base = 4 + (this.profile.rangePreference / 100) * 22;
+    if (!def) return base;
+    const [lo, hi] = def.botRange;
+    return clamp(base, lo + 1, Math.max(lo + 2, Math.min(hi - 2, hi * 0.7)));
+  }
+
+  // ------------------------------------------------------------------ tactical decisions (~10 Hz)
+
+  private decide(view: BotWorldView, target: CombatantView | undefined): void {
+    const me = view.self;
+    const tick = view.tick;
+    const hurt = this.hurt(view);
+    const underFire = tick - this.underFireTick < TICK_RATE * 1.5 || tick - this.hurtTick < TICK_RATE * 1.5;
+
+    if (this.mountPlan && !hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)) this.state = 'mount';
+    else if (target && hurt && !this.berserker) this.state = 'retreat';
+    else if (target) this.state = this.cover ? 'cover' : 'engage';
+    else if (this.cover && (underFire || tick - this.lastTargetTick < TICK_RATE * (2.5 + (1 - this.profile.aggression / 100) * 3))) {
+      // Ducked out of sight behind cover: keep up the hide-and-peek rather than charging off.
+      this.state = 'cover';
+    } else if (this.state === 'retreat' && this.lastKnown && tick - this.lastKnown.tick < TICK_RATE * 3) {
+      // Keep running for a moment after losing sight of the threat.
+    } else if (this.lastKnown && !hurt && tick - this.lastKnown.tick < TICK_RATE * (1 + (this.profile.pursuitPersistence / 100) * 7) && horizontalDistance(me.pos, this.lastKnown.pos) > 1.5) {
+      this.state = 'chase';
+    } else if (this.heard && tick - this.heard.tick < TICK_RATE * 10 && horizontalDistance(me.pos, this.heard.pos) > 2) {
+      this.state = 'investigate';
+    } else {
+      if (this.state === 'chase' && this.lastKnown && horizontalDistance(me.pos, this.lastKnown.pos) <= 1.5) {
+        // Got there and nobody's here: look around before moving on.
+        this.scanUntil = tick + Math.round(TICK_RATE * (0.8 + this.tactical));
+        this.scanYaw = this.yaw;
+      }
+      if (this.state === 'investigate') this.heard = null;
+      if (this.state === 'chase') this.lastKnown = null;
+      this.state = this.mountPlan ? 'mount' : view.orderGoal ? 'hold' : 'advance';
+    }
+
+    // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
+    const threat = target?.pos ?? (underFire ? this.threatFrom : null);
+    if (threat && !this.berserker && this.rng() < 0.5 + this.tactical) {
+      const dist = horizontalDistance(me.pos, threat);
+      const held = this.heldWeapon(view);
+      const lowAmmo = !!held && held.def.magazine > 0 && held.mag <= Math.ceil(held.def.magazine * 0.25);
+      const wantCover = underFire || hurt || lowAmmo || !!view.reloading || dist > 11 || this.state === 'retreat';
+      const threatEye = { x: threat.x, y: threat.y + PLAYER.eyeHeight, z: threat.z };
+      if (this.cover && (horizontalDistance(this.cover.threat, threatEye) > 4 || (tick % 30 < DECIDE_TICKS && !stillCovered(view.physics, this.cover.pos, threatEye)))) {
+        // Threat moved round our cover: find another.
+        this.cover = null;
+      }
+      if (wantCover && !this.cover && tick >= this.nextCoverSearch) {
+        this.nextCoverSearch = tick + Math.round(TICK_RATE * (1.2 + this.rng()));
+        const advance = view.squad?.advance === true;
+        this.cover = findCover({
+          physics: view.physics,
+          nav: view.nav,
+          from: me.pos,
+          threat: threatEye,
+          radius: this.state === 'retreat' ? 9 : 8,
+          preferred: advance ? Math.max(6, dist - 8) : this.preferredRange(view),
+          avoid: view.allies?.filter((a) => a.slot !== me.slot).map((a) => a.pos),
+          away: this.state === 'retreat',
+          rng: this.rng,
+        });
+        if (this.cover) {
+          this.peekPhase = 'hide';
+          this.peeks = 0;
+          this.phaseUntil = tick + Math.round(TICK_RATE * (0.4 + this.rng() * 0.6));
+        }
+      }
+    } else if (!target && !underFire && tick - this.lastTargetTick > TICK_RATE * 4) {
+      this.cover = null;
+    }
+    // Bounding squads: the moving half leaves its cover for one further forward.
+    if (view.squad?.advance && this.cover && target && horizontalDistance(this.cover.pos, target.pos) > horizontalDistance(me.pos, target.pos) - 1 && tick >= this.nextCoverSearch) {
+      this.cover = null;
+    }
+
+    this.considerGrenade(view, target);
+    this.considerMount(view, target);
+  }
+
+  // ------------------------------------------------------------------ per-tick actions
+
+  private act(view: BotWorldView, seq: number, target: CombatantView | undefined, ctx: AimContext): PlayerInput {
+    const me = view.self;
+    const tick = view.tick;
     let moveYaw: number | null = null;
+    let moveScale = 1;
     let backOff = false;
+    let sprint = false;
     let wantFire = false;
+    let stance: Stance = 0;
+    let strafe = false;
+    let sol: AimSolution | null = null;
+    let lookDone = false;
+    const def = ctx.weapon;
+    const hurt = this.hurt(view);
+    const underFire = tick - this.underFireTick < TICK_RATE * 1.5;
+
+    const aimAtTarget = (t: CombatantView) => {
+      sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: t.stance });
+      this.turnToward(sol.yaw, sol.pitch);
+      lookDone = true;
+      wantFire = true;
+    };
 
     switch (this.state) {
-      case 'engage': {
-        const t = target!;
-        const dist = horizontalDistance(me.pos, t.pos);
-        const preferred = 4 + (this.profile.rangePreference / 100) * 22;
-        if (dist > preferred + 3) moveYaw = this.followPathTo(view, t.pos, true);
-        else if (dist < preferred - 3) backOff = true;
-        wantFire = this.aimAt(view, t);
-        break;
-      }
-      case 'chase':
-        moveYaw = this.followPathTo(view, this.lastKnown!.pos, false);
-        this.lookAlongPath(view);
-        break;
+      case 'engage':
+      case 'cover':
       case 'retreat': {
-        const threat = target?.pos ?? this.lastKnown?.pos ?? me.pos;
-        const refuge = this.pickupGoal(view, 'health') ?? farthest(view.spawnPoints, threat) ?? me.pos;
-        moveYaw = this.followPathTo(view, refuge, false);
-        if (target) wantFire = this.aimAt(view, target);
-        else this.lookAlongPath(view);
-        break;
-      }
-      case 'roam':
-        if (view.orderGoal) {
-          const g = view.orderGoal;
-          if (horizontalDistance(me.pos, g.pos) > g.radius || Math.abs(me.pos.y - g.pos.y) > 2) {
-            moveYaw = this.followPathTo(view, g.pos, true);
-            this.lookAlongPath(view);
+        const t = target;
+        if (!t) {
+          const threat = this.lastKnown?.pos ?? this.threatFrom;
+          if (this.cover && threat) {
+            // Hidden behind cover (or peeking for the enemy to show again).
+            const r = this.inCover(view, threat, def);
+            moveYaw = r.moveYaw;
+            sprint = r.sprint;
+            stance = r.stance;
+            moveScale = r.moveScale;
+          }
+          // Hold the angle where they were.
+          if (threat && !sprint) this.lookAt(view, threat, 1.2);
+          lookDone = !sprint;
+          break;
+        }
+        const dist = horizontalDistance(me.pos, t.pos);
+        const preferred = this.preferredRange(view);
+        if (this.state === 'retreat' && !this.cover) {
+          // No cover: get to health or away from the threat, fast.
+          const refuge = this.pickupGoal(view, 'health') ?? farthest(view.spawnPoints, t.pos) ?? me.pos;
+          moveYaw = this.followPathTo(view, refuge, false);
+          sprint = true;
+          if (moveYaw !== null) {
+            this.turnToward(moveYaw, 0);
+            lookDone = true;
+          } else aimAtTarget(t);
+          break;
+        }
+        if (this.cover) {
+          const r = this.inCover(view, t.pos, def);
+          moveYaw = r.moveYaw;
+          sprint = r.sprint;
+          stance = r.stance;
+          moveScale = r.moveScale;
+          if (r.shoot) aimAtTarget(t);
+          else if (sprint && moveYaw !== null) {
+            this.turnToward(moveYaw, 0);
+            lookDone = true;
           } else {
-            // On station: slowly scan around.
-            this.turnToward(this.yaw + 0.6 * TICK_DT * (this.strafeDir || 1), 0);
+            this.lookAt(view, t.pos, STANCES[t.stance ?? 0].height * 0.6);
+            lookDone = true;
           }
           break;
         }
-        if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 1.5 || (view.tick + this.slot) % TICK_RATE === 0) {
-          // Re-evaluate pickups once a second; otherwise keep the current goal.
-          this.roamGoal = this.pickupGoal(view) ?? (this.roamGoal && horizontalDistance(me.pos, this.roamGoal) >= 1.5 ? this.roamGoal : this.pickRoamGoal(view));
+        // In the open.
+        if (this.berserker) {
+          // Straight at them; sprint the long way in.
+          if (dist > 7) moveYaw = this.followPathTo(view, t.pos, true);
+          if (dist > 18) sprint = true;
+          strafe = dist < 10;
+        } else {
+          const squadAdvance = view.squad?.advance === true;
+          if (dist > preferred + 4 || (squadAdvance && dist > 8)) {
+            moveYaw = this.followPathTo(view, t.pos, true);
+            moveScale = 0.75;
+          } else if (dist < preferred - 4) backOff = true;
+          else if (dist < 14) strafe = true;
+          // Holding at range: crouch to steady the aim; snipers lie down.
+          if (moveYaw === null && !backOff && !strafe) {
+            stance = this.wantsProne(view, dist) ? 2 : dist > 13 ? 1 : 0;
+          }
         }
-        moveYaw = this.followPathTo(view, this.roamGoal, false);
+        if (!sprint) aimAtTarget(t);
+        break;
+      }
+      case 'chase': {
+        const lk = this.lastKnown!;
+        const far = horizontalDistance(me.pos, lk.pos) > 25;
+        moveYaw = this.followPathTo(view, lk.pos, false);
+        // Rejoin a fight that has moved away at a run; close in carefully.
+        if (far && !this.careful()) sprint = true;
+        else moveScale = this.careful() ? 0.7 : 1;
+        // Suppressors keep firing at where the enemy went into cover.
+        if (hasTag(this.profile, 'SUPPRESSOR') && tick - lk.tick < TICK_RATE * 2.5 && horizontalDistance(me.pos, lk.pos) > 6) {
+          moveYaw = null;
+          const sup = this.suppress(view, lk.pos, ctx);
+          if (sup) {
+            sol = sup;
+            lookDone = true;
+            wantFire = true;
+          }
+        }
+        break;
+      }
+      case 'investigate':
+        moveYaw = this.followPathTo(view, this.heard!.pos, false);
+        moveScale = this.careful() ? 0.65 : 1;
+        break;
+      case 'mount': {
+        const plan = this.mountPlan;
+        const m = plan && view.mounts?.find((x) => x.index === plan.index);
+        if (!plan || !m || !m.alive || !m.seats.some((s) => s.free)) {
+          this.mountPlan = null;
+          break;
+        }
+        const d = horizontalDistance(me.pos, m.pos);
+        if (d > m.enterRadius * 0.8) {
+          moveYaw = this.followPathTo(view, m.pos, false);
+          sprint = d > 8;
+        }
+        break;
+      }
+      case 'hold': {
+        const g = view.orderGoal;
+        if (!g) break;
+        if (horizontalDistance(me.pos, g.pos) > g.radius || Math.abs(me.pos.y - g.pos.y) > 2) {
+          moveYaw = this.followPathTo(view, g.pos, true);
+          moveScale = this.careful() ? 0.8 : 1;
+        } else {
+          // On station: scan around slowly.
+          this.turnToward(this.yaw + 0.6 * TICK_DT * (this.strafeDir || 1), 0);
+          lookDone = true;
+          if (hasTag(this.profile, 'SNIPER')) stance = 1;
+        }
+        break;
+      }
+      case 'advance':
+      case 'roam':
+      default: {
+        if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 2 || (tick + this.slot) % (TICK_RATE * 2) === 0) {
+          // Re-evaluate pickups now and then; otherwise keep advancing on the current goal.
+          const pick = this.pickupGoal(view);
+          if (pick) this.roamGoal = pick;
+          else if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 2) this.pickAdvanceGoal(view);
+        }
+        let goal = this.roamGoal!;
+        if (this.via) {
+          if (horizontalDistance(me.pos, this.via) < 4) this.via = null;
+          else goal = this.via;
+        }
+        moveYaw = this.followPathTo(view, goal, false);
         // Arrived or unreachable: pick another goal next tick.
-        if (moveYaw === null) this.roamGoal = null;
-        this.lookAlongPath(view);
+        if (moveYaw === null) {
+          this.roamGoal = null;
+          this.via = null;
+        }
+        moveScale = this.careful() && this.clearing ? 0.7 : 1;
         break;
-      case 'dead':
-        break;
+      }
+    }
+
+    // Corner checks and room clearing while moving through the map (not in a fight).
+    const travelling = this.state === 'advance' || this.state === 'chase' || this.state === 'investigate' || this.state === 'hold';
+    if (travelling && !target && moveYaw !== null && !sprint) {
+      const r = this.checkCorners(view);
+      if (r.pause !== undefined) {
+        moveScale = Math.min(moveScale, r.pause);
+        if (r.pause === 0) moveYaw = null;
+      }
+      if (r.look && !this.throwPlan) {
+        this.lookAt(view, r.look, 0);
+        lookDone = true;
+      }
+    } else if (target) {
+      this.pie = null;
+      this.clearing = null;
+    }
+
+    // Grenade throw in progress: line it up and let go.
+    let throwNow = false;
+    if (this.throwPlan) {
+      if (tick > this.throwPlan.until) this.throwPlan = null;
+      else {
+        this.turnToward(this.throwPlan.yaw, this.throwPlan.pitch);
+        lookDone = true;
+        wantFire = false;
+        if (Math.abs(angleDelta(this.yaw, this.throwPlan.yaw)) < 0.03 && Math.abs(this.pitch - this.throwPlan.pitch) < 0.03) {
+          throwNow = true;
+          this.throwPlan = null;
+          this.nextThrow = tick + Math.round(TICK_RATE * (6 + this.rng() * 6));
+          // Let it go off before walking in after it.
+          if (this.pie) this.pie.until = Math.max(this.pie.until, tick + Math.round(TICK_RATE * 2.8));
+        }
+      }
+    }
+
+    if (!lookDone) {
+      if (tick < this.scanUntil) {
+        this.turnToward(this.scanYaw + Math.sin((this.scanUntil - tick) / 14) * 1.6, 0);
+      } else if (this.state === 'chase' && this.lastKnown && horizontalDistance(me.pos, this.lastKnown.pos) < 30 && this.canSee(view, ctx.eye, this.lastKnown.pos)) {
+        // Keep the gun on where they were while closing in.
+        this.lookAt(view, this.lastKnown.pos, 1.2);
+      } else this.lookAlongPath(view);
     }
 
     if (moveYaw !== null && this.hazardAhead(view, moveYaw)) moveYaw = null;
+    if (moveYaw !== null) moveYaw = this.separate(view, moveYaw);
 
     let forward = 0;
     let right = 0;
     if (moveYaw !== null) {
-      const rel = angleDelta(this.yaw, moveYaw);
-      forward = Math.cos(rel);
-      right = Math.sin(rel);
-    } else if (backOff) {
-      forward = -1;
-    }
-    if (this.state === 'engage' || (this.state === 'retreat' && target)) {
-      if (view.tick >= this.nextStrafeFlip) {
-        this.strafeDir = this.rng() < 0.5 ? -1 : 1;
-        this.nextStrafeFlip = view.tick + Math.round(TICK_RATE * (0.4 + this.rng()));
+      if (sprint) {
+        // Sprinting means facing where you run.
+        this.turnToward(moveYaw, 0);
+        const rel = angleDelta(this.yaw, moveYaw);
+        forward = Math.cos(rel);
+        right = Math.sin(rel);
+        if (Math.abs(rel) > 0.5) sprint = false;
+      } else {
+        const rel = angleDelta(this.yaw, moveYaw);
+        forward = Math.cos(rel) * moveScale;
+        right = Math.sin(rel) * moveScale;
       }
-      right = clamp(right + this.strafeDir * 0.8, -1, 1);
+    } else if (backOff) {
+      forward = -0.8;
+    }
+    if (strafe) {
+      if (tick >= this.nextStrafeFlip) {
+        this.strafeDir = this.rng() < 0.5 ? -1 : 1;
+        this.nextStrafeFlip = tick + Math.round(TICK_RATE * (0.5 + this.rng() * 1.1));
+      }
+      right = clamp(right + this.strafeDir * 0.7, -1, 1);
     }
 
     let buttons = 0;
-    // Semi-auto and burst triggers need letting go between shots: tap them.
-    const heldDef = view.inventory.find((w) => weaponCode(w.def) === view.held)?.def;
-    const mode = heldDef?.fireMode ?? 'auto';
-    if (wantFire && (mode === 'auto' || !this.trigger)) buttons |= BUTTON_FIRE;
-    // Scoped weapons are fired through the scope (they spray from the hip).
-    if (wantFire && heldDef?.view.zoomFov && !heldDef.alt) buttons |= BUTTON_ZOOM;
-    this.trigger = (buttons & BUTTON_FIRE) !== 0;
-    // Now and then lob a grenade at a target in throwing range.
-    if (wantFire && target && (view.throwables ?? 0) > 0) {
-      const d = horizontalDistance(me.pos, target.pos);
-      if (d > 6 && d < 18 && this.rng() < 0.012) buttons |= BUTTON_THROW;
+    // Fire through the aim model's trigger discipline.
+    const reacted = target ? this.reacted(view, target) : true;
+    let pull = false;
+    if (wantFire && sol && !sprint) pull = this.aim.trigger(ctx, sol, this.yaw, this.pitch, reacted);
+    else this.aim.trigger(ctx, { yaw: this.yaw + 9, pitch: 0, dist: 1, halfAngle: 0 }, this.yaw, this.pitch, false);
+    if (pull) buttons |= BUTTON_FIRE;
+    // Scoped weapons are fired through the scope (they spray from the hip); not up close.
+    const sDist = (sol as AimSolution | null)?.dist ?? 0;
+    if (wantFire && def?.view.zoomFov && !def.alt && sDist > 7) buttons |= BUTTON_ZOOM;
+    if (throwNow) buttons |= BUTTON_THROW;
+
+    // Reload: when empty; topping up only when nobody is in sight, or from behind cover.
+    const held = this.heldWeapon(view);
+    const inCoverHidden = !!this.cover && this.peekPhase === 'hide' && horizontalDistance(me.pos, this.cover.pos) < 0.8;
+    if (held && held.def.magazine > 0 && held.reserve > 0 && !view.reloading) {
+      if (held.mag === 0 || (!target && held.mag < held.def.magazine / 2) || (inCoverHidden && held.mag < held.def.magazine * 0.6)) buttons |= BUTTON_RELOAD;
     }
-    const held = view.inventory.find((w) => weaponCode(w.def) === view.held);
-    // Reload when empty, or top up when nothing is threatening us.
-    if (held && held.def.magazine > 0 && held.reserve > 0 && (held.mag === 0 || (!target && held.mag < held.def.magazine / 2))) buttons |= BUTTON_RELOAD;
+    if (view.reloading && !this.berserker && target && moveYaw === null) stance = Math.max(stance, 1) as Stance;
+    // Badly hurt and hidden: lie flat.
+    if (hurt && inCoverHidden && this.tactical > 0.5) stance = 2;
+
+    if (sprint && moveYaw !== null && forward > 0.3) buttons |= BUTTON_SPRINT;
+    else if (stance === 2) buttons |= BUTTON_PRONE;
+    else if (stance === 1) buttons |= BUTTON_CROUCH;
+
     if (this.checkStuck(view, forward !== 0 || right !== 0) || this.jumpNext) {
       buttons |= BUTTON_JUMP;
       this.jumpNext = false;
     }
+    // Getting in: use when close enough to the planned mount.
+    if (this.state === 'mount' && this.mountPlan) {
+      const m = view.mounts?.find((x) => x.index === this.mountPlan!.index);
+      if (m && horizontalDistance(me.pos, m.pos) <= m.enterRadius * 0.8 && tick - this.lastUseTick > 20) {
+        buttons |= BUTTON_USE;
+        this.lastUseTick = tick;
+      }
+    }
     return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon: this.chooseWeapon(view, target) };
+  }
+
+  private sightCache = { tick: -Infinity, ok: false };
+
+  /** Line of sight to a spot, rechecked a few times a second (it only steers the look). */
+  private canSee(view: BotWorldView, eye: Vec3, p: Vec3): boolean {
+    if (view.tick - this.sightCache.tick >= DECIDE_TICKS) this.sightCache = { tick: view.tick, ok: view.physics.lineOfSight(eye, { x: p.x, y: p.y + 1.2, z: p.z }) };
+    return this.sightCache.ok;
+  }
+
+  /** Searching and clearing at a walk, not a run (berserkers don't bother). */
+  private careful(): boolean {
+    return !this.berserker && this.tactical > 0.3;
+  }
+
+  private reacted(view: BotWorldView, target: CombatantView): boolean {
+    const since = this.visibleSince.get(target.slot);
+    const reactionTicks = (this.difficulty.reactionMs / 1000) * TICK_RATE * (1.5 - this.profile.reactionSpeed / 100);
+    return since !== undefined && view.tick - since >= reactionTicks;
+  }
+
+  private wantsProne(view: BotWorldView, dist: number): boolean {
+    const def = this.heldDef(view);
+    const scoped = !!def?.view.zoomFov;
+    return hasTag(this.profile, 'SNIPER') && dist > 22 && (scoped || (def?.botRange[0] ?? 0) >= 10) && view.tick - this.underFireTick > TICK_RATE * 2;
+  }
+
+  /**
+   * Behind cover: get there (sprinting if under fire), then alternate hiding
+   * (crouched, reloading) and peeking (standing up over low cover or leaning
+   * out past tall cover) to shoot.
+   */
+  private inCover(view: BotWorldView, threat: Vec3, def: WeaponDefinition | undefined): { moveYaw: number | null; sprint: boolean; stance: Stance; moveScale: number; shoot: boolean } {
+    const me = view.self;
+    const tick = view.tick;
+    const c = this.cover!;
+    const d = horizontalDistance(me.pos, c.pos);
+    const underFire = tick - this.underFireTick < TICK_RATE * 1.2;
+    if (d > 0.45 && !(this.peekPhase === 'peek' && c.peek !== 0 && d < 1.8)) {
+      const moveYaw = this.followPathTo(view, c.pos, false);
+      if (moveYaw === null) {
+        this.cover = null;
+        return { moveYaw: null, sprint: false, stance: 0, moveScale: 1, shoot: true };
+      }
+      const sprint = d > 2.5 && (underFire || this.hurt(view) || this.state === 'retreat');
+      return { moveYaw, sprint, stance: 0, moveScale: 1, shoot: !sprint };
+    }
+    // At cover: alternate hiding and peeking. Shorter peeks while under fire.
+    if (tick >= this.phaseUntil) {
+      const aggr = this.profile.aggression / 100;
+      if (this.peekPhase === 'hide') {
+        this.peekPhase = 'peek';
+        this.peeks++;
+        this.phaseUntil = tick + Math.round(TICK_RATE * (0.7 + this.rng() * 0.9 + aggr * 0.6) * (underFire ? 0.75 : 1));
+      } else {
+        this.peekPhase = 'hide';
+        this.phaseUntil = tick + Math.round(TICK_RATE * (0.6 + this.rng() * 0.8 + (1 - aggr) * 0.6));
+      }
+    }
+    // Several peeks without sight of anyone: they've moved; go and look.
+    if (tick - this.lastTargetTick > TICK_RATE * 2 && this.peeks > 2 && !underFire) {
+      this.cover = null;
+      return { moveYaw: null, sprint: false, stance: 0, moveScale: 1, shoot: false };
+    }
+    const reloading = !!view.reloading;
+    const held = this.heldWeapon(view);
+    const empty = !!held && held.def.magazine > 0 && held.mag === 0;
+    const sniping = this.wantsProne(view, horizontalDistance(me.pos, threat)) && c.low;
+    if (this.peekPhase === 'hide' || reloading || empty) {
+      // Hidden: crouch (low cover hides a crouched body; tall cover hides anyone).
+      return { moveYaw: d > 0.35 ? this.followPathTo(view, c.pos, false) : null, sprint: false, stance: 1, moveScale: 0.5, shoot: false };
+    }
+    // Peek.
+    if (c.low) return { moveYaw: null, sprint: false, stance: sniping ? 1 : 0, moveScale: 1, shoot: true };
+    if (c.peek !== 0) {
+      const tx = c.threat.x - c.pos.x;
+      const tz = c.threat.z - c.pos.z;
+      const l = Math.hypot(tx, tz) || 1;
+      const lean = { x: c.pos.x + (tz / l) * c.peek * 1.1, y: c.pos.y, z: c.pos.z - (tx / l) * c.peek * 1.1 };
+      const moveYaw = horizontalDistance(me.pos, lean) > 0.3 ? Math.atan2(lean.x - me.pos.x, lean.z - me.pos.z) : null;
+      return { moveYaw, sprint: false, stance: 0, moveScale: 0.8, shoot: true };
+    }
+    // Hide-only spot: step out to fight when the peek comes round.
+    this.cover = null;
+    void def;
+    return { moveYaw: null, sprint: false, stance: 0, moveScale: 1, shoot: true };
+  }
+
+  /** Fire at a spot where an enemy went out of sight (suppression). */
+  private suppress(view: BotWorldView, pos: Vec3, ctx: AimContext): AimSolution | null {
+    const aimAt = { x: pos.x, y: pos.y + 1.0, z: pos.z };
+    const want = lookAngles(ctx.eye, aimAt);
+    // Spray around the spot rather than at a point.
+    const wob = 0.04 * Math.sin(view.tick * 0.21 + this.slot);
+    const sol = { yaw: want.yaw + wob, pitch: want.pitch + wob * 0.3, dist: distance(ctx.eye, aimAt), halfAngle: 0.08 };
+    this.turnToward(sol.yaw, sol.pitch);
+    return sol;
+  }
+
+  // ------------------------------------------------------------------ corners and rooms
+
+  /**
+   * Before going round a corner or through a doorway the bot slows and looks
+   * into the space beyond, sweeping across it ("pieing" the corner); once
+   * through, it checks the room's corners in turn. Spaces it went through
+   * recently are not re-checked.
+   */
+  private checkCorners(view: BotWorldView): { pause?: number; look?: Vec3 } {
+    const me = view.self;
+    const tick = view.tick;
+    if (this.pie) {
+      const p = this.pie;
+      if (tick >= p.until) {
+        this.pie = null;
+        this.clearing = { corner: p.corner, yaw: Math.atan2(p.points[1]!.x - p.corner.x, p.points[1]!.z - p.corner.z), points: [], start: 0, until: tick + TICK_RATE * 6 };
+      } else {
+        // Sweep the points in turn, one side across to the other.
+        const per = Math.max(1, (p.until - p.start) / p.points.length);
+        const idx = clamp(Math.floor((tick - p.start) / per), 0, p.points.length - 1);
+        const d = horizontalDistance(me.pos, p.corner);
+        return { pause: d > 2 ? 0.3 : 0, look: p.points[idx] };
+      }
+    }
+    if (this.clearing) {
+      const c = this.clearing;
+      if (c.points.length === 0) {
+        // Wait until through the doorway / round the corner, then check the room.
+        const d = horizontalDistance(me.pos, c.corner);
+        const ahead = (me.pos.x - c.corner.x) * Math.sin(c.yaw) + (me.pos.z - c.corner.z) * Math.cos(c.yaw);
+        if (tick > c.until || d > 8) {
+          this.clearing = null;
+          return {};
+        }
+        if (ahead < 0.6) return {};
+        const eye = { x: me.pos.x, y: me.pos.y + 1.4, z: me.pos.z };
+        const pts = fanPoints(view.physics, eye, c.yaw, 1.3, 4, 16);
+        // The room's far corners first, then the near ones.
+        c.points = [pts[0]!, pts[3]!, pts[1]!, pts[2]!];
+        c.start = tick;
+        c.until = tick + Math.round(TICK_RATE * (0.8 + this.tactical * 0.8));
+      }
+      if (tick < c.until) {
+        const per = Math.max(1, (c.until - c.start) / c.points.length);
+        const i = clamp(Math.floor((tick - c.start) / per), 0, c.points.length - 1);
+        return { pause: 0.6, look: c.points[i] };
+      }
+      this.clearing = null;
+      return {};
+    }
+    if (!this.careful() || (tick + this.slot) % 4 !== 0) return {};
+    const c = this.path[this.pathIndex];
+    if (!c) return {};
+    const dc = horizontalDistance(me.pos, c);
+    if (dc < 0.5) return {};
+    const dirX = (c.x - me.pos.x) / dc;
+    const dirZ = (c.z - me.pos.z) / dc;
+    let at: Vec3 | null = null;
+    let yawIn = 0;
+    // A doorway a couple of metres ahead that opens into a space (not just a corridor).
+    const probeD = Math.min(dc, 2.4);
+    const probe = { x: me.pos.x + dirX * probeD, y: me.pos.y, z: me.pos.z + dirZ * probeD };
+    const beyond = { x: probe.x + dirX * 1.8, y: probe.y, z: probe.z + dirZ * 1.8 };
+    const doorKey = `d${Math.round(probe.x / 2)},${Math.round(probe.y)},${Math.round(probe.z / 2)}`;
+    if (!this.recentlyChecked(doorKey, tick) && isDoorway(view.physics, probe, dirX, dirZ, 2.3) && !isDoorway(view.physics, beyond, dirX, dirZ, 2.8)) {
+      this.markChecked(doorKey, tick);
+      at = probe;
+      yawIn = Math.atan2(dirX, dirZ);
+    } else {
+      // A sharp turn at the next corner of the route.
+      const next = this.path[this.pathIndex + 1];
+      const k = key(c);
+      if (next && dc < 3.2 && !this.recentlyChecked(k, tick) && turnAngle(me.pos, c, next) > 0.75) {
+        this.markChecked(k, tick);
+        at = c;
+        yawIn = Math.atan2(next.x - c.x, next.z - c.z);
+      }
+    }
+    if (!at) return {};
+    // Somewhere it has just been: no need to check again.
+    const into = { x: at.x + Math.sin(yawIn) * 4, y: at.y, z: at.z + Math.cos(yawIn) * 4 };
+    if (this.memory.ageSeconds(into, tick) < 20) return {};
+    const pts = fanPoints(view.physics, { x: at.x, y: at.y + 1.4, z: at.z }, yawIn, 0.85, 4, 16);
+    // Start from the side we can see least of from here.
+    const side = Math.sign(angleDelta(Math.atan2(at.x - me.pos.x, at.z - me.pos.z), yawIn)) || 1;
+    if (side > 0) pts.reverse();
+    this.pie = { start: tick, until: tick + Math.round(TICK_RATE * (0.6 + this.tactical * 0.9)), points: pts, corner: { ...at } };
+    return { pause: 0.3, look: pts[0] };
+  }
+
+  private recentlyChecked(k: string, tick: number): boolean {
+    const last = this.checked.get(k);
+    return last !== undefined && tick - last < TICK_RATE * 25;
+  }
+
+  private markChecked(k: string, tick: number): void {
+    this.checked.set(k, tick);
+    if (this.checked.size > 48) this.checked.delete(this.checked.keys().next().value!);
+  }
+
+  // ------------------------------------------------------------------ grenades
+
+  /**
+   * Throw a grenade to flush an enemy out of cover (last seen moments ago,
+   * now hidden, in throwing range) or into a room it is about to clear where
+   * an enemy was heard. The throw is solved so it lands there, not at the
+   * door frame or the enemy's face.
+   */
+  private considerGrenade(view: BotWorldView, target: CombatantView | undefined): void {
+    const tick = view.tick;
+    if (this.throwPlan || tick < this.nextThrow || !(view.throwables ?? 0) || !view.throwable || view.throwable === 'mine') return;
+    if (this.rng() > 0.25 + this.tactical * 0.5) return;
+    const me = view.self;
+    const eye = { x: me.pos.x, y: me.pos.y + STANCES[me.stance ?? 0].eye, z: me.pos.z };
+    let at: Vec3 | null = null;
+    if (!target && this.lastKnown && tick - this.lastKnown.tick > TICK_RATE * 0.6 && tick - this.lastKnown.tick < TICK_RATE * 5) {
+      const d = horizontalDistance(me.pos, this.lastKnown.pos);
+      if (d > 7 && d < 24 && !view.physics.lineOfSight(eye, { x: this.lastKnown.pos.x, y: this.lastKnown.pos.y + 1, z: this.lastKnown.pos.z })) at = this.lastKnown.pos;
+    } else if (!target && this.heard && tick - this.heard.tick < TICK_RATE * 6 && this.pie) {
+      const d = horizontalDistance(me.pos, this.heard.pos);
+      if (d > 5.5 && d < 22) at = this.heard.pos;
+    } else if (target && this.cover && this.peekPhase === 'hide') {
+      // Pinned behind cover: lob one at them.
+      const d = horizontalDistance(me.pos, target.pos);
+      if (d > 9 && d < 22 && this.rng() < 0.15) at = target.pos;
+    }
+    if (!at) return;
+    const spec = THROWABLE_DEFS[view.throwable].projectile;
+    const sol = solveThrow(view.physics, eye, at, spec);
+    if (!sol) {
+      this.nextThrow = tick + TICK_RATE;
+      return;
+    }
+    // Don't throw if it would land close to ourselves.
+    if (horizontalDistance(sol.impact, me.pos) < spec.splashRadius + 0.5) return;
+    this.throwPlan = { yaw: sol.yaw, pitch: sol.pitch, until: tick + TICK_RATE };
+  }
+
+  // ------------------------------------------------------------------ turrets and vehicles
+
+  private considerMount(view: BotWorldView, target: CombatantView | undefined): void {
+    const mounts = view.mounts;
+    if (!mounts?.length || this.mountPlan || hasTag(this.profile, 'NPC') || view.tick < this.nextMountTick) return;
+    if ((view.tick + this.slot * 7) % (TICK_RATE / 2) >= DECIDE_TICKS) return;
+    const me = view.self;
+    const enemy = target?.pos ?? (this.lastKnown && view.tick - this.lastKnown.tick < TICK_RATE * 4 ? this.lastKnown.pos : null);
+    if (enemy) {
+      // A turret covering the enemy, closer to us than they are.
+      if (target && horizontalDistance(me.pos, target.pos) < 12) return;
+      const m = turretFor(mounts, me.pos, enemy, Math.min(14, horizontalDistance(me.pos, enemy) * 0.6));
+      if (m && this.rng() < 0.4 + this.tactical * 0.6) {
+        this.mountPlan = { index: m.index, until: view.tick + TICK_RATE * 6, drive: false };
+        this.state = 'mount';
+      }
+      return;
+    }
+    const goal = this.roamGoal ?? view.orderGoal?.pos ?? null;
+    if (!goal) return;
+    const v = vehicleFor(mounts, me.pos, goal, 22);
+    if (v && this.rng() < 0.5) {
+      // Drive only along an open route (no long detours).
+      const route = view.nav.findPath(v.pos, goal);
+      if (!route) return;
+      let len = 0;
+      for (let i = 1; i < route.length; i++) len += horizontalDistance(route[i - 1]!, route[i]!);
+      if (len > horizontalDistance(v.pos, goal) * 1.5) return;
+      this.mountPlan = { index: v.index, until: view.tick + TICK_RATE * 8, drive: true };
+      this.state = 'mount';
+    }
+  }
+
+  /** In a turret or vehicle. */
+  private thinkMounted(view: BotWorldView, seq: number, target: CombatantView | undefined, ctx: AimContext): PlayerInput {
+    const tick = view.tick;
+    const seat = view.seat!;
+    const m = view.mounts?.find((x) => x.index === seat.mount);
+    if (this.state !== 'mounted') {
+      this.state = 'mounted';
+      this.mountedSince = tick;
+      this.drive = freshDrive();
+      this.useLatch = true;
+      this.path = [];
+      this.goal = null;
+    }
+    this.mountPlan = null;
+    let forward = 0;
+    let right = 0;
+    let buttons = 0;
+    let leave = false;
+    const gunCtx: AimContext = { ...ctx, weapon: seat.weapon ?? ctx.weapon, steady: !!seat.weapon, speed: 0, stance: 0 };
+    const armed = !!seat.weapon || seat.role === 'passenger';
+    const inSeatArc = (p: Vec3) => !m || inArc(m, seat, p) || (!seat.weapon && seat.role === 'passenger');
+    let fireAt: CombatantView | undefined = target && armed && inSeatArc(target.pos) ? target : undefined;
+    if (seat.role === 'driver' && m) {
+      const goal = this.roamGoal ?? view.orderGoal?.pos ?? farthest(view.spawnPoints, m.pos) ?? m.pos;
+      const left = horizontalDistance(m.pos, goal);
+      if (!this.goal || horizontalDistance(this.goal, goal) > 3 || tick - this.lastPathTick > TICK_RATE * 2) {
+        this.goal = { ...goal };
+        this.path = view.nav.findPath(m.pos, goal) ?? [];
+        this.pathIndex = 1;
+        this.lastPathTick = tick;
+      }
+      // Look ahead along the route.
+      while (this.pathIndex < this.path.length - 1 && horizontalDistance(m.pos, this.path[this.pathIndex]!) < 6) this.pathIndex++;
+      const aimPt = this.path[this.pathIndex] ?? goal;
+      let ctl = steer(this.drive, tick, m, aimPt, left);
+      // An armed pilot (forward guns) turns onto targets in front.
+      if (seat.weapon && target && horizontalDistance(m.pos, target.pos) < 45) {
+        ctl = steer(this.drive, tick, m, target.pos, 30);
+        fireAt = inArc(m, seat, target.pos) ? target : undefined;
+      }
+      forward = ctl.forward;
+      right = ctl.right;
+      if (!fireAt) {
+        const a = Math.atan2(aimPt.x - m.pos.x, aimPt.z - m.pos.z);
+        this.turnToward(a, 0);
+      }
+      // Get out: arrived, wrecked soon, stuck for good, or a fight with no gun.
+      if (left < 14 || m.health < 0.3 || this.drive.unstick >= 3 || (target && !seat.weapon && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
+    } else if (m) {
+      // Gunner: stay while there is something to shoot.
+      if (fireAt) this.lastTargetTick = tick;
+      const idle = tick - Math.max(this.lastTargetTick, this.mountedSince) > TICK_RATE * 7;
+      const flanked = target && !inSeatArc(target.pos) && horizontalDistance(m.pos, target.pos) < 12;
+      if (idle || m.health < 0.3 || flanked) leave = true;
+      if (!fireAt) this.turnToward(m.yaw, 0);
+    }
+    if (fireAt) {
+      const sol = this.aim.solve(gunCtx, { slot: fireAt.slot, pos: fireAt.pos, stance: fireAt.stance });
+      this.turnToward(sol.yaw, sol.pitch);
+      const cool = !seat.overheated && seat.heat < 0.85;
+      if (cool && this.aim.trigger(gunCtx, sol, this.yaw, this.pitch, this.reacted(view, fireAt))) buttons |= BUTTON_FIRE;
+    }
+    if (leave && tick - this.mountedSince > TICK_RATE && !this.useLatch) buttons |= BUTTON_USE;
+    this.useLatch = (buttons & BUTTON_USE) !== 0;
+    if (leave) this.nextMountTick = tick + TICK_RATE * 10;
+    return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons };
+  }
+
+  private nextMountTick = 0;
+
+  // ------------------------------------------------------------------ weapons and items
+
+  private heldCache: { view: BotWorldView | null; w: InventoryView | undefined } = { view: null, w: undefined };
+
+  private heldWeapon(view: BotWorldView): InventoryView | undefined {
+    if (this.heldCache.view !== view) this.heldCache = { view, w: view.inventory.find((w) => weaponCode(w.def) === view.held) };
+    return this.heldCache.w;
   }
 
   /**
    * Best owned weapon with ammo for the current distance: data-driven via each
    * weapon's desirability and range band, nudged by personality (range
-   * preference, explosives fans) and avoiding splash damage up close.
+   * preference, explosives fans, favourite weapons) and avoiding splash
+   * damage up close. An empty gun in a close fight: draw another rather than
+   * reload in the open.
    */
   private chooseWeapon(view: BotWorldView, target: CombatantView | undefined): number {
-    const dist = target ? distance(view.self.pos, target.pos) : 15;
+    const dist = target ? distance(view.self.pos, target.pos) : this.lastKnown ? Math.min(30, distance(view.self.pos, this.lastKnown.pos)) : 15;
     let best = view.held;
     let bestScore = -Infinity;
     for (const w of view.inventory) {
@@ -265,6 +1050,9 @@ export class BotBrain {
       if (w.def.projectile && dist < w.def.projectile.splashRadius + 1) score -= 1.5 * (this.profile.selfPreservation / 100);
       if (this.profile.tags.includes('EXPLOSIVES_FAN') && w.def.projectile) score += 0.4;
       if (w.def.kind === 'melee') score += (this.profile.meleePreference / 100) * 0.5;
+      if (this.profile.weaponPreferences.includes(w.def.id)) score += 0.25;
+      // Empty magazine with an enemy in sight: switching is faster than reloading.
+      if (target && w.def.magazine > 0 && w.mag === 0 && dist < 15) score -= 0.5;
       // Avoid dithering between near-equal choices.
       if (weaponCode(w.def) === view.held) score += 0.15;
       if (score > bestScore) {
@@ -305,24 +1093,51 @@ export class BotBrain {
     return best ? { ...best.pos } : null;
   }
 
+  /**
+   * Where to advance next: in team modes the enemy's side of the map (by one
+   * of several routes, so teammates spread out); otherwise the places it
+   * hasn't checked lately.
+   */
+  private pickAdvanceGoal(view: BotWorldView): void {
+    const me = view.self;
+    const pts = view.spawnPoints;
+    const places = view.nav.places();
+    this.via = null;
+    if (this.rng() * 100 < this.profile.exploration * 0.6 || pts.length === 0) {
+      this.roamGoal = pickExploreGoal(places, pts, me.pos, this.memory, view.tick, this.rng, this.profile.exploration) ?? { ...(pts[0] ?? me.pos) };
+    } else {
+      this.roamGoal = { ...pts[Math.floor(this.rng() * pts.length)]! };
+    }
+    // Spread over the routes: a lane per bot.
+    const lane = (this.slot % 3) - 1;
+    if (lane !== 0 && this.roamGoal) this.via = laneWaypoint(places, me.pos, this.roamGoal, lane);
+  }
+
+  // ------------------------------------------------------------------ perception
+
   private perceive(view: BotWorldView): void {
     const me = view.self;
-    const myEye = eye(me.pos);
+    const myEye = { x: me.pos.x, y: me.pos.y + STANCES[me.stance ?? 0].eye, z: me.pos.z };
     const facing = { x: Math.sin(this.yaw), z: Math.cos(this.yaw) };
-    let best: { slot: number; dist: number } | null = null;
+    let best: { slot: number; score: number } | null = null;
     const seen = new Set<number>();
+    this.memory.mark(me.pos, view.tick);
     for (const o of view.others) {
       if (!o.alive) continue;
       const d = Math.hypot(o.pos.x - me.pos.x, o.pos.y - me.pos.y, o.pos.z - me.pos.z);
-      if (d > SIGHT_RANGE) continue;
+      const range = SIGHT_RANGE * STANCE_SIGHT[o.stance ?? 0];
+      if (d > range && !(this.visibleSince.has(o.slot) && d < SIGHT_RANGE)) continue;
       const dx = (o.pos.x - me.pos.x) / (d || 1);
       const dz = (o.pos.z - me.pos.z) / (d || 1);
       const inFov = dx * facing.x + dz * facing.z >= FOV_COS * Math.hypot(dx, dz);
       if (!inFov && d > HEARING_RANGE) continue;
-      if (!view.physics.lineOfSight(myEye, eye(o.pos))) continue;
+      const theirEye = { x: o.pos.x, y: o.pos.y + STANCES[o.stance ?? 0].eye, z: o.pos.z };
+      if (!view.physics.lineOfSight(myEye, theirEye)) continue;
       seen.add(o.slot);
       if (!this.visibleSince.has(o.slot)) this.visibleSince.set(o.slot, view.tick);
-      if (!best || d < best.dist) best = { slot: o.slot, dist: d };
+      // Stick with the current target unless another is much closer.
+      const score = d * (o.slot === this.targetSlot ? 0.7 : 1);
+      if (!best || score < best.score) best = { slot: o.slot, score };
     }
     for (const slot of [...this.visibleSince.keys()]) if (!seen.has(slot)) this.visibleSince.delete(slot);
 
@@ -333,56 +1148,39 @@ export class BotBrain {
     } else {
       this.targetSlot = null;
     }
-    // Aim error drifts between perception updates rather than jittering every tick.
-    const err = this.difficulty.aimErrorRad * (1.5 - this.profile.accuracy / 100);
-    this.aimErrYaw = (this.rng() * 2 - 1) * err;
-    this.aimErrPitch = (this.rng() * 2 - 1) * err * 0.5;
-  }
-
-  private chooseState(view: BotWorldView, target: CombatantView | undefined): void {
-    const me = view.self;
-    const lowHealth = me.health < (this.profile.selfPreservation / 100) * PLAYER.maxHealth * 0.6;
-    if (target && lowHealth) {
-      this.state = 'retreat';
-    } else if (target) {
-      this.state = 'engage';
-    } else if (this.lastKnown && !lowHealth) {
-      const pursuitTicks = TICK_RATE * (1 + (this.profile.pursuitPersistence / 100) * 7);
-      const fresh = view.tick - this.lastKnown.tick < pursuitTicks;
-      const arrived = horizontalDistance(me.pos, this.lastKnown.pos) < 1.5;
-      this.state = fresh && !arrived ? 'chase' : 'roam';
-      if (this.state === 'roam') this.lastKnown = null;
-    } else if (this.state === 'retreat' && this.lastKnown && view.tick - this.lastKnown.tick < TICK_RATE * 3) {
-      // Keep running for a moment after losing sight of the threat.
-    } else {
-      this.state = 'roam';
+    // Hearing: gunfire and explosions from enemies we can't see.
+    if (view.noises?.length && !best) {
+      const hostile = new Set(view.others.map((o) => o.slot));
+      let loud: { pos: Vec3; tick: number; d: number } | null = null;
+      for (const n of view.noises) {
+        if (n.by >= 0 && !hostile.has(n.by)) continue;
+        const d = horizontalDistance(n.pos, me.pos) + Math.abs(n.pos.y - me.pos.y) * 2;
+        if (d > n.range || d < 3) continue;
+        if (!loud || d < loud.d) loud = { pos: n.pos, tick: n.tick, d };
+      }
+      if (loud && (!this.heard || loud.tick > this.heard.tick + TICK_RATE)) {
+        // Roughly where it came from (hearing isn't exact).
+        const err = Math.min(4, loud.d * 0.08);
+        const p = view.nav.closestPoint({ x: loud.pos.x + (this.rng() * 2 - 1) * err, y: loud.pos.y + 0.5, z: loud.pos.z + (this.rng() * 2 - 1) * err }, { x: 3, y: 3, z: 3 });
+        if (p) this.heard = { pos: p, tick: loud.tick };
+      }
     }
-  }
-
-  /** Turn toward the target with limited turn rate; returns true when the shot is lined up and reaction time has passed. */
-  private aimAt(view: BotWorldView, target: CombatantView): boolean {
-    const from = eye(view.self.pos);
-    const want = lookAngles(from, chest(target.pos));
-    // Lobbed projectiles: aim above the target to cancel the drop over the flight time.
-    const lob = view.inventory.find((w) => weaponCode(w.def) === view.held)?.def.projectile;
-    if (lob && lob.gravity > 0) {
-      const d = distance(from, chest(target.pos));
-      const t = d / lob.speed;
-      want.pitch += Math.atan2(0.5 * lob.gravity * t * t, d);
-    }
-    this.turnToward(want.yaw + this.aimErrYaw, want.pitch + this.aimErrPitch);
-    const since = this.visibleSince.get(target.slot);
-    const reactionTicks = (this.difficulty.reactionMs / 1000) * TICK_RATE * (1.5 - this.profile.reactionSpeed / 100);
-    const reacted = since !== undefined && view.tick - since >= reactionTicks;
-    const onTarget = Math.abs(angleDelta(this.yaw, want.yaw)) < 0.12 && Math.abs(this.pitch - want.pitch) < 0.12;
-    return reacted && onTarget;
   }
 
   private lookAlongPath(view: BotWorldView): void {
     const corner = this.path[this.pathIndex];
     if (!corner) return;
-    const a = lookAngles(eye(view.self.pos), { x: corner.x, y: corner.y + PLAYER.eyeHeight, z: corner.z });
-    this.turnToward(a.yaw, 0);
+    const me = view.self;
+    const a = lookAngles({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, { x: corner.x, y: corner.y + PLAYER.eyeHeight, z: corner.z });
+    // Glance about now and then while moving through open ground.
+    const glance = Math.sin((view.tick + this.slot * 37) / 50) * 0.45 * (this.careful() ? 1 : 0.3);
+    this.turnToward(a.yaw + glance, 0);
+  }
+
+  private lookAt(view: BotWorldView, p: Vec3, up: number): void {
+    const me = view.self;
+    const a = lookAngles({ x: me.pos.x, y: me.pos.y + STANCES[me.stance ?? 0].eye, z: me.pos.z }, { x: p.x, y: p.y + up, z: p.z });
+    this.turnToward(a.yaw, a.pitch);
   }
 
   private turnToward(yaw: number, pitch: number): void {
@@ -392,6 +1190,29 @@ export class BotBrain {
     this.pitch = clamp(this.pitch, -1.5, 1.5);
   }
 
+  /** Teammates don't stack up: steer a little away from any ally right in front. */
+  private separate(view: BotWorldView, moveYaw: number): number {
+    if (!view.allies?.length) return moveYaw;
+    const me = view.self.pos;
+    let px = 0;
+    let pz = 0;
+    for (const a of view.allies) {
+      if (a.slot === view.self.slot) continue;
+      const dx = me.x - a.pos.x;
+      const dz = me.z - a.pos.z;
+      const d = Math.hypot(dx, dz);
+      if (d > 2 || d < 1e-3 || Math.abs(a.pos.y - me.y) > 1.5) continue;
+      px += (dx / d) * (2 - d);
+      pz += (dz / d) * (2 - d);
+    }
+    if (!px && !pz) return moveYaw;
+    const mx = Math.sin(moveYaw) + px * 0.8;
+    const mz = Math.cos(moveYaw) + pz * 0.8;
+    return Math.atan2(mx, mz);
+  }
+
+  // ------------------------------------------------------------------ navigation
+
   /** Follow a navmesh path to `goal`; returns the world yaw to move along, or null when there is nowhere to go. */
   private followPathTo(view: BotWorldView, goal: Vec3, movingGoal: boolean): number | null {
     const me = view.self;
@@ -399,7 +1220,7 @@ export class BotBrain {
     const stale = movingGoal && view.tick - this.lastPathTick > PATH_REFRESH_TICKS;
     // Ran out of corners without arriving (e.g. pushed off the path): replan, throttled.
     const exhausted = this.pathIndex >= this.path.length && horizontalDistance(me.pos, goal) > 1;
-    if (goalMoved || ((stale || exhausted) && view.tick - this.lastPathTick >= 6)) {
+    if ((goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6)) {
       this.goal = { ...goal };
       this.path = view.nav.findPath(me.pos, goal) ?? [];
       if (this.pathBlocked(view)) this.path = [];
@@ -442,16 +1263,6 @@ export class BotBrain {
     return !inside && view.hazards.some((h) => segmentHitsAabb(here, ahead, h, PLAYER.radius));
   }
 
-  private pickRoamGoal(view: BotWorldView): Vec3 {
-    const pts = view.spawnPoints;
-    if (pts.length === 0) return { ...view.self.pos };
-    // Explorers prefer far-away points; others pick uniformly.
-    if (this.rng() * 100 < this.profile.exploration) {
-      return { ...(farthest(pts, view.self.pos) ?? pts[0]!) };
-    }
-    return { ...pts[Math.floor(this.rng() * pts.length)]! };
-  }
-
   /** Detect lack of progress while trying to move; repath and hop when stuck. */
   private checkStuck(view: BotWorldView, moving: boolean): boolean {
     const pos = view.self.pos;
@@ -464,16 +1275,19 @@ export class BotBrain {
       return false;
     }
     if (view.tick - this.stuckCheck.tick < STUCK_WINDOW_TICKS) return false;
-    const progressed = horizontalDistance(pos, this.stuckCheck.pos) > 0.75 || Math.abs(pos.y - this.stuckCheck.pos.y) > 0.5;
+    const progressed = horizontalDistance(pos, this.stuckCheck.pos) > 0.6 || Math.abs(pos.y - this.stuckCheck.pos.y) > 0.5;
     this.stuckCheck = { tick: view.tick, pos: { ...pos } };
     if (progressed) return false;
     this.stuckCount++;
     this.path = [];
     this.goal = null;
     this.lastPathTick = -Infinity;
+    this.cover = null;
     return true;
   }
 }
+
+const key = (p: Vec3): string => `${Math.round(p.x)},${Math.round(p.y)},${Math.round(p.z)}`;
 
 function farthest(points: readonly Vec3[], from: Vec3): Vec3 | undefined {
   let best: Vec3 | undefined;
