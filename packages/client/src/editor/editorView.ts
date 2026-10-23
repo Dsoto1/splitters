@@ -246,13 +246,15 @@ export class EditorView {
     const factions = mapFactions(doc);
     const factionColor = (id: string) => factions.find((f) => f.id === id)?.color ?? '#888888';
     this.scenario.factionColor = factionColor;
+    const flagTeams = mapTeams(doc, MAX_TEAMS);
+    this.scenario.teamColor = (id) => flagTeams.find((t) => t.id === id)?.color ?? '#888888';
     this.scenario.surface = (m, t) => this.styler.surfaceMaterial(doc, m, t);
     const teams = mapTeams(doc, MAX_TEAMS);
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
       seen.add(e.id);
       // Rebuild a marker when the entity changed kind, item or any scenario property.
-      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null, color: e.kind === 'encounter' ? factionColor(e.faction) : null });
+      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null, color: e.kind === 'encounter' ? factionColor(e.faction) : e.kind === 'flag' ? this.scenario.teamColor(e.team) : null });
       let m = this.markers.get(e.id);
       if (m && m.key !== key) {
         m.node.dispose(false, false);
@@ -434,6 +436,10 @@ function selectionSize(e: MapEntity): number {
       return Math.max(e.size[0], e.size[2]) * 1.2;
     case 'encounter':
       return e.radius * 2 + 0.4;
+    case 'hill':
+      return e.radius * 2 + 0.4;
+    case 'flag':
+      return 2.6;
     case 'trap':
       return e.trap === 'mine' ? 1.1 : e.trap === 'flames' ? 1.4 : 3.6;
     case 'destructible':

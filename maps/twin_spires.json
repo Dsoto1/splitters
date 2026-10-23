@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 9,
+  "formatVersion": 11,
   "metadata": {
     "id": "twin_spires",
     "name": "Twin Spires",
@@ -15,7 +15,9 @@
     },
     "supportedModes": [
       "core.tdm",
-      "core.deathmatch"
+      "core.deathmatch",
+      "core.ctf",
+      "core.koth"
     ]
   },
   "classicStructure": {
@@ -1525,6 +1527,68 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "flag_137",
+      "position": [
+        -54,
+        0,
+        0
+      ],
+      "kind": "flag",
+      "yaw": 1.5707963267948966,
+      "team": "embers"
+    },
+    {
+      "id": "flag_138",
+      "position": [
+        54,
+        0,
+        0
+      ],
+      "kind": "flag",
+      "yaw": -1.5707963267948966,
+      "team": "tide"
+    },
+    {
+      "id": "hill_139",
+      "position": [
+        0,
+        4,
+        0
+      ],
+      "kind": "hill",
+      "radius": 4
+    },
+    {
+      "id": "hill_140",
+      "position": [
+        -16,
+        0,
+        8
+      ],
+      "kind": "hill",
+      "radius": 4
+    },
+    {
+      "id": "hill_141",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "hill",
+      "radius": 4
+    },
+    {
+      "id": "hill_142",
+      "position": [
+        16,
+        0,
+        -8
+      ],
+      "kind": "hill",
+      "radius": 4
     }
   ],
   "factions": [],
@@ -1537,6 +1601,7 @@
   "terrain": null,
   "bounds": null,
   "backdrop": null,
+  "blood": null,
   "teamSetup": {
     "sizes": [
       8,

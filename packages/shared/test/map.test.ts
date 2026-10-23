@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildMapGeometry, isOpenEdge, buildOccupancy, loadMap, migrateMapDocument, serializeMap, MapMigrationError, type Migration } from '../src/index.ts';
+import { buildMapGeometry, isOpenEdge, buildOccupancy, loadMap, migrateMapDocument, serializeMap, MapMigrationError, MAP_FORMAT_VERSION, type Migration } from '../src/index.ts';
 import { loadArena, makeMap } from './helpers.ts';
 
 describe('map loading', () => {
@@ -69,7 +69,7 @@ describe('migrations', () => {
   });
 
   it('fails loudly on a gap in the chain', () => {
-    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), 11)).toThrow(MapMigrationError);
+    expect(() => migrateMapDocument({ ...loadArena() }, new Map(), MAP_FORMAT_VERSION + 1)).toThrow(MapMigrationError);
   });
 });
 

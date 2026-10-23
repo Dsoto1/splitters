@@ -30,6 +30,9 @@ export class SessionAudio {
   private dryFireAt = 0;
   private recentKills: number[] = [];
 
+  /** Your team in team modes (null otherwise), for objective and round announcements. */
+  myTeam: () => string | null = () => null;
+
   /** Whether blood is shown (the map's setting and the player's): the wet splat on a kill goes with it. */
   bloodOn: () => boolean = () => true;
 
@@ -190,7 +193,25 @@ export class SessionAudio {
         break;
       }
       case 'round_end':
-        this.audio.play(ev.winner === null ? 'announce.tie' : ev.winner === me ? 'announce.win' : 'announce.lose');
+        if (ev.team !== undefined) this.audio.play(ev.team === null ? 'announce.tie' : ev.team === this.myTeam() ? 'announce.win' : 'announce.lose');
+        else this.audio.play(ev.winner === null ? 'announce.tie' : ev.winner === me ? 'announce.win' : 'announce.lose');
+        break;
+      // Objective modes: existing cues, chosen by whether it is good or bad news for your team.
+      case 'flag': {
+        const ours = ev.team === this.myTeam();
+        if (ev.a === 'take') this.audio.play(ours ? 'cue.alarm' : ev.s === me ? 'pickup.powerup' : 'objective.new');
+        else if (ev.a === 'drop') this.audio.play('message');
+        else if (ev.a === 'return') this.audio.play('cue.chime');
+        else this.audio.play(ours ? 'cue.buzzer' : 'objective.complete');
+        break;
+      }
+      case 'hill':
+        if (ev.a === 'move') this.audio.play('objective.new');
+        else if (ev.team !== null) this.audio.play(ev.team === this.myTeam() ? 'cue.chime' : 'cue.buzzer', { gain: 0.6 });
+        break;
+      case 'elim':
+        if (ev.a === 'start') this.audio.play('announce.fight');
+        else this.audio.play(ev.team === null ? 'announce.tie' : ev.team === this.myTeam() ? 'announce.win' : 'announce.lose');
         break;
       case 'round_start':
         this.recentKills = [];

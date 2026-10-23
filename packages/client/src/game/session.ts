@@ -19,6 +19,8 @@ import {
   OBJECTIVE_STATES,
   mapFactions,
   mapTeams,
+  isTeamMode,
+  MODE_LABELS,
   NPC_ID_BASE,
   type NpcSnapshot,
   type PlayerSnapshot,
@@ -46,6 +48,7 @@ import { bindFullscreenButton, pageHoldsEscape } from '../fullscreen.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
+import { ModeHud } from './modeHud.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState } from './input.ts';
 import { Interpolator } from './interpolation.ts';
@@ -122,6 +125,8 @@ export class GameSession {
   private seat: [number, number, number] | null = null;
   private localStatus = 0;
   private lastWeapon = 0;
+  /** Capture the Flag, King of the Hill, Elimination: flags, hill, status line, markers, announcer. */
+  private modeHud: ModeHud | null = null;
 
   // Frame timing / instrumentation.
   private acc = 0;
@@ -254,6 +259,7 @@ export class GameSession {
     this.abort.abort();
     this.input.dispose();
     this.opts.audio.stopAll();
+    this.modeHud?.dispose();
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
@@ -271,13 +277,16 @@ export class GameSession {
         }
         this.slot = msg.slot;
         this.rules = msg.rules;
-        this.hud.setTeams(msg.rules.mode === 'core.tdm' ? mapTeams(loaded.map, msg.rules.teamSizes?.length ?? 2) : null);
-        this.hud.setModeLabel(msg.rules.mode === 'core.tdm' ? 'Team Deathmatch' : msg.rules.mode === 'core.coop' ? 'Co-op Mission' : 'Deathmatch');
+        const teams = isTeamMode(msg.rules.mode) ? mapTeams(loaded.map, msg.rules.mode === 'core.ctf' ? 2 : (msg.rules.teamSizes?.length ?? 2)) : null;
+        this.hud.setTeams(teams);
+        this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
+        this.sfx.myTeam = () => this.hud.team(this.slot)?.id ?? null;
         this.hud.minimap.setMap(loaded.map);
         void this.opts.portrait?.then((src) => this.hud.setPortrait(src), () => undefined);
         const geometry = buildMapGeometry(loaded.map);
         this.map = loaded.map;
         this.view.buildMap(loaded.map, geometry);
+        if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
@@ -290,7 +299,7 @@ export class GameSession {
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud };
         this.opts.onReady?.();
         break;
       }
@@ -317,6 +326,7 @@ export class GameSession {
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         this.taken = new Set(msg.pk);
+        this.modeHud?.snapshot(msg.md);
         // Door and crate colliders first, so reconciliation replays against the same world as the server.
         this.scenario?.apply(msg.sc);
         const me = msg.players.find((p) => p.s === this.slot);
@@ -333,6 +343,7 @@ export class GameSession {
         const posesNow = () => (poses ??= this.interp.sample());
         for (const ev of msg.ev) {
           this.sfx.event(ev, posesNow, performance.now());
+          this.modeHud?.event(ev);
           if (ev.e === 'shot') {
             const def = CORE_WEAPONS[ev.w];
             const mine = ev.s === this.slot;
@@ -625,6 +636,7 @@ export class GameSession {
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
+    this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
     this.view.updateAvatars(
       poses,
       this.slot,

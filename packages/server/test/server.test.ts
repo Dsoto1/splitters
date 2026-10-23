@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { fileURLToPath } from 'node:url';
 import WebSocket from 'ws';
 import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, PLAYER, PROTOCOL_VERSION, lookAngles, type MapDocument, type ServerMessage } from '@chronosplit/shared';
 import { parseClientMessage, startServer, type RunningServer } from '../src/server.ts';
 
 const room: MapDocument = {
   format: 'chronosplit.map',
-  formatVersion: 10,
+  formatVersion: 11,
   metadata: {
     id: 'test_room',
     name: 'Test Room',
@@ -82,6 +83,22 @@ afterEach(async () => {
 });
 
 describe('dedicated server', () => {
+  it('hosts Capture the Flag on a map with flag bases, sending flag state, and refuses it on one without', async () => {
+    const ctfMap = fileURLToPath(new URL('../../../maps/bunker_cross.json', import.meta.url));
+    server = await startServer({ port: 0, map: ctfMap, botFill: 0, seed: 1, mode: 'core.ctf' });
+    expect(server.match.rules.mode).toBe('core.ctf');
+    const a = new TestClient(server.port, 'Alice');
+    const welcome = await a.waitFor('welcome');
+    expect(welcome.rules.mode).toBe('core.ctf');
+    const snap = await a.waitFor('snapshot');
+    expect(snap.md?.fl?.length).toBe(2);
+    expect(snap.md?.ts).toEqual([0, 0]);
+    a.ws.close();
+    await server.close();
+    server = undefined;
+    await expect(startServer({ port: 0, map: room, botFill: 0, mode: 'core.ctf' })).rejects.toThrow(/Capture the Flag/);
+  });
+
   it('runs a two-client match: welcome, snapshots, acked inputs, and a networked kill', async () => {
     server = await startServer({ port: 0, map: room, botFill: 0, seed: 1, rules: { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 600 } });
     const a = new TestClient(server.port, 'Alice');

@@ -6,6 +6,8 @@ mixes like 2v2v2v2v2v2v12 and 1v3.
 
 - **Teams.** Embers, Tide, Verdant, Volt, Violet, Frost, Crimson and Ash, in
   that order. A map that names two factions renames the first two.
+- **Modes.** King of the Hill and Elimination use the same teams; Capture the
+  Flag always has two (see [GAME_MODES.md](GAME_MODES.md)).
 - **Rules.** `MatchRules.teamSizes` holds players per team. Each newcomer,
   human or bot, joins the team furthest below its size as a share of it, so
   a 12-player team fills alongside 2-player squads. When bots leave, they

@@ -1,9 +1,9 @@
 import {
   CORE_LOOKS,
-  DEFAULT_COOP_RULES,
-  DEFAULT_DEATHMATCH_RULES,
   DEFAULT_LOOK,
-  DEFAULT_TDM_RULES,
+  DEFAULT_RULES,
+  MODE_LABELS,
+  isTeamMode,
   LOOK_BIOS,
   MAX_PLAYER_SLOTS,
   MAX_TEAMS,
@@ -44,7 +44,7 @@ export interface ArcadeSetup {
   skill: 'easy' | 'normal' | 'hard';
   scoreLimit: number;
   minutes: number;
-  /** Team Deathmatch: players per team (2–8 teams); bots fill every team. */
+  /** Team modes: players per team (2–8 teams; Capture the Flag uses the first two); bots fill every team. */
   teams?: number[];
 }
 
@@ -57,8 +57,15 @@ export interface FrontEndHooks {
 
 type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options';
 
-const MODE_LABEL: Record<GameMode, string> = { 'core.deathmatch': 'Deathmatch', 'core.tdm': 'Team Deathmatch', 'core.coop': 'Co-op' };
-const BASE_RULES: Record<GameMode, MatchRules> = { 'core.deathmatch': DEFAULT_DEATHMATCH_RULES, 'core.tdm': DEFAULT_TDM_RULES, 'core.coop': DEFAULT_COOP_RULES };
+const MODE_LABEL = MODE_LABELS;
+const BASE_RULES = DEFAULT_RULES;
+/** The score limit row per mode: its label and stepper (step, min, max). */
+const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: number; max: number }>> = {
+  'core.tdm': { label: 'Team score', step: 5, min: 5, max: 200 },
+  'core.ctf': { label: 'Captures', step: 1, min: 1, max: 20 },
+  'core.koth': { label: 'Hill seconds', step: 10, min: 30, max: 600 },
+  'core.elim': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
+};
 const FAMILY_LABEL = { ranger: 'Ranger', peasant: 'Peasant', athlete: 'Sportswear' } as const;
 
 function storage(key: string, value?: string): string | null {
@@ -312,12 +319,12 @@ export class FrontEnd {
       { class: 'setup panel' },
       el('h3', { class: 'panel-title', textContent: current.map.metadata.name }),
       el('div', { class: 'row' }, 'Mode', tabs(current.modes.map((m) => [m, MODE_LABEL[m]] as [string, string]), s.mode, (v) => (this.setup.mode = v as GameMode, this.setup.scoreLimit = BASE_RULES[v as GameMode].scoreLimit))),
-      ...(s.mode === 'core.tdm' ? this.teamRows(current.map, stepper) : [el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
+      ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, s.mode === 'core.ctf') : [el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
       el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
       ...(coop
         ? []
         : [
-            el('div', { class: 'row' }, s.mode === 'core.tdm' ? 'Team score' : 'Score limit', stepper(s.scoreLimit, 5, 5, 200, (v) => (this.setup.scoreLimit = v))),
+            ((row) => el('div', { class: 'row' }, row.label, stepper(s.scoreLimit, row.step, row.min, row.max, (v) => (this.setup.scoreLimit = v))))(SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 }),
             el('div', { class: 'row' }, 'Time limit', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v}m` : '∞'))),
           ]),
       el('p', { class: 'map-desc', textContent: current.map.metadata.description }),
@@ -336,9 +343,9 @@ export class FrontEnd {
     const base = BASE_RULES[this.setup.mode];
     const rules: MatchRules = this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 };
     this.saveSetup();
-    if (this.setup.mode === 'core.tdm') {
+    if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.
-      const teams = this.teamSizes(m.map);
+      const teams = this.teamSizes(m.map, this.setup.mode === 'core.ctf');
       this.hooks.playLocal(m.map, { ...rules, teamSizes: teams }, Math.min(MAX_PLAYER_SLOTS, teams.reduce((a, b) => a + b, 0)), this.setup.skill);
       return;
     }
@@ -346,14 +353,15 @@ export class FrontEnd {
     this.hooks.playLocal(m.map, rules, this.setup.bots + 1, this.setup.skill);
   }
 
-  /** The team layout for Team Deathmatch: your last choice, else the map's, else two teams of four. */
-  private teamSizes(map: MapDocument): number[] {
-    return this.setup.teams ?? (map.teamSetup ? [...map.teamSetup.sizes] : [4, 4]);
+  /** The team layout for team modes: your last choice, else the map's, else two teams of four (`two`: just the first two teams, for CTF). */
+  private teamSizes(map: MapDocument, two = false): number[] {
+    const sizes = this.setup.teams ?? (map.teamSetup ? [...map.teamSetup.sizes] : [4, 4]);
+    return two ? sizes.slice(0, 2) : sizes;
   }
 
   /** Arcade rows for teams: a layout preset, then a stepper per team in its colour. */
-  private teamRows(map: MapDocument, stepper: (value: number, step: number, min: number, max: number, set: (v: number) => void) => HTMLElement): HTMLElement[] {
-    const sizes = this.teamSizes(map);
+  private teamRows(map: MapDocument, stepper: (value: number, step: number, min: number, max: number, set: (v: number) => void) => HTMLElement, twoTeams = false): HTMLElement[] {
+    const sizes = this.teamSizes(map, twoTeams);
     const teams = mapTeams(map, sizes.length);
     const set = (next: number[]) => {
       this.setup.teams = next;
@@ -369,9 +377,12 @@ export class FrontEnd {
     plus.addEventListener('click', () => sizes.length < MAX_TEAMS && set([...sizes, sizes[sizes.length - 1] ?? 2]));
     const minus = el('button', { class: 'tab', textContent: '− Team' });
     minus.addEventListener('click', () => sizes.length > 2 && set(sizes.slice(0, -1)));
+    const all = this.teamSizes(map);
     const steppers = teams.map((t, i) =>
-      el('div', { class: 'team-size' }, swatch(t.color), el('span', { textContent: t.name }), stepper(sizes[i]!, 1, 1, 16, (v) => (this.setup.teams = sizes.map((s, j) => (j === i ? v : s))))),
+      el('div', { class: 'team-size' }, swatch(t.color), el('span', { textContent: t.name }), stepper(sizes[i]!, 1, 1, 16, (v) => (this.setup.teams = all.map((s, j) => (j === i ? v : s))))),
     );
+    // Capture the Flag is always two teams: just their sizes.
+    if (twoTeams) return [el('div', { class: 'team-grid' }, ...steppers)];
     return [el('div', { class: 'row' }, 'Teams', el('div', { class: 'team-layout' }, preset, plus, minus)), el('div', { class: 'team-grid' }, ...steppers)];
   }
 
@@ -423,7 +434,7 @@ export class FrontEnd {
       'div',
       { class: 'loadout' },
       el('h4', { textContent: 'Loadout' }),
-      ...DEFAULT_DEATHMATCH_RULES.startingWeapons.map((w) => {
+      ...DEFAULT_RULES['core.deathmatch'].startingWeapons.map((w) => {
         const icon = weaponIcon(w, 'wicon large');
         return el('span', { title: getWeapon(w).displayName }, ...(icon ? [icon] : []), getWeapon(w).displayName);
       }),

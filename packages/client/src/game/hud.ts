@@ -40,6 +40,11 @@ export class Hud {
   readonly minimap = new Minimap($<HTMLCanvasElement>('minimap'));
   /** The two sides in Team Deathmatch; null in other modes. */
   private teams: readonly Faction[] | null = null;
+  /** Objective modes: team scores (captures, hill seconds, rounds) in team order, replacing kill totals. */
+  private modeScores: readonly number[] | null = null;
+  private readonly modeStatus = $('mode-status');
+  private readonly modeMarkers = $('mode-markers');
+  private lastModeStatus = '';
   private lastTeamScore = '';
   private readonly feed = $('feed');
   private readonly banner = $('banner');
@@ -90,6 +95,9 @@ export class Hud {
     this.portrait.removeAttribute('src');
     this.target.hidden = true;
     this.teams = null;
+    this.modeScores = null;
+    this.setModeStatus('');
+    this.setModeMarkers([]);
     this.health.textContent = '';
     this.armor.textContent = '';
     this.weaponBar.innerHTML = '';
@@ -126,8 +134,49 @@ export class Hud {
     return id ? this.teams?.find((t) => t.id === id) : undefined;
   }
 
-  /** Kills per team, from the per-player scores. */
+  /** Objective mode scores in team order (null: team scores are kill totals). */
+  setModeScores(scores: readonly number[] | null): void {
+    this.modeScores = scores;
+  }
+
+  /** The line under the scorebar in objective modes: flag status, the hill, the round (HTML). */
+  setModeStatus(html: string): void {
+    if (html === this.lastModeStatus) return;
+    this.lastModeStatus = html;
+    this.modeStatus.innerHTML = html;
+  }
+
+  /**
+   * Objective markers (flags, the hill): on screen at the objective, or an
+   * arrow at the screen edge pointing the way when it is behind you or off
+   * to the side (`edge`: its bearing in radians, 0 ahead, clockwise).
+   */
+  setModeMarkers(list: { id: string; x: number; y: number; color: string; label: string; icon: string; edge?: number }[]): void {
+    const seen = new Set<string>();
+    for (const m of list) {
+      seen.add(m.id);
+      let el = this.modeMarkers.querySelector<HTMLElement>(`[data-id="${m.id}"]`);
+      if (!el) {
+        el = document.createElement('div');
+        el.dataset.id = m.id;
+        el.className = 'mode-marker';
+        el.innerHTML = '<i></i><b></b><span></span>';
+        this.modeMarkers.append(el);
+      }
+      el.style.left = `${m.x}px`;
+      el.style.top = `${m.y}px`;
+      el.style.color = m.color;
+      el.classList.toggle('edge', m.edge !== undefined);
+      (el.firstElementChild as HTMLElement).style.transform = m.edge !== undefined ? `rotate(${m.edge}rad)` : '';
+      el.querySelector('b')!.textContent = m.icon;
+      el.querySelector('span')!.textContent = m.label;
+    }
+    for (const el of [...this.modeMarkers.children] as HTMLElement[]) if (!seen.has(el.dataset.id ?? '')) el.remove();
+  }
+
+  /** Team scores: the objective mode's, else kills per team from the per-player scores. */
   teamTotals(scores: readonly ScoreEntry[]): Map<string, number> {
+    if (this.modeScores && this.teams) return new Map(this.teams.map((t, i) => [t.id, this.modeScores![i] ?? 0]));
     const out = new Map<string, number>((this.teams ?? []).map((t) => [t.id, 0]));
     for (const s of scores) {
       const t = this.roster.get(s.s)?.team;
@@ -357,8 +406,11 @@ export class Hud {
     const s = String(timeLeft % 60).padStart(2, '0');
     this.timer.textContent = phase === 'intermission' ? 'Intermission' : timeLeft ? `${m}:${s}` : '';
     if (phase === 'intermission') this.banner.textContent = outcome === 'victory' ? 'Mission complete' : outcome === 'defeat' ? 'Mission failed' : winner ? `${winner} wins the round` : 'Round over';
-    else this.banner.textContent = alive ? '' : 'Respawning…';
+    else this.banner.textContent = alive ? '' : this.waitLabel;
   }
+
+  /** Shown while you are dead ("Respawning…", or "Next round" in Elimination). */
+  waitLabel = 'Respawning…';
 
   kill(killer: number | null, victim: number, weapon: string, localSlot: number, headshot = false): void {
     const line = document.createElement('div');
