@@ -104,7 +104,11 @@ export function buildMapGeometry(map: MapDocument, catalog: TileCatalog = coreCa
       // Wall slab along this side, described in a frame where the side is "north":
       // u runs along the wall, v is the inset toward the cell centre.
       const segments: [number, number, number, number][] = []; // [u0, u1, y0, y1]
-      if (open) {
+      const [nx, ny] = SIDE_DIRS[side];
+      const seamless = open && occ.def.open && cells.get(cellKey(gx + nx, gy + ny, gz))?.def.open;
+      if (seamless) {
+        // Open ground on both sides: no wall at all.
+      } else if (open) {
         const d = doorWidth / 2;
         segments.push([-half, -d, 0, levelHeight], [d, half, 0, levelHeight], [-d, d, doorHeight, levelHeight]);
       } else {

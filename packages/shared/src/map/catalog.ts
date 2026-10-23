@@ -40,6 +40,12 @@ export interface TileDefinition {
   floors: readonly number[];
   ports: readonly TilePort[];
   solids?: readonly LocalBox[];
+  /**
+   * Open ground: where two open tiles meet there is no wall at all, so a group
+   * of them makes one big courtyard or street (other edges still get doorways
+   * or walls as usual).
+   */
+  open?: boolean;
 }
 
 /** Shared tile dimensions (metres). Tiles assume the default 8 m cell / 4 m level. */
@@ -164,6 +170,33 @@ export const CORE_TILES: readonly TileDefinition[] = [
       { min: [-2, 0, -1], max: [2, 0.75, 2] },
       { min: [-1, 0, -1.5], max: [1, 0.5, -1] },
       { min: [-1, 0, -2], max: [1, 0.25, -1.5] },
+    ],
+  },
+  { id: 'core.yard', displayName: 'Courtyard', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES, open: true },
+  {
+    id: 'core.yard_crates',
+    displayName: 'Courtyard (Crates)',
+    cells: [[0, 0, 0]],
+    floors: [0],
+    ports: ALL_SIDES,
+    open: true,
+    // A two-high stack with a single crate beside it to climb on.
+    solids: [
+      { min: [0.8, 0, 0.8], max: [2.2, 2, 2.2] },
+      { min: [2.2, 0, 1], max: [3.2, 1, 2] },
+    ],
+  },
+  {
+    id: 'core.yard_wall',
+    displayName: 'Courtyard (Low Wall)',
+    cells: [[0, 0, 0]],
+    floors: [0],
+    ports: ALL_SIDES,
+    open: true,
+    // Waist-high wall across the middle with a gap to walk through.
+    solids: [
+      { min: [-4, 0, -0.25], max: [-0.9, 1.1, 0.25] },
+      { min: [0.9, 0, -0.25], max: [4, 1.1, 0.25] },
     ],
   },
   {

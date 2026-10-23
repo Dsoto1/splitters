@@ -91,8 +91,12 @@ export const SpawnEntity = EntityBase.extend({
   kind: z.literal('spawn'),
   /** Facing in radians, see viewDirection(). */
   yaw: z.number().finite().default(0),
-  /** Faction ID; null spawns are shared by everyone (free-for-all). */
-  faction: ContentId.nullable().default(null),
+  /** Team (faction ID) that spawns here in Team Deathmatch; null spawns are shared by everyone. */
+  faction: z
+    .string()
+    .regex(/^[a-z0-9_.]{2,64}$/)
+    .nullable()
+    .default(null),
 });
 
 /** A pickup (health, armor, ammo, weapon, powerup) that respawns after being taken. */

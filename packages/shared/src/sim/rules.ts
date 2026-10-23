@@ -1,7 +1,7 @@
 import type { MapDocument } from '../map/schema.ts';
 import { TICK_RATE } from './constants.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm';
 
 /** Reusable, mode-agnostic match rules (v1 spec §4.3). */
 export interface MatchRules {
@@ -40,7 +40,28 @@ export const DEFAULT_COOP_RULES: MatchRules = {
   intermissionTicks: TICK_RATE * 8,
 };
 
+/**
+ * Team Deathmatch: two sides (the map's first two factions, or Embers and
+ * Tide), balanced as players join, no friendly fire. Every kill scores for the
+ * killer's team; the first team to the limit wins.
+ */
+export const DEFAULT_TDM_RULES: MatchRules = {
+  mode: 'core.tdm',
+  scoreLimit: 40,
+  timeLimitSeconds: 600,
+  respawnDelayTicks: Math.round(TICK_RATE * 2.5),
+  startingWeapons: ['core.knife', 'core.pistol'],
+  intermissionTicks: TICK_RATE * 6,
+};
+
 /** The rules a map asks for: its first supported mode. */
 export function rulesForMap(map: MapDocument): MatchRules {
-  return map.metadata.supportedModes[0] === 'core.coop' ? DEFAULT_COOP_RULES : DEFAULT_DEATHMATCH_RULES;
+  switch (map.metadata.supportedModes[0]) {
+    case 'core.coop':
+      return DEFAULT_COOP_RULES;
+    case 'core.tdm':
+      return DEFAULT_TDM_RULES;
+    default:
+      return DEFAULT_DEATHMATCH_RULES;
+  }
 }

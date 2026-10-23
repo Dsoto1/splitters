@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, NPC_ID_BASE, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
+import { CORE_WEAPONS, NPC_ID_BASE, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
 import { slotColor } from './view.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -19,6 +19,10 @@ export class Hud {
   private readonly root = $('hud');
   private readonly health = $('health');
   private readonly timer = $('timer');
+  private readonly teamScore = $('team-score');
+  /** The two sides in Team Deathmatch; null in other modes. */
+  private teams: readonly Faction[] | null = null;
+  private lastTeamScore = '';
   private readonly feed = $('feed');
   private readonly banner = $('banner');
   private readonly scoreboard = $('scoreboard');
@@ -58,6 +62,9 @@ export class Hud {
     this.feed.replaceChildren();
     this.banner.textContent = '';
     this.timer.textContent = '';
+    this.teamScore.innerHTML = '';
+    this.lastTeamScore = '';
+    this.teams = null;
     this.health.textContent = '';
     this.armor.textContent = '';
     this.weaponBar.innerHTML = '';
@@ -78,6 +85,49 @@ export class Hud {
 
   setRoster(players: RosterEntry[]): void {
     this.roster = new Map(players.map((p) => [p.slot, p]));
+  }
+
+  setTeams(teams: readonly Faction[] | null): void {
+    this.teams = teams;
+  }
+
+  teamById(id: string | null): Faction | undefined {
+    return id ? this.teams?.find((t) => t.id === id) : undefined;
+  }
+
+  /** Team of a player slot in Team Deathmatch. */
+  team(slot: number): Faction | undefined {
+    const id = this.roster.get(slot)?.team;
+    return id ? this.teams?.find((t) => t.id === id) : undefined;
+  }
+
+  /** Kills per team, from the per-player scores. */
+  teamTotals(scores: readonly ScoreEntry[]): Map<string, number> {
+    const out = new Map<string, number>((this.teams ?? []).map((t) => [t.id, 0]));
+    for (const s of scores) {
+      const t = this.roster.get(s.s)?.team;
+      if (t && out.has(t)) out.set(t, out.get(t)! + s.k);
+    }
+    return out;
+  }
+
+  /** "Embers 12 · 9 Tide" over the timer in Team Deathmatch, your team first. */
+  setTeamScore(scores: readonly ScoreEntry[], localSlot: number, limit: number): void {
+    if (!this.teams) return;
+    const totals = this.teamTotals(scores);
+    const mine = this.roster.get(localSlot)?.team;
+    const [a, b] = [...this.teams].sort((x, y) => (x.id === mine ? -1 : y.id === mine ? 1 : 0));
+    const html = [a!, b!]
+      .map((t, i) => {
+        const name = `<span class="team-name" style="color:${t.color}">${escapeHtml(t.name)}</span>`;
+        const score = `<b>${totals.get(t.id) ?? 0}</b>`;
+        return i === 0 ? `${name} ${score}` : `${score} ${name}`;
+      })
+      .join('<span class="sep">·</span>');
+    const full = `${html}${limit > 0 ? `<small>first to ${limit}</small>` : ''}`;
+    if (full === this.lastTeamScore) return;
+    this.lastTeamScore = full;
+    this.teamScore.innerHTML = full;
   }
 
   /** Display names for NPC actor IDs, provided by the session. */
@@ -139,7 +189,8 @@ export class Hud {
 
   kill(killer: number | null, victim: number, weapon: string, localSlot: number): void {
     const line = document.createElement('div');
-    const name = (slot: number | null) => `<span style="color:${slot === null ? '#ccc' : slotColor(slot)}">${escapeHtml(this.name(slot))}</span>`;
+    const color = (slot: number | null) => (slot === null ? '#ccc' : (this.team(slot)?.color ?? slotColor(slot)));
+    const name = (slot: number | null) => `<span style="color:${color(slot)}">${escapeHtml(this.name(slot))}</span>`;
     line.innerHTML = killer === null ? `${name(victim)} ${HAZARD_DEATHS[weapon] ?? 'blew themselves up'}` : `${name(killer)} <small>${escapeHtml(weaponLabel(weapon))}</small> ${name(victim)}`;
     if (killer === localSlot || victim === localSlot) line.style.outline = '1px solid rgba(255,255,255,0.5)';
     this.feed.prepend(line);
@@ -196,14 +247,25 @@ export class Hud {
   renderScoreboard(visible: boolean, scores: ScoreEntry[], localSlot: number): void {
     this.scoreboard.hidden = !visible;
     if (!visible) return;
-    const rows = [...scores]
-      .sort((a, b) => b.k - a.k || a.d - b.d)
-      .map((s) => {
-        const p = this.roster.get(s.s);
-        return `<tr class="${s.s === localSlot ? 'me' : ''}"><td><span style="color:${slotColor(s.s)}">●</span> ${escapeHtml(this.name(s.s))}${p?.bot ? ' <small>(bot)</small>' : ''}</td><td>${s.k}</td><td>${s.d}</td></tr>`;
+    const row = (s: ScoreEntry) => {
+      const p = this.roster.get(s.s);
+      const color = this.team(s.s)?.color ?? slotColor(s.s);
+      return `<tr class="${s.s === localSlot ? 'me' : ''}"><td><span style="color:${color}">●</span> ${escapeHtml(this.name(s.s))}${p?.bot ? ' <small>(bot)</small>' : ''}</td><td>${s.k}</td><td>${s.d}</td></tr>`;
+    };
+    const sorted = [...scores].sort((a, b) => b.k - a.k || a.d - b.d);
+    if (!this.teams) {
+      this.scoreboard.innerHTML = `<table><tr><th>Player</th><th>Kills</th><th>Deaths</th></tr>${sorted.map(row).join('')}</table>`;
+      return;
+    }
+    // Team Deathmatch: one table per team, the higher score first.
+    const totals = this.teamTotals(scores);
+    const teams = [...this.teams].sort((a, b) => (totals.get(b.id) ?? 0) - (totals.get(a.id) ?? 0));
+    this.scoreboard.innerHTML = teams
+      .map((t) => {
+        const rows = sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row).join('');
+        return `<table class="team"><tr><th style="color:${t.color}">${escapeHtml(t.name)} <b>${totals.get(t.id) ?? 0}</b></th><th>Kills</th><th>Deaths</th></tr>${rows}</table>`;
       })
       .join('');
-    this.scoreboard.innerHTML = `<table><tr><th>Player</th><th>Kills</th><th>Deaths</th></tr>${rows}</table>`;
   }
 
   renderPerf(visible: boolean, lines: Record<string, string | number>, server: ServerStats | null, botStates: string[]): void {

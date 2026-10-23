@@ -113,6 +113,23 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
   - death, and a dance at intermission.
 - **Looks:** fourteen presets mixing parts, colourways, skin and hair tints. The main menu has a **Character** picker; the choice is sent to the server and shown to everyone through the roster. Bots get a spread of looks.
 - **Viewer:** `?mode=characters` shows every look and NPC with motion and weapon controls.
+- **Team Deathmatch** (`core.tdm`):
+  - **Teams:** the map's first two factions, or Embers and Tide by default. Players and bots are balanced as they join, and the bot filler keeps the sides even.
+  - **Spawning:** each team spawns on its own spawn points; shared points are used when a team has none.
+  - **Scoring:** no friendly fire. Every kill scores for the killer's team, and the first team to 40 wins (10-minute limit).
+  - **Bots:** roam toward the enemy side's spawns.
+  - **HUD:** team scores under the timer, a scoreboard split by team, team-coloured kill feed and tracers, and a marker over teammates' heads.
+  - **MapMaker:** a "Team Deathmatch" mode, and a **Team** setting on spawns (markers take the team colour). Validation warns when only one team has spawns.
+- **Courtyard tiles and the Desert Town theme:**
+  - Courtyard, Courtyard (Crates) and Courtyard (Low Wall) are open ground: where two of them meet there is no wall, so they make streets and squares.
+  - New materials: packed sand, sun plaster and crate boards.
+- **Sandgate** (`maps/sandgate.json`; main menu → "Play Sandgate", or a MapMaker template). It's a desert-town Team Deathmatch map, inspired by the classic desert bomb maps but with its own layout:
+  - Embers spawn in the south, Tide in the north.
+  - A long street up the west side, through a doors room.
+  - Mid doors in the centre.
+  - Covered tunnels up the east, with a branch to mid.
+  - Two crate-filled squares at the north end.
+  - It's built by `packages/server/src/tools/build-sandgate.ts` through the MapMaker's own edit commands (`pnpm --filter @chronosplit/server build-sandgate`), so it opens and edits like any other map. Tests check it validates, that every area is reachable, and that a 12-bot match plays with kills on both sides.
 
 ## M4 — what exists
 

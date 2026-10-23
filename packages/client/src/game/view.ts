@@ -10,6 +10,8 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
+import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
+import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
@@ -57,6 +59,8 @@ interface Avatar {
   weaponNode?: TransformNode;
   anim?: CharacterAnimator;
   specKey: string;
+  /** Team-colour marker over a teammate's head (Team Deathmatch). */
+  tag?: { mesh: Mesh; color: string };
   last?: { x: number; y: number; z: number; t: number };
   vel: { x: number; z: number };
 }
@@ -202,7 +206,7 @@ export class GameView {
    * Update remote player and NPC avatars from interpolated poses. Each one is
    * a capsule until its character model has loaded, then an animated character.
    */
-  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => CharacterSpec, celebrate = false): void {
+  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => CharacterSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null): void {
     const now = performance.now();
     const seen = new Set<number>();
     for (const p of poses) {
@@ -247,6 +251,7 @@ export class GameView {
         for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
       }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
+      this.setTag(a, p.alive ? allyColor(p.slot) : null);
     }
     for (const [slot, a] of this.avatars) {
       if (!seen.has(slot)) {
@@ -307,6 +312,25 @@ export class GameView {
       if (slotNow >= 0) this.setAvatarWeapon(a, slotNow);
     });
     return a;
+  }
+
+  /** Show a teammate marker in the team colour over the avatar (null hides it). */
+  private setTag(a: Avatar, color: string | null): void {
+    if (a.tag && a.tag.color !== color) {
+      a.tag.mesh.dispose(false, true);
+      a.tag = undefined;
+    }
+    if (!color || a.tag) return;
+    const mesh = CreateDisc(`${a.root.name}_tag`, { radius: 0.11, tessellation: 4 }, this.scene);
+    const mat = new StandardMaterial(`${a.root.name}_tagmat`, this.scene);
+    mat.emissiveColor = Color3.FromHexString(color);
+    mat.disableLighting = true;
+    mesh.material = mat;
+    mesh.billboardMode = MeshClass.BILLBOARDMODE_ALL;
+    mesh.parent = a.root;
+    mesh.position.y = PLAYER.height + 0.35;
+    mesh.isPickable = false;
+    a.tag = { mesh, color };
   }
 
   private disposeAvatar(a: Avatar): void {

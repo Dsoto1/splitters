@@ -28,6 +28,7 @@ import {
   NPC_ROLE_SPECS,
   SQUAD_ORDERS,
   mapFactions,
+  mapTeams,
   SCENARIO_PALETTE,
   TRAP_ACTIVATIONS,
   TRAP_KINDS,
@@ -60,6 +61,7 @@ import {
 import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
 import outpostTemplate from '../../../../maps/m4_outpost.json';
+import sandgateTemplate from '../../../../maps/sandgate.json';
 import { EditorView } from './editorView.ts';
 import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibrary, readAutosave, saveToLibrary, writeAutosave } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
@@ -899,9 +901,16 @@ export class EditorApp {
         this.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(32, min)), max: Math.max(1, Math.min(32, max)) } } });
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
       const mode = document.createElement('select');
-      mode.append(new Option('Deathmatch', 'core.deathmatch', false, doc.metadata.supportedModes[0] !== 'core.coop'), new Option('Co-op mission', 'core.coop', false, doc.metadata.supportedModes[0] === 'core.coop'));
+      const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.coop', 'Co-op mission']] as const) mode.append(new Option(label, id, false, id === current));
       mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value] } }));
-      el.append(row('Mode', mode), small(mode.value === 'core.coop' ? 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".' : 'Deathmatch: everyone for themselves. NPC squads fight everyone.'));
+      const teams = mapTeams(doc);
+      const help: Record<string, string> = {
+        'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
+        'core.tdm': `Team Deathmatch: ${teams[0].name} against ${teams[1].name} (the first two factions, if the map names them). Give spawns a team in their inspector.`,
+        'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
+      };
+      el.append(row('Mode', mode), small(help[mode.value] ?? ''));
       const theme = document.createElement('select');
       for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
       theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
@@ -1058,8 +1067,12 @@ export class EditorApp {
         el.append(small(`${e.roster.trooper + e.roster.gunner + e.roster.heavy} in the first wave, then ${e.reinforcements} reinforcements (+${e.perPlayer} per extra player). Factions are edited in the Logic panel (L).`));
         break;
       }
-      case 'spawn':
+      case 'spawn': {
+        const teams = mapTeams(doc);
+        choose('Team', [['', 'Any (shared)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));
+        el.append(small(doc.metadata.supportedModes[0] === 'core.tdm' ? 'In Team Deathmatch a team spawns on its own points; shared points are used when a team has none.' : 'Teams only matter in Team Deathmatch.'));
         break;
+      }
     }
 
     // Rules that mention this entity, and a shortcut to add one.
@@ -1213,6 +1226,10 @@ export class EditorApp {
     add('Outpost Siege', 'Template · co-op mission with NPC squads and factions', () => {
       const r = loadMap(outpostTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Outpost Remix', parentId: r.map.metadata.id } });
+    });
+    add('Sandgate', 'Template · desert town for Team Deathmatch, with open courtyards', () => {
+      const r = loadMap(sandgateTemplate);
+      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Sandgate Remix', parentId: r.map.metadata.id } });
     });
     for (const entry of listLibrary()) {
       add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {

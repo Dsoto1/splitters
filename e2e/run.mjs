@@ -214,6 +214,22 @@ async function outpostFlow(browser) {
   await page.context().close();
 }
 
+async function sandgateFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=sandgate`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForTimeout(2000);
+  const score = (await page.textContent('#team-score')) ?? '';
+  check(score.includes('Embers') && score.includes('Tide'), `team deathmatch shows both team scores (${score})`);
+  await page.waitForFunction(() => window.__cs.view.characterCount() >= 8, null, { timeout: 20000 }).catch(() => {});
+  const chars = await page.evaluate(() => window.__cs.view.characterCount());
+  check(chars >= 8, `5 v 5 bots are rendered as characters (${chars})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function charactersFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
@@ -257,7 +273,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

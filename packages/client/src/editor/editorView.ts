@@ -14,7 +14,7 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
-import { DESTRUCTIBLE_SPECS, PLAYER, buildMapGeometry, mapFactions, placementCells, viewDirection } from '@chronosplit/shared';
+import { DESTRUCTIBLE_SPECS, PLAYER, buildMapGeometry, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -187,12 +187,27 @@ export class EditorView {
   }
 
   /** Spawn markers and pickup previews for entities on visible levels; selected ones are highlighted. */
+  private readonly teamMats = new Map<string, StandardMaterial>();
+
+  /** Spawn marker material in a team's colour. */
+  private teamMaterial(color: string): StandardMaterial {
+    let m = this.teamMats.get(color);
+    if (!m) {
+      m = new StandardMaterial(`spawnteam_${color}`, this.scene);
+      m.diffuseColor = Color3.FromHexString(color);
+      m.emissiveColor = Color3.FromHexString(color).scale(0.35);
+      this.teamMats.set(color, m);
+    }
+    return m;
+  }
+
   setEntities(doc: MapDocument, level: number, showAll: boolean, selected: ReadonlySet<string>): void {
     const { levelHeight } = doc.classicStructure;
     const seen = new Set<string>();
     const factions = mapFactions(doc);
     const factionColor = (id: string) => factions.find((f) => f.id === id)?.color ?? '#888888';
     this.scenario.factionColor = factionColor;
+    const teams = mapTeams(doc);
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
       seen.add(e.id);
@@ -217,7 +232,7 @@ export class EditorView {
       if (e.kind === 'spawn') {
         m.node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
         m.node.rotation.y = e.yaw;
-        (m.node as Mesh).material = selected.has(e.id) ? this.mat.spawnSel : this.mat.spawn;
+        (m.node as Mesh).material = selected.has(e.id) ? this.mat.spawnSel : e.faction ? this.teamMaterial(teams.find((t) => t.id === e.faction)?.color ?? '#888888') : this.mat.spawn;
       } else {
         const scenario = e.kind !== 'pickup';
         m.node.position.set(e.position[0], e.position[1] + (scenario ? 0 : PICKUP_HOVER), e.position[2]);

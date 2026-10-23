@@ -2,7 +2,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 import { BotBrain, type CombatantView, type PickupView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { buildMapGeometry, type WorldBox } from '../map/geometry.ts';
-import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type MapDocument, type NpcRole } from '../map/schema.ts';
+import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, horizontalDistance, normalize, scale, viewDirection, type Vec3 } from '../math.ts';
 import { NavWorld } from '../nav/index.ts';
 import {
@@ -26,7 +26,7 @@ import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
 import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
-import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_PROFILE, NPC_ROLE_SPECS, mapFactions, relation } from './npc.ts';
+import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_PROFILE, NPC_ROLE_SPECS, mapFactions, mapTeams, relation } from './npc.ts';
 import { getWeapon, rayCapsule, resolveHitscan, type WeaponDefinition } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -118,7 +118,7 @@ export class Match {
   readonly physics: PhysicsWorld;
   readonly nav: NavWorld;
   readonly slots: (Combatant | null)[] = new Array(MAX_PLAYER_SLOTS).fill(null);
-  readonly spawnPoints: { pos: Vec3; yaw: number }[];
+  readonly spawnPoints: { pos: Vec3; yaw: number; team: string | null }[];
   readonly pickups: PickupState[];
   /** Doors, buttons, destructibles, zones, traps and the map's logic rules. */
   readonly scenario: Scenario;
@@ -153,7 +153,7 @@ export class Match {
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
-      .map((e) => ({ pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, yaw: e.yaw }));
+      .map((e) => ({ pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, yaw: e.yaw, team: e.faction }));
     this.pickups = [];
     for (const e of map.entities) {
       if (e.kind !== 'pickup') continue;
@@ -211,14 +211,37 @@ export class Match {
     });
   }
 
-  /** The map's NPC factions (or the default enemy faction). */
-  get factions() {
-    return mapFactions(this.map);
+  private factionList?: readonly Faction[];
+
+  /** The map's NPC factions (or the default enemy faction), after the two teams in Team Deathmatch. */
+  get factions(): readonly Faction[] {
+    if (!this.factionList) {
+      const npc = mapFactions(this.map);
+      this.factionList = this.teams ? [...this.teams, ...npc.filter((f) => !this.teams!.some((t) => t.id === f.id))] : npc;
+    }
+    return this.factionList;
   }
 
-  /** Faction players join: everyone shares one side in co-op; deathmatch is free-for-all. */
+  /** The two sides in Team Deathmatch; null in other modes. */
+  get teams(): readonly [Faction, Faction] | null {
+    return this.rules.mode === 'core.tdm' ? mapTeams(this.map) : null;
+  }
+
+  /** Faction players join: everyone shares one side in co-op; deathmatch is free-for-all; TDM balances teams. */
   private get playerFaction(): string | null {
+    if (this.teams) {
+      const [a, b] = this.teams;
+      const count = (id: string) => this.combatants().filter((c) => c.faction === id).length;
+      return count(b.id) < count(a.id) ? b.id : a.id;
+    }
     return this.rules.mode === 'core.coop' ? PLAYERS_FACTION : null;
+  }
+
+  /** Kills per team in Team Deathmatch (suicides count against the team). */
+  teamScores(): Map<string, number> {
+    const out = new Map<string, number>((this.teams ?? []).map((t) => [t.id, 0]));
+    for (const c of this.combatants()) if (c.faction && out.has(c.faction)) out.set(c.faction, out.get(c.faction)! + c.kills);
+    return out;
   }
 
   private readonly hostility = new Map<string, boolean>();
@@ -393,6 +416,12 @@ export class Match {
     const blockers = this.scenario.blockers();
     const hazards = this.scenario.hazards();
     const spawnPoints = this.spawnPoints.map((s) => s.pos);
+    // Team Deathmatch bots roam toward the other side's spawns, so the teams meet in the middle.
+    const teamRoam = new Map<string, Vec3[]>();
+    for (const t of this.teams ?? []) {
+      const away = this.spawnPoints.filter((s) => s.team !== null && s.team !== t.id).map((s) => s.pos);
+      if (away.length) teamRoam.set(t.id, away);
+    }
     const coop = this.rules.mode === 'core.coop';
     for (const c of actors) {
       if (!c.bot) continue;
@@ -410,7 +439,7 @@ export class Match {
         others: hostiles.map((o) => views.get(o.slot)!),
         physics: this.physics,
         nav: this.nav,
-        spawnPoints: npc && orderGoal ? [orderGoal.pos] : spawnPoints,
+        spawnPoints: npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
         pickups: npc ? npcPickups : pickups,
         inventory: [...c.weapons.values()].map((w) => ({ def: w.def, mag: w.mag, reserve: w.reserve })),
         held: c.current,
@@ -686,7 +715,9 @@ export class Match {
     victim.respawnTick = this.tick + this.rules.respawnDelayTicks;
     if (!killer) victim.kills--; // suicides (falls, own grenades, traps) cost a point
     this.scenario.playerKilled(victim.slot, killer?.slot ?? null);
-    if (killer && !killer.npc && this.rules.scoreLimit > 0 && killer.kills >= this.rules.scoreLimit) this.endRound();
+    if (!killer || killer.npc || this.rules.scoreLimit <= 0) return;
+    const score = this.teams && killer.faction ? (this.teamScores().get(killer.faction) ?? 0) : killer.kills;
+    if (score >= this.rules.scoreLimit) this.endRound();
   }
 
   // ---------------------------------------------------------------- pickups
@@ -745,12 +776,19 @@ export class Match {
 
   // ---------------------------------------------------------------- lifecycle
 
-  /** Spawn at the point farthest from living opponents, with a little randomness among near-equal choices. */
+  /**
+   * Spawn at the point farthest from living opponents, with a little randomness
+   * among near-equal choices. In Team Deathmatch a team uses its own spawns
+   * when the map has any.
+   */
   private spawn(c: Combatant): void {
     const enemies = this.actors().filter((o) => o.alive && this.hostile(c, o));
-    let best = this.spawnPoints[0];
+    const own = this.teams && c.faction ? this.spawnPoints.filter((sp) => sp.team === c.faction) : [];
+    const shared = this.spawnPoints.filter((sp) => sp.team === null);
+    const candidates = own.length ? own : shared.length ? shared : this.spawnPoints;
+    let best = candidates[0];
     let bestScore = -Infinity;
-    for (const sp of this.spawnPoints) {
+    for (const sp of candidates) {
       const nearest = enemies.reduce((m, e) => Math.min(m, horizontalDistance(sp.pos, e.move.pos) + Math.abs(sp.pos.y - e.move.pos.y) * 2), 100);
       const score = nearest + this.rng() * 3;
       if (score > bestScore) {
@@ -793,6 +831,14 @@ export class Match {
     this.phase = 'intermission';
     this.phaseEndTick = this.tick + this.rules.intermissionTicks;
     this.projectiles = [];
+    if (this.teams && !outcome) {
+      // Team Deathmatch: the higher team score wins (logic can still name a player, whose team wins).
+      const scores = this.teamScores();
+      const [a, b] = this.teams;
+      const team = named && !named.npc ? named.faction : scores.get(a.id)! === scores.get(b.id)! ? null : scores.get(a.id)! > scores.get(b.id)! ? a.id : b.id;
+      this.pendingEvents.push({ e: 'round_end', winner: null, team });
+      return;
+    }
     this.pendingEvents.push(outcome ? { e: 'round_end', winner: null, outcome } : { e: 'round_end', winner: top && !tied ? top.slot : null });
   }
 
@@ -883,7 +929,7 @@ export class Match {
   }
 
   roster(): RosterEntry[] {
-    return this.combatants().map((c) => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look }));
+    return this.combatants().map((c) => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null }));
   }
 
   destroy(): void {
@@ -912,7 +958,13 @@ export class BotFiller {
     const humans = all.filter((c) => c.kind === 'human').length;
     const bots = all.filter((c) => c.kind === 'bot');
     const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans));
-    for (let i = bots.length; i > want; i--) this.match.remove(bots[i - 1]!.slot);
+    for (let i = bots.length; i > want; i--) {
+      // In Team Deathmatch, take bots from the bigger team so the sides stay even.
+      const live = this.match.combatants();
+      const size = (team: string | null) => live.filter((c) => c.faction === team).length;
+      const left = live.filter((c) => c.kind === 'bot').sort((a, b) => size(b.faction) - size(a.faction) || b.slot - a.slot);
+      this.match.remove(left[0]!.slot);
+    }
     for (let i = bots.length; i < want; i++) {
       const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
       const name = BOT_NAMES[this.counter % BOT_NAMES.length]!;

@@ -7,7 +7,8 @@
     "start": "tsx src/main.ts",
     "bench": "tsx src/tools/bench.ts",
     "validate-map": "tsx src/tools/validate-map.ts",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p .",
+    "build-sandgate": "tsx src/tools/build-sandgate.ts"
   },
   "dependencies": {
     "@chronosplit/shared": "workspace:*",

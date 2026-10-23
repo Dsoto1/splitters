@@ -55,6 +55,15 @@ export const DEFAULT_FACTIONS: readonly Faction[] = [{ id: 'syndicate', name: 'S
 
 export const mapFactions = (map: MapDocument): readonly Faction[] => (map.factions.length ? map.factions : DEFAULT_FACTIONS);
 
+/** Team Deathmatch sides when a map doesn't name two factions of its own. */
+export const DEFAULT_TEAMS: readonly [Faction, Faction] = [
+  { id: 'embers', name: 'Embers', color: '#e2703a', relations: {} },
+  { id: 'tide', name: 'Tide', color: '#3a8fe2', relations: {} },
+];
+
+/** The two Team Deathmatch sides: the map's first two factions, or Embers and Tide. */
+export const mapTeams = (map: MapDocument): readonly [Faction, Faction] => (map.factions.length >= 2 ? [map.factions[0]!, map.factions[1]!] : DEFAULT_TEAMS);
+
 /**
  * How faction `a` treats faction `b`. `null` is a free-for-all player
  * (deathmatch): everyone is their enemy, and NPC factions treat them like the

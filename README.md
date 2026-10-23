@@ -15,7 +15,7 @@ pnpm dev:server   # dedicated server on ws://localhost:7777 (fills with bots)
 pnpm dev:client   # open http://localhost:5173
 ```
 
-The menu offers **MapMaker**, **Play offline vs bots** (no server needed) and **Play online** (needs `dev:server`). Pick your **Character** there too.
+The menu offers **MapMaker**, offline matches against bots (the arena, The Vault, Outpost Siege co-op and **Sandgate** team deathmatch; no server needed) and **Play online** (needs `dev:server`). Pick your **Character** there too.
 
 - **Playing:** WASD move · Space jump · LMB fire · RMB zoom (sniper) · R reload · E use (buttons, doors) · 1–6 / wheel / Q switch weapons · Tab scoreboard · F3 performance/bot overlay · Esc twice to leave. Volume is in the pause menu (Esc).
 - **MapMaker:** pick a piece and click to place · R rotate · right-click erase · Select tool (V) to click/drag/Shift-select · Del delete · Ctrl+D duplicate · Ctrl+Z / Ctrl+Y undo/redo · PgUp/PgDn change floor · RMB drag look, WASD/QE fly, wheel zoom · B Paint tool: pick a material + tint, click surfaces (scope: surface / piece type / level / map), Alt-click picks a style · F5 or ▶ TEST to play the map instantly with bots.

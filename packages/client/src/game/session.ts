@@ -11,6 +11,8 @@ import {
   NPC_ROLE_SPECS,
   OBJECTIVE_STATES,
   mapFactions,
+  mapTeams,
+  NPC_ID_BASE,
   type NpcSnapshot,
   type PlayerSnapshot,
   buildMapGeometry,
@@ -23,6 +25,7 @@ import {
   type ScoreEntry,
   type ServerMessage,
   type ServerStats,
+  type MatchRules,
 } from '@chronosplit/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import type { RendererKind } from '../engine.ts';
@@ -77,6 +80,7 @@ export class GameSession {
   private scores: ScoreEntry[] = [];
   private serverStats: ServerStats | null = null;
   private winner: string | null = null;
+  private rules: MatchRules | null = null;
   private outcome: 'victory' | 'defeat' | null = null;
   /** Role and faction of each NPC seen, for names and looks. */
   private npcInfo = new Map<number, { role: number; faction: number }>();
@@ -169,6 +173,8 @@ export class GameSession {
           return;
         }
         this.slot = msg.slot;
+        this.rules = msg.rules;
+        this.hud.setTeams(msg.rules.mode === 'core.tdm' ? mapTeams(loaded.map) : null);
         const geometry = buildMapGeometry(loaded.map);
         this.map = loaded.map;
         this.view.buildMap(loaded.map, geometry);
@@ -221,7 +227,7 @@ export class GameSession {
               if (ev.hit.some((h) => h !== null)) this.hud.hit();
             } else {
               const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
-              for (const to of ev.to) this.view.addTracer(from, { x: to[0], y: to[1], z: to[2] }, slotColor(ev.s));
+              for (const to of ev.to) this.view.addTracer(from, { x: to[0], y: to[1], z: to[2] }, this.hud.team(ev.s)?.color ?? slotColor(ev.s));
               this.view.avatarAction(ev.s, 'shoot');
             }
           } else if (ev.e === 'melee') {
@@ -234,7 +240,7 @@ export class GameSession {
           } else if (ev.e === 'kill') {
             this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot);
           } else if (ev.e === 'round_end') {
-            this.winner = ev.winner === null ? null : this.hud.name(ev.winner);
+            this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
             this.outcome = ev.outcome ?? null;
           } else if (ev.e === 'round_start') {
             this.outcome = null;
@@ -388,9 +394,15 @@ export class GameSession {
         return npc ? { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1 } } : { look: this.looks.get(id) };
       },
       this.phase === 'intermission',
+      (id) => {
+        const mine = this.hud.team(this.slot);
+        const theirs = id < NPC_ID_BASE ? this.hud.team(id) : undefined;
+        return mine && theirs && mine.id === theirs.id ? mine.color : null;
+      },
     );
     this.sfx.remoteSteps(poses);
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot);
+    this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0);
 
     this.frames++;
     if (now - this.fpsAt >= 1000) {

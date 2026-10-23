@@ -60,7 +60,7 @@ export type GameEvent =
   | { e: 'kill'; killer: number | null; victim: number; weapon: string }
   | { e: 'spawn'; s: number }
   /** `outcome` is set when a co-op mission ends (victory or defeat). */
-  | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat' }
+  | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null }
   | { e: 'round_start' }
   // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
   /** Creator message from a logic rule. */
@@ -116,6 +116,8 @@ export interface RosterEntry {
   bot: boolean;
   /** Character look ID (CORE_LOOKS). */
   look: string;
+  /** Team (faction ID) in Team Deathmatch; null otherwise. */
+  team: string | null;
 }
 
 export interface ServerStats {

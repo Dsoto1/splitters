@@ -89,3 +89,9 @@ button.primary:hover { background: #ffc061; }
 #marker::before { content: '◆'; display: block; font-size: 20px; line-height: 20px; }
 #help { position: absolute; right: 16px; bottom: 14px; font-size: 12px; color: var(--muted); }
 #timer:empty { display: none; }
+#team-score { position: absolute; top: 52px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; align-items: baseline; font-size: 18px; font-variant-numeric: tabular-nums; background: var(--panel); padding: 4px 12px; border-radius: 6px; white-space: nowrap; }
+#team-score:empty { display: none; }
+#team-score .team-name { font-weight: 700; font-size: 14px; }
+#team-score .sep { color: var(--muted); }
+#team-score small { color: var(--muted); font-size: 11px; margin-left: 6px; }
+#scoreboard table.team + table.team { margin-top: 12px; }
