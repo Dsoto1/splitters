@@ -13,7 +13,7 @@ export interface NpcPaletteEntry {
   label: string;
   blurb: string;
   search: string;
-  roster: Record<NpcRole, number>;
+  roster: { trooper: number; gunner: number; heavy: number } & Partial<Record<NpcRole, number>>;
   order: SquadOrder;
   activeCap: number;
   reinforcements: number;
@@ -27,6 +27,10 @@ export const NPC_PALETTE: readonly NpcPaletteEntry[] = [
   { key: 'trooper', label: 'Trooper', blurb: 'One rifleman guarding this spot', search: 'trooper soldier guard rifle single npc enemy', roster: { trooper: 1, gunner: 0, heavy: 0 }, order: 'hold', activeCap: 1, reinforcements: 0, perPlayer: 0, radius: 1 },
   { key: 'gunner', label: 'Gunner', blurb: 'One shotgunner guarding this spot', search: 'gunner shotgun soldier guard single npc enemy', roster: { trooper: 0, gunner: 1, heavy: 0 }, order: 'hold', activeCap: 1, reinforcements: 0, perPlayer: 0, radius: 1 },
   { key: 'heavy', label: 'Heavy', blurb: 'One tough grenadier guarding this spot', search: 'heavy grenade launcher tank brute single npc enemy', roster: { trooper: 0, gunner: 0, heavy: 1 }, order: 'hold', activeCap: 1, reinforcements: 0, perPlayer: 0, radius: 1 },
+  { key: 'sniper', label: 'Sniper', blurb: 'One sharpshooter who hangs back and lies prone', search: 'sniper scope marksman single npc enemy', roster: { trooper: 0, gunner: 0, heavy: 0, sniper: 1 }, order: 'hold', activeCap: 1, reinforcements: 0, perPlayer: 0, radius: 1 },
+  { key: 'imps', label: 'Imp Pack', blurb: 'Imps and puglins that rush in and claw', search: 'imp puglin creature monster pack melee horde npc enemy', roster: { trooper: 0, gunner: 0, heavy: 0, imp: 2, puglin: 2 }, order: 'attack', activeCap: 4, reinforcements: 0, perPlayer: 1, radius: 3 },
+  { key: 'aliens', label: 'Alien Spitters', blurb: 'A cyclops and an oculus that spit from range', search: 'alien cyclops oculus creature spitter goo plasma npc enemy', roster: { trooper: 0, gunner: 0, heavy: 0, cyclops: 1, oculus: 1 }, order: 'hold', activeCap: 2, reinforcements: 0, perPlayer: 0, radius: 3 },
+  { key: 'brute', label: 'Scolitex', blurb: 'A slow, heavy alien brute', search: 'scolitex brute boss alien creature melee npc enemy', roster: { trooper: 0, gunner: 0, heavy: 0, scolitex: 1 }, order: 'attack', activeCap: 1, reinforcements: 0, perPlayer: 0, radius: 1 },
   { key: 'squad', label: 'Squad', blurb: 'Two troopers and a gunner holding this area', search: 'squad group soldiers encounter team npc enemy', roster: { trooper: 2, gunner: 1, heavy: 0 }, order: 'hold', activeCap: 4, reinforcements: 0, perPlayer: 1, radius: 3 },
   { key: 'hunters', label: 'Hunter Squad', blurb: 'Four soldiers that hunt the players down', search: 'hunter squad attack hunt assault soldiers npc enemy', roster: { trooper: 2, gunner: 1, heavy: 1 }, order: 'attack', activeCap: 4, reinforcements: 0, perPlayer: 1, radius: 3 },
   { key: 'waves', label: 'Reinforced Squad', blurb: 'A squad that keeps getting reinforcements', search: 'waves reinforcements horde endless spawner squad npc enemy', roster: { trooper: 2, gunner: 1, heavy: 0 }, order: 'attack', activeCap: 4, reinforcements: 12, perPlayer: 2, radius: 4 },
