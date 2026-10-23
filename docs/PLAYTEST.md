@@ -24,6 +24,7 @@ Jump straight into any map with `http://localhost:5173/?offline=<map>`, e.g.
 | E | Use: get in / out of vehicles and turrets, doors, switches |
 | Tab | Scoreboard |
 | F3 | Performance stats |
+| F11 or Alt+Enter | Fullscreen (also a button in the pause menu and Options); in fullscreen a quick Esc pauses, holding Esc leaves fullscreen |
 | F5 | Back to MapMaker (when testing from MapMaker) |
 | Esc | Pause (Esc twice leaves) |
 
@@ -102,13 +103,21 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] On `canyon` or `frost_basin`: no rock, log, bush or crate floats at the edge of a slope; rocks and logs lean with the hill, trees stand straight.
 - [ ] MapMaker: place a rock on a hillside and drag it up and down the hill: it stays on the ground.
 
-## 7. Teams (Arcade)
+## 7. Shooter homages (`backwoods`, `dockside_depot`, `bunker_cross`, `rail_stockyard`)
+
+- [ ] **Backwoods Lodge:** attack the lodge from the woods by each route: across the yard, past the barn (sniper rifle in the hayloft), along the road to the garage, and through the long drain into the cellar.
+- [ ] **Dockside Depot:** fire escape to the roof, drop through a hatch into the offices; crawl the air duct from the back strip into the north-west office; fight across the truck lot.
+- [ ] **Bunker Cross:** press **Call the airstrike** in the south control room (E): alarm, blast doors seal, everyone in the yard dies after 6 s; it's ready again after 60 s.
+- [ ] **Rail Stockyard:** reach the railgun on the crane perch along the girder from the west shed roof; use the culvert under the yard and the jump pad out of the pit.
+- [ ] Each one in Team Deathmatch from the Arcade: teams start on their own sides.
+
+## 8. Teams (Arcade)
 
 - [ ] Arcade → pick a map → set 3 or more team rows with different sizes (try 2,2,2,2,2,2,12).
 - [ ] The score bar and Tab scoreboard show every team in its colour.
 - [ ] Teams are filled to the sizes you set; teammates don't take damage from you (if friendly fire is off).
 
-## 8. MapMaker
+## 9. MapMaker
 
 - [ ] **Curves** tab: small / medium / large round corners and arcades, half-round rooms, round tower, curved corridor, balconies. Rotate them and connect them to the regular rooms with no gaps.
 - [ ] Wall styles: **High** (2 storeys), **Tower** (4 storeys), **Fence**.

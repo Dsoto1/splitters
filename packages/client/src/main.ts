@@ -25,6 +25,7 @@ import { ModelThumbnails } from './frontend/modelThumbs.ts';
 import { setWeaponIconSource } from './frontend/weaponIcons.ts';
 import { PortraitRenderer } from './frontend/portraits.ts';
 import { GameSession } from './game/session.ts';
+import { installFullscreenKeys } from './fullscreen.ts';
 import type { Transport } from './game/transport.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -83,6 +84,7 @@ volumeInput.addEventListener('input', () => {
   storage('cs.volume', String(audio.getVolume()));
 });
 for (const type of ['pointerdown', 'keydown'] as const) window.addEventListener(type, () => audio.unlock(), { capture: true });
+installFullscreenKeys();
 (window as unknown as { __audio: AudioSystem }).__audio = audio;
 
 /** Top-level shell: one Babylon engine shared by the main menu, MapMaker and game sessions. */

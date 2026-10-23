@@ -24,6 +24,7 @@ import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
 import { CROSSHAIR_COLOURS, CROSSHAIR_STYLES, crosshairSetting, saveCrosshair } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
+import { bindFullscreenButton } from '../fullscreen.ts';
 
 /** A built-in map the Arcade offers. */
 export interface ArcadeMap {
@@ -471,6 +472,8 @@ export class FrontEnd {
       this.audio.setVolume(Number(volume.value) / 100);
       storage('cs.volume', String(this.audio.getVolume()));
     });
+    const fullscreen = el('button', { type: 'button' });
+    bindFullscreenButton(fullscreen);
     const controls = el(
       'div',
       { class: 'controls' },
@@ -484,6 +487,7 @@ export class FrontEnd {
         ['Use', 'E'],
         ['Weapons', '1–9 · Wheel · Q'],
         ['Scores', 'Tab'],
+        ['Fullscreen', 'F11 · Alt+Enter'],
       ].map(([a, k]) => el('div', {}, el('span', { textContent: a! }), kbd(k!))),
     );
     // Crosshair styles and colours (reference board: crosshair styles).
@@ -520,6 +524,7 @@ export class FrontEnd {
         { class: 'form panel' },
         el('label', {}, 'Player name', name),
         el('label', {}, 'Volume', volume),
+        el('label', {}, 'Display', fullscreen),
         el('h3', { class: 'panel-title', textContent: 'Crosshair' }),
         crosshairs,
         colours,

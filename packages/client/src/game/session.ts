@@ -39,6 +39,7 @@ import {
 } from '@chronosplit/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
+import { bindFullscreenButton } from '../fullscreen.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
@@ -168,12 +169,16 @@ export class GameSession {
       { signal },
     );
     this.sfx.bloodOn = () => this.view.blood.on;
+    bindFullscreenButton($('pause-fullscreen') as HTMLButtonElement, signal);
     document.addEventListener('pointerlockchange', () => this.updatePause(), { signal });
-    // A second Esc (the first one releases the pointer) leaves.
+    // A second Esc (the first one releases the pointer) leaves. In fullscreen the
+    // page holds Esc (Keyboard Lock), so the first press releases the pointer here.
     window.addEventListener(
       'keydown',
       (e) => {
-        if (e.code === 'Escape' && !this.input.locked && this.local) this.exit();
+        if (e.code !== 'Escape') return;
+        if (this.input.locked) document.exitPointerLock();
+        else if (this.local) this.exit();
       },
       { signal },
     );
