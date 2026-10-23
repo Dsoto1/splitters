@@ -28,7 +28,7 @@ import {
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
-import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_THROW, BUTTON_USE, applyPads, mapPads, sanitizeInput, stepMovement, type JumpPad, type MoveState, type PlayerInput } from './movement.ts';
+import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_THROW, BUTTON_USE, applyPads, mapPads, padLandings, sanitizeInput, stepMovement, type JumpPad, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
 import { Scenario } from './scenario.ts';
@@ -253,7 +253,7 @@ export class Match {
     this.killY = mapKillY(this.geometry, map);
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map));
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true)], mapTerrainMesh(map));
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true)], mapTerrainMesh(map), padLandings(mapPads(map.entities), this.physics));
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')

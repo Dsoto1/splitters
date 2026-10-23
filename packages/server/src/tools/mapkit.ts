@@ -15,8 +15,11 @@ import {
   buildMapGeometry,
   fitBounds,
   initPhysics,
+  PhysicsWorld,
   loadMap,
+  mapPads,
   mapTeams,
+  padLandings,
   mapTerrainMesh,
   newMapDocument,
   placeTileCommand,
@@ -175,7 +178,10 @@ export class MapBuilder {
     const loaded = loadMap(JSON.parse(serializeMap(this.doc)));
     if (!loaded.ok) throw new Error(`${this.id}: map does not load: ${JSON.stringify(loaded.issues)}`);
     await Promise.all([initPhysics(), initNavigation()]);
-    const nav = NavWorld.build(buildMapGeometry(loaded.map), mapTerrainMesh(loaded.map));
+    const geometry = buildMapGeometry(loaded.map);
+    const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
+    const nav = NavWorld.build(geometry, mapTerrainMesh(loaded.map), padLandings(mapPads(loaded.map.entities), physics));
+    physics.free();
     const issues = [...validateMap(loaded.map), ...validateNavigation(loaded.map, nav)];
     nav.destroy();
     for (const i of issues) console.log(`${this.id}: ${i.severity.padEnd(10)} ${i.code} ${i.message}`);

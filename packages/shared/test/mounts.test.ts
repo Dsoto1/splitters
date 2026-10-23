@@ -147,4 +147,14 @@ describe('turrets, sentries and vehicles', () => {
     expect(top).toBeGreaterThan(3.5);
     expect(a.move.pos.x).toBeGreaterThan(14);
   });
+
+  it('bots can path through a jump pad up to a ledge they could not walk to', () => {
+    const map = yard([]);
+    // A platform one level up, reachable only by the pad.
+    map.classicStructure.tiles.push({ id: 'ledge', tile: 'core.platform_rail', x: 2, y: 2, z: 1, rotation: 0 });
+    map.entities.push({ id: 'pad', kind: 'pad', position: [16, 0, 4], yaw: 0, power: 14, push: 11 });
+    const match = new Match(map, rules);
+    const path = match.nav.findPath({ x: 24, y: 0, z: 0 }, { x: 16, y: 4, z: 17 });
+    expect(path).not.toBeNull();
+  });
 });

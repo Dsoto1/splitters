@@ -42,6 +42,8 @@ type Mode = 'menu' | 'editor' | 'game' | 'designer';
 
 const OFFLINE_MAPS = { arena: arenaJson, vault: vaultJson, outpost: outpostJson, sandgate: sandgateJson, citadel: citadelJson, canyon: canyonJson } as const;
 type OfflineMap = keyof typeof OFFLINE_MAPS;
+/** Every map file shipped in maps/ (loaded up front; they are small). */
+const EXTRA_MAPS = import.meta.glob<unknown>('../../../maps/*.json', { eager: true, import: 'default' });
 
 /** The built-in maps the Arcade offers, with the modes each supports. */
 function arcadeMaps(): ArcadeMap[] {
@@ -49,6 +51,16 @@ function arcadeMaps(): ArcadeMap[] {
     const r = loadMap(OFFLINE_MAPS[key]);
     return r.ok ? [{ key, map: r.map, blurb, modes, bots }] : [];
   };
+  // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata.
+  const extra = Object.entries(EXTRA_MAPS).flatMap(([path, json]): ArcadeMap[] => {
+    const key = path.replace(/^.*\/|\.json$/g, '');
+    if (key in OFFLINE_MAPS) return [];
+    const r = loadMap(json);
+    if (!r.ok) return [];
+    const modes = r.map.metadata.supportedModes.filter((m): m is GameMode => m === 'core.deathmatch' || m === 'core.tdm' || m === 'core.coop');
+    const blurb = r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? '';
+    return [{ key, map: r.map, blurb, modes: modes.length ? modes : ['core.deathmatch'], bots: Math.max(3, Math.min(11, r.map.metadata.recommendedPlayers.max - 1)) }];
+  });
   return [
     ...entry('canyon', 'Outdoor canyon: two bases, boulder fields, hills and a ridge ledge.', ['core.tdm', 'core.deathmatch'], 9),
     ...entry('citadel', 'Castle keep: a two-storey atrium, roof terraces, every weapon.', ['core.deathmatch', 'core.tdm'], 7),
@@ -56,6 +68,7 @@ function arcadeMaps(): ArcadeMap[] {
     ...entry('arena', 'Graybox loop around a pillar hall, with an upper floor.', ['core.deathmatch', 'core.tdm'], 5),
     ...entry('vault', 'Doors, traps and a vault to crack.', ['core.deathmatch'], 3),
     ...entry('outpost', 'Take the outpost from the Syndicate with a militia escort.', ['core.coop'], 2),
+    ...extra.sort((a, b) => a.map.metadata.name.localeCompare(b.map.metadata.name)),
   ];
 }
 
@@ -174,12 +187,14 @@ class App {
   }
 
   /** Quick start from a URL (?offline=sandgate): the map's own mode and a default bot count. */
-  async playOffline(which: OfflineMap = 'arena'): Promise<void> {
+  async playOffline(which: string = 'arena'): Promise<void> {
     await this.init();
-    const arena = loadMap(OFFLINE_MAPS[which]);
+    const json = which in OFFLINE_MAPS ? OFFLINE_MAPS[which as OfflineMap] : EXTRA_MAPS[`../../../maps/${which}.json`];
+    if (!json) return void this.showMenu(`No map called ${which}`);
+    const arena = loadMap(json);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');
     // Co-op: two bot teammates; team deathmatch: 5 v 5; deathmatch maps: a lobby of opponents.
-    const botFill = { outpost: 3, vault: 4, sandgate: 10, arena: 6, citadel: 8, canyon: 10 }[which];
+    const botFill = ({ outpost: 3, vault: 4, sandgate: 10, arena: 6, citadel: 8, canyon: 10 } as Record<string, number>)[which] ?? Math.max(4, Math.min(12, arena.map.metadata.recommendedPlayers.max));
     this.playLocal(arena.map, rulesForMap(arena.map), botFill, 'normal');
   }
 
@@ -248,6 +263,6 @@ if (params.get('mode') === 'assets') {
 else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('offline')) {
   const which = params.get('offline');
-  void app.playOffline(which && which in OFFLINE_MAPS ? (which as OfflineMap) : 'arena');
+  void app.playOffline(which || 'arena');
 } else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.front!.server, app.front!.name));
 else void app.showMenu();

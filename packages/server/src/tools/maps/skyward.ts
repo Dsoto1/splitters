@@ -19,8 +19,8 @@ for (const x of [-5, 5]) m.tile('platform_rail', x, 0, 1);
 for (const y of [-4, 4]) m.tile('platform_rail', 0, y, 2);
 // Pads: deck edge -> towers (west/east), deck middle -> perches (north/south), perches/towers back down by dropping.
 const P = Math.PI / 2;
-m.pad([-18, 0, 0], -P, 14, 17.5).pad([18, 0, 0], P, 14, 17.5);
-m.pad([0, 0, 10], 0, 18, 15).pad([0, 0, -10], Math.PI, 18, 15);
+m.pad([-18, 0, 0], -P, 14, 22).pad([18, 0, 0], P, 14, 22);
+m.pad([0, 0, 10], 0, 18, 19).pad([0, 0, -10], Math.PI, 18, 19);
 // Cover on the deck.
 m.prop('crate_large', [-6, 0, 4], 0.3).prop('crate_large', [6, 0, -4], -0.3).prop('crate_small', [8, 0, 6]).prop('crate_small', [-8, 0, -6]);
 m.prop('metal_panel', [0, 0, 0], P);

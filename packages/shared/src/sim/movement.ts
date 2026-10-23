@@ -141,3 +141,29 @@ export function applyPads(pads: readonly JumpPad[], state: MoveState): MoveState
   }
   return state;
 }
+
+/**
+ * Where each pad's launch comes down (for bots: the navmesh gets a one-way
+ * link from the pad to its landing). Traces the flight with gravity and
+ * returns the first floor hit on the way down; pads that never land are left out.
+ */
+export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld): { start: Vec3; end: Vec3 }[] {
+  const out: { start: Vec3; end: Vec3 }[] = [];
+  for (const p of pads) {
+    let pos = { x: p.pos.x, y: p.pos.y + 0.9, z: p.pos.z };
+    let vy = p.vy;
+    for (let t = 0; t < 6; t += TICK_DT) {
+      const next = { x: pos.x + p.vx * TICK_DT, y: pos.y + vy * TICK_DT, z: pos.z + p.vz * TICK_DT };
+      vy -= PLAYER.gravity * TICK_DT;
+      if (vy < 0) {
+        const down = physics.raycastWorld({ x: next.x, y: next.y, z: next.z }, { x: 0, y: -1, z: 0 }, 1.0 + Math.abs(vy * TICK_DT));
+        if (down !== null) {
+          out.push({ start: { ...p.pos }, end: { x: next.x, y: next.y - down, z: next.z } });
+          break;
+        }
+      }
+      pos = next;
+    }
+  }
+  return out;
+}

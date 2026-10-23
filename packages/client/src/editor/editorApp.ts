@@ -76,6 +76,10 @@ import {
   TERRAIN_MATERIAL_LABELS,
   TERRAIN_SURFACES,
   applyBrush,
+  PhysicsWorld,
+  initPhysics,
+  mapPads,
+  padLandings,
   fitBounds,
   CORE_WEAPONS,
   MOUNT_DEFS,
@@ -100,6 +104,9 @@ import outpostTemplate from '../../../../maps/m4_outpost.json';
 import sandgateTemplate from '../../../../maps/sandgate.json';
 import citadelTemplate from '../../../../maps/citadel.json';
 import canyonTemplate from '../../../../maps/canyon.json';
+
+/** Every map file shipped in maps/. */
+const SHIPPED_MAPS = import.meta.glob<unknown>('../../../../maps/*.json', { eager: true, import: 'default' });
 import { EditorView } from './editorView.ts';
 import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibrary, readAutosave, saveToLibrary, writeAutosave } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
@@ -1703,7 +1710,11 @@ export class EditorApp {
       await initNavigation();
       if (token !== this.navToken) return;
       try {
-        const nav = NavWorld.build(buildMapGeometry(doc), mapTerrainMesh(doc));
+        const geometry = buildMapGeometry(doc);
+        await initPhysics();
+        const physics = new PhysicsWorld(geometry, mapTerrainMesh(doc));
+        const nav = NavWorld.build(geometry, mapTerrainMesh(doc), padLandings(mapPads(doc.entities), physics));
+        physics.free();
         this.navIssues = validateNavigation(doc, nav);
         nav.destroy();
       } catch (e) {
@@ -1812,6 +1823,16 @@ export class EditorApp {
       const r = loadMap(canyonTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Canyon Remix', parentId: r.map.metadata.id } });
     });
+    // Every other shipped map (the homage maps and later additions) is a template too.
+    const known = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
+    for (const [path, json] of Object.entries(SHIPPED_MAPS)) {
+      if (known.has(path.replace(/^.*\/|\.json$/g, ''))) continue;
+      const r = loadMap(json);
+      if (!r.ok) continue;
+      add(r.map.metadata.name, `Template · ${r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? ''}`, () => {
+        this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: `${r.map.metadata.name} Remix`, parentId: r.map.metadata.id } });
+      });
+    }
     for (const entry of listLibrary()) {
       add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {
         const r = openFromLibrary(entry.id);

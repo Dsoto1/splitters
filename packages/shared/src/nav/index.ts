@@ -27,8 +27,8 @@ export class NavWorld {
     private readonly query: NavMeshQuery,
   ) {}
 
-  /** `extra` adds triangle geometry (terrain) to the boxes. */
-  static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null): NavWorld {
+  /** `extra` adds triangle geometry (terrain) to the boxes; `links` are one-way jumps (jump pads) bots can take. */
+  static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null, links: readonly { start: Vec3; end: Vec3 }[] = [], snapped = false): NavWorld {
     const box = boxesToTriangles(boxes);
     let positions = box.positions;
     let indices = box.indices;
@@ -57,9 +57,19 @@ export class NavWorld {
       maxVertsPerPoly: 6,
       detailSampleDist: 6,
       detailSampleMaxError: 1,
+      offMeshConnections: (snapped ? links : []).map((l) => ({ startPosition: l.start, endPosition: l.end, radius: 0.8, bidirectional: false })),
     });
     if (!result.success) throw new Error(`navmesh generation failed: ${result.error}`);
-    return new NavWorld(result.navMesh, new NavMeshQuery(result.navMesh));
+    const world = new NavWorld(result.navMesh, new NavMeshQuery(result.navMesh));
+    if (!links.length || snapped) return world;
+    // Jump links must start and end on the mesh: snap them to it, then build again with the links in.
+    const onMesh = links.flatMap((l) => {
+      const start = world.closestPoint(l.start, { x: 1.5, y: 2, z: 1.5 });
+      const end = world.closestPoint(l.end, { x: 2.5, y: 3, z: 2.5 });
+      return start && end ? [{ start, end }] : [];
+    });
+    world.destroy();
+    return NavWorld.build(boxes, extra, onMesh, true);
   }
 
   /** Nearest point on the navmesh, or null if nothing walkable is close. */
