@@ -193,7 +193,14 @@ export const TrapEntity = EntityBase.extend({
 export const FactionId = z.string().regex(/^[a-z0-9_]{2,32}$/, 'faction IDs are 2-32 chars of [a-z0-9_]');
 export const PLAYERS_FACTION = 'players';
 
-export const NPC_ROLES = ['trooper', 'gunner', 'heavy'] as const;
+/**
+ * NPC kinds an encounter can field: the soldiers, then the creatures (see
+ * sim/npc.ts and sim/creatures.ts). Order matters: snapshots send the index.
+ */
+export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const;
+/** The creature kinds among NPC_ROLES (their own bodies and clips, not the soldier rig). */
+export const CREATURE_ROLES = ['imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const satisfies readonly (typeof NPC_ROLES)[number][];
+const squadCount = z.number().int().min(0).max(16);
 export const SQUAD_ORDERS = ['hold', 'attack', 'defend', 'patrol', 'follow'] as const;
 
 /**
@@ -205,9 +212,19 @@ export const EncounterEntity = EntityBase.extend({
   kind: z.literal('encounter'),
   yaw: Yaw,
   faction: FactionId.default('syndicate'),
+  // Creature counts default to 0, so maps saved before creatures existed load unchanged.
   roster: z
-    .object({ trooper: z.number().int().min(0).max(16), gunner: z.number().int().min(0).max(16), heavy: z.number().int().min(0).max(16) })
-    .default({ trooper: 2, gunner: 1, heavy: 0 }),
+    .object({
+      trooper: squadCount,
+      gunner: squadCount,
+      heavy: squadCount,
+      imp: squadCount.default(0),
+      puglin: squadCount.default(0),
+      cyclops: squadCount.default(0),
+      oculus: squadCount.default(0),
+      scolitex: squadCount.default(0),
+    })
+    .default({ trooper: 2, gunner: 1, heavy: 0, imp: 0, puglin: 0, cyclops: 0, oculus: 0, scolitex: 0 }),
   activeCap: z.number().int().min(1).max(32).default(4),
   reinforcements: z.number().int().min(0).max(500).default(0),
   /** Extra reinforcements for each player beyond the first (co-op scaling). */

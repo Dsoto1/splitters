@@ -73,7 +73,7 @@ export class Encounters {
     const r = this.list.get(id);
     if (!r || r.active) return;
     const extraPlayers = Math.max(0, this.host.players().length - 1);
-    const roster = NPC_ROLES.flatMap((role) => Array<NpcRole>(r.e.roster[role]).fill(role));
+    const roster = NPC_ROLES.flatMap((role) => Array<NpcRole>(r.e.roster[role] ?? 0).fill(role));
     if (!roster.length) roster.push('trooper');
     r.queue = roster;
     r.budget = r.spawned + roster.length + r.e.reinforcements + r.e.perPlayer * extraPlayers;

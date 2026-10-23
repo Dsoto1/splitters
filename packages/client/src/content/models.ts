@@ -22,7 +22,7 @@ export class ModelLibrary {
   load(path: string): Promise<AssetContainer> {
     let p = this.containers.get(path);
     if (!p) {
-      p = LoadAssetContainerAsync(path.startsWith('props/') ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`, this.scene);
+      p = LoadAssetContainerAsync(/^(props|creatures)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`, this.scene);
       this.containers.set(path, p);
     }
     return p;

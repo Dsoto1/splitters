@@ -94,6 +94,7 @@ An **encounter** is one squad of a faction's soldiers that spawns around its mar
 |---|---|
 | Faction | Which side the squad fights for (see Factions below) |
 | Troopers / Gunners / Heavies | The first wave. Troopers carry rifles, Gunners shotguns, Heavies grenade launchers (tougher, slower) |
+| Imps / Puglins / Cyclopes / Oculi / Scolitexes | Creatures in the first wave, mixed freely with soldiers (see *Creatures* below) |
 | Max alive | Never more than this many at once |
 | Reinforcements, + per extra player | Extra soldiers that trickle in as others die. The per-player number scales co-op difficulty with team size |
 | Reinforce every (s) | Delay between reinforcements |
@@ -105,6 +106,29 @@ An **encounter** is one squad of a faction's soldiers that spawns around its mar
 - Squads share sightings, so when one soldier spots you, the rest come looking.
 - NPCs don't use player slots.
 - In deathmatch they fight everyone; in co-op they fight the players' side.
+
+### Creatures
+
+Encounters can field creatures as well as soldiers. They use the same squad
+settings and the same player-sized hit capsule; only the body, the attack and
+the stats differ (`NPC_ROLE_SPECS` in `shared/src/sim/npc.ts`, looks in
+`shared/src/sim/creatures.ts`).
+
+| Creature | Health | Speed | Attack | Behaviour |
+|---|---|---|---|---|
+| Imp (1.7 m, Bestiary pack) | 70 | 1.05 × player | Claw (knife strike, 0.7 × damage) | Paths toward you, then rushes straight in from 10 m and claws |
+| Puglin (1.1 m) | 45 | 1.15 × player | Bite (knife strike, 0.45 × damage) | Like the imp, smaller, faster and weaker |
+| Cyclops (alien, hovers) | 90 | 0.75 × player | Spits slowing goo (Goo Gun) | Keeps its distance like a soldier |
+| Oculus (alien, hovers) | 60 | 0.9 × player | Spits fast plasma bolts (Plasma Rifle) | Keeps its distance |
+| Scolitex (alien brute, 2.5 m) | 320 | 0.8 × player | Heavy claws (knife strike, 1.5 × damage) | Rushes in like the imps |
+
+- Melee creatures switch from the bot brain's pathing to a straight charge once
+  they see their target within 10 m (`chargeIntoMelee`).
+- Creatures carry no visible weapon, have no ragdoll, and play their own death
+  (the imp and puglin a death clip, the aliens drop and roll over); the body
+  stays like any other.
+- Demo: `maps/creature_lab.json` (`?offline=creature_lab`), three waves on a deck
+  built from the sci-fi kit.
 
 ### Factions (Logic panel → Factions)
 

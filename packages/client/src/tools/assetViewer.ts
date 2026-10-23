@@ -37,15 +37,27 @@ export async function openAssetViewer(engine: AbstractEngine, canvas: HTMLCanvas
   panel.innerHTML = `<h2 style="margin:0 0 8px">Asset viewer</h2><p style="color:#9aa">Orbit: drag · Zoom: wheel · Red arrow = +Z (forward) · Grid = 10 cm</p>`;
   document.body.append(panel);
 
-  const assets = provenance.assets.filter((a) => a.file.startsWith('models/'));
-  const cols = 3;
+  // ?set=props (or creatures) shows that folder instead of weapons and vehicles; ?filter=sf_ narrows it by file name.
+  const params = new URLSearchParams(location.search);
+  const set = params.get('set') ?? 'models';
+  const filter = params.get('filter') ?? '';
+  const assets = provenance.assets.filter((a) => a.file.startsWith(`${set}/`) && a.file.includes(filter));
+  const big = set !== 'models';
+  const cols = big ? Math.ceil(Math.sqrt(assets.length)) : 3;
+  // Props and creatures are metres across: space them out and pull the camera back.
+  const step = big ? 5.5 : 1.1;
+  if (big) {
+    camera.target = new Vector3(((cols - 1) * step) / 2, 0, ((Math.ceil(assets.length / cols) - 1) * step) / 2);
+    camera.radius = cols * step * 1.1;
+    camera.maxZ = 1000;
+  }
   await Promise.all(
     assets.map(async (a, i) => {
-      const x = (i % cols) * 1.1;
-      const z = Math.floor(i / cols) * 0.75 - 0.3;
-      const root = await library.instantiate(a.file.replace(/^models\//, ''), `asset_${i}`);
-      root.position.set(x, 0.15, z);
-      const arrow = CreateLines(`fwd_${i}`, { points: [new Vector3(x, 0.01, z), new Vector3(x, 0.01, z + 0.3)] }, scene);
+      const x = (i % cols) * step;
+      const z = Math.floor(i / cols) * (big ? step : 0.75) - (big ? 0 : 0.3);
+      const root = await library.instantiate(set === 'models' ? a.file.replace(/^models\//, '') : a.file, `asset_${i}`);
+      root.position.set(x, big ? 0 : 0.15, z);
+      const arrow = CreateLines(`fwd_${i}`, { points: [new Vector3(x, 0.01, z), new Vector3(x, 0.01, z + (big ? 1.5 : 0.3))] }, scene);
       arrow.color = new Color3(1, 0.3, 0.3);
       const row = document.createElement('div');
       row.style.cssText = 'padding:8px 0;border-top:1px solid #333';

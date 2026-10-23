@@ -36,11 +36,12 @@ Enforced by `pnpm content:check` for every imported model:
 
 | Asset | Budget | What we actually ship |
 |---|---|---|
-| Placeable prop | ≤ 6,000 triangles, ≤ 400 KB | 267 props: average ≈ 260 triangles and 22 KB; the biggest (a steam locomotive) 1,666 triangles and 104 KB |
+| Placeable prop | ≤ 6,000 triangles, ≤ 400 KB | 267 Kenney props: average ≈ 260 triangles and 22 KB; the biggest (a steam locomotive) 1,666 triangles and 104 KB. 110 sci-fi kit pieces: average ≈ 520 triangles and 70 KB (their trim-sheet textures are embedded at 512 px colour + 256 px normal), the biggest (pipe column) 3,455 triangles and 242 KB; 7.8 MB for all of them, so a map using 20 of them adds ≈ 1.5 MB |
 | Weapon / vehicle model | ≤ 6,000 triangles | 1,000–3,000 typical |
 | Surface textures | 512 px colour + normal | 83 files, 3.2 MB in all |
 | Sky photos | 2048 × 1024 JPEG | 25–125 KB each |
 | Characters | shared skeleton, LODs | 9.2 MB for every body, outfit and animation |
+| Creatures (NPC) | ≤ 20,000 triangles, ≤ 1.5 MB (character budget) | 5 models, 1.4 MB in all: imp 8.6k triangles / 597 KB, puglin 4.5k / 330 KB, aliens 2.1k–5.7k / 78–242 KB |
 
 A match only downloads what its map uses: the props, sky and textures it
 places, plus the weapons and characters in play. A typical map needs 2–6 MB of
@@ -55,7 +56,7 @@ to run are low-poly kits that share one small colour texture:
 | Source | Licence | Why it's cheap | In use |
 |---|---|---|---|
 | Kenney 3D kits (kenney.nl) | CC0 | 50–2,000 triangles, one shared 64 px colour map per kit | 14 kits: survival, furniture, graveyard, pirate, space station, factory, mini dungeon, city, nature, castle, fantasy town, train, mini market, platformer (+ blaster, car, space for weapons and vehicles) |
-| Quaternius (quaternius.com) | CC0 | Flat-coloured low-poly, no textures | Guns, characters, animations |
+| Quaternius (quaternius.com) | CC0 (Bestiary kit: QAL, see ASSET_SOURCES.md) | Flat-coloured low-poly; the sci-fi kit uses shared trim sheets | Guns, characters, animations, sci-fi set pieces, creatures |
 | KayKit (kaylousberg.itch.io) | CC0 | One gradient atlas per pack | Candidate for dungeon and adventure sets |
 | Poly Haven (polyhaven.com) | CC0 | Photo-real; use sparingly (heavier textures) | Sky photos |
 | ambientCG (ambientcg.com) | CC0 | Scanned materials, downscaled to 512 px | All wall and floor materials |

@@ -23,6 +23,7 @@ export * from './sim/rules.ts';
 export * from './sim/scenarioDefs.ts';
 export * from './sim/scenario.ts';
 export * from './sim/npc.ts';
+export * from './sim/creatures.ts';
 export * from './content/looks.ts';
 export * from './content/props.ts';
 export * from './protocol.ts';

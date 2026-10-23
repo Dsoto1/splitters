@@ -58,8 +58,10 @@ import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
-import { CharacterLibrary, type CharacterInstance, type CharacterSpec } from '../content/characters.ts';
+import { CharacterLibrary, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
+import { CreatureLibrary, type AvatarSpec } from '../content/creatures.ts';
+import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
 
 const SLOT_COLORS = ['#e6544a', '#4aa3e6', '#f2c14e', '#5cc77a', '#b276e0', '#f28f3b', '#46c9c0', '#e872b0'];
@@ -83,7 +85,8 @@ interface Avatar {
   mat: StandardMaterial;
   weaponSlot: number;
   weaponNode?: TransformNode;
-  anim?: CharacterAnimator;
+  /** Soldiers and players get a character, creature NPCs their own animator. */
+  anim?: CharacterAnimator | CreatureAnimator;
   specKey: string;
   /** Team-colour marker over a teammate's head (Team Deathmatch). */
   tag?: { mesh: Mesh; color: string };
@@ -148,6 +151,7 @@ export class GameView {
   readonly models: ModelLibrary;
   readonly scenario: ScenarioVisuals;
   readonly characters: CharacterLibrary;
+  readonly creatures: CreatureLibrary;
   private readonly avatars = new Map<number, Avatar>();
   private readonly pickups = new Map<string, PickupVisual>();
   private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number }>();
@@ -189,6 +193,7 @@ export class GameView {
     this.scenario = new ScenarioVisuals(this.scene);
     this.zoneVisuals = new ZoneVisuals(this.scene);
     this.characters = new CharacterLibrary(this.scene);
+    this.creatures = new CreatureLibrary(this.scene);
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.blood = new BloodVisuals(this.scene, () => this.physics);
     this.impacts = new ImpactVisuals(this.scene, () => this.physics);
@@ -256,6 +261,8 @@ export class GameView {
     const old = this.pushes.get(slot);
     const keep = old && now - old.t < 250 ? old.v : { x: 0, y: 0, z: 0 };
     this.pushes.set(slot, { v: { x: keep.x + v.x, y: keep.y + v.y, z: keep.z + v.z }, t: now });
+    const anim = this.avatars.get(slot)?.anim;
+    if (anim instanceof CreatureAnimator) anim.flinch();
   }
 
   cameraPosition(): Vec3 {
@@ -283,7 +290,7 @@ export class GameView {
 
   private startRagdoll(slot: number, a: Avatar): void {
     const root = a.anim?.skeletonRoot;
-    if (!a.anim || !root || !this.physics) return;
+    if (!(a.anim instanceof CharacterAnimator) || !root || !this.physics) return;
     const push = this.pushes.get(slot);
     const fresh = push && performance.now() - push.t < 600 ? push.v : { x: 0, y: 0, z: 0 };
     const v = { x: a.vel.x * 0.6 + fresh.x, y: 0.5 + fresh.y, z: a.vel.z * 0.6 + fresh.z };
@@ -614,7 +621,7 @@ export class GameView {
    * Update remote player and NPC avatars from interpolated poses. Each one is
    * a capsule until its character model has loaded, then an animated character.
    */
-  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => CharacterSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set()): void {
+  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set()): void {
     const now = performance.now();
     const seen = new Set<number>();
     for (const p of poses) {
@@ -644,6 +651,12 @@ export class GameView {
         if (Math.hypot(p.x - a.last.x, p.z - a.last.z) > 4) a.vel = { x: 0, z: 0 };
       }
       a.last = { x: p.x, y: p.y, z: p.z, t: now };
+      // A creature plays its own death and is left lying where it fell (no ragdoll).
+      if (a.wasAlive && !p.alive && a.anim instanceof CreatureAnimator) {
+        a.anim.update(0, { speed: 0, moveAngle: 0, airborne: false, alive: false, pitch: 0, celebrate: false });
+        this.toCorpse(p.slot, a);
+        continue;
+      }
       // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
       if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) {
         this.startRagdoll(p.slot, a);
@@ -678,7 +691,7 @@ export class GameView {
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
         });
-        for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
+        if (a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
       }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
       if (p.status || a.aura) {
@@ -741,7 +754,7 @@ export class GameView {
     });
   }
 
-  private createAvatar(slot: number, spec: CharacterSpec, specKey: string): Avatar {
+  private createAvatar(slot: number, spec: AvatarSpec, specKey: string): Avatar {
     const root = new TransformNode(`avatar_${slot}`, this.scene);
     const placeholder = CreateCapsule(`avatarcap_${slot}`, { height: PLAYER.height, radius: PLAYER.radius, tessellation: 12, subdivisions: 2 }, this.scene);
     placeholder.parent = root;
@@ -750,6 +763,15 @@ export class GameView {
     placeholder.material = mat;
     placeholder.isPickable = false;
     const a: Avatar = { root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 } };
+    if (spec.creature) {
+      void this.creatures.create(spec.creature, `creature_${slot}`).then((ch) => {
+        if (root.isDisposed()) return ch.dispose();
+        ch.root.parent = root;
+        a.anim = new CreatureAnimator(this.scene, ch);
+        placeholder.setEnabled(false);
+      });
+      return a;
+    }
     void this.characters.create(spec, `char_${slot}`).then((ch) => {
       if (root.isDisposed()) return ch.dispose();
       ch.root.parent = root;

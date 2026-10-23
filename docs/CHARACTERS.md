@@ -163,6 +163,31 @@ in the background were seen to stall in the browser.
   `content/characters.lock.json` (hashes, triangle and size budgets, licences)
   and lists them in `content/provenance.json`.
 
+## Creatures
+
+Creature NPCs (imp, puglin, cyclops, oculus, scolitex; see SCENARIO.md) are
+kept apart from the character parts: `packages/client/public/creatures/<id>.glb`,
+built by `node tools/content/prepare-creatures.mjs <downloads dir>` from the
+Quaternius Bestiary – Dungeon Monsters kit (imp, puglin) and the Modular SciFi
+MegaKit's aliens, and checked against `content/creatures.lock.json`.
+
+- **Imp and puglin** share our rig's joint names (minus the pinkies) but ship
+  without clips. The script retargets our rig clips onto them: each joint keeps
+  its own rest pose and takes the rig's rotation relative to the rig's rest
+  pose, and the hips' motion is scaled by leg length. Clips: `idle`, `walk`,
+  `run`, `attack` (the imp's is the heavy swing, the puglin's the punch),
+  `hit`, `death`.
+- **Aliens** keep their own spine-chain skeletons and their one `idle` clip.
+  The game leans them into their motion, speeds the idle up as they move,
+  lunges them forward to attack, jolts them on hits, and drops and rolls them
+  over when they die.
+- In game, `content/creatures.ts` (`CreatureLibrary`) loads and instances
+  them and `game/creatureAnimator.ts` drives them; `view.ts` uses them when an
+  avatar's spec names a creature. No ragdoll: their death plays and the body
+  is left as a corpse.
+- `?mode=characters` shows the five creatures in a row in front of the
+  characters, driven by the same buttons.
+
 ## Known gaps
 
 - The ranger boots barely simplify (their texture seams stop the simplifier),
@@ -171,3 +196,7 @@ in the background were seen to stall in the browser.
   only the Ranger and Peasant outfits; the other ten are in the paid Source
   editions.
 - NPCs use the plain mannequins in faction colours until faction outfits exist.
+- Creatures use the player-sized hit capsule, so shots just over a puglin or
+  at the top of a scolitex hit or miss as if they were player-sized.
+- The aliens have no walk, attack or death clips of their own (procedural
+  motion stands in).

@@ -1,5 +1,5 @@
 import { CORE_BOT_PROFILES, type BotProfile } from '../bots/profile.ts';
-import { PLAYERS_FACTION, type Faction, type MapDocument, type NpcRole, type Relation } from '../map/schema.ts';
+import { NPC_ROLES, PLAYERS_FACTION, type Faction, type MapDocument, type NpcRole, type Relation } from '../map/schema.ts';
 
 /**
  * NPC combatants (MASTER_SPEC_V2 §8, CHARACTERS_BOTS_V2 §14): scenario
@@ -19,14 +19,34 @@ export interface NpcRoleSpec {
   speed: number;
   /** Visual size multiplier. */
   scale: number;
+  /** A creature instead of a soldier: drawn with its own body and clips (sim/creatures.ts), no held weapon. */
+  creature?: boolean;
+  /** Charges into melee range once it has seen its target (instead of keeping its distance). */
+  melee?: boolean;
+  /** Multiplier on the damage its attacks do. */
+  damage?: number;
 }
 
-/** The basic squad archetype: troopers with rifles, gunners with shotguns, heavies with grenade launchers. */
+/**
+ * The basic squad archetype: troopers with rifles, gunners with shotguns,
+ * heavies with grenade launchers. Then the creatures: imps and puglins rush
+ * in and claw (the knife's melee strike), the cyclops spits slowing goo, the
+ * oculus spits fast plasma bolts, and the scolitex is a slow, heavy brute
+ * whose claws hit hard.
+ */
 export const NPC_ROLE_SPECS: Record<NpcRole, NpcRoleSpec> = {
   trooper: { label: 'Trooper', health: 70, weapon: 'core.rifle', speed: 0.82, scale: 1 },
   gunner: { label: 'Gunner', health: 90, weapon: 'core.shotgun', speed: 0.9, scale: 1.05 },
   heavy: { label: 'Heavy', health: 160, weapon: 'core.launcher', speed: 0.7, scale: 1.18 },
+  imp: { label: 'Imp', health: 70, weapon: 'core.knife', speed: 1.05, scale: 1, creature: true, melee: true, damage: 0.7 },
+  puglin: { label: 'Puglin', health: 45, weapon: 'core.knife', speed: 1.15, scale: 1, creature: true, melee: true, damage: 0.45 },
+  cyclops: { label: 'Cyclops', health: 90, weapon: 'core.goo_gun', speed: 0.75, scale: 1, creature: true },
+  oculus: { label: 'Oculus', health: 60, weapon: 'core.plasma', speed: 0.9, scale: 1, creature: true },
+  scolitex: { label: 'Scolitex', health: 320, weapon: 'core.knife', speed: 0.8, scale: 1, creature: true, melee: true, damage: 1.5 },
 };
+
+/** How many NPCs an encounter roster fields in its first wave. */
+export const rosterSize = (roster: Readonly<Record<NpcRole, number>>): number => NPC_ROLES.reduce((n, r) => n + (roster[r] ?? 0), 0);
 
 /**
  * NPC weapons hit players for this fraction of normal damage, so squads are a
