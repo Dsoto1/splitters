@@ -80,7 +80,7 @@ export function propTilts(model: string): boolean {
 }
 
 /** Top of whatever stands under (x, z) no higher than `y` + a little: floors, blocks, other props. */
-function supportUnder(boxes: readonly WorldBox[], x: number, z: number, y: number, skip: string): number {
+export function supportUnder(boxes: readonly WorldBox[], x: number, z: number, y: number, skip: string): number {
   let best = -Infinity;
   for (const b of boxes) {
     if (b.sourceId === skip || b.kind === 'barrier') continue;
@@ -110,7 +110,12 @@ function supportUnder(boxes: readonly WorldBox[], x: number, z: number, y: numbe
  * above the ground (more than 3 m) are taken to be deliberate (hung lamps,
  * signs) and left alone.
  */
-export function floatingProps(map: MapDocument, boxes: readonly WorldBox[] = [...buildMapGeometry(map), ...blockBoxes(map), ...blockBoxes(map, true), ...propBoxes(map), ...propBoxes(map, true)]): { id: string; gap: number }[] {
+/** Everything a prop can stand on: floors, blocks and other props. */
+export function supportBoxes(map: MapDocument): WorldBox[] {
+  return [...buildMapGeometry(map), ...blockBoxes(map), ...blockBoxes(map, true), ...propBoxes(map), ...propBoxes(map, true)];
+}
+
+export function floatingProps(map: MapDocument, boxes: readonly WorldBox[] = supportBoxes(map)): { id: string; gap: number }[] {
   const t = map.terrain;
   if (!t) return [];
   const out: { id: string; gap: number }[] = [];

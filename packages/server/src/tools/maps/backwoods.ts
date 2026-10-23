@@ -16,23 +16,27 @@
  * (4 m); the creek bed and the drain are level 0; the main floor is level 2,
  * upstairs level 3. Terrain everywhere, tiles for the buildings and the drain.
  *
- *  y        x -9 -8 -7 -6 -5 -4 -3 -2 -1  0  1  2  3  4  5  6  7  8
- *  10,9      ^  ^  ^  ^  ^  ^  ^  pine hill behind the lodge  ^  ^  ^  ^
- *  6         ^  .  .  .  o  .  w [L  L  L  L  S  G] .  .  .  r  ^      L lodge (3 floors), G garage (wide doors E)
- *  5         ^  .  .  .  .  .  w [L  L  L  L  L  G] =  =  =  r  ^      S stairs garage -> main floor; = driveway
- *  4         ^  .  .  .  .  .  . [L  L  T  L  s  L] P  .  .  r  ^      T drain stairs up into the cellar, s stairs to upstairs
- *  3         ^  .  .  .  .  .  .  d  d  D  d  /  .  /  .  .  r  ^      d back deck (z2), D deck over the drain, / steps, P porch
- *  2         ^  .  .  .  .  .  .  .  .  :  .  .  .  .  .  .  r  ^      : drain under the yard (level 0, grass cover)
- *  1         ^  -  -  -  -  -  -  -  -  :  -  -  -  -  .  .  r  ^      - yard fence (gates)
- *  0         ^  .  B  B  .  .  .  .  .  :  .  .  .  .  .  .  r  ^      B barn: two storeys, hayloft (sniper rifle)
- * -1         ^  .  B  B  .  .  n  J  :  :  .  .  .  h  .  .  r  ^      J drain junction, n niche (rocket launcher), h shed (big armour)
- * -2         ^  .  .  .  .  .  .  :  .  .  .  .  .  .  .  .  r  ^
- * -3         ^  .  hay   .  .  .  :  .  .  wall   .  .  .  .  r  ^
- * -4         ^  .  .  .  .  .  .  :  .  .  .  .  .  .  .  .  r  ^
- * -5         ~  ~  ~  #  ~  ~  ~  M  ~  ~  ~  ~  ~  ~  ~  #  r  ~      ~ creek ravine (level 0), M drain mouth, # bridges
- * -6         ~  ~  ~  #  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  #  r  ~
- * -7         ^  ^  ^  #  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  #  r  ^      ^ pine woods
- * -8..-12    ^  ^  ^  ^  ^  ^  [ attackers' camp: tents, fire ]  r  ^
+ * y       -9 -8 -7 -6 -5 -4 -3 -2 -1  0  1  2  3  4  5  6  7  8   <- x
+ * 10,9     ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^   ^ pine woods
+ * 8        ^  ^  ^  ^  ^  .  .  .  .  .  .  .  .  ^  ^  ^  ^  ^
+ * 7        ^  ^  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ^  ^
+ * 6        ^  ^  .  .  .  o  w  L  L  L  S  G  =  =  =  .  ^  ^   L lodge (3 floors), G garage (wide doors east), S stairs garage -> main floor
+ * 5        ^  ^  .  .  .  .  .  L  L  L  L  G  =  =  =  r  ^  ^   = driveway, r road, o outhouse, w woodpiles
+ * 4        ^  ^  .  .  .  .  w  L  T  L  s  L  P  .  .  r  ^  ^   T drain stairs up into the cellar, s stairs to upstairs, P porch
+ * 3        ^  ^  .  .  .  .  .  d  D  d  /  .  /  .  .  r  ^  ^   d back deck (level 2), D deck and balcony over the drain, / outdoor steps
+ * 2        ^  ^  .  .  .  .  .  .  :  .  .  .  .  .  .  r  ^  ^   : drain under the yard (level 0, grass-topped cover)
+ * 1        ^  ^  .  .  -  +     -  :        -  -  -  -  r  ^  ^   - yard fence along y 1.5 (gates), + fence corner
+ * 0        ^  ^  B  B  .  |  .  .  :  .  .  .  y  .  |  r  ^  ^   B barn: two storeys, hayloft (sniper rifle); | fences; y hay
+ * -1       ^  ^  B  B  .  n  J  :  :  .  .  .  .  H  |  r  ^  ^   J drain junction, n niche (rockets), H shed (big armour)
+ * -2       ^  ^  .  .  .  |  :  .  .  .  .  .  .  .  |  r  ^  ^
+ * -3       ^  ^  .  .  .  |  :  .  .  _  _  .  .  .  |  r  ^  ^   _ old stone wall
+ * -4       ^  ^  .  .  .  y  :  y  .  .  .  y  .  y  |  r  ^  ^
+ * -5       ~  m  ~  #  ~  ~  M  ~  ~  ~  ~  ~  ~  ~  ~  #  ~  ~   ~ creek ravine (bed at level 0), M drain mouth, m watermill
+ * -6       ~  ~  ~  #  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  #  ~  ~   # footbridge (west) and road bridge (east)
+ * -7       ^  ^  ^  #  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  #  ^  ^
+ * -8,-9    ^  ^  ^  ^  ^  ^  ^  ^  .  .  .  ^  ^  ^  ^  r  ^  ^
+ * -10      ^  ^  ^  ^  ^  ^  .  t  .  *  .  t  .  ^  ^  r  ^  ^   attackers' camp: t tents, * fire
+ * -11,-12  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  r  ^  ^
  *
  * Routes: yard (centre, open, hay and fences, rear deck stairs), barn flank
  * (west, footbridge -> barn -> outhouse -> cellar side door), road (east,
@@ -125,18 +129,20 @@ const roadDist = (x: number, z: number) => lineDist(x, z, ROAD);
 const UNDER_RECTS = UNDERGROUND.map(([x, y]) => rect(x, y));
 const underDist = (x: number, z: number) => Math.min(...UNDER_RECTS.map((r) => rectDist(x, z, r)));
 
-/** The creek ravine: a flat bed 6 m wide, banks climbing at about 39 degrees. */
+/** The creek ravine: a flat bed 6 m wide, banks climbing at about 31 degrees (steeper trips the navmesh's ledge filter). */
 const ravine = (x: number, z: number) => {
   const dz = Math.abs(z - CREEK_Z);
   // A little pool in front of the drain mouth.
   const pool = 1.5 * (1 - smooth(8, 14, Math.abs(x + 24)));
-  return BED + Math.max(0, dz - 3 - (z > CREEK_Z ? pool : 0)) * 0.8;
+  return BED + Math.max(0, dz - 3 - (z > CREEK_Z ? pool : 0)) * 0.6;
 };
 
 function natural(x: number, z: number): number {
   let h = G;
   // Pine woods south of the creek climb toward the camp.
-  h += smooth(56, 86, -z) * (3 + 1.4 * Math.sin(x / 14 + 1) + 0.9 * Math.cos(x / 9 - z / 13));
+  h += smooth(56, 86, -z) * (1.8 + 0.9 * Math.sin(x / 14 + 1) + 0.6 * Math.cos(x / 9 - z / 13));
+  // The lodge stands highest: the yard falls away gently toward the creek.
+  h -= 1.3 * (1 - smooth(-40, 12, z)) * smooth(-58, -48, z);
   // The hill behind the lodge, the west woods and the bank beyond the road.
   h += smooth(58, 86, z) * (5 + 1.5 * Math.sin(x / 12));
   h += smooth(58, 82, -x) * (4 + 1.5 * Math.sin(z / 11));
@@ -145,7 +151,7 @@ function natural(x: number, z: number): number {
   const field = smooth(-36, -28, z) * (1 - smooth(54, 62, z));
   h += field * (0.7 * Math.sin(x / 19 + 0.3) * Math.cos(z / 23) + 0.4 * Math.sin(z / 11 + x / 29));
   // Camp clearing: levelled to the woods height there.
-  const campH = G + 3 + 1.4 * Math.sin(1) + 0.9 * Math.cos(-CAMP[1] / -13);
+  const campH = G + 1.8 + 0.9 * Math.sin(1) + 0.6 * Math.cos(-CAMP[1] / -13);
   h = lerp(h, campH, 1 - smooth(16, 26, Math.hypot(x - CAMP[0], z - CAMP[1])));
   // Level ground round everything built: lodge and driveway, barn, shed, the drain strip, bridge ends, the road.
   let flat = 0;
@@ -155,7 +161,7 @@ function natural(x: number, z: number): number {
   flat = Math.max(flat, 1 - smooth(4, 10, rectDist(x, z, SHED_RECT)));
   flat = Math.max(flat, 1 - smooth(8, 16, underDist(x, z)));
   for (const bx of Object.values(BRIDGE_X)) flat = Math.max(flat, 1 - smooth(4, 10, rectDist(x, z, [bx * 8 - 4, -64, bx * 8 + 4, -30])));
-  flat = Math.max(flat, 1 - smooth(4, 10, roadDist(x, z)));
+  flat = Math.max(flat, 1 - smooth(4, 18, roadDist(x, z)));
   h = lerp(h, G, flat);
   return h;
 }
@@ -189,7 +195,9 @@ for (let r = 0; r < ROWS; r++) {
     if ([LODGE_RECT, BARN_RECT, SHED_RECT].some((b) => strictlyInside(x, z, b))) h = UNDER;
     surfaceH.push(h);
     // Under the drain (and 2 m round it, where the grass-topped cover blocks hide the cut).
-    if (UNDER_RECTS.some((b) => rectCheb(x, z, b) <= 2.01)) h = Math.min(h, LOW);
+    // Inside the drain the cut sits deeper (props on the drain floor stay put); the ring outside matches the creek bed, so the mouth steps out level.
+    if (UNDER_RECTS.some((b) => strictlyInside(x, z, b))) h = Math.min(h, LOW);
+    else if (UNDER_RECTS.some((b) => rectCheb(x, z, b) <= 2.01)) h = Math.min(h, BED);
     heights.push(Math.round(h * 100));
   }
 }
@@ -212,7 +220,7 @@ for (let r = 0; r < ROWS - 1; r++) {
     if (pathDist(x, z) < 1.6) (g = 'dirt'), (f = 0);
     if (roadDist(x, z) < 4 || rectDist(x, z, [20, 34, 44, 54]) < 0.5) (g = 'gravel'), (f = 0);
     if (dz < 4.5) (g = 'mud'), (f = 0);
-    else if (dz < 8.5) (g = 'dirt'), (f = 2);
+    else if (dz < 10) (g = 'dirt'), (f = 2);
     materials.push(M(g));
     foliage.push(f);
   }
@@ -220,7 +228,12 @@ for (let r = 0; r < ROWS - 1; r++) {
 terrain = paintSlopes({ ...terrain, materials, foliage }, 40, 'stone');
 m.terrain(terrain);
 const ground = (x: number, z: number) => +(terrainHeightAt(terrain, x, z) ?? G).toFixed(2);
-const onGround = (x: number, z: number): [number, number, number] => [x, ground(x, z), z];
+/** A point on the ground; refuses spots over the drain or its cover (the terrain there is cut away underneath). */
+const overDrain = (x: number, z: number) => [...UNDER_RECTS, ...bands].some(([x0, z0, x1, z1]) => x > x0 - 1 && x < x1 + 1 && z > z0 - 1 && z < z1 + 1);
+const onGround = (x: number, z: number): [number, number, number] => {
+  if (overDrain(x, z)) throw new Error(`backwoods: ${x},${z} is over the drain`);
+  return [x, ground(x, z), z];
+};
 
 // ================================================================ the drain (level 0)
 
@@ -345,7 +358,7 @@ m.block([24, 3.6, 19.4], [4.4, 0.5, 1.2], 'solid', { material: 'pbr_planks' });
 // Barn: an atrium (two storeys, gallery all round with stairs up), big doors front and back.
 m.tile('atrium', -7, -1, 1);
 m.edge(-7, -1, 1, 'S', 'wide').edge(-6, 0, 1, 'N', 'wide').edge(-6, 0, 1, 'E', 'door').edge(-7, 0, 1, 'W', 'door');
-m.edge(-6, 0, 2, 'E', 'window').edge(-6, -1, 2, 'S', 'window').edge(-7, 0, 2, 'N', 'window').edge(-7, -1, 2, 'W', 'window');
+m.edge(-6, 0, 2, 'E', 'window').edge(-6, 0, 2, 'N', 'window').edge(-6, -1, 2, 'S', 'window').edge(-7, 0, 2, 'N', 'window').edge(-7, -1, 2, 'W', 'window');
 paint(-7, -1, 1, { walls: mat('pbr_planks', '#b0503c'), floor: mat('pbr_planks'), trim: mat('pbr_plaster_white') });
 for (let k = 0; k < 6; k++) {
   const w = 9.2 - 1.45 * k;
@@ -374,7 +387,7 @@ m.water([-4, BED, CREEK_Z], [144, 0.5, 7], 'water');
 
 // Defenders: through the lodge (cellar, garage, main floor, upstairs).
 for (const [x, y, z, yaw] of [
-  [-8, 4, 44, PI], [16, 4, 40, -P2], [-4, 8, 46, PI], [-16, 8, 41, PI],
+  [-8, 4, 44, PI], [16, 4, 40, -P2], [-4, 8, 46, PI], [-18.5, 8, 43, PI],
   [16, 8, 32, PI], [-16, 12, 33, 0], [0, 12, 48, PI], [16, 12, 47, PI],
 ] as const) m.spawn([x, y, z], yaw, defenders);
 // Attackers: the camp in the woods.
@@ -382,7 +395,7 @@ for (const [x, z, yaw] of [[-12, -80, 0], [-5, -86, 0], [5, -86, 0], [12, -80, 0
   m.spawn(onGround(x, z), yaw, attackers);
 }
 // Anyone (deathmatch): barn, shed, drain junction, the road, the west field, the hill behind the lodge.
-m.spawn([-52, 4, -2], P2).spawn([32, 4, -9], 0).spawn([-24, 0, -8], P2);
+m.spawn([-52, 4, -2], P2).spawn([30, 4, -6], 0).spawn([-24, 0, -8], P2);
 m.spawn(onGround(48, 0), PI).spawn(onGround(-66, 22), P2).spawn(onGround(-4, 64), PI);
 
 // ================================================================ pickups
@@ -395,10 +408,10 @@ m.pickup('weapon_marksman', [-16, 12, 48]).pickup('armor_small', [16, 12, 42]).p
 // The drain: the rocket launcher in the niche off the junction, health at the mouth.
 m.pickup('weapon_rockets', [-32, 0, -8]).pickup('ammo_explosive', [-8, 0, 8]).pickup('health_small', [-24, 0, -36]);
 // Barn: sniper rifle in the hayloft by the window facing the lodge, big health on the floor.
-m.pickup('weapon_sniper', [-45.3, 8, 0]).pickup('ammo_sniper', [-58.5, 8, -10.5]).pickup('health_large', [-52, 4, -4]);
+m.pickup('weapon_sniper', [-45.5, 8, 2.5]).pickup('ammo_sniper', [-58.5, 8, -10.5]).pickup('health_large', [-52, 4, -4]);
 // Shed: the big armour. Field: rifle by the hay cart, grenade launcher behind the old wall.
 m.pickup('armor_large', [32, 4, -8]);
-m.pickup('weapon_rifle', onGround(10, -10)).pickup('weapon_launcher', onGround(-2, -22)).pickup('ammo_rifle', onGround(22, 4));
+m.pickup('weapon_rifle', onGround(10, -10)).pickup('weapon_launcher', onGround(6, -21.5)).pickup('ammo_rifle', onGround(22, 4));
 m.pickup('health_small', onGround(-30, 14)).pickup('ammo', onGround(36, 20));
 // Creek: plasma under the road bridge, the LMG by the footbridge.
 m.pickup('weapon_plasma', onGround(ROAD_X - 2, CREEK_Z)).pickup('ammo_cells', onGround(ROAD_X + 2, CREEK_Z + 1.5));
@@ -414,73 +427,71 @@ const prop = (model: string, p: [number, number, number], yaw = 0, scale = 1, so
 const g = (x: number, z: number) => onGround(x, z);
 
 // Lower floor: garage, cellars, workshop.
-prop('workbench', [13.2, 4, 38.5], P2).prop('shelf_boxes', [13.4, 4, 42.5], P2).prop('barrel', [13.2, 4, 51]).prop('barrel', [14.2, 4, 51.2]);
-prop('cardboard_box', [18.8, 4, 51.2]).prop('factory_box', [18, 4, 50.2], 0.1);
+prop('workbench', [13.2, 4, 38.5], P2).prop('shelf_boxes', [13.4, 4, 42.5], P2).prop('barrel', [13.2, 4, 51]).prop('barrel', [14.2, 4, 51]);
+prop('crate_small', [19, 4, 51]).prop('crate_small', [19.1, 4.6, 51]);
 m.breakable('generator', [17.6, 4, 30.5], 0);
-prop('washer', [11, 4, 29.4]).prop('washer', [10, 4, 29.4]).prop('bucket', [8, 4, 29.2], 0, 1, false);
-prop('dungeon_barrel', [-19, 4, 51]).prop('dungeon_barrel', [-17.8, 4, 51]).prop('dungeon_barrel', [-19, 4, 49.8]);
-prop('bookcase_wide', [-11, 4, 51.3]).prop('crate_bottles', [-9, 4, 50.8], 0.2).prop('crate_large', [2.5, 4, 49.5], 0.3);
-prop('crate_bottles', [-3, 4, 29.4]).prop('dungeon_barrel', [3, 4, 29.6]);
-prop('workbench', [-19.2, 4, 31], P2).prop('anvil', [-16, 4, 29.5]).prop('log_stack', [-14, 4, 34.6], 0, 0.8);
-prop('lantern', [-8, 1.6, 26], 0, 1, false).prop('lantern', [-4, 5.6, 43.6], 0, 1, false);
+prop('washer', [11, 4, 29.4]).prop('washer', [10, 4, 29.4]);
+prop('dungeon_barrel', [-18.9, 4, 50.9]).prop('dungeon_barrel', [-17.7, 4, 50.9]).prop('dungeon_barrel', [-18.9, 4, 49.7]);
+prop('bookcase_wide', [-10.3, 4, 51.1]).prop('crate_bottles', [-8.4, 4, 50.8], 0.2).prop('crate_large', [2.2, 4, 49.5], 0.3);
+prop('crate_bottles', [-3, 4, 29.4]).prop('dungeon_barrel', [2.8, 4, 29.6]);
+prop('workbench', [-18.8, 4, 31], P2).prop('anvil', [-16, 4, 29.5]).prop('log_stack', [-14, 4, 34.2], 0, 0.8);
+prop('lantern', [-11.4, 2.4, 24], 0, 1, false).prop('lantern', [-4, 6.8, 43.6], 0, 1, false);
 // Main floor: living room, kitchen, dining, study, halls, parlour.
 prop('rug', [-4, 8, 44], 0, 1.4, false).prop('sofa_long', [-4, 8, 49.5], PI).prop('armchair', [-9, 8, 44], P2).prop('tv_cabinet', [-4, 8, 37], 0);
-prop('bookcase', [3.4, 8, 50], -P2).prop('floor_lamp', [-10.8, 8, 50.6], 0, 1, false);
-prop('fridge', [-19.2, 8, 51], P2).prop('stove', [-17, 8, 51.3], PI).prop('kitchen_cabinet', [-15.9, 8, 51.3], PI).prop('kitchen_cabinet', [-14.8, 8, 51.3], PI);
-prop('table_round', [-16, 8, 47]).prop('chair', [-17.2, 8, 47]).prop('chair', [-14.8, 8, 47]);
-prop('table_cloth', [-16, 8, 40], P2).prop('chair_cushion', [-17.2, 8, 39]).prop('chair_cushion', [-14.8, 8, 41]);
-prop('desk', [-16, 8, 29], 0).prop('office_chair', [-16, 8, 30.2], PI).prop('bookcase', [-19.4, 8, 33], P2);
-prop('coat_rack', [-11, 8, 34.5], 0, 1, false).prop('bench', [-6, 8, 34], 0, 2);
+prop('bookcase', [3.1, 8, 50], -P2);
+prop('fridge', [-18.9, 8, 50.8], P2).prop('stove', [-17.2, 8, 50.9], PI).prop('kitchen_cabinet', [-16.25, 8, 50.9], PI).prop('kitchen_cabinet', [-15.3, 8, 50.9], PI);
+prop('table', [-16, 8, 46.6]).prop('chair', [-17.4, 8, 46.6]).prop('chair', [-14.6, 8, 46.6]);
+prop('table_cloth', [-16, 8, 40], P2).prop('chair', [-17.2, 8, 39]).prop('chair', [-14.8, 8, 41]);
+prop('desk', [-16, 8, 29], 0).prop('chair', [-16, 8, 30.2], PI).prop('bookcase', [-19.1, 8, 33], P2);
+prop('coat_rack', [-11, 8, 34.5], 0, 1, false);
 prop('table', [0, 8, 33.5], 0).prop('chair', [-1, 8, 32.5]).prop('chair', [1, 8, 32.5]);
-prop('coat_rack', [19, 8, 34.6], 0, 1, false).prop('potted_plant', [13.5, 8, 35]);
-prop('armchair', [18.5, 8, 46], -P2).prop('side_table', [18.8, 8, 44], -P2).prop('bookcase', [13, 8, 51.3], PI);
+prop('coat_rack', [19, 8, 34.6], 0, 1, false);
+prop('armchair', [18.5, 8, 46], -P2).prop('side_table', [18.8, 8, 44], -P2).prop('bookcase', [13, 8, 51.1], PI);
 // Upstairs: bedrooms, bathroom, the attic hall.
-prop('bed', [-16, 12, 30.5], 0).prop('side_table', [-18.5, 12, 29], 0).prop('bunk_bed', [-11, 12, 31], 0).prop('bed', [16, 12, 30.5], 0);
-prop('bathtub', [-18.4, 12, 49.5], P2).prop('toilet', [-13.5, 12, 51.1], PI);
-prop('bed', [-16, 12, 41], P2).prop('desk', [12.8, 12, 49], P2).prop('bunk_bed', [19, 12, 50]).prop('rug_round', [-4, 12, 44], 0, 1, false);
+prop('bed', [-16, 12, 30.5], 0).prop('side_table', [-18.5, 12, 29], 0).prop('bunk_bed', [-10.8, 12, 31], 0).prop('bed', [16, 12, 30.5], 0);
+prop('bathtub', [-18.4, 12, 49.5], P2).prop('toilet', [-13.5, 12, 50.9], PI);
+prop('bed', [-16, 12, 41], P2).prop('desk', [13.2, 12, 49], P2).prop('bunk_bed', [19, 12, 50]).prop('rug', [-4, 12, 44], P2, 1, false);
 prop('crate_small', [-10.6, 12, 50.6]).prop('chest', [3, 12, 50.8], PI);
-// Deck posts, rocking chairs, porch.
+// Deck posts, chairs, porch.
 for (const x of [-19.4, -12, -4, 3.4]) prop('stone_pillar_town', [x, x === -12 || x === -4 ? 4 : G, 20.4], 0, 1.15);
 prop('chair', [-17, 8, 21.5], PI).prop('chair', [1.5, 8, 21.8], PI).prop('barrel', [-19, 8, 21]);
 prop('stone_pillar_town', [27.6, G, 28.4], 0, 1.15).prop('stone_pillar_town', [27.6, G, 35.6], 0, 1.15).prop('lantern_post', [21, 8, 35.2]);
 // Woodpiles and the chopping block against the lodge; the outhouse lantern.
-prop('woodpile', [-22, G, 48], P2).prop('woodpile', [-22, G, 31], P2).prop('log_stack', [-24, G, 26], 0.3).prop('stump_cut', [-26, G, 32]);
-prop('lantern', [-30, 6.3, 46.9], 0, 1, false).prop('bucket', [-28.6, G, 46.6], 0, 1, false);
-// Driveway: the cart, barrels, a mailbox post.
-prop('cart', [34, G, 46], P2 + 0.2).prop('barrel', [22, G, 38]).prop('barrel_open', [22.6, G, 39]).prop('signpost', [46, G, 30], -P2);
-prop('lightpost', [42.5, G, 26]).prop('lightpost', [42.5, G, -30]);
-// Barn: hay inside and out, the hay cart, tools.
+prop('woodpile', g(-22, 48), P2).prop('woodpile', g(-22, 31), P2).prop('log_stack', g(-24.5, 25), 0.3).prop('stump', g(-26, 32), 0, 1.6);
+prop('lantern', [-30, 6.35, 46.9], 0, 1, false);
+// Driveway: the cart, barrels under the porch, lamp posts by the road.
+prop('cart', g(34, 46), P2 + 0.2).prop('barrel', g(22, 34.5)).prop('barrel', g(22.8, 33.6));
+prop('lightpost', g(42.5, 26)).prop('lightpost', g(43.4, -30.6));
+// Barn: hay inside and out, the hay cart, a woodpile.
 prop('hay_bale', [-58.6, 4, 2], P2).prop('hay_bale', [-58.6, 4, 0.4], P2).prop('hay_bale', [-58.6, 4.8, 1.2], P2);
-prop('hay_bale', [-46, 8, 2.8]).prop('hay_bale', [-58.8, 8, -4], P2).prop('woodpile', [-46, 4, -2], P2, 0.8);
-prop('cart_high', [-40, G, -16], 0.3).prop('hay_bale', [-38, G, 6]).prop('hay_bale', [-37.6, G, 7.6], 0.4);
-prop('wheat', [-42, G, 9], 0, 1, false).prop('wheat', [-43, G, 10], 0.5, 1, false);
-// Shed: tools and a cart of logs.
-prop('workbench', [35, 4, -9], -P2).prop('planks_stack', [29.5, 4, -10], 0, 0.7).prop('lumber_car', [38.6, G, -16], 0, 0.7);
-// The yard: hay bales, an old stone wall, logs and the hay cart. Mirrored-ish so both flanks get cover.
-for (const [x, z, yaw] of [[-22, -20, 0.2], [-20.5, -21.4, 0.2], [-21.3, -20.7, 1.6], [12, -26, -0.3], [13.4, -24.8, -0.3], [24, -2, 0.8], [-34, -30, 0], [30, -32, 0.5]] as const) {
+prop('hay_bale', [-58.8, 8, -4], P2).prop('woodpile', [-46, 4, -4.5], P2, 0.8);
+prop('cart_high', g(-42, -21), 0.3).prop('hay_bale', g(-39, 6)).prop('hay_bale', g(-38.6, 7.6), 0.4);
+// Shed: tools and planks.
+prop('workbench', [34.9, 4, -9], -P2).prop('planks_stack', [29.5, 4, -10], 0, 0.7);
+// The yard: hay bales, an old stone wall, logs and the hay cart, so both flanks get cover.
+for (const [x, z, yaw] of [[-13, -29, 0.2], [-11.5, -30.4, 0.2], [-12.3, -29.7, 1.6], [16, -28, -0.3], [17.4, -26.8, -0.3], [24, -2, 0.8], [-34, -30, 0], [30, -32, 0.5]] as const) {
   prop('hay_bale', g(x, z), yaw);
 }
-prop('hay_bale', [-21, ground(-21, -20.5) + 0.8, -20.5], 0.2);
-for (const [x, z, model] of [[-6, -24, 'stone_wall'], [-3.4, -24.2, 'stone_wall_damaged'], [2, -24.4, 'stone_wall'], [4.4, -24.4, 'stone_wall']] as const) prop(model, g(x, z), 0);
-prop('cart_high', g(10, -13), 0.5).prop('log_big', g(-28, 2), 0.7).prop('log_big', g(18, 10), -0.4).prop('boulder_flat', g(28, -24), 0.4);
-prop('rock_large', g(-44, -32), 0.8, 1.4).prop('rock_medium', g(34, -36), 0.2, 1.3);
+prop('hay_bale', [-12, ground(-12, -29.5) + 0.8, -29.5], 0.2);
+for (const [x, model] of [[2, 'stone_wall'], [4.2, 'stone_wall_damaged'], [6.6, 'stone_wall'], [9, 'stone_wall']] as const) prop(model, g(x, -24), 0);
+prop('cart_high', g(10, -13), 0.5).prop('log_big', g(-28, 3), 0.7).prop('log_big', g(18, 9.5), -0.4);
+prop('rock_large', g(-44, -32), 0.8, 1.4).prop('rock_medium', g(34, -35), 0.2, 1.3).prop('rock_large', g(28, -22), 0.4, 1.2);
 // Lone field trees.
-prop('oak', g(-30, -6), 0.4, 1.1).prop('oak_dark', g(24, -16), 1.2, 1.05).prop('tree_detailed', g(-34, 24), 2.1).prop('oak', g(32, 30), 0.9, 0.95);
+prop('oak', g(-26, 8), 0.4, 1.1).prop('oak', g(24, -16), 1.2, 1.05).prop('tree_detailed', g(-34, 24), 2.1).prop('oak', g(32, 30), 0.9, 0.95);
 // The old watermill on the creek, west of the footbridge, and its stack of planks.
 prop('watermill', g(-66, -36.5), P2).prop('planks_stack', g(-60, -32), 0.3, 0.8);
 // Drain: pipes, a valve wheel, junk and lamps.
-prop('big_pipe', [-27.4, 0, -22], 0, 0.9).prop('pipe_valve', [-20.8, 0, -16], 0, 0.8).prop('debris', [-24, 0, -30], 0.6, 1, false);
-prop('lantern', [-27.6, 2, -36], 0, 1, false).prop('lantern', [-20.4, 2, -8], 0, 1, false).prop('lantern', [-11.6, 2, 0], 0, 1, false).prop('lantern', [-4.4, 2, 16], 0, 1, false);
-prop('barrel', [-35, 0, -5]).prop('crate_small', [-35, 0, -11], 0.3).prop('bucket', [-4.6, 0, -11], 0, 1, false);
-// Creek: logs, rocks, a rowing boat pulled up on the mud, bridge piers.
-prop('rowboat', g(-14, CREEK_Z - 3.3), 0.3).prop('log', g(8, CREEK_Z + 1), 1.4).prop('rock_medium', g(26, CREEK_Z - 2), 0.4).prop('rock_small', g(-40, CREEK_Z + 2.4), 1.1);
-for (const bx of Object.values(BRIDGE_X)) for (const dz of [-6, 6]) prop('wood_support', g(bx * 8, CREEK_Z + dz), 0, 0.9);
-for (const [x, z] of [[-70, -44], [-62, -47], [-36, -45.5], [-6, -46.8], [16, -44.6], [30, -47], [60, -45]] as const) prop('lily', [x, BED + 0.5, z], x, 4, false);
+prop('big_pipe', [-26.4, 0, -16], 0, 0.9).prop('pipe_valve', [-21.2, 0, -18], 0, 0.8);
+prop('lantern', [-27.2, 2, -36], 0, 1, false).prop('lantern', [-24, 2.6, -4.8], 0, 1, false).prop('lantern', [-11.2, 2, 0], 0, 1, false).prop('lantern', [-4.8, 2, 16], 0, 1, false);
+prop('barrel', [-35, 0, -5]).prop('crate_small', [-35, 0, -11], 0.3);
+// Creek: logs and rocks on the mud, posts under the bridges.
+prop('log', g(8, CREEK_Z + 1), 1.4).prop('rock_medium', g(26, CREEK_Z - 2), 0.4).prop('rock_medium', g(-40, CREEK_Z + 2.4), 1.1, 0.7);
+for (const bx of Object.values(BRIDGE_X)) for (const dx of [-1.3, 1.3]) for (const dz of [-3.5, 3.5]) prop('stone_pillar_town', g(bx * 8 + dx, CREEK_Z + dz));
 // Camp: tents, the fire, log benches, crates.
-prop('tent', g(-16, -90), 0.3).prop('tent_canvas', g(16, -90), -0.3).prop('tent', g(-22, -80), 1.2);
-prop('campfire_stones', g(0, -80)).prop('campfire', g(0, -80), 0, 1, false);
+prop('tent', g(-16, -90), 0.3).prop('tent', g(16, -90), -0.3).prop('tent', g(-22, -80), 1.2);
+prop('campfire_stones', g(0, -80));
 prop('log', g(-3.6, -80), 0).prop('log', g(3.6, -80), 0).prop('log', g(0, -83.6), P2);
-prop('crate_large', g(20, -82), 0.4).prop('crate_small', g(20.6, -80.5)).prop('cargo_crate', g(-24, -88), 0.2).prop('lantern_post', g(10, -76));
+prop('crate_large', g(20, -82), 0.4).prop('crate_small', g(21.5, -79.6)).prop('cargo_crate', g(-24, -88), 0.2).prop('lantern_post', g(10, -76));
 
 // Fences: the yard fence across the property (gates for the paths and the deck steps), the road fence, the creek fence.
 const fenceLine = (x0: number, z0: number, x1: number, z1: number, gaps: [number, number][] = [], model = 'fence', step = 1.15) => {
@@ -494,28 +505,30 @@ const fenceLine = (x0: number, z0: number, x1: number, z1: number, gaps: [number
     prop(model, [+x.toFixed(2), onCover ? 4 : ground(x, z), +z.toFixed(2)], yaw);
   }
 };
-fenceLine(-44, 12, 40, 12, [[13, 18], [33, 41], [56, 62]]); // gates at x -31..-26, -11..-3, 12..18
+fenceLine(-44, 12, 40, 12, [[13, 18], [33, 41], [50, 58]]); // gates at x -31..-26, -11..-3, 6..14
 fenceLine(42, -34, 42, 10, [[18, 24]]);
-fenceLine(-76, -36, -38, -36, [[6, 12], [24, 30]]);
-fenceLine(-44, -24, -44, 12, [[14, 22]]);
+fenceLine(-76, -36, -38, -36, [[4, 14.5], [24, 30]]);
+fenceLine(-36, -24, -36, 12, [[14, 22]]);
 
 // Woods: pines and oaks on the hills round the property, bushes and ferns under them, rocks and logs.
 let seed = 0x5eed1e;
 const rand = () => (seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) / 4294967296;
+const FENCES: P[][] = [[[-44, 12], [40, 12]], [[42, -34], [42, 10]], [[-76, -36], [-38, -36]], [[-36, -24], [-36, 12]]];
 const keepOut: [number, number, number][] = [
   [CAMP[0], CAMP[1], 15],
+  [-66, -36.5, 5], // the watermill
   ...m.doc.entities.filter((e) => e.kind === 'spawn' || e.kind === 'pickup').map((e) => [e.position[0], e.position[2], 3] as [number, number, number]),
 ];
 const trees: [number, number, number][] = [];
 const clear = (x: number, z: number, r: number) =>
   x > -74 && x < 66 && z > -94 && z < 78 &&
-  pathDist(x, z) > 2.5 + r && roadDist(x, z) > 7 + r && Math.abs(z - CREEK_Z) > 8.5 + r &&
+  pathDist(x, z) > 2.5 + r && roadDist(x, z) > 7 + r && Math.abs(z - CREEK_Z) > 10 + r &&
   rectDist(x, z, LODGE_RECT) > 12 + r && rectDist(x, z, [20, 16, 52, 56]) > 2 + r && rectDist(x, z, BARN_RECT) > 6 + r && rectDist(x, z, SHED_RECT) > 5 + r &&
   underDist(x, z) > 6 + r && !Object.values(BRIDGE_X).some((bx) => Math.abs(x - bx * 8) < 6 + r && z > -66 && z < -28) &&
-  keepOut.every(([kx, kz, kr]) => Math.hypot(kx - x, kz - z) > kr + r) &&
+  keepOut.every(([kx, kz, kr]) => Math.hypot(kx - x, kz - z) > kr + r) && FENCES.every((f) => lineDist(x, z, f) > 1.5 + r) &&
   trees.every(([tx, tz, tr]) => Math.hypot(tx - x, tz - z) > tr + r + 1.2);
 const woodsAt = (x: number, z: number) => z < -55 || z > 58 || x < -60 || x > 56;
-const TREES = ['pine', 'pine', 'pine_tall', 'pine_tall_b', 'pine_round', 'pine_crooked', 'oak_dark', 'tree_round_dark', 'oak', 'tree_fat'];
+const TREES = ['pine', 'pine', 'pine_tall', 'pine_tall', 'pine_round', 'pine_crooked', 'tree_round_dark', 'oak'];
 for (let n = 0; n < 6000 && trees.length < 230; n++) {
   const x = -76 + rand() * 144;
   const z = -96 + rand() * 176;
@@ -528,7 +541,7 @@ for (let n = 0; n < 6000 && trees.length < 230; n++) {
   const model = TREES[Math.floor(rand() * TREES.length)]!;
   prop(model, [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(rand() * 6.28).toFixed(2), +(0.85 + rand() * 0.45).toFixed(2));
 }
-const UNDERGROWTH = ['bush', 'bush_large', 'fern', 'fern', 'bush_small', 'grass_tall'];
+const UNDERGROWTH = ['bush', 'bush_large', 'fern', 'fern', 'grass_tall'];
 let under = 0;
 for (let n = 0; n < 4000 && under < 150; n++) {
   const x = -76 + rand() * 144;
@@ -546,7 +559,7 @@ for (let n = 0; n < 3000 && litter < 60; n++) {
   litter++;
   trees.push([x, z, 1]);
   const pick = rand();
-  const model = pick < 0.35 ? 'rock_large' : pick < 0.6 ? 'rock_medium' : pick < 0.8 ? 'log_big' : 'stump_old';
+  const model = pick < 0.35 ? 'rock_large' : pick < 0.6 ? 'rock_medium' : pick < 0.8 ? 'log_big' : 'stump';
   prop(model, [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(rand() * 6.28).toFixed(2), +(0.9 + rand() * 0.6).toFixed(2));
 }
 // Flowers and tufts in the yard (walk-through).
@@ -557,7 +570,7 @@ for (let n = 0; n < 2000 && flowers < 40; n++) {
   if (woodsAt(x, z) || !clear(x, z, 0.3) || underDist(x, z) < 6) continue;
   flowers++;
   const pick = rand();
-  prop(pick < 0.3 ? 'flower_yellow' : pick < 0.55 ? 'flower_purple' : pick < 0.75 ? 'flower_red' : 'grass_leafy', [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(rand() * 6.28).toFixed(2), 1, false);
+  prop(pick < 0.4 ? 'flower_yellow' : pick < 0.7 ? 'flower_purple' : 'grass_tall', [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(rand() * 6.28).toFixed(2), 1, false);
 }
 
 // ================================================================ map settings

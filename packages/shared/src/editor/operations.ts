@@ -6,7 +6,7 @@ import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
-import { FLOAT_TOLERANCE, floatingProps, settledPropY } from '../map/settle.ts';
+import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder } from '../map/settle.ts';
 
 /** Editor-level selection: stable IDs only, never object references or indices. */
 export interface Selection {
@@ -204,11 +204,15 @@ export function settlePropsCommand(doc: MapDocument, ids?: readonly string[]): E
   const after: MapEntity[] = [];
   if (!t) return { kind: 'updateEntities', before, after };
   const want = ids ? new Set(ids) : null;
-  const floating = new Set(floatingProps(doc).map((f) => f.id));
+  const boxes = supportBoxes(doc);
+  const floating = new Set(floatingProps(doc, boxes).map((f) => f.id));
   for (const e of doc.entities) {
     if (e.kind !== 'prop' || (want && !want.has(e.id))) continue;
     const y = settledPropY(t, e);
     if (y === null || Math.abs(y - e.position[1]) < 0.01) continue;
+    // Held up by a floor, block or another prop above the ground: it stays where it stands.
+    const held = supportUnder(boxes, e.position[0], e.position[2], e.position[1], e.id);
+    if (held > y + 0.05 && held >= e.position[1] - FLOAT_TOLERANCE) continue;
     // Only props near the ground (or reported floating), never ones up on a roof or a crate.
     const near = e.position[1] - y < FLOAT_TOLERANCE + 0.05 && e.position[1] - y > -1.5;
     if (!near && !floating.has(e.id)) continue;

@@ -72,6 +72,11 @@ describe('props on slopes', () => {
       prop('stacked', 'prop.crate_small', -10, 0.6, -10),
     );
     map.entities.find((e) => e.id === 'base')!.position[1] = 0;
+    // A free block floor 0.1 m above the hillside, with a crate on it.
+    const fx = 6, fz = -6;
+    const floorTop = Math.round((settledPropY(t, prop('f', 'prop.crate_small', fx, 0, fz))! + 0.13 + 0.1) * 100) / 100;
+    map.entities.push({ id: 'floor', kind: 'block', position: [fx, floorTop - 0.3, fz], size: [4, 0.3, 4], yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 100 } as never);
+    map.entities.push({ ...prop('onfloor', 'prop.crate_small', fx, floorTop, fz), yaw: 0 });
     (map.entities.find((e) => e.id === 'base') as PropEntity).yaw = 0;
     (map.entities.find((e) => e.id === 'stacked') as PropEntity).yaw = 0;
     expect(floatingProps(map).map((f) => f.id)).toEqual(['floater']);
@@ -82,6 +87,8 @@ describe('props on slopes', () => {
     const settled = history.doc.entities.find((e) => e.id === 'floater')!;
     expect(settled.position[1]).toBeCloseTo(ground, 2);
     expect(history.doc.entities.find((e) => e.id === 'stacked')!.position[1]).toBe(0.6);
+    // A prop on a floor just above the hillside stays on the floor, not sunk to the terrain.
+    expect(history.doc.entities.find((e) => e.id === 'onfloor')!.position[1]).toBe(floorTop);
     expect(floatingProps(history.doc)).toEqual([]);
     history.undo();
     expect(history.doc.entities.find((e) => e.id === 'floater')!.position[1]).toBeCloseTo(ground + 0.8, 5);

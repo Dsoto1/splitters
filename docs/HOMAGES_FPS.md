@@ -71,3 +71,29 @@ Built from the scenario kit:
 - a master rule for the alarm, the messages and the cooldown;
 - a rule that locks, closes and unlocks the doors;
 - eleven rules that each enable, fire and disable ten charges, because a rule holds at most 32 actions.
+
+## Backwoods Lodge (`backwoods`)
+
+An homage to Counter-Strike's **cs_militia**, rebuilt from memory with our own kit (script: `packages/server/src/tools/maps/backwoods.ts`). Frontier Saloon theme on terrain, under a cloudy sky with forest scenery. A big three-level wooden lodge stands on the high ground at the north end of a farm property. A creek ravine runs across the south, with pine woods beyond it. TDM and deathmatch, 8–16 players. Embers defend the lodge (8 spawns across the cellar, the garage, the main floor and upstairs) and Tide attack from a camp in the woods (8 spawns). Six neutral spawns cover deathmatch: the barn, the shed, the drain junction, the road, the west field and the hill behind the lodge.
+
+**The lodge**
+- **Lower floor** (stone, at yard level): the garage, with two wide doors onto the driveway; a workshop, a laundry, a boiler room and a big cellar; and a side door on the west.
+- **Main floor**: a rear door onto a raised back deck with steps down to the yard, and a front door onto a porch with steps down to the drive. Stairs lead up from the garage into the living room.
+- **Upstairs**: bedrooms, a bathroom and an attic hall, with windows all round and a balcony over the deck looking straight down the yard.
+
+**Routes**
+- **The yard** (centre): an open field rising gently from the creek to the lodge. Cover comes from hay bales, an old stone wall, a hay cart and lone oaks. A fence line with gates runs across it. Getting in means taking the deck steps to the rear door, under fire from the upstairs windows and the balcony.
+- **Barn flank** (west): over the footbridge (past the old watermill) to the two-storey barn, then past the outhouse and the woodpiles to the cellar side door. From the barn's hayloft windows you can trade shots with the lodge.
+- **The road** (east): over the road bridge and along the gravel road past the shed to the driveway. From there the garage doors lead to the lower floor, or the porch steps to the front door.
+- **The drain**: a concrete culvert opens on the creek bed below the yard. It runs north to a junction with a side niche, turns east, then runs north under the whole yard. Stairs at its end climb into the lodge cellar. On the surface it shows as a slightly raised grass strip.
+
+**Key pickups**
+- **Sniper rifle**: in the barn hayloft, by the window facing the lodge.
+- **Rocket launcher**: in the niche off the drain junction.
+- **Heavy armour**: in the roadside shed.
+- **Big health**: on the barn floor.
+- **Marksman rifle**: upstairs in the lodge. The lodge also has a shotgun in the cellar, an SMG in the living room and small armour upstairs.
+- **Grenade launcher**: behind the old stone wall in the yard.
+- **Plasma rifle**: on the creek bed under the road bridge.
+- **LMG**: by the footbridge.
+- **The camp**: a burst rifle, an SMG, small armour and grenades.
