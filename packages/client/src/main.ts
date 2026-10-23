@@ -6,7 +6,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { initPhysics, loadMap, rulesForMap, type GameMode, type MatchRules } from '@chronosplit/shared';
+import { initPhysics, isGameMode, loadMap, mapCanRun, playableModes, rulesForMap, rulesForMode, type GameMode, type MatchRules } from '@chronosplit/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
@@ -56,9 +56,8 @@ function arcadeEntries(files: Record<string, unknown>, group?: string): ArcadeMa
       if (key in OFFLINE_MAPS) return [];
       const r = loadMap(json);
       if (!r.ok) return [];
-      const modes = r.map.metadata.supportedModes.filter((m): m is GameMode => m === 'core.deathmatch' || m === 'core.tdm' || m === 'core.coop');
       const blurb = r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? '';
-      return [{ key, map: r.map, blurb, modes: modes.length ? modes : ['core.deathmatch'], bots: Math.max(3, Math.min(11, r.map.metadata.recommendedPlayers.max - 1)), ...(group ? { group } : {}) }];
+      return [{ key, map: r.map, blurb, modes: playableModes(r.map), bots: Math.max(3, Math.min(11, r.map.metadata.recommendedPlayers.max - 1)), ...(group ? { group } : {}) }];
     })
     .sort((a, b) => a.map.metadata.name.localeCompare(b.map.metadata.name));
 }
@@ -67,7 +66,8 @@ function arcadeEntries(files: Record<string, unknown>, group?: string): ArcadeMa
 function arcadeMaps(): ArcadeMap[] {
   const entry = (key: OfflineMap, blurb: string, modes: GameMode[], bots: number): ArcadeMap[] => {
     const r = loadMap(OFFLINE_MAPS[key]);
-    return r.ok ? [{ key, map: r.map, blurb, modes, bots }] : [];
+    // Modes the map gains from its objectives (flag bases, hills) join the built-in list.
+    return r.ok ? [{ key, map: r.map, blurb, modes: [...modes, ...playableModes(r.map).filter((m) => !modes.includes(m))], bots }] : [];
   };
   return [
     ...entry('canyon', 'Outdoor canyon: two bases, boulder fields, hills and a ridge ledge.', ['core.tdm', 'core.deathmatch'], 9),
@@ -202,8 +202,8 @@ class App {
     });
   }
 
-  /** Quick start from a URL (?offline=sandgate): the map's own mode and a default bot count. */
-  async playOffline(which: string = 'arena'): Promise<void> {
+  /** Quick start from a URL (?offline=sandgate, &gamemode=core.ctf): the map's own mode (or the one asked for) and a default bot count. */
+  async playOffline(which: string = 'arena', mode: string | null = null): Promise<void> {
     await this.init();
     const json = which in OFFLINE_MAPS ? OFFLINE_MAPS[which as OfflineMap] : (EXTRA_MAPS[`../../../maps/${which}.json`] ?? (await importedMaps())[`../../../maps/imported/${which}.json`]);
     if (!json) return void this.showMenu(`No map called ${which}`);
@@ -211,7 +211,8 @@ class App {
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');
     // Co-op: two bot teammates; team deathmatch: 5 v 5; deathmatch maps: a lobby of opponents.
     const botFill = ({ outpost: 3, vault: 4, sandgate: 10, arena: 6, citadel: 8, canyon: 10 } as Record<string, number>)[which] ?? Math.max(4, Math.min(12, arena.map.metadata.recommendedPlayers.max));
-    this.playLocal(arena.map, rulesForMap(arena.map), botFill, 'normal');
+    const asked = mode && isGameMode(mode) && mapCanRun(arena.map, mode) ? mode : null;
+    this.playLocal(arena.map, asked ? rulesForMode(arena.map, asked) : rulesForMap(arena.map), botFill, 'normal');
   }
 
   playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard'): void {
@@ -279,6 +280,6 @@ if (params.get('mode') === 'assets') {
 else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('offline')) {
   const which = params.get('offline');
-  void app.playOffline(which || 'arena');
+  void app.playOffline(which || 'arena', params.get('gamemode'));
 } else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.front!.server, app.front!.name));
 else void app.showMenu();

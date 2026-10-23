@@ -338,3 +338,20 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #vehicle-hp b, #vehicle-bars b { display: block; height: 100%; width: var(--hp, 100%); background: var(--hp-color, var(--success)); transition: width 0.2s; }
 #vehicle-bars { position: absolute; inset: 0; pointer-events: none; }
 #vehicle-bars i { position: absolute; width: 64px; height: 5px; margin-left: -32px; background: rgba(0, 0, 0, 0.55); outline: 1px solid rgba(0, 0, 0, 0.6); }
+
+/* Objective modes: flag / hill / round status under the scorebar, and markers to the objectives. */
+#mode-status { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; font: 600 12px var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+#mode-status:empty { display: none; }
+#mode-status .ms { display: flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(11, 15, 26, 0.85); border-bottom: 2px solid currentColor; }
+#mode-status .ms b { font-size: 15px; line-height: 1; }
+#mode-status .ms.taken { animation: ms-blink 0.8s steps(2) infinite; }
+#mode-status .ms em { font-style: normal; color: #f2f2f2; }
+#mode-status .me { color: #f2c14e; border-color: #f2c14e; }
+@keyframes ms-blink { 50% { opacity: 0.45; } }
+#mode-markers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.mode-marker { position: absolute; transform: translate(-50%, -100%); text-align: center; font: 700 12px var(--font-display); text-shadow: 0 1px 3px #000; }
+.mode-marker b { display: block; font-size: 20px; line-height: 22px; }
+.mode-marker span { color: #f2f2f2; }
+.mode-marker i { display: none; }
+.mode-marker.edge { transform: translate(-50%, -50%); }
+.mode-marker.edge i { display: block; width: 0; height: 0; margin: 0 auto 2px; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid currentColor; }

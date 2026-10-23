@@ -513,6 +513,85 @@ async function teamsFlow(browser) {
   await page.context().close();
 }
 
+/** Capture the Flag offline: flags drawn, taking the enemy flag shows on the HUD, bringing it home scores. */
+async function ctfFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=bunker_cross&gamemode=core.ctf`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match && window.__cs.mode?.state, null, { timeout: 40000 });
+  await page.waitForTimeout(1500);
+  const label = await page.textContent('#mode-label');
+  check(label === 'Capture the Flag', `the match runs Capture the Flag (${label})`);
+  const drawn = await page.evaluate(() => ({ flags: window.__cs.mode.flagCount, nodes: window.__cs.view.scene.transformNodes.filter((n) => /^flag_[a-z]+$/.test(n.name)).length, bases: window.__cs.view.scene.transformNodes.filter((n) => /^flagbase_/.test(n.name)).length }));
+  check(drawn.flags === 2 && drawn.nodes === 2 && drawn.bases === 2, `both flags and bases are drawn (${JSON.stringify(drawn)})`);
+  const status = await page.evaluate(() => [...document.querySelectorAll('#mode-status [data-flag]')].map((e) => e.dataset.state));
+  check(status.length === 2, `the HUD shows both flags' status (${status})`);
+  if (process.env.E2E_SHOTS) {
+    // Look at the enemy flag from a few metres off (the pause overlay is up in headless runs: hide it for the picture).
+    await page.evaluate(() => {
+      const me = window.__match.slots[window.__cs.slot];
+      me.health = 1e6;
+      const theirs = window.__match.mode.flags.find((f) => f.team !== me.faction);
+      const own = window.__match.mode.flags.find((f) => f.team === me.faction);
+      const d = Math.hypot(own.base.x - theirs.base.x, own.base.z - theirs.base.z) || 1;
+      const from = { x: theirs.base.x + ((own.base.x - theirs.base.x) / d) * 5, y: theirs.base.y + 0.2, z: theirs.base.z + ((own.base.z - theirs.base.z) / d) * 5 };
+      me.move = { pos: from, velY: 0, grounded: false };
+      window.__cs.input.yaw = Math.atan2(theirs.base.x - from.x, theirs.base.z - from.z);
+      window.__cs.input.pitch = -0.15;
+      document.getElementById('pause').style.visibility = 'hidden';
+    });
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-flag.png`, timeout: 60000 }).catch(() => {});
+  }
+  // Stand on the enemy flag: it is ours to carry.
+  await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const theirs = window.__match.mode.flags.find((f) => f.team !== me.faction);
+    // Bots are shooting: make the test player sturdy enough to make the run.
+    me.health = 1e6;
+    // If a bot already has it, put it back on its base so the test starts clean.
+    if (theirs.state === 1) {
+      const c = window.__match.slots[theirs.carrier];
+      if (c) c.modeSpeed = undefined;
+      Object.assign(theirs, { state: 0, carrier: null, pos: { ...theirs.base } });
+    }
+    me.move = { pos: { ...theirs.pos, y: theirs.pos.y + 0.2 }, velY: 0, grounded: false };
+  });
+  await page.waitForFunction(() => document.querySelector('#mode-status .ms.me'), null, { timeout: 8000 }).catch(() => {});
+  const carrying = await page.evaluate(() => ({
+    hud: document.querySelector('#mode-status .ms.me')?.textContent ?? '',
+    msg: document.getElementById('message').textContent,
+    carrier: window.__cs.mode.state.fl.find((r) => r[1] === 1)?.[5],
+    slot: window.__cs.slot,
+    speed: window.__cs.local.statusSpeed,
+    home: [...document.querySelectorAll('#mode-markers .mode-marker')].map((m) => m.dataset.id),
+  }));
+  check(carrying.carrier === carrying.slot && /You have it/.test(carrying.hud), `picking up the enemy flag shows on the HUD (${carrying.hud})`);
+  check(/You have the flag/.test(carrying.msg ?? ''), `the announcer calls it (${carrying.msg})`);
+  check(Math.abs(carrying.speed - 0.85) < 0.01, `the carrier is slowed (${carrying.speed})`);
+  check(carrying.home.includes('base'), `a marker points the way home (${carrying.home})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-carrying.png`, timeout: 60000 }).catch(() => {});
+  // Run it home (our own flag must be there: send it home if a bot took it).
+  await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    const ours = m.mode.flags.find((f) => f.team === me.faction);
+    if (ours.state !== 0) {
+      const c = m.slots[ours.carrier];
+      if (c) c.modeSpeed = undefined;
+      Object.assign(ours, { state: 0, carrier: null, pos: { ...ours.base } });
+    }
+    me.move = { pos: { ...ours.base, y: ours.base.y + 0.2 }, velY: 0, grounded: false };
+  });
+  await page.waitForFunction(() => window.__cs.mode.state.ts.some((n) => n > 0) && document.querySelector('#sb-left b')?.textContent === '1', null, { timeout: 8000 }).catch(() => {});
+  const after = await page.evaluate(() => ({ ts: window.__cs.mode.state.ts, left: document.querySelector('#sb-left b')?.textContent, msg: document.getElementById('message').textContent }));
+  check(after.ts.some((n) => n === 1) && after.left === '1', `bringing it home scores a capture (${JSON.stringify(after)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-captured.png`, timeout: 60000 }).catch(() => {});
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function arsenalFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
@@ -682,7 +761,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

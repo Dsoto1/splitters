@@ -133,6 +133,33 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] The score bar and Tab scoreboard show every team in its colour.
 - [ ] Teams are filled to the sizes you set; teammates don't take damage from you (if friendly fire is off).
 
+## 9b. Objective modes (see [GAME_MODES.md](GAME_MODES.md))
+
+Capture the Flag (`?offline=bunker_cross&gamemode=core.ctf`, also `rail_stockyard`, `twin_spires`):
+
+- [ ] Both flags stand on glowing bases in team colours; the line under the scorebar reads "Your flag: Home" and "<Team> flag: Home".
+- [ ] Walk onto the enemy flag: "You have the flag! Take it home!", you are a little slower, a marker points home, E won't get you into a buggy, and a jetpack does nothing until you drop or capture.
+- [ ] Bring it home with your flag there: "You captured the flag!", the team score goes up, and the flag is back on its base.
+- [ ] With your own flag taken, standing on your base with theirs scores nothing.
+- [ ] Die while carrying: the flag lies on the ground where you fell. A teammate of its team touching it sends it home ("returned"); otherwise it goes home after 30 s (the countdown shows).
+- [ ] When a bot takes your flag you hear the alarm and see "Your flag has been taken!"; other players see the flag on the carrier's back.
+- [ ] Leave it running with bots for a few minutes: the bots capture, return and chase.
+
+King of the Hill (`?offline=bunker_cross&gamemode=core.koth`):
+
+- [ ] The hill ring shows with a marker. Stand in it alone and your team's score climbs once a second; with an enemy inside it reads "Contested" and stops.
+- [ ] Every 60 s "The hill has moved!" and the ring jumps to the next spot.
+
+Elimination (`?offline=sandgate&gamemode=core.elim`):
+
+- [ ] When you die you stay out ("Out until the next round"); the status line counts the players standing on each side.
+- [ ] When a side is wiped out, "<Team> win round N", a 3 s pause, then everyone respawns for round N+1.
+
+Arcade and MapMaker:
+
+- [ ] Arcade: maps with flag bases and hills show Capture the Flag and King of the Hill tabs; CTF has two team-size steppers; the score row is labelled Captures / Hill seconds / Rounds to win.
+- [ ] MapMaker → Entities: place two Flag Bases (the second goes to the other team on its own) and a few Hills. Set Map properties → Mode to Capture the Flag and TEST. Remove one base: validation names the missing team.
+
 ## 10. MapMaker
 
 - [ ] **Curves** tab: small / medium / large round corners and arcades, half-round rooms, round tower, curved corridor, balconies. Rotate them and connect them to the regular rooms with no gaps.

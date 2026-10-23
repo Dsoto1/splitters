@@ -23,6 +23,7 @@ import {
   type Liquid,
   type MapEntity,
 } from '@chronosplit/shared';
+import { createFlagBase, createFlagModel, createHillModel } from './flagVisuals.ts';
 
 /** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */
 export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: number; depthAlpha: number; shine: number; flow: number }> = {
@@ -40,7 +41,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill'];
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
 interface Visual {
@@ -170,7 +171,27 @@ export class ScenarioVisuals {
         return this.block(name, e);
       case 'water':
         return this.water(name, e);
+      case 'flag':
+      case 'hill':
+        return this.objective(name, e);
     }
+  }
+
+  /** Team colours for flag bases (MapMaker). */
+  teamColor: (team: string) => string = () => '#888888';
+
+  /**
+   * Editor-only markers for mode objectives: a flag base with its flag in the
+   * team's colour, or a hill's area. In a match the mode draws these itself
+   * (and only in its own mode).
+   */
+  private objective(name: string, e: Extract<MapEntity, { kind: 'flag' | 'hill' }>): Visual {
+    if (!this.opts.editor) return { root: new TransformNode(name, this.scene) };
+    if (e.kind === 'hill') return { root: createHillModel(this.scene, e.radius, name) };
+    const color = this.teamColor(e.team);
+    const root = createFlagBase(this.scene, color, name);
+    createFlagModel(this.scene, color, `${name}_flag`).parent = root;
+    return { root };
   }
 
   /** Materials for free blocks (the map's library materials; set by the game and MapMaker views). */

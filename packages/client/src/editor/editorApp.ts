@@ -31,6 +31,9 @@ import {
   SQUAD_ORDERS,
   mapFactions,
   mapTeams,
+  playableModes,
+  isTeamMode,
+  MODE_LABELS,
   SCENARIO_PALETTE,
   TRAP_ACTIVATIONS,
   TRAP_KINDS,
@@ -169,6 +172,8 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   generator: '<rect x="8" y="20" width="40" height="26" rx="2" fill="#5a6066"/><rect x="12" y="24" width="14" height="10" fill="#e3b021"/><circle cx="37" cy="33" r="6" fill="#3a3f48"/><rect x="14" y="12" width="6" height="8" fill="#5a6066"/>',
   door: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#3fd26b"/>',
   door_locked: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#e0412f"/><rect x="23" y="34" width="10" height="9" rx="1" fill="#e0412f"/><path d="M25 34v-3a3 3 0 0 1 6 0v3" stroke="#e0412f" stroke-width="2" fill="none"/>',
+  flag: '<ellipse cx="28" cy="48" rx="16" ry="5" fill="#2a2f3a" stroke="#e2703a" stroke-width="2"/><rect x="18" y="8" width="3" height="40" fill="#c9ccd2"/><path d="M21 10h22l-5 8 5 8H21z" fill="#e2703a"/>',
+  hill: '<ellipse cx="28" cy="38" rx="22" ry="9" fill="#f2f2f2" fill-opacity=".2" stroke="#f2f2f2" stroke-width="2"/><path d="M14 38V26M42 38V26M28 47V35M28 29V17" stroke="#f2f2f2" stroke-width="2"/><path d="M22 14l6-8 6 8z" fill="#f2c14e"/>',
   pad: '<ellipse cx="28" cy="42" rx="20" ry="7" fill="#2a2f3a"/><ellipse cx="28" cy="41" rx="15" ry="5" fill="#36d6ff"/><path d="M20 30l8-10 8 10M20 22l8-10 8 10" stroke="#36d6ff" stroke-width="3" fill="none"/>',
   button: '<rect x="24" y="24" width="8" height="26" fill="#3a3f48"/><rect x="17" y="12" width="22" height="16" rx="2" fill="#c9ccd2"/><circle cx="28" cy="20" r="5" fill="#3fd26b"/>',
   crate: '<rect x="12" y="14" width="32" height="32" fill="#9a6b3d"/><path d="M12 14L44 46M12 18h32M12 42h32" stroke="#6e4a28" stroke-width="3"/>',
@@ -204,6 +209,10 @@ function pickRadius(e: MapEntity): number {
       return e.model === 'wall' ? 1.5 : 0.9;
     case 'encounter':
       return Math.max(1.2, Math.min(3, e.radius));
+    case 'hill':
+      return Math.max(1.2, Math.min(4, e.radius));
+    case 'flag':
+      return 1.1;
     case 'prop': {
       const size = getProp(e.model)?.size ?? [1, 1, 1];
       return Math.max(0.5, (Math.min(size[0], size[2]) * e.scale) / 2 + 0.2);
@@ -502,7 +511,7 @@ export class EditorApp {
         p = [d.x, y, d.z];
         yaw = d.yaw;
       }
-      const entity = newScenarioEntity(this.tool.key, p, yaw);
+      const entity = newScenarioEntity(this.tool.key, p, yaw, this.doc);
       const label = SCENARIO_PALETTE.find((x) => x.key === (this.tool as { key: string }).key)?.label ?? 'object';
       if (this.run(`Place ${label}`, { kind: 'addEntities', entities: [entity] })) this.setSelection({ tiles: [], entities: [entity.id] });
     }
@@ -1617,16 +1626,22 @@ export class EditorApp {
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
       const mode = document.createElement('select');
       const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.coop', 'Co-op mission']] as const) mode.append(new Option(label, id, false, id === current));
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.coop', 'Co-op mission']] as const) mode.append(new Option(label, id, false, id === current));
       mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value] } }));
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
         'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
         'core.tdm': `Team Deathmatch: ${teams.map((t) => t.name).join(' against ')}. Give spawns a team in their inspector; teams without spawns of their own use the shared ones.`,
         'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
+        'core.ctf': `Capture the Flag: ${teams.slice(0, 2).map((t) => t.name).join(' against ')}. Place a Flag Base (Entities tab) for each team; bring the enemy flag to yours while yours is home. Other modes ignore flag bases.`,
+        'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
+        'core.elim': 'Elimination: round-based Team Deathmatch. No respawns until the next round; the last team standing wins it.',
       };
+      // Maps with flag bases or hills also offer those modes in the Arcade, whatever the main mode is.
+      const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
+      if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
-      if (current === 'core.tdm') this.renderTeamSetup(el);
+      if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim') this.renderTeamSetup(el);
       const theme = document.createElement('select');
       for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
       theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
@@ -1866,6 +1881,17 @@ export class EditorApp {
         el.append(small(`${e.roster.trooper + e.roster.gunner + e.roster.heavy} in the first wave, then ${e.reinforcements} reinforcements (+${e.perPlayer} per extra player). Factions are edited in the Logic panel (L).`));
         break;
       }
+      case 'flag': {
+        const teams = mapTeams(doc, 2);
+        choose('Team', teams.map((t) => [t.id, t.name] as const), e.team, (v) => ({ team: v }));
+        number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
+        el.append(small('Capture the Flag: this team\'s flag stands here. Players bring the enemy flag to it to score, while their own flag is home. One base per team; put it somewhere the team can defend, off its spawn points.'));
+        break;
+      }
+      case 'hill':
+        number('Radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 2, 20) }));
+        el.append(small('King of the Hill: the hill moves between hills in the order they were placed, every minute. A team scores a point per second while it alone stands inside.'));
+        break;
       case 'pad':
         number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
         number('Launch up (m/s)', e.power, 1, (v) => ({ power: Math.max(2, Math.min(40, v)) }));
@@ -1888,7 +1914,7 @@ export class EditorApp {
       case 'spawn': {
         const teams = mapTeams(doc, MAX_TEAMS);
         choose('Team', [['', 'Any (shared)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));
-        el.append(small(doc.metadata.supportedModes[0] === 'core.tdm' ? 'In Team Deathmatch a team spawns on its own points; shared points are used when a team has none.' : 'Teams only matter in Team Deathmatch.'));
+        el.append(small(isTeamMode(doc.metadata.supportedModes[0] ?? '') ? 'In team modes a team spawns on its own points; shared points are used when a team has none.' : 'Teams only matter in team modes (Team Deathmatch, Capture the Flag, King of the Hill, Elimination).'));
         break;
       }
     }
@@ -2092,7 +2118,8 @@ export class EditorApp {
     const botCount = Number($<HTMLSelectElement>('ed-bots').value);
     const difficulty = $<HTMLSelectElement>('ed-skill').value as TestRequest['difficulty'];
     // Team maps fill every team to its size; otherwise the bots chosen in the top bar.
-    const teams = this.doc.metadata.supportedModes[0] === 'core.tdm' ? this.doc.teamSetup?.sizes : undefined;
+    const main = this.doc.metadata.supportedModes[0] ?? '';
+    const teams = isTeamMode(main) ? (main === 'core.ctf' ? (this.doc.teamSetup?.sizes.slice(0, 2) ?? [4, 4]) : this.doc.teamSetup?.sizes) : undefined;
     const fill = teams ? Math.min(32, teams.reduce((a, b) => a + b, 0)) : botCount + 1;
     this.host.startTest({ map: this.doc, botFill: fill, difficulty });
   }
