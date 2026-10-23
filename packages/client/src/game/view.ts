@@ -96,6 +96,8 @@ export class GameView {
   private readonly viewRoot: TransformNode;
   private viewmodel?: TransformNode;
   private viewWeapon?: string;
+  /** Your own character's arms in first person, gripping the viewmodel. */
+  private fpArms?: { look: string; anim: CharacterAnimator | null; root: TransformNode };
   private viewLoad = 0;
   /** Front of the loaded viewmodel along its forward axis, for the muzzle flash. */
   private muzzleZ = 0.2;
@@ -167,6 +169,41 @@ export class GameView {
       // Draw on top of the world so the gun never clips into walls.
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
       this.viewmodel = node;
+      this.fpArms?.anim?.gripExternal(node, def.view.hold);
+    });
+  }
+
+  /**
+   * Show your own character's arms in first person, holding the viewmodel.
+   * The arms hang from the camera at shoulder height; the gun keeps its
+   * viewmodel placement (bob, recoil, reload dip) and the hands follow it by IK.
+   */
+  setLocalLook(look: string | undefined): void {
+    if (!look || this.fpArms?.look === look) return;
+    this.fpArms?.anim?.dispose();
+    this.fpArms?.root.dispose();
+    const root = new TransformNode('fpArms', this.scene);
+    root.parent = this.camera;
+    const arms = { look, anim: null as CharacterAnimator | null, root };
+    this.fpArms = arms;
+    void this.characters.create({ look, armsOnly: true }, 'fpArmsChar').then((ch) => {
+      if (this.fpArms !== arms) return ch.dispose();
+      // Same size as the full character (fitted to the player height: the head joint sits
+      // about 0.2 m below the top of the head), placed so the eyes are at the camera.
+      const head = ch.joints.get('Head');
+      head?.computeWorldMatrix(true);
+      const headY = head ? head.getAbsolutePosition().y : PLAYER.eyeHeight;
+      const scale = PLAYER.height / (headY + 0.2);
+      ch.root.parent = root;
+      ch.root.scaling.setAll(scale);
+      // A little forward of the eyes, so the support hand reaches long guns (the shoulders are never in view).
+      ch.root.position.set(0, -(headY + 0.07) * scale, 0.2);
+      for (const m of ch.meshes) {
+        m.renderingGroupId = 1;
+        m.receiveShadows = false;
+      }
+      arms.anim = new CharacterAnimator(this.scene, ch);
+      if (this.viewmodel && this.viewWeapon) arms.anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold);
     });
   }
 
@@ -180,6 +217,8 @@ export class GameView {
   updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean }): void {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     this.viewRoot.setEnabled(!o.hidden && !!def);
+    this.fpArms?.root.setEnabled(!o.hidden && !!def);
+    if (def && this.fpArms?.anim) this.fpArms.anim.update(dt, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
     if (!def) return;
     this.kickAmount = Math.max(0, this.kickAmount - dt * 6);
     if (o.moving) this.bobPhase += dt * 9;
@@ -264,6 +303,11 @@ export class GameView {
   /** Play an upper-body action on a remote avatar (shooting, melee). */
   avatarAction(slot: number, action: OneShot): void {
     this.avatars.get(slot)?.anim?.trigger(action);
+  }
+
+  /** Whether your own first-person arms have loaded (for tests). */
+  hasFirstPersonArms(): boolean {
+    return !!this.fpArms?.anim;
   }
 
   /** Remote avatars currently shown as animated characters (for tests and the stats overlay). */

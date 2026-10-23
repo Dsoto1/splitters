@@ -140,6 +140,18 @@ export class CharacterAnimator {
     }
   }
 
+  /**
+   * Put the hands on a weapon that is positioned by someone else (the
+   * first-person viewmodel): the weapon is not moved or owned, only gripped.
+   */
+  gripExternal(weapon: TransformNode | null, grip: WeaponHold | null): void {
+    this.weapon?.dispose();
+    this.weapon = null;
+    this.external = weapon && grip ? { node: weapon, grip } : null;
+  }
+
+  private external: { node: TransformNode; grip: WeaponHold } | null = null;
+
   update(dt: number, s: MotionState): void {
     if (!s.alive) {
       if (!this.dead) this.die();
@@ -188,7 +200,7 @@ export class CharacterAnimator {
       this.handsOff = false;
     }
     // Hands on the weapon unless an action needs them; long guns turn the shoulders into the stock.
-    const ikTarget = this.handsOff || this.grip?.style === 'melee' ? 0 : 1;
+    const ikTarget = this.handsOff || (this.grip?.style === 'melee' && !this.external) ? 0 : 1;
     this.ik += Math.sign(ikTarget - this.ik) * Math.min(Math.abs(ikTarget - this.ik), dt * 6);
     const bladeTarget = this.grip?.style === 'long' && !s.celebrate ? LONG_GUN_BLADE * this.ik : 0;
     this.blade += (bladeTarget - this.blade) * Math.min(1, dt * 8);
@@ -264,6 +276,7 @@ export class CharacterAnimator {
       bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
     }
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
+    else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x);
   }
 
   /**
@@ -331,6 +344,26 @@ export class CharacterAnimator {
     // Into the root's space.
     weapon.position.copyFrom(Vector3.TransformCoordinates(at, root.getWorldMatrix().clone().invert()));
     weapon.rotationQuaternion = Quaternion.Inverse(rootRot).multiply(rot);
+  }
+
+  /** Hands onto a weapon placed elsewhere: palms to its grip and support points, fingers closed. */
+  private gripPlaced(weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace, scale: number): void {
+    weapon.computeWorldMatrix(true);
+    const world = weapon.getWorldMatrix();
+    const point = (p: ModelPoint) => Vector3.TransformCoordinates(new Vector3(p[0], p[1], p[2]), world);
+    const pos = (n: TransformNode) => {
+      n.computeWorldMatrix(true);
+      return n.getAbsolutePosition().clone();
+    };
+    const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
+    const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
+    const w = this.ik;
+    solveArm(space, arms.r, point(grip.grip), pos(arms.r.upper).add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), w);
+    closeHand(space, arms.r, w);
+    if (grip.support) {
+      solveArm(space, arms.l, point(grip.support), pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
+      closeHand(space, arms.l, w * 0.7);
+    }
   }
 
   dispose(): void {

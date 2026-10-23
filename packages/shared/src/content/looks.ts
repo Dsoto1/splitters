@@ -161,6 +161,11 @@ export const HAIR_COLORS = ['#f0e0c0', '#d0a060', '#b08850', '#8a6a50', '#8a3a2a
 const partById = new Map(CHARACTER_PARTS.map((p) => [p.id, p]));
 export const partInfo = (id: string): PartInfo | undefined => partById.get(id);
 
+/** The part shown as a look's own arms in first person: its arms part, or bare arms under a sportswear top. */
+export function firstPersonArms(l: Pick<CharacterLook, 'body' | 'parts'>): string {
+  return l.parts.find((p) => partById.get(p)?.slot === 'arms') ?? `athlete_fparms_${l.body === 'male' ? 'm' : 'f'}`;
+}
+
 /** Why a look can't be worn (empty when it can). */
 export function lookProblems(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways'>): string[] {
   const out: string[] = [];

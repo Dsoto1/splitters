@@ -420,6 +420,23 @@ for (const sex of ['Male', 'Female']) {
   }
 }
 
+// Bare arms for the first-person view of a sportswear top (the top itself would
+// put the chest in front of the camera). Not a wearable part.
+const armJoint = (joint) => /^(upperarm|lowerarm|hand|index|middle|ring|pinky|thumb)_/.test(joint);
+for (const sex of ['Male', 'Female']) {
+  const doc = await readGltf(find(`${BASE}/Base Characters/Godot - UE/Superhero_${sex}_FullBody.gltf`));
+  const body = superBody(doc);
+  for (const m of doc.getRoot().listMeshes()) if (m !== body) m.dispose();
+  await doc.transform(prune({ keepAttributes: true }));
+  keepRegion(doc, body.getName(), (j) => (armJoint(j) ? 'arms' : 'rest'), 'arms');
+  conformSkin(doc, lock.rigJoints);
+  conformTo(doc, BIND[sex]);
+  body.listPrimitives()[0].getMaterial().setName(`MI_Athlete_${sex}`);
+  simplifyMaterials(doc);
+  const id = `athlete_fparms_${SEX[sex]}`;
+  lock.files.push({ role: 'fparms', id, body: sex.toLowerCase(), source: 'quaternius-universal-base-characters', ...(await finish(doc, `${id}.glb`, { ratio: 0.6 })) });
+}
+
 // ---------------------------------------------------------------- outfit parts
 
 /** Modular outfit parts: [file, our slot, simplify ratio]. Any part fits any other part for the same body. */

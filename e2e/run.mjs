@@ -249,6 +249,8 @@ async function designerFlow(browser) {
   check(selected === id, `the saved look is selected on the menu (${selected})`);
   await page.click('#play-offline');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: 20000 }).catch(() => {});
+  check(await page.evaluate(() => window.__cs.view.hasFirstPersonArms()), 'first-person arms of the custom look hold the weapon');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

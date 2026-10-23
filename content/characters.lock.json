@@ -163,6 +163,26 @@
       "bytes": 77732
     },
     {
+      "role": "fparms",
+      "id": "athlete_fparms_m",
+      "body": "male",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/athlete_fparms_m.glb",
+      "sha256": "2e7dfcff2a5ff140",
+      "triangles": 2774,
+      "bytes": 142636
+    },
+    {
+      "role": "fparms",
+      "id": "athlete_fparms_f",
+      "body": "female",
+      "source": "quaternius-universal-base-characters",
+      "file": "characters/athlete_fparms_f.glb",
+      "sha256": "db66f8af80ec56bf",
+      "triangles": 2648,
+      "bytes": 151388
+    },
+    {
       "role": "part",
       "id": "ranger_arms_m",
       "body": "male",

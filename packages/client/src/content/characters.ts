@@ -12,7 +12,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
-import { PLAYER, getLook, materialTint, textureFor, type BodyType, type CharacterLook } from '@chronosplit/shared';
+import { PLAYER, firstPersonArms, getLook, materialTint, textureFor, type BodyType, type CharacterLook } from '@chronosplit/shared';
 
 /** Base URL of built character content (packages/client/public/characters). */
 export const CHARACTER_BASE = `${import.meta.env.BASE_URL}characters/`;
@@ -56,6 +56,8 @@ export interface CharacterSpec {
   look?: string;
   /** An NPC: a mannequin in a faction colour. */
   npc?: { color: string; scale: number; female?: boolean };
+  /** Only the look's arms (the first-person view of your own character). */
+  armsOnly?: boolean;
 }
 
 /**
@@ -128,7 +130,8 @@ export class CharacterLibrary {
       body = 'mannequin';
     } else {
       const look = getLook(spec.look);
-      const [carrierC, ...rest] = await Promise.all([...look.parts, look.head, ...look.hair].map((p) => this.load(`${p}.glb`)));
+      const files = spec.armsOnly ? [firstPersonArms(look)] : [...look.parts, look.head, ...look.hair];
+      const [carrierC, ...rest] = await Promise.all(files.map((p) => this.load(`${p}.glb`)));
       // The first part carries the skeleton; every part shares it (all are bound to this body's pose).
       const carrier = carrierC!.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true });
       for (const n of carrier.rootNodes) n.parent = holder;

@@ -197,6 +197,7 @@ export class GameSession {
       case 'roster':
         this.hud.setRoster(msg.players);
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
+        this.view.setLocalLook(this.looks.get(this.slot));
         for (const p of msg.players) this.view.characters.preload({ look: p.look });
         break;
       case 'snapshot': {

@@ -893,6 +893,38 @@
       ]
     },
     {
+      "file": "characters/athlete_fparms_m.glb",
+      "sha256": "2e7dfcff2a5ff140",
+      "triangles": 2774,
+      "bytes": 142636,
+      "source": "quaternius-universal-base-characters",
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the base body",
+        "rebound to the regular body pose",
+        "simplified"
+      ]
+    },
+    {
+      "file": "characters/athlete_fparms_f.glb",
+      "sha256": "db66f8af80ec56bf",
+      "triangles": 2648,
+      "bytes": 151388,
+      "source": "quaternius-universal-base-characters",
+      "title": "Universal Base Characters",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/universal-base-characters",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the base body",
+        "rebound to the regular body pose",
+        "simplified"
+      ]
+    },
+    {
       "file": "characters/ranger_arms_m.glb",
       "sha256": "e21905804b7faed4",
       "triangles": 2956,

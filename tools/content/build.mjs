@@ -354,6 +354,7 @@ const CHAR_MODS = {
   hair: ['rebound to the regular body pose', 'simplified', 'materials simplified'],
   part: ['rebound to the regular body pose', 'simplified', 'materials simplified', 'textures made shared'],
   npc: ['rebound to the rig pose', 'simplified'],
+  fparms: ['arms cut from the base body', 'rebound to the regular body pose', 'simplified'],
   texture: ['downscaled to a JPEG'],
 };
 const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));

@@ -130,6 +130,13 @@ How the hands close on the weapon:
   in the right hand; it fades back in afterwards.
 - The finger joints keep their animation tracks in the clips that hold things.
 
+### First-person arms
+
+Your own view shows your look's arms holding the viewmodel:
+- **Which arms:** the arms part of your look. Under a sportswear top it's `athlete_fparms_m/f`, bare arms cut from the base body for this view only.
+- **Placement:** they hang from the camera a little in front of the eyes. The shoulders are never in view, and long guns stay within reach.
+- **Grip:** the gun keeps its tuned viewmodel placement, with bob, recoil and the reload dip. `gripExternal` IKs the palms onto its grip and support points with the same solver as third person.
+
 To fit a new weapon, read the grip, support and butt positions off a side view
 of the model, then check them in `?mode=characters`.
 
@@ -150,7 +157,6 @@ of the model, then check them in `?mode=characters`.
 
 - Triangle counts are high for a 32-player shooter: a full ranger is about 19k
   with head and hair. LODs, or a further simplification pass, come before large lobbies.
-- No first-person arms yet; the viewmodel is still just the weapon.
 - More outfits and era costumes on the same rig. The free pack editions hold
   only the Ranger and Peasant outfits; the other ten are in the paid Source
   editions.
