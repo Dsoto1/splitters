@@ -63,6 +63,36 @@ Blender / DCC export (glTF 2.0)
 
 Run it with `pnpm content:build` (local) and `pnpm content:check` (CI, fails on any violation).
 
+### Pack imports from a downloads directory
+
+Some packs are too big to keep in the repo, or their licence forbids
+redistributing the raw files (the Quaternius Bestiary kit, QAL v1.0). For
+these only the licence summary lives in `assets-src/<pack>/License.txt`; the
+built files and their lock files are committed, and `content:check` verifies
+them by hash. To re-run an import, download the packs from the creator's page,
+unzip each into its own folder inside one downloads directory (the extracted
+folder can sit directly in it or one level down), and run:
+
+| Pack(s) | Command | Writes |
+|---|---|---|
+| Universal Base Characters, Modular Outfits – Fantasy, Universal Animation Library 1 + 2 | `node tools/content/prepare-characters.mjs <dir>` | `public/characters`, `content/characters.lock.json` |
+| Modular SciFi MegaKit (`Modular SciFi MegaKit[Standard]`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `sf_*` props in `public/props`, `content/props.lock.json`, `shared/src/content/props.generated.ts` |
+| Bestiary – Dungeon Monsters Kit (`Bestiary - Dungeon Monsters Kit[Standard]`) and the MegaKit's aliens | `node tools/content/prepare-creatures.mjs <dir>` | `public/creatures`, `content/creatures.lock.json` |
+
+Then `pnpm content:build` (provenance) and `pnpm content:check`. Without
+`--downloads`, `prepare-props.mjs` rebuilds the in-repo packs and keeps the
+kit props as built (checking them against the lock file). Never copy the raw
+downloads into the repo.
+
+Kit props (`content/props.json` entries of a pack with a `download` folder)
+take extra fields: `src` may list several pieces merged in kit space (a wall
+and its top), `yaw` turns the piece so it faces +Z, `scale` replaces `height`
+(the kit is already metric), `lift` raises flat pieces off the floor,
+`simplify` decimates heavy pieces, and `collide` adds `stairs` (walkable
+steps toward +Z, at most 0.25 m each), `frame` (a doorway open in the middle)
+and `shell` (boxes following the footprint, for corners and curved railings),
+written as `boxes` in the prop definition.
+
 ### Starting budgets (to be tuned by profiling)
 
 | Asset | LOD0 triangles | Textures | Other |

@@ -38,6 +38,7 @@ import { DEFAULT_DEATHMATCH_RULES, isTeamMode, type MatchRules } from './rules.t
 import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
+import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, relation } from './npc.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, zoneMultiplier, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
@@ -675,6 +676,11 @@ export class Match {
         seat: c.mount ? this.seatView(c) : null,
         squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
       });
+      // Melee creatures rush the target they can see instead of keeping their distance.
+      if (npc && NPC_ROLE_SPECS[npc.role].melee && c.alive) {
+        const target = c.bot.target === null ? null : this.actor(c.bot.target);
+        chargeIntoMelee(input, c.move.pos, target?.alive ? target.move.pos : null, getWeapon(NPC_ROLE_SPECS[npc.role].weapon).range);
+      }
       c.queue.push(input);
     }
     this.lastAiMs = performance.now() - t0;
@@ -1615,6 +1621,7 @@ export class Match {
     // No friendly fire; hazards (no attacker) and your own grenades still hurt.
     if (attacker && attacker !== victim && !this.hostile(attacker, victim)) return;
     if (attacker?.npc && !victim.npc) amount *= NPC_DAMAGE_TO_PLAYERS;
+    if (attacker?.npc) amount *= NPC_ROLE_SPECS[attacker.npc.role].damage ?? 1;
     let dmg = attacker && attacker !== victim && attacker.damageTicks > 0 ? amount * DAMAGE_BOOST : amount;
     if (victim.armor > 0) {
       const absorbed = Math.min(victim.armor, dmg * ARMOR_ABSORB);

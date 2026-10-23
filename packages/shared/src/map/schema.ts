@@ -193,7 +193,14 @@ export const TrapEntity = EntityBase.extend({
 export const FactionId = z.string().regex(/^[a-z0-9_]{2,32}$/, 'faction IDs are 2-32 chars of [a-z0-9_]');
 export const PLAYERS_FACTION = 'players';
 
-export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper'] as const;
+/**
+ * NPC kinds an encounter can field: the soldiers, then the creatures (see
+ * sim/npc.ts and sim/creatures.ts). Order matters: snapshots send the index.
+ */
+export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper', 'imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const;
+/** The creature kinds among NPC_ROLES (their own bodies and clips, not the soldier rig). */
+export const CREATURE_ROLES = ['imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const satisfies readonly (typeof NPC_ROLES)[number][];
+const squadCount = z.number().int().min(0).max(16);
 export const SQUAD_ORDERS = ['hold', 'attack', 'defend', 'patrol', 'follow'] as const;
 
 /**
@@ -205,9 +212,19 @@ export const EncounterEntity = EntityBase.extend({
   kind: z.literal('encounter'),
   yaw: Yaw,
   faction: FactionId.default('syndicate'),
+  // Snipers and creatures are optional (missing = none), so older maps load unchanged.
   roster: z
-    // Snipers came later: optional, so older maps (and code building rosters) need not mention them.
-    .object({ trooper: z.number().int().min(0).max(16), gunner: z.number().int().min(0).max(16), heavy: z.number().int().min(0).max(16), sniper: z.number().int().min(0).max(16).optional() })
+    .object({
+      trooper: squadCount,
+      gunner: squadCount,
+      heavy: squadCount,
+      sniper: squadCount.optional(),
+      imp: squadCount.optional(),
+      puglin: squadCount.optional(),
+      cyclops: squadCount.optional(),
+      oculus: squadCount.optional(),
+      scolitex: squadCount.optional(),
+    })
     .default({ trooper: 2, gunner: 1, heavy: 0 }),
   activeCap: z.number().int().min(1).max(32).default(4),
   reinforcements: z.number().int().min(0).max(500).default(0),

@@ -6,7 +6,7 @@ Policy recap: shipped content is hand-made by people, either by us or by human a
 
 ## Imported so far
 
-The authoritative per-file list is generated at `content/provenance.json` (`pnpm content:build`). Source files and each pack's licence live in `assets-src/<pack>/`.
+The authoritative per-file list is generated at `content/provenance.json` (`pnpm content:build`). Source files and each pack's licence live in `assets-src/<pack>/`. Packs too large to keep, or not ours to redistribute, keep only their licence in `assets-src/<pack>/License.txt`; their processed outputs and lock files are committed, and the import is re-run from a local downloads directory (CONTENT_PIPELINE.md §3, "Pack imports from a downloads directory"): the Quaternius character and animation packs, the Modular SciFi MegaKit and the Bestiary kit.
 
 | Pack | Licence (verified in the download) | Used for |
 |---|---|---|
@@ -15,6 +15,8 @@ The authoritative per-file list is generated at `content/provenance.json` (`pnpm
 | Kenney — Sci-Fi Sounds, Impact Sounds, RPG Audio, Interface Sounds, Voiceover Pack: Fighter | CC0 1.0 | Explosions, impacts, footsteps, reloads, pickups, UI cues, announcer (see AUDIO.md) |
 | Quaternius — Universal Base Characters, Modular Character Outfits – Fantasy, Universal Animation Library 1 + 2 (free Standard editions) | CC0 1.0 | Player, bot and NPC characters: every base body, outfit part, hairstyle, colourway and mannequin in the free editions, plus 20 animation clips (see CHARACTERS.md) |
 | Kenney — Survival Kit, Furniture Kit, Graveyard Kit 5.0, Pirate Kit, Space Station Kit, Factory Kit 3.0, Mini Dungeon, City Kit (Commercial) 2.1, Nature Kit 2.1, Castle Kit, Fantasy Town Kit 2.0, Train Kit, Mini Market, Platformer Kit | CC0 1.0 | 267 placeable props: furniture, machines, trees and plants (the Nature Kit also grows as terrain plants, see SCENERY.md), castle walls and siege engines, market stalls, fountains and windmills, trains and rail, shop fittings (see `content/props.json` and MAP_BUDGETS.md) (crates, barrels, furniture, machines, consoles, gravestones, trees, rocks, tents, cannons…), see `content/props.json` |
+| Quaternius — Modular SciFi MegaKit [Standard] (free edition) | CC0 1.0 | 110 sci-fi set pieces as props in four categories (Sci-Fi Base, Walls, Platforms, Decals: props, all columns, straight, full-height and corner walls, doors and doorway frames, floor plates, stairs, ramps, railings, a few decals), and the three alien creatures (cyclops, oculus, scolitex NPCs). Raw download kept out of the repo (≈65 MB); rebuilt with `prepare-props.mjs --downloads` and `prepare-creatures.mjs` |
+| Quaternius — Bestiary – Dungeon Monsters Kit [Standard] (free edition) | **Quaternius Asset License (QAL) v1.0** ([terms](https://quaternius.com/license.html)) | Imp and puglin creature NPCs (`packages/client/public/creatures`). Free for commercial games, no credit required, but the assets may not be resold or redistributed *as assets*: only processed, game-ready models ship inside the game, and the raw pack files (zip, FBX, GLB, textures) are never committed. Our copy of the terms summary: `assets-src/quaternius-bestiary-dungeon-monsters/License.txt` |
 | Poly Haven — 10 pure-sky photographs (Greg Zaal, Jarod Guest, Sergej Majboroda) | CC0 1.0 | Sky backdrops, see `content/skies.json` and SCENERY.md |
 | ambientCG (Lennart Demes) — 41 photographed/scanned material sets | CC0 1.0 | Wall, floor and trim materials and the themes built from them, see `content/textures.json` |
 | Chakra Petch (Cadson Demak) and Barlow (Jeremy Tribby), via the `@fontsource` npm packages | SIL Open Font License 1.1 | UI type: Chakra Petch for headings, buttons and HUD numbers; Barlow for body text (see UI.md) |
@@ -25,7 +27,7 @@ The authoritative per-file list is generated at `content/provenance.json` (`pnpm
 |---|---|---|---|
 | **1: Free, no credit** | CC0 (public domain) | None. Crediting is still a courtesy, and we will. | Anything, including bases we modify heavily |
 | **2: Free with credit** | CC-BY 3.0 / 4.0 | Name the creator, title, source and licence in the in-game credits | Fine. The credits screen is generated from provenance, so it's cheap |
-| **3: Custom royalty-free** | Sonniss GDC bundle, Mixamo | Read the specific terms; usually no raw-file redistribution | Selectively, with the terms saved alongside |
+| **3: Custom royalty-free** | Sonniss GDC bundle, Mixamo, Quaternius Asset License (QAL) v1.0 | Read the specific terms; usually no raw-file redistribution | Selectively, with the terms saved alongside. `content:check` accepts QAL (`LicenseRef-Quaternius-QAL-1.0`) only for creature models, whose raw files stay outside the repo |
 | **Avoid** | CC-BY-NC (non-commercial), CC-BY-SA / GPL on art (share-alike would apply to our derivatives), "personal use only", unknown licence | n/a | Never in shipped builds |
 
 ## Shortlist by category

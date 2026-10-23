@@ -17,6 +17,13 @@ export interface PropDefinition {
   size: readonly [number, number, number];
   /** Collision box [x, height, z] centred on the footprint, or null to walk through. */
   collision: readonly [number, number, number] | null;
+  /**
+   * Finer collision for set pieces (stairs and ramps as walkable steps,
+   * doorways open in the middle, corners and curved railings): boxes
+   * [minX, minY, minZ, maxX, maxY, maxZ] in the prop's own space, used instead
+   * of the `collision` box for the level's static collision.
+   */
+  boxes?: readonly (readonly [number, number, number, number, number, number])[];
   /** Can be shot apart: health at scale 1, an explosion when it goes, and the colour of its debris. */
   breakable?: { health: number; blast?: { radius: number; damage: number; edge: number }; debris: string };
 }

@@ -7,7 +7,9 @@ import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { CORE_LOOKS, NPC_ROLE_SPECS, PLAYER, getWeapon } from '@chronosplit/shared';
+import { CORE_LOOKS, CREATURE_ROLES, NPC_ROLE_SPECS, PLAYER, getWeapon } from '@chronosplit/shared';
+import { CreatureLibrary } from '../content/creatures.ts';
+import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CharacterLibrary, type CharacterSpec } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState, type OneShot } from '../game/characterAnimator.ts';
@@ -58,6 +60,15 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
       return new CharacterAnimator(scene, ch);
     }),
   );
+  // Creature NPCs in a row in front (2.5 m apart), driven by the same buttons.
+  const creatureLib = new CreatureLibrary(scene);
+  const creatures = await Promise.all(
+    CREATURE_ROLES.map(async (kind, i) => {
+      const ch = await creatureLib.create(kind, `creature_${kind}`);
+      ch.root.position.set(mid + (i - (CREATURE_ROLES.length - 1) / 2) * 2.6, 0, 2.4);
+      return new CreatureAnimator(scene, ch);
+    }),
+  );
   // Characters face the camera: the camera looks along -Z from +Z.
   const state: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false };
 
@@ -80,7 +91,7 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   btn('Airborne', () => Object.assign(state, { airborne: !state.airborne }));
   btn('Death', () => Object.assign(state, { alive: !state.alive }));
   btn('Dance', () => Object.assign(state, { celebrate: !state.celebrate }));
-  for (const a of ['shoot', 'melee', 'melee_heavy', 'reload', 'throw', 'hit', 'interact'] as OneShot[]) btn(a, () => animators.forEach((x) => x.trigger(a)));
+  for (const a of ['shoot', 'melee', 'melee_heavy', 'reload', 'throw', 'hit', 'interact'] as OneShot[]) btn(a, () => [...animators, ...creatures].forEach((x) => x.trigger(a)));
   for (const [label, w] of [['Knife', 'core.knife'], ['Pistol', 'core.pistol'], ['Rifle', 'core.rifle'], ['Shotgun', 'core.shotgun'], ['Sniper', 'core.sniper'], ['Launcher', 'core.launcher']] as const) {
     btn(label, () => animators.forEach((x, i) => void models.instantiate(getWeapon(w).view.model, `held_${i}`).then((n) => x.hold(n, getWeapon(w).view.hold))));
   }
@@ -90,10 +101,10 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   pitch.max = '60';
   pitch.value = '0';
   pitch.oninput = () => (state.pitch = (Number(pitch.value) * Math.PI) / 180);
-  panel.append(' Aim pitch ', pitch, ` ${specs.map((s) => s.label).join(' · ')}`);
+  panel.append(' Aim pitch ', pitch, ` ${specs.map((s) => s.label).join(' · ')} · front: ${CREATURE_ROLES.join(', ')}`);
   document.body.append(panel);
   (window as unknown as { __charsReady: boolean; __charState: MotionState; __charAnimators: CharacterAnimator[] }).__charsReady = true;
-  Object.assign(window, { __charState: state, __charAnimators: animators });
+  Object.assign(window, { __charState: state, __charAnimators: animators, __creatureAnimators: creatures });
 
   let last = performance.now();
   engine.runRenderLoop(() => {
@@ -101,6 +112,7 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     for (const a of animators) a.update(dt, state);
+    for (const c of creatures) c.update(dt, state);
     scene.render();
   });
   return () => {

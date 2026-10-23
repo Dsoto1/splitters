@@ -14,6 +14,7 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import {
   BUTTON,
   DESTRUCTIBLE_SPECS,
+  rosterSize,
   DOOR,
   TRAP_ACTIVE,
   TRAP_ENABLED,
@@ -361,7 +362,7 @@ export class ScenarioVisuals {
     disc.material = this.mat('encArea', color, { emissive: 0.4, alpha: 0.18 });
     this.box(`${name}_pole`, root, [0.08, 2.6, 0.08], [0, 1.3, 0], this.mat('pole', '#3a3f48'));
     this.box(`${name}_flag`, root, [0.7, 0.45, 0.03], [0.35, 2.3, 0], this.mat('encFlag', color, { emissive: 0.5 }));
-    const count = Math.min(8, e.roster.trooper + e.roster.gunner + e.roster.heavy + (e.roster.sniper ?? 0));
+    const count = Math.min(8, rosterSize(e.roster));
     for (let i = 0; i < count; i++) {
       const a = (i / Math.max(1, count)) * Math.PI * 2;
       const fig = CreateCylinder(`${name}_fig${i}`, { diameterTop: 0.35, diameterBottom: 0.5, height: 1.2, tessellation: 8 }, this.scene);

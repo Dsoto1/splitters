@@ -16,6 +16,8 @@ import {
   DESTRUCTIBLE_SPECS,
   NPC_ROLES,
   NPC_ROLE_SPECS,
+  isCreature,
+  type CreatureKind,
   OBJECTIVE_STATES,
   mapFactions,
   mapTeams,
@@ -440,12 +442,12 @@ export class GameSession {
     }
   }
 
-  private npcLook(id: number): { color: string; scale: number; label: string } | undefined {
+  private npcLook(id: number): { color: string; scale: number; label: string; creature?: CreatureKind } | undefined {
     const info = this.npcInfo.get(id);
     if (!info || !this.map) return undefined;
     const faction = mapFactions(this.map)[info.faction];
     const role = NPC_ROLES[info.role] ?? 'trooper';
-    return { color: faction?.color ?? '#d04a3a', scale: NPC_ROLE_SPECS[role].scale, label: `${faction?.name ?? 'Enemy'} ${NPC_ROLE_SPECS[role].label}` };
+    return { color: faction?.color ?? '#d04a3a', scale: NPC_ROLE_SPECS[role].scale, label: `${faction?.name ?? 'Enemy'} ${NPC_ROLE_SPECS[role].label}`, ...(isCreature(role) ? { creature: role } : {}) };
   }
 
   /** Objectives, timers, the Use prompt and the objective marker. */
@@ -643,6 +645,7 @@ export class GameSession {
       (id) => {
         const npc = this.npcLook(id);
         // About half of each squad uses the female mannequin.
+        if (npc?.creature) return { creature: npc.creature };
         return npc ? { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1 } } : { look: this.looks.get(id) };
       },
       this.phase === 'intermission',

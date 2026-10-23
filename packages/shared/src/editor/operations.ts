@@ -337,7 +337,7 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
         position,
         yaw,
         faction: 'syndicate',
-        roster: { trooper: 2, gunner: 1, heavy: 0 },
+        roster: { trooper: 2, gunner: 1, heavy: 0, imp: 0, puglin: 0, cyclops: 0, oculus: 0, scolitex: 0 },
         activeCap: 4,
         reinforcements: 0,
         perPlayer: 1,

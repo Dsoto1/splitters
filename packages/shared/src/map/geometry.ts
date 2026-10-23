@@ -310,12 +310,28 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
     if (e.kind !== 'prop' || !e.solid || isBreakableProp(e) !== breakable) continue;
     const def = getProp(e.model);
     if (!def?.collision) continue;
-    const [w, h, d] = def.collision.map((v) => v * e.scale) as [number, number, number];
-    const c = Math.abs(Math.cos(e.yaw));
-    const s = Math.abs(Math.sin(e.yaw));
-    const hx = (w * c + d * s) / 2;
-    const hz = (w * s + d * c) / 2;
     const [x, y, z] = e.position;
+    const c = Math.cos(e.yaw);
+    const s = Math.sin(e.yaw);
+    if (def.boxes) {
+      // Each part box turned with the prop (exact at right angles, its bounds otherwise).
+      for (const [x0, y0, z0, x1, y1, z1] of def.boxes) {
+        const cx = ((x0 + x1) / 2) * e.scale;
+        const cz = ((z0 + z1) / 2) * e.scale;
+        const hw = ((x1 - x0) / 2) * e.scale;
+        const hd = ((z1 - z0) / 2) * e.scale;
+        // Turned the way a mesh is by rotation.y = yaw: local +Z goes to (sin, cos).
+        const px = x + cx * c + cz * s;
+        const pz = z - cx * s + cz * c;
+        const hx = hw * Math.abs(c) + hd * Math.abs(s);
+        const hz = hw * Math.abs(s) + hd * Math.abs(c);
+        out.push({ min: [px - hx, y + y0 * e.scale, pz - hz], max: [px + hx, y + y1 * e.scale, pz + hz], kind: 'prop', sourceId: e.id });
+      }
+      continue;
+    }
+    const [w, h, d] = def.collision.map((v) => v * e.scale) as [number, number, number];
+    const hx = (w * Math.abs(c) + d * Math.abs(s)) / 2;
+    const hz = (w * Math.abs(s) + d * Math.abs(c)) / 2;
     out.push({ min: [x - hx, y, z - hz], max: [x + hx, y + h, z + hz], kind: 'prop', sourceId: e.id });
   }
   return out;

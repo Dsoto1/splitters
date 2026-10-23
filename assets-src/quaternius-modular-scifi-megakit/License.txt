@@ -1,0 +1,13 @@
+Modular SciFi MegaKit [Standard] (free edition)
+Models by Quaternius - https://quaternius.com
+Source page: https://quaternius.itch.io/modular-sci-fi-megakit
+
+License (as stated in License_Standard.txt inside the download):
+CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Raw pack files are not kept in this repository (the download is ~65 MB).
+tools/content/prepare-props.mjs builds the game-ready props in
+packages/client/public/props from the extracted download (see
+docs/CONTENT_PIPELINE.md, "Pack imports from a downloads directory"), and
+content/props.lock.json records what it wrote.

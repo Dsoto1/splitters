@@ -397,6 +397,46 @@ for (const f of existsSync(CHAR_DIR) ? readdirSync(CHAR_DIR, { recursive: true }
 }
 console.log(`checked ${charEntries.length} character files`);
 
+// ---------------------------------------------------------------- creatures
+// NPC creature models, prepared from the pack downloads by
+// tools/content/prepare-creatures.mjs (the Bestiary pack's licence forbids
+// redistributing its raw files, so they never enter the repo). Besides the
+// free tiers, creatures may come from a pack under the Quaternius Asset
+// Licence: game-ready models inside the game, raw files never redistributed.
+const CREATURE_LICENCE = /^CC0-1\.0$|^CC-BY-(3|4)\.0$|^LicenseRef-Quaternius-QAL-1\.0$/;
+const creatureLock = JSON.parse(readFileSync(join(ROOT, 'content/creatures.lock.json'), 'utf8'));
+const creatureFiles = new Set();
+for (const f of creatureLock.files) {
+  creatureFiles.add(f.file);
+  const pack = manifest.packs[f.source];
+  if (!pack) {
+    problems.push(`${f.file}: unknown pack ${f.source}`);
+    continue;
+  }
+  if (!existsSync(join(ROOT, pack.licenseFile))) problems.push(`${f.file}: licence file missing (${pack.licenseFile})`);
+  if (!CREATURE_LICENCE.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
+  const path = join(ROOT, 'packages/client/public', f.file);
+  if (!existsSync(path)) problems.push(`${f.file}: missing (run node tools/content/prepare-creatures.mjs <downloads dir>)`);
+  else if (createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${f.file}: does not match content/creatures.lock.json`);
+  if (f.triangles > manifest.characterBudgets.maxTriangles) problems.push(`${f.file}: ${f.triangles} triangles exceeds budget ${manifest.characterBudgets.maxTriangles}`);
+  if (f.bytes > manifest.characterBudgets.maxBytes) problems.push(`${f.file}: ${f.bytes} bytes exceeds budget ${manifest.characterBudgets.maxBytes}`);
+  ledger.assets.push({
+    file: f.file,
+    sha256: f.sha256,
+    triangles: f.triangles,
+    bytes: f.bytes,
+    source: `${f.source}/${f.src}`,
+    title: pack.title,
+    creator: pack.creator,
+    url: pack.url,
+    license: pack.license,
+    modifications: ['simplified', 'textures downscaled and embedded', f.clips.length > 1 ? 'our character rig clips retargeted onto its skeleton' : 'idle clip kept'],
+  });
+}
+const CREATURE_DIR = join(ROOT, 'packages/client/public/creatures');
+for (const f of existsSync(CREATURE_DIR) ? readdirSync(CREATURE_DIR) : []) if (!creatureFiles.has(`creatures/${f}`)) problems.push(`creatures/${f}: not in content/creatures.lock.json`);
+console.log(`checked ${creatureLock.files.length} creatures`);
+
 // ---------------------------------------------------------------- textures and props
 // Prepared by tools/content/prepare-textures.mjs and prepare-props.mjs; their
 // lock files record what they wrote, and this checks the shipped files against them.
@@ -427,7 +467,7 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
       creator: pack.creator,
       url: f.asset ? `https://ambientcg.com/view?id=${f.asset}` : pack.url,
       license: pack.license,
-      modifications,
+      modifications: typeof modifications === 'function' ? modifications(f, pack) : modifications,
     });
   }
   const full = join(ROOT, 'packages/client/public', dir);
@@ -437,7 +477,14 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
 const textureManifest = JSON.parse(readFileSync(join(ROOT, 'content/textures.json'), 'utf8'));
 const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, ['downscaled to 512 px', 'colour, normal and emission maps only'], 'node tools/content/prepare-textures.mjs');
 const propManifest = JSON.parse(readFileSync(join(ROOT, 'content/props.json'), 'utf8'));
-const propCount = checkLocked('content/props.lock.json', 'props', (f) => propManifest.packs[f.source], propManifest.budgets, ['centred, stood on the ground and scaled to metres', 'texture embedded'], 'node tools/content/prepare-props.mjs');
+const propCount = checkLocked(
+  'content/props.lock.json',
+  'props',
+  (f) => propManifest.packs[f.source],
+  propManifest.budgets,
+  (f, pack) => (pack.download ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
+  'node tools/content/prepare-props.mjs',
+);
 const skyManifest = JSON.parse(readFileSync(join(ROOT, 'content/skies.json'), 'utf8'));
 const skyPacks = Object.fromEntries(
   skyManifest.skies.map((s) => [s.id, { title: s.title, creator: s.authors, url: `https://polyhaven.com/a/${s.source}`, license: skyManifest.license, licenseFile: 'assets-src/polyhaven/License.txt' }]),

@@ -1,6 +1,6 @@
 import { ACTION_INFO, CONDITION_INFO, EVENT_INFO, TOGGLEABLE_KINDS, type TargetKind } from './logic.ts';
 import { PLAYERS_FACTION, type MapDocument } from './schema.ts';
-import { MAX_TEAMS, mapFactions, mapTeams } from '../sim/npc.ts';
+import { MAX_TEAMS, mapFactions, mapTeams, rosterSize } from '../sim/npc.ts';
 import type { ValidationIssue } from './validate.ts';
 
 const KIND_LABEL: Record<TargetKind, string> = {
@@ -99,7 +99,7 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
   for (const e of map.entities) {
     if (e.kind !== 'encounter') continue;
     if (!factionIds.has(e.faction) || e.faction === PLAYERS_FACTION) issues.push({ severity: 'error', code: 'encounter.faction', message: `encounter ${e.id} uses unknown faction "${e.faction}"`, targetId: e.id });
-    if (e.roster.trooper + e.roster.gunner + e.roster.heavy + (e.roster.sniper ?? 0) === 0) issues.push({ severity: 'warning', code: 'encounter.empty', message: `encounter ${e.id} has nobody in its squad`, targetId: e.id });
+    if (rosterSize(e.roster) === 0) issues.push({ severity: 'warning', code: 'encounter.empty', message: `encounter ${e.id} has nobody in its squad`, targetId: e.id });
     if ((e.order === 'defend' || e.order === 'patrol') && (!e.orderTarget || !entities.has(e.orderTarget))) {
       issues.push({ severity: 'warning', code: 'encounter.target', message: `encounter ${e.id} is ordered to ${e.order} but has no target object`, targetId: e.id });
     }

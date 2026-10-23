@@ -175,6 +175,12 @@ export class MapBuilder {
     return this;
   }
 
+  /** The map's NPC factions (replaces any set before). */
+  factions(factions: MapDocument['factions']): this {
+    this.run('Factions', { kind: 'setFactions', before: this.doc.factions, after: [...factions] });
+    return this;
+  }
+
   theme(theme: string): this {
     this.run('Change theme', setThemeCommand(this.doc, `core.${theme}`));
     return this;

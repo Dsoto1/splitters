@@ -112,6 +112,20 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/kenney-platformer-kit/License.txt",
       "retrieved": "2026-10-23"
+    },
+    "quaternius-modular-scifi-megakit": {
+      "title": "Modular SciFi MegaKit [Standard]",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-sci-fi-megakit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-modular-scifi-megakit/License.txt",
+      "retrieved": "2026-10-23",
+      "download": "Modular SciFi MegaKit[Standard]",
+      "models": "glTF",
+      "images": "Textures",
+      "textureSize": 512,
+      "normalSize": 256,
+      "decalSize": 512
     }
   },
   "budgets": {
@@ -2887,6 +2901,1090 @@
       "category": "Industrial",
       "height": 0.8,
       "collide": "none"
+    },
+    {
+      "id": "sf_access_panel",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_AccessPoint.gltf",
+      "name": "Access Panel",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_barrel",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Barrel_Large.gltf",
+      "name": "Sci-Fi Barrel",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_cable",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Cable_1.gltf",
+      "name": "Floor Cable",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01,
+      "simplify": 0.5
+    },
+    {
+      "id": "sf_cable_long",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Cable_3.gltf",
+      "name": "Long Floor Cables",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01,
+      "simplify": 0.4
+    },
+    {
+      "id": "sf_chest",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Chest.gltf",
+      "name": "Supply Chest",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_clamp",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Clamp.gltf",
+      "name": "Cable Clamp",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "sf_computer",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Computer.gltf",
+      "name": "Terminal",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_crate",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Crate3.gltf",
+      "name": "Cargo Crate",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_crate_large",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Crate4.gltf",
+      "name": "Large Cargo Crate",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_fan",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Fan_Small.gltf",
+      "name": "Floor Fan",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_item_holder",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_ItemHolder.gltf",
+      "name": "Item Pedestal",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_light_corner",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Light_Corner.gltf",
+      "name": "Corner Light Strip",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "sf_floor_light",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Light_Floor.gltf",
+      "name": "Floor Light",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_light_small",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Light_Small.gltf",
+      "name": "Small Ceiling Light",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "sf_light_wide",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Light_Wide.gltf",
+      "name": "Wide Ceiling Light",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "sf_pipe_rack",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_PipeHolder.gltf",
+      "name": "Pipe Rack",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box",
+      "simplify": 0.5
+    },
+    {
+      "id": "sf_railing_2",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Rail_2.gltf",
+      "name": "Railing (2 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_railing_3",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Rail_3.gltf",
+      "name": "Railing (3 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_railing_4",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Rail_4.gltf",
+      "name": "Railing (4 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_railing_incline_l",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Rail_Incline_Long_L.gltf",
+      "name": "Stair Railing, Long (Left)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_railing_incline_r",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Rail_Incline_Long_R.gltf",
+      "name": "Stair Railing, Long (Right)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_railing_incline_short_l",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Rail_Incline_Short_L.gltf",
+      "name": "Stair Railing, Short (Left)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_railing_incline_short_r",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Rail_Incline_Short_R.gltf",
+      "name": "Stair Railing, Short (Right)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_railing_round",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Rail_Round_Big.gltf",
+      "name": "Curved Railing",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_railing_round_small",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Rail_Round_Small.gltf",
+      "name": "Small Curved Railing",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_vent",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Vent_Big.gltf",
+      "name": "Floor Vent",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_vent_small",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Vent_Small.gltf",
+      "name": "Small Vent",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_vent_wide",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Props/Prop_Vent_Wide.gltf",
+      "name": "Slot Vent",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_column_astra",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Columns/Column_Astra.gltf",
+      "name": "Wall Pillar",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_column_hollow",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Columns/Column_Hollow.gltf",
+      "name": "Hollow Column",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_column_large",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Columns/Column_Large_Straight.gltf",
+      "name": "Great Column (10 m)",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_beam",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Columns/Column_MetalSupport.gltf",
+      "name": "Support Beam",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01,
+      "yaw": -90
+    },
+    {
+      "id": "sf_beam_curve",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Columns/Column_MetalSupport_Curve.gltf",
+      "name": "Curved Support Beam",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_column_pipes",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Columns/Column_Pipes.gltf",
+      "name": "Pipe Column",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box",
+      "simplify": 0.4
+    },
+    {
+      "id": "sf_column_round",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Columns/Column_Round.gltf",
+      "name": "Round Column",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_column",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Columns/Column_Simple.gltf",
+      "name": "Column",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_low_wall_band",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/ShortWall_Band2_Straight.gltf",
+      "name": "Banded Wall Panel (2 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_dark",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/ShortWall_DarkMetal2_Straight.gltf",
+      "name": "Dark Wall Panel (2 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_metal",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/ShortWall_Metal2_Straight.gltf",
+      "name": "Metal Wall Panel (2 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_white",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/ShortWall_WhitePlate2_Straight.gltf",
+      "name": "White Wall Panel (2 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_plates",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/ShortWall_MetalPlates_Straight.gltf",
+      "name": "Plated Barrier (1 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_triangles",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/ShortWall_Triangles_Straight.gltf",
+      "name": "Hazard Barrier (1 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_metal_corner",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/ShortWall_Metal2_Corner_Outer.gltf",
+      "name": "Metal Wall Panel Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_low_wall_triangles_corner",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/ShortWall_Triangles_Corner_Inner.gltf",
+      "name": "Hazard Barrier Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_astra",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallAstra_Straight.gltf",
+      "name": "Ribbed Wall",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_broken",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallAstra_Straight_Broken.gltf",
+      "name": "Ribbed Wall, Broken",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90,
+      "simplify": 0.5
+    },
+    {
+      "id": "sf_wall_astra_divided",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallAstra_Straight_Divided.gltf",
+      "name": "Ribbed Wall, Divided",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_flat",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallAstra_Straight_Flat.gltf",
+      "name": "Flat Panel Wall",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_flat_window",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallAstra_Straight_Flat_Window.gltf",
+      "name": "Flat Panel Wall, Window",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_window",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallAstra_Straight_Window.gltf",
+      "name": "Ribbed Wall, Window",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_band",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallBand_Straight.gltf",
+      "name": "Banded Wall",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_band_broken",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallBand_Straight_Broken.gltf",
+      "name": "Banded Wall, Broken",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_window",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallWindow_Straight.gltf",
+      "name": "Padded Window Wall",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_tall",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": [
+        "Walls/WallAstra_Straight.gltf",
+        "Walls/TopAstra_Straight.gltf"
+      ],
+      "name": "Ribbed Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_window_tall",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": [
+        "Walls/WallWindow_Straight.gltf",
+        "Walls/TopWindow_Straight.gltf"
+      ],
+      "name": "Window Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_band_tall",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": [
+        "Walls/WallBand_Straight.gltf",
+        "Walls/TopSimple_Straight.gltf"
+      ],
+      "name": "Banded Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_cables_tall",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": [
+        "Walls/WallAstra_Straight_Flat.gltf",
+        "Walls/TopCables_Straight.gltf"
+      ],
+      "name": "Cable Duct Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_plastic_tall",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": [
+        "Walls/WallBand_Straight.gltf",
+        "Walls/TopPlastic_Straight.gltf"
+      ],
+      "name": "Panelled Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_hanging_cables",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/TopCables_Straight_Hanging.gltf",
+      "name": "Hanging Cables",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "none",
+      "yaw": -90,
+      "simplify": 0.5
+    },
+    {
+      "id": "sf_wall_astra_corner",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallAstra_Corner_Square_Outer.gltf",
+      "name": "Ribbed Wall Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_astra_corner_round",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallAstra_Corner_Round_Outer.gltf",
+      "name": "Ribbed Wall Corner, Round",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_window_corner",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallWindow_Corner_Square_Outer.gltf",
+      "name": "Window Wall Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_window_corner_round",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallWindow_Corner_Round_Inner.gltf",
+      "name": "Window Wall Corner, Round",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_band_corner",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallBand_Corner_Square_Outer.gltf",
+      "name": "Banded Wall Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_band_corner_round",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Walls/WallBand_Corner_Round_Inner.gltf",
+      "name": "Banded Wall Corner, Round",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_door_dark",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Door_DarkMetal.gltf",
+      "name": "Dark Door Panel",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_door_metal",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Door_Metal.gltf",
+      "name": "Metal Door Panel",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_door_simple",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Door_Simple.gltf",
+      "name": "Door Panel",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_doorway_a",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Door_Frame_A.gltf",
+      "name": "Doorway Frame",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "frame"
+    },
+    {
+      "id": "sf_doorway_square",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Door_Frame_Square.gltf",
+      "name": "Square Doorway",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "frame"
+    },
+    {
+      "id": "sf_doorway_tall",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Door_Frame_SquareTall.gltf",
+      "name": "Tall Doorway",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "frame"
+    },
+    {
+      "id": "sf_doorway_blocked",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Door_Frame_Square_Blocked.gltf",
+      "name": "Sealed Doorway",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_floor_3plates",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_3Plates.gltf",
+      "name": "Floor Plate, Three Panels",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_center",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_CenterPlate.gltf",
+      "name": "Floor Plate, Centre Panel",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_center_curve",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_CenterPlate_Curve.gltf",
+      "name": "Floor Plate, Centre Panel (Curved)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_dark",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_DarkPlates.gltf",
+      "name": "Floor Plate, Dark",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_dark_curve",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_DarkPlates_Curves.gltf",
+      "name": "Floor Plate, Dark (Curved)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_metal",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Metal.gltf",
+      "name": "Floor Plate, Metal",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_metal2",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Metal2.gltf",
+      "name": "Floor Plate, Grille",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_simple",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Simple.gltf",
+      "name": "Floor Plate, Plain",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_simple2",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Simple2.gltf",
+      "name": "Floor Plate, Plain 2",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_squares",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Squares.gltf",
+      "name": "Floor Plate, Squares",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_squares_curve",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Squares_Curve.gltf",
+      "name": "Floor Plate, Squares (Curved)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_x",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_X.gltf",
+      "name": "Floor Plate, Cross",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_round_platform",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Round1.gltf",
+      "name": "Round Platform",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_glass_floor",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Window_Thin.gltf",
+      "name": "Glass Floor, Narrow",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_glass_floor_wide",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Window_Wide.gltf",
+      "name": "Glass Floor",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_stairs_2",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Stairs_2.gltf",
+      "name": "Stairs (1 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stairs_4",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Stairs_4.gltf",
+      "name": "Stairs (2 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stairs_wide",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Stairs_4Wide.gltf",
+      "name": "Wide Stairs (2 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stairs_tall",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Stairs_4WideTall.gltf",
+      "name": "Wide Stairs (3 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_ramp_2",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Ramp_2.gltf",
+      "name": "Ramp (1 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_ramp_short",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Ramp_2Short.gltf",
+      "name": "Steep Ramp (1 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_ramp_4",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Ramp_4.gltf",
+      "name": "Ramp (2 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_ramp_wide",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Ramp_4Wide.gltf",
+      "name": "Wide Ramp (2 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stair_rails",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Rails_2.gltf",
+      "name": "Stair Rails (1 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stair_rails_4",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Rails_4.gltf",
+      "name": "Stair Rails (2 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stair_rails_wide",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Rails_4Wide.gltf",
+      "name": "Wide Stair Rails (2 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stair_rails_tall",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Platforms/Platform_Rails_4WideTall.gltf",
+      "name": "Wide Stair Rails (3 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_decal_logo",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_Logo.gltf",
+      "name": "Decal: Logo",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_letters",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_Logo_Letters.gltf",
+      "name": "Decal: Lettering",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_caution",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_Sign.gltf",
+      "name": "Decal: Caution Sign",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_x",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_XSign.gltf",
+      "name": "Decal: X Sign",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_dashes",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_Dashes.gltf",
+      "name": "Decal: Dashes",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_a",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_A.gltf",
+      "name": "Decal: Letter A",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_1",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_1.gltf",
+      "name": "Decal: Number 1",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_2",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_2.gltf",
+      "name": "Decal: Number 2",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_line",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_Line_Straight.gltf",
+      "name": "Floor Line",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_line_bend",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_Line_Bend1_L.gltf",
+      "name": "Floor Line, Bend",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_line_round",
+      "pack": "quaternius-modular-scifi-megakit",
+      "src": "Decals/Decal_Line_90_Round.gltf",
+      "name": "Floor Line, Round Corner",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
     }
   ]
 }
