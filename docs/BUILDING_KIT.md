@@ -111,7 +111,7 @@ in the same themes and paint slots as straight walls.
 
 ## Jump pads
 
-A **Jump Pad** (Entities tab, Scenario & Traps) throws whoever steps on it
+A **Jump Pad** (Entities → Scenario) throws whoever steps on it
 up (`power`, m/s) and along its arrows (`push`, m/s). The inspector shows
 roughly how high and how far that is. Launches are predicted on the client
 like any other movement. Each pad's flight is traced to where it lands and

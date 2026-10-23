@@ -157,7 +157,8 @@ async function editorFlow(browser) {
   check(ms < 3000, `TEST starts within the 3 s budget (${ms.toFixed(0)} ms)`);
   await page.waitForTimeout(1500);
   await page.keyboard.press('Escape');
-  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: 5000 });
+  // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: 15000 });
   check(await page.evaluate(() => window.__editor.history.canUndo), 'returns to the editor with history intact');
 
   await page.keyboard.press('Control+KeyS');
@@ -170,6 +171,174 @@ async function editorFlow(browser) {
   const lib = await page.$$eval('#ed-library li', (ls) => ls.map((l) => l.textContent));
   check(lib.some((t) => t.includes('Untitled Map')), 'saved map is listed in the library');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  // Close it, or its render loop keeps eating CPU through the later flows.
+  await page.context().close();
+}
+
+/** MapMaker tool bar, Erase tool, level strip and NPC palette. Screenshots go to E2E_SHOTS when set. */
+async function editoruxFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: 60000 });
+  page.once('dialog', (d) => d.accept());
+  await page.click('#ed-new');
+  await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const clickAt = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.click(p.x, p.y);
+  };
+  // Let the editor catch up on a frame (panels and hover refresh per frame).
+  const settle = () => page.waitForTimeout(250);
+
+  check(await page.isVisible('#ed-toolbar #ed-tb-erase') && (await page.textContent('#ed-tb-erase')).includes('X'), 'tool bar shows Erase with its key');
+  check((await page.getAttribute('#ed-tb-select', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Select'), 'Select is the lit tool and the hint says what it does');
+
+  await page.waitForFunction(() => document.querySelector('#ed-tiles .thumb img'), null, { timeout: 30000 }).catch(() => {});
+  check(await page.evaluate(() => !!document.querySelector('#ed-tiles .thumb img')?.src.startsWith('data:image/png')), 'tile cards get 3D thumbnails of the real pieces');
+  check(parseFloat(await page.evaluate(() => getComputedStyle(document.getElementById('ed-palette')).width)) >= 300, 'the palette is wide (300 px or more)');
+  // Build: a corridor east, a barrel on it, a pickup and a squad from the NPCs tab.
+  await clickTool(page, '[data-tool="tile:core.corridor"]');
+  await page.click('#ed-tb-rotate');
+  check(await page.evaluate(() => window.__editor.rotation === 1), 'toolbar Rotate turns the piece being placed');
+  await page.click('#ed-tb-rotate');
+  await page.click('#ed-tb-rotate');
+  await page.click('#ed-tb-rotate');
+  await clickAt(8, 0, 0);
+  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  await clickAt(16, 0, 0);
+  await clickTool(page, '[data-tool="tile:core.corridor"]');
+  await clickAt(16, 0, 0);
+  check((await page.getAttribute('#ed-tb-place', 'class')).includes('active') && (await page.textContent('#ed-tb-place')).includes('Corridor'), 'Place is lit and names the piece');
+  await clickTool(page, '[data-tool="pickup:core.health_small"]');
+  await clickAt(-2, 0, -2);
+  await clickTool(page, '[data-tool="npc:squad"]');
+  await clickAt(1, 0, 2);
+  let d = await doc();
+  const squad = d.entities.find((e) => e.kind === 'encounter');
+  check(squad && squad.roster.trooper === 2 && squad.roster.gunner === 1 && (await page.evaluate(() => window.__editor.selection.entities[0])) === squad.id, 'NPCs tab places a squad and selects it');
+  await settle();
+  check((await page.textContent('#ed-inspector')).includes('Troopers'), 'the squad opens in the inspector');
+  await clickTool(page, '[data-tool="npc:heavy"]');
+  await clickAt(-2, 0, 2.5);
+  d = await doc();
+  check(d.entities.some((e) => e.kind === 'encounter' && e.roster.heavy === 1 && e.activeCap === 1), 'places a lone Heavy');
+  await clickTool(page, '[data-tool="npc:militia"]');
+  await clickAt(9, 0, 1);
+  d = await doc();
+  check(d.factions.some((f) => f.id === 'militia') && d.entities.some((e) => e.kind === 'encounter' && e.faction === 'militia' && e.order === 'follow'), 'Allied Militia adds a friendly faction and a following squad');
+  await page.keyboard.press('Control+KeyZ');
+  d = await doc();
+  check(!d.factions.some((f) => f.id === 'militia') && !d.entities.some((e) => e.kind === 'encounter' && e.faction === 'militia'), 'one undo takes the militia and its faction back');
+  await page.click('#ed-entities-btn');
+  check(await page.isVisible('#ed-pal-tabs [data-pane="npcs"]') && !(await page.isVisible('#ed-pal-tabs [data-pane="tiles"]')), 'the Entities workspace swaps the palette sub-tabs');
+  await page.click('#ed-pal-tabs [data-pane="entities"]');
+  check(await page.isVisible('[data-tool="scenario:flag"]') && await page.isVisible('[data-tool="spawn"]'), 'Gameplay holds spawns, pickups and the game-mode objects');
+  await page.click('#ed-pal-tabs [data-pane="npcs"]');
+  await shot('npcs');
+
+  // Erase tool: click the barrel, the pickup and a tile.
+  await page.keyboard.press('Escape');
+  await page.click('#ed-tb-erase');
+  check((await page.getAttribute('#ed-tb-erase', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Erase'), 'Erase lights up with its hint');
+  const barrel = await at(16, 0.6, 0);
+  await page.mouse.move(barrel.x, barrel.y);
+  await settle();
+  check((await page.textContent('#ed-target')).includes('Barrel'), `hovering the barrel marks it for erasing (${await page.textContent('#ed-target')})`);
+  await shot('erase-hover');
+  await page.mouse.click(barrel.x, barrel.y);
+  d = await doc();
+  check(!d.entities.some((e) => e.kind === 'prop'), 'Erase deletes a prop by clicking it');
+  await clickAt(-2, 0.4, -2);
+  d = await doc();
+  check(!d.entities.some((e) => e.kind === 'pickup'), 'Erase deletes a pickup');
+  const tilesBefore = d.classicStructure.tiles.length;
+  await clickAt(16, 0, 0);
+  d = await doc();
+  check(d.classicStructure.tiles.length === tilesBefore - 1 && !d.classicStructure.tiles.some((t) => t.x === 2), 'Erase deletes a tile');
+  await page.keyboard.press('Control+KeyZ');
+  d = await doc();
+  check(d.classicStructure.tiles.some((t) => t.x === 2), 'undo brings the erased tile back in one step');
+
+  // Select + Delete, and Rotate from the tool bar.
+  await page.click('#ed-tb-select');
+  await clickAt(1, 0, 2);
+  check((await page.evaluate(() => window.__editor.selection.entities[0])) === squad.id, 'Select picks the squad');
+  await page.keyboard.press('Delete');
+  d = await doc();
+  check(!d.entities.some((e) => e.id === squad.id), 'Delete removes the selection');
+  await page.keyboard.press('Control+KeyZ');
+  await clickAt(16, 0, 0);
+  const sel = await page.evaluate(() => window.__editor.selection.tiles[0]);
+  const rot = (await doc()).classicStructure.tiles.find((t) => t.id === sel)?.rotation;
+  await page.click('#ed-tb-rotate');
+  d = await doc();
+  check(sel && d.classicStructure.tiles.find((t) => t.id === sel).rotation === (rot + 1) % 4, 'toolbar Rotate turns the selected tile');
+  await page.click('#ed-tb-delete');
+  d = await doc();
+  check(!d.classicStructure.tiles.some((t) => t.id === sel), 'toolbar Delete removes the selection');
+  await page.keyboard.press('Control+KeyZ');
+
+  // Levels: up with the strip, build there, the toast and the ghosted ground floor; erase stays on its level.
+  await page.click('#ed-level-up');
+  await settle();
+  check((await page.evaluate(() => window.__editor.level)) === 1 && (await page.textContent('#ed-level')) === 'Level 1', 'level strip goes up to Level 1');
+  check((await page.textContent('#ed-toast')).includes('Level 1'), 'a toast says which level is being edited');
+  await clickTool(page, '[data-tool="tile:core.room"]');
+  await clickAt(0, 4, 0);
+  d = await doc();
+  check(d.classicStructure.tiles.some((t) => t.z === 1), 'places a room on Level 1');
+  check(await page.evaluate(() => window.__editor.view.scene.meshes.some((m) => m.name.startsWith('edmapdim') && m.visibility < 1)), 'other levels are drawn ghosted');
+  await page.click('#ed-tb-erase');
+  const n = d.classicStructure.tiles.length;
+  await clickAt(8, 4, 0);
+  check((await doc()).classicStructure.tiles.length === n, 'erasing over an empty cell on Level 1 leaves the ground floor alone');
+  await page.mouse.move(10, 400);
+  await shot('level1');
+  await page.click('#ed-level-list [data-level="0"]');
+  check((await page.evaluate(() => window.__editor.level)) === 0 && (await page.textContent('#ed-level')) === 'Ground', 'clicking Ground in the strip goes back down');
+  await page.keyboard.press('PageUp');
+  check((await page.evaluate(() => window.__editor.level)) === 1, 'Page Up still changes level');
+  await page.keyboard.press('PageDown');
+
+  // Terrain: scattered plants and rocks are bedded into the ground, a little below level 0; Erase must still reach them.
+  await page.click('#ed-env-btn');
+  check((await page.getAttribute('#ed-env-btn', 'class')).includes('on') && (await page.isVisible('#ed-pal-tabs [data-ws="environment"][data-pane="paint"]')), 'the Environment workspace shows its own sub-tabs');
+  await page.click('#ed-pal-tabs [data-ws="environment"][data-pane="terrain"]');
+  await page.click('#ed-tr-new');
+  await page.evaluate(() => window.__editor.view.focus({ x: 30, y: 0, z: 30 }));
+  await clickTool(page, '[data-tool="scatter:rocks"]');
+  await clickAt(30, 0, 30);
+  d = await doc();
+  const rocks = d.entities.filter((e) => e.kind === 'prop');
+  const rock = rocks.sort((a, b) => Math.hypot(a.position[0] - 30, a.position[2] - 30) - Math.hypot(b.position[0] - 30, b.position[2] - 30))[0];
+  check(rock && rock.position[1] < 0, `scattered rocks sit just under level 0 (${rocks.length}, y ${rock?.position[1]})`);
+  await page.click('#ed-tb-erase');
+  const rp = await at(rock.position[0], rock.position[1] + 0.3, rock.position[2]);
+  await page.mouse.move(rp.x, rp.y);
+  // Rock models load in the background (slow software rendering): wait until the pointer has a target.
+  await page.waitForFunction(() => /Erase:/.test(document.getElementById('ed-target')?.textContent ?? ''), null, { timeout: 10000 }).catch(() => {});
+  const target = await page.evaluate(() => window.__editor.pick());
+  const aimed = rocks.find((e) => e.id === target?.id);
+  await page.mouse.click(rp.x, rp.y);
+  d = await doc();
+  check(aimed && aimed.position[1] < 0 && !d.entities.some((e) => e.id === aimed.id) && d.entities.filter((e) => e.kind === 'prop').length === rocks.length - 1, `Erase deletes the rock under the pointer, standing on the terrain (${aimed?.position[1]})`);
+  await page.mouse.move(700, 400);
+  await shot('erase-terrain');
+  // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.evaluate(() => document.querySelector('#ed-modes [data-ws="build"]').click());
+  await settle();
+  check(await page.evaluate(() => { const t = document.getElementById('ed-top'); return t.scrollWidth <= t.clientWidth + 1; }), 'the top bar fits at 1280×720');
+  check(await page.evaluate(() => document.getElementById('ed-toolbar').getBoundingClientRect().right <= document.getElementById('ed-right').getBoundingClientRect().left), 'the tool bar stays clear of the right panel at 1280×720');
+  await shot('1280');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 async function offlineFlow(browser) {
@@ -353,6 +522,8 @@ async function sceneryFlow(browser) {
   await page.waitForFunction(() => Math.max(...window.__editor.doc.terrain.heights) > 150 || window.__editor.stroke?.now && Math.max(...window.__editor.stroke.now.heights) > 150, null, { timeout: 8000 }).catch(() => {});
   await page.mouse.up();
   await clickTool(page, '[data-tool="scatter:rocks"]');
+  // Bring the hillside to the middle of the view, clear of the tool bar over its top edge.
+  await page.evaluate(() => window.__editor.view.focus({ x: 18, y: 0, z: 18 }));
   p = await at(18, 18);
   await page.mouse.move(p.x, p.y);
   await page.mouse.click(p.x, p.y);
@@ -827,7 +998,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, webgpu: webgpuFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

@@ -83,16 +83,16 @@
 
     <div id="editor" hidden>
       <header id="ed-top">
-        <button id="ed-home" title="Main menu">◀ Menu</button>
+        <button id="ed-home" title="Main menu">◀ <span class="wide">Menu</span></button>
         <span class="ed-brand"><i>Chrono</i><b>Split</b> <small>MapMaker</small></span>
         <input id="ed-name" maxlength="80" aria-label="Map name" />
         <span id="ed-dirty" title="Unsaved changes"></span>
-        <div class="group">
-          <button id="ed-new">New</button>
-          <button id="ed-open">Open…</button>
-          <button id="ed-save" title="Ctrl+S">Save</button>
-          <button id="ed-export">Export</button>
-          <button id="ed-import">Import</button>
+        <div class="group ed-file">
+          <button id="ed-new" title="New map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 11v6M9 14h6" stroke="currentColor" stroke-width="2"/></svg><span class="wide">New</span></button>
+          <button id="ed-open" title="Open a saved map or a template"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h6l2 2h10v11H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="wide">Open…</span></button>
+          <button id="ed-save" title="Save (Ctrl+S)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h13l3 3v13H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 4v5h8V4M8 20v-6h8v6" fill="none" stroke="currentColor" stroke-width="2"/></svg><span class="wide">Save</span></button>
+          <button id="ed-export" title="Export the map file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="wide">Export</span></button>
+          <button id="ed-import" title="Import a map file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="wide">Import</span></button>
           <input id="ed-import-file" type="file" accept=".json,application/json" hidden />
         </div>
         <div class="group">
@@ -100,47 +100,69 @@
           <button id="ed-redo" title="Ctrl+Y">↷</button>
         </div>
         <button id="ed-status" class="pill">Checking…</button>
-        <div class="tabs ed-modes">
-          <button id="ed-build-btn" class="tab on" title="Place and paint pieces">Build</button>
-          <button id="ed-logic-btn" class="tab" title="Scenario logic: objectives, variables, timers, rules (L)">Logic</button>
+        <div class="tabs ed-modes" id="ed-modes">
+          <button id="ed-build-btn" class="tab on" data-ws="build" title="Build: tiles, walls and openings, terrain, props">Build</button>
+          <button id="ed-entities-btn" class="tab" data-ws="entities" title="Entities: NPCs, spawns and pickups, vehicles, doors and traps">Entities</button>
+          <button id="ed-logic-btn" class="tab" data-ws="logic" title="Scenario logic: objectives, variables, timers, rules (L)">Logic</button>
+          <button id="ed-env-btn" class="tab" data-ws="environment" title="Environment: materials and paint, plants, terrain; sky and backdrop in Map properties"><span class="wide">Environment</span><span class="narrow">Env</span></button>
+          <button id="ed-test-tab" class="tab" data-ws="test" title="Play the map now (F5)">Test</button>
         </div>
         <div class="spacer"></div>
-        <select id="ed-theme" title="Map theme"></select>
+        <button id="ed-grid" class="ed-toggle on" aria-pressed="true" title="Grid lines on the level being edited"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="wide">Grid</span></button>
+        <select id="ed-snap" title="Snap for spawns, items, objects and props (hold Shift while placing a prop for none)"><option value="fine">Snap 25 cm</option><option value="normal" selected>Snap 50 cm</option><option value="coarse">Snap 1 m</option><option value="off">Snap off</option></select>
+        <label class="ed-pick" title="Map theme"><span class="wide">Theme</span><select id="ed-theme" title="Map theme"></select></label>
         <select id="ed-bots" title="Bots in TEST"></select>
         <select id="ed-skill" title="Bot skill in TEST"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select>
         <button id="ed-test" class="primary" title="F5">▶ TEST</button>
       </header>
       <aside id="ed-palette">
         <div class="tabs ed-pal-tabs" id="ed-pal-tabs">
-          <button class="tab on" data-pane="tiles">Tiles</button>
-          <button class="tab" data-pane="props">Props</button>
-          <button class="tab" data-pane="entities">Entities</button>
-          <button class="tab" data-pane="paint">Paint</button>
-          <button class="tab" data-pane="terrain">Terrain</button>
+          <button class="tab on" data-ws="build" data-pane="tiles">Tiles</button>
+          <button class="tab" data-ws="build" data-pane="advanced">Advanced</button>
+          <button class="tab" data-ws="build" data-pane="terrain">Terrain</button>
+          <button class="tab" data-ws="build" data-pane="props">Props</button>
+          <button class="tab" data-ws="entities" data-pane="npcs" hidden>NPCs</button>
+          <button class="tab" data-ws="entities" data-pane="entities" hidden>Gameplay</button>
+          <button class="tab" data-ws="entities" data-pane="vehicles" hidden>Vehicles</button>
+          <button class="tab" data-ws="entities" data-pane="scenario" hidden>Scenario</button>
+          <button class="tab" data-ws="environment" data-pane="paint" hidden>Paint</button>
+          <button class="tab" data-ws="environment" data-pane="plants" hidden>Plants</button>
+          <button class="tab" data-ws="environment" data-pane="terrain" hidden>Terrain</button>
         </div>
-        <input id="ed-search" placeholder="Search pieces…" autocomplete="off" />
-        <div id="ed-tools"></div>
+        <input id="ed-search" placeholder="Search tiles, props, NPCs…" autocomplete="off" />
         <div class="ed-pane" data-pane="tiles">
-          <h3>Structure</h3>
           <div id="ed-tiles" class="tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="advanced" hidden>
           <h3>Walls &amp; Openings</h3>
+          <p class="ed-note">Pick a style, then click any side of a room or corridor to build it that way (O cycles styles, right-click resets).</p>
           <div id="ed-edges" class="tiles"></div>
         </div>
         <div class="ed-pane" data-pane="props" hidden>
+          <div id="ed-props" class="tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="plants" hidden>
           <h3>Scatter brush</h3>
           <div id="ed-scatter" class="tiles"></div>
           <label class="stack">Brush size <span id="ed-sc-radius-v">8 m</span><input id="ed-sc-radius" type="range" min="2" max="40" step="1" value="8" /></label>
           <div class="ed-note">Click to plant a patch · Alt-click clears that kind of plant · [ ] resize</div>
-          <h3>Props</h3>
-          <div id="ed-props" class="tiles"></div>
         </div>
         <div class="ed-pane" data-pane="entities" hidden>
-          <h3>Gameplay</h3>
+          <h3>Spawns, Pickups &amp; Game Modes</h3>
           <div id="ed-entities" class="tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="vehicles" hidden>
           <h3>Vehicles &amp; Turrets</h3>
           <div id="ed-mounts" class="tiles"></div>
-          <h3>Scenario &amp; Traps</h3>
+        </div>
+        <div class="ed-pane" data-pane="scenario" hidden>
+          <h3>Doors, Objects &amp; Traps</h3>
           <div id="ed-scenario" class="tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="npcs" hidden>
+          <h3>NPCs</h3>
+          <p class="ed-note">Click one, then click the map to drop it there. Each is an NPC squad marker: change its soldiers, faction, orders and skill in the inspector on the right.</p>
+          <div id="ed-npcs" class="tiles"></div>
         </div>
         <div class="ed-pane" data-pane="terrain" hidden>
           <h3>Terrain</h3>
@@ -193,13 +215,26 @@
           <ul id="ed-issues"></ul>
         </section>
       </aside>
+      <div id="ed-overlay">
+      <div id="ed-toolbar" role="toolbar" aria-label="Tools"></div>
+      <div id="ed-toolhint"></div>
+
+      </div>
+      <nav id="ed-levels" aria-label="Levels">
+        <div class="lv-head">Editing</div>
+        <b id="ed-level" class="lv-current">Ground</b>
+        <button id="ed-level-up" class="lv-step" title="Up a level (Page Up or ])">▲ Up <kbd>PgUp</kbd></button>
+        <div id="ed-level-list" class="lv-list"></div>
+        <button id="ed-level-down" class="lv-step" title="Down a level (Page Down or [)">▼ Down <kbd>PgDn</kbd></button>
+        <label class="lv-all" title="Show the levels above this one too (H)"><input type="checkbox" id="ed-showall" /> Show all <kbd>H</kbd></label>
+      </nav>
       <footer id="ed-bottom">
-        <span class="group">Level <button id="ed-level-down" title="Page Down">−</button><b id="ed-level">0</b><button id="ed-level-up" title="Page Up">+</button></span>
-        <label class="inline"><input type="checkbox" id="ed-showall" /> Show all levels</label>
+        <span id="ed-level-name-bottom"></span>
         <span id="ed-counts"></span>
         <span id="ed-target"></span>
         <span id="ed-hint"></span>
       </footer>
+      <div id="ed-tip" hidden></div>
       <div id="ed-toast"></div>
       <div id="ed-logic" hidden></div>
       <dialog id="ed-open-dialog">

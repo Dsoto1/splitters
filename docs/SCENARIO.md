@@ -86,9 +86,15 @@ Clicking an issue frames the object or opens the rule.
 
 ## NPCs, factions and co-op (M4)
 
-### NPC squads (MapMaker → "NPC Squad")
+### NPC squads (MapMaker → Entities → NPCs, or Entities → Scenario → "NPC Squad")
 
 An **encounter** is one squad of a faction's soldiers that spawns around its marker.
+
+The **NPCs** sub-tab places ready-made encounters in one click: a lone **Trooper**, **Gunner** or **Heavy**
+(one soldier holding the spot), a **Squad** (two troopers and a gunner), a **Hunter Squad** (four that hunt
+the players), a **Reinforced Squad** (12 reinforcements) and an **Allied Militia** that follows the players
+(it adds a friendly *Militia* faction if the map has none, in the same undo step). They are ordinary
+encounters afterwards: every setting below is in the inspector.
 
 | Setting | Meaning |
 |---|---|

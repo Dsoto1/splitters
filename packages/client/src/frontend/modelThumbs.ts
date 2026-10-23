@@ -7,14 +7,21 @@ import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import { Vector3 as V3 } from '@babylonjs/core/Maths/math.vector';
+import { buildMapGeometry, newMapDocument, type TileDefinition } from '@chronosplit/shared';
 import { ModelLibrary } from '../content/models.ts';
+import { MapStyler } from '../mapMeshes.ts';
 
 const SIZE = 96;
 
 /** How to frame a thumbnail: three-quarter (props) or a side-on strip (weapons, barrel to the right). */
 export type ThumbView = 'three-quarter' | 'side';
-const VIEWS: Record<ThumbView, { dir: [number, number, number]; width: number; height: number }> = {
+export type AnyThumbView = ThumbView | 'tile';
+const VIEWS: Record<AnyThumbView, { dir: [number, number, number]; width: number; height: number }> = {
   'three-quarter': { dir: [0.75, 0.6, -1], width: SIZE, height: SIZE },
+  // Building pieces: steeper, so you see into rooms over their walls.
+  tile: { dir: [0.55, 1.7, -0.9], width: SIZE, height: SIZE },
   side: { dir: [-1, 0.12, 0], width: 128, height: 56 },
 };
 
@@ -27,6 +34,7 @@ export class ModelThumbnails {
   private readonly scene: Scene;
   private readonly camera: FreeCamera;
   private readonly models: ModelLibrary;
+  private styler?: MapStyler;
   private readonly cache = new Map<string, Promise<string>>();
   private queue: Promise<unknown> = Promise.resolve();
 
@@ -60,14 +68,54 @@ export class ModelThumbnails {
     return p;
   }
 
+  /** A thumbnail of a MapMaker building piece, drawn from its real geometry in the default theme; cached. */
+  getTile(def: TileDefinition): Promise<string> {
+    const key = `tile:${def.id}`;
+    let p = this.cache.get(key);
+    if (!p) {
+      p = (this.queue = this.queue.then(() => this.renderTile(def))) as Promise<string>;
+      p.catch(() => this.cache.delete(key));
+      this.cache.set(key, p);
+    }
+    return p;
+  }
+
+  private async renderTile(def: TileDefinition): Promise<string> {
+    const base = newMapDocument('thumb');
+    const doc = { ...base, classicStructure: { ...base.classicStructure, tiles: [{ id: 'thumb_tile', tile: def.id, x: 0, y: 0, z: 0, rotation: 0 as const }] } };
+    this.styler ??= new MapStyler(this.scene);
+    const meshes = this.styler.build(doc, buildMapGeometry(doc), 'thumbtile');
+    try {
+      return await this.renderMeshes(meshes, 'tile');
+    } finally {
+      for (const m of meshes) m.setEnabled(false);
+    }
+  }
+
   private async render(path: string, view: ThumbView): Promise<string> {
+    const node = await this.models.instantiate(path, 'thumb');
+    try {
+      node.getHierarchyBoundingVectors(true); // brings every world matrix in the model up to date
+      return await this.renderMeshes(node.getChildMeshes(), view);
+    } finally {
+      node.dispose();
+    }
+  }
+
+  private async renderMeshes(meshes: AbstractMesh[], view: AnyThumbView): Promise<string> {
     const { dir: d, width: W, height: H } = VIEWS[view];
     const aspect = W / H;
     this.camera.freezeProjectionMatrix(Matrix.PerspectiveFovLH(0.6, aspect, 0.02, 200, this.scene.getEngine().isNDCHalfZRange));
-    const node = await this.models.instantiate(path, 'thumb');
-    try {
-      const meshes = node.getChildMeshes();
-      const { min, max } = node.getHierarchyBoundingVectors(true);
+    {
+      let min = new V3(Infinity, Infinity, Infinity);
+      let max = new V3(-Infinity, -Infinity, -Infinity);
+      for (const m of meshes) {
+        m.computeWorldMatrix(true);
+        const b = m.getBoundingInfo().boundingBox;
+        min = V3.Minimize(min, b.minimumWorld);
+        max = V3.Maximize(max, b.maximumWorld);
+      }
+      if (!meshes.length) throw new Error('nothing to draw');
       const centre = min.add(max).scale(0.5);
       const radius = Math.max(0.2, max.subtract(min).length() / 2);
       const dir = new Vector3(d[0], d[1], d[2]).normalize();
@@ -103,8 +151,6 @@ export class ModelThumbnails {
       for (let y = 0; y < H; y++) img.data.set(pixels.subarray((H - 1 - y) * row, (H - y) * row), y * row);
       g.putImageData(img, 0, 0);
       return canvas.toDataURL('image/png');
-    } finally {
-      node.dispose();
     }
   }
 }
