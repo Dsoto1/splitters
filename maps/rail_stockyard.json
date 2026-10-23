@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 10,
+  "formatVersion": 11,
   "metadata": {
     "id": "rail_stockyard",
     "name": "Rail Stockyard",
@@ -15,7 +15,9 @@
     },
     "supportedModes": [
       "core.deathmatch",
-      "core.tdm"
+      "core.tdm",
+      "core.ctf",
+      "core.koth"
     ]
   },
   "classicStructure": {
@@ -3930,6 +3932,58 @@
       "kind": "pickup",
       "item": "core.ammo_cells",
       "respawnSeconds": null
+    },
+    {
+      "id": "flag_289",
+      "position": [
+        3,
+        0,
+        26
+      ],
+      "kind": "flag",
+      "yaw": 1.5707963267948966,
+      "team": "embers"
+    },
+    {
+      "id": "flag_290",
+      "position": [
+        77,
+        0,
+        26
+      ],
+      "kind": "flag",
+      "yaw": -1.5707963267948966,
+      "team": "tide"
+    },
+    {
+      "id": "hill_291",
+      "position": [
+        40,
+        -4,
+        28
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_292",
+      "position": [
+        24,
+        0,
+        16
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_293",
+      "position": [
+        40,
+        0,
+        40
+      ],
+      "kind": "hill",
+      "radius": 4
     }
   ],
   "factions": [],

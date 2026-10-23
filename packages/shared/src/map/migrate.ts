@@ -26,6 +26,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [8, (doc) => ({ ...doc })],
   // v9 -> v10: optional `blood` settings (absent = dark red, light).
   [9, (doc) => ({ ...doc })],
+  // v10 -> v11: `flag` (Capture the Flag bases) and `hill` (King of the Hill) entity kinds. Existing entities are unchanged.
+  [10, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

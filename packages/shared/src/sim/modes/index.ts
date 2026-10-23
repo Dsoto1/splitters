@@ -1,0 +1,25 @@
+import type { GameMode } from '../rules.ts';
+import { CtfMode } from './ctf.ts';
+import { ElimMode } from './elim.ts';
+import { KothMode } from './koth.ts';
+import type { ModeHost, ModeLogic } from './types.ts';
+
+export type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+export { CtfMode, FLAG_CAPTURE_RADIUS, FLAG_CARRIER_SPEED, FLAG_TOUCH_RADIUS, type FlagRt } from './ctf.ts';
+export { CARRIER_AWARENESS, ctfBotAwareness, ctfBotGoal, ctfRole, type CtfRole } from './ctfBots.ts';
+export { KothMode, onHill, type HillRt } from './koth.ts';
+export { ElimMode, ELIM_BREAK_SECONDS, ELIM_ROUND_SECONDS } from './elim.ts';
+
+/** The objective rules for a mode, or null for modes without any (deathmatch, TDM, co-op). */
+export function createMode(mode: GameMode, host: ModeHost): ModeLogic | null {
+  switch (mode) {
+    case 'core.ctf':
+      return new CtfMode(host);
+    case 'core.koth':
+      return new KothMode(host);
+    case 'core.elim':
+      return new ElimMode(host);
+    default:
+      return null;
+  }
+}

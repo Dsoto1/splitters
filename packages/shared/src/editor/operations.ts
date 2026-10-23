@@ -6,6 +6,7 @@ import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
+import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
 import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder } from '../map/settle.ts';
 
 /** Editor-level selection: stable IDs only, never object references or indices. */
@@ -267,6 +268,8 @@ export const SCENARIO_PALETTE = [
   { key: 'door_locked', label: 'Locked Door', search: 'door locked key gate vault' },
   { key: 'button', label: 'Button', search: 'button switch lever press use' },
   { key: 'pad', label: 'Jump Pad', search: 'jump pad launch bounce boost trampoline' },
+  { key: 'flag', label: 'Flag Base', search: 'flag base ctf capture the flag team objective' },
+  { key: 'hill', label: 'Hill', search: 'hill king of the hill koth zone objective control point' },
   { key: 'crate', label: 'Crate', search: 'crate box destructible break cover' },
   { key: 'barrel', label: 'Explosive Barrel', search: 'barrel explosive destructible red boom' },
   { key: 'wall', label: 'Breakable Wall', search: 'wall breakable destructible breach' },
@@ -296,9 +299,20 @@ export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 /** Entities that sit in a doorway and snap to cell edges. */
 export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser';
 
-export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, number, number], yaw: number): MapEntity {
+/**
+ * A new scenario entity with sensible defaults. Flag bases go to the first
+ * team (of the map's two) that has none yet when `doc` is given.
+ */
+export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, number, number], yaw: number, doc?: MapDocument): MapEntity {
   const base = { position, yaw };
   switch (key) {
+    case 'flag': {
+      const teams = doc ? mapTeams(doc, 2) : DEFAULT_TEAMS.slice(0, 2);
+      const free = teams.find((t) => !doc?.entities.some((e) => e.kind === 'flag' && e.team === t.id)) ?? teams[0]!;
+      return { id: newId('flag'), kind: 'flag', ...base, team: free.id };
+    }
+    case 'hill':
+      return { id: newId('hill'), kind: 'hill', position, radius: 5 };
     case 'door':
     case 'door_locked':
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: key === 'door_locked', auto: key === 'door' };
@@ -368,7 +382,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {

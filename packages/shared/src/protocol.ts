@@ -105,6 +105,13 @@ export type GameEvent =
   /** `outcome` is set when a co-op mission ends (victory or defeat). */
   | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null }
   | { e: 'round_start' }
+  // Objective modes. `team` is a team (faction) ID.
+  /** Capture the Flag: `team`'s flag was taken, dropped, returned home or captured; `s` is who did it (null: it went home on its own). */
+  | { e: 'flag'; a: FlagAction; team: string; s: number | null }
+  /** King of the Hill: the hill moved to entity `i`, or `team` took it (null: nobody holds it, or it is contested). */
+  | { e: 'hill'; a: 'move' | 'hold'; i: number; team: string | null }
+  /** Elimination: `team` won round `round` (null: a draw), or round `round` started. */
+  | { e: 'elim'; a: 'win' | 'start'; round: number; team: string | null }
   // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
   /** Creator message from a logic rule. */
   | { e: 'msg'; text: string; secs: number }
@@ -181,6 +188,26 @@ export interface ServerStats {
 
 export type MatchPhase = 'playing' | 'intermission';
 
+export type FlagAction = 'take' | 'drop' | 'return' | 'capture';
+export const FLAG_HOME = 0;
+export const FLAG_CARRIED = 1;
+export const FLAG_DROPPED = 2;
+
+/**
+ * State of an objective mode (Capture the Flag, King of the Hill,
+ * Elimination). Team indices follow the match's team list (mapTeams).
+ */
+export interface ModeSnapshot {
+  /** Team scores in team order: captures, hill seconds or rounds won. */
+  ts: number[];
+  /** Flags as [team index, state (FLAG_*), x, y, z, carrier slot (-1 none), seconds until it goes home (dropped)]. */
+  fl?: [number, number, number, number, number, number, number][];
+  /** The hill: [entity index, holder team index (-1 nobody, -2 contested), seconds until it moves]. */
+  hl?: [number, number, number];
+  /** Elimination: [round, seconds until the next round starts (0 while in play), ...players alive per team]. */
+  el?: number[];
+}
+
 export type ServerMessage =
   | {
       t: 'welcome';
@@ -221,6 +248,8 @@ export type ServerMessage =
       sc?: ScenarioSnapshot;
       /** NPCs (living and recently dead). */
       np: NpcSnapshot[];
+      /** Objective mode state (CTF, KOTH, Elimination). */
+      md?: ModeSnapshot;
     }
   | { t: 'pong'; id: number; ct: number }
   | ({ t: 'stats' } & ServerStats);

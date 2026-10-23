@@ -107,10 +107,16 @@ for (const sx of [-8, 8]) {
   m.prop('holo_table', [X + d * 2.4, 8, 0]).prop('space_chair', [X + d * 1.6, 4, 1.6]).prop('container_wide', [X + d * 2.5, 0, -6]);
 }
 
+// ---------------------------------------------------------------- objectives
+// Capture the Flag: each team's flag stands on the plaza at the foot of its own spire.
+m.flag(west, [-54, 0, 0], P).flag(east, [54, 0, 0], -P);
+// King of the Hill: the bridge, the north walkway, the underpass, the south walkway.
+m.hill([0, 4, 0], 4).hill([-16, 0, 8], 4).hill([0, 0, 0], 4).hill([16, 0, -8], 4);
+
 m.meta({
   description:
     'Two spires at either end of a narrow causeway hanging in open space. Each team spawns in its own spire, climbs the switchback stairwells past the windows to a railed sniper deck, and fights for the railgun on the central bridge and the rockets beneath it. No walls and no railings on the causeway: one step too far and the void takes you. An homage in spirit to the classic tower-to-tower sniping duel above a planet.',
-  modes: ['core.tdm', 'core.deathmatch'],
+  modes: ['core.tdm', 'core.deathmatch', 'core.ctf', 'core.koth'],
   players: [4, 14],
 });
 await m.save();

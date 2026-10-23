@@ -204,10 +204,16 @@ m.pickup('ammo', [16, 0, 28]).pickup('ammo', [64, 0, 28]).pickup('ammo_shells', 
 
 m.bounds('invisible');
 m.teams([6, 6]);
+// ---------------------------------------------------------------- objectives
+// Capture the Flag: each team's flag in the ground-floor atrium of its own shed.
+m.flag(embers, [3, 0, 26], P).flag(tide, [77, 0, 26], -P);
+// King of the Hill: the loading pit, the south-west yard, the open yard by the dock.
+m.hill([40, -4, 28], 5).hill([24, 0, 16], 5).hill([40, 0, 40], 4);
+
 m.meta({
   description:
     'A railway goods yard at dusk. Weave between boxcars and cargo stacks in the open yard, drop into the sunken loading pit, slip through the culvert beneath the tracks, or run the dock catwalk between the two brick sheds and their windows over the yard. The railgun waits on the crane perch above the pit, and the only way out to it is a bare girder from the west shed roof, in plain sight of everyone.',
-  modes: ['core.deathmatch', 'core.tdm'],
+  modes: ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth'],
   players: [6, 12],
 });
 await m.save();

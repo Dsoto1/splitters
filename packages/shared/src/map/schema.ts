@@ -8,7 +8,8 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
 /**
  * ChronoSplit map document, format version 6 (v2 added per-surface tile styles, v3 pickup
  * entities, v4 scenario entities and logic, v5 factions and NPC encounters, v6 per-side
- * wall styles, trim and props, v7 terrain, v8 map boundary and team setup).
+ * wall styles, trim and props, v7 terrain, v8 map boundary and team setup, v11 flag bases
+ * and hills for Capture the Flag and King of the Hill).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -17,7 +18,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 10;
+export const MAP_FORMAT_VERSION = 11;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -294,7 +295,21 @@ export const WaterEntity = EntityBase.extend({
   liquid: z.enum(LIQUIDS).default('water'),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity]);
+/** Capture the Flag: a team's flag base (position: the floor under the flag). */
+export const FlagEntity = EntityBase.extend({
+  kind: z.literal('flag'),
+  yaw: Yaw,
+  /** Team (faction ID, as for spawns) whose flag stands here. */
+  team: z.string().regex(/^[a-z0-9_.]{2,64}$/),
+});
+
+/** King of the Hill: one of the places the hill moves between (in map order). Position: the floor at its centre. */
+export const HillEntity = EntityBase.extend({
+  kind: z.literal('hill'),
+  radius: z.number().min(2).max(20).default(5),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -406,6 +421,8 @@ export type BlockEntity = z.infer<typeof BlockEntity>;
 export type BloodSettings = z.infer<typeof BloodSettings>;
 export type BloodAmount = (typeof BLOOD_AMOUNTS)[number];
 export type WaterEntity = z.infer<typeof WaterEntity>;
+export type FlagEntity = z.infer<typeof FlagEntity>;
+export type HillEntity = z.infer<typeof HillEntity>;
 export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
 export type Liquid = (typeof LIQUIDS)[number];
 export type Faction = z.infer<typeof Faction>;

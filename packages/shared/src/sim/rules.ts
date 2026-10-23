@@ -1,7 +1,25 @@
 import type { MapDocument } from '../map/schema.ts';
 import { TICK_RATE } from './constants.ts';
+import { mapTeams } from './npc.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim';
+
+/** Every mode, in menu order. */
+export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.coop'];
+
+export const MODE_LABELS: Record<GameMode, string> = {
+  'core.deathmatch': 'Deathmatch',
+  'core.tdm': 'Team Deathmatch',
+  'core.ctf': 'Capture the Flag',
+  'core.koth': 'King of the Hill',
+  'core.elim': 'Elimination',
+  'core.coop': 'Co-op',
+};
+
+/** Modes played in teams (factions from mapTeams). */
+export const isTeamMode = (mode: string): boolean => mode === 'core.tdm' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.elim';
+
+export const isGameMode = (mode: string): mode is GameMode => (GAME_MODES as readonly string[]).includes(mode);
 
 /** Reusable, mode-agnostic match rules (v1 spec §4.3). */
 export interface MatchRules {
@@ -22,6 +40,10 @@ export interface MatchRules {
    * Absent: two teams, balanced as players join.
    */
   teamSizes?: number[];
+  /** Capture the Flag: seconds a dropped flag lies before it goes home on its own (default 30). */
+  flagReturnSeconds?: number;
+  /** King of the Hill: seconds before the hill moves to the next spot (default 60). */
+  hillSeconds?: number;
 }
 
 export const DEFAULT_DEATHMATCH_RULES: MatchRules = {
@@ -65,14 +87,98 @@ export const DEFAULT_TDM_RULES: MatchRules = {
   intermissionTicks: TICK_RATE * 6,
 };
 
-/** The rules a map asks for: its first supported mode. */
+/**
+ * Capture the Flag: two teams, each with a flag at its base. Bring the enemy
+ * flag home while your own is there to score; the score limit counts captures.
+ */
+export const DEFAULT_CTF_RULES: MatchRules = {
+  mode: 'core.ctf',
+  scoreLimit: 3,
+  timeLimitSeconds: 900,
+  respawnDelayTicks: Math.round(TICK_RATE * 3),
+  startingWeapons: ['core.knife', 'core.pistol'],
+  startingGrenades: 1,
+  intermissionTicks: TICK_RATE * 8,
+  flagReturnSeconds: 30,
+};
+
+/**
+ * King of the Hill: a hill zone that moves between the map's hill spots every
+ * minute; a team scores a point per second while it alone stands on it.
+ */
+export const DEFAULT_KOTH_RULES: MatchRules = {
+  mode: 'core.koth',
+  scoreLimit: 120,
+  timeLimitSeconds: 600,
+  respawnDelayTicks: Math.round(TICK_RATE * 3),
+  startingWeapons: ['core.knife', 'core.pistol'],
+  startingGrenades: 1,
+  intermissionTicks: TICK_RATE * 6,
+  hillSeconds: 60,
+};
+
+/**
+ * Elimination: round-based Team Deathmatch. The dead wait for the next round;
+ * the last team standing wins the round, and the score limit counts rounds.
+ */
+export const DEFAULT_ELIM_RULES: MatchRules = {
+  mode: 'core.elim',
+  scoreLimit: 5,
+  timeLimitSeconds: 900,
+  respawnDelayTicks: Math.round(TICK_RATE * 2),
+  startingWeapons: ['core.knife', 'core.pistol'],
+  startingGrenades: 1,
+  intermissionTicks: TICK_RATE * 6,
+};
+
+export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
+  'core.deathmatch': DEFAULT_DEATHMATCH_RULES,
+  'core.tdm': DEFAULT_TDM_RULES,
+  'core.coop': DEFAULT_COOP_RULES,
+  'core.ctf': DEFAULT_CTF_RULES,
+  'core.koth': DEFAULT_KOTH_RULES,
+  'core.elim': DEFAULT_ELIM_RULES,
+};
+
+/** Capture the Flag needs a flag base for each of its two teams. */
+export function hasFlagBases(map: MapDocument): boolean {
+  return mapTeams(map, 2).every((t) => map.entities.some((e) => e.kind === 'flag' && e.team === t.id));
+}
+
+/** King of the Hill needs at least one hill spot. */
+export const hasHills = (map: MapDocument): boolean => map.entities.some((e) => e.kind === 'hill');
+
+/** Can this map run the mode at all (CTF without flag bases or KOTH without hills can't)? */
+export function mapCanRun(map: MapDocument, mode: GameMode): boolean {
+  if (mode === 'core.ctf') return hasFlagBases(map);
+  if (mode === 'core.koth') return hasHills(map);
+  return true;
+}
+
+/**
+ * The modes a map offers: the supported modes it can run, plus Capture the
+ * Flag when it has flag bases, King of the Hill when it has hills, and
+ * Elimination wherever Team Deathmatch is offered.
+ */
+export function playableModes(map: MapDocument): GameMode[] {
+  const listed = map.metadata.supportedModes.filter(isGameMode).filter((m) => mapCanRun(map, m));
+  const out = listed.length ? [...listed] : (['core.deathmatch'] as GameMode[]);
+  if (hasFlagBases(map) && !out.includes('core.ctf')) out.push('core.ctf');
+  if (hasHills(map) && !out.includes('core.koth')) out.push('core.koth');
+  if (out.includes('core.tdm') && !out.includes('core.elim')) out.push('core.elim');
+  return out;
+}
+
+/** Default rules for a mode on a map (team modes take the map's recommended teams; CTF is always two). */
+export function rulesForMode(map: MapDocument, mode: GameMode): MatchRules {
+  const base = DEFAULT_RULES[mode];
+  if (mode === 'core.ctf') return { ...base, teamSizes: [...(map.teamSetup?.sizes.slice(0, 2) ?? [8, 8])] };
+  if (isTeamMode(mode) && map.teamSetup) return { ...base, teamSizes: [...map.teamSetup.sizes] };
+  return base;
+}
+
+/** The rules a map asks for: its first supported mode (when it can run it). */
 export function rulesForMap(map: MapDocument): MatchRules {
-  switch (map.metadata.supportedModes[0]) {
-    case 'core.coop':
-      return DEFAULT_COOP_RULES;
-    case 'core.tdm':
-      return map.teamSetup ? { ...DEFAULT_TDM_RULES, teamSizes: [...map.teamSetup.sizes] } : DEFAULT_TDM_RULES;
-    default:
-      return DEFAULT_DEATHMATCH_RULES;
-  }
+  const first = map.metadata.supportedModes[0];
+  return rulesForMode(map, first && isGameMode(first) && mapCanRun(map, first) ? first : 'core.deathmatch');
 }

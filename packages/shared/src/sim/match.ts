@@ -34,7 +34,8 @@ import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapPads, padLandings, sanitizeInput, stepMovement, type JumpPad, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
-import { DEFAULT_DEATHMATCH_RULES, type MatchRules } from './rules.ts';
+import { DEFAULT_DEATHMATCH_RULES, isTeamMode, type MatchRules } from './rules.ts';
+import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
 import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
@@ -159,6 +160,8 @@ export interface Combatant {
   bot?: BotBrain;
   /** Seat in a turret or vehicle: mount index (into Match.mounts) and seat. */
   mount?: { index: number; seat: number };
+  /** Movement multiplier set by an objective mode (flag carriers are slower); absent = 1. */
+  modeSpeed?: number;
 }
 
 interface Projectile {
@@ -253,6 +256,8 @@ export class Match {
   private readonly history = new Map<number, Map<number, Vec3 & { h: number }>>();
   /** Bot AI time spent in the most recent tick, for instrumentation. */
   lastAiMs = 0;
+  /** Objective rules (Capture the Flag, King of the Hill, Elimination); null in other modes. */
+  readonly mode: ModeLogic | null;
 
   /** Requires initPhysics() and initNavigation() to have resolved. */
   constructor(
@@ -331,6 +336,28 @@ export class Match {
       fire: (event, target, instigator) => this.scenario.fire(event, target, instigator),
       random: () => this.rng(),
     });
+    this.mode = this.teams
+      ? createMode(rules.mode, {
+          get tick() {
+            return match.tick;
+          },
+          teams: this.teams,
+          rules,
+          map,
+          killY: this.killY,
+          combatants: () => this.combatants(),
+          emit: (ev) => this.pendingEvents.push(ev),
+          endRound: () => this.endRound(),
+          respawn: (c) => {
+            this.leaveMount(c, false);
+            this.spawn(c);
+          },
+          groundBelow: (p) => {
+            const hit = this.physics.raycastHit(p, { x: 0, y: -1, z: 0 }, 8);
+            return hit ? p.y - hit.dist : null;
+          },
+        })
+      : null;
   }
 
   private factionList?: readonly Faction[];
@@ -346,9 +373,9 @@ export class Match {
 
   private teamList?: readonly Faction[] | null;
 
-  /** The sides in Team Deathmatch (2–8); null in other modes. */
+  /** The sides in team modes (2–8; Capture the Flag always has two); null in other modes. */
   get teams(): readonly Faction[] | null {
-    if (this.teamList === undefined) this.teamList = this.rules.mode === 'core.tdm' ? mapTeams(this.map, this.rules.teamSizes?.length ?? 2) : null;
+    if (this.teamList === undefined) this.teamList = isTeamMode(this.rules.mode) ? mapTeams(this.map, this.rules.mode === 'core.ctf' ? 2 : (this.rules.teamSizes?.length ?? 2)) : null;
     return this.teamList;
   }
 
@@ -381,8 +408,9 @@ export class Match {
     return this.rules.mode === 'core.coop' ? PLAYERS_FACTION : null;
   }
 
-  /** Kills per team in Team Deathmatch (suicides count against the team). */
+  /** Kills per team in Team Deathmatch (suicides count against the team); objective modes keep their own score. */
   teamScores(): Map<string, number> {
+    if (this.mode) return this.mode.teamScores();
     const out = new Map<string, number>((this.teams ?? []).map((t) => [t.id, 0]));
     for (const c of this.combatants()) if (c.faction && out.has(c.faction)) out.set(c.faction, out.get(c.faction)! + c.kills);
     return out;
@@ -527,6 +555,7 @@ export class Match {
   remove(slot: number): void {
     const c = this.slots[slot];
     if (!c) return;
+    if (this.phase === 'playing') this.mode?.onLeave(c);
     this.leaveMount(c, false);
     this.physics.removeCollider(c.collider);
     this.slots[slot] = null;
@@ -561,6 +590,7 @@ export class Match {
       this.stepStatuses();
       if (this.phase === 'playing') this.scenario.step();
       if (this.phase === 'playing') this.encounters.step();
+      if (this.phase === 'playing') this.mode?.step();
       for (const c of this.combatants()) {
         if (!c.alive && this.tick >= c.respawnTick) this.spawn(c);
       }
@@ -594,17 +624,19 @@ export class Match {
     for (const c of actors) {
       if (!c.bot) continue;
       const hostiles = actors.filter((o) => o.alive && this.hostile(c, o));
+      // Objective modes can narrow what a bot notices (flag carriers keep running).
+      const aware = this.mode && !c.npc ? this.mode.botAwareness(c) : Infinity;
       const npc = c.npc;
       // Dormant NPCs (no enemy within earshot of the squad's area) skip thinking entirely.
       if (npc && c.alive && !c.bot.lastSeen && !hostiles.some((o) => horizontalDistance(o.move.pos, c.move.pos) < 70)) {
         c.queue.push({ seq: c.lastSeq + 1, forward: 0, right: 0, yaw: c.yaw, pitch: c.pitch, buttons: 0 });
         continue;
       }
-      const orderGoal = npc ? this.encounters.goalFor(c.slot) : coop ? this.coopGoal(c, hostiles) : null;
+      const orderGoal = npc ? this.encounters.goalFor(c.slot) : coop ? this.coopGoal(c, hostiles) : (this.mode?.botGoal(c, hostiles) ?? null);
       const input = c.bot.think({
         tick: this.tick,
         self: views.get(c.slot)!,
-        others: hostiles.map((o) => views.get(o.slot)!),
+        others: (aware < Infinity ? hostiles.filter((o) => horizontalDistance(o.move.pos, c.move.pos) <= aware) : hostiles).map((o) => views.get(o.slot)!),
         physics: this.physics,
         nav: this.nav,
         spawnPoints: npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
@@ -1159,6 +1191,7 @@ export class Match {
     let bestD = Infinity;
     for (const m of this.mounts) {
       if (!m.alive || !m.def.seats.length || !m.seats.includes(null)) continue;
+      if (m.def.vehicle && this.mode?.blocksVehicle(c)) continue;
       const d = horizontalDistance(m.pos, c.move.pos);
       if (d <= m.def.enterRadius && Math.abs(m.pos.y - c.move.pos.y) < 2.5 && d < bestD) {
         best = m;
@@ -1532,6 +1565,7 @@ export class Match {
     victim.respawnTick = this.tick + this.rules.respawnDelayTicks;
     if (!killer) victim.kills--; // suicides (falls, own grenades, traps) cost a point
     this.scenario.playerKilled(victim.slot, killer?.slot ?? null);
+    this.mode?.onKill(victim, killer);
     if (!killer || killer.npc || this.rules.scoreLimit <= 0) return;
     const score = this.teams && killer.faction ? (this.teamScores().get(killer.faction) ?? 0) : killer.kills;
     if (score >= this.rules.scoreLimit) this.endRound();
@@ -1707,6 +1741,7 @@ export class Match {
       c.deaths = 0;
       c.alive = false;
     }
+    this.mode?.reset();
     for (const c of this.combatants()) this.spawn(c);
     this.pendingEvents.push({ e: 'round_start' });
   }
@@ -1793,6 +1828,7 @@ export class Match {
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
+      ...(this.mode ? { md: this.mode.snapshot() } : {}),
     };
   }
 
@@ -1917,10 +1953,10 @@ function spendRound(w: WeaponState): boolean {
   return true;
 }
 
-/** Movement multiplier from status effects: frozen solid, chilled, slowed. */
+/** Movement multiplier from status effects (frozen solid, chilled, slowed) and the mode (carrying a flag). */
 function statusSpeed(c: Combatant): number {
   if (c.frozenTicks > 0) return 0;
-  return (c.slowTicks > 0 ? 0.55 : 1) * (1 - 0.6 * c.chill);
+  return (c.slowTicks > 0 ? 0.55 : 1) * (1 - 0.6 * c.chill) * (c.modeSpeed ?? 1);
 }
 
 const inZone = (z: Zone, feet: Vec3): boolean => zoneContains(z.kind, z.pos, z.radius, feet);

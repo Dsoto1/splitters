@@ -123,6 +123,28 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
     }
   }
 
+  // Capture the Flag: one base for each of the two teams.
+  const flags = map.entities.filter((e) => e.kind === 'flag');
+  const ctfTeams = mapTeams(map, 2);
+  if (map.metadata.supportedModes.includes('core.ctf') || flags.length) {
+    const listed = map.metadata.supportedModes.includes('core.ctf');
+    for (const t of ctfTeams) {
+      const n = flags.filter((f) => f.team === t.id).length;
+      if (n === 0) issues.push({ severity: listed ? 'error' : 'warning', code: 'ctf.flag_missing', message: `Capture the Flag needs a flag base for ${t.name}` });
+      else if (n > 1) issues.push({ severity: 'warning', code: 'ctf.flag_extra', message: `${t.name} has ${n} flag bases; only the first is used` });
+    }
+    for (const f of flags) {
+      if (!ctfTeams.some((t) => t.id === f.team)) issues.push({ severity: 'warning', code: 'ctf.flag_team', message: `flag base ${f.id} belongs to "${f.team}", which is not one of the two teams`, targetId: f.id });
+    }
+    if (flags.length >= 2) {
+      const [a, b] = ctfTeams.map((t) => flags.find((f) => f.team === t.id));
+      if (a && b && Math.hypot(a.position[0] - b.position[0], a.position[2] - b.position[2]) < 16) issues.push({ severity: 'suggestion', code: 'ctf.flags_close', message: 'the two flag bases are less than 16 m apart' });
+    }
+  }
+  if (map.metadata.supportedModes.includes('core.koth') && !map.entities.some((e) => e.kind === 'hill')) {
+    issues.push({ severity: 'error', code: 'koth.no_hill', message: 'King of the Hill needs at least one hill' });
+  }
+
   for (const e of map.entities) {
     if (e.kind === 'button' && !used.buttons.has(e.id)) {
       issues.push({ severity: 'warning', code: 'button.unused', message: `button ${e.id} does nothing (no rule uses it)`, targetId: e.id });

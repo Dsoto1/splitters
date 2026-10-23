@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 10,
+  "formatVersion": 11,
   "metadata": {
     "id": "bunker_cross",
     "name": "Bunker Cross",
@@ -15,7 +15,9 @@
     },
     "supportedModes": [
       "core.deathmatch",
-      "core.tdm"
+      "core.tdm",
+      "core.ctf",
+      "core.koth"
     ]
   },
   "classicStructure": {
@@ -4969,6 +4971,58 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "flag_238",
+      "position": [
+        0,
+        0,
+        25
+      ],
+      "kind": "flag",
+      "yaw": 3.141592653589793,
+      "team": "embers"
+    },
+    {
+      "id": "flag_239",
+      "position": [
+        0,
+        0,
+        -25
+      ],
+      "kind": "flag",
+      "yaw": 0,
+      "team": "tide"
+    },
+    {
+      "id": "hill_240",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_241",
+      "position": [
+        -16,
+        0,
+        8
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_242",
+      "position": [
+        16,
+        0,
+        -8
+      ],
+      "kind": "hill",
+      "radius": 5
     }
   ],
   "factions": [],

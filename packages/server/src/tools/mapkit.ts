@@ -36,6 +36,7 @@ import {
   type SceneryId,
   type SkyId,
   type EdgeStyle,
+  type GameMode,
   type MapDocument,
   type MapEntity,
   type MountModel,
@@ -130,6 +131,16 @@ export class MapBuilder {
     return this.add({ kind: 'mount', model, position: at, yaw, faction: team, respawnSeconds: null });
   }
 
+  /** Capture the Flag: `team`'s flag base, standing on the floor at `at`. */
+  flag(team: string, at: V3, yaw = 0): this {
+    return this.add({ kind: 'flag', position: at, yaw, team });
+  }
+
+  /** King of the Hill: a hill spot (the hill moves between them in the order they are added). */
+  hill(at: V3, radius = 5): this {
+    return this.add({ kind: 'hill', position: at, radius });
+  }
+
   /** A jump pad throwing you `power` m/s up and `push` m/s along `yaw`. */
   pad(at: V3, yaw: number, power = 14, push = 6): this {
     return this.add({ kind: 'pad', position: at, yaw, power, push });
@@ -199,7 +210,7 @@ export class MapBuilder {
     return mapTeams(this.doc, count).map((t) => t.id);
   }
 
-  meta(m: { description: string; modes: ('core.deathmatch' | 'core.tdm' | 'core.coop')[]; players: [number, number]; author?: string }): this {
+  meta(m: { description: string; modes: GameMode[]; players: [number, number]; author?: string }): this {
     this.run('Edit map', {
       kind: 'setMetadata',
       before: this.doc.metadata,
