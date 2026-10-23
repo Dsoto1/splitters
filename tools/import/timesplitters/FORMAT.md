@@ -248,3 +248,12 @@ Make these in each game's MapMaker on one memory card and export each as a GCI (
 | 13 | Change one tile's light colour | colour field confirmation |
 | 14 | Two saves identical except for one byte of the name (TSFP) | isolates the checksum's input range; then brute-force the algorithm (or read it from the DOL via a disassembler) |
 | 15 | One stairs piece connecting levels 0 and 1 | vertical pieces |
+
+## 7. Findings from the converter (`packages/server/src/tools/import-timesplitters.ts`)
+
+- **TSFP cell ids (likely).** Ids are handed out tile by tile from 1001 in record order, and row by row over the footprint at rotation 0 (`id = base + i + w*j`, then rotated like the footprint). With per-type id counts learned from the samples (the most common step between consecutive tiles), 81% of same-level links resolve to two adjacent cells. Several types take more ids than footprint cells: 15 (1x1, 2 ids), 27 (1x1, 3), 42 (1x1, 12), 19 (3x1, 7), 13/20/23/24/31-33/39/41 (3x3, 10-14): probably extra levels (stairs, shafts, tall rooms).
+- **TSFP vertical links.** Types 2 (2x1) and 15 (1x1) link to a tile one level up at their far end: stairs/ramps. Most other cross-level links point down (dz -1..-5) from open pieces (17, 16, 10, 42) and are probably sight/drop portals, not walkways.
+- **TSFP tiles without links.** 2,049 of 8,892 tiles have no links and sit right over another tile, almost all types 17, 16 and 6 with `b08` byte 0 in {0, 1, 3}. In "Romulus" the whole z=0 layer repeats z=-1 this way. Most likely the upper storey of tall spaces (or outdoor scenery).
+- **TSFP `b08` low 12 bits (guess).** Look like 4 sides x 3 segments of per-side flags (bits 0-2 S, 3-5 E, 6-8 N, 9-11 W at rotation 0): the cells along the edge of an open block of type 17 set the bit of their outer side (corner cells two bits). Probably walls or windows along the edge of open areas.
+- **TS2 type 14** (1x2) has a same-level exit at its S end and the level above beyond its N end in 61% of placements: stairs up.
+- **TS2 type 21** (3x3, exits N and S) meets the level above along its E side in 88% of placements.

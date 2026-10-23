@@ -33,6 +33,8 @@ export interface ArcadeMap {
   blurb: string;
   modes: GameMode[];
   bots: number;
+  /** Shown under its own heading after the built-in maps (e.g. "Imported"). */
+  group?: string;
 }
 
 export interface ArcadeSetup {
@@ -252,7 +254,22 @@ export class FrontEnd {
   private arcade(): HTMLElement {
     const current = this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
     const cards = el('div', { class: 'map-cards' });
+    // Grouped maps (many, e.g. imported ones) draw their plans only once they scroll into view.
+    const lazy = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver((seen) => {
+      for (const e of seen) {
+        if (!e.isIntersecting) continue;
+        lazy!.unobserve(e.target);
+        const m = this.maps.find((x) => x.key === (e.target as HTMLElement).dataset.map);
+        const c = e.target.querySelector('canvas');
+        if (m && c) drawMapPlan(c, m.map);
+      }
+    }, { root: cards });
+    let group: string | undefined;
     for (const m of this.maps) {
+      if (m.group !== group) {
+        group = m.group;
+        if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
+      }
       const plan = el('canvas');
       const card = el(
         'button',
@@ -266,7 +283,8 @@ export class FrontEnd {
         this.go('play');
       });
       cards.append(card);
-      requestAnimationFrame(() => drawMapPlan(plan, m.map));
+      if (m.group && lazy) lazy.observe(card);
+      else requestAnimationFrame(() => drawMapPlan(plan, m.map));
     }
     const stepper = (value: number, step: number, min: number, max: number, set: (v: number) => void, fmt = (v: number) => String(v)) => {
       const minus = el('button', { textContent: '−' });
@@ -303,6 +321,7 @@ export class FrontEnd {
             el('div', { class: 'row' }, 'Time limit', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v}m` : '∞'))),
           ]),
       el('p', { class: 'map-desc', textContent: current.map.metadata.description }),
+      ...(current.map.metadata.author && current.map.metadata.author !== 'ChronoSplit' ? [el('p', { class: 'map-credit', textContent: `Map by ${current.map.metadata.author}` })] : []),
       start,
     );
     return el('div', { class: 'screen play' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Arcade <em>Match</em>' })), el('div', { class: 'arcade' }, cards, panel));

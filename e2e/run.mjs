@@ -579,15 +579,32 @@ async function mapsFlow(browser) {
   const { readdirSync } = await import('node:fs');
   const covered = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
   const ids = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !covered.has(id));
-  for (const id of ids) {
+  // Imported maps (maps/imported/, converted from TimeSplitters MapMaker saves) are many: spot-check 5 at random
+  // (E2E_IMPORTED=all checks every one, E2E_IMPORTED=id1,id2 checks those).
+  let imported = [];
+  try {
+    imported = readdirSync(new URL('../maps/imported/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
+  } catch {}
+  const pick = process.env.E2E_IMPORTED;
+  const chosen = pick === 'all' ? imported : pick ? pick.split(',') : imported.map((id) => [Math.random(), id]).sort((a, b) => a[0] - b[0]).slice(0, 5).map(([, id]) => id);
+  if (imported.length) console.log(`imported maps checked: ${chosen.join(', ')}`);
+  for (const id of [...ids, ...chosen]) {
     const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(`${CLIENT}/?offline=${id}`);
     const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 40000 }).then(() => true, () => false);
     await page.waitForTimeout(1500);
-    const alive = ok && (await page.evaluate(() => window.__cs.local.alive && window.__cs.local.state.pos.y > -5));
-    check(ok && alive && errors.length === 0, `${id}: match starts and you spawn on solid ground${errors.length ? ` (${errors.join('; ')})` : ''}`);
+    // Imported maps can have floors below level 0: "solid ground" there means not below the lowest floor.
+    let floor = -5;
+    if (chosen.includes(id)) {
+      const { readFileSync } = await import('node:fs');
+      const m = JSON.parse(readFileSync(new URL(`../maps/imported/${id}.json`, import.meta.url), 'utf8'));
+      floor = Math.min(0, ...m.classicStructure.tiles.map((t) => t.z)) * m.classicStructure.levelHeight - 1;
+    }
+    const alive = ok && (await page.evaluate((floor) => window.__cs.local.alive && window.__cs.local.state.pos.y > floor, floor));
+    const where = ok ? await page.evaluate(() => window.__cs.local.state.pos.y.toFixed(1)) : 'no match';
+    check(ok && alive && errors.length === 0, `${id}: match starts and you spawn on solid ground${chosen.includes(id) ? ` (y ${where})` : ''}${errors.length ? ` (${errors.join('; ')})` : ''}`);
     await page.context().close();
   }
 }
