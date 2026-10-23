@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_FIRE, CORE_BOT_PROFILES, DEFAULT_TDM_RULES, DEFAULT_TEAMS, PLAYER, initPhysics, lookAngles, rulesForMap, validateMap, type GameEvent } from '../src/index.ts';
+import { BUTTON_FIRE, CORE_BOT_PROFILES, DEFAULT_TDM_RULES, DEFAULT_TEAMS, PLAYER, mapTeams, initPhysics, lookAngles, rulesForMap, validateMap, type Faction, type GameEvent } from '../src/index.ts';
 import { BotFiller, Match, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -17,7 +17,7 @@ function tdmMap() {
     [[-2, 0, -2], [-2, 0, 2], [10, 0, -2], [10, 0, 2]],
   );
   map.metadata.supportedModes = ['core.tdm'];
-  const [a, b] = DEFAULT_TEAMS;
+  const [a, b] = DEFAULT_TEAMS as [Faction, Faction];
   map.entities.forEach((e, i) => {
     if (e.kind === 'spawn') e.faction = i < 2 ? a.id : b.id;
   });
@@ -38,7 +38,7 @@ describe('Team Deathmatch', () => {
   it('balances teams, spawns each team on its own spawns and reports teams in the roster', () => {
     const match = new Match(tdmMap(), DEFAULT_TDM_RULES);
     const players = [match.addHuman('a')!, match.addHuman('b')!, match.addHuman('c')!, match.addHuman('d')!];
-    const [ta, tb] = DEFAULT_TEAMS;
+    const [ta, tb] = DEFAULT_TEAMS as [Faction, Faction];
     expect(players.map((p) => p.faction)).toEqual([ta.id, tb.id, ta.id, tb.id]);
     for (const p of players) expect(p.move.pos.x < 4).toBe(p.faction === ta.id);
     expect(match.roster().map((r) => r.team)).toEqual([ta.id, tb.id, ta.id, tb.id]);
@@ -93,5 +93,30 @@ describe('Team Deathmatch', () => {
     for (const e of map.entities) if (e.kind === 'spawn') e.faction = DEFAULT_TEAMS[0].id;
     expect(validateMap(map).some((i) => i.code === 'tdm.spawn_missing')).toBe(true);
     expect(validateMap(tdmMap()).some((i) => i.code.startsWith('tdm.'))).toBe(false);
+  });
+
+  it('runs any team layout: 2v2v2v2v2v2v12 fills each team to its size, nobody shoots their own side', () => {
+    const sizes = [2, 2, 2, 2, 2, 2, 12];
+    const match = new Match(tdmMap(), { ...DEFAULT_TDM_RULES, teamSizes: sizes });
+    match.addHuman('me');
+    new BotFiller(match).rebalance(sizes.reduce((a, b) => a + b, 0));
+    const teams = mapTeams(match.map, sizes.length);
+    expect(match.teams?.map((t) => t.id)).toEqual(teams.map((t) => t.id));
+    const count = (id: string) => match.combatants().filter((c) => c.faction === id).length;
+    expect(teams.map((t) => count(t.id))).toEqual(sizes);
+    // Teams beyond the map's two bases spawn on the shared points (or anyone's) and still play.
+    for (let i = 0; i < 600; i++) match.step();
+    for (const c of match.combatants()) expect(c.move.pos.y).toBeGreaterThan(-1);
+    expect(match.teamScores().size).toBe(7);
+    // A bot leaving takes from the team most over its size.
+    new BotFiller(match).rebalance(23);
+    expect(count(teams[6]!.id)).toBe(11);
+  });
+
+  it('the map can recommend a team layout, which the rules pick up', () => {
+    const map = { ...tdmMap(), teamSetup: { sizes: [3, 3, 3] } };
+    expect(rulesForMap(map).teamSizes).toEqual([3, 3, 3]);
+    expect(mapTeams(map).map((t) => t.name)).toEqual(['Embers', 'Tide', 'Verdant']);
+    expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
   });
 });

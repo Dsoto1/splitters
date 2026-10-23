@@ -289,6 +289,28 @@ async function canyonFlow(browser) {
   await page.context().close();
 }
 
+async function teamsFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  // Arcade: Team Deathmatch on Sandgate as 2v2v2v2v2v2v12 (24 players, 7 teams).
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10 })));
+  await page.goto(CLIENT);
+  await page.click('#nav-play');
+  await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
+  await page.click('#arcade-start');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForTimeout(2500);
+  await page.keyboard.down('Tab');
+  await page.waitForTimeout(300);
+  const board = await page.evaluate(() => ({ many: document.getElementById('scoreboard').classList.contains('many'), tables: [...document.querySelectorAll('#scoreboard table')].map((t) => t.querySelectorAll('tr').length - 1) }));
+  await page.keyboard.up('Tab');
+  check(board.many && board.tables.length === 7, `the scoreboard shows seven teams (${board.tables.length})`);
+  check([...board.tables].sort((a, b) => a - b).join(',') === '2,2,2,2,2,2,12', `teams are filled to 2v2v2v2v2v2v12 (${board.tables.join(',')})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function designerFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1200, height: 760 } })).newPage();
   const errors = [];
@@ -362,7 +384,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, teams: teamsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

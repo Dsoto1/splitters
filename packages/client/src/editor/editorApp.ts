@@ -77,6 +77,9 @@ import {
   TERRAIN_SURFACES,
   applyBrush,
   fitBounds,
+  MAX_TEAMS,
+  TEAM_PRESETS,
+  teamLayoutLabel,
   mapTerrainMesh,
   type BoundaryStyle,
   newTerrain,
@@ -179,6 +182,7 @@ interface DragState {
 }
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+
 const FLY_SPEED = 18;
 const LOOK_SENSITIVITY = 0.004;
 const snap = (v: number, step: number) => Math.round(v / step) * step;
@@ -950,6 +954,44 @@ export class EditorApp {
     this.setTool({ kind: 'select' });
   }
 
+  // ---------------------------------------------------------------- teams
+
+  /** Map properties in team modes: how many teams and how many players on each (2–8 teams of 1–16). */
+  private renderTeamSetup(el: HTMLElement): void {
+    const doc = this.doc;
+    const sizes = doc.teamSetup?.sizes ?? [4, 4];
+    const set = (label: string, next: number[]) => this.run(label, { kind: 'setTeamSetup', before: doc.teamSetup, after: { sizes: next } });
+    const head = document.createElement('h3');
+    head.textContent = `Teams · ${teamLayoutLabel(sizes)}`;
+    el.append(head);
+    const presets = document.createElement('select');
+    presets.id = 'ed-team-preset';
+    presets.append(new Option('Presets…', ''));
+    for (const p of TEAM_PRESETS) presets.append(new Option(`${teamLayoutLabel(p)} (${p.reduce((a, b) => a + b, 0)} players)`, p.join(',')));
+    presets.addEventListener('change', () => presets.value && set('Set teams', presets.value.split(',').map(Number)));
+    el.append(row('Layout', presets));
+    const teams = mapTeams(doc, sizes.length);
+    teams.forEach((t, i) => {
+      const input = numberInput(sizes[i] ?? 1, 1, (v) => set('Set team size', sizes.map((s, j) => (j === i ? Math.max(1, Math.min(16, Math.round(v))) : s))));
+      input.dataset.team = t.id;
+      const label = document.createElement('span');
+      label.innerHTML = `<span style="color:${t.color}">●</span> ${escapeHtml(t.name)}`;
+      const r = row('', input);
+      r.firstElementChild?.replaceWith(label);
+      el.append(r);
+    });
+    const buttons = document.createElement('div');
+    buttons.className = 'ed-row-buttons';
+    const add = button('+ Team', () => set('Add team', [...sizes, sizes[sizes.length - 1] ?? 2]));
+    add.id = 'ed-team-add';
+    add.disabled = sizes.length >= MAX_TEAMS;
+    const remove = button('− Team', () => set('Remove team', sizes.slice(0, -1)));
+    remove.disabled = sizes.length <= 2;
+    buttons.append(add, remove);
+    const total = sizes.reduce((a, b) => a + b, 0);
+    el.append(buttons, small(`${total} players in all${total > 32 ? ' (a match holds 32: the biggest teams will be short)' : ''}. Bots fill every team to its size in TEST and the Arcade.`));
+  }
+
   // ---------------------------------------------------------------- boundary
 
   /** Map properties: walls round the play area, fitted to the map in one click. */
@@ -1343,10 +1385,11 @@ export class EditorApp {
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
         'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
-        'core.tdm': `Team Deathmatch: ${teams[0].name} against ${teams[1].name} (the first two factions, if the map names them). Give spawns a team in their inspector.`,
+        'core.tdm': `Team Deathmatch: ${teams.map((t) => t.name).join(' against ')}. Give spawns a team in their inspector; teams without spawns of their own use the shared ones.`,
         'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
       };
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
+      if (current === 'core.tdm') this.renderTeamSetup(el);
       const theme = document.createElement('select');
       for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
       theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
@@ -1543,7 +1586,7 @@ export class EditorApp {
         break;
       }
       case 'spawn': {
-        const teams = mapTeams(doc);
+        const teams = mapTeams(doc, MAX_TEAMS);
         choose('Team', [['', 'Any (shared)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));
         el.append(small(doc.metadata.supportedModes[0] === 'core.tdm' ? 'In Team Deathmatch a team spawns on its own points; shared points are used when a team has none.' : 'Teams only matter in Team Deathmatch.'));
         break;
@@ -1734,7 +1777,10 @@ export class EditorApp {
     }
     const botCount = Number($<HTMLSelectElement>('ed-bots').value);
     const difficulty = $<HTMLSelectElement>('ed-skill').value as TestRequest['difficulty'];
-    this.host.startTest({ map: this.doc, botFill: botCount + 1, difficulty });
+    // Team maps fill every team to its size; otherwise the bots chosen in the top bar.
+    const teams = this.doc.metadata.supportedModes[0] === 'core.tdm' ? this.doc.teamSetup?.sizes : undefined;
+    const fill = teams ? Math.min(32, teams.reduce((a, b) => a + b, 0)) : botCount + 1;
+    this.host.startTest({ map: this.doc, botFill: fill, difficulty });
   }
 
   toast(message: string, error = false): void {

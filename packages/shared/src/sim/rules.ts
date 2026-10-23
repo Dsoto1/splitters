@@ -17,6 +17,11 @@ export interface MatchRules {
   startingGrenades: number;
   /** Ticks the results screen stays up before the next round starts. */
   intermissionTicks: number;
+  /**
+   * Team modes: players per team, 2–8 teams of any sizes (e.g. [2, 2, 2, 12]).
+   * Absent: two teams, balanced as players join.
+   */
+  teamSizes?: number[];
 }
 
 export const DEFAULT_DEATHMATCH_RULES: MatchRules = {
@@ -45,8 +50,9 @@ export const DEFAULT_COOP_RULES: MatchRules = {
 };
 
 /**
- * Team Deathmatch: two sides (the map's first two factions, or Embers and
- * Tide), balanced as players join, no friendly fire. Every kill scores for the
+ * Team Deathmatch: two to eight sides (the map's first two factions, or
+ * Embers and Tide, then the rest of the palette), filled to their sizes as
+ * players join, no friendly fire. Every kill scores for the
  * killer's team; the first team to the limit wins.
  */
 export const DEFAULT_TDM_RULES: MatchRules = {
@@ -65,7 +71,7 @@ export function rulesForMap(map: MapDocument): MatchRules {
     case 'core.coop':
       return DEFAULT_COOP_RULES;
     case 'core.tdm':
-      return DEFAULT_TDM_RULES;
+      return map.teamSetup ? { ...DEFAULT_TDM_RULES, teamSizes: [...map.teamSetup.sizes] } : DEFAULT_TDM_RULES;
     default:
       return DEFAULT_DEATHMATCH_RULES;
   }

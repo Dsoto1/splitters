@@ -181,7 +181,7 @@ export class GameSession {
         }
         this.slot = msg.slot;
         this.rules = msg.rules;
-        this.hud.setTeams(msg.rules.mode === 'core.tdm' ? mapTeams(loaded.map) : null);
+        this.hud.setTeams(msg.rules.mode === 'core.tdm' ? mapTeams(loaded.map, msg.rules.teamSizes?.length ?? 2) : null);
         this.hud.setModeLabel(msg.rules.mode === 'core.tdm' ? 'Team Deathmatch' : msg.rules.mode === 'core.coop' ? 'Co-op Mission' : 'Deathmatch');
         this.hud.minimap.setMap(loaded.map);
         void this.opts.portrait?.then((src) => this.hud.setPortrait(src), () => undefined);

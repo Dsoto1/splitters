@@ -55,14 +55,39 @@ export const DEFAULT_FACTIONS: readonly Faction[] = [{ id: 'syndicate', name: 'S
 
 export const mapFactions = (map: MapDocument): readonly Faction[] => (map.factions.length ? map.factions : DEFAULT_FACTIONS);
 
-/** Team Deathmatch sides when a map doesn't name two factions of its own. */
-export const DEFAULT_TEAMS: readonly [Faction, Faction] = [
+/** Most teams a team match can have. */
+export const MAX_TEAMS = 8;
+
+/** Team sides, in order, when a map doesn't name its own (the first two can be renamed by the map's first two factions). */
+export const DEFAULT_TEAMS: readonly Faction[] = [
   { id: 'embers', name: 'Embers', color: '#e2703a', relations: {} },
   { id: 'tide', name: 'Tide', color: '#3a8fe2', relations: {} },
+  { id: 'verdant', name: 'Verdant', color: '#4cc25a', relations: {} },
+  { id: 'volt', name: 'Volt', color: '#e8c530', relations: {} },
+  { id: 'violet', name: 'Violet', color: '#a05ae0', relations: {} },
+  { id: 'frost', name: 'Frost', color: '#5fe0e0', relations: {} },
+  { id: 'crimson', name: 'Crimson', color: '#d8344f', relations: {} },
+  { id: 'ash', name: 'Ash', color: '#b8b8b8', relations: {} },
 ];
 
-/** The two Team Deathmatch sides: the map's first two factions, or Embers and Tide. */
-export const mapTeams = (map: MapDocument): readonly [Faction, Faction] => (map.factions.length >= 2 ? [map.factions[0]!, map.factions[1]!] : DEFAULT_TEAMS);
+/**
+ * The sides of a team match: the map's first two factions (when it names at
+ * least two) and then the rest of the palette, `count` of them (default: the
+ * map's recommended team setup, else two).
+ */
+export function mapTeams(map: MapDocument, count = map.teamSetup?.sizes.length ?? 2): readonly Faction[] {
+  const named = map.factions.length >= 2 ? [map.factions[0]!, map.factions[1]!] : [];
+  const rest = DEFAULT_TEAMS.filter((t, i) => i >= named.length && !named.some((n) => n.id === t.id));
+  return [...named, ...rest].slice(0, Math.max(2, Math.min(MAX_TEAMS, count)));
+}
+
+/** Team layouts offered in one click in MapMaker and the Arcade (any other mix can be set by hand). */
+export const TEAM_PRESETS: readonly (readonly number[])[] = [
+  [1, 1], [2, 2], [4, 4], [8, 8], [2, 2, 2], [3, 3, 3], [2, 2, 2, 2], [4, 4, 4, 4], [2, 2, 2, 2, 2, 2, 2, 2], [2, 2, 2, 2, 2, 2, 12], [1, 3], [4, 12],
+];
+
+/** Short "2v2v4" style label for a team layout. */
+export const teamLayoutLabel = (sizes: readonly number[]): string => sizes.join('v');
 
 /**
  * How faction `a` treats faction `b`. `null` is a free-for-all player

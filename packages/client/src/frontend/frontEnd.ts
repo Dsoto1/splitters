@@ -5,7 +5,12 @@ import {
   DEFAULT_LOOK,
   DEFAULT_TDM_RULES,
   LOOK_BIOS,
+  MAX_PLAYER_SLOTS,
+  MAX_TEAMS,
+  TEAM_PRESETS,
   getLook,
+  mapTeams,
+  teamLayoutLabel,
   getWeapon,
   partInfo,
   type GameMode,
@@ -36,6 +41,8 @@ export interface ArcadeSetup {
   skill: 'easy' | 'normal' | 'hard';
   scoreLimit: number;
   minutes: number;
+  /** Team Deathmatch: players per team (2–8 teams); bots fill every team. */
+  teams?: number[];
 }
 
 export interface FrontEndHooks {
@@ -286,7 +293,7 @@ export class FrontEnd {
       { class: 'setup panel' },
       el('h3', { class: 'panel-title', textContent: current.map.metadata.name }),
       el('div', { class: 'row' }, 'Mode', tabs(current.modes.map((m) => [m, MODE_LABEL[m]] as [string, string]), s.mode, (v) => (this.setup.mode = v as GameMode, this.setup.scoreLimit = BASE_RULES[v as GameMode].scoreLimit))),
-      el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v))),
+      ...(s.mode === 'core.tdm' ? this.teamRows(current.map, stepper) : [el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
       el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
       ...(coop
         ? []
@@ -309,8 +316,43 @@ export class FrontEnd {
     const base = BASE_RULES[this.setup.mode];
     const rules: MatchRules = this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 };
     this.saveSetup();
+    if (this.setup.mode === 'core.tdm') {
+      // Bots fill every team to its size; you take a place on one of them.
+      const teams = this.teamSizes(m.map);
+      this.hooks.playLocal(m.map, { ...rules, teamSizes: teams }, Math.min(MAX_PLAYER_SLOTS, teams.reduce((a, b) => a + b, 0)), this.setup.skill);
+      return;
+    }
     // The bot filler counts the player too.
     this.hooks.playLocal(m.map, rules, this.setup.bots + 1, this.setup.skill);
+  }
+
+  /** The team layout for Team Deathmatch: your last choice, else the map's, else two teams of four. */
+  private teamSizes(map: MapDocument): number[] {
+    return this.setup.teams ?? (map.teamSetup ? [...map.teamSetup.sizes] : [4, 4]);
+  }
+
+  /** Arcade rows for teams: a layout preset, then a stepper per team in its colour. */
+  private teamRows(map: MapDocument, stepper: (value: number, step: number, min: number, max: number, set: (v: number) => void) => HTMLElement): HTMLElement[] {
+    const sizes = this.teamSizes(map);
+    const teams = mapTeams(map, sizes.length);
+    const set = (next: number[]) => {
+      this.setup.teams = next;
+      this.saveSetup();
+      this.go('play');
+    };
+    const preset = el('select', { id: 'arcade-teams' }) as HTMLSelectElement;
+    const label = teamLayoutLabel(sizes);
+    preset.append(new Option(`${label} (${sizes.reduce((a, b) => a + b, 0)} players)`, ''));
+    for (const p of TEAM_PRESETS) if (teamLayoutLabel(p) !== label) preset.append(new Option(`${teamLayoutLabel(p)} (${p.reduce((a, b) => a + b, 0)} players)`, p.join(',')));
+    preset.addEventListener('change', () => preset.value && set(preset.value.split(',').map(Number)));
+    const plus = el('button', { class: 'tab', textContent: '+ Team' });
+    plus.addEventListener('click', () => sizes.length < MAX_TEAMS && set([...sizes, sizes[sizes.length - 1] ?? 2]));
+    const minus = el('button', { class: 'tab', textContent: '− Team' });
+    minus.addEventListener('click', () => sizes.length > 2 && set(sizes.slice(0, -1)));
+    const steppers = teams.map((t, i) =>
+      el('div', { class: 'team-size' }, swatch(t.color), el('span', { textContent: t.name }), stepper(sizes[i]!, 1, 1, 16, (v) => (this.setup.teams = sizes.map((s, j) => (j === i ? v : s))))),
+    );
+    return [el('div', { class: 'row' }, 'Teams', el('div', { class: 'team-layout' }, preset, plus, minus)), el('div', { class: 'team-grid' }, ...steppers)];
   }
 
   // ---------------------------------------------------------------- character select
@@ -521,4 +563,12 @@ export class FrontEnd {
       this.select(this.hovered);
     }
   }
+}
+
+/** A small colour chip. */
+function swatch(color: string): HTMLElement {
+  const s = document.createElement('span');
+  s.className = 'swatch';
+  s.style.background = color;
+  return s;
 }

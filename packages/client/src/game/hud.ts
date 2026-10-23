@@ -148,11 +148,13 @@ export class Hud {
     let right = '';
     const box = (value: number, label: string, color: string) => `<b style="background:${color}">${value}</b><small>${escapeHtml(label)}</small>`;
     if (this.teams) {
+      // Your team on the left; on the right the strongest other team (with 3+ teams, the leader among them).
       const totals = this.teamTotals(scores);
       const mine = this.roster.get(localSlot)?.team;
-      const [a, b] = [...this.teams].sort((x, y) => (x.id === mine ? -1 : y.id === mine ? 1 : 0));
-      left = box(totals.get(a!.id) ?? 0, a!.name, a!.color);
-      right = box(totals.get(b!.id) ?? 0, b!.name, b!.color);
+      const own = this.teams.find((t) => t.id === mine) ?? this.teams[0]!;
+      const rival = this.teams.filter((t) => t.id !== own.id).sort((x, y) => (totals.get(y.id) ?? 0) - (totals.get(x.id) ?? 0))[0]!;
+      left = box(totals.get(own.id) ?? 0, own.name, own.color);
+      right = box(totals.get(rival.id) ?? 0, this.teams.length > 2 ? `${rival.name} · lead` : rival.name, rival.color);
     } else if (!coop) {
       const me = scores.find((s) => s.s === localSlot)?.k ?? 0;
       const best = scores.filter((s) => s.s !== localSlot).reduce((m, s) => Math.max(m, s.k), 0);
@@ -331,6 +333,7 @@ export class Hud {
     // Team Deathmatch: one table per team, the higher score first.
     const totals = this.teamTotals(scores);
     const teams = [...this.teams].sort((a, b) => (totals.get(b.id) ?? 0) - (totals.get(a.id) ?? 0));
+    this.scoreboard.classList.toggle('many', teams.length > 2);
     this.scoreboard.innerHTML = teams
       .map((t) => {
         const rows = sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row).join('');

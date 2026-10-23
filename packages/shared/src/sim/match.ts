@@ -227,7 +227,7 @@ export class Match {
 
   private factionList?: readonly Faction[];
 
-  /** The map's NPC factions (or the default enemy faction), after the two teams in Team Deathmatch. */
+  /** The map's NPC factions (or the default enemy faction), after the teams in Team Deathmatch. */
   get factions(): readonly Faction[] {
     if (!this.factionList) {
       const npc = mapFactions(this.map);
@@ -236,17 +236,39 @@ export class Match {
     return this.factionList;
   }
 
-  /** The two sides in Team Deathmatch; null in other modes. */
-  get teams(): readonly [Faction, Faction] | null {
-    return this.rules.mode === 'core.tdm' ? mapTeams(this.map) : null;
+  private teamList?: readonly Faction[] | null;
+
+  /** The sides in Team Deathmatch (2–8); null in other modes. */
+  get teams(): readonly Faction[] | null {
+    if (this.teamList === undefined) this.teamList = this.rules.mode === 'core.tdm' ? mapTeams(this.map, this.rules.teamSizes?.length ?? 2) : null;
+    return this.teamList;
   }
 
-  /** Faction players join: everyone shares one side in co-op; deathmatch is free-for-all; TDM balances teams. */
+  /** Target players per team: the rules' sizes, or even teams. */
+  teamTargets(): Map<string, number> {
+    const teams = this.teams ?? [];
+    return new Map(teams.map((t, i) => [t.id, this.rules.teamSizes?.[i] ?? 16]));
+  }
+
+  /**
+   * Faction players join: everyone shares one side in co-op; deathmatch is
+   * free-for-all; team modes put each newcomer on the team furthest below its
+   * size (as a share of it, so a 12-player team fills alongside 2-player ones).
+   */
   private get playerFaction(): string | null {
     if (this.teams) {
-      const [a, b] = this.teams;
+      const targets = this.teamTargets();
       const count = (id: string) => this.combatants().filter((c) => c.faction === id).length;
-      return count(b.id) < count(a.id) ? b.id : a.id;
+      let best = this.teams[0]!.id;
+      let bestFill = Infinity;
+      for (const t of this.teams) {
+        const fill = count(t.id) / targets.get(t.id)!;
+        if (fill < bestFill - 1e-9) {
+          bestFill = fill;
+          best = t.id;
+        }
+      }
+      return best;
     }
     return this.rules.mode === 'core.coop' ? PLAYERS_FACTION : null;
   }
@@ -435,6 +457,8 @@ export class Match {
     // Team Deathmatch bots roam toward the other side's spawns, so the teams meet in the middle.
     const teamRoam = new Map<string, Vec3[]>();
     for (const t of this.teams ?? []) {
+      // Teams without bases of their own roam the whole map.
+      if (!this.spawnPoints.some((s) => s.team === t.id)) continue;
       const away = this.spawnPoints.filter((s) => s.team !== null && s.team !== t.id).map((s) => s.pos);
       if (away.length) teamRoam.set(t.id, away);
     }
@@ -888,6 +912,7 @@ export class Match {
     const enemies = this.actors().filter((o) => o.alive && this.hostile(c, o));
     const own = this.teams && c.faction ? this.spawnPoints.filter((sp) => sp.team === c.faction) : [];
     const shared = this.spawnPoints.filter((sp) => sp.team === null);
+    // A team without spawns of its own (more teams than the map has bases) uses the shared ones, else anyone's, farthest from enemies.
     const candidates = own.length ? own : shared.length ? shared : this.spawnPoints;
     let best = candidates[0];
     let bestScore = -Infinity;
@@ -938,10 +963,9 @@ export class Match {
     this.phaseEndTick = this.tick + this.rules.intermissionTicks;
     this.projectiles = [];
     if (this.teams && !outcome) {
-      // Team Deathmatch: the higher team score wins (logic can still name a player, whose team wins).
-      const scores = this.teamScores();
-      const [a, b] = this.teams;
-      const team = named && !named.npc ? named.faction : scores.get(a.id)! === scores.get(b.id)! ? null : scores.get(a.id)! > scores.get(b.id)! ? a.id : b.id;
+      // Team Deathmatch: the highest team score wins; a tie at the top is a draw (logic can still name a player, whose team wins).
+      const scores = [...this.teamScores()].sort((x, y) => y[1] - x[1]);
+      const team = named && !named.npc ? named.faction : scores.length > 1 && scores[0]![1] === scores[1]![1] ? null : (scores[0]?.[0] ?? null);
       this.pendingEvents.push({ e: 'round_end', winner: null, team });
       return;
     }
@@ -1065,11 +1089,12 @@ export class BotFiller {
     const humans = all.filter((c) => c.kind === 'human').length;
     const bots = all.filter((c) => c.kind === 'bot');
     const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans));
+    const targets = this.match.teamTargets();
     for (let i = bots.length; i > want; i--) {
-      // In Team Deathmatch, take bots from the bigger team so the sides stay even.
+      // In team modes, take bots from the team most over its size so the sides stay as set.
       const live = this.match.combatants();
-      const size = (team: string | null) => live.filter((c) => c.faction === team).length;
-      const left = live.filter((c) => c.kind === 'bot').sort((a, b) => size(b.faction) - size(a.faction) || b.slot - a.slot);
+      const over = (team: string | null) => live.filter((c) => c.faction === team).length / (team ? (targets.get(team) ?? 1) : 1);
+      const left = live.filter((c) => c.kind === 'bot').sort((a, b) => over(b.faction) - over(a.faction) || b.slot - a.slot);
       this.match.remove(left[0]!.slot);
     }
     for (let i = bots.length; i < want; i++) {

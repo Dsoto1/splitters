@@ -14,7 +14,7 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, Rotation, TerrainData, Vec3, WorldBox } from '@chronosplit/shared';
-import { DESTRUCTIBLE_SPECS, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -230,7 +230,7 @@ export class EditorView {
     const factions = mapFactions(doc);
     const factionColor = (id: string) => factions.find((f) => f.id === id)?.color ?? '#888888';
     this.scenario.factionColor = factionColor;
-    const teams = mapTeams(doc);
+    const teams = mapTeams(doc, MAX_TEAMS);
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
       seen.add(e.id);

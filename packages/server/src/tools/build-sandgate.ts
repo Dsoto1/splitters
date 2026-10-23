@@ -30,6 +30,7 @@ import {
   serializeMap,
   setThemeCommand,
   validateMap,
+  type Faction,
   type MapEntity,
   type Rotation,
 } from '@chronosplit/shared';
@@ -108,7 +109,7 @@ for (const [x, y] of [[8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [7, 2], [6, 2], [1
 
 // ---------------------------------------------------------------- spawns
 
-const [embers, tide] = mapTeams(history.doc);
+const [embers, tide] = mapTeams(history.doc) as [Faction, Faction];
 function spawns(team: string, cells: [number, number][], yaw: number): void {
   for (const [gx, gy] of cells) {
     for (const dx of [-2, 2]) {

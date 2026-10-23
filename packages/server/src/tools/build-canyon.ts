@@ -35,6 +35,7 @@ import {
   terrainHeightAt,
   validateMap,
   type EdgeStyle,
+  type Faction,
   type MapEntity,
   type Rotation,
   type Side,
@@ -213,7 +214,7 @@ run('Add props', { kind: 'addEntities', entities });
 
 // ---------------------------------------------------------------- spawns and pickups
 
-const [embers, tide] = mapTeams(history.doc);
+const [embers, tide] = mapTeams(history.doc) as [Faction, Faction];
 const spawnAt = (team: string, x: number, z: number, yaw: number) => {
   const { command } = addSpawnCommand([x, 0, z], yaw);
   const spawn = (command as { entities: MapEntity[] }).entities[0]!;

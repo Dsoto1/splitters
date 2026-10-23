@@ -16,7 +16,7 @@ describe('Sandgate', () => {
     const map = load();
     expect(validateMap(map)).toEqual([]);
     expect(rulesForMap(map).mode).toBe('core.tdm');
-    for (const t of DEFAULT_TEAMS) expect(map.entities.filter((e) => e.kind === 'spawn' && e.faction === t.id).length).toBe(8);
+    for (const t of DEFAULT_TEAMS.slice(0, 2)) expect(map.entities.filter((e) => e.kind === 'spawn' && e.faction === t.id).length).toBe(8);
   });
 
   it('connects both spawns to both squares, mid and long on the navmesh', () => {
@@ -43,7 +43,7 @@ describe('Sandgate', () => {
     // No friendly kills, and both teams score.
     expect(kills.some((k) => teamOf(k.killer!) === teamOf(k.victim))).toBe(false);
     const scores = match.teamScores();
-    for (const t of DEFAULT_TEAMS) expect(scores.get(t.id)).toBeGreaterThan(0);
+    for (const t of DEFAULT_TEAMS.slice(0, 2)) expect(scores.get(t.id)).toBeGreaterThan(0);
     for (const c of match.combatants()) expect(c.move.pos.y).toBeGreaterThan(-1);
   });
 });

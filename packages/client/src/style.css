@@ -300,3 +300,14 @@ img:not([src]) { visibility: hidden; }
 img.wicon { height: 18px; width: auto; vertical-align: middle; margin: 0 4px; filter: drop-shadow(0 1px 1px #000); }
 img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .loadout span { display: flex; align-items: center; }
+/* Three or more teams: tables side by side, wrapping. */
+#scoreboard.many { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 14px; width: min(980px, 94vw); top: 12%; max-height: 76vh; overflow-y: auto; }
+#scoreboard.many table { font-size: 13px; }
+/* Arcade team layout */
+.team-layout { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.team-layout select { background: var(--panel-2, #1b2335); color: inherit; border: 1px solid var(--line); padding: 4px 6px; font: inherit; }
+.team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin: 4px 0 8px; }
+.team-size { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.team-size > span:nth-child(2) { flex: 1; }
+.team-size .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.team-size .stepper button { padding: 0 6px; }

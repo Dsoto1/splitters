@@ -1,4 +1,4 @@
-import { TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@chronosplit/shared';
+import { MAX_TEAMS, TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@chronosplit/shared';
 
 /** Fill a box's top-down outline (turned boxes as a quad). */
 export function fillBox(g: CanvasRenderingContext2D, b: WorldBox, px: (x: number) => number, py: (z: number) => number): void {
@@ -108,7 +108,7 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
   for (const b of boxes) if (b.kind === 'wall' && b.min[1] < 1) fillBox(g, b, px, py);
 
   // Spawns in team colours (cyan when shared), pickups as small green squares.
-  const teams = mapTeams(map);
+  const teams = mapTeams(map, MAX_TEAMS);
   for (const e of map.entities) {
     const x = px(e.position[0]);
     const y = py(e.position[2]);

@@ -1,6 +1,6 @@
 import { ACTION_INFO, CONDITION_INFO, EVENT_INFO, TOGGLEABLE_KINDS, type TargetKind } from './logic.ts';
 import { PLAYERS_FACTION, type MapDocument } from './schema.ts';
-import { mapFactions, mapTeams } from '../sim/npc.ts';
+import { MAX_TEAMS, mapFactions, mapTeams } from '../sim/npc.ts';
 import type { ValidationIssue } from './validate.ts';
 
 const KIND_LABEL: Record<TargetKind, string> = {
@@ -110,8 +110,9 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
   if (map.metadata.supportedModes[0] === 'core.tdm') {
     const teams = mapTeams(map);
     const spawns = map.entities.filter((e) => e.kind === 'spawn');
+    const anyTeam = mapTeams(map, MAX_TEAMS);
     for (const sp of spawns) {
-      if (sp.faction !== null && !teams.some((t) => t.id === sp.faction)) {
+      if (sp.faction !== null && !anyTeam.some((t) => t.id === sp.faction)) {
         issues.push({ severity: 'warning', code: 'tdm.spawn_team', message: `spawn ${sp.id} belongs to "${sp.faction}", which is not a team`, targetId: sp.id });
       }
     }
