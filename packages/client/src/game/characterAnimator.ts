@@ -27,9 +27,9 @@ export interface MotionState {
 
 export type OneShot = 'shoot' | 'melee' | 'melee_heavy' | 'reload' | 'hit' | 'throw' | 'interact';
 
-const LOOPS: readonly Clip[] = ['aim_idle', 'walk', 'run', 'sprint', 'jump_air', 'dance', 'crouch_idle', 'crouch_walk'];
+const LOOPS: readonly Clip[] = ['aim_idle', 'walk', 'run', 'sprint', 'jump_air', 'dance', 'crouch_idle', 'crouch_walk', 'prone_idle', 'prone_crawl'];
 /** Natural ground speed of each locomotion clip (m/s), used to match foot speed. */
-const CLIP_SPEED: Partial<Record<Clip, number>> = { walk: 1.6, run: 4.2, sprint: 6.5, crouch_walk: 1.5 };
+const CLIP_SPEED: Partial<Record<Clip, number>> = { walk: 1.6, run: 4.2, sprint: 6.5, crouch_walk: 1.5, prone_crawl: 0.9 };
 /** Lying prone: the body tips forward onto its front around the hips (radians, metres). */
 const PRONE_TILT = 1.45;
 const HIP_HEIGHT = 0.95;
@@ -174,15 +174,20 @@ export class CharacterAnimator {
 
     let want: Clip;
     const low = (s.stance ?? 0) > 0;
+    // Real prone clips when the rig has them; otherwise the body is tipped over (below).
+    const proneClips = s.stance === 2 && this.ch.clips.has('prone_idle');
     if (s.celebrate) want = 'dance';
     else if (s.airborne) want = 'jump_air';
+    else if (proneClips) want = s.speed < 0.3 ? 'prone_idle' : 'prone_crawl';
     else if (low) want = s.speed < 0.4 ? 'crouch_idle' : 'crouch_walk';
     else if (s.speed < 0.6) want = 'aim_idle';
     else if (s.speed < 3) want = 'walk';
     else if (s.sprinting || s.speed >= 7.4) want = 'sprint';
     else want = 'run';
     // Prone: tip the whole body forward onto its front, pivoting at the hips over the feet.
-    const tilt = s.stance === 2 && !s.celebrate ? PRONE_TILT : 0;
+    const tilt = s.stance === 2 && !s.celebrate && !proneClips ? PRONE_TILT : 0;
+    // Lying down, the standing aim pose would pull the arms upright: leave the arms to the clip and the grip.
+    this.lying = proneClips;
     this.prone += (tilt - this.prone) * Math.min(1, dt * 8);
     if (Math.abs(this.prone - tilt) < 1e-3) this.prone = tilt;
     this.applyProne();
@@ -206,7 +211,7 @@ export class CharacterAnimator {
       if (natural) g.speedRatio = Math.max(0.5, Math.min(2, s.speed / natural)) * (back ? -1 : 1);
     }
 
-    if (this.aimUpper) this.aimUpper.weight = 1 - (this.weights.get('dance') ?? 0);
+    if (this.aimUpper) this.aimUpper.weight = this.lying ? 0 : 1 - (this.weights.get('dance') ?? 0);
 
     if (this.overlay && performance.now() > this.overlay.until) {
       this.overlay.clip.stop();
@@ -261,6 +266,7 @@ export class CharacterAnimator {
 
   /** Current forward tip of the body (0 standing, PRONE_TILT lying down). */
   private prone = 0;
+  private lying = false;
 
   /** Where the body sits before any prone offset (first-person arms are placed under the camera). */
   private rootBase: Vector3 | null = null;

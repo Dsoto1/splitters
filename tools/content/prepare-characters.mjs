@@ -49,7 +49,11 @@ const find = (rel) => {
 const BASE = 'x_UniversalBaseCharactersStandardzip/Universal Base Characters[Standard]';
 const OUTFITS = 'x_outfits/Modular Character Outfits - Fantasy[Standard]/Exports/glTF (Godot-Unreal)';
 const OUTFIT_TEX = 'x_outfits/Modular Character Outfits - Fantasy[Standard]/Textures';
-const UAL1 = 'x_UniversalAnimationLibraryStandardzip/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb';
+// The Source edition of the first library (a superset: same skeleton, 120 clips including crawling and
+// directional crouching) is used when it's in the downloads; otherwise the free Standard edition.
+const UAL1_SOURCE = 'x_UniversalAnimationLibrarySourcezip/Unreal-Godot/UAL1.glb';
+const UAL1 = existsSync(join(downloads, UAL1_SOURCE)) ? UAL1_SOURCE : 'x_UniversalAnimationLibraryStandardzip/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb';
+const SOURCE_EDITION = UAL1 === UAL1_SOURCE;
 const UAL2 = 'x_UniversalAnimationLibrary2Standardzip/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb';
 const UAL2_F = 'x_UniversalAnimationLibrary2Standardzip/Universal Animation Library 2[Standard]/Female Mannequin/Unreal-Godot/Mannequin_F.glb';
 
@@ -73,6 +77,13 @@ const CLIPS = [
   [UAL1, 'Dance_Loop', 'dance'],
   [UAL1, 'Crouch_Idle_Loop', 'crouch_idle'],
   [UAL1, 'Crouch_Fwd_Loop', 'crouch_walk'],
+  // Source edition only: lying prone and crawling.
+  ...(SOURCE_EDITION
+    ? [
+        [UAL1, 'Crawl_Idle_Loop', 'prone_idle'],
+        [UAL1, 'Crawl_Fwd_Loop', 'prone_crawl'],
+      ]
+    : []),
   [UAL2, 'Hit_Knockback', 'knockback'],
   [UAL2, 'OverhandThrow', 'throw'],
   [UAL2, 'Yes', 'cheer'],
