@@ -82,6 +82,7 @@
           <button class="tab" data-pane="props">Props</button>
           <button class="tab" data-pane="entities">Entities</button>
           <button class="tab" data-pane="paint">Paint</button>
+          <button class="tab" data-pane="terrain">Terrain</button>
         </div>
         <input id="ed-search" placeholder="Search pieces…" autocomplete="off" />
         <div id="ed-tools"></div>
@@ -100,6 +101,29 @@
           <div id="ed-entities" class="tiles"></div>
           <h3>Scenario &amp; Traps</h3>
           <div id="ed-scenario" class="tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="terrain" hidden>
+          <h3>Terrain</h3>
+          <div id="ed-tr-create">
+            <p class="ed-note">Open ground you can sculpt into hills, ridges and canyons, then paint with grass, dirt, stone and more. Tiles and props sit on top.</p>
+            <label class="stack">Size
+              <select id="ed-tr-new-size"><option value="96">96 m (skirmish)</option><option value="160" selected>160 m (medium)</option><option value="240">240 m (large)</option><option value="320">320 m (huge)</option></select>
+            </label>
+            <label class="stack">Ground<select id="ed-tr-new-ground"></select></label>
+            <button id="ed-tr-new" class="primary">Create terrain</button>
+          </div>
+          <div id="ed-tr-edit" hidden>
+            <div class="ed-note" id="ed-tr-size"></div>
+            <div class="sub-h">Sculpt</div>
+            <div id="ed-tr-brushes" class="tiles"></div>
+            <label class="stack">Brush size <span id="ed-tr-radius-v">8 m</span><input id="ed-tr-radius" type="range" min="2" max="40" step="1" value="8" /></label>
+            <label class="stack">Strength <span id="ed-tr-strength-v">50%</span><input id="ed-tr-strength" type="range" min="5" max="100" step="5" value="50" /></label>
+            <div class="sub-h">Ground paint</div>
+            <div id="ed-tr-materials" class="mats"></div>
+            <button id="ed-tr-cliffs">Paint steep slopes as stone</button>
+            <label class="check"><input id="ed-tr-boundary" type="checkbox" checked /> Invisible walls round the edge</label>
+            <button id="ed-tr-remove" class="danger">Remove terrain</button>
+          </div>
         </div>
         <div class="ed-pane" data-pane="paint" hidden>
           <h3>Paint</h3>

@@ -3,6 +3,7 @@ import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { getProp } from '../content/props.ts';
 import { buildOccupancy, cellHasFloor, cellKey } from './geometry.ts';
+import { terrainHeightAt } from './terrain.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument } from './schema.ts';
 import { validateScenario } from './validateScenario.ts';
@@ -82,7 +83,7 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
       }
     }
   }
-  if (map.classicStructure.tiles.length === 0) {
+  if (map.classicStructure.tiles.length === 0 && !map.terrain) {
     issues.push({ severity: 'error', code: 'tile.none', message: 'map has no structural tiles' });
   }
 
@@ -104,7 +105,9 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     const gy = Math.round(z / cellSize);
     const gz = Math.floor((y + 0.01) / levelHeight);
     const occ = cells.get(cellKey(gx, gy, gz));
-    if (!occ || !cellHasFloor(occ)) {
+    const ground = map.terrain ? terrainHeightAt(map.terrain, x, z) : null;
+    const onTerrain = ground !== null && Math.abs(ground - y) < 1.5;
+    if (!onTerrain && (!occ || !cellHasFloor(occ))) {
       issues.push({ severity: 'warning', code: 'spawn.no_floor', message: `spawn ${s.id} is not above a tile floor`, targetId: s.id });
     }
   }

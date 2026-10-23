@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { buildMapGeometry, initPhysics, loadMap } from '@chronosplit/shared';
+import { buildMapGeometry, initPhysics, loadMap, mapTerrainMesh } from '@chronosplit/shared';
 import { NavWorld, initNavigation, validateNavigation } from '@chronosplit/shared/match';
 
 /** Usage: pnpm validate-map <map.json> — prints creator-facing issues; exits 1 on errors. */
@@ -15,7 +15,7 @@ await Promise.all([initPhysics(), initNavigation()]);
 const result = loadMap(readFileSync(path, 'utf8'));
 const issues = [...result.issues];
 if (result.ok) {
-  const nav = NavWorld.build(buildMapGeometry(result.map));
+  const nav = NavWorld.build(buildMapGeometry(result.map), mapTerrainMesh(result.map));
   issues.push(...validateNavigation(result.map, nav));
   nav.destroy();
 }

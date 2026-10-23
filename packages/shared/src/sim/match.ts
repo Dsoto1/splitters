@@ -1,7 +1,7 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { BotBrain, type CombatantView, type PickupView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
-import { buildMapGeometry, mapKillY, propBoxes, type WorldBox } from '../map/geometry.ts';
+import { buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, horizontalDistance, normalize, scale, viewDirection, type Vec3 } from '../math.ts';
 import { NavWorld } from '../nav/index.ts';
@@ -160,10 +160,10 @@ export class Match {
     readonly seed = 1,
   ) {
     this.geometry = buildMapGeometry(map);
-    this.killY = mapKillY(this.geometry);
-    this.physics = new PhysicsWorld(this.geometry);
+    this.killY = mapKillY(this.geometry, map);
+    this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map));
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true)]);
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true)], mapTerrainMesh(map));
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')

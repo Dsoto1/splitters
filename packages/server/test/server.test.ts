@@ -5,7 +5,7 @@ import { parseClientMessage, startServer, type RunningServer } from '../src/serv
 
 const room: MapDocument = {
   format: 'chronosplit.map',
-  formatVersion: 6,
+  formatVersion: 7,
   metadata: {
     id: 'test_room',
     name: 'Test Room',
@@ -24,6 +24,7 @@ const room: MapDocument = {
   ],
   factions: [],
   logic: { variables: [], timers: [], objectives: [], rules: [] },
+  terrain: null,
   dependencies: [],
 };
 

@@ -42,8 +42,9 @@ export class PhysicsWorld {
   /** Set when a movable world collider changed; queries need a broad-phase update first. */
   private dirty = false;
 
-  constructor(boxes: readonly WorldBox[]) {
+  constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null) {
     this.world = new RAPIER.World({ x: 0, y: 0, z: 0 });
+    if (terrain) this.world.createCollider(RAPIER.ColliderDesc.trimesh(terrain.positions, terrain.indices).setCollisionGroups(WORLD_COLLIDER_GROUPS));
     for (const b of boxes) {
       const hx = (b.max[0] - b.min[0]) / 2;
       const hy = (b.max[1] - b.min[1]) / 2;

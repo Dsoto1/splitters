@@ -14,7 +14,7 @@ export function loadArena(): MapDocument {
 export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns: [number, number, number][] = [[0, 0, 0]]): MapDocument {
   return {
     format: 'chronosplit.map',
-    formatVersion: 6,
+    formatVersion: 7,
     metadata: {
       id: 'test_map',
       name: 'Test',
@@ -30,6 +30,7 @@ export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns:
     entities: spawns.map((position, i) => ({ id: `spawn_${i}`, kind: 'spawn' as const, position, yaw: 0, faction: null })),
     factions: [],
     logic: { variables: [], timers: [], objectives: [], rules: [] },
+    terrain: null,
     dependencies: [],
   };
 }

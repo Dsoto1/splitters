@@ -18,6 +18,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [4, (doc) => ({ ...doc })],
   // v5 -> v6: per-side tile edges, the trim surface slot and `prop` entities, all optional.
   [5, (doc) => ({ ...doc })],
+  // v6 -> v7: optional outdoor `terrain` (absent = none).
+  [6, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

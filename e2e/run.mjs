@@ -254,6 +254,41 @@ async function citadelFlow(browser) {
   await page.context().close();
 }
 
+async function canyonFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  // The game: terrain meshes per ground material, and players stand on the ground.
+  await page.goto(`${CLIENT}/?offline=canyon`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForTimeout(3000);
+  const grounds = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).map((m) => m.name.split('_terrain_')[1]));
+  check(grounds.length >= 5 && grounds.includes('grass') && grounds.includes('stone'), `canyon terrain is drawn in its ground materials (${grounds.join(', ')})`);
+  const y = await page.evaluate(() => window.__cs.local.eye.y);
+  check(y > 0.5 && y < 3, `the player stands on the ground at a base (eye ${y.toFixed(2)} m)`);
+  // MapMaker: create terrain, sculpt a hill, undo it.
+  await page.goto(`${CLIENT}/?mode=editor`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: 30000 });
+  page.once('dialog', (d) => d.accept());
+  await page.click('#ed-new');
+  await page.click('#ed-pal-tabs [data-pane="terrain"]');
+  await page.click('#ed-tr-new');
+  check(await page.evaluate(() => !!window.__editor.doc.terrain), 'MapMaker creates terrain');
+  await clickTool(page, '[data-tool="terrain:raise"]');
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 0, y: 0, z: 0 }));
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.down();
+  await page.waitForTimeout(700);
+  await page.mouse.up();
+  const peak = await page.evaluate(() => Math.max(...window.__editor.doc.terrain.heights));
+  check(peak > 50, `raise brush builds a hill (${peak} cm)`);
+  await page.keyboard.press('Control+z');
+  const flat = await page.evaluate(() => Math.max(...window.__editor.doc.terrain.heights));
+  check(flat === 0, 'undo takes the whole stroke back');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function designerFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1200, height: 760 } })).newPage();
   const errors = [];
@@ -327,7 +362,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

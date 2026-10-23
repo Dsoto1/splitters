@@ -186,6 +186,7 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('harbour', 'Harbour', '#9ab8cc', 'pbr_hex_paving', 'pbr_brick_old', 'pbr_planks', 'pbr_delft', 'pbr_plaster_white'),
   theme('bunker', 'Bunker', '#5c6058', 'pbr_concrete_dark', 'pbr_concrete', 'pbr_canvas', 'pbr_steel', 'hazard'),
   theme('forest', 'Forest Camp', '#8ab08a', 'pbr_forest', 'pbr_planks', 'pbr_rock', 'pbr_siding', 'pbr_walnut'),
+  theme('canyon', 'Canyon Outpost', '#8fb8dc', 'pbr_tread_plate', 'pbr_concrete', 'pbr_rusted_plate', 'pbr_steel', 'hazard'),
   theme('garden', 'Walled Garden', '#b8d8f0', 'pbr_grass', 'pbr_brick_red', 'pbr_hex_paving', 'pbr_brick_old', 'stone_trim'),
 ];
 

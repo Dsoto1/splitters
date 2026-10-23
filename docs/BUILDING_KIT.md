@@ -51,3 +51,29 @@ explosion. Solid props collide for players, shots and bots; breakable ones are
 scenario colliders that disappear when destroyed (and fire the `destroyed`
 logic event). Props can be turned freely, scaled 0.25–4×, tinted and made
 walk-through in the inspector.
+
+## Terrain (`map/terrain.ts`, format v7)
+
+A map can have one terrain: a height grid (up to 161 × 161 vertices, 2 m apart
+by default, so up to 320 m across) with a ground material per cell. Grounds are
+grass, dirt, stone, sand, gravel, snow, moss and mud, each drawn with an
+ambientCG texture. Heights are stored in whole centimetres, so maps stay
+small and exact.
+
+- **Game.** The terrain is one triangle mesh in physics (players, shots and
+  grenades) and in the navmesh (bots path over hills). Optional invisible walls
+  round the edge keep everyone in. The kill height drops below the lowest
+  ground. The minimap and map cards draw it top-down, lighter on high ground.
+- **MapMaker, Terrain tab.** Create a 96–320 m terrain in any ground, then hold
+  the left button to sculpt: Raise (Shift lowers), Lower, Smooth, Flatten (to
+  the height where the stroke started), Roughen, or Paint a ground. `[` and `]`
+  change the brush size; `T` cycles brushes. Each stroke is one undo step.
+  "Paint steep slopes as stone" turns every face over 35° into rock. Spawns,
+  pickups and props placed over terrain stand on it. New terrain sits 15 cm
+  under level 0, so tiles placed on flat ground do not flicker against it.
+- **Rockfall Canyon** (`maps/canyon.json`, built by
+  `pnpm --filter @chronosplit/server build-canyon`) is the worked example: a
+  240 m canyon between rock walls, two hills, a ledge along the west wall, a
+  winding dirt trail, boulder fields from scaled rock props, and a bunker
+  base at each end with stairs to a railed roof. Open it from the MapMaker
+  templates to remix it.

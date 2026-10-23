@@ -5,6 +5,7 @@ export * from './map/catalog.ts';
 export * from './map/materials.ts';
 export * from './map/surfaces.ts';
 export * from './map/geometry.ts';
+export * from './map/terrain.ts';
 export * from './map/migrate.ts';
 export * from './map/validate.ts';
 export * from './sim/constants.ts';

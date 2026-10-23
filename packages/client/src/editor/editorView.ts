@@ -13,8 +13,8 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import type { MapDocument, MapEntity, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
-import { DESTRUCTIBLE_SPECS, PLAYER, buildMapDecor, buildMapGeometry, getProp, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
+import type { MapDocument, MapEntity, Rotation, TerrainData, Vec3, WorldBox } from '@chronosplit/shared';
+import { DESTRUCTIBLE_SPECS, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -44,6 +44,7 @@ export class EditorView {
   pitch = -0.9;
   private readonly styler: MapStyler;
   private faceHighlight?: Mesh;
+  private brushRing?: LinesMesh;
   private grid?: LinesMesh;
   private hover?: Mesh;
   private ghost?: Mesh;
@@ -352,6 +353,32 @@ export class EditorView {
     this.faceHighlight.setEnabled(true);
     this.faceHighlight.scaling.set(scale[0]!, scale[1]!, scale[2]!);
     this.faceHighlight.position.set(pos[0]!, pos[1]!, pos[2]!);
+  }
+
+  /** Redraw only the terrain (live preview while a brush is dragged). */
+  previewTerrain(doc: MapDocument): void {
+    this.styler.buildTerrain(doc, 'edmap');
+  }
+
+  /** Terrain brush outline draped over the ground; null hides it. */
+  setBrushRing(t: TerrainData | null, x: number, z: number, radius: number, color = '#ffd34d'): void {
+    this.brushRing?.dispose();
+    this.brushRing = undefined;
+    if (!t) return;
+    const ring = (rad: number) => {
+      const pts: Vector3[] = [];
+      for (let i = 0; i <= 64; i++) {
+        const a = (i / 64) * Math.PI * 2;
+        const px = x + Math.cos(a) * rad;
+        const pz = z + Math.sin(a) * rad;
+        pts.push(new Vector3(px, (terrainHeightAt(t, px, pz) ?? t.baseY) + 0.12, pz));
+      }
+      return pts;
+    };
+    const cy = (terrainHeightAt(t, x, z) ?? t.baseY) + 0.12;
+    this.brushRing = CreateLineSystem('brushRing', { lines: [ring(radius), ring(radius * 0.5), [new Vector3(x, cy, z), new Vector3(x, cy + 1.2, z)]] }, this.scene);
+    this.brushRing.color = Color3.FromHexString(color);
+    this.brushRing.isPickable = false;
   }
 
   render(): void {

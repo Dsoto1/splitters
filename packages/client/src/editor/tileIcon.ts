@@ -1,6 +1,6 @@
 import { buildMapGeometry, newMapDocument, type TileDefinition } from '@chronosplit/shared';
 
-const FILL = { floor: '#5b616b', wall: '#d9d6cf', solid: '#d98b3a', trim: '#d9d6cf', prop: '#d98b3a' } as const;
+const FILL = { floor: '#5b616b', wall: '#d9d6cf', solid: '#d98b3a', trim: '#d9d6cf', prop: '#d98b3a', barrier: '#00000000' } as const;
 
 /** Top-down SVG thumbnail generated from the tile's real geometry, so icons never drift from the catalog. */
 export function tileIcon(def: TileDefinition): string {

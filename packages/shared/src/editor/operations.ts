@@ -157,6 +157,7 @@ export function newMapDocument(name = 'Untitled Map', now: Date = new Date()): M
     entities: [{ id: newId('spawn'), kind: 'spawn', position: [0, 0, 0], yaw: 0, faction: null }],
     factions: [],
     logic: emptyLogic(),
+    terrain: null,
     dependencies: [],
   };
 }

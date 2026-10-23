@@ -71,12 +71,26 @@ import {
   PROP_CATEGORIES,
   getProp,
   placementCells,
+  TERRAIN_BRUSHES,
+  TERRAIN_MATERIALS,
+  TERRAIN_MATERIAL_LABELS,
+  TERRAIN_SURFACES,
+  applyBrush,
+  mapTerrainMesh,
+  newTerrain,
+  paintSlopes,
+  terrainHeightAt,
+  terrainRaycast,
+  type TerrainBrush,
+  type TerrainData,
+  type TerrainMaterial,
 } from '@chronosplit/shared';
 import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
 import outpostTemplate from '../../../../maps/m4_outpost.json';
 import sandgateTemplate from '../../../../maps/sandgate.json';
 import citadelTemplate from '../../../../maps/citadel.json';
+import canyonTemplate from '../../../../maps/canyon.json';
 import { EditorView } from './editorView.ts';
 import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibrary, readAutosave, saveToLibrary, writeAutosave } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
@@ -106,7 +120,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string };
+type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -210,6 +224,14 @@ export class EditorApp {
   private hoverEdge: EdgeTarget | null = null;
   private paintStyle: SurfaceStyle = { material: 'core.red_brick', tint: null };
   private paintScope: PaintScope = 'surface';
+  private terrainBrush: TerrainBrush = 'raise';
+  private terrainMaterial: TerrainMaterial = 'dirt';
+  private brushRadius = 8;
+  private brushStrength = 0.5;
+  /** Ground point under the pointer for the terrain tool. */
+  private terrainHover: Vec3 | null = null;
+  /** Live sculpt: the terrain before the stroke and as it is now (committed as one undo step on release). */
+  private stroke: { before: TerrainData; now: TerrainData; target: number; seed: number } | null = null;
 
   constructor(private readonly host: EditorHost) {
     this.view = new EditorView(host.engine);
@@ -260,6 +282,7 @@ export class EditorApp {
       const u = k('KeyE') - k('KeyQ');
       if (f || r || u) this.view.fly(f * speed, r * speed, u * speed);
     }
+    if (this.stroke) this.strokeStep(dt);
     this.refresh(false);
     this.view.render();
   }
@@ -289,6 +312,7 @@ export class EditorApp {
       this.updateTopBar();
       this.updateHover();
       this.logic.render();
+      this.syncTerrainUi();
       if (!force) this.scheduleAutosave();
     }
   }
@@ -324,7 +348,12 @@ export class EditorApp {
     if (tool.kind === 'paint') this.showPane('paint');
     else if (tool.kind === 'edge' || tool.kind === 'tile') this.showPane('tiles');
     else if (tool.kind === 'prop') this.showPane('props');
+    else if (tool.kind === 'terrain') this.showPane('terrain');
     else if (tool.kind === 'spawn' || tool.kind === 'pickup' || tool.kind === 'scenario') this.showPane('entities');
+    if (tool.kind !== 'terrain') {
+      this.terrainHover = null;
+      this.view.setBrushRing(null, 0, 0, 0);
+    }
     if (tool.kind !== 'paint' && tool.kind !== 'edge') this.hoverFace = null;
     if (tool.kind !== 'edge') this.hoverEdge = null;
     for (const b of document.querySelectorAll<HTMLElement>('[data-tool]')) {
@@ -336,6 +365,7 @@ export class EditorApp {
           (tool.kind === 'scenario' && t === `scenario:${tool.key}`) ||
           (tool.kind === 'edge' && t === `edge:${tool.style}`) ||
           (tool.kind === 'prop' && t === `prop:${tool.model}`) ||
+          (tool.kind === 'terrain' && t === `terrain:${this.terrainBrush}`) ||
           t === tool.kind,
       );
     }
@@ -348,6 +378,7 @@ export class EditorApp {
       paint: 'Click a surface to paint · Right-click resets to theme · Alt-click or I picks a style',
       edge: 'Click a wall or floor edge to build it this way · Right-click resets to auto · O cycles the style',
       prop: 'Click place (snaps to 25 cm, hold Shift for free) · R turn 15° · Right-click erase · Esc select tool',
+      terrain: 'Hold left to sculpt or paint · [ ] brush size · Shift inverts raise/lower · T cycles brushes',
     };
     $('ed-hint').textContent = `${hints[tool.kind]} · RMB look · WASD/QE fly`;
     this.updateHover();
@@ -550,6 +581,18 @@ export class EditorApp {
   private updatePointer(clientX: number, clientY: number): void {
     const { cellSize, levelHeight } = this.doc.classicStructure;
     this.hoverPoint = this.view.pickPlane(clientX, clientY, this.level * levelHeight);
+    const t = this.stroke?.now ?? this.doc.terrain;
+    this.terrainHover = null;
+    if (t) {
+      const ray = this.view.pointerRay(clientX, clientY);
+      const hit = ray ? terrainRaycast(t, ray.origin, ray.dir) : null;
+      if (hit && this.tool.kind === 'terrain') this.terrainHover = hit;
+      // Spawns, pickups and props stand on the ground where it is nearer than the level plane.
+      if (hit && ray && this.tool.kind !== 'tile' && this.tool.kind !== 'terrain') {
+        const dist = (p: Vec3) => Math.hypot(p.x - ray.origin.x, p.y - ray.origin.y, p.z - ray.origin.z);
+        if (!this.hoverPoint || dist(hit) < dist(this.hoverPoint)) this.hoverPoint = hit;
+      }
+    }
     this.hoverCell = this.hoverPoint ? [Math.round(this.hoverPoint.x / cellSize), Math.round(this.hoverPoint.z / cellSize), this.level] : null;
     if (this.tool.kind === 'paint' || this.tool.kind === 'edge') {
       const ray = this.view.pointerRay(clientX, clientY);
@@ -566,6 +609,17 @@ export class EditorApp {
   }
 
   private updateHover(): void {
+    if (this.tool.kind === 'terrain') {
+      const h = this.terrainHover;
+      const t = this.stroke?.now ?? this.doc.terrain;
+      const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff' };
+      this.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.brushRadius, colors[this.terrainBrush]);
+      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : this.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.brushRadius} m` : '';
+      this.view.setFaceHighlight(null, null);
+      this.view.setHoverCell(this.doc, null);
+      this.view.setGhost(this.doc, null, null, 0, true);
+      return;
+    }
     if (this.tool.kind === 'edge') {
       const e = this.hoverEdge;
       if (e) {
@@ -663,6 +717,7 @@ export class EditorApp {
       if (e.button !== 0) return;
       if (this.tool.kind === 'paint') return e.altKey ? this.pickStyleAtHover() : this.paintAtHover(false);
       if (this.tool.kind === 'edge') return this.edgeAtHover(this.tool.style);
+      if (this.tool.kind === 'terrain') return this.startStroke(e.shiftKey);
       if (this.tool.kind !== 'select') return this.placeAtHover();
       const hit = this.pick();
       if (!hit) {
@@ -692,13 +747,16 @@ export class EditorApp {
         } else if (wasClick && this.tool.kind === 'edge') {
           this.updatePointer(e.clientX, e.clientY);
           this.edgeAtHover('auto');
-        } else if (wasClick && this.tool.kind !== 'select') {
+        } else if (wasClick && this.tool.kind !== 'select' && this.tool.kind !== 'terrain') {
           this.updatePointer(e.clientX, e.clientY);
           this.eraseAtHover();
         }
         return;
       }
-      if (e.button === 0) this.endDrag();
+      if (e.button === 0) {
+        this.endStroke();
+        this.endDrag();
+      }
     });
     window.addEventListener(
       'wheel',
@@ -752,6 +810,11 @@ export class EditorApp {
         case 'KeyB':
           this.setTool({ kind: 'paint' });
           break;
+        case 'KeyT': {
+          const i = this.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.terrainBrush);
+          this.setTerrainBrush(TERRAIN_BRUSHES[i]!);
+          break;
+        }
         case 'KeyO': {
           // Wall tool; pressed again, cycle through the styles.
           const styles = EDGE_STYLES.filter((x) => x !== 'auto');
@@ -777,12 +840,14 @@ export class EditorApp {
           break;
         case 'PageUp':
         case 'BracketRight':
-          if (e.shiftKey) this.nudge(0, 0, 1);
+          if (this.tool.kind === 'terrain' && e.code === 'BracketRight') this.setBrushRadius(this.brushRadius + 2);
+          else if (e.shiftKey) this.nudge(0, 0, 1);
           else this.setLevel(this.level + 1);
           break;
         case 'PageDown':
         case 'BracketLeft':
-          if (e.shiftKey) this.nudge(0, 0, -1);
+          if (this.tool.kind === 'terrain' && e.code === 'BracketLeft') this.setBrushRadius(this.brushRadius - 2);
+          else if (e.shiftKey) this.nudge(0, 0, -1);
           else this.setLevel(this.level - 1);
           break;
         case 'ArrowUp':
@@ -860,6 +925,7 @@ export class EditorApp {
     }
 
     this.buildPropPalette();
+    this.buildTerrainPalette();
 
     // Palette tabs (after the reference board): one group of tools at a time; search looks across all of them.
     const tabs = $('ed-pal-tabs');
@@ -880,6 +946,126 @@ export class EditorApp {
       for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn, #ed-palette .mat-btn')) b.hidden = !!q && !(b.dataset.search ?? '').includes(q);
     });
     this.setTool({ kind: 'select' });
+  }
+
+  // ---------------------------------------------------------------- terrain
+
+  private setTerrainBrush(brush: TerrainBrush): void {
+    this.terrainBrush = brush;
+    this.setTool({ kind: 'terrain' });
+    for (const b of document.querySelectorAll<HTMLElement>('[data-ground]')) b.classList.toggle('active', brush === 'paint' && b.dataset.ground === this.terrainMaterial);
+  }
+
+  private setBrushRadius(r: number): void {
+    this.brushRadius = Math.max(2, Math.min(40, r));
+    $<HTMLInputElement>('ed-tr-radius').value = String(this.brushRadius);
+    $('ed-tr-radius-v').textContent = `${this.brushRadius} m`;
+    this.updateHover();
+  }
+
+  private startStroke(invert: boolean): void {
+    const t = this.doc.terrain;
+    if (!t || !this.terrainHover) return;
+    if (invert && (this.terrainBrush === 'raise' || this.terrainBrush === 'lower')) this.terrainBrush = this.terrainBrush === 'raise' ? 'lower' : 'raise';
+    this.stroke = { before: t, now: t, target: this.terrainHover.y, seed: (Math.random() * 1e9) | 0 };
+    this.strokeStep(1 / 30);
+  }
+
+  /** Apply the brush for one frame; heights change at a steady rate however fast the pointer moves. */
+  private strokeStep(dt: number): void {
+    const s = this.stroke!;
+    const h = this.terrainHover;
+    if (!h) return;
+    const rate = this.brushStrength;
+    const strength = this.terrainBrush === 'raise' || this.terrainBrush === 'lower' ? rate * 6 * dt : this.terrainBrush === 'roughen' ? rate * 1.5 * dt : Math.min(1, rate * 8 * dt);
+    s.now = applyBrush(s.now, { brush: this.terrainBrush, x: h.x, z: h.z, radius: this.brushRadius, strength, target: s.target, material: this.terrainMaterial, seed: s.seed });
+    this.view.previewTerrain({ ...this.doc, terrain: s.now });
+    if (this.terrainBrush !== 'paint') {
+      const y = terrainHeightAt(s.now, h.x, h.z);
+      if (y !== null) this.terrainHover = { ...h, y };
+    }
+    this.updateHover();
+  }
+
+  private endStroke(): void {
+    const s = this.stroke;
+    if (!s) return;
+    this.stroke = null;
+    const label = this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : `Terrain ${this.terrainBrush}`;
+    if (s.now !== s.before) this.run(label, { kind: 'setTerrain', before: s.before, after: s.now });
+  }
+
+  private setTerrain(label: string, after: TerrainData | null): void {
+    this.run(label, { kind: 'setTerrain', before: this.doc.terrain, after });
+    this.setTerrainBrush(this.terrainBrush);
+  }
+
+  private syncTerrainUi(): void {
+    const t = this.doc.terrain;
+    $('ed-tr-create').hidden = !!t;
+    $('ed-tr-edit').hidden = !t;
+    if (t) {
+      $<HTMLInputElement>('ed-tr-boundary').checked = t.boundary;
+      $('ed-tr-size').textContent = `${((t.cols - 1) * t.spacing).toFixed(0)} × ${((t.rows - 1) * t.spacing).toFixed(0)} m · ${t.spacing} m grid`;
+    }
+  }
+
+  private buildTerrainPalette(): void {
+    const icons: Record<TerrainBrush, string> = {
+      raise: '<path d="M6 46 Q28 6 50 46Z" fill="#8fbf5a"/><path d="M28 12v-6m-5 5l5-5 5 5" stroke="#ffd34d" stroke-width="3" fill="none"/>',
+      lower: '<path d="M6 20 Q28 56 50 20V50H6Z" fill="#8a6a3f"/><path d="M28 8v10m-5-5l5 5 5-5" stroke="#ff7a4d" stroke-width="3" fill="none"/>',
+      smooth: '<path d="M6 40 Q18 30 28 34 T50 32V50H6Z" fill="#8fbf5a"/><path d="M8 18 Q18 12 28 18 T48 18" stroke="#7fd8ff" stroke-width="3" fill="none"/>',
+      flatten: '<path d="M6 36 L18 30 L38 30 L50 38V50H6Z" fill="#8fbf5a"/><path d="M12 22h32" stroke="#c7a6ff" stroke-width="3"/>',
+      roughen: '<path d="M6 40 L12 32 L17 38 L23 26 L29 36 L35 28 L41 37 L50 30V50H6Z" fill="#7d8a5a"/>',
+      paint: '<rect x="8" y="30" width="40" height="18" fill="#c9a36b"/><path d="M34 8l10 10-14 14-10-10z" fill="#dfe6ee"/><path d="M20 22l10 10-6 4-8-8z" fill="#8fbf5a"/>',
+    };
+    const brushes = $('ed-tr-brushes');
+    for (const brush of TERRAIN_BRUSHES) {
+      const b = document.createElement('button');
+      b.className = 'tile-btn';
+      b.dataset.tool = `terrain:${brush}`;
+      b.dataset.search = `terrain ${brush} ground sculpt`;
+      b.innerHTML = `<svg viewBox="0 0 56 56">${icons[brush]}</svg>${brush[0]!.toUpperCase()}${brush.slice(1)}`;
+      b.addEventListener('click', () => this.setTerrainBrush(brush));
+      brushes.append(b);
+    }
+    const grounds = $('ed-tr-materials');
+    for (const m of TERRAIN_MATERIALS) {
+      const def = coreMaterials.get(TERRAIN_SURFACES[m]);
+      const b = document.createElement('button');
+      b.className = 'mat-btn';
+      b.dataset.ground = m;
+      b.dataset.search = `${TERRAIN_MATERIAL_LABELS[m]} ground terrain paint`.toLowerCase();
+      b.title = `Paint ${TERRAIN_MATERIAL_LABELS[m]}`;
+      b.innerHTML = `${def ? `<img alt="" src="${materialThumbnail(def)}">` : ''}<span>${TERRAIN_MATERIAL_LABELS[m]}</span>`;
+      b.addEventListener('click', () => {
+        this.terrainMaterial = m;
+        this.setTerrainBrush('paint');
+      });
+      grounds.append(b);
+    }
+    $('ed-tr-new').addEventListener('click', () => {
+      const size = Number($<HTMLSelectElement>('ed-tr-new-size').value);
+      const ground = $<HTMLSelectElement>('ed-tr-new-ground').value as TerrainMaterial;
+      // Just under ground-floor tiles, so the two never fight for the same pixels.
+      this.setTerrain('Create terrain', { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 });
+    });
+    for (const m of TERRAIN_MATERIALS) $<HTMLSelectElement>('ed-tr-new-ground').append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
+    $('ed-tr-remove').addEventListener('click', () => {
+      if (confirm('Remove the terrain from this map?')) this.setTerrain('Remove terrain', null);
+    });
+    $('ed-tr-cliffs').addEventListener('click', () => {
+      if (this.doc.terrain) this.setTerrain('Paint cliffs as stone', paintSlopes(this.doc.terrain, 35, 'stone'));
+    });
+    $<HTMLInputElement>('ed-tr-boundary').addEventListener('change', (e) => {
+      if (this.doc.terrain) this.setTerrain('Terrain boundary', { ...this.doc.terrain, boundary: (e.target as HTMLInputElement).checked });
+    });
+    $<HTMLInputElement>('ed-tr-radius').addEventListener('input', (e) => this.setBrushRadius(Number((e.target as HTMLInputElement).value)));
+    $<HTMLInputElement>('ed-tr-strength').addEventListener('input', (e) => {
+      this.brushStrength = Number((e.target as HTMLInputElement).value) / 100;
+      $('ed-tr-strength-v').textContent = `${Math.round(this.brushStrength * 100)}%`;
+    });
+    this.syncTerrainUi();
   }
 
   /** Props by category; thumbnails render from the real models as they scroll into view. */
@@ -1378,7 +1564,7 @@ export class EditorApp {
       await initNavigation();
       if (token !== this.navToken) return;
       try {
-        const nav = NavWorld.build(buildMapGeometry(doc));
+        const nav = NavWorld.build(buildMapGeometry(doc), mapTerrainMesh(doc));
         this.navIssues = validateNavigation(doc, nav);
         nav.destroy();
       } catch (e) {
@@ -1482,6 +1668,10 @@ export class EditorApp {
     add('Citadel', 'Template · castle keep with a two-storey atrium, roof terraces, props and breakables', () => {
       const r = loadMap(citadelTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Citadel Remix', parentId: r.map.metadata.id } });
+    });
+    add('Rockfall Canyon', 'Template · sculpted terrain canyon with two bases, boulders and a ridge ledge', () => {
+      const r = loadMap(canyonTemplate);
+      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Canyon Remix', parentId: r.map.metadata.id } });
     });
     for (const entry of listLibrary()) {
       add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {

@@ -1,4 +1,43 @@
-import { buildMapGeometry, mapTeams, type MapDocument } from '@chronosplit/shared';
+import { TERRAIN_MATERIALS, buildMapGeometry, mapTeams, vertexY, type MapDocument, type TerrainData } from '@chronosplit/shared';
+
+/** Top-down ground colours for terrain materials. */
+const GROUND_COLORS: Record<(typeof TERRAIN_MATERIALS)[number], [number, number, number]> = {
+  grass: [79, 110, 58],
+  dirt: [122, 92, 59],
+  stone: [109, 109, 106],
+  sand: [180, 154, 104],
+  gravel: [119, 115, 106],
+  snow: [216, 221, 227],
+  moss: [77, 107, 63],
+  mud: [77, 61, 44],
+};
+
+/**
+ * Paint terrain cells top-down in their ground colours, lighter on high
+ * ground, so hills and canyons read on map cards and the minimap.
+ * `px`/`py` map world X/Z to canvas pixels; `s` is pixels per metre.
+ */
+export function drawTerrainPlan(g: CanvasRenderingContext2D, t: TerrainData, px: (x: number) => number, py: (z: number) => number, s: number): void {
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const h of t.heights) {
+    lo = Math.min(lo, h);
+    hi = Math.max(hi, h);
+  }
+  const range = Math.max(1, hi - lo);
+  const size = t.spacing * s + 0.75;
+  for (let r = 0; r < t.rows - 1; r++) {
+    for (let c = 0; c < t.cols - 1; c++) {
+      const base = GROUND_COLORS[TERRAIN_MATERIALS[t.materials[r * (t.cols - 1) + c]!] ?? 'grass'];
+      const y = (vertexY(t, c, r) + vertexY(t, c + 1, r + 1) - 2 * t.baseY) * 50; // mean height, cm
+      const k = 0.55 + 0.6 * ((y - lo) / range);
+      g.fillStyle = `rgb(${Math.min(255, base[0] * k) | 0}, ${Math.min(255, base[1] * k) | 0}, ${Math.min(255, base[2] * k) | 0})`;
+      const x = t.origin[0] + c * t.spacing;
+      const z = t.origin[1] + (r + 1) * t.spacing;
+      g.fillRect(px(x), py(z), size, size);
+    }
+  }
+}
 
 /**
  * Draw a map's top-down plan from its real geometry (floors, walls, cover,
@@ -44,6 +83,7 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
     g.stroke();
   }
 
+  if (map.terrain) drawTerrainPlan(g, map.terrain, px, py, s);
   const rect = (b: { min: number[]; max: number[] }) => [px(b.min[0]!), py(b.max[2]!), (b.max[0]! - b.min[0]!) * s, (b.max[2]! - b.min[2]!) * s] as const;
   const floors = boxes.filter((b) => b.kind === 'floor').sort((a, b) => a.max[1] - b.max[1]);
   for (const b of floors) {

@@ -27,8 +27,20 @@ export class NavWorld {
     private readonly query: NavMeshQuery,
   ) {}
 
-  static build(boxes: readonly WorldBox[]): NavWorld {
-    const { positions, indices } = boxesToTriangles(boxes);
+  /** `extra` adds triangle geometry (terrain) to the boxes. */
+  static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null): NavWorld {
+    const box = boxesToTriangles(boxes);
+    let positions = box.positions;
+    let indices = box.indices;
+    if (extra) {
+      positions = new Float32Array(box.positions.length + extra.positions.length);
+      positions.set(box.positions);
+      positions.set(extra.positions, box.positions.length);
+      indices = new Uint32Array(box.indices.length + extra.indices.length);
+      indices.set(box.indices);
+      const offset = box.positions.length / 3;
+      for (let i = 0; i < extra.indices.length; i++) indices[box.indices.length + i] = extra.indices[i]! + offset;
+    }
     const result = generateSoloNavMesh(positions, indices, {
       cs: CELL,
       ch: CELL_HEIGHT,

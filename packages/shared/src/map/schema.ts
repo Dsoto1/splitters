@@ -1,11 +1,12 @@
 import { z } from 'zod';
 import { EDGE_STYLES } from './catalog.ts';
+import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
 import { ScenarioLogic } from './logic.ts';
 
 /**
  * ChronoSplit map document, format version 6 (v2 added per-surface tile styles, v3 pickup
  * entities, v4 scenario entities and logic, v5 factions and NPC encounters, v6 per-side
- * wall styles, trim and props).
+ * wall styles, trim and props, v7 terrain).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -14,7 +15,7 @@ import { ScenarioLogic } from './logic.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 6;
+export const MAP_FORMAT_VERSION = 7;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -246,6 +247,21 @@ export const Faction = z.object({
   relations: z.record(FactionId, z.enum(RELATIONS)).default({}),
 });
 
+/** Outdoor heightmap terrain (see terrain.ts). Heights are centimetres above baseY. */
+export const Terrain = z
+  .object({
+    origin: z.tuple([z.number().finite(), z.number().finite()]),
+    spacing: z.number().min(0.5).max(8),
+    cols: z.number().int().min(2).max(MAX_TERRAIN_VERTS),
+    rows: z.number().int().min(2).max(MAX_TERRAIN_VERTS),
+    baseY: z.number().finite().default(0),
+    heights: z.array(z.number().int().min(-5000).max(20000)),
+    materials: z.array(z.number().int().min(0).max(TERRAIN_MATERIALS.length - 1)),
+    boundary: z.boolean().default(true),
+  })
+  .refine((t) => t.heights.length === t.cols * t.rows, 'terrain needs cols × rows heights')
+  .refine((t) => t.materials.length === (t.cols - 1) * (t.rows - 1), 'terrain needs a material for every cell');
+
 export const MapDocument = z.object({
   format: z.literal(MAP_FORMAT),
   formatVersion: z.literal(MAP_FORMAT_VERSION),
@@ -256,6 +272,8 @@ export const MapDocument = z.object({
   factions: z.array(Faction).max(16).default([]),
   /** Scenario logic: variables, timers, objectives and WHEN -> IF -> DO rules. */
   logic: ScenarioLogic.default({ variables: [], timers: [], objectives: [], rules: [] }),
+  /** Outdoor terrain (grass, dirt, stone… with hills and cliffs), or none. */
+  terrain: Terrain.nullable().default(null),
   /** Content packs this map needs, beyond the always-present core pack. */
   dependencies: z.array(z.object({ pack: ContentId, version: z.string() })).default([]),
 });

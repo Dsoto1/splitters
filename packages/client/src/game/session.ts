@@ -28,6 +28,7 @@ import {
   type MatchRules,
   PLAYER,
   getProp,
+  mapTerrainMesh,
 } from '@chronosplit/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import type { RendererKind } from '../engine.ts';
@@ -189,7 +190,7 @@ export class GameSession {
         this.view.buildMap(loaded.map, geometry);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
-        const physics = new PhysicsWorld(geometry);
+        const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
         this.local = new LocalPlayer(physics);
         this.scenario = new ScenarioState(loaded.map, physics);
         this.scenario.apply(msg.sc);

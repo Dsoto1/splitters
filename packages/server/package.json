@@ -9,7 +9,8 @@
     "validate-map": "tsx src/tools/validate-map.ts",
     "typecheck": "tsc -p .",
     "build-sandgate": "tsx src/tools/build-sandgate.ts",
-    "build-citadel": "tsx src/tools/build-citadel.ts"
+    "build-citadel": "tsx src/tools/build-citadel.ts",
+    "build-canyon": "tsx src/tools/build-canyon.ts"
   },
   "dependencies": {
     "@chronosplit/shared": "workspace:*",

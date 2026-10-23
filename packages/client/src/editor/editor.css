@@ -164,3 +164,11 @@ dialog { border-top: 3px solid var(--cyan); }
   #ed-name { width: 150px; }
   #ed-theme { max-width: 118px; }
 }
+
+/* Terrain tab */
+#ed-tr-materials { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; }
+#ed-tr-create button, #ed-tr-edit > button { width: 100%; margin: 6px 0; }
+.ed-note { color: var(--muted); font-size: 11px; line-height: 1.4; margin: 4px 0 8px; }
+label.check { display: flex; align-items: center; gap: 6px; color: var(--muted); margin: 8px 0; font-size: 12px; }
+label.stack > span { float: right; color: var(--text, #e8edf5); }
+button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }

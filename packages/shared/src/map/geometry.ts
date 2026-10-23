@@ -1,13 +1,15 @@
 import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, type EdgeStyle, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { getProp } from '../content/props.ts';
+import { terrainBoundary, terrainTriangles } from './terrain.ts';
 
 /**
  * `trim` boxes are visual only (baseboards, cornices, frames): never in physics
  * or navigation. `prop` boxes are the collision of placed props: physics and
- * navigation only, the prop's model is drawn instead.
+ * navigation only, the prop's model is drawn instead. `barrier` boxes are
+ * invisible walls (round terrain): physics and navigation only.
  */
-export type BoxKind = 'floor' | 'wall' | 'solid' | 'trim' | 'prop';
+export type BoxKind = 'floor' | 'wall' | 'solid' | 'trim' | 'prop' | 'barrier';
 
 /** World-space axis-aligned box. Shared by physics, navigation and rendering. */
 export interface WorldBox {
@@ -253,10 +255,16 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   return out;
 }
 
+/** The terrain's collision mesh, if the map has terrain. */
+export function mapTerrainMesh(map: MapDocument): { positions: Float32Array; indices: Uint32Array } | null {
+  return map.terrain ? terrainTriangles(map.terrain) : null;
+}
+
 /** Lowest point anyone can stand on, minus a margin: falling past it kills. */
-export function mapKillY(boxes: readonly WorldBox[]): number {
+export function mapKillY(boxes: readonly WorldBox[], map?: MapDocument): number {
   let low = Infinity;
   for (const b of boxes) if (b.kind === 'floor') low = Math.min(low, b.max[1]);
+  if (map?.terrain) low = Math.min(low, map.terrain.baseY + Math.min(...map.terrain.heights) / 100);
   return Number.isFinite(low) ? low - 14 : -40;
 }
 
@@ -295,6 +303,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
 
   if (decor) return boxes;
   boxes.push(...propBoxes(map));
+  if (map.terrain) boxes.push(...terrainBoundary(map.terrain));
   for (const placement of map.classicStructure.tiles) {
     const def = catalog.get(placement.tile);
     if (!def) continue;

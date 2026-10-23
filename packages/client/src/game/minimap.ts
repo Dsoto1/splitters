@@ -1,4 +1,5 @@
 import { buildMapGeometry, type MapDocument } from '@chronosplit/shared';
+import { drawTerrainPlan } from '../frontend/mapPlan.ts';
 
 /** Pixels per metre on the minimap's backing image. */
 const PX_PER_M = 5;
@@ -41,6 +42,11 @@ export class Minimap {
     const g = plan.getContext('2d')!;
     const h = plan.height;
     const rect = (b: { min: number[]; max: number[] }) => [(b.min[0]! - x0) * PX_PER_M, h - (b.max[2]! - z0) * PX_PER_M, (b.max[0]! - b.min[0]!) * PX_PER_M, (b.max[2]! - b.min[2]!) * PX_PER_M] as const;
+    if (map.terrain) {
+      g.globalAlpha = 0.85;
+      drawTerrainPlan(g, map.terrain, (x) => (x - x0) * PX_PER_M, (z) => h - (z - z0) * PX_PER_M, PX_PER_M);
+      g.globalAlpha = 1;
+    }
     g.fillStyle = 'rgba(42, 58, 85, 0.95)';
     for (const b of boxes) if (b.kind === 'floor' && b.max[1] < 1) g.fillRect(...rect(b));
     g.fillStyle = 'rgba(138, 106, 63, 0.9)';

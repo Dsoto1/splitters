@@ -5,7 +5,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { buildMapDecor, coreThemes, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TilePlacement, type WorldBox } from '@chronosplit/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, coreMaterials, coreThemes, vertexY, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TilePlacement, type WorldBox } from '@chronosplit/shared';
 import { materialPixels } from './materials/patterns.ts';
 
 /** Faces of an axis-aligned box: corners (clockwise from outside, Babylon's front face) and outward normal. */
@@ -70,6 +70,7 @@ export class MapStyler {
   private readonly materials = new Map<string, StandardMaterial>();
   private readonly images = new Map<string, Texture>();
   private meshes: Mesh[] = [];
+  private terrainMeshes: Mesh[] = [];
 
   constructor(private readonly scene: Scene) {}
 
@@ -79,7 +80,7 @@ export class MapStyler {
     const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
     // Trim (baseboards, cornices, frames) is drawn with the structure but never collides.
     for (const b of [...boxes, ...buildMapDecor(doc)]) {
-      if (b.kind === 'prop') continue; // drawn by the prop's model
+      if (b.kind === 'prop' || b.kind === 'barrier') continue; // drawn by the prop's model / invisible
       const tile = tiles.get(b.sourceId);
       for (const [corners, n] of boxFaces(b)) {
         const style = resolveSurface(doc, tile, faceSlot(b, n));
@@ -89,6 +90,7 @@ export class MapStyler {
         g.buf.add(corners, n, 1 / style.material.scale);
       }
     }
+    this.buildTerrain(doc, name);
     this.meshes = [...groups.entries()].map(([key, g]) => {
       const mesh = new Mesh(`${name}_${key}`, this.scene);
       g.buf.toVertexData().applyToMesh(mesh);
@@ -98,6 +100,67 @@ export class MapStyler {
       return mesh;
     });
     return this.meshes;
+  }
+
+  /**
+   * Terrain: one mesh per ground material holding that material's cells, with
+   * normals taken from the height grid so lighting runs smoothly across
+   * material borders. Rebuilt on its own while MapMaker brushes are dragged.
+   */
+  buildTerrain(doc: MapDocument, name = 'map'): void {
+    for (const m of this.terrainMeshes) m.dispose();
+    this.terrainMeshes = [];
+    const t = doc.terrain;
+    if (!t) return;
+    const s = t.spacing;
+    const y = (c: number, r: number) => vertexY(t, Math.max(0, Math.min(t.cols - 1, c)), Math.max(0, Math.min(t.rows - 1, r)));
+    const normal = (c: number, r: number): [number, number, number] => {
+      const nx = -(y(c + 1, r) - y(c - 1, r)) / (2 * s);
+      const nz = -(y(c, r + 1) - y(c, r - 1)) / (2 * s);
+      const l = Math.hypot(nx, 1, nz);
+      return [nx / l, 1 / l, nz / l];
+    };
+    const byMaterial = new Map<number, number[]>();
+    t.materials.forEach((m, i) => {
+      let list = byMaterial.get(m);
+      if (!list) byMaterial.set(m, (list = []));
+      list.push(i);
+    });
+    for (const [m, cells] of byMaterial) {
+      const material = TERRAIN_MATERIALS[m] ?? 'grass';
+      const def = coreMaterials.get(TERRAIN_SURFACES[material]) ?? coreMaterials.get('core.proto_floor')!;
+      // Gravel's photo texture is near white in daylight; darken it so it reads as ground, not snow.
+      const style: ResolvedStyle = { material: def, tint: material === 'gravel' ? '#8f877b' : null };
+      const positions: number[] = [];
+      const normals: number[] = [];
+      const uvs: number[] = [];
+      const indices: number[] = [];
+      for (const i of cells) {
+        const c = i % (t.cols - 1);
+        const r = Math.floor(i / (t.cols - 1));
+        const base = positions.length / 3;
+        for (const [dc, dr] of [[0, 0], [1, 0], [1, 1], [0, 1]] as const) {
+          const x = t.origin[0] + (c + dc) * s;
+          const z = t.origin[1] + (r + dr) * s;
+          positions.push(x, y(c + dc, r + dr), z);
+          normals.push(...normal(c + dc, r + dr));
+          uvs.push(x / def.scale, z / def.scale);
+        }
+        // Same diagonal as the collision mesh (00-11), wound so the faces point up.
+        indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+      }
+      const vd = new VertexData();
+      vd.positions = positions;
+      vd.normals = normals;
+      vd.uvs = uvs;
+      vd.indices = indices;
+      const mesh = new Mesh(`${name}_terrain_${material}`, this.scene);
+      vd.applyToMesh(mesh);
+      mesh.material = this.material(style);
+      mesh.isPickable = false;
+      mesh.freezeWorldMatrix();
+      this.terrainMeshes.push(mesh);
+    }
   }
 
   /** Sky colour of the map's theme. */
