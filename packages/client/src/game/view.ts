@@ -276,7 +276,7 @@ export class GameView {
     void this.models.instantiate(def.view.model, `held_${slot}`).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
       if (a.anim) {
-        a.anim.hold(node);
+        a.anim.hold(node, def.view.hold);
         return;
       }
       node.parent = a.placeholder;

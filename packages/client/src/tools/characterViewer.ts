@@ -81,8 +81,8 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   btn('Death', () => Object.assign(state, { alive: !state.alive }));
   btn('Dance', () => Object.assign(state, { celebrate: !state.celebrate }));
   for (const a of ['shoot', 'melee', 'melee_heavy', 'reload', 'throw', 'hit', 'interact'] as OneShot[]) btn(a, () => animators.forEach((x) => x.trigger(a)));
-  for (const [label, w] of [['Pistol', 'core.pistol'], ['Rifle', 'core.rifle'], ['Shotgun', 'core.shotgun'], ['Launcher', 'core.launcher']] as const) {
-    btn(label, () => animators.forEach((x, i) => void models.instantiate(getWeapon(w).view.model, `held_${i}`).then((n) => x.hold(n))));
+  for (const [label, w] of [['Knife', 'core.knife'], ['Pistol', 'core.pistol'], ['Rifle', 'core.rifle'], ['Shotgun', 'core.shotgun'], ['Sniper', 'core.sniper'], ['Launcher', 'core.launcher']] as const) {
+    btn(label, () => animators.forEach((x, i) => void models.instantiate(getWeapon(w).view.model, `held_${i}`).then((n) => x.hold(n, getWeapon(w).view.hold))));
   }
   const pitch = document.createElement('input');
   pitch.type = 'range';

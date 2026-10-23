@@ -28,6 +28,24 @@ export interface WeaponPresentation {
   tracer: string;
   /** Vertical FOV while aiming (radians); absent = no zoom. */
   zoomFov?: number;
+  /** How characters hold the model in third person. */
+  hold: WeaponHold;
+}
+
+/** A point on a weapon model, in model space (metres; +Z along the barrel, +Y up, +X right). */
+export type ModelPoint = [number, number, number];
+
+/**
+ * Third-person hold. `pistol`: the gun sits in the right palm where the
+ * animation puts it. `long`: the `shoulder` point is set in the right
+ * shoulder pocket. In both cases the right palm goes to `grip` and the left
+ * palm to `support`. `melee`: the weapon stays in the right hand.
+ */
+export interface WeaponHold {
+  style: 'pistol' | 'long' | 'melee';
+  grip: ModelPoint;
+  support?: ModelPoint;
+  shoulder?: ModelPoint;
 }
 
 /** Data-driven weapon definition (v1 spec §5.2). Gameplay code never names a specific weapon. */
@@ -78,7 +96,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 10,
     botDesirability: 0.15,
     botRange: [0, 2],
-    view: { model: 'weapons/knife.glb', viewOffset: [0.2, -0.2, 0.42], tracer: '#ffffff' },
+    view: { model: 'weapons/knife.glb', viewOffset: [0.2, -0.2, 0.42], tracer: '#ffffff', hold: { style: 'melee', grip: [0, 0, -0.1] } },
   },
   'core.pistol': {
     id: 'core.pistol',
@@ -97,7 +115,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 15,
     botDesirability: 0.35,
     botRange: [2, 25],
-    view: { model: 'weapons/pistol.glb', viewOffset: [0.2, -0.18, 0.42], tracer: '#ffe08a' },
+    view: { model: 'weapons/pistol.glb', viewOffset: [0.2, -0.18, 0.42], tracer: '#ffe08a', hold: { style: 'pistol', grip: [0, -0.03, -0.075], support: [-0.02, -0.04, -0.065] } },
   },
   'core.rifle': {
     id: 'core.rifle',
@@ -116,7 +134,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 20,
     botDesirability: 0.7,
     botRange: [4, 35],
-    view: { model: 'weapons/rifle.glb', viewOffset: [0.2, -0.2, 0.55], tracer: '#ffd36b' },
+    view: { model: 'weapons/rifle.glb', viewOffset: [0.2, -0.2, 0.55], tracer: '#ffd36b', hold: { style: 'long', grip: [0, -0.05, -0.375], support: [0, 0.03, 0], shoulder: [0, 0.08, -0.58] } },
   },
   'core.shotgun': {
     id: 'core.shotgun',
@@ -135,7 +153,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 20,
     botDesirability: 0.65,
     botRange: [0, 9],
-    view: { model: 'weapons/shotgun.glb', viewOffset: [0.2, -0.2, 0.6], tracer: '#ffb38a' },
+    view: { model: 'weapons/shotgun.glb', viewOffset: [0.2, -0.2, 0.6], tracer: '#ffb38a', hold: { style: 'long', grip: [0, -0.01, -0.21], support: [0, 0, 0.1], shoulder: [0, -0.03, -0.47] } },
   },
   'core.sniper': {
     id: 'core.sniper',
@@ -154,7 +172,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 25,
     botDesirability: 0.6,
     botRange: [18, 120],
-    view: { model: 'weapons/sniper.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4 },
+    view: { model: 'weapons/sniper.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4, hold: { style: 'long', grip: [0, -0.04, -0.29], support: [0, -0.005, 0.02], shoulder: [0, -0.05, -0.57] } },
   },
   'core.launcher': {
     id: 'core.launcher',
@@ -174,7 +192,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     projectile: { speed: 26, gravity: 12, fuseSeconds: 3, splashRadius: 4.5, splashDamage: 100, splashEdgeDamage: 15, selfDamageScale: 0.6 },
     botDesirability: 0.75,
     botRange: [6, 22],
-    view: { model: 'weapons/launcher.glb', viewOffset: [0.22, -0.22, 0.55], tracer: '#c2c9a8' },
+    view: { model: 'weapons/launcher.glb', viewOffset: [0.22, -0.22, 0.55], tracer: '#c2c9a8', hold: { style: 'long', grip: [0, -0.1, -0.33], support: [0, -0.08, 0.02], shoulder: [0, 0, -0.45] } },
   },
 };
 

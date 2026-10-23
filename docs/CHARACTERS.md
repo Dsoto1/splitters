@@ -85,11 +85,34 @@ Mixing rules for the Character Designer:
   One-shots (shooting, melee, reloads) play over it through an upper-body mask.
 - **After the clips:**
   - The spine is bent for aim pitch and twisted toward strafing.
-  - The weapon model follows the right hand.
+  - The weapon is placed and the hands close on it (below).
 - **Death:** plays once and holds until respawn. Intermission plays the dance.
 
 Clips are retargeted from the rig onto each character's joints by name. The
 hip track is offset per body type.
+
+## Holding weapons
+
+Each weapon's `view.hold` (in `packages/shared/src/sim/weapons.ts`) gives a
+style and points on the model, in model space (+Z barrel, +Y up):
+
+| Style | Weapon placement | Hands |
+|---|---|---|
+| `pistol` | Points along the aim, its `grip` in the right palm where the clip puts it | Left palm IK'd to `support` |
+| `long` | Points along the aim, its `shoulder` point (the butt) in the right shoulder pocket; the shoulders turn into the stock | Right palm IK'd to `grip`, left to `support` |
+| `melee` | Carried in the right hand | — |
+
+How the hands close on the weapon:
+- Two-bone arm IK runs in the skeleton's own space, because the glTF import
+  mirrors the scene above it.
+- The hands keep their animated orientation, and the fingers curl toward the
+  palm.
+- During reloads, melee, throws and hits, the IK fades out and the weapon rides
+  in the right hand; it fades back in afterwards.
+- The finger joints keep their animation tracks in the clips that hold things.
+
+To fit a new weapon, read the grip, support and butt positions off a side view
+of the model, then check them in `?mode=characters`.
 
 ## Tools
 
