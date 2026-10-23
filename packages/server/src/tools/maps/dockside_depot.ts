@@ -134,8 +134,8 @@ for (const x of [3, 5, 6]) m.edge(x, 0, 0, 'N', 'half');
 m.edge(2, 1, 0, 'E', 'fence');
 
 // ---------------------------------------------------------------- paint
-const ASPHALT: TileSurfaces = { floor: { material: 'core.pbr_asphalt' } };
-const SHED: TileSurfaces = { floor: { material: 'core.pbr_concrete' }, walls: { material: 'core.pbr_corrugated', tint: '#9aa6ac' } };
+const ASPHALT: TileSurfaces = { floor: { material: 'core.pbr_asphalt', tint: null } };
+const SHED: TileSurfaces = { floor: { material: 'core.pbr_concrete', tint: null }, walls: { material: 'core.pbr_corrugated', tint: '#9aa6ac' } };
 for (let x = 0; x <= 7; x++) for (let y = 0; y <= 8; y++) {
   if (inWarehouse(x, y) || (x === 0 && y === 5)) continue;
   const nextToShed = (x === 1 && y >= 4 && y <= 7) || (y === 3 && x >= 2 && x <= 6) || (y === 8 && x >= 2 && x <= 6) || (x === 7 && y >= 4 && y <= 7);
@@ -144,13 +144,13 @@ for (let x = 0; x <= 7; x++) for (let y = 0; y <= 8; y++) {
 for (let x = WH.x0; x <= WH.x1; x++) for (let y = WH.y0; y <= WH.y1; y++) {
   if (!((x === 2 && y === 5) || (x === 6 && y === 5))) paint(x, y, 0, SHED);
   const roof = m.doc.classicStructure.tiles.find((p) => p.x === x && p.y === y && p.z === 2);
-  if (roof) paint(x, y, 2, { floor: { material: 'core.pbr_concrete_dark' } });
+  if (roof) paint(x, y, 2, { floor: { material: 'core.pbr_concrete_dark', tint: null } });
 }
 for (let x = WH.x0; x <= WH.x1; x++) {
-  paint(x, 4, 1, { floor: { material: 'core.pbr_walkway' }, walls: SHED.walls });
-  paint(x, 7, 1, { floor: { material: 'core.pbr_floorboards' }, walls: { material: 'core.pbr_plaster' } });
+  paint(x, 4, 1, { floor: { material: 'core.pbr_walkway', tint: null }, walls: SHED.walls });
+  paint(x, 7, 1, { floor: { material: 'core.pbr_floorboards', tint: null }, walls: { material: 'core.pbr_plaster', tint: null } });
 }
-paint(2, 6, 1, { floor: { material: 'core.pbr_walkway' }, walls: SHED.walls });
+paint(2, 6, 1, { floor: { material: 'core.pbr_walkway', tint: null }, walls: SHED.walls });
 
 // ---------------------------------------------------------------- the air duct (free blocks)
 // Interior 2.3 m wide and 2.3 m high: in at the back strip (x 6), climbing 4 m (x 10-18), out through the wall at (3,7) z1.
