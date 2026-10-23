@@ -64,6 +64,8 @@ export class PortraitRenderer {
 
   private async render(look: string): Promise<string> {
     const ch = await this.lib.create({ look }, 'portrait');
+    // Characters face -Z; the portrait camera sits on +Z, so turn them round to face it.
+    ch.root.rotation.y = Math.PI;
     const anim = new CharacterAnimator(this.scene, ch);
     try {
       // Settle into the idle stance (arms down) rather than the bind T-pose.

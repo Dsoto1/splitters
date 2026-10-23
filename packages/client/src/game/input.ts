@@ -36,6 +36,8 @@ export class InputState {
       'keydown',
       (e) => {
         if (e.code === 'Tab' || e.code === 'F3' || e.code === 'F5') e.preventDefault();
+        // Safari otherwise acts on plain letter keys in play (e.g. the character/emoji picker).
+        else if (this.locked && !e.metaKey && !e.ctrlKey && e.code !== 'Escape' && !/^F\d+$/.test(e.code)) e.preventDefault();
         if (!e.repeat) this.onToggle.get(e.code)?.();
         this.keys.add(e.code);
         if (e.code === 'Space') this.jumpQueued = true;
@@ -77,22 +79,16 @@ export class InputState {
       },
       opts,
     );
-    canvas.addEventListener(
-      'mousedown',
-      (e) => {
-        if (e.button === 0) this.fireDown = true;
-        if (e.button === 2) this.zoomDown = true;
-      },
-      opts,
-    );
-    window.addEventListener(
-      'mouseup',
-      (e) => {
-        if (e.button === 0) this.fireDown = false;
-        if (e.button === 2) this.zoomDown = false;
-      },
-      opts,
-    );
+    // Pointer events, not mouse events: Safari drops the compatibility mousedown under
+    // pointer lock (the engine cancels pointerdown). `buttons` also covers chorded presses.
+    const buttons = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return;
+      const press = this.locked || e.target === canvas;
+      this.fireDown = (e.buttons & 1) !== 0 && (press || this.fireDown);
+      this.zoomDown = (e.buttons & 2) !== 0 && (press || this.zoomDown);
+    };
+    window.addEventListener('pointerdown', buttons, opts);
+    window.addEventListener('pointerup', buttons, opts);
     canvas.addEventListener('contextmenu', (e) => e.preventDefault(), opts);
     window.addEventListener(
       'wheel',
@@ -105,6 +101,7 @@ export class InputState {
     window.addEventListener(
       'pointermove',
       (e) => {
+        buttons(e);
         if (!this.locked || e.pointerType === 'touch') return;
         const s = MOUSE_SENSITIVITY * this.sensitivityScale;
         this.yaw += e.movementX * s;

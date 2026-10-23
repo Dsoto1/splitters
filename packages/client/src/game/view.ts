@@ -206,6 +206,9 @@ export class GameView {
     this.viewRoot.parent = this.camera;
     this.flash = createStarFlash(this.scene, 'muzzleFlash', 0.32);
     this.flash.renderingGroupId = 1;
+    // It rides on the gun in camera space and already faces you: billboarding it
+    // made it trail the muzzle by a frame whenever you moved.
+    this.flash.billboardMode = MeshClass.BILLBOARDMODE_NONE;
     this.brass = new StandardMaterial('brassMat', this.scene);
     this.brass.diffuseColor = new Color3(0.78, 0.6, 0.22);
     this.brass.specularColor = new Color3(0.9, 0.8, 0.5);
