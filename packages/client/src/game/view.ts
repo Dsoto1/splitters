@@ -179,7 +179,8 @@ export class GameView {
     this.scene.clearColor = new Color4(0.52, 0.62, 0.72, 1);
     this.scene.skipPointerMovePicking = true;
     this.camera = new FreeCamera('camera', new Vector3(0, 10, -10), this.scene);
-    this.camera.minZ = 0.03;
+    // Not too near: the depth buffer has to stretch to the distant scenery (4 km).
+    this.camera.minZ = 0.1;
     // Far enough for the backdrop's distant scenery.
     this.camera.maxZ = 4000;
     this.camera.fov = DEFAULT_FOV;

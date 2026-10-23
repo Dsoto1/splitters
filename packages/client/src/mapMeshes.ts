@@ -106,8 +106,14 @@ export class MapStyler {
     const tiles = new Map<string, TilePlacement>(doc.classicStructure.tiles.map((t) => [t.id, t]));
     const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
     // Trim (baseboards, cornices, frames) is drawn with the structure but never collides.
-    for (const b of [...boxes, ...buildMapDecor(doc)]) {
-      if (b.kind === 'prop' || b.kind === 'barrier') continue; // drawn by the prop's model / invisible
+    const all = [...boxes, ...buildMapDecor(doc)];
+    for (let i = 0; i < all.length; i++) {
+      const raw = all[i]!;
+      if (raw.kind === 'prop' || raw.kind === 'barrier') continue; // drawn by the prop's model / invisible
+      // Overlapping pieces would put two faces in exactly the same place, which flicker as
+      // they fight for depth: grow each box by its own tiny amount (1-5 mm) so one always wins.
+      const g = 0.001 * (1 + (i * 2654435761 >>> 0) % 5);
+      const b: WorldBox = { ...raw, min: [raw.min[0] - g, raw.min[1] - g, raw.min[2] - g], max: [raw.max[0] + g, raw.max[1] + g, raw.max[2] + g] };
       const tile = tiles.get(b.sourceId);
       // Free blocks carry their own material on every face.
       const own = b.surface ? { material: coreMaterials.get(b.surface.material), tint: b.surface.tint } : null;

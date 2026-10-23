@@ -33,14 +33,16 @@ async function webgpuSurvives(engine: WebGPUEngine): Promise<boolean> {
 }
 
 /**
- * WebGPU first, WebGL2 fallback (MASTER_SPEC_V2 header). `?renderer=webgl2`
- * forces the fallback; `?renderer=webgpu` skips the survival probe.
+ * WebGL2 by default for now: on WebGPU some of our materials draw flat white
+ * and effects land in the wrong place (seen on macOS Chrome), so WebGPU is
+ * opt-in with `?renderer=webgpu` until that's fixed and checked.
+ * `?renderer=webgl2` forces WebGL2.
  */
 export async function createEngine(canvas: HTMLCanvasElement): Promise<{ engine: AbstractEngine; kind: RendererKind; canvas: HTMLCanvasElement; note?: string }> {
   const forced = new URLSearchParams(location.search).get('renderer');
   let note: string | undefined;
   let touchedCanvas = false;
-  if (forced !== 'webgl2') {
+  if (forced === 'webgpu') {
     try {
       if (await WebGPUEngine.IsSupportedAsync) {
         touchedCanvas = true;
@@ -60,6 +62,8 @@ export async function createEngine(canvas: HTMLCanvasElement): Promise<{ engine:
   // A canvas that had a WebGPU context cannot get a WebGL one; swap in a fresh canvas.
   if (touchedCanvas) canvas = replaceCanvas(canvas);
   const engine = new Engine(canvas, true, { stencil: true, powerPreference: 'high-performance' }, true);
+  // Reverse depth spreads depth precision far more evenly from near to far, so distant walls don't flicker.
+  engine.useReverseDepthBuffer = true;
   return { engine, kind: 'WebGL2', canvas, note };
 }
 

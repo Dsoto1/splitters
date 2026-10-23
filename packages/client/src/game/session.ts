@@ -42,7 +42,7 @@ import {
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
-import { bindFullscreenButton } from '../fullscreen.ts';
+import { bindFullscreenButton, pageHoldsEscape } from '../fullscreen.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
@@ -201,8 +201,11 @@ export class GameSession {
       'keydown',
       (e) => {
         if (e.code !== 'Escape') return;
-        if (this.input.locked) document.exitPointerLock();
-        else if (this.local) this.exit();
+        // Normally the browser's own Esc releases the mouse (in Safari the first Esc only
+        // closes its banner); only when the page holds Esc in fullscreen do we release it.
+        if (this.input.locked) {
+          if (pageHoldsEscape()) document.exitPointerLock();
+        } else if (this.local) this.exit();
       },
       { signal },
     );

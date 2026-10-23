@@ -8,6 +8,10 @@ type KeyboardLock = { lock?: (codes?: string[]) => Promise<void>; unlock?: () =>
 
 const keyboard = (): KeyboardLock | undefined => (navigator as Navigator & { keyboard?: KeyboardLock }).keyboard;
 
+/** Esc is held by the page (Chrome's Keyboard Lock in fullscreen), so the game must release the mouse itself. */
+let escapeHeld = false;
+export const pageHoldsEscape = (): boolean => escapeHeld && isFullscreen();
+
 export function isFullscreen(): boolean {
   return document.fullscreenElement !== null;
 }
@@ -21,10 +25,15 @@ export async function toggleFullscreen(): Promise<void> {
   try {
     if (isFullscreen()) {
       keyboard()?.unlock?.();
+      escapeHeld = false;
       await document.exitFullscreen();
     } else {
       await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
-      await keyboard()?.lock?.(['Escape']);
+      const lock = keyboard()?.lock;
+      if (lock) {
+        await lock.call(keyboard(), ['Escape']);
+        escapeHeld = true;
+      }
     }
   } catch {
     // Refused (not from a gesture, or blocked by the page's host): nothing to do.

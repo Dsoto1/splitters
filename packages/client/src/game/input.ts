@@ -101,10 +101,11 @@ export class InputState {
       },
       opts,
     );
+    // pointermove, not mousemove: Safari doesn't reliably report locked-pointer movement on mousemove.
     window.addEventListener(
-      'mousemove',
+      'pointermove',
       (e) => {
-        if (!this.locked) return;
+        if (!this.locked || e.pointerType === 'touch') return;
         const s = MOUSE_SENSITIVITY * this.sensitivityScale;
         this.yaw += e.movementX * s;
         this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - e.movementY * s));
