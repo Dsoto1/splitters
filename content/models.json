@@ -370,28 +370,28 @@
       "out": "vehicles/speeder.glb",
       "pack": "kenney-space-kit",
       "file": "craft_speederA.glb",
-      "forward": "+z",
+      "forward": "-z",
       "length": 3.6
     },
     {
       "out": "vehicles/hauler.glb",
       "pack": "kenney-space-kit",
       "file": "craft_cargoA.glb",
-      "forward": "+z",
+      "forward": "-z",
       "length": 6.0
     },
     {
       "out": "turrets/mg.glb",
       "pack": "kenney-space-kit",
       "file": "turret_double.glb",
-      "forward": "+z",
+      "forward": "-z",
       "length": 1.4
     },
     {
       "out": "turrets/rocket.glb",
       "pack": "kenney-space-kit",
       "file": "turret_single.glb",
-      "forward": "+z",
+      "forward": "-z",
       "length": 1.3,
       "recolor": {
         "desaturate": 0.5,
@@ -402,7 +402,7 @@
       "out": "turrets/sentry.glb",
       "pack": "kenney-space-kit",
       "file": "turret_single.glb",
-      "forward": "+z",
+      "forward": "-z",
       "length": 1.2,
       "recolor": {
         "desaturate": 0.7,

@@ -568,7 +568,7 @@
     },
     {
       "file": "models/vehicles/speeder.glb",
-      "sha256": "1435d1c69efc1edd",
+      "sha256": "e449cb47748af4f0",
       "triangles": 280,
       "bytes": 19740,
       "source": "kenney-space-kit/craft_speederA.glb",
@@ -583,7 +583,7 @@
     },
     {
       "file": "models/vehicles/hauler.glb",
-      "sha256": "be60e1f59c110804",
+      "sha256": "758480fb7cf006ae",
       "triangles": 264,
       "bytes": 18164,
       "source": "kenney-space-kit/craft_cargoA.glb",
@@ -598,7 +598,7 @@
     },
     {
       "file": "models/turrets/mg.glb",
-      "sha256": "9d80a085034b0ac6",
+      "sha256": "55897124cdc77495",
       "triangles": 876,
       "bytes": 49400,
       "source": "kenney-space-kit/turret_double.glb",
@@ -613,9 +613,9 @@
     },
     {
       "file": "models/turrets/rocket.glb",
-      "sha256": "6c669f03c54c8b41",
+      "sha256": "6cb7b82ebd236e60",
       "triangles": 576,
-      "bytes": 37164,
+      "bytes": 37160,
       "source": "kenney-space-kit/turret_single.glb",
       "title": "Space Kit",
       "creator": "Kenney",
@@ -629,9 +629,9 @@
     },
     {
       "file": "models/turrets/sentry.glb",
-      "sha256": "96b1c4009dfe1c1b",
+      "sha256": "d28a47f56a82d6ad",
       "triangles": 576,
-      "bytes": 37160,
+      "bytes": 37156,
       "source": "kenney-space-kit/turret_single.glb",
       "title": "Space Kit",
       "creator": "Kenney",
