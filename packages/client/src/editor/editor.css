@@ -151,3 +151,16 @@ dialog { border-top: 3px solid var(--cyan); }
 .tile-cat { grid-column: 1 / -1; margin: 8px 0 0; font: 600 10px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
 .tile-cat:first-child { margin-top: 0; }
 .prop-btn img { width: 56px; height: 56px; object-fit: contain; background: radial-gradient(circle at 50% 40%, var(--surface-3), var(--surface-1)); border-radius: 3px; }
+.ed-pal-tabs { margin: -2px -2px 10px; padding: 3px; background: var(--deep-space); border: 1px solid var(--line); }
+.ed-pal-tabs .tab { flex: 1; padding: 6px 4px; font-size: 11px; }
+.ed-map-plan { display: block; width: 100%; aspect-ratio: 16 / 10; margin: 4px 0 8px; background: var(--deep-space); border: 1px solid var(--line); }
+.ed-layers { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin: 4px 0; }
+.ed-layers label { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 12px; }
+#ed-theme { max-width: 140px; }
+.ed-pal-tabs .tab { padding: 6px 2px; font-size: 10px; letter-spacing: 0.04em; min-width: 0; }
+@media (max-width: 1500px) {
+  #ed-top { gap: 5px; }
+  #ed-top button, #ed-top .tab { padding: 5px 7px; font-size: 11px; }
+  #ed-name { width: 150px; }
+  #ed-theme { max-width: 118px; }
+}

@@ -16,6 +16,8 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { drawMapPlan } from './mapPlan.ts';
 import type { MenuScene } from './menuScene.ts';
+import { weaponIcon } from './weaponIcons.ts';
+import { CROSSHAIR_COLOURS, CROSSHAIR_STYLES, crosshairSetting, saveCrosshair } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
 
 /** A built-in map the Arcade offers. */
@@ -355,7 +357,16 @@ export class FrontEnd {
     const img = el('img', { alt: '' });
     void this.portraits.get(id).then((src) => (img.src = src), () => undefined);
     const outfits = [...new Set(l.parts.map((p) => partInfo(p)?.outfit).filter((x): x is 'ranger' | 'peasant' | 'athlete' => !!x))].map((o) => FAMILY_LABEL[o]).join(' / ');
-    const loadout = el('div', { class: 'loadout' }, el('h4', { textContent: 'Loadout' }), ...DEFAULT_DEATHMATCH_RULES.startingWeapons.map((w) => el('span', { textContent: getWeapon(w).displayName })));
+    const loadout = el(
+      'div',
+      { class: 'loadout' },
+      el('h4', { textContent: 'Loadout' }),
+      ...DEFAULT_DEATHMATCH_RULES.startingWeapons.map((w) => {
+        const icon = weaponIcon(w, 'wicon large');
+        return el('span', { title: getWeapon(w).displayName }, ...(icon ? [icon] : []), getWeapon(w).displayName);
+      }),
+      el('span', { title: 'Frag grenade (G)' }, '● Frag grenade'),
+    );
     const customise = el('button', { textContent: 'Customise' });
     customise.addEventListener('click', () => this.hooks.openDesigner(id));
     info.replaceChildren(
@@ -424,14 +435,56 @@ export class FrontEnd {
       ...[
         ['Move', 'WASD'],
         ['Jump', 'Space'],
-        ['Fire / zoom', 'Mouse'],
+        ['Fire', 'Left mouse'],
+        ['Second trigger / zoom', 'Right mouse'],
+        ['Throw grenade or mine', 'G'],
         ['Reload', 'R'],
         ['Use', 'E'],
-        ['Weapons', '1–6 · Wheel · Q'],
+        ['Weapons', '1–9 · Wheel · Q'],
         ['Scores', 'Tab'],
       ].map(([a, k]) => el('div', {}, el('span', { textContent: a! }), kbd(k!))),
     );
-    return el('div', { class: 'screen options' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Game <em>Options</em>' })), el('div', { class: 'form panel' }, el('label', {}, 'Player name', name), el('label', {}, 'Volume', volume), el('h3', { class: 'panel-title', textContent: 'Controls' }), controls));
+    // Crosshair styles and colours (reference board: crosshair styles).
+    const crosshairs = el('div', { class: 'crosshair-pick' });
+    const colours = el('div', { class: 'crosshair-pick colours' });
+    const renderPick = () => {
+      const { style, colour } = crosshairSetting();
+      crosshairs.replaceChildren(
+        ...CROSSHAIR_STYLES.map((s) => {
+          const mark = el('i', { class: 'xh' });
+          mark.dataset.style = s;
+          const b = el('button', { class: `xh-opt${s === style ? ' on' : ''}`, title: s }, mark);
+          b.style.setProperty('--xh', colour);
+          b.addEventListener('click', () => (saveCrosshair({ style: s, colour }), renderPick()));
+          return b;
+        }),
+      );
+      colours.replaceChildren(
+        ...CROSSHAIR_COLOURS.map((c) => {
+          const b = el('button', { class: `xh-col${c === colour ? ' on' : ''}`, title: c });
+          b.style.background = c;
+          b.addEventListener('click', () => (saveCrosshair({ style, colour: c }), renderPick()));
+          return b;
+        }),
+      );
+    };
+    renderPick();
+    return el(
+      'div',
+      { class: 'screen options' },
+      el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Game <em>Options</em>' })),
+      el(
+        'div',
+        { class: 'form panel' },
+        el('label', {}, 'Player name', name),
+        el('label', {}, 'Volume', volume),
+        el('h3', { class: 'panel-title', textContent: 'Crosshair' }),
+        crosshairs,
+        colours,
+        el('h3', { class: 'panel-title', textContent: 'Controls' }),
+        controls,
+      ),
+    );
   }
 
   // ---------------------------------------------------------------- keyboard

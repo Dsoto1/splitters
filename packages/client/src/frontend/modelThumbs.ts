@@ -11,6 +11,13 @@ import { ModelLibrary } from '../content/models.ts';
 
 const SIZE = 96;
 
+/** How to frame a thumbnail: three-quarter (props) or a side-on strip (weapons, barrel to the right). */
+export type ThumbView = 'three-quarter' | 'side';
+const VIEWS: Record<ThumbView, { dir: [number, number, number]; width: number; height: number }> = {
+  'three-quarter': { dir: [0.75, 0.6, -1], width: SIZE, height: SIZE },
+  side: { dir: [-1, 0.12, 0], width: 128, height: 56 },
+};
+
 /**
  * Small three-quarter thumbnails of our own models (props in the MapMaker),
  * rendered in a private scene into a texture, one at a time, and cached as
@@ -42,32 +49,38 @@ export class ModelThumbnails {
   }
 
   /** A thumbnail (PNG data URL) of a model file; cached. */
-  get(path: string): Promise<string> {
-    let p = this.cache.get(path);
+  get(path: string, view: ThumbView = 'three-quarter'): Promise<string> {
+    const key = `${view}:${path}`;
+    let p = this.cache.get(key);
     if (!p) {
-      p = (this.queue = this.queue.then(() => this.render(path))) as Promise<string>;
-      p.catch(() => this.cache.delete(path));
-      this.cache.set(path, p);
+      p = (this.queue = this.queue.then(() => this.render(path, view))) as Promise<string>;
+      p.catch(() => this.cache.delete(key));
+      this.cache.set(key, p);
     }
     return p;
   }
 
-  private async render(path: string): Promise<string> {
+  private async render(path: string, view: ThumbView): Promise<string> {
+    const { dir: d, width: W, height: H } = VIEWS[view];
+    const aspect = W / H;
+    this.camera.freezeProjectionMatrix(Matrix.PerspectiveFovLH(0.6, aspect, 0.02, 200, this.scene.getEngine().isNDCHalfZRange));
     const node = await this.models.instantiate(path, 'thumb');
     try {
       const meshes = node.getChildMeshes();
       const { min, max } = node.getHierarchyBoundingVectors(true);
       const centre = min.add(max).scale(0.5);
       const radius = Math.max(0.2, max.subtract(min).length() / 2);
-      const dir = new Vector3(0.75, 0.6, -1).normalize();
-      this.camera.position.copyFrom(centre.add(dir.scale(radius / Math.tan(0.3) * 1.05)));
+      const dir = new Vector3(d[0], d[1], d[2]).normalize();
+      // Long, thin models (side view) fill the width: frame by the horizontal half-angle.
+      const half = view === 'side' ? Math.atan(Math.tan(0.3) * aspect) : 0.3;
+      this.camera.position.copyFrom(centre.add(dir.scale((radius / Math.tan(half)) * 1.05)));
       this.camera.setTarget(centre);
       const deadline = performance.now() + 8000;
       while (!meshes.every((m) => m.isReady(true)) && performance.now() < deadline) {
         this.scene.render();
         await new Promise((r) => setTimeout(r, 30));
       }
-      const rtt = new RenderTargetTexture('thumbRT', SIZE, this.scene, false);
+      const rtt = new RenderTargetTexture('thumbRT', { width: W, height: H }, this.scene, false);
       rtt.activeCamera = this.camera;
       rtt.renderList = meshes;
       rtt.clearColor = new Color4(0, 0, 0, 0);
@@ -82,11 +95,12 @@ export class ModelThumbnails {
       rtt.dispose();
       if (!pixels) throw new Error('thumbnail render failed');
       const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = SIZE;
+      canvas.width = W;
+      canvas.height = H;
       const g = canvas.getContext('2d')!;
-      const img = g.createImageData(SIZE, SIZE);
-      const row = SIZE * 4;
-      for (let y = 0; y < SIZE; y++) img.data.set(pixels.subarray((SIZE - 1 - y) * row, (SIZE - y) * row), y * row);
+      const img = g.createImageData(W, H);
+      const row = W * 4;
+      for (let y = 0; y < H; y++) img.data.set(pixels.subarray((H - 1 - y) * row, (H - y) * row), y * row);
       g.putImageData(img, 0, 0);
       return canvas.toDataURL('image/png');
     } finally {

@@ -71,38 +71,53 @@
           <button id="ed-logic-btn" class="tab" title="Scenario logic: objectives, variables, timers, rules (L)">Logic</button>
         </div>
         <div class="spacer"></div>
-        <label class="inline">Bots <select id="ed-bots"></select></label>
-        <label class="inline">Skill <select id="ed-skill"><option>easy</option><option selected>normal</option><option>hard</option></select></label>
+        <select id="ed-theme" title="Map theme"></select>
+        <select id="ed-bots" title="Bots in TEST"></select>
+        <select id="ed-skill" title="Bot skill in TEST"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select>
         <button id="ed-test" class="primary" title="F5">▶ TEST</button>
       </header>
       <aside id="ed-palette">
+        <div class="tabs ed-pal-tabs" id="ed-pal-tabs">
+          <button class="tab on" data-pane="tiles">Tiles</button>
+          <button class="tab" data-pane="props">Props</button>
+          <button class="tab" data-pane="entities">Entities</button>
+          <button class="tab" data-pane="paint">Paint</button>
+        </div>
         <input id="ed-search" placeholder="Search pieces…" autocomplete="off" />
         <div id="ed-tools"></div>
-        <h3>Structure</h3>
-        <div id="ed-tiles" class="tiles"></div>
-        <h3>Walls &amp; Openings</h3>
-        <div id="ed-edges" class="tiles"></div>
-        <h3>Gameplay</h3>
-        <div id="ed-entities" class="tiles"></div>
-        <h3>Props</h3>
-        <div id="ed-props" class="tiles"></div>
-        <h3>Scenario &amp; Traps</h3>
-        <div id="ed-scenario" class="tiles"></div>
-        <h3>Paint</h3>
-        <div id="ed-brush-row"><img id="ed-brush" alt="" /><span id="ed-brush-label"></span></div>
-        <label class="stack">Apply to
-          <select id="ed-scope">
-            <option value="surface">This surface</option>
-            <option value="sameType">Same piece type</option>
-            <option value="level">Whole level</option>
-            <option value="all">Whole map</option>
-          </select>
-        </label>
-        <div class="sub-h">Tint</div>
-        <div id="ed-tints"></div>
-        <label class="stack inline-row">Custom tint <input id="ed-tint-custom" type="color" value="#ffffff" /></label>
-        <div class="sub-h">Materials</div>
-        <div id="ed-materials"></div>
+        <div class="ed-pane" data-pane="tiles">
+          <h3>Structure</h3>
+          <div id="ed-tiles" class="tiles"></div>
+          <h3>Walls &amp; Openings</h3>
+          <div id="ed-edges" class="tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="props" hidden>
+          <h3>Props</h3>
+          <div id="ed-props" class="tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="entities" hidden>
+          <h3>Gameplay</h3>
+          <div id="ed-entities" class="tiles"></div>
+          <h3>Scenario &amp; Traps</h3>
+          <div id="ed-scenario" class="tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="paint" hidden>
+          <h3>Paint</h3>
+          <div id="ed-brush-row"><img id="ed-brush" alt="" /><span id="ed-brush-label"></span></div>
+          <label class="stack">Apply to
+            <select id="ed-scope">
+              <option value="surface">This surface</option>
+              <option value="sameType">Same piece type</option>
+              <option value="level">Whole level</option>
+              <option value="all">Whole map</option>
+            </select>
+          </label>
+          <div class="sub-h">Tint</div>
+          <div id="ed-tints"></div>
+          <label class="stack inline-row">Custom tint <input id="ed-tint-custom" type="color" value="#ffffff" /></label>
+          <div class="sub-h">Materials</div>
+          <div id="ed-materials"></div>
+        </div>
       </aside>
       <aside id="ed-right">
         <section id="ed-inspector"></section>

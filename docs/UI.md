@@ -39,7 +39,14 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
   - bottom left: your portrait with health and armour bars;
   - bottom right: the weapon with magazine and reserve ammo;
   - centre: a target name and health bar after a hit.
-- **MapMaker** (`src/editor/editor.css`): brand bar with Build / Logic tabs, token colours throughout.
+- **MapMaker** (`src/editor/`): brand bar with Build / Logic tabs and a theme picker; the palette has
+  Tiles / Props / Entities / Paint tabs (search looks across all of them); the right panel opens on
+  Map properties: a plan preview, size, map layers (props, spawns, pickups, logic) and settings.
+- **Options**: crosshair styles (cross, dot, circle, chevron, gap) and colours (`src/game/crosshair.ts`).
+- **Weapon icons** in the kill feed and the character loadout are rendered side-on from the weapons'
+  own models (`src/frontend/weaponIcons.ts`, `modelThumbs.ts`); MapMaker prop thumbnails the same way.
+
+Pickup and objective notices are boxed toasts with a coloured edge (green pickups, orange messages).
 
 Portraits come from `PortraitRenderer` (`src/frontend/portraits.ts`): a private
 scene renders each look to a 256 px texture once and caches the PNG data URL.

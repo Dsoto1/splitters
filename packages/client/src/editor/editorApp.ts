@@ -70,6 +70,7 @@ import {
   CORE_PROPS,
   PROP_CATEGORIES,
   getProp,
+  placementCells,
 } from '@chronosplit/shared';
 import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
@@ -84,6 +85,7 @@ import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
+import { drawMapPlan } from '../frontend/mapPlan.ts';
 
 /** Small palette icon for a pickup item, coloured by item type. */
 function itemIcon(itemId: string): string {
@@ -178,6 +180,7 @@ export class EditorApp {
   /** Facing for the next prop placed. */
   private propYaw = 0;
   private readonly thumbs: ModelThumbnails;
+  private showPane: (pane: string) => void = () => {};
   private spawnYaw = 0;
   private scenarioYaw = 0;
   readonly logic: LogicPanel;
@@ -318,6 +321,10 @@ export class EditorApp {
 
   private setTool(tool: Tool): void {
     this.tool = tool;
+    if (tool.kind === 'paint') this.showPane('paint');
+    else if (tool.kind === 'edge' || tool.kind === 'tile') this.showPane('tiles');
+    else if (tool.kind === 'prop') this.showPane('props');
+    else if (tool.kind === 'spawn' || tool.kind === 'pickup' || tool.kind === 'scenario') this.showPane('entities');
     if (tool.kind !== 'paint' && tool.kind !== 'edge') this.hoverFace = null;
     if (tool.kind !== 'edge') this.hoverEdge = null;
     for (const b of document.querySelectorAll<HTMLElement>('[data-tool]')) {
@@ -854,8 +861,22 @@ export class EditorApp {
 
     this.buildPropPalette();
 
+    // Palette tabs (after the reference board): one group of tools at a time; search looks across all of them.
+    const tabs = $('ed-pal-tabs');
+    const showPane = (pane: string) => {
+      for (const b of tabs.querySelectorAll<HTMLElement>('.tab')) b.classList.toggle('on', b.dataset.pane === pane);
+      for (const p of document.querySelectorAll<HTMLElement>('#ed-palette .ed-pane')) p.hidden = p.dataset.pane !== pane;
+    };
+    this.showPane = showPane;
+    tabs.addEventListener('click', (e) => {
+      const pane = (e.target as HTMLElement).dataset.pane;
+      if (pane) showPane(pane);
+    });
+
     $<HTMLInputElement>('ed-search').addEventListener('input', (e) => {
       const q = (e.target as HTMLInputElement).value.trim().toLowerCase();
+      // While searching, every group is shown so matches anywhere turn up.
+      for (const p of document.querySelectorAll<HTMLElement>('#ed-palette .ed-pane')) p.hidden = q ? false : p.dataset.pane !== ($('ed-pal-tabs').querySelector<HTMLElement>('.tab.on')?.dataset.pane ?? 'tiles');
       for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn, #ed-palette .mat-btn')) b.hidden = !!q && !(b.dataset.search ?? '').includes(q);
     });
     this.setTool({ kind: 'select' });
@@ -1013,10 +1034,15 @@ export class EditorApp {
     });
 
     const bots = $<HTMLSelectElement>('ed-bots');
-    for (let i = 0; i <= 15; i++) bots.append(new Option(String(i), String(i), i === 3, i === 3));
+    for (let i = 0; i <= 15; i++) bots.append(new Option(`${i} bot${i === 1 ? "" : "s"}`, String(i), i === 3, i === 3));
+
+    const theme = $<HTMLSelectElement>('ed-theme');
+    for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id));
+    theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
   }
 
   private updateTopBar(): void {
+    $<HTMLSelectElement>('ed-theme').value = this.doc.classicStructure.theme;
     const name = $<HTMLInputElement>('ed-name');
     if (document.activeElement !== name) name.value = this.doc.metadata.name;
     $('ed-dirty').classList.toggle('on', this.isDirty());
@@ -1043,7 +1069,37 @@ export class EditorApp {
     const { tiles, entities } = this.selection;
     const doc = this.doc;
     if (tiles.length + entities.length === 0) {
-      el.append(h2('Map'));
+      el.append(h2('Map properties'));
+      // Plan preview and size (reference board: map properties).
+      const plan = document.createElement('canvas');
+      plan.className = 'ed-map-plan';
+      plan.width = 236;
+      plan.height = 148;
+      drawMapPlan(plan, doc);
+      el.append(plan);
+      const occupied = doc.classicStructure.tiles.flatMap((t) => placementCells(t) ?? []);
+      if (occupied.length) {
+        const span = (i: 0 | 1 | 2) => Math.max(...occupied.map((c) => c[i])) - Math.min(...occupied.map((c) => c[i])) + 1;
+        el.append(row('Size', text(`${span(0)} × ${span(1)} cells · ${span(2)} level${span(2) === 1 ? '' : 's'}`)));
+      }
+      const layersHead = document.createElement('h3');
+      layersHead.textContent = 'Map layers';
+      const layers = document.createElement('div');
+      layers.className = 'ed-layers';
+      for (const [key, label] of [['prop', 'Props'], ['spawn', 'Spawn points'], ['pickup', 'Pickups'], ['logic', 'Logic & traps']] as const) {
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.checked = !this.view.hiddenLayers.has(key);
+        box.addEventListener('change', () => {
+          if (box.checked) this.view.hiddenLayers.delete(key);
+          else this.view.hiddenLayers.add(key);
+          this.updateSelectionVisuals();
+        });
+        const lab = document.createElement('label');
+        lab.append(box, document.createTextNode(label));
+        layers.append(lab);
+      }
+      el.append(layersHead, layers);
       const desc = document.createElement('textarea');
       desc.rows = 3;
       desc.value = doc.metadata.description;

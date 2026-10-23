@@ -33,6 +33,15 @@ async function waitForHttp(url, ms = 20000) {
   throw new Error(`timed out waiting for ${url}`);
 }
 
+/** Click a MapMaker palette tool, opening the palette tab that holds it first. */
+async function clickTool(page, selector) {
+  await page.evaluate((sel) => {
+    const pane = document.querySelector(sel)?.closest('.ed-pane');
+    if (pane) document.querySelector(`#ed-pal-tabs [data-pane="${pane.dataset.pane}"]`)?.click();
+  }, selector);
+  await page.click(selector);
+}
+
 async function editorFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
@@ -49,16 +58,16 @@ async function editorFlow(browser) {
     await page.mouse.click(p.x, p.y);
   };
 
-  await page.click('[data-tool="tile:core.corridor"]');
+  await clickTool(page, '[data-tool="tile:core.corridor"]');
   await page.keyboard.press('KeyR');
   await clickWorld(8, 0);
-  await page.click('[data-tool="tile:core.room_pillar"]');
+  await clickTool(page, '[data-tool="tile:core.room_pillar"]');
   await clickWorld(16, 0);
   await clickWorld(0, 0); // occupied
   let d = await doc();
   check(d.classicStructure.tiles.length === 3, 'places tiles and refuses an occupied cell');
 
-  await page.click('[data-tool="spawn"]');
+  await clickTool(page, '[data-tool="spawn"]');
   await clickWorld(18.5, 2.5);
   await page.keyboard.press('Escape');
   d = await doc();
@@ -103,18 +112,18 @@ async function editorFlow(browser) {
   await page.keyboard.press('Escape');
 
   // Pickups: place a health pack in the start room.
-  await page.click('[data-tool="pickup:core.health_small"]');
+  await clickTool(page, '[data-tool="pickup:core.health_small"]');
   await clickWorld(-2, -2);
   await page.keyboard.press('Escape');
   d = await doc();
   check(d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.health_small'), 'places a pickup');
 
   // Scenario: a locked door snapped into the doorway, a button and a spike trap, wired with a logic template.
-  await page.click('[data-tool="scenario:door_locked"]');
+  await clickTool(page, '[data-tool="scenario:door_locked"]');
   await clickWorld(4.4, 0.6);
-  await page.click('[data-tool="scenario:button"]');
+  await clickTool(page, '[data-tool="scenario:button"]');
   await clickWorld(-2, 3);
-  await page.click('[data-tool="scenario:trap:spikes"]');
+  await clickTool(page, '[data-tool="scenario:trap:spikes"]');
   await clickWorld(8, -2);
   await page.keyboard.press('Escape');
   d = await doc();

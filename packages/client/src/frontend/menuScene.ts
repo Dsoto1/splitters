@@ -29,7 +29,7 @@ export class MenuScene {
   private token = 0;
   private t = 0;
   /** Camera framing: hero right of centre (home) or far right, full length (screens with a big left panel). */
-  private framing = { x: -1.05, tx: -0.62, y: 1.3, ty: 1.02, z: 3.3 };
+  private framing = { x: 0.2, tx: 0.55, y: 1.3, ty: 1.02, z: 3.3 };
   private goal = { ...this.framing };
   private readonly state: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0.08, celebrate: false };
 
@@ -133,7 +133,8 @@ export class MenuScene {
 
   /** Where the hero stands on screen: beside the home menu, or pushed right of a wide panel. */
   setShot(shot: 'home' | 'side'): void {
-    this.goal = shot === 'home' ? { x: -1.05, tx: -0.62, y: 1.3, ty: 1.02, z: 3.3 } : { x: -2.3, tx: -1.85, y: 1.15, ty: 0.95, z: 4.4 };
+    // Looking down -Z, screen right is world -X: a positive target x puts the hero right of centre.
+    this.goal = shot === 'home' ? { x: 0.2, tx: 0.55, y: 1.3, ty: 1.02, z: 3.3 } : { x: 1.5, tx: 1.85, y: 1.15, ty: 0.95, z: 4.4 };
   }
 
   frame(dt: number): void {

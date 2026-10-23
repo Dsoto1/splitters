@@ -204,6 +204,9 @@ export class EditorView {
     return m;
   }
 
+  /** Map layers switched off in the inspector: 'prop', 'spawn', 'pickup', 'logic'. */
+  readonly hiddenLayers = new Set<string>();
+
   setEntities(doc: MapDocument, level: number, showAll: boolean, selected: ReadonlySet<string>): void {
     const { levelHeight } = doc.classicStructure;
     const seen = new Set<string>();
@@ -234,6 +237,8 @@ export class EditorView {
         m.key = key;
         this.markers.set(e.id, m);
       }
+      const layer = e.kind === 'prop' || e.kind === 'spawn' || e.kind === 'pickup' ? e.kind : 'logic';
+      m.node.setEnabled(!this.hiddenLayers.has(layer));
       if (e.kind === 'spawn') {
         m.node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
         m.node.rotation.y = e.yaw;

@@ -1,5 +1,7 @@
 import { CORE_WEAPONS, NPC_ID_BASE, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
 import { slotColor } from './view.ts';
+import { applyCrosshair } from './crosshair.ts';
+import { weaponIcon } from '../frontend/weaponIcons.ts';
 import { Minimap } from './minimap.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -62,6 +64,7 @@ export class Hud {
   private hitTimer?: number;
 
   show(): void {
+    applyCrosshair();
     this.root.hidden = false;
   }
 
@@ -253,6 +256,13 @@ export class Hud {
     const color = (slot: number | null) => (slot === null ? '#ccc' : (this.team(slot)?.color ?? slotColor(slot)));
     const name = (slot: number | null) => `<span style="color:${color(slot)}">${escapeHtml(this.name(slot))}</span>`;
     line.innerHTML = killer === null ? `${name(victim)} ${HAZARD_DEATHS[weapon] ?? 'blew themselves up'}` : `${name(killer)} <small>${escapeHtml(weaponLabel(weapon))}</small> ${name(victim)}`;
+    // Weapon icon between the names (reference board), rendered from the weapon's model.
+    const icon = killer !== null ? weaponIcon(weapon) : null;
+    const label = line.querySelector('small');
+    if (icon && label) {
+      icon.title = weaponLabel(weapon);
+      label.replaceWith(icon);
+    }
     if (killer === localSlot || victim === localSlot) line.style.outline = '1px solid rgba(255,255,255,0.5)';
     this.feed.prepend(line);
     while (this.feed.children.length > 5) this.feed.lastChild?.remove();

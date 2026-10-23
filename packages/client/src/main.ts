@@ -20,6 +20,8 @@ import { NetTransport } from './game/netTransport.ts';
 import { CharacterDesigner } from './designer/characterDesigner.ts';
 import { FrontEnd, type ArcadeMap } from './frontend/frontEnd.ts';
 import { MenuScene } from './frontend/menuScene.ts';
+import { ModelThumbnails } from './frontend/modelThumbs.ts';
+import { setWeaponIconSource } from './frontend/weaponIcons.ts';
 import { PortraitRenderer } from './frontend/portraits.ts';
 import { GameSession } from './game/session.ts';
 import type { Transport } from './game/transport.ts';
@@ -94,6 +96,7 @@ class App {
       window.addEventListener('resize', () => this.engine.resize());
       this.menuScene = new MenuScene(this.engine);
       this.portraits = new PortraitRenderer(this.engine);
+      setWeaponIconSource(new ModelThumbnails(this.engine));
       this.front = new FrontEnd($('menu'), arcadeMaps(), {
         openEditor: () => void this.openEditor(),
         openDesigner: (look) => void this.openDesigner(look),
