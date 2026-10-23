@@ -1,7 +1,7 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
-import { buildOccupancy, cellKey } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey } from './geometry.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument } from './schema.ts';
 import { validateScenario } from './validateScenario.ts';
@@ -103,7 +103,7 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     const gy = Math.round(z / cellSize);
     const gz = Math.floor((y + 0.01) / levelHeight);
     const occ = cells.get(cellKey(gx, gy, gz));
-    if (!occ || !occ.def.floors.includes(occ.level)) {
+    if (!occ || !cellHasFloor(occ)) {
       issues.push({ severity: 'warning', code: 'spawn.no_floor', message: `spawn ${s.id} is not above a tile floor`, targetId: s.id });
     }
   }

@@ -148,3 +148,5 @@ dialog { border-top: 3px solid var(--cyan); }
 #ed-hint { flex-shrink: 1 !important; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 1500px) { .ed-brand small { display: none; } }
 @media (max-width: 1300px) { .ed-brand { display: none; } }
+.tile-cat { grid-column: 1 / -1; margin: 8px 0 0; font: 600 10px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+.tile-cat:first-child { margin-top: 0; }

@@ -5,7 +5,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { coreThemes, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TilePlacement, type WorldBox } from '@chronosplit/shared';
+import { buildMapDecor, coreThemes, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TilePlacement, type WorldBox } from '@chronosplit/shared';
 import { materialPixels } from './materials/patterns.ts';
 
 /** Faces of an axis-aligned box: corners (clockwise from outside, Babylon's front face) and outward normal. */
@@ -76,7 +76,8 @@ export class MapStyler {
     for (const m of this.meshes) m.dispose();
     const tiles = new Map<string, TilePlacement>(doc.classicStructure.tiles.map((t) => [t.id, t]));
     const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
-    for (const b of boxes) {
+    // Trim (baseboards, cornices, frames) is drawn with the structure but never collides.
+    for (const b of [...boxes, ...buildMapDecor(doc)]) {
       const tile = tiles.get(b.sourceId);
       for (const [corners, n] of boxFaces(b)) {
         const style = resolveSurface(doc, tile, faceSlot(b, n));

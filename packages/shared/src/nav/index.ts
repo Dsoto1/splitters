@@ -34,7 +34,8 @@ export class NavWorld {
       ch: CELL_HEIGHT,
       walkableSlopeAngle: PLAYER.maxSlopeDegrees,
       walkableHeight: Math.ceil(PLAYER.height / CELL_HEIGHT),
-      walkableClimb: Math.floor(PLAYER.maxStepHeight / CELL_HEIGHT),
+      // Round, not floor: 0.3 / 0.05 is 5.999… in floating point, which would reject 0.25 m steps at some heights.
+      walkableClimb: Math.round(PLAYER.maxStepHeight / CELL_HEIGHT),
       // Extra clearance beyond the capsule radius so corner-cutting bots do not snag door frames.
       walkableRadius: Math.ceil((PLAYER.radius + 0.2) / CELL),
       maxEdgeLen: 12 / CELL,

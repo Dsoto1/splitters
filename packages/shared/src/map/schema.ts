@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EDGE_STYLES } from './catalog.ts';
 import { ScenarioLogic } from './logic.ts';
 
 /**
@@ -52,7 +53,11 @@ export const TileSurfaces = z.object({
   walls: SurfaceStyle.optional(),
   solids: SurfaceStyle.optional(),
   underside: SurfaceStyle.optional(),
+  trim: SurfaceStyle.optional(),
 });
+
+/** One side of one tile cell, in the tile's own frame: "dx,dy,dz:N". */
+export const EdgeKey = z.string().regex(/^-?\d+,-?\d+,-?\d+:[NESW]$/, 'edge keys look like "0,0,0:N"');
 
 export const Rotation = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]);
 
@@ -69,6 +74,8 @@ export const TilePlacement = z.object({
   z: z.number().int().min(-16).max(16),
   rotation: Rotation.default(0),
   surfaces: TileSurfaces.optional(),
+  /** Per-side wall choices (window, archway, half wall, no wall…); absent sides are `auto`. */
+  edges: z.record(EdgeKey, z.enum(EDGE_STYLES)).optional(),
 });
 
 export const ClassicStructure = z.object({

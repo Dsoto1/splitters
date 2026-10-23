@@ -1,7 +1,8 @@
-import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
+import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, type EdgeStyle, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, TilePlacement } from './schema.ts';
 
-export type BoxKind = 'floor' | 'wall' | 'solid';
+/** `trim` boxes are visual only (baseboards, cornices, frames): never in physics or navigation. */
+export type BoxKind = 'floor' | 'wall' | 'solid' | 'trim';
 
 /** World-space axis-aligned box. Shared by physics, navigation and rendering. */
 export interface WorldBox {
@@ -17,6 +18,8 @@ export interface CellOccupant {
   def: TileDefinition;
   /** Local dz of the tile cell occupying this grid cell. */
   level: number;
+  /** The tile cell (local [dx, dy, dz]) occupying this grid cell. */
+  local: readonly [number, number, number];
 }
 
 export const cellKey = (x: number, y: number, z: number): string => `${x},${y},${z}`;
@@ -58,14 +61,143 @@ export function buildOccupancy(
         overlaps.push({ key, ids: [existing.placement.id, placement.id] });
         continue;
       }
-      cells.set(key, { placement, def, level: dz });
+      cells.set(key, { placement, def, level: dz, local: [dx, dy, dz] });
     }
   }
   return { cells, overlaps, unknownTiles };
 }
 
 function hasPort(occ: CellOccupant, worldSide: Side): boolean {
-  return occ.def.ports.some((p) => p.level === occ.level && rotateSide(p.side, occ.placement.rotation) === worldSide);
+  const [cx, cy] = occ.local;
+  return occ.def.ports.some((p) => p.level === occ.level && (p.cell?.[0] ?? 0) === cx && (p.cell?.[1] ?? 0) === cy && rotateSide(p.side, occ.placement.rotation) === worldSide);
+}
+
+/** Key of one side of one tile cell in a placement's `edges`, in the tile's own (unrotated) frame. */
+export const edgeKey = (local: readonly [number, number, number], localSide: Side): string => `${local[0]},${local[1]},${local[2]}:${localSide}`;
+
+/** The tile-local side that faces `worldSide` after the placement's rotation. */
+export const localSide = (worldSide: Side, rotation: number): Side => SIDES[(SIDES.indexOf(worldSide) - (rotation % 4) + 4) % 4]!;
+
+/** Whether a cell has walkable floor of its own (a full slab or partial floors). */
+export function cellHasFloor(occ: CellOccupant): boolean {
+  return occ.def.floors.includes(occ.level) || !!occ.def.extraFloors?.length;
+}
+
+/**
+ * What gets built on one side of one cell: `none` (no wall: open ground, the
+ * inside of a multi-cell tile, or a side left open), or one of the edge styles.
+ */
+export type ResolvedEdge = Exclude<EdgeStyle, 'auto' | 'open'> | 'none';
+
+/**
+ * Resolve a cell side: the cell's own choice for that side, else the
+ * neighbour's choice for the shared side, else the classic rule (doorway where
+ * ports meet, nothing between open tiles, otherwise the tile's default edge).
+ */
+export function resolveEdge(cells: Map<string, CellOccupant>, x: number, y: number, z: number, side: Side): ResolvedEdge {
+  const here = cells.get(cellKey(x, y, z));
+  if (!here) return 'none';
+  const [dx, dy] = SIDE_DIRS[side];
+  const there = cells.get(cellKey(x + dx, y + dy, z));
+  if (there && there.placement === here.placement) return 'none';
+  const choice = (occ: CellOccupant | undefined, s: Side) => occ?.placement.edges?.[edgeKey(occ.local, localSide(s, occ.placement.rotation))];
+  const picked = choice(here, side) ?? choice(there, OPPOSITE[side]);
+  const fallback = here.def.edgeDefault ?? 'wall';
+  const openish = fallback === 'open' || fallback === 'railing';
+  let style: EdgeStyle = picked ?? 'auto';
+  if (style === 'auto') {
+    // Ports meeting: nothing between open ground, no frame of its own on a platform or bridge, else a doorway.
+    if (isOpenEdge(cells, x, y, z, side)) style = (here.def.open && there?.def.open) || openish ? 'open' : 'door';
+    else style = fallback;
+  }
+  return style === 'open' || style === 'auto' ? 'none' : style;
+}
+
+/** Wall pieces of an edge style along one side: [u0, u1, y0, y1, thickness] with u along the side (-half..half). */
+export function edgeSegments(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
+  const t = TILE_DIMENSIONS.wallThickness;
+  const top = (h: number) => Math.min(h, height);
+  switch (style) {
+    case 'none':
+      return [];
+    case 'wall':
+      return [[-half, half, 0, height, t]];
+    case 'door': {
+      const d = TILE_DIMENSIONS.doorWidth / 2;
+      return [[-half, -d, 0, height, t], [d, half, 0, height, t], [-d, d, top(TILE_DIMENSIONS.doorHeight), height, t]];
+    }
+    case 'wide':
+      return [[-half, -2.5, 0, height, t], [2.5, half, 0, height, t], [-2.5, 2.5, top(3.5), height, t]];
+    case 'arch':
+      return [[-half, -half + 0.75, 0, height, t], [half - 0.75, half, 0, height, t], [-half + 0.75, half - 0.75, top(3.4), height, t]];
+    case 'window':
+      return [[-half, -1.3, 0, height, t], [1.3, half, 0, height, t], [-1.3, 1.3, 0, 1, t], [-1.3, 1.3, top(2.4), height, t]];
+    case 'windows':
+      return [[-half, -2.7, 0, height, t], [-0.8, 0.8, 0, height, t], [2.7, half, 0, height, t], [-2.7, -0.8, 0, 1, t], [0.8, 2.7, 0, 1, t], [-2.7, -0.8, top(2.4), height, t], [0.8, 2.7, top(2.4), height, t]];
+    case 'slit':
+      return [[-half, -1.5, 0, height, t], [1.5, half, 0, height, t], [-1.5, 1.5, 0, 1.25, t], [-1.5, 1.5, top(1.6), height, t]];
+    case 'half':
+      return [[-half, half, 0, 1.1, t]];
+    case 'railing':
+      return [[-half, half, 0, 1, 0.12]];
+  }
+}
+
+/** Visual trim for an edge (inner face only): [u0, u1, y0, y1, depth] standing off the wall face. */
+function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
+  const out: [number, number, number, number, number][] = [];
+  const base = (u0: number, u1: number) => out.push([u0, u1, 0, 0.16, 0.04]);
+  const cornice = (u0: number, u1: number) => height >= 3 && out.push([u0, u1, height - 0.2, height, 0.07]);
+  const frame = (d: number, h: number) => out.push([-d - 0.16, -d, 0, h, 0.06], [d, d + 0.16, 0, h, 0.06], [-d - 0.16, d + 0.16, h, h + 0.16, 0.06]);
+  const window = (u0: number, u1: number, y0: number, y1: number) => out.push([u0 - 0.08, u1 + 0.08, y0 - 0.08, y0, 0.12], [u0 - 0.1, u1 + 0.1, y1, y1 + 0.12, 0.05], [u0 - 0.1, u0, y0, y1, 0.05], [u1, u1 + 0.1, y0, y1, 0.05]);
+  switch (style) {
+    case 'none':
+      return out;
+    case 'wall':
+      base(-half, half);
+      cornice(-half, half);
+      return out;
+    case 'door':
+    case 'wide': {
+      const d = style === 'door' ? TILE_DIMENSIONS.doorWidth / 2 : 2.5;
+      base(-half, -d - 0.16);
+      base(d + 0.16, half);
+      cornice(-half, half);
+      if (height > (style === 'door' ? TILE_DIMENSIONS.doorHeight : 3.5) + 0.2) frame(d, style === 'door' ? TILE_DIMENSIONS.doorHeight : 3.5);
+      return out;
+    }
+    case 'arch':
+      base(-half, -half + 0.75);
+      base(half - 0.75, half);
+      cornice(-half, half);
+      out.push([-half + 0.75, half - 0.75, 3.25, 3.4, 0.08]);
+      return out;
+    case 'window':
+      base(-half, half);
+      cornice(-half, half);
+      window(-1.3, 1.3, 1, 2.4);
+      return out;
+    case 'windows':
+      base(-half, half);
+      cornice(-half, half);
+      window(-2.7, -0.8, 1, 2.4);
+      window(0.8, 2.7, 1, 2.4);
+      return out;
+    case 'slit':
+      base(-half, half);
+      cornice(-half, half);
+      window(-1.5, 1.5, 1.25, 1.6);
+      return out;
+    case 'half':
+      base(-half, half);
+      out.push([-half, half, 1.1, 1.18, 0.04]);
+      return out;
+    case 'railing':
+      // Posts every 2 m and a top rail.
+      for (let u = -half + 0.1; u <= half - 0.1 + 1e-6; u += 2) out.push([u - 0.06, u + 0.06, 0, 1.08, 0.04]);
+      out.push([-half, half, 0.95, 1.08, 0.05]);
+      return out;
+  }
 }
 
 /** True when both cells on either side of this edge expose a port toward each other. */
@@ -78,12 +210,28 @@ export function isOpenEdge(cells: Map<string, CellOccupant>, x: number, y: numbe
 
 /**
  * Convert the Classic Grid layout into world boxes. Unconnected ports become
- * solid walls (auto-cap), so any layout is enclosed and bots cannot walk off
- * into the void through a dangling doorway.
+ * solid walls (auto-cap) unless the tile or the creator says otherwise, so
+ * ordinary layouts stay enclosed and bots cannot walk off into the void.
  */
 export function buildMapGeometry(map: MapDocument, catalog: TileCatalog = coreCatalog): WorldBox[] {
+  return buildBoxes(map, catalog, false);
+}
+
+/** Visual-only trim (baseboards, cornices, door and window frames, railing posts) for the renderer. */
+export function buildMapDecor(map: MapDocument, catalog: TileCatalog = coreCatalog): WorldBox[] {
+  return buildBoxes(map, catalog, true);
+}
+
+/** Lowest point anyone can stand on, minus a margin: falling past it kills. */
+export function mapKillY(boxes: readonly WorldBox[]): number {
+  let low = Infinity;
+  for (const b of boxes) if (b.kind === 'floor') low = Math.min(low, b.max[1]);
+  return Number.isFinite(low) ? low - 14 : -40;
+}
+
+function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): WorldBox[] {
   const { cellSize, levelHeight } = map.classicStructure;
-  const { wallThickness: t, floorThickness, doorWidth, doorHeight } = TILE_DIMENSIONS;
+  const { floorThickness } = TILE_DIMENSIONS;
   const { cells } = buildOccupancy(map, catalog);
   const boxes: WorldBox[] = [];
   const half = cellSize / 2;
@@ -95,65 +243,63 @@ export function buildMapGeometry(map: MapDocument, catalog: TileCatalog = coreCa
     const baseY = gz * levelHeight;
     const id = occ.placement.id;
 
-    if (occ.def.floors.includes(occ.level)) {
+    if (!decor && occ.def.floors.includes(occ.level)) {
       boxes.push({ min: [cx - half, baseY - floorThickness, cz - half], max: [cx + half, baseY, cz + half], kind: 'floor', sourceId: id });
     }
 
     for (const side of SIDES) {
-      const open = isOpenEdge(cells, gx, gy, gz, side);
-      // Wall slab along this side, described in a frame where the side is "north":
-      // u runs along the wall, v is the inset toward the cell centre.
-      const segments: [number, number, number, number][] = []; // [u0, u1, y0, y1]
-      const [nx, ny] = SIDE_DIRS[side];
-      const seamless = open && occ.def.open && cells.get(cellKey(gx + nx, gy + ny, gz))?.def.open;
-      if (seamless) {
-        // Open ground on both sides: no wall at all.
-      } else if (open) {
-        const d = doorWidth / 2;
-        segments.push([-half, -d, 0, levelHeight], [d, half, 0, levelHeight], [-d, d, doorHeight, levelHeight]);
+      const style = resolveEdge(cells, gx, gy, gz, side);
+      if (decor) {
+        const t = style === 'railing' ? 0.12 : TILE_DIMENSIONS.wallThickness;
+        for (const [u0, u1, y0, y1, depth] of edgeTrim(style, half, levelHeight)) {
+          boxes.push(sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, t, t + depth, id, 'trim'));
+        }
       } else {
-        segments.push([-half, half, 0, levelHeight]);
-      }
-      for (const [u0, u1, y0, y1] of segments) {
-        boxes.push(sideBox(side, cx, cz, half, t, u0, u1, baseY + y0, baseY + y1, id));
+        for (const [u0, u1, y0, y1, t] of edgeSegments(style, half, levelHeight)) {
+          boxes.push(sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall'));
+        }
       }
     }
   }
 
+  if (decor) return boxes;
   for (const placement of map.classicStructure.tiles) {
     const def = catalog.get(placement.tile);
-    if (!def?.solids) continue;
+    if (!def) continue;
     const cx = placement.x * cellSize;
     const cz = placement.y * cellSize;
     const baseY = placement.z * levelHeight;
-    for (const solid of def.solids) {
-      boxes.push(rotateLocalBox(solid, placement.rotation, cx, baseY, cz, placement.id));
-    }
+    for (const f of def.extraFloors ?? []) boxes.push(rotateLocalBox(f, placement.rotation, cx, baseY, cz, placement.id, 'floor'));
+    for (const solid of def.solids ?? []) boxes.push(rotateLocalBox(solid, placement.rotation, cx, baseY, cz, placement.id, 'solid'));
   }
   return boxes;
 }
 
-function sideBox(side: Side, cx: number, cz: number, half: number, t: number, u0: number, u1: number, y0: number, y1: number, sourceId: string): WorldBox {
-  const kind = 'wall' as const;
+/**
+ * A box along one side of a cell: u runs along the side, v is the distance in
+ * from the cell boundary (wall slabs span v 0..thickness; trim stands off the
+ * inner face).
+ */
+function sideBox(side: Side, cx: number, cz: number, half: number, u0: number, u1: number, y0: number, y1: number, v0: number, v1: number, sourceId: string, kind: BoxKind): WorldBox {
   switch (side) {
     case 'N':
-      return { min: [cx + u0, y0, cz + half - t], max: [cx + u1, y1, cz + half], kind, sourceId };
+      return { min: [cx + u0, y0, cz + half - v1], max: [cx + u1, y1, cz + half - v0], kind, sourceId };
     case 'S':
-      return { min: [cx + u0, y0, cz - half], max: [cx + u1, y1, cz - half + t], kind, sourceId };
+      return { min: [cx + u0, y0, cz - half + v0], max: [cx + u1, y1, cz - half + v1], kind, sourceId };
     case 'E':
-      return { min: [cx + half - t, y0, cz + u0], max: [cx + half, y1, cz + u1], kind, sourceId };
+      return { min: [cx + half - v1, y0, cz + u0], max: [cx + half - v0, y1, cz + u1], kind, sourceId };
     case 'W':
-      return { min: [cx - half, y0, cz + u0], max: [cx - half + t, y1, cz + u1], kind, sourceId };
+      return { min: [cx - half + v0, y0, cz + u0], max: [cx - half + v1, y1, cz + u1], kind, sourceId };
   }
 }
 
-function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string): WorldBox {
+function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
   const [ax, az] = rotateXZ(box.min[0], box.min[2], rotation);
   const [bx, bz] = rotateXZ(box.max[0], box.max[2], rotation);
   return {
     min: [cx + Math.min(ax, bx), baseY + box.min[1], cz + Math.min(az, bz)],
     max: [cx + Math.max(ax, bx), baseY + box.max[1], cz + Math.max(az, bz)],
-    kind: 'solid',
+    kind,
     sourceId,
   };
 }

@@ -1,5 +1,5 @@
-import { coreCatalog, type TileCatalog } from '../map/catalog.ts';
-import { buildOccupancy, cellKey, rotateXZ } from '../map/geometry.ts';
+import { SIDE_DIRS, coreCatalog, type EdgeStyle, type Side, type TileCatalog } from '../map/catalog.ts';
+import { buildOccupancy, cellKey, edgeKey, localSide, rotateXZ } from '../map/geometry.ts';
 import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
@@ -302,3 +302,75 @@ export function entityLabel(doc: MapDocument, e: MapEntity): string {
   const same = doc.entities.filter((o) => o.kind === e.kind && (e.kind !== 'trap' || (o.kind === 'trap' && o.trap === e.trap)) && (e.kind !== 'destructible' || (o.kind === 'destructible' && o.model === e.model)));
   return `${kind} ${same.indexOf(e) + 1}`;
 }
+
+/** One side of one grid cell: what the MapMaker's wall tool points at. */
+export interface EdgeTarget {
+  cell: [number, number, number];
+  side: Side;
+}
+
+const OPPOSITE_SIDE: Record<Side, Side> = { N: 'S', E: 'W', S: 'N', W: 'E' };
+
+/**
+ * The cell side a pointer hit refers to: step a little off the surface along
+ * its normal into the space it faces (or back through the wall if that is
+ * empty), then take the nearest side of that cell.
+ */
+export function edgeTargetAt(doc: MapDocument, point: readonly [number, number, number], normal: readonly [number, number, number], catalog: TileCatalog = coreCatalog): EdgeTarget | null {
+  const { cellSize, levelHeight } = doc.classicStructure;
+  const { cells } = buildOccupancy(doc, catalog);
+  for (const k of [0.3, -0.8]) {
+    const q = point.map((v, i) => v + normal[i]! * k) as [number, number, number];
+    const cell: [number, number, number] = [Math.round(q[0] / cellSize) + 0, Math.round(q[2] / cellSize) + 0, Math.floor((q[1] + 0.01) / levelHeight) + 0];
+    if (!cells.has(cellKey(...cell))) continue;
+    const dx = q[0] - cell[0] * cellSize;
+    const dz = q[2] - cell[1] * cellSize;
+    const side: Side = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? 'E' : 'W') : dz > 0 ? 'N' : 'S';
+    return { cell, side };
+  }
+  return null;
+}
+
+/**
+ * Set how one cell side is built. The choice is stored on the tile that owns
+ * the cell (in its own frame, so it turns with the tile), and any different
+ * choice the neighbour made for the same wall is cleared so both halves match.
+ */
+export function setEdgeCommand(doc: MapDocument, target: EdgeTarget, style: EdgeStyle, catalog: TileCatalog = coreCatalog): EditCommand | { error: string } {
+  const { cells } = buildOccupancy(doc, catalog);
+  const here = cells.get(cellKey(...target.cell));
+  if (!here) return { error: 'no tile there' };
+  const [dx, dy] = SIDE_DIRS[target.side];
+  const there = cells.get(cellKey(target.cell[0] + dx, target.cell[1] + dy, target.cell[2]));
+  if (there?.placement === here.placement) return { error: 'that side is inside one piece' };
+  const withEdge = (t: TilePlacement, key: string, value: EdgeStyle | null): TilePlacement => {
+    const edges = { ...(t.edges ?? {}) };
+    if (value === null || value === 'auto') delete edges[key];
+    else edges[key] = value;
+    const { edges: _old, ...rest } = t;
+    return Object.keys(edges).length ? { ...rest, edges } : rest;
+  };
+  const before: TilePlacement[] = [here.placement];
+  const after: TilePlacement[] = [withEdge(here.placement, edgeKey(here.local, localSide(target.side, here.placement.rotation)), style)];
+  if (there) {
+    const key = edgeKey(there.local, localSide(OPPOSITE_SIDE[target.side], there.placement.rotation));
+    if (there.placement.edges?.[key] !== undefined) {
+      before.push(there.placement);
+      after.push(withEdge(there.placement, key, null));
+    }
+  }
+  return { kind: 'updateTiles', before, after };
+}
+
+/** The effective edge choice stored for a cell side (its own, else the neighbour's), or `auto`. */
+export function edgeChoiceAt(doc: MapDocument, target: EdgeTarget, catalog: TileCatalog = coreCatalog): EdgeStyle {
+  const { cells } = buildOccupancy(doc, catalog);
+  const here = cells.get(cellKey(...target.cell));
+  if (!here) return 'auto';
+  const own = here.placement.edges?.[edgeKey(here.local, localSide(target.side, here.placement.rotation))];
+  if (own) return own;
+  const [dx, dy] = SIDE_DIRS[target.side];
+  const there = cells.get(cellKey(target.cell[0] + dx, target.cell[1] + dy, target.cell[2]));
+  return (there && there.placement.edges?.[edgeKey(there.local, localSide(OPPOSITE_SIDE[target.side], there.placement.rotation))]) ?? 'auto';
+}
+

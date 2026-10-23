@@ -1,7 +1,7 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { BotBrain, type CombatantView, type PickupView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
-import { buildMapGeometry, type WorldBox } from '../map/geometry.ts';
+import { buildMapGeometry, mapKillY, type WorldBox } from '../map/geometry.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, horizontalDistance, normalize, scale, viewDirection, type Vec3 } from '../math.ts';
 import { NavWorld } from '../nav/index.ts';
@@ -115,6 +115,8 @@ export const heldWeapon = (c: Combatant): WeaponState => c.weapons.get(c.current
  */
 export class Match {
   readonly geometry: WorldBox[];
+  /** Falling below this height kills (some way under the lowest floor). */
+  readonly killY: number;
   readonly physics: PhysicsWorld;
   readonly nav: NavWorld;
   readonly slots: (Combatant | null)[] = new Array(MAX_PLAYER_SLOTS).fill(null);
@@ -148,6 +150,7 @@ export class Match {
     readonly seed = 1,
   ) {
     this.geometry = buildMapGeometry(map);
+    this.killY = mapKillY(this.geometry);
     this.physics = new PhysicsWorld(this.geometry);
     this.nav = NavWorld.build(this.geometry);
     this.rng = createRng(seed);
@@ -508,7 +511,7 @@ export class Match {
       if (!c.npc) this.collectPickups(c);
       // NPCs never run dry: their reserve refills.
       else if (held.reserve < held.def.magazine) held.reserve = held.def.reserveMax;
-      if (c.move.pos.y < PLAYER.killY) this.kill(c, null, 'core.fall');
+      if (c.move.pos.y < this.killY) this.kill(c, null, 'core.fall');
       if (!c.alive) break;
     }
   }
@@ -649,7 +652,7 @@ export class Match {
         continue;
       }
       p.pos = add(p.pos, delta);
-      if (--p.ticksLeft <= 0 || p.pos.y < PLAYER.killY) {
+      if (--p.ticksLeft <= 0 || p.pos.y < this.killY) {
         this.explode(p, p.pos);
         continue;
       }

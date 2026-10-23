@@ -7,7 +7,7 @@
  */
 
 /** Paintable surface groups of a Classic Grid tile. */
-export const SURFACE_SLOTS = ['floor', 'walls', 'solids', 'underside'] as const;
+export const SURFACE_SLOTS = ['floor', 'walls', 'solids', 'underside', 'trim'] as const;
 export type SurfaceSlot = (typeof SURFACE_SLOTS)[number];
 
 export const SURFACE_SLOT_LABELS: Record<SurfaceSlot, string> = {
@@ -15,6 +15,7 @@ export const SURFACE_SLOT_LABELS: Record<SurfaceSlot, string> = {
   walls: 'Walls',
   solids: 'Pillars, cover & steps',
   underside: 'Underside (ceiling below)',
+  trim: 'Trim & frames',
 };
 
 export type PatternId =
@@ -93,6 +94,9 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('light_strip', 'Light Panel', 'Tech', 'stripes', '#bfe8ff', '#5ab4e6', 2, 0.2, true),
   m('paint_matte', 'Painted (Matte)', 'Paint', 'plain', '#ffffff', '#f2f2f2', 4),
   m('paint_gloss', 'Painted (Gloss)', 'Paint', 'plain', '#ffffff', '#f2f2f2', 4, 0.8),
+  m('proto_trim', 'Prototype Trim', 'Prototype', 'plain', '#5d636b', '#555b63', 4),
+  m('brass', 'Brass', 'Metal', 'plain', '#b08d3a', '#9a7a30', 4, 0.7),
+  m('stone_trim', 'Dressed Stone', 'Stone', 'noise', '#cfc8ba', '#b9b2a4', 2),
 ];
 
 export interface SurfaceStyleDef {
@@ -110,43 +114,26 @@ export interface ThemeDefinition {
 }
 
 export const CORE_THEMES: readonly ThemeDefinition[] = [
-  {
-    id: 'core.prototype',
-    displayName: 'Prototype',
-    slots: { floor: { material: 'core.proto_floor' }, walls: { material: 'core.proto_wall' }, solids: { material: 'core.proto_solid' }, underside: { material: 'core.proto_wall' } },
-    sky: '#85a0b8',
-  },
-  {
-    id: 'core.tomb',
-    displayName: 'Desert Tomb',
-    slots: { floor: { material: 'core.sandstone' }, walls: { material: 'core.sandstone', tint: '#e8d9b8' }, solids: { material: 'core.marble', tint: '#e0c890' }, underside: { material: 'core.sandstone', tint: '#a08a66' } },
-    sky: '#e3c48f',
-  },
-  {
-    id: 'core.desert',
-    displayName: 'Desert Town',
-    slots: { floor: { material: 'core.sand' }, walls: { material: 'core.plaster' }, solids: { material: 'core.crate_wood' }, underside: { material: 'core.sandstone', tint: '#b89c6c' } },
-    sky: '#9cc6e8',
-  },
-  {
-    id: 'core.factory',
-    displayName: 'Factory',
-    slots: { floor: { material: 'core.grate' }, walls: { material: 'core.red_brick' }, solids: { material: 'core.hazard' }, underside: { material: 'core.rusty_metal' } },
-    sky: '#6f6a64',
-  },
-  {
-    id: 'core.lab',
-    displayName: 'Research Lab',
-    slots: { floor: { material: 'core.white_tiles' }, walls: { material: 'core.scifi_panel' }, solids: { material: 'core.circuit' }, underside: { material: 'core.light_strip' } },
-    sky: '#1b2633',
-  },
-  {
-    id: 'core.manor',
-    displayName: 'Gothic Manor',
-    slots: { floor: { material: 'core.carpet' }, walls: { material: 'core.dark_wood' }, solids: { material: 'core.cobble' }, underside: { material: 'core.dark_brick' } },
-    sky: '#2a2433',
-  },
+  theme('prototype', 'Prototype', '#85a0b8', 'proto_floor', 'proto_wall', 'proto_solid', 'proto_wall', 'proto_trim'),
+  theme('tomb', 'Desert Tomb', '#e3c48f', 'sandstone', ['sandstone', '#e8d9b8'], ['marble', '#e0c890'], ['sandstone', '#a08a66'], ['marble', '#d8b870']),
+  theme('desert', 'Desert Town', '#9cc6e8', 'sand', 'plaster', 'crate_wood', ['sandstone', '#b89c6c'], ['plaster', '#c8a878']),
+  theme('factory', 'Factory', '#6f6a64', 'grate', 'red_brick', 'hazard', 'rusty_metal', 'steel_plate'),
+  theme('lab', 'Research Lab', '#1b2633', 'white_tiles', 'scifi_panel', 'circuit', 'light_strip', 'circuit'),
+  theme('manor', 'Gothic Manor', '#2a2433', 'carpet', 'dark_wood', 'cobble', 'dark_brick', 'brass'),
+  theme('castle', 'Castle Keep', '#7d93ad', 'cobble', ['cobble', '#d8d2c4'], 'oak_planks', 'dark_wood', 'stone_trim'),
+  theme('station', 'Space Station', '#05070d', 'steel_plate', ['scifi_panel', '#c0ccd8'], 'hazard', 'circuit', ['light_strip', '#7fd8ff']),
+  theme('ruins', 'Jungle Ruins', '#a8c8a0', ['cobble', '#a4b48a'], ['sandstone', '#a8b48c'], ['marble', '#c8d0b0'], ['cobble', '#6c7a5a'], ['stone_trim', '#9aa884']),
+  theme('neon', 'Neon City', '#120b24', 'checker', 'dark_brick', 'hazard', 'circuit', ['light_strip', '#ff5ea8']),
+  theme('arctic', 'Arctic Base', '#c8dcec', ['white_tiles', '#e8f4ff'], ['steel_plate', '#dce8f0'], 'hazard', 'steel_plate', ['circuit', '#3a6a8a']),
+  theme('saloon', 'Frontier Saloon', '#f0c890', ['oak_planks', '#8a6a4a'], ['oak_planks', '#d8aa72'], 'crate_wood', 'dark_wood', 'dark_wood'),
 ];
+
+/** Shorthand for a theme: each slot is a material name or [material, tint]. */
+function theme(id: string, displayName: string, sky: string, ...slots: (string | [string, string])[]): ThemeDefinition {
+  const style = (x: string | [string, string]): SurfaceStyleDef => (typeof x === 'string' ? { material: `core.${x}` } : { material: `core.${x[0]}`, tint: x[1] });
+  const [floor, walls, solids, underside, trim] = slots.map(style);
+  return { id: `core.${id}`, displayName, sky, slots: { floor: floor!, walls: walls!, solids: solids!, underside: underside!, trim: trim! } };
+}
 
 /** Curated tint swatches offered first in the UI; any #rrggbb is also allowed. */
 export const TINT_SWATCHES: readonly string[] = [

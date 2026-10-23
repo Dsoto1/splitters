@@ -14,7 +14,7 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, Rotation, Vec3, WorldBox } from '@chronosplit/shared';
-import { DESTRUCTIBLE_SPECS, PLAYER, buildMapGeometry, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
+import { DESTRUCTIBLE_SPECS, PLAYER, buildMapDecor, buildMapGeometry, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -160,13 +160,15 @@ export class EditorView {
   /** Rebuild map meshes. Tiles above the active level are hidden unless showAll. */
   setMap(doc: MapDocument, level: number, showAll: boolean): WorldBox[] {
     const visibleTiles = showAll ? doc.classicStructure.tiles : doc.classicStructure.tiles.filter((t) => t.z <= level);
-    const boxes = buildMapGeometry({ ...doc, classicStructure: { ...doc.classicStructure, tiles: visibleTiles } });
-    this.styler.build(doc, boxes, 'edmap');
+    const visible = { ...doc, classicStructure: { ...doc.classicStructure, tiles: visibleTiles } };
+    const boxes = buildMapGeometry(visible);
+    this.styler.build(visible, boxes, 'edmap');
     const sky = MapStyler.skyColor(doc).scale(0.45);
     this.scene.clearColor = new Color4(sky.r, sky.g, sky.b, 1);
     this.setGrid(doc, level);
     this.setEntities(doc, level, showAll, new Set());
-    return boxes;
+    // Trim is pickable too, so it can be painted.
+    return [...boxes, ...buildMapDecor(visible)];
   }
 
   private setGrid(doc: MapDocument, level: number): void {

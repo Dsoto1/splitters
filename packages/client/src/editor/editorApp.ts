@@ -57,6 +57,16 @@ import {
   type TileDefinition,
   type ValidationIssue,
   type Vec3,
+  EDGE_STYLES,
+  EDGE_STYLE_LABELS,
+  SIDES,
+  TILE_CATEGORIES,
+  edgeChoiceAt,
+  edgeSegments,
+  edgeTargetAt,
+  setEdgeCommand,
+  type EdgeStyle,
+  type EdgeTarget,
 } from '@chronosplit/shared';
 import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
@@ -89,7 +99,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' };
+type Tool = { kind: 'select' } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -177,6 +187,8 @@ export class EditorApp {
   /** Boxes currently shown (respecting floor isolation), for surface picking. */
   private visibleBoxes: WorldBox[] = [];
   private hoverFace: BoxHit | null = null;
+  /** Cell side under the pointer for the wall tool. */
+  private hoverEdge: EdgeTarget | null = null;
   private paintStyle: SurfaceStyle = { material: 'core.red_brick', tint: null };
   private paintScope: PaintScope = 'surface';
 
@@ -289,10 +301,14 @@ export class EditorApp {
 
   private setTool(tool: Tool): void {
     this.tool = tool;
-    if (tool.kind !== 'paint') this.hoverFace = null;
+    if (tool.kind !== 'paint' && tool.kind !== 'edge') this.hoverFace = null;
+    if (tool.kind !== 'edge') this.hoverEdge = null;
     for (const b of document.querySelectorAll<HTMLElement>('[data-tool]')) {
       const t = b.dataset.tool;
-      b.classList.toggle('active', (tool.kind === 'tile' && t === `tile:${tool.tile}`) || (tool.kind === 'pickup' && t === `pickup:${tool.item}`) || (tool.kind === 'scenario' && t === `scenario:${tool.key}`) || t === tool.kind);
+      b.classList.toggle(
+        'active',
+        (tool.kind === 'tile' && t === `tile:${tool.tile}`) || (tool.kind === 'pickup' && t === `pickup:${tool.item}`) || (tool.kind === 'scenario' && t === `scenario:${tool.key}`) || (tool.kind === 'edge' && t === `edge:${tool.style}`) || t === tool.kind,
+      );
     }
     const hints: Record<Tool['kind'], string> = {
       select: 'Click select · Shift add · Drag move · Del delete · Ctrl+D duplicate · R rotate · F focus',
@@ -301,6 +317,7 @@ export class EditorApp {
       pickup: 'Click place pickup · Right-click erase · Esc select tool',
       scenario: 'Click place · Doors, walls and lasers snap to doorways · R turn 90° · Right-click erase · L logic',
       paint: 'Click a surface to paint · Right-click resets to theme · Alt-click or I picks a style',
+      edge: 'Click a wall or floor edge to build it this way · Right-click resets to auto · O cycles the style',
     };
     $('ed-hint').textContent = `${hints[tool.kind]} · RMB look · WASD/QE fly`;
     this.updateHover();
@@ -375,6 +392,15 @@ export class EditorApp {
     const scopeLabel: Record<PaintScope, string> = { surface: '', sameType: ' (all of this piece)', level: ' (whole level)', all: ' (whole map)' };
     const label = `${clear ? 'Reset' : 'Paint'} ${SURFACE_SLOT_LABELS[target.slot].toLowerCase()}${scopeLabel[this.paintScope]}`;
     this.run(label, paintCommand(this.doc, target.tile.id, target.slot, clear ? null : this.paintStyle, this.paintScope));
+  }
+
+  /** Wall tool: build the hovered cell side in the given style. */
+  private edgeAtHover(style: EdgeStyle): void {
+    const target = this.hoverEdge;
+    if (!target) return;
+    const cmd = setEdgeCommand(this.doc, target, style);
+    if ('error' in cmd) return this.toast(cmd.error, true);
+    this.run(style === 'auto' ? 'Reset wall' : `Wall: ${EDGE_STYLE_LABELS[style]}`, cmd);
   }
 
   /** Eyedropper: copy the hovered surface's effective style into the brush. */
@@ -486,14 +512,43 @@ export class EditorApp {
     const { cellSize, levelHeight } = this.doc.classicStructure;
     this.hoverPoint = this.view.pickPlane(clientX, clientY, this.level * levelHeight);
     this.hoverCell = this.hoverPoint ? [Math.round(this.hoverPoint.x / cellSize), Math.round(this.hoverPoint.z / cellSize), this.level] : null;
-    if (this.tool.kind === 'paint') {
+    if (this.tool.kind === 'paint' || this.tool.kind === 'edge') {
       const ray = this.view.pointerRay(clientX, clientY);
       this.hoverFace = ray ? raycastBoxes(ray.origin, ray.dir, this.visibleBoxes) : null;
     } else this.hoverFace = null;
+    this.hoverEdge = null;
+    if (this.tool.kind === 'edge' && this.hoverFace) {
+      const ray = this.view.pointerRay(clientX, clientY)!;
+      const d = this.hoverFace.distance;
+      const point: [number, number, number] = [ray.origin.x + ray.dir.x * d, ray.origin.y + ray.dir.y * d, ray.origin.z + ray.dir.z * d];
+      this.hoverEdge = edgeTargetAt(this.doc, point, this.hoverFace.normal);
+    }
     this.updateHover();
   }
 
   private updateHover(): void {
+    if (this.tool.kind === 'edge') {
+      const e = this.hoverEdge;
+      if (e) {
+        const { cellSize, levelHeight } = this.doc.classicStructure;
+        const [gx, gy, gz] = e.cell;
+        const [dx, dz] = { N: [0, 1], E: [1, 0], S: [0, -1], W: [-1, 0] }[e.side] as [number, number];
+        const h = cellSize / 2;
+        const cx = gx * cellSize + dx * (h - 0.25);
+        const cz = gy * cellSize + dz * (h - 0.25);
+        const box = { min: [cx - (dx ? 0.25 : h), gz * levelHeight, cz - (dz ? 0.25 : h)], max: [cx + (dx ? 0.25 : h), (gz + 1) * levelHeight, cz + (dz ? 0.25 : h)], kind: 'wall', sourceId: '' } as WorldBox;
+        this.view.setFaceHighlight(box, [-dx, 0, -dz]);
+        const tileName = coreCatalog.get(tileAt(this.doc, gx, gy, gz)?.tile ?? '')?.displayName ?? '';
+        const sideName = { N: 'North', E: 'East', S: 'South', W: 'West' }[e.side];
+        $('ed-target').textContent = `${sideName} side · ${tileName} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.doc, e)]} → ${EDGE_STYLE_LABELS[this.tool.style]}`;
+      } else {
+        this.view.setFaceHighlight(null, null);
+        $('ed-target').textContent = '';
+      }
+      this.view.setHoverCell(this.doc, null);
+      this.view.setGhost(this.doc, null, null, 0, true);
+      return;
+    }
     this.view.setFaceHighlight(this.hoverFace?.box ?? null, this.hoverFace?.normal ?? null);
     if (this.tool.kind === 'paint') {
       const target = this.paintTarget();
@@ -568,6 +623,7 @@ export class EditorApp {
       }
       if (e.button !== 0) return;
       if (this.tool.kind === 'paint') return e.altKey ? this.pickStyleAtHover() : this.paintAtHover(false);
+      if (this.tool.kind === 'edge') return this.edgeAtHover(this.tool.style);
       if (this.tool.kind !== 'select') return this.placeAtHover();
       const hit = this.pick();
       if (!hit) {
@@ -594,6 +650,9 @@ export class EditorApp {
         if (wasClick && this.tool.kind === 'paint') {
           this.updatePointer(e.clientX, e.clientY);
           this.paintAtHover(true);
+        } else if (wasClick && this.tool.kind === 'edge') {
+          this.updatePointer(e.clientX, e.clientY);
+          this.edgeAtHover('auto');
         } else if (wasClick && this.tool.kind !== 'select') {
           this.updatePointer(e.clientX, e.clientY);
           this.eraseAtHover();
@@ -654,6 +713,13 @@ export class EditorApp {
         case 'KeyB':
           this.setTool({ kind: 'paint' });
           break;
+        case 'KeyO': {
+          // Wall tool; pressed again, cycle through the styles.
+          const styles = EDGE_STYLES.filter((x) => x !== 'auto');
+          const next = this.tool.kind === 'edge' ? styles[(styles.indexOf(this.tool.style as (typeof styles)[number]) + 1) % styles.length]! : 'window';
+          this.setTool({ kind: 'edge', style: next });
+          break;
+        }
         case 'KeyI':
           if (this.tool.kind === 'paint') this.pickStyleAtHover();
           break;
@@ -711,7 +777,23 @@ export class EditorApp {
     this.buildPaintPalette();
 
     const tiles = $('ed-tiles');
-    for (const def of coreCatalog.all()) tiles.append(this.paletteButton(def));
+    for (const category of TILE_CATEGORIES) {
+      const head = document.createElement('div');
+      head.className = 'tile-cat';
+      head.textContent = category;
+      tiles.append(head, ...coreCatalog.all().filter((d) => d.category === category).map((d) => this.paletteButton(d)));
+    }
+    const edges = $('ed-edges');
+    for (const style of EDGE_STYLES) {
+      const b = document.createElement('button');
+      b.className = 'tile-btn edge-btn';
+      b.dataset.tool = `edge:${style}`;
+      b.dataset.search = `${EDGE_STYLE_LABELS[style]} wall side opening`.toLowerCase();
+      b.innerHTML = `${edgeIcon(style)}${escapeHtml(EDGE_STYLE_LABELS[style])}`;
+      b.title = style === 'auto' ? 'Back to the automatic wall or doorway' : `Build a side as: ${EDGE_STYLE_LABELS[style]}`;
+      b.addEventListener('click', () => this.setTool({ kind: 'edge', style }));
+      edges.append(b);
+    }
     const spawnBtn = document.createElement('button');
     spawnBtn.className = 'tile-btn';
     spawnBtn.dataset.tool = 'spawn';
@@ -814,9 +896,13 @@ export class EditorApp {
     const b = document.createElement('button');
     b.className = 'tile-btn';
     b.dataset.tool = `tile:${def.id}`;
-    b.dataset.search = `${def.displayName} ${def.id}`.toLowerCase();
+    b.dataset.search = `${def.displayName} ${def.id} ${def.category} ${def.blurb ?? ''}`.toLowerCase();
     b.innerHTML = `${tileIcon(def)}${def.displayName}`;
-    b.title = def.displayName;
+    const size = (() => {
+      const span = (i: 0 | 1 | 2) => Math.max(...def.cells.map((c) => c[i])) - Math.min(...def.cells.map((c) => c[i])) + 1;
+      return `${span(0)} × ${span(1)} × ${span(2)}`;
+    })();
+    b.title = `${def.displayName}\n${def.blurb ?? ''}\nSize ${size} cells · ${def.ports.length} connectors`.trim();
     b.addEventListener('click', () => this.setTool({ kind: 'tile', tile: def.id }));
     return b;
   }
@@ -932,6 +1018,24 @@ export class EditorApp {
         row('Level', numberInput(t.z, 1, (v) => set({ z: v }))),
         row('Rotation', text(`${t.rotation * 90}°`)),
       );
+      const def = coreCatalog.get(t.tile);
+      const wallsHead = document.createElement('h3');
+      wallsHead.textContent = 'Walls';
+      el.append(wallsHead);
+      if (def && def.cells.length === 1) {
+        for (const side of SIDES) {
+          const target = { cell: [t.x, t.y, t.z] as [number, number, number], side };
+          const sel = document.createElement('select');
+          const now = edgeChoiceAt(doc, target);
+          for (const style of EDGE_STYLES) sel.append(new Option(EDGE_STYLE_LABELS[style], style, false, style === now));
+          sel.addEventListener('change', () => {
+            const cmd = setEdgeCommand(this.doc, target, sel.value as EdgeStyle);
+            if ('error' in cmd) this.toast(cmd.error, true);
+            else this.run(`Wall: ${EDGE_STYLE_LABELS[sel.value as EdgeStyle]}`, cmd);
+          });
+          el.append(row({ N: 'North', E: 'East', S: 'South', W: 'West' }[side], sel));
+        }
+      } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
       const h3 = document.createElement('h3');
       h3.textContent = 'Surfaces';
       el.append(h3);
@@ -1319,4 +1423,12 @@ function numberInput(value: number, step: number, onCommit: (v: number) => void)
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+/** Front-view thumbnail of an edge style, drawn from the same wall pieces the map builds. */
+function edgeIcon(style: EdgeStyle): string {
+  if (style === 'auto') return '<svg viewBox="0 0 56 56"><rect x="4" y="14" width="48" height="30" fill="none" stroke="#8ea2c0" stroke-dasharray="3 3"/><text x="28" y="34" text-anchor="middle" font-size="12" fill="#8ea2c0">AUTO</text></svg>';
+  const pieces = style === 'open' ? [] : edgeSegments(style, 4, 4);
+  const rects = pieces.map(([u0, u1, y0, y1, t]) => `<rect x="${(4 + (u0 + 4) * 6).toFixed(1)}" y="${(48 - y1 * 8.5).toFixed(1)}" width="${((u1 - u0) * 6).toFixed(1)}" height="${((y1 - y0) * 8.5).toFixed(1)}" fill="${t < 0.3 ? '#8ea2c0' : '#d9d6cf'}"/>`);
+  return `<svg viewBox="0 0 56 56" aria-hidden="true"><rect x="4" y="48" width="48" height="3" fill="#5b616b"/>${rects.join('')}</svg>`;
 }
