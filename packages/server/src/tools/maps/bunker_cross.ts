@@ -143,15 +143,20 @@ const charge = (pos: V3) => {
   charges.push(id);
   m.add({ kind: 'trap', id, name: 'Airstrike charge', trap: 'mine', position: pos, yaw: 0, activation: 'proximity', onSeconds: 0.2, offSeconds: 600, offsetSeconds: 0, startEnabled: false, damage: 1000 });
 };
+// Cells with solid cover get their own layout (in the tile's frame), clear of the solids and on top of anything climbable.
+const GRID: [number, number, number][] = [[-2, -2, 0], [2, -2, 0], [-2, 2, 0], [2, 2, 0]];
+const LAYOUT: Record<string, [number, number, number][]> = {
+  yard_crates: [[-2, -2, 0], [2, -2, 0], [-2, 2, 0], [3.5, 3.3, 0], [1.5, 1.5, 2]], // and on the 2 m stack
+  yard_ruins: [[-1.2, 1.2, 0], [1.2, 1.2, 0], [-1.2, -1.2, 0], [1.5, -3.2, 0], [-3.2, 0, 0], [2.5, 2.5, 1.4], [1.8, -2, 0.9]], // and on the blocks
+};
 for (let x = -2; x <= 2; x++) {
   for (const y of [-2, -1, 0, 1, 2]) {
-    const z = y === 0 ? -1 : 0;
-    for (const dx of [-2, 2]) for (const dy of [-2, 2]) charge(at(x, y, z, dx, dy, -0.2));
+    const [kind, rot] = y === 0 ? ['yard', 0] : (yardKind[`${x},${y}`] ?? ['yard', 0]);
+    const flip = rot === 2 ? -1 : 1; // only half turns are used for the cover tiles
+    for (const [dx, dy, top] of LAYOUT[kind] ?? GRID) charge(at(x, y, y === 0 ? -1 : 0, dx * flip, dy * flip, top - 0.2));
   }
 }
 for (const dy of [-2.5, 2.5]) charge(at(0, 0, 0, 0, dy, -0.2)); // the bridge deck
-charge(at(-1, 1, 0, 1.5, 1.5, 1.8)); // tops of the crate stacks (2 m)
-charge(at(1, -1, 0, -1.5, -1.5, 1.8));
 
 const act = (type: LogicAction['type'], target: string | null = null, o: { value?: number; text?: string; state?: string } = {}): LogicAction => ({ type, target, value: o.value ?? 0, text: o.text ?? '', state: o.state ?? '' });
 const rule = (id: string, name: string, when: LogicRule['when'], actions: LogicAction[], once = false): LogicRule => ({ id, name, enabled: true, once, when, if: [], do: actions });
