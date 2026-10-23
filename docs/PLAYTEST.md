@@ -91,13 +91,24 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] Grass and flowers grow on the canyon floor; they don't poke through floors, and never hide a crouching player.
 - [ ] Frame rate stays smooth when you look across a grassy field (F3 shows it).
 
-## 6. Teams (Arcade)
+## 6. Hits, blood and ragdolls
+
+- [ ] Shoot a bot: a meaty thump at the bot, a tick for you, a small red spray and splats on the floor or wall behind it.
+- [ ] Kill a bot with a shotgun or rifle: it's thrown along the shot and falls limp down slopes and stairs; a small pool under it.
+- [ ] Kill one with a grenade or rocket: it's thrown away from the blast.
+- [ ] Blow up a crate or barrel: the chunks bounce, roll and come to rest, then shrink away.
+- [ ] Pause → untick **Blood**: no more spray, splats or splat sound (remembered next time).
+- [ ] MapMaker → Map properties → **Blood**: pick Alien (green) and Heavy, TEST: blood is green and there's more of it.
+- [ ] On `canyon` or `frost_basin`: no rock, log, bush or crate floats at the edge of a slope; rocks and logs lean with the hill, trees stand straight.
+- [ ] MapMaker: place a rock on a hillside and drag it up and down the hill: it stays on the ground.
+
+## 7. Teams (Arcade)
 
 - [ ] Arcade → pick a map → set 3 or more team rows with different sizes (try 2,2,2,2,2,2,12).
 - [ ] The score bar and Tab scoreboard show every team in its colour.
 - [ ] Teams are filled to the sizes you set; teammates don't take damage from you (if friendly fire is off).
 
-## 7. MapMaker
+## 8. MapMaker
 
 - [ ] **Curves** tab: small / medium / large round corners and arcades, half-round rooms, round tower, curved corridor, balconies. Rotate them and connect them to the regular rooms with no gaps.
 - [ ] Wall styles: **High** (2 storeys), **Tower** (4 storeys), **Fence**.

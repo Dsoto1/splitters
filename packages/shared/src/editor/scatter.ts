@@ -1,5 +1,5 @@
 import type { MapDocument, MapEntity, PropEntity } from '../map/schema.ts';
-import { terrainHeightAt } from '../map/terrain.ts';
+import { settledPropY } from '../map/settle.ts';
 
 /**
  * Scatter brush sets: a mix of props planted with a minimum spacing, random
@@ -61,16 +61,18 @@ export function scatterProps(doc: MapDocument, set: ScatterSetId, x: number, z: 
     const px = x + Math.cos(a) * r;
     const pz = z + Math.sin(a) * r;
     if (taken.some(([tx, tz, d]) => Math.hypot(tx - px, tz - pz) < d)) continue;
-    const ground = doc.terrain ? terrainHeightAt(doc.terrain, px, pz) : null;
-    const y = ground ?? floorY;
     taken.push([px, pz, s.spacing]);
     const model = pick();
+    const yaw = round(rand() * Math.PI * 2 - Math.PI);
+    const scale = round(s.scale[0] + rand() * (s.scale[1] - s.scale[0]));
+    // Bedded into the slope: the lowest ground under the footprint, so no edge hangs in the air.
+    const ground = doc.terrain ? settledPropY(doc.terrain, { model, position: [px, 0, pz], yaw, scale }) : null;
     out.push({
       kind: 'prop',
       model,
-      position: [round(px), round(y - 0.05), round(pz)],
-      yaw: round(rand() * Math.PI * 2 - Math.PI),
-      scale: round(s.scale[0] + rand() * (s.scale[1] - s.scale[0])),
+      position: [round(px), ground ?? round(floorY - 0.05), round(pz)],
+      yaw,
+      scale,
       solid: true,
       tint: s.tint && /grass|fern/.test(model) ? s.tint : null,
     });

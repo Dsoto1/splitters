@@ -21,7 +21,7 @@ import { BackdropVisuals } from '../backdrop.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
-import { createPropNode } from '../game/propVisuals.ts';
+import { createPropNode, orientProp } from '../game/propVisuals.ts';
 import { createMountNode } from '../game/mountVisuals.ts';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -282,7 +282,8 @@ export class EditorView {
       } else {
         const scenario = e.kind !== 'pickup';
         m.node.position.set(e.position[0], e.position[1] + (scenario ? 0 : PICKUP_HOVER), e.position[2]);
-        if ('yaw' in e && scenario) m.node.rotation.y = e.yaw;
+        if (e.kind === 'prop') orientProp(m.node as TransformNode, e, doc.terrain);
+        else if ('yaw' in e && scenario) m.node.rotation.y = e.yaw;
         if (selected.has(e.id) && !m.ring) {
           m.ring = CreateCylinder(`edsel_${e.id}`, { diameter: selectionSize(e), height: 1.2, tessellation: 24 }, this.scene);
           m.ring.material = this.mat.outline;

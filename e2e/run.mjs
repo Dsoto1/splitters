@@ -317,6 +317,11 @@ async function sceneryFlow(browser) {
   await page.waitForTimeout(300);
   const bd = await page.evaluate(() => ({ sky: window.__editor.doc.backdrop?.sky, mesh: window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky') }));
   check(bd.sky === 'sunset' && bd.mesh, `MapMaker sets the map's sky (${bd.sky})`);
+  await page.click('#ed-blood-amount');
+  await page.selectOption('#ed-blood-amount', 'heavy');
+  await page.click('.ed-row-buttons button:has-text("Alien")');
+  const blood = await page.evaluate(() => window.__editor.doc.blood);
+  check(blood?.color === '#3f9b1f' && blood?.amount === 'heavy', `MapMaker sets the map's blood (${JSON.stringify(blood)})`);
   await page.click('#ed-pal-tabs [data-pane="terrain"]');
   await page.click('#ed-tr-new');
   await page.click('[data-foliage="4"]');
@@ -337,6 +342,29 @@ async function sceneryFlow(browser) {
   await page.keyboard.press('Control+z');
   const undone = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop').length);
   check(undone === 0, 'one undo takes the whole patch back');
+  // Props stay on sloping ground: raise a hill, scatter rocks on its side, nothing floats.
+  await clickTool(page, '[data-tool="terrain:raise"]');
+  p = await at(20, 20);
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.down();
+  await page.waitForTimeout(1500);
+  await page.mouse.up();
+  await clickTool(page, '[data-tool="scatter:rocks"]');
+  p = await at(24, 20);
+  await page.mouse.click(p.x, p.y);
+  const rocks = await page.evaluate(() => {
+    const doc = window.__editor.doc;
+    const props = doc.entities.filter((e) => e.kind === 'prop');
+    const t = doc.terrain;
+    const h = (x, z) => {
+      const fx = (x - t.origin[0]) / t.spacing, fz = (z - t.origin[1]) / t.spacing;
+      const c = Math.floor(fx), r = Math.floor(fz);
+      // The highest corner of the cell: anything above it is floating.
+      return t.baseY + Math.max(...[[0, 0], [1, 0], [0, 1], [1, 1]].map(([i, j]) => t.heights[(r + j) * t.cols + c + i] ?? 0)) / 100;
+    };
+    return { n: props.length, worst: Math.max(...props.map((e) => e.position[1] - h(e.position[0], e.position[2]))) };
+  });
+  check(rocks.n > 0 && rocks.worst < 0.02, `scattered rocks sit on the hillside (${rocks.n}, worst gap ${rocks.worst.toFixed(2)} m)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -376,6 +404,87 @@ async function setpiecesFlow(browser) {
   const fly = await page.evaluate(() => ({ y: window.__match.slots[window.__cs.slot].move.pos.y, hud: document.getElementById('powerups')?.textContent ?? '' }));
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   check(fly.y > 7 && /JETPACK/.test(fly.hud), `the jetpack flies you up (${fly.y.toFixed(1)} m) with a fuel gauge on the HUD`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+async function physicsfxFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=canyon`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: 30000 });
+  await page.waitForTimeout(2500);
+  // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats.
+  const props = await page.evaluate(() => {
+    const roots = window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model'));
+    const leaning = roots.filter((n) => n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01).length;
+    return { roots: roots.length, leaning };
+  });
+  check(props.leaning > 0, `natural props lean with the canyon's slopes (${props.leaning} of ${props.roots})`);
+  // Line up a bot in front of you on open ground and kill it: it falls as a ragdoll and bleeds.
+  await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    window.__pin = setInterval(() => { me.health = 100; }, 50);
+    const bot = m.slots.find((c) => c && c !== me && c.alive);
+    for (const c of m.slots) if (c && c !== me && c !== bot) c.alive = false;
+    const f = window.__cs.view.camera.getForwardRay(1).direction;
+    const len = Math.hypot(f.x, f.z) || 1;
+    bot.move = { ...bot.move, pos: { x: me.move.pos.x + (f.x / len) * 4, y: me.move.pos.y + 0.5, z: me.move.pos.z + (f.z / len) * 4 }, velY: 0, grounded: false };
+    window.__botSlot = bot.slot;
+    window.__autoInput = { buttons: 0 };
+  });
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    const bot = m.slots[window.__botSlot];
+    window.__cs.view.pushPlayer(bot.slot, { x: (bot.move.pos.x - me.move.pos.x) * 1.2, y: 2, z: (bot.move.pos.z - me.move.pos.z) * 1.2 });
+    m.damage(bot, 500, me, 'core.pistol');
+  });
+  await page.addStyleTag({ content: '#pause { display: none !important; }' });
+  // Sample the fall while the body is down (the bot respawns 2-3 s after dying).
+  const track = [];
+  let ragdolled = false;
+  for (let i = 0; i < 6; i++) {
+    await page.waitForTimeout(150);
+    const s = await page.evaluate(() => {
+      const a = window.__cs.view.avatars.get(window.__botSlot);
+      const head = a?.anim?.ch.joints.get('Head');
+      return { rag: !!a?.ragdoll, head: head ? head.getAbsolutePosition().y : null };
+    });
+    ragdolled ||= s.rag;
+    if (s.head !== null) track.push(s.head);
+  }
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-ragdoll.png` });
+  const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat').length }));
+  check(ragdolled && track[0] - Math.min(...track) > 0.5, `the killed bot drops as a ragdoll (head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
+  check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
+  // Debris chunks are real bodies: they land and rest on the ground.
+  await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const f = window.__cs.view.camera.getForwardRay(1).direction;
+    window.__cs.view.debris({ x: me.move.pos.x + f.x * 3, y: me.move.pos.y + 1.5, z: me.move.pos.z + f.z * 3 }, '#8a5d33', 0.8);
+  });
+  // Headless frame rates are low, so run three seconds of physics at once rather than waiting on the frames.
+  const chunks = await page.evaluate(() => {
+    const view = window.__cs.view;
+    for (let i = 0; i < 180; i++) view.physics.step(1 / 60);
+    return view.debrisBodies.map((d) => ({ y: d.body.translation().y, v: Math.hypot(...Object.values(d.body.linvel())) }));
+  });
+  await page.waitForTimeout(300);
+  check(chunks.length === 10 && chunks.every((c) => c.v < 1.5), `debris chunks land and come to rest (${chunks.length}, fastest ${Math.max(...chunks.map((c) => c.v)).toFixed(2)} m/s)`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-debris.png` });
+  // Custom blood colour from the map.
+  const green = await page.evaluate(() => {
+    const view = window.__cs.view;
+    view.blood.setLook('#3f9b1f', 'heavy');
+    const me = window.__match.slots[window.__cs.slot];
+    view.blood.hit({ x: me.move.pos.x + 2, y: me.move.pos.y + 1.2, z: me.move.pos.z }, { x: 1, y: 0, z: 0 }, 2);
+    return view.scene.getMaterialByName('bloodDrop').diffuseColor.g > 0.5;
+  });
+  check(green, 'blood takes the map\'s colour');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -554,7 +663,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, teams: teamsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

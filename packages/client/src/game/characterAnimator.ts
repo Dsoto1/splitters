@@ -227,6 +227,24 @@ export class CharacterAnimator {
     if (!g.isPlaying) g.start(true);
   }
 
+  /** The skeleton's root joint (ragdolls work in its space). */
+  get skeletonRoot(): TransformNode | undefined {
+    return this.skelRoot;
+  }
+
+  /**
+   * Hand the body to a ragdoll: every animation stops where it is and the
+   * weapon drops away; physics poses the bones until the next spawn.
+   */
+  ragdoll(): void {
+    this.dead = true;
+    for (const g of this.ch.clips.values()) if (g.isPlaying) g.stop();
+    this.aimUpper?.stop();
+    this.overlay = null;
+    this.handsOff = false;
+    this.weapon?.setEnabled(false);
+  }
+
   private die(): void {
     this.dead = true;
     for (const g of this.ch.clips.values()) if (g.isPlaying) g.stop();
@@ -380,7 +398,7 @@ export class CharacterAnimator {
  * scene above the skeleton, so world matrices of joints are not pure rotations;
  * relative to the root joint the mirror cancels and rotations compose normally.
  */
-class SkeletonSpace {
+export class SkeletonSpace {
   private readonly toSpace: Matrix;
 
   constructor(private readonly rootJoint: TransformNode) {

@@ -1,0 +1,17 @@
+Sounds from Freesound (https://freesound.org), each released by its author
+under Creative Commons 0 (public domain):
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Modifications for ChronoSplit: converted to mono 44.1 kHz, leading silence
+trimmed, shortened with a 0.1 s fade-out, peak-normalised to -1 dBFS, encoded
+as Ogg Vorbis (from Freesound's high-quality previews).
+
+522091_pound-of-flesh-1.ogg      "Pound of Flesh 1" by magnuswaker        https://freesound.org/people/magnuswaker/sounds/522091/
+530117_pound-of-flesh-3.ogg      "Pound of Flesh 3" by magnuswaker        https://freesound.org/people/magnuswaker/sounds/530117/
+540077_meat-slap-1.ogg           "Meat Slap 1" by magnuswaker             https://freesound.org/people/magnuswaker/sounds/540077/
+641046_gore-impact.ogg           "Gore Impact - LOT OF HEART" by magnuswaker https://freesound.org/people/magnuswaker/sounds/641046/
+779805_meaty-damage-impact.ogg   "Meaty Damage Impact" by modusmogulus    https://freesound.org/people/modusmogulus/sounds/779805/
+511194_headshot.ogg              "Headshot.wav" by Pablobd                https://freesound.org/people/Pablobd/sounds/511194/
+360942_splat.ogg                 "splat.ogg" by gprosser                  https://freesound.org/people/gprosser/sounds/360942/
+
+Thank you to the authors.

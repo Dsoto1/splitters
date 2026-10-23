@@ -1,7 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
-import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
@@ -41,7 +41,17 @@ import {
   mapLiquids,
   type Liquid,
   type LiquidBox,
+  DEFAULT_BLOOD,
+  EffectsWorld,
+  mapTerrainMesh,
 } from '@chronosplit/shared';
+import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
+import { Ragdoll } from './ragdoll.ts';
+
+/** Bodies tumbling at once; older ones freeze where they lie. */
+const MAX_RAGDOLLS = 12;
+/** Seconds a physics debris chunk lies around before shrinking away. */
+const DEBRIS_LIFE = 6;
 import { MapStyler } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
@@ -81,6 +91,9 @@ interface Avatar {
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
   aura?: Mesh;
   jet?: Mesh;
+  /** Physics body after death (until the next spawn). */
+  ragdoll?: Ragdoll;
+  wasAlive?: boolean;
 }
 
 /** Characters face +Z (our yaw 0) after glTF import; fit them to the player height. */
@@ -143,6 +156,8 @@ export class GameView {
     this.zoneVisuals = new ZoneVisuals(this.scene);
     this.characters = new CharacterLibrary(this.scene);
     this.foliage = new FoliageVisuals(this.scene, this.models);
+    this.blood = new BloodVisuals(this.scene, () => this.physics);
+    this.blood.enabled = bloodPreference();
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
     hemi.intensity = 0.8;
@@ -164,16 +179,114 @@ export class GameView {
     styler.build(doc, boxes);
     new BackdropVisuals(this.scene, styler).build(doc, boxes);
     this.liquids = mapLiquids(doc.entities);
+    this.physics?.free();
+    try {
+      this.physics = new EffectsWorld(boxes, mapTerrainMesh(doc));
+    } catch {
+      this.physics = null;
+    }
+    const blood = doc.blood ?? DEFAULT_BLOOD;
+    this.blood.setLook(blood.color, blood.amount);
     this.scenario.surface = (m, t) => styler.surfaceMaterial(doc, m, t);
     void this.foliage.grow(doc.terrain, boxes, doc.metadata.id);
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     doc.entities.forEach((e, i) => {
-      if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`, true, true));
+      if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`, true, true, doc.terrain));
     });
     this.scenario.build(doc.entities);
     // Warm the model cache so first switches and pickups don't hitch.
     for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);
     void this.models.load('projectiles/grenade.glb');
+  }
+
+  /** Client-only physics for ragdolls, debris and blood (built with the map). */
+  private physics: EffectsWorld | null = null;
+  readonly blood: BloodVisuals;
+  /** How hard each recently hit player was pushed (shots and blasts), for the ragdoll's throw. */
+  private readonly pushes = new Map<number, { v: Vec3; t: number }>();
+  private lastFrame = performance.now();
+  private debrisBodies: { mesh: Mesh; body: ReturnType<EffectsWorld['addBody']>; born: number }[] = [];
+  private ragdolls: { slot: number; at: number }[] = [];
+
+  /** Remember a push on a player (from a hit or a blast) so their ragdoll flies the right way if it kills them. */
+  pushPlayer(slot: number, v: Vec3): void {
+    const now = performance.now();
+    const old = this.pushes.get(slot);
+    const keep = old && now - old.t < 250 ? old.v : { x: 0, y: 0, z: 0 };
+    this.pushes.set(slot, { v: { x: keep.x + v.x, y: keep.y + v.y, z: keep.z + v.z }, t: now });
+  }
+
+  cameraPosition(): Vec3 {
+    const p = this.camera.position;
+    return { x: p.x, y: p.y, z: p.z };
+  }
+
+  /** A blast throws anyone near it (so the ones it kills fly away from it). */
+  blast(at: Vec3, radius: number): void {
+    for (const [slot, a] of this.avatars) {
+      const d = { x: a.root.position.x - at.x, y: a.root.position.y + 1 - at.y, z: a.root.position.z - at.z };
+      const dist = Math.hypot(d.x, d.y, d.z);
+      if (dist > radius * 1.5) continue;
+      const k = (8 * (1 - dist / (radius * 1.5))) / Math.max(0.3, dist);
+      this.pushPlayer(slot, { x: d.x * k, y: 4 + Math.max(0, d.y) * k, z: d.z * k });
+    }
+  }
+
+  /** Where a player's chest is drawn (for blood on kills). */
+  chestOf(slot: number): Vec3 | null {
+    const a = this.avatars.get(slot);
+    if (!a) return null;
+    return { x: a.root.position.x, y: a.root.position.y + 1.1, z: a.root.position.z };
+  }
+
+  private startRagdoll(slot: number, a: Avatar): void {
+    const root = a.anim?.skeletonRoot;
+    if (!a.anim || !root || !this.physics) return;
+    const push = this.pushes.get(slot);
+    const fresh = push && performance.now() - push.t < 600 ? push.v : { x: 0, y: 0, z: 0 };
+    const v = { x: a.vel.x * 0.6 + fresh.x, y: 0.5 + fresh.y, z: a.vel.z * 0.6 + fresh.z };
+    try {
+      a.anim.ragdoll();
+      a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, v);
+    } catch {
+      a.ragdoll = undefined;
+    }
+    // Only so many bodies tumble at once; the oldest settle where they lie.
+    this.ragdolls = [...this.ragdolls.filter((r) => r.slot !== slot), { slot, at: performance.now() }];
+    while (this.ragdolls.length > MAX_RAGDOLLS) {
+      const old = this.avatars.get(this.ragdolls.shift()!.slot);
+      if (old?.ragdoll) {
+        old.ragdoll.dispose();
+        old.ragdoll = undefined;
+      }
+    }
+  }
+
+  /** Step the effects physics and everything riding on it. */
+  private updateEffects(): void {
+    const now = performance.now();
+    const dt = Math.min(0.1, (now - this.lastFrame) / 1000);
+    this.lastFrame = now;
+    if (this.physics) {
+      this.physics.step(dt);
+      for (const a of this.avatars.values()) a.ragdoll?.update();
+      this.debrisBodies = this.debrisBodies.filter((d) => {
+        const age = (now - d.born) / 1000;
+        if (age > DEBRIS_LIFE) {
+          d.mesh.material?.dispose();
+          d.mesh.dispose();
+          this.physics!.remove(d.body);
+          return false;
+        }
+        const t = d.body.translation();
+        const r = d.body.rotation();
+        d.mesh.position.set(t.x, t.y, t.z);
+        d.mesh.rotationQuaternion = new Quaternion(r.x, r.y, r.z, r.w);
+        if (age > DEBRIS_LIFE - 0.6) d.mesh.scaling.setAll(Math.max(0.01, (DEBRIS_LIFE - age) / 0.6));
+        return true;
+      });
+    }
+    this.blood.update(dt);
   }
 
   /** A jetpack flame (a glowing cone pointing down behind the shoulders). */
@@ -215,6 +328,7 @@ export class GameView {
     this.camera.fov = fov;
     this.foliage.update(this.camera.position);
     this.updateUnderwater();
+    this.updateEffects();
   }
 
   // ---------------------------------------------------------------- viewmodel
@@ -338,8 +452,18 @@ export class GameView {
         if (Math.hypot(p.x - a.last.x, p.z - a.last.z) > 4) a.vel = { x: 0, z: 0 };
       }
       a.last = { x: p.x, y: p.y, z: p.z, t: now };
-      a.root.position.set(p.x, p.y, p.z);
-      a.root.rotation.y = p.yaw;
+      // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
+      if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) this.startRagdoll(p.slot, a);
+      if (p.alive && a.ragdoll) {
+        a.ragdoll.dispose();
+        a.ragdoll = undefined;
+      }
+      a.wasAlive = p.alive;
+      // While ragdolled the body stays where it fell; physics moves the bones.
+      if (!a.ragdoll) {
+        a.root.position.set(p.x, p.y, p.z);
+        a.root.rotation.y = p.yaw;
+      }
       a.placeholder.setEnabled(p.alive && !a.anim);
       const glowColor = p.powerups & POWERUP_DAMAGE_BIT ? '#c03cff' : p.powerups & POWERUP_SPEED_BIT ? '#36d6ff' : null;
       a.mat.emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
@@ -456,6 +580,7 @@ export class GameView {
   }
 
   private disposeAvatar(a: Avatar): void {
+    a.ragdoll?.dispose();
     a.anim?.dispose();
     a.weaponNode?.dispose();
     a.root.dispose(false, true);
@@ -584,28 +709,34 @@ export class GameView {
     });
   }
 
-  /** Chunks flying out of a broken crate, barrel or wall. */
+  /** Chunks flying out of a broken crate, barrel or wall: real little bodies that bounce and settle (falls back to a canned arc without physics). */
   debris(at: Vec3, color: string, size: number): void {
     for (let k = 0; k < 10; k++) {
       const s = size * (0.15 + Math.random() * 0.2);
       const chunk = CreateBox('debris', { size: s }, this.scene);
-      // Each effect disposes its own material when it ends.
       chunk.material = solid(this.scene, 'debrisMat', color);
       chunk.isPickable = false;
       const v = new Vector3((Math.random() - 0.5) * 6, 2 + Math.random() * 4, (Math.random() - 0.5) * 6);
       const spin = new Vector3(Math.random() * 8, Math.random() * 8, Math.random() * 8);
-      const start = new Vector3(at.x, at.y, at.z);
+      const start = new Vector3(at.x + (Math.random() - 0.5) * size, at.y + (Math.random() - 0.5) * size, at.z + (Math.random() - 0.5) * size);
+      if (this.physics) {
+        const body = this.physics.addBody({ kind: 'box', half: { x: s / 2, y: s / 2, z: s / 2 } }, start, { x: 0, y: 0, z: 0, w: 1 }, 'debris', { vel: v, spin, density: 0.6 });
+        chunk.position.copyFrom(start);
+        this.debrisBodies.push({ mesh: chunk, body, born: performance.now() });
+        continue;
+      }
+      // Each effect disposes its own material when it ends.
       this.effects.push({
-        mesh: chunk,
-        born: performance.now(),
-        ttl: 900,
-        update: (f) => {
-          const t = f * 0.9;
-          chunk.position.set(start.x + v.x * t, Math.max(0.05 + at.y - size, start.y + v.y * t - 10 * t * t), start.z + v.z * t);
-          chunk.rotation.set(spin.x * t, spin.y * t, spin.z * t);
-          chunk.scaling.setAll(f > 0.7 ? (1 - f) / 0.3 : 1);
-        },
-      });
+      mesh: chunk,
+      born: performance.now(),
+      ttl: 900,
+      update: (f) => {
+        const t = f * 0.9;
+        chunk.position.set(start.x + v.x * t, Math.max(0.05 + at.y - size, start.y + v.y * t - 10 * t * t), start.z + v.z * t);
+        chunk.rotation.set(spin.x * t, spin.y * t, spin.z * t);
+        chunk.scaling.setAll(f > 0.7 ? (1 - f) / 0.3 : 1);
+      },
+    });
     }
   }
 
@@ -694,7 +825,10 @@ export class GameView {
   }
 
   dispose(): void {
+    this.blood.dispose();
     this.scene.dispose();
+    this.physics?.free();
+    this.physics = null;
   }
 }
 

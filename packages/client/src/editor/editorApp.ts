@@ -11,6 +11,8 @@ import {
   loadMap,
   moveCommand,
   moveEntitiesCommand,
+  settlePropsCommand,
+  settledPropY,
   newId,
   newMapDocument,
   normalizeYaw,
@@ -86,6 +88,9 @@ import {
   SKY_IDS,
   resolveBackdrop,
   type Backdrop,
+  BLOOD_AMOUNTS,
+  DEFAULT_BLOOD,
+  type BloodSettings,
   type BackdropGround,
   type SceneryId,
   type SkyId,
@@ -253,6 +258,8 @@ export class EditorApp {
   private showAll = false;
   private selection: Selection = emptySelection();
   private hoverPoint: Vec3 | null = null;
+  /** The hover point is on the terrain (nearer than the level plane). */
+  private hoverOnTerrain = false;
   private hoverCell: [number, number, number] | null = null;
   private drag: DragState | null = null;
   private looking: { x: number; y: number; moved: boolean; button: number } | null = null;
@@ -476,6 +483,8 @@ export class EditorApp {
     } else if (this.tool.kind === 'prop' && this.hoverPoint) {
       const free = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
       const p: [number, number, number] = [free ? Math.round(this.hoverPoint.x * 100) / 100 : snap(this.hoverPoint.x, 0.25), this.level * this.doc.classicStructure.levelHeight, free ? Math.round(this.hoverPoint.z * 100) / 100 : snap(this.hoverPoint.z, 0.25)];
+      // On the terrain, bedded into the slope rather than at the level's height.
+      if (this.hoverOnTerrain && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model: this.tool.model, position: p, yaw: this.propYaw, scale: 1 }) ?? p[1];
       const id = newId('prop');
       const name = getProp(this.tool.model)?.displayName ?? 'prop';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p, model: this.tool.model, yaw: this.propYaw, scale: 1, solid: true, tint: null }] })) this.setSelection({ tiles: [], entities: [id] });
@@ -644,6 +653,7 @@ export class EditorApp {
     this.hoverPoint = this.view.pickPlane(clientX, clientY, this.level * levelHeight);
     const t = this.stroke?.now ?? this.doc.terrain;
     this.terrainHover = null;
+    this.hoverOnTerrain = false;
     if (t) {
       const ray = this.view.pointerRay(clientX, clientY);
       const hit = ray ? terrainRaycast(t, ray.origin, ray.dir) : null;
@@ -651,7 +661,10 @@ export class EditorApp {
       // Spawns, pickups and props stand on the ground where it is nearer than the level plane.
       if (hit && ray && this.tool.kind !== 'tile' && this.tool.kind !== 'terrain') {
         const dist = (p: Vec3) => Math.hypot(p.x - ray.origin.x, p.y - ray.origin.y, p.z - ray.origin.z);
-        if (!this.hoverPoint || dist(hit) < dist(this.hoverPoint)) this.hoverPoint = hit;
+        if (!this.hoverPoint || dist(hit) < dist(this.hoverPoint)) {
+          this.hoverPoint = hit;
+          this.hoverOnTerrain = true;
+        }
       }
     }
     this.hoverCell = this.hoverPoint ? [Math.round(this.hoverPoint.x / cellSize), Math.round(this.hoverPoint.z / cellSize), this.level] : null;
@@ -1096,6 +1109,44 @@ export class EditorApp {
     el.append(row('Haze', haze));
     if (own) el.append(button('Use the theme\'s backdrop', () => set('Theme backdrop', null)));
     el.append(small(own ? 'Drawn only: nothing out there blocks players or shots.' : "Following the theme. Change anything to give this map its own."));
+  }
+
+  private settleProps(ids?: readonly string[]): void {
+    const cmd = settlePropsCommand(this.doc, ids);
+    if (cmd.kind === 'updateEntities' && cmd.after.length === 0) return this.toast('Already on the ground');
+    if (this.run('Settle props', cmd)) this.toast(`Settled ${cmd.kind === 'updateEntities' ? cmd.after.length : 0} props`);
+  }
+
+  // ---------------------------------------------------------------- blood
+
+  /** Blood colour and amount for this map (red and light unless set): green for aliens, black oil for robots, or none. */
+  private renderBloodPanel(el: HTMLElement): void {
+    const head = document.createElement('h3');
+    head.textContent = 'Blood';
+    el.append(head);
+    const b: BloodSettings = this.doc.blood ?? { ...DEFAULT_BLOOD };
+    const set = (after: BloodSettings | null) => this.run('Change blood', { kind: 'setBlood', before: this.doc.blood, after });
+    const color = document.createElement('input');
+    color.type = 'color';
+    color.id = 'ed-blood-color';
+    color.value = b.color;
+    color.addEventListener('change', () => set({ ...b, color: color.value }));
+    const amount = document.createElement('select');
+    amount.id = 'ed-blood-amount';
+    const labels: Record<(typeof BLOOD_AMOUNTS)[number], string> = { off: 'None', light: 'Light', heavy: 'Heavy' };
+    for (const a of BLOOD_AMOUNTS) amount.append(new Option(labels[a], a, false, a === b.amount));
+    amount.addEventListener('change', () => set({ ...b, amount: amount.value as BloodSettings['amount'] }));
+    el.append(row('Colour', color), row('Amount', amount));
+    const swatches = document.createElement('div');
+    swatches.className = 'ed-row-buttons';
+    for (const [label, hex] of [['Red', '#8a0b0b'], ['Alien', '#3f9b1f'], ['Oil', '#1b1b1f'], ['Ichor', '#d7b21a'], ['Coolant', '#2a7fd0']] as const) {
+      const sw = button(label, () => set({ ...b, color: hex }));
+      sw.style.borderLeft = `10px solid ${hex}`;
+      swatches.append(sw);
+    }
+    el.append(swatches);
+    if (this.doc.blood) el.append(button('Default blood', () => set(null)));
+    el.append(small('Hit sprays, splats and pools. Players can still switch blood off in the pause menu.'));
   }
 
   // ---------------------------------------------------------------- boundary
@@ -1581,6 +1632,12 @@ export class EditorApp {
       theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
       el.append(row('Theme', theme), small('The theme is the default look; painted surfaces keep their own style.'));
       this.renderBackdropPanel(el);
+      this.renderBloodPanel(el);
+      if (doc.terrain && doc.entities.some((e) => e.kind === 'prop')) {
+        const settle = button('Settle all props on ground', () => this.settleProps());
+        settle.id = 'ed-settle-all';
+        el.append(settle, small('Beds every prop standing on the terrain into the slope under it; props on floors and blocks stay put.'));
+      }
       this.renderBoundsPanel(el);
       return;
     }
@@ -1631,6 +1688,12 @@ export class EditorApp {
     buttons.className = 'buttons';
     buttons.append(button('Rotate (R)', () => this.run('Rotate', rotateCommand(this.doc, this.selection))), button('Duplicate', () => this.duplicate()), button('Delete', () => this.deleteSelection()), button('Focus (F)', () => this.focusSelection()));
     el.append(buttons);
+    if (doc.terrain && entities.some((id) => doc.entities.find((x) => x.id === id)?.kind === 'prop')) {
+      const settle = button('Settle on ground', () => this.settleProps(entities));
+      settle.id = 'ed-settle';
+      settle.title = 'Bed the selected props into the terrain under them (no floating corners on slopes)';
+      el.append(settle);
+    }
   }
 
   /** Inspector fields for one entity: position, facing and its kind's settings. */

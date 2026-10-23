@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, PLAYER, getItem, type MapDocument, type GameEvent, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@chronosplit/shared';
+import { CORE_WEAPONS, PLAYER, getItem, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@chronosplit/shared';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import type { LocalPlayer } from './prediction.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -29,6 +29,9 @@ export class SessionAudio {
   private prevHeld = 0;
   private dryFireAt = 0;
   private recentKills: number[] = [];
+
+  /** Whether blood is shown (the map's setting and the player's): the wet splat on a kill goes with it. */
+  bloodOn: () => boolean = () => true;
 
   constructor(
     private readonly audio: AudioSystem,
@@ -123,13 +126,26 @@ export class SessionAudio {
         const altLaunch = ev.alt && getWeapon(ev.w).alt?.kind === 'projectile' && getWeapon(ev.w).alt?.ammo === 'own';
         if (!mine) this.audio.play(altLaunch ? 'fire.launcher' : fireSound(ev.w), { at: tuple(ev.from) });
         let impacts = 0;
+        // Bodies: one meaty hit per victim (a shotgun blast is one big hit, not nine little ones), heavier for big damage.
+        const def = getWeapon(ev.w);
+        const perVictim = new Map<number, { at: Tuple3; pellets: number }>();
         ev.to.forEach((to, i) => {
+          const hit = ev.hit[i];
+          if (hit !== null && hit !== undefined) {
+            const v = perVictim.get(hit);
+            perVictim.set(hit, { at: v?.at ?? to, pellets: (v?.pellets ?? 0) + 1 });
+            return;
+          }
           if (impacts >= MAX_IMPACTS_PER_SHOT) return;
           impacts++;
-          const hit = ev.hit[i];
-          if (hit === me) return; // the hurt sound covers it
-          this.audio.play(hit === null || hit === undefined ? 'impact.world' : 'impact.body', { at: tuple(to) });
+          this.audio.play('impact.world', { at: tuple(to) });
         });
+        for (const [victim, v] of perVictim) {
+          const heavy = def.damage * v.pellets >= 45;
+          const at = victim === me ? undefined : tuple(v.at);
+          this.audio.play(heavy ? 'impact.heavy' : 'impact.body', { at, gain: victim === me ? 0.6 : 1 });
+          this.audio.play('impact.thud', { at, gain: 0.8 });
+        }
         if (mine && ev.hit.some((h) => h !== null)) this.audio.play('ui.hit');
         break;
       }
@@ -164,6 +180,7 @@ export class SessionAudio {
         const at = ev.victim === me ? undefined : poseOf(ev.victim);
         if (ev.victim === me) this.audio.play('death');
         else if (at) this.audio.play('death', { at });
+        if (at && this.bloodOn()) this.audio.play('blood.splat', { at });
         if (ev.killer === me && ev.victim !== me) {
           this.audio.play('ui.kill');
           const t = now / 1000;

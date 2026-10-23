@@ -5,7 +5,7 @@ import { parseClientMessage, startServer, type RunningServer } from '../src/serv
 
 const room: MapDocument = {
   format: 'chronosplit.map',
-  formatVersion: 9,
+  formatVersion: 10,
   metadata: {
     id: 'test_room',
     name: 'Test Room',
@@ -28,6 +28,7 @@ const room: MapDocument = {
   bounds: null,
   teamSetup: null,
   backdrop: null,
+    blood: null,
   dependencies: [],
 };
 

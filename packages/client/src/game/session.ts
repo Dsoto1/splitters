@@ -38,6 +38,7 @@ import {
   mapTerrainMesh,
 } from '@chronosplit/shared';
 import type { AudioSystem } from '../audio/audio.ts';
+import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
@@ -151,6 +152,22 @@ export class GameSession {
     $('resume').addEventListener('click', lock, { signal });
     $('exitmatch').addEventListener('click', () => this.exit(), { signal });
     $('exitmatch').textContent = opts.exitLabel;
+    // The player's own blood switch; the map sets the colour and amount.
+    const bloodBox = $('blood-toggle') as HTMLInputElement;
+    bloodBox.checked = this.view.blood.enabled;
+    bloodBox.addEventListener(
+      'change',
+      () => {
+        this.view.blood.enabled = bloodBox.checked;
+        try {
+          localStorage.setItem(BLOOD_PREF_KEY, bloodBox.checked ? 'on' : 'off');
+        } catch {
+          // Private windows: the switch lasts for this match.
+        }
+      },
+      { signal },
+    );
+    this.sfx.bloodOn = () => this.view.blood.on;
     document.addEventListener('pointerlockchange', () => this.updatePause(), { signal });
     // A second Esc (the first one releases the pointer) leaves.
     window.addEventListener(
@@ -259,6 +276,17 @@ export class GameSession {
         for (const ev of msg.ev) {
           this.sfx.event(ev, posesNow, performance.now());
           if (ev.e === 'shot') {
+            const def = CORE_WEAPONS[ev.w];
+            ev.hit.forEach((victim, i) => {
+              const to = ev.to[i] ?? ev.to[0];
+              if (victim === null || victim === undefined || !to) return;
+              const d = { x: to[0] - ev.from[0], y: to[1] - ev.from[1], z: to[2] - ev.from[2] };
+              const len = Math.hypot(d.x, d.y, d.z) || 1;
+              const dir = { x: d.x / len, y: d.y / len, z: d.z / len };
+              const strength = Math.min(2.5, Math.max(0.6, (def?.damage ?? 20) / 25));
+              this.view.blood.hit({ x: to[0], y: to[1], z: to[2] }, dir, strength);
+              this.view.pushPlayer(victim, { x: dir.x * 2.5 * strength, y: 0.8, z: dir.z * 2.5 * strength });
+            });
             if (ev.s === this.slot) {
               if (ev.hit.some((h) => h !== null)) this.hud.hit();
               const target = ev.hit.find((h): h is number => h !== null && h !== undefined);
@@ -271,14 +299,26 @@ export class GameSession {
           } else if (ev.e === 'melee') {
             if (ev.s === this.slot && ev.hit !== null) this.hud.hit();
             if (ev.s !== this.slot) this.view.avatarAction(ev.s, 'melee');
+            const at = ev.hit !== null ? this.view.chestOf(ev.hit) : null;
+            const from = this.view.chestOf(ev.s) ?? (ev.s === this.slot ? this.view.cameraPosition() : null);
+            if (at && from) {
+              const d = { x: at.x - from.x, y: 0, z: at.z - from.z };
+              const len = Math.hypot(d.x, d.z) || 1;
+              const dir = { x: d.x / len, y: 0.1, z: d.z / len };
+              this.view.blood.hit(at, dir, 1.4);
+              this.view.pushPlayer(ev.hit!, { x: dir.x * 4, y: 1.5, z: dir.z * 4 });
+            }
           } else if (ev.e === 'arc') {
             this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })));
           } else if (ev.e === 'explode') {
             this.view.explosion({ x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ev.r);
+            this.view.blast({ x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ev.r);
           } else if (ev.e === 'pickup') {
             if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
           } else if (ev.e === 'kill') {
             this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot);
+            const at = this.view.chestOf(ev.victim);
+            if (at) this.view.blood.kill(at);
           } else if (ev.e === 'round_end') {
             this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
             this.outcome = ev.outcome ?? null;

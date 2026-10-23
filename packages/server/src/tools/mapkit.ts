@@ -26,6 +26,8 @@ import {
   newMapDocument,
   placeTileCommand,
   serializeMap,
+  applyCommand,
+  settlePropsCommand,
   setEdgeCommand,
   setThemeCommand,
   validateMap,
@@ -209,7 +211,9 @@ export class MapBuilder {
    */
   async save(): Promise<void> {
     this.flush();
-    const loaded = loadMap(JSON.parse(serializeMap(this.doc)));
+    // Props on the terrain are bedded into the slope under them (no floating corners).
+    const settled = applyCommand(this.doc, settlePropsCommand(this.doc));
+    const loaded = loadMap(JSON.parse(serializeMap(settled)));
     if (!loaded.ok) throw new Error(`${this.id}: map does not load: ${JSON.stringify(loaded.issues)}`);
     await Promise.all([initPhysics(), initNavigation()]);
     const geometry = buildMapGeometry(loaded.map);

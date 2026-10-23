@@ -40,6 +40,38 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/kenney-voiceover-pack-fighter/License.txt",
       "retrieved": "2026-10-22"
+    },
+    "freesound-magnuswaker": {
+      "title": "Freesound: sounds by magnuswaker",
+      "creator": "magnuswaker",
+      "url": "https://freesound.org/people/magnuswaker/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/freesound-magnuswaker/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "freesound-modusmogulus": {
+      "title": "Freesound: sounds by modusmogulus",
+      "creator": "modusmogulus",
+      "url": "https://freesound.org/people/modusmogulus/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/freesound-modusmogulus/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "freesound-pablobd": {
+      "title": "Freesound: sounds by Pablobd",
+      "creator": "Pablobd",
+      "url": "https://freesound.org/people/Pablobd/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/freesound-pablobd/License.txt",
+      "retrieved": "2026-10-23"
+    },
+    "freesound-gprosser": {
+      "title": "Freesound: sounds by gprosser",
+      "creator": "gprosser",
+      "url": "https://freesound.org/people/gprosser/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/freesound-gprosser/License.txt",
+      "retrieved": "2026-10-23"
     }
   },
   "budgets": {
@@ -145,21 +177,25 @@
       ]
     },
     "impact.body": {
-      "gain": 0.6,
+      "gain": 0.75,
       "range": "mid",
-      "jitter": 0.1,
+      "jitter": 0.08,
       "variants": [
         {
-          "pack": "kenney-impact-sounds",
-          "file": "Audio/impactPunch_medium_000.ogg"
+          "pack": "freesound-magnuswaker",
+          "file": "522091_pound-of-flesh-1.ogg"
         },
         {
-          "pack": "kenney-impact-sounds",
-          "file": "Audio/impactPunch_medium_001.ogg"
+          "pack": "freesound-magnuswaker",
+          "file": "530117_pound-of-flesh-3.ogg"
         },
         {
-          "pack": "kenney-impact-sounds",
-          "file": "Audio/impactPunch_medium_002.ogg"
+          "pack": "freesound-magnuswaker",
+          "file": "540077_meat-slap-1.ogg"
+        },
+        {
+          "pack": "freesound-modusmogulus",
+          "file": "779805_meaty-damage-impact.ogg"
         }
       ]
     },
@@ -326,14 +362,10 @@
       ]
     },
     "ui.hit": {
-      "gain": 0.4,
-      "jitter": 0.03,
-      "variants": [
-        {
-          "pack": "kenney-interface-sounds",
-          "file": "Audio/select_001.ogg"
-        }
-      ]
+      "gain": 0.45,
+      "synth": "hitmark",
+      "variants": 4,
+      "jitter": 0.02
     },
     "ui.kill": {
       "gain": 0.5,
@@ -738,6 +770,51 @@
         {
           "pack": "kenney-sci-fi-sounds",
           "file": "Audio/doorOpen_001.ogg"
+        }
+      ]
+    },
+    "impact.thud": {
+      "gain": 0.45,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPunch_medium_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPunch_medium_001.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPunch_medium_002.ogg"
+        }
+      ]
+    },
+    "impact.heavy": {
+      "gain": 0.85,
+      "range": "mid",
+      "jitter": 0.06,
+      "variants": [
+        {
+          "pack": "freesound-magnuswaker",
+          "file": "641046_gore-impact.ogg"
+        },
+        {
+          "pack": "freesound-pablobd",
+          "file": "511194_headshot.ogg"
+        }
+      ]
+    },
+    "blood.splat": {
+      "gain": 0.5,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "freesound-gprosser",
+          "file": "360942_splat.ogg"
         }
       ]
     }

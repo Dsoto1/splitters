@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet';
+export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -258,6 +258,26 @@ function renderDryfire(seed: number): Float32Array<ArrayBuffer> {
   return finish(out);
 }
 
+/**
+ * Hit confirm: a short, bright "tick" with a little metallic ring and a soft
+ * low knock under it, so landing a hit feels solid without masking the world.
+ */
+function renderHitmark(seed: number, variant: number): Float32Array<ArrayBuffer> {
+  const n = Math.ceil(0.09 * SYNTH_RATE);
+  const out = new Float32Array(n);
+  const rnd = noiseSource(seed);
+  const hp = new Biquad('highpass').set(3500, 0.8);
+  const ring = 2600 + variant * 140;
+  for (let i = 0; i < n; i++) {
+    const t = i / SYNTH_RATE;
+    const click = hp.run(rnd()) * Math.exp(-t / 0.0025) * 0.9;
+    const tone = (Math.sin(2 * Math.PI * ring * t) + 0.4 * Math.sin(2 * Math.PI * ring * 1.51 * t)) * Math.exp(-t / 0.022) * 0.5;
+    const knock = Math.sin(2 * Math.PI * (210 - t * 900) * t) * Math.exp(-t / 0.018) * 0.45;
+    out[i] = click + tone + knock;
+  }
+  return finish(out);
+}
+
 /** Flame jet: a low, flickering roar of filtered noise that swells and dies away. */
 function renderFlame(seed: number): Float32Array<ArrayBuffer> {
   const n = Math.ceil(1.6 * SYNTH_RATE);
@@ -475,5 +495,7 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
       return renderFreeze(seed);
     case 'flamelet':
       return renderFlamelet(seed);
+    case 'hitmark':
+      return renderHitmark(seed, variant);
   }
 }

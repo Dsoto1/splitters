@@ -4,6 +4,7 @@ import { getItem } from '../sim/items.ts';
 import { getProp } from '../content/props.ts';
 import { buildOccupancy, cellHasFloor, cellKey, yawXZ } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
+import { floatingProps } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { validateScenario } from './validateScenario.ts';
@@ -102,6 +103,16 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   }
 
   issues.push(...budgetIssues(map));
+  const floating = floatingProps(map);
+  if (floating.length) {
+    const worst = floating.reduce((a, b) => (b.gap > a.gap ? b : a));
+    issues.push({
+      severity: 'warning',
+      code: 'prop.floating',
+      message: `${floating.length} prop${floating.length > 1 ? 's float' : ' floats'} above the ground (worst: ${worst.id}, ${worst.gap} m); MapMaker's "Settle on ground" beds them in`,
+      targetId: worst.id,
+    });
+  }
 
   const spawns = map.entities.filter((e) => e.kind === 'spawn');
   if (spawns.length === 0) {

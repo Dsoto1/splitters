@@ -6,6 +6,7 @@ import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
+import { FLOAT_TOLERANCE, floatingProps, settledPropY } from '../map/settle.ts';
 
 /** Editor-level selection: stable IDs only, never object references or indices. */
 export interface Selection {
@@ -161,6 +162,7 @@ export function newMapDocument(name = 'Untitled Map', now: Date = new Date()): M
     bounds: null,
     teamSetup: null,
     backdrop: null,
+    blood: null,
     dependencies: [],
   };
 }
@@ -177,7 +179,42 @@ export function moveEntitiesCommand(doc: MapDocument, ids: readonly string[], dx
   const set = new Set(ids);
   const before = doc.entities.filter((e) => set.has(e.id));
   const r = (v: number) => Math.round(v * 1000) / 1000;
-  const after = before.map((e) => ({ ...e, position: [r(e.position[0] + dx), r(e.position[1] + dy), r(e.position[2] + dz)] as [number, number, number] }));
+  const t = doc.terrain;
+  const after = before.map((e): MapEntity => {
+    const moved = { ...e, position: [r(e.position[0] + dx), r(e.position[1] + dy), r(e.position[2] + dz)] as [number, number, number] };
+    // A prop resting on the terrain stays on it: re-bedded at its new spot, uphill or down.
+    if (t && e.kind === 'prop' && moved.kind === 'prop' && !dy) {
+      const was = settledPropY(t, e);
+      const now = settledPropY(t, moved);
+      if (was !== null && now !== null && Math.abs(e.position[1] - was) <= FLOAT_TOLERANCE) moved.position = [moved.position[0], now, moved.position[2]];
+    }
+    return moved;
+  });
+  return { kind: 'updateEntities', before, after };
+}
+
+/**
+ * Bed props into the terrain under them (the given ones, or every prop on the
+ * terrain): base at the lowest ground under the footprint. Props on a floor,
+ * block or another prop stay put.
+ */
+export function settlePropsCommand(doc: MapDocument, ids?: readonly string[]): EditCommand {
+  const t = doc.terrain;
+  const before: MapEntity[] = [];
+  const after: MapEntity[] = [];
+  if (!t) return { kind: 'updateEntities', before, after };
+  const want = ids ? new Set(ids) : null;
+  const floating = new Set(floatingProps(doc).map((f) => f.id));
+  for (const e of doc.entities) {
+    if (e.kind !== 'prop' || (want && !want.has(e.id))) continue;
+    const y = settledPropY(t, e);
+    if (y === null || Math.abs(y - e.position[1]) < 0.01) continue;
+    // Only props near the ground (or reported floating), never ones up on a roof or a crate.
+    const near = e.position[1] - y < FLOAT_TOLERANCE + 0.05 && e.position[1] - y > -1.5;
+    if (!near && !floating.has(e.id)) continue;
+    before.push(e);
+    after.push({ ...e, position: [e.position[0], y, e.position[2]] });
+  }
   return { kind: 'updateEntities', before, after };
 }
 

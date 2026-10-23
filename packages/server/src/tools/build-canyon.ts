@@ -32,6 +32,8 @@ import {
   paintSlopes,
   placeTileCommand,
   serializeMap,
+  applyCommand,
+  settlePropsCommand,
   setEdgeCommand,
   setThemeCommand,
   terrainHeightAt,
@@ -287,7 +289,8 @@ run('Edit map', {
   },
 });
 
-const doc = history.doc;
+// Props on the terrain are bedded into the slope under them (no floating corners).
+const doc = applyCommand(history.doc, settlePropsCommand(history.doc));
 const loaded = loadMap(JSON.parse(serializeMap(doc)));
 if (!loaded.ok) throw new Error(`map does not load: ${JSON.stringify(loaded.issues)}`);
 const issues = validateMap(loaded.map);

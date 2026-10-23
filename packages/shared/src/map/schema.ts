@@ -17,7 +17,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 9;
+export const MAP_FORMAT_VERSION = 10;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -348,6 +348,14 @@ export const BackdropSchema = z.object({
   haze: z.number().min(0).max(1).default(0.5),
 });
 
+/** Blood on hits and kills: its colour (green for aliens, oil for robots…) and how much. */
+export const BLOOD_AMOUNTS = ['off', 'light', 'heavy'] as const;
+export const BloodSettings = z.object({
+  color: z.string().regex(/^#[0-9a-f]{6}$/).default('#8a0b0b'),
+  amount: z.enum(BLOOD_AMOUNTS).default('light'),
+});
+export const DEFAULT_BLOOD = { color: '#8a0b0b', amount: 'light' } as const;
+
 /** Recommended team layout for team modes: players per team, 2–8 teams (e.g. [2, 2, 2, 12]). */
 export const TeamSetup = z.object({
   sizes: z.array(z.number().int().min(1).max(16)).min(2).max(8),
@@ -369,6 +377,8 @@ export const MapDocument = z.object({
   bounds: MapBounds.nullable().default(null),
   /** What surrounds the play area, or none (the theme's backdrop). */
   backdrop: BackdropSchema.nullable().default(null),
+  /** Blood colour and amount, or none (dark red, light). */
+  blood: BloodSettings.nullable().default(null),
   /** Recommended teams for team modes, or none (two even teams). */
   teamSetup: TeamSetup.nullable().default(null),
   /** Content packs this map needs, beyond the always-present core pack. */
@@ -393,6 +403,8 @@ export type PropEntity = z.infer<typeof PropEntity>;
 export type MountEntity = z.infer<typeof MountEntity>;
 export type PadEntity = z.infer<typeof PadEntity>;
 export type BlockEntity = z.infer<typeof BlockEntity>;
+export type BloodSettings = z.infer<typeof BloodSettings>;
+export type BloodAmount = (typeof BLOOD_AMOUNTS)[number];
 export type WaterEntity = z.infer<typeof WaterEntity>;
 export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
 export type Liquid = (typeof LIQUIDS)[number];

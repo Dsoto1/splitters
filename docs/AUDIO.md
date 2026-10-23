@@ -1,6 +1,6 @@
 # Audio
 
-**Status:** first audio pass (October 2026). Every shipped sound is either **CC0 from Kenney** or **synthesised by our own code**. There are no generated (AI) sounds and no Artlist sounds; see [`ASSET_SOURCES.md`](ASSET_SOURCES.md) for why Artlist is excluded.
+**Status:** first audio pass (October 2026). Every shipped sound is either **CC0** (Kenney, and a few Freesound recordings by named authors) or **synthesised by our own code**. There are no generated (AI) sounds and no Artlist sounds; see [`ASSET_SOURCES.md`](ASSET_SOURCES.md) for why Artlist is excluded.
 
 ## Where sounds come from
 
@@ -8,9 +8,11 @@
 |---|---|---|
 | Weapon fire | **In-house synthesiser** (`packages/client/src/audio/synth.ts`) | pistol, rifle, shotgun (with pump), sniper (with echo and bolt), grenade launcher "foomp", knife swing, dry-fire click |
 | Explosions | Kenney Sci-Fi Sounds (CC0) | low-frequency boom plus a debris crunch layer |
-| Impacts, bodies, footsteps, landing | Kenney Impact Sounds (CC0) | bullet hits on walls, hits on players, deaths, concrete footsteps |
+| Impacts, bodies, footsteps, landing | Kenney Impact Sounds (CC0) | bullet hits on walls, deaths, concrete footsteps, the low thud under body hits |
+| Hits on players (flesh) | Freesound CC0: magnuswaker, modusmogulus, Pablobd, gprosser | `impact.body`, `impact.heavy` (45+ damage), `blood.splat` on kills; see [`PHYSICS_FX.md`](PHYSICS_FX.md) |
 | Reload, weapon raise, knife hits, ammo/weapon pickups | Kenney RPG Audio (CC0) | metal click/latch, belt handling, knife slices, coins |
-| Hit marker, kill confirm, health pickup | Kenney Interface Sounds (CC0) | |
+| Hit marker | synthesised (`hitmark` recipe) | a short bright tick, four variants |
+| Kill confirm, health pickup | Kenney Interface Sounds (CC0) | |
 | Armor and powerup pickups | Kenney Impact / Sci-Fi Sounds (CC0) | |
 | Announcer | Kenney Voiceover Pack: Fighter (CC0) | "Fight!", "You win", "You lose", "Tie", "Multi kill" |
 | Scenario (M3) | Kenney Sci-Fi / Impact / Interface (CC0) + synthesiser | doors, button press and refusal, spike/crusher/laser traps, crate and wall breaks, chime/buzzer cues, objective and message chimes; synthesised flame roar, mine warning beep and alarm siren |
