@@ -1,4 +1,4 @@
-import { BUTTON_ALT, BUTTON_FIRE, BUTTON_JUMP, BUTTON_RELOAD, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
+import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const PITCH_LIMIT = 1.5;
@@ -18,6 +18,9 @@ export class InputState {
   private throwQueued = false;
   /** G is held: aiming a throw. */
   throwAiming = false;
+  /** Crouch / prone toggles (C, Z). */
+  crouchOn = false;
+  proneOn = false;
   /** Set by the session: the held weapon has a second trigger (RMB fires it instead of zooming). */
   altTrigger = false;
   /** Weapon slot requested with number keys (0 = none pending). */
@@ -38,6 +41,16 @@ export class InputState {
         if (e.code === 'Space') this.jumpQueued = true;
         if (e.code === 'KeyR') this.reloadQueued = true;
         if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
+        // C crouches and Z lies prone (toggles); jumping or sprinting gets you up.
+        if (e.code === 'KeyC' && !e.repeat) {
+          this.crouchOn = !this.crouchOn;
+          this.proneOn = false;
+        }
+        if (e.code === 'KeyZ' && !e.repeat) {
+          this.proneOn = !this.proneOn;
+          this.crouchOn = false;
+        }
+        if ((e.code === 'Space' || e.code === 'ShiftLeft') && !e.repeat) this.crouchOn = this.proneOn = false;
         // Hold G to aim a throw (the arc shows), let go to throw.
         if (e.code === 'KeyG' && !e.repeat) this.throwAiming = true;
         const digit = /^Digit([1-9])$/.exec(e.code);
@@ -149,6 +162,10 @@ export class InputState {
     // Right mouse: the held weapon's second trigger if it has one, otherwise zoom.
     if (this.zoomDown) buttons |= this.altTrigger ? BUTTON_ALT : BUTTON_ZOOM;
     if (this.throwQueued) buttons |= BUTTON_THROW;
+    // Shift sprints, except through a scope, where it holds your breath.
+    if (this.keys.has('ShiftLeft') && !this.zoomDown) buttons |= BUTTON_SPRINT;
+    if (this.crouchOn) buttons |= BUTTON_CROUCH;
+    if (this.proneOn) buttons |= BUTTON_PRONE;
     if (this.useQueued) buttons |= BUTTON_USE;
     this.jumpQueued = false;
     this.reloadQueued = false;

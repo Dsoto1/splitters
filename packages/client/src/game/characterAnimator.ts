@@ -19,13 +19,20 @@ export interface MotionState {
   pitch: number;
   /** Victory dance (intermission). */
   celebrate: boolean;
+  /** Crouching (1) or prone (2). */
+  stance?: number;
+  /** Sprinting (plays the sprint even at the edge of its speed). */
+  sprinting?: boolean;
 }
 
 export type OneShot = 'shoot' | 'melee' | 'melee_heavy' | 'reload' | 'hit' | 'throw' | 'interact';
 
-const LOOPS: readonly Clip[] = ['aim_idle', 'walk', 'run', 'sprint', 'jump_air', 'dance'];
+const LOOPS: readonly Clip[] = ['aim_idle', 'walk', 'run', 'sprint', 'jump_air', 'dance', 'crouch_idle', 'crouch_walk'];
 /** Natural ground speed of each locomotion clip (m/s), used to match foot speed. */
-const CLIP_SPEED: Partial<Record<Clip, number>> = { walk: 1.6, run: 4.2, sprint: 6.5 };
+const CLIP_SPEED: Partial<Record<Clip, number>> = { walk: 1.6, run: 4.2, sprint: 6.5, crouch_walk: 1.5 };
+/** Lying prone: the body tips forward onto its front around the hips (radians, metres). */
+const PRONE_TILT = 1.45;
+const HIP_HEIGHT = 0.95;
 const FADE_PER_SEC = 8;
 /** Overlays outweigh locomotion on the upper body. */
 const OVERLAY_WEIGHT = 4;
@@ -166,12 +173,19 @@ export class CharacterAnimator {
     this.twist += (side - this.twist) * Math.min(1, dt * 10);
 
     let want: Clip;
+    const low = (s.stance ?? 0) > 0;
     if (s.celebrate) want = 'dance';
     else if (s.airborne) want = 'jump_air';
+    else if (low) want = s.speed < 0.4 ? 'crouch_idle' : 'crouch_walk';
     else if (s.speed < 0.6) want = 'aim_idle';
     else if (s.speed < 3) want = 'walk';
-    else if (s.speed < 7.6) want = 'run';
-    else want = 'sprint';
+    else if (s.sprinting || s.speed >= 7.4) want = 'sprint';
+    else want = 'run';
+    // Prone: tip the whole body forward onto its front, pivoting at the hips over the feet.
+    const tilt = s.stance === 2 && !s.celebrate ? PRONE_TILT : 0;
+    this.prone += (tilt - this.prone) * Math.min(1, dt * 8);
+    if (Math.abs(this.prone - tilt) < 1e-3) this.prone = tilt;
+    this.applyProne();
     if (want !== this.current) {
       this.current = want;
       this.play(want, this.weights.get(want) ?? 0);
@@ -245,8 +259,29 @@ export class CharacterAnimator {
     this.weapon?.setEnabled(false);
   }
 
+  /** Current forward tip of the body (0 standing, PRONE_TILT lying down). */
+  private prone = 0;
+
+  /** Where the body sits before any prone offset (first-person arms are placed under the camera). */
+  private rootBase: Vector3 | null = null;
+  private applied = 0;
+
+  private applyProne(): void {
+    if (this.prone === this.applied) return;
+    this.applied = this.prone;
+    const root = this.ch.root;
+    this.rootBase ??= root.position.clone();
+    root.rotation.x = this.prone;
+    // Rotating about the feet would throw the body a metre forward; keep the hips over the feet and lay it on the ground.
+    // Lifted a little so the chest rests on the floor instead of sinking into it.
+    root.position.set(this.rootBase.x, this.rootBase.y + 0.12 * (this.prone / PRONE_TILT), this.rootBase.z - HIP_HEIGHT * Math.sin(this.prone));
+  }
+
   private die(): void {
     this.dead = true;
+    // The ragdoll takes over from wherever the body is.
+    this.prone = 0;
+    this.applyProne();
     for (const g of this.ch.clips.values()) if (g.isPlaying) g.stop();
     this.aimUpper?.stop();
     this.overlay = null;

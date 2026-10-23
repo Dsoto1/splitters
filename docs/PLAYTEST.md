@@ -16,7 +16,9 @@ Jump straight into any map with `http://localhost:5173/?offline=<map>`, e.g.
 
 | Key | Does |
 | --- | --- |
-| W A S D, Space | Move, jump |
+| W A S D, Space | Move, jump (jumping also stands you up) |
+| Shift | Sprint while moving forward: faster, uses the stamina bar (yellow; red when you've run dry). Firing stops a sprint |
+| C / Z | Crouch / lie prone (toggles): slower, smaller target, steadier aim |
 | Mouse, left / right button | Aim, fire / zoom or alt-fire |
 | 1–9 | Pick a weapon slot (press again to cycle weapons in that slot) |
 | R | Reload |
@@ -93,7 +95,20 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] Grass and flowers grow on the canyon floor; they don't poke through floors, and never hide a crouching player.
 - [ ] Frame rate stays smooth when you look across a grassy field (F3 shows it).
 
-## 6. Hits, blood and ragdolls
+## 6. Movement and gunplay
+
+- [ ] Walking feels slower than before; Shift sprints, the stamina bar drains and refills after a short rest; run it dry and you can't sprint until it's back to a quarter.
+- [ ] C crouches (view drops, slower, tighter spread), Z goes prone (view near the floor, very slow); you can't stand up under a low ceiling; Space stands you up.
+- [ ] Bots crouched or prone look it (crouch pose, lying on the ground) and are harder to hit.
+- [ ] Shoot a wall: each round flies from your muzzle, leaves a hole that stays all match, sparks and dust.
+- [ ] Shoot someone in the head: red hit marker, "HEADSHOT" on a kill, a ✛ in the kill feed. Leg hits do less damage.
+- [ ] Shells fly out of the right side of your gun and rattle on the floor.
+- [ ] Sniper: scope in (right mouse) to see the reticle; the sights sway; hold Shift to steady them until your breath runs out. Unscoped, it sprays.
+- [ ] Hold G: an arc, bounce rings and the blast area show; let go to throw. The grenade follows the arc unless something moves into its way.
+- [ ] Damage a vehicle: a health bar over it, smoke under half, fire under a quarter; inside one, a health panel at the bottom.
+- [ ] Bodies stay where they fall after the player respawns (Pause → Bodies: Stay / Fade); shoot a body and it jerks and bleeds.
+
+## 7. Hits, blood and ragdolls
 
 - [ ] Shoot a bot: a meaty thump at the bot, a tick for you, a small red spray and splats on the floor or wall behind it.
 - [ ] Kill a bot with a shotgun or rifle: it's thrown along the shot and falls limp down slopes and stairs; a small pool under it.
@@ -104,7 +119,7 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] On `canyon` or `frost_basin`: no rock, log, bush or crate floats at the edge of a slope; rocks and logs lean with the hill, trees stand straight.
 - [ ] MapMaker: place a rock on a hillside and drag it up and down the hill: it stays on the ground.
 
-## 7. Shooter homages (`backwoods`, `dockside_depot`, `bunker_cross`, `rail_stockyard`)
+## 8. Shooter homages (`backwoods`, `dockside_depot`, `bunker_cross`, `rail_stockyard`)
 
 - [ ] **Backwoods Lodge:** attack the lodge from the woods by each route: across the yard, past the barn (sniper rifle in the hayloft), along the road to the garage, and through the long drain into the cellar.
 - [ ] **Dockside Depot:** fire escape to the roof, drop through a hatch into the offices; crawl the air duct from the back strip into the north-west office; fight across the truck lot.
@@ -112,13 +127,13 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] **Rail Stockyard:** reach the railgun on the crane perch along the girder from the west shed roof; use the culvert under the yard and the jump pad out of the pit.
 - [ ] Each one in Team Deathmatch from the Arcade: teams start on their own sides.
 
-## 8. Teams (Arcade)
+## 9. Teams (Arcade)
 
 - [ ] Arcade → pick a map → set 3 or more team rows with different sizes (try 2,2,2,2,2,2,12).
 - [ ] The score bar and Tab scoreboard show every team in its colour.
 - [ ] Teams are filled to the sizes you set; teammates don't take damage from you (if friendly fire is off).
 
-## 9. MapMaker
+## 10. MapMaker
 
 - [ ] **Curves** tab: small / medium / large round corners and arcades, half-round rooms, round tower, curved corridor, balconies. Rotate them and connect them to the regular rooms with no gaps.
 - [ ] Wall styles: **High** (2 storeys), **Tower** (4 storeys), **Fence**.

@@ -21,7 +21,6 @@ const PLAYER_COLLIDER_GROUPS = groups(GROUP_PLAYER, 0xffff);
 const WORLD_ONLY_QUERY = groups(0xffff, GROUP_WORLD);
 
 const CAPSULE_HALF_HEIGHT = (PLAYER.height - PLAYER.radius * 2) / 2;
-const CAPSULE_CENTER_Y = PLAYER.height / 2;
 const CONTROLLER_OFFSET = 0.02;
 /**
  * Each move starts this far above the stored position. Quantised positions can
@@ -143,14 +142,27 @@ export class PhysicsWorld {
    * geometry. Other players never block movement, which keeps client
    * prediction independent of remote player positions.
    */
-  moveCharacter(collider: RAPIER.Collider, feet: Vec3, delta: Vec3): { feet: Vec3; grounded: boolean; movedY: number } {
+  moveCharacter(collider: RAPIER.Collider, feet: Vec3, delta: Vec3, height: number = PLAYER.height): { feet: Vec3; grounded: boolean; movedY: number } {
+    // Crouching and prone shrink the capsule.
+    const half = Math.max(0.01, (height - PLAYER.radius * 2) / 2);
+    const shape = collider.shape as RAPIER.Capsule;
+    if (Math.abs(shape.halfHeight - half) > 1e-4) collider.setHalfHeight(half);
+    const centerY = height / 2;
     const startY = feet.y + START_LIFT;
-    collider.setTranslation({ x: feet.x, y: startY + CAPSULE_CENTER_Y, z: feet.z });
+    collider.setTranslation({ x: feet.x, y: startY + centerY, z: feet.z });
     this.controller.computeColliderMovement(collider, { x: delta.x, y: delta.y - START_LIFT, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, WORLD_ONLY_QUERY);
     const m = this.controller.computedMovement();
     const next = { x: feet.x + m.x, y: startY + m.y, z: feet.z + m.z };
-    collider.setTranslation({ x: next.x, y: next.y + CAPSULE_CENTER_Y, z: next.z });
+    collider.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
     return { feet: next, grounded: this.controller.computedGrounded(), movedY: m.y + START_LIFT };
+  }
+
+  /** Whether a player body `height` tall fits standing at `feet` (room to stand or crouch up). */
+  headroom(feet: Vec3, height: number): boolean {
+    const r = PLAYER.radius - 0.03;
+    const half = Math.max(0.01, height / 2 - r);
+    const hit = this.world.intersectionWithShape({ x: feet.x, y: feet.y + height / 2 + 0.03, z: feet.z }, { x: 0, y: 0, z: 0, w: 1 }, new RAPIER.Capsule(half, r), undefined, WORLD_ONLY_QUERY);
+    return !hit;
   }
 
   /** Like raycastWorld, but also returns the collider handle that was hit. */

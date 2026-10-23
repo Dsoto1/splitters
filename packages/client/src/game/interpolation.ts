@@ -26,6 +26,9 @@ export interface RemotePose {
   /** Status effect bits (STATUS_*). */
   status: number;
   state?: string;
+  /** Crouching (1) or prone (2). */
+  stance?: number;
+  sprinting?: boolean;
 }
 
 /** Snapshot interpolation for remote players, driven by an estimate of the server clock. */
@@ -107,6 +110,8 @@ export class Interpolator {
         pitch: from.pitch + (pb.pitch - from.pitch) * blend,
         alive: pb.alive === 1,
         grounded: pb.g === 1,
+        ...(pb.sn ? { stance: pb.sn } : {}),
+        ...(pb.sr ? { sprinting: true } : {}),
         weapon: pb.w,
         powerups: pb.pu,
         status: pb.fx ?? 0,

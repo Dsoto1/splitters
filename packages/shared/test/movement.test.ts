@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_JUMP, PhysicsWorld, buildMapGeometry, emptyInput, initPhysics, stepMovement, type MoveState, type PlayerInput } from '../src/index.ts';
+import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_SPRINT, PLAYER, SPRINT, STANCES, PhysicsWorld, bodyHeightOf, buildMapGeometry, emptyInput, initPhysics, stepMovement, type MoveState, type PlayerInput } from '../src/index.ts';
 import { loadArena, makeMap } from './helpers.ts';
 
 beforeAll(() => initPhysics());
@@ -26,7 +26,7 @@ describe('player movement', () => {
     const physics = singleRoom();
     const start: MoveState = { pos: { x: 0, y: 0, z: 0 }, velY: 0, grounded: true };
     const quarterSecond = run(physics, start, { forward: 1 }, 15);
-    expect(quarterSecond.pos.z).toBeCloseTo(7 * 0.25, 2);
+    expect(quarterSecond.pos.z).toBeCloseTo(PLAYER.runSpeed * 0.25, 1);
     const blocked = run(physics, start, { forward: 1 }, 120);
     expect(blocked.pos.z).toBeLessThan(3.5 - 0.39); // wall inner face at 3.5, capsule radius 0.4
     expect(blocked.pos.z).toBeGreaterThan(3.0);
@@ -57,5 +57,50 @@ describe('player movement', () => {
     const collider = physics.createPlayerCollider();
     const play = () => inputs.reduce<MoveState>((s, inp) => stepMovement(physics, collider, s, inp), { pos: { x: 8, y: 0, z: 8 }, velY: 0, grounded: true });
     expect(play()).toEqual(play());
+  });
+
+  it('sprints faster on stamina, runs dry, and recovers after a rest; firing stops a sprint', () => {
+    const physics = singleRoom();
+    const start: MoveState = { pos: { x: 0, y: 0, z: -3 }, velY: 0, grounded: true };
+    const walk = run(physics, start, { forward: 1 }, 15);
+    const sprint = run(physics, start, { forward: 1, buttons: BUTTON_SPRINT }, 15);
+    expect(sprint.pos.z - start.pos.z).toBeCloseTo((walk.pos.z - start.pos.z) * SPRINT.speed, 1);
+    expect(sprint.stamina!).toBeLessThan(1);
+    const shooting = run(physics, start, { forward: 1, buttons: BUTTON_SPRINT | BUTTON_FIRE }, 15);
+    expect(shooting.pos.z).toBeCloseTo(walk.pos.z, 3);
+    // Sprint on the spot until empty: winded, then it comes back after a rest.
+    let s = run(physics, start, { forward: 1, right: 0, yaw: Math.PI / 2, buttons: BUTTON_SPRINT }, Math.ceil(60 / SPRINT.drain) + 10);
+    expect(s.winded).toBe(true);
+    expect(s.sprint).toBeUndefined();
+    s = run(physics, s, {}, Math.ceil(60 * (SPRINT.rest + SPRINT.restart / SPRINT.regen)) + 5);
+    expect(s.winded).toBeUndefined();
+    s = run(physics, s, {}, 60 * 5);
+    expect(s.stamina).toBeUndefined();
+  });
+
+  it('crouches and goes prone (slower, shorter), and can only stand where there is room', () => {
+    const room = buildMapGeometry(makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }]));
+    // A low slab 1.4 m up over the north half of the room.
+    const physics = new PhysicsWorld([...room, { min: [-4, 1.4, 1], max: [4, 1.7, 4], kind: 'floor', sourceId: 'slab' }]);
+    const start: MoveState = { pos: { x: 0, y: 0, z: -2 }, velY: 0, grounded: true };
+    const crouched = run(physics, start, { forward: 1, buttons: BUTTON_CROUCH }, 30);
+    expect(crouched.stance).toBe(1);
+    expect(bodyHeightOf(crouched)).toBe(STANCES[1].height);
+    const walked = run(physics, start, { forward: 1 }, 30);
+    expect(crouched.pos.z - start.pos.z).toBeCloseTo((walked.pos.z - start.pos.z) * STANCES[1].speed, 1);
+    const prone = run(physics, start, { buttons: BUTTON_PRONE }, 5);
+    expect(prone.stance).toBe(2);
+    // Crawl under the slab crouched, then try to stand: no room, so you stay down.
+    let under = run(physics, start, { forward: 1, buttons: BUTTON_CROUCH }, 200);
+    expect(under.pos.z).toBeGreaterThan(1.6);
+    under = run(physics, under, {}, 5);
+    expect(under.stance).toBe(1);
+    // Out in the open again: you stand up.
+    const out = run(physics, under, { forward: -1 }, 400);
+    expect(out.stance).toBeUndefined();
+    // Jumping from a crouch stands you up instead of jumping.
+    const up = run(physics, crouched, { buttons: BUTTON_JUMP | BUTTON_CROUCH }, 1);
+    expect(up.stance).toBeUndefined();
+    expect(up.grounded).toBe(true);
   });
 });

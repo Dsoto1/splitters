@@ -1,6 +1,6 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { Vec3 } from '../math.ts';
-import { PLAYER, TICK_DT, quantize } from './constants.ts';
+import { PLAYER, SPRINT, STANCES, TICK_DT, quantize, type Stance } from './constants.ts';
 import type { PhysicsWorld } from './physics.ts';
 import { JET, LIQUID_SPECS, SWIM_DEPTH, liquidAt, type LiquidBox } from './liquids.ts';
 
@@ -14,7 +14,12 @@ export const BUTTON_USE = 16;
 export const BUTTON_ALT = 32;
 /** Throw the carried grenade or mine (G). */
 export const BUTTON_THROW = 64;
-const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW;
+/** Sprint while held (Shift): faster forward running that uses stamina. */
+export const BUTTON_SPRINT = 128;
+/** Wants to crouch / lie prone (held state; the client turns toggle keys into it). */
+export const BUTTON_CROUCH = 256;
+export const BUTTON_PRONE = 512;
+const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {
@@ -47,7 +52,22 @@ export interface MoveState {
   jet?: boolean;
   /** Swimming this tick. */
   swim?: boolean;
+  /** Crouching (1) or prone (2); absent when standing. */
+  stance?: 1 | 2;
+  /** Stamina 0..1 (absent = full), ticks left before it starts recovering, and whether you're sprinting. */
+  stamina?: number;
+  rest?: number;
+  sprint?: boolean;
+  /** Ran dry: no sprinting until stamina is back to SPRINT.restart. */
+  winded?: boolean;
 }
+
+/** Current stance of a move state. */
+export const stanceOf = (s: MoveState): Stance => s.stance ?? 0;
+/** Eye height above the feet in this state. */
+export const eyeHeightOf = (s: MoveState): number => STANCES[stanceOf(s)].eye;
+/** Body (capsule) height in this state. */
+export const bodyHeightOf = (s: MoveState): number => STANCES[stanceOf(s)].height;
 
 /** What else shapes a step: liquids to swim or wade in, and whether a jetpack has fuel. */
 export interface MoveEnv {
@@ -79,6 +99,41 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
  * snapshot reproduces the server result exactly.
  */
 export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, state: MoveState, input: PlayerInput, speedScale = 1, dt: number = TICK_DT, traction = 1, env: MoveEnv = {}): MoveState {
+  // Stance: what you ask for, unless there's no room to stand (or crouch) up. Jumping gets you up first.
+  let jumpPressed = (input.buttons & BUTTON_JUMP) !== 0;
+  const was = stanceOf(state);
+  let want: Stance = input.buttons & BUTTON_PRONE ? 2 : input.buttons & BUTTON_CROUCH ? 1 : 0;
+  if (jumpPressed && was > 0) {
+    want = 0;
+    jumpPressed = false;
+  }
+  if (want === 2 && !state.grounded) want = was === 2 ? 2 : 1;
+  let stance: Stance = was;
+  if (want > was) stance = want;
+  else if (want < was) {
+    // Rise as far as the headroom allows.
+    for (let s = want; s < was; s++) {
+      if (physics.headroom(state.pos, STANCES[s].height)) {
+        stance = s as Stance;
+        break;
+      }
+    }
+  }
+  // Sprint: forward, standing, not shooting, while stamina lasts.
+  let stamina = state.stamina ?? 1;
+  let rest = state.rest ?? 0;
+  let winded = state.winded ?? false;
+  const sprint = (input.buttons & BUTTON_SPRINT) !== 0 && (input.buttons & BUTTON_FIRE) === 0 && input.forward > 0.3 && stance === 0 && !winded && stamina > 0;
+  if (sprint) {
+    // Quantised here (not just on output) so running dry is seen the same on server and client.
+    stamina = quantize(Math.max(0, stamina - SPRINT.drain * dt));
+    rest = Math.round(SPRINT.rest / dt);
+    if (stamina === 0) winded = true;
+  } else if (rest > 0) rest--;
+  else stamina = quantize(Math.min(1, stamina + SPRINT.regen * dt));
+  if (winded && stamina >= SPRINT.restart) winded = false;
+  speedScale *= STANCES[stance].speed * (sprint ? SPRINT.speed : 1);
+
   // Horizontal wish velocity in the yaw frame (see viewDirection for axes).
   const sin = Math.sin(input.yaw);
   const cos = Math.cos(input.yaw);
@@ -107,7 +162,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   }
 
   let velY = state.velY;
-  const jump = (input.buttons & BUTTON_JUMP) !== 0;
+  const jump = jumpPressed;
   let jet = false;
   if (chest) {
     // Swimming: you sink slowly, water drags, jump swims up; near the surface it hops you out.
@@ -125,7 +180,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   }
 
   const desiredY = velY * dt;
-  const moved = physics.moveCharacter(collider, state.pos, { x: (wx + vx) * dt, y: desiredY, z: (wz + vz) * dt });
+  const moved = physics.moveCharacter(collider, state.pos, { x: (wx + vx) * dt, y: desiredY, z: (wz + vz) * dt }, STANCES[stance].height);
   let grounded = moved.grounded;
   if (grounded && velY < 0) velY = 0;
   // Bumped a ceiling while rising.
@@ -142,6 +197,11 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     ...(vx || vz ? { vx, vz } : {}),
     ...(jet ? { jet } : {}),
     ...(chest ? { swim: true } : {}),
+    ...(stance ? { stance } : {}),
+    ...(stamina < 1 ? { stamina: quantize(stamina) } : {}),
+    ...(rest ? { rest } : {}),
+    ...(sprint ? { sprint } : {}),
+    ...(winded ? { winded } : {}),
   };
 }
 

@@ -12,6 +12,7 @@ import {
   zoneContains,
   THROWABLES,
   PLAYER,
+  eyeHeightOf,
   PhysicsWorld,
   SPEED_BOOST,
   WEAPONS_BY_SLOT,
@@ -96,8 +97,9 @@ export class LocalPlayer {
     this.collider = physics.createPlayerCollider();
   }
 
+  /** Where your eyes are (they drop when you crouch or go prone). */
   get eye(): Vec3 {
-    return { x: this.state.pos.x, y: this.state.pos.y + PLAYER.eyeHeight, z: this.state.pos.z };
+    return { x: this.state.pos.x, y: this.state.pos.y + eyeHeightOf(this.state), z: this.state.pos.z };
   }
 
   get weapon(): WeaponDefinition | undefined {
@@ -243,7 +245,15 @@ export class LocalPlayer {
     this.held = pendingSwitch ?? server.w;
 
     const before = this.state.pos;
-    this.state = { pos: { x: server.p[0], y: server.p[1], z: server.p[2] }, velY: server.vy, grounded: server.g === 1, ...(server.vx || server.vz ? { vx: server.vx ?? 0, vz: server.vz ?? 0 } : {}) };
+    const sta = me?.sta;
+    this.state = {
+      pos: { x: server.p[0], y: server.p[1], z: server.p[2] },
+      velY: server.vy,
+      grounded: server.g === 1,
+      ...(server.vx || server.vz ? { vx: server.vx ?? 0, vz: server.vz ?? 0 } : {}),
+      ...(server.sn ? { stance: server.sn } : {}),
+      ...(sta ? { ...(sta[0] < 1000 ? { stamina: sta[0] / 1000 } : {}), ...(sta[1] ? { rest: sta[1] } : {}), ...(sta[2] ? { winded: true } : {}) } : {}),
+    };
     if (this.alive && !this.mounted) {
       for (const input of this.pending) this.state = this.move(this.state, input);
     }

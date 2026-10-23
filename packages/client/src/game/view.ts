@@ -674,6 +674,8 @@ export class GameView {
           alive: p.alive,
           pitch: p.pitch,
           celebrate: celebrate && p.alive,
+          stance: p.stance ?? 0,
+          sprinting: !!p.sprinting,
         });
         for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
       }

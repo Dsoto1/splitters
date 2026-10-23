@@ -42,7 +42,9 @@ export type Clip =
   | 'knockback'
   | 'throw'
   | 'cheer'
-  | 'idle_arms';
+  | 'idle_arms'
+  | 'crouch_idle'
+  | 'crouch_walk';
 
 export interface CharacterInstance {
   /** Place and turn this node; the model stands on its origin facing +Z. */

@@ -204,6 +204,18 @@ export class Hud {
     this.root.classList.toggle('dead', !alive);
   }
 
+  /** Sprint stamina (shown while not full) and the stance you're in. */
+  setStamina(stamina: number, winded: boolean, alive: boolean, stance: number): void {
+    const row = document.getElementById('stamina-row');
+    if (!row) return;
+    row.classList.toggle('on', alive && (stamina < 1 || stance > 0));
+    row.classList.toggle('winded', winded);
+    (document.getElementById('stamina-bar') as HTMLElement).style.width = `${Math.round(stamina * 100)}%`;
+    const label = stance === 2 ? 'Prone' : stance === 1 ? 'Crouch' : '';
+    const st = document.getElementById('stance')!;
+    if (st.textContent !== label) st.textContent = label;
+  }
+
   /** Held weapon, ammo and the owned-weapons bar. */
   /** The vehicle you're in: its name and health (null hides the panel). */
   setVehicle(v: { name: string; pct: number } | null): void {

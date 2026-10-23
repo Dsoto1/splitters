@@ -479,7 +479,9 @@ export class FrontEnd {
       { class: 'controls' },
       ...[
         ['Move', 'WASD'],
-        ['Jump', 'Space'],
+        ['Jump (stands you up)', 'Space'],
+        ['Sprint (uses stamina)', 'Shift'],
+        ['Crouch / prone (toggle)', 'C / Z'],
         ['Fire', 'Left mouse'],
         ['Second trigger / zoom', 'Right mouse'],
         ['Throw grenade or mine', 'Hold G to aim, let go to throw'],

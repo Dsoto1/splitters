@@ -281,6 +281,13 @@ img:not([src]) { visibility: hidden; }
 .vit-row.hp b::before { content: '✚ '; font-size: 14px; color: var(--success); vertical-align: 3px; }
 .vit-row.ar b { font-size: 17px; color: #7fb4ff; }
 .vit-row.ar b::before { content: '◆ '; font-size: 11px; vertical-align: 2px; }
+/* Stamina (sprint) and stance: a thin bar that only shows while it's being used. */
+.vit-row.st { opacity: 0; transition: opacity 0.4s; }
+.vit-row.st.on { opacity: 1; transition: none; }
+.vit-row.st b { font-size: 11px; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+.vit-row.st .bar { height: 4px; }
+#stamina-bar { background: #e8d36a; }
+.vit-row.st.winded #stamina-bar { background: var(--danger); }
 .vit-row.ar:has(b:empty) { display: none; }
 #vitals .bar { width: 150px; height: 8px; }
 .vit-row.ar .bar { height: 5px; }

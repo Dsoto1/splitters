@@ -63,7 +63,7 @@ describe('terrain', () => {
     const collider = physics.createPlayerCollider();
     let state = { pos: { x: -20, y: 1, z: 0 }, velY: 0, grounded: false };
     // Walk east (+x) up and over the hill.
-    for (let i = 0; i < 420; i++) state = stepMovement(physics, collider, state, { seq: i, forward: 1, right: 0, yaw: Math.PI / 2, pitch: 0, buttons: 0 });
+    for (let i = 0; i < 560; i++) state = stepMovement(physics, collider, state, { seq: i, forward: 1, right: 0, yaw: Math.PI / 2, pitch: 0, buttons: 0 });
     expect(state.pos.x).toBeGreaterThan(14);
     expect(Math.abs(state.pos.y - terrainHeightAt(map.terrain!, state.pos.x, state.pos.z)!)).toBeLessThan(0.3);
     // Keep walking: the edge wall stops them at x = 32.

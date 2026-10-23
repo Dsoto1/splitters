@@ -39,6 +39,10 @@ export interface PlayerSnapshot {
   fx?: number;
   /** Bot AI state for the debug overlay; absent for humans. */
   st?: string;
+  /** Crouching (1) or prone (2); absent when standing. */
+  sn?: 1 | 2;
+  /** Sprinting this tick. */
+  sr?: 1;
 }
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */
@@ -59,6 +63,8 @@ export interface PrivateState {
   dm: number;
   /** Jetpack fuel units (see JET); absent without a jetpack. */
   jp?: number;
+  /** Stamina for sprinting, when not full: [stamina ×1000, rest ticks, winded 0/1]. */
+  sta?: [number, number, number];
 }
 
 export const STATUS_BURN = 1;

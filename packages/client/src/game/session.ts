@@ -137,6 +137,8 @@ export class GameSession {
   private sway = { x: 0, y: 0, t: 0 };
   private breath = 1;
   private breathSpent = false;
+  /** Smoothed eye height above the feet (crouching and prone lower it). */
+  private eyeOffset: number | null = null;
   private kibPerSec = 0;
 
   constructor(private readonly opts: SessionOptions) {
@@ -567,13 +569,20 @@ export class GameSession {
           const dist = 4 + ride.def.half[2] * 1.5;
           this.view.setCamera({ x: eye.x - back.x * dist, y: eye.y - back.y * dist + 1, z: eye.z - back.z * dist }, this.input.yaw, this.input.pitch - 0.15, DEFAULT_FOV);
         } else this.view.setCamera(eye, this.input.yaw, this.input.pitch, DEFAULT_FOV);
-      } else this.view.setCamera(local.eye, this.input.yaw, this.input.pitch, fov);
+      } else {
+        // The view eases down and up as you crouch, go prone or stand.
+        const eye = local.eye;
+        const offset = eye.y - local.state.pos.y;
+        this.eyeOffset = this.eyeOffset === null || !local.alive ? offset : this.eyeOffset + (offset - this.eyeOffset) * Math.min(1, dt * 12);
+        this.view.setCamera({ x: eye.x, y: local.state.pos.y + this.eyeOffset, z: eye.z }, this.input.yaw, this.input.pitch, fov);
+      }
       this.view.setViewmodel(weapon);
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, (weapon.reloadTicks - local.reloadTicks) / 10) : 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed });
       this.hud.setScope(zoomed);
       this.updateScopeSway(dt, zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
+      this.hud.setStamina(local.state.stamina ?? 1, !!local.state.winded, local.alive, local.state.stance ?? 0);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2]);
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
       this.hud.setThrowable(local.throwable, local.alive);
