@@ -9,6 +9,8 @@ import { createEngine, type RendererKind } from './engine.ts';
 import { EditorApp, type TestRequest } from './editor/editorApp.ts';
 import { LocalTransport } from './game/localTransport.ts';
 import { NetTransport } from './game/netTransport.ts';
+import { CharacterDesigner } from './designer/characterDesigner.ts';
+import { listCustomLooks } from './designer/customLooks.ts';
 import { GameSession } from './game/session.ts';
 import type { Transport } from './game/transport.ts';
 
@@ -19,8 +21,24 @@ const serverInput = $<HTMLInputElement>('server');
 const lookSelect = $<HTMLSelectElement>('look');
 
 nameInput.value = params.get('name') ?? storage('cs.name') ?? `Player${Math.floor(Math.random() * 900 + 100)}`;
-for (const l of CORE_LOOKS) lookSelect.add(new Option(l.name, l.id));
-lookSelect.value = getLook(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK).id;
+/** Fill the Character picker: presets, then looks saved from the Character Designer. */
+function fillLooks(selected: string): void {
+  lookSelect.replaceChildren();
+  const presets = document.createElement('optgroup');
+  presets.label = 'Presets';
+  for (const l of CORE_LOOKS) presets.append(new Option(l.name, l.id));
+  lookSelect.append(presets);
+  const saved = listCustomLooks();
+  if (saved.length) {
+    const mine = document.createElement('optgroup');
+    mine.label = 'Your characters';
+    for (const s of saved) mine.append(new Option(s.name, s.id));
+    lookSelect.append(mine);
+  }
+  lookSelect.value = getLook(selected).id;
+  if (!lookSelect.value) lookSelect.value = DEFAULT_LOOK;
+}
+fillLooks(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK);
 lookSelect.addEventListener('change', () => storage('cs.look', lookSelect.value));
 serverInput.value = params.get('server') ?? `ws://${location.hostname || 'localhost'}:7777`;
 
@@ -33,7 +51,7 @@ function storage(key: string, value?: string): string | null {
   }
 }
 
-type Mode = 'menu' | 'editor' | 'game';
+type Mode = 'menu' | 'editor' | 'game' | 'designer';
 
 const OFFLINE_MAPS = { arena: arenaJson, vault: vaultJson, outpost: outpostJson, sandgate: sandgateJson } as const;
 type OfflineMap = keyof typeof OFFLINE_MAPS;
@@ -59,6 +77,7 @@ class App {
   private mode: Mode = 'menu';
   private editor?: EditorApp;
   private session?: GameSession;
+  private designer?: CharacterDesigner;
   private ready?: Promise<void>;
   private last = performance.now();
 
@@ -82,6 +101,7 @@ class App {
     this.last = now;
     if (this.mode === 'game') this.session?.frame();
     else if (this.mode === 'editor') this.editor?.frame(dt);
+    else if (this.mode === 'designer') this.designer?.frame(dt);
   }
 
   private showMenu(status = ''): void {
@@ -89,6 +109,23 @@ class App {
     this.editor?.hide();
     $('menu').hidden = false;
     $('status').textContent = status;
+  }
+
+  async openDesigner(): Promise<void> {
+    $('status').textContent = 'Loading Character Designer…';
+    await this.init();
+    $('menu').hidden = true;
+    this.mode = 'designer';
+    this.designer = new CharacterDesigner(this.engine, this.canvas, lookSelect.value, (id) => {
+      this.designer?.dispose();
+      this.designer = undefined;
+      if (id) {
+        storage('cs.look', id);
+        fillLooks(id);
+      }
+      this.showMenu();
+    });
+    $('status').textContent = '';
   }
 
   async openEditor(): Promise<void> {
@@ -177,6 +214,7 @@ $('play-offline').addEventListener('click', () => void app.playOffline());
 $('play-vault').addEventListener('click', () => void app.playOffline('vault'));
 $('play-outpost').addEventListener('click', () => void app.playOffline('outpost'));
 $('play-sandgate').addEventListener('click', () => void app.playOffline('sandgate'));
+$('open-designer').addEventListener('click', () => void app.openDesigner());
 $('join').addEventListener('submit', (e) => {
   e.preventDefault();
   void app.playOnline(serverInput.value.trim(), nameInput.value.trim());
@@ -202,6 +240,7 @@ if (params.get('mode') === 'assets') {
     await openCharacterViewer(engine, canvas);
   })();
 } else if (params.get('mode') === 'editor') void app.openEditor();
+else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('offline')) {
   const which = params.get('offline');
   void app.playOffline(which && which in OFFLINE_MAPS ? (which as OfflineMap) : 'arena');

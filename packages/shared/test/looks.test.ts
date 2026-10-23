@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, getLook, initPhysics, lookForBot, materialTint, textureFor } from '../src/index.ts';
+import { CHARACTER_PARTS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, decodeLook, encodeLook, getLook, initPhysics, lookForBot, lookProblems, materialTint, textureFor } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 import { loadArena } from './helpers.ts';
 
@@ -67,5 +67,49 @@ describe('character looks', () => {
     expect(bots.length).toBeGreaterThan(1);
     expect(new Set(bots.map((b) => b.look)).size).toBeGreaterThan(1);
     expect(lookForBot(0)).not.toBe(lookForBot(1));
+  });
+});
+
+describe('custom looks', () => {
+  it('lists exactly the shipped parts', () => {
+    const shipped = lock.files.filter((f) => f.role === 'part').map((f) => f.id).sort();
+    expect(CHARACTER_PARTS.map((p) => p.id).sort()).toEqual(shipped);
+    for (const p of CHARACTER_PARTS) expect(file(p.id)!.slot === p.slot || (file(p.id)!.slot === 'torso' && p.slot === 'torso')).toBe(true);
+  });
+
+  it('accepts every preset and round-trips it through a custom ID', () => {
+    for (const l of CORE_LOOKS) {
+      expect(lookProblems(l), l.id).toEqual([]);
+      const id = encodeLook(l);
+      expect(id.length).toBeLessThanOrEqual(64);
+      const back = decodeLook(id)!;
+      expect(back, l.id).not.toBeNull();
+      expect([...back.parts].sort()).toEqual([...l.parts].sort());
+      expect([...back.hair].sort()).toEqual([...l.hair].sort());
+      expect(back.colorways).toEqual(l.colorways);
+      expect(back.skin).toBe(l.skin);
+      expect(back.hairColor).toBe(l.hairColor);
+      expect(getLook(id).id).toBe(id);
+    }
+  });
+
+  it('rejects looks that cannot be worn and falls back to the default', () => {
+    const base = getLook('core.ranger');
+    expect(lookProblems({ ...base, parts: base.parts.filter((p) => !p.startsWith('ranger_legs')) })).toContain('needs trousers');
+    expect(lookProblems({ ...base, parts: [...base.parts, 'athlete_torso_m'] }).length).toBeGreaterThan(0);
+    expect(lookProblems({ ...base, parts: ['athlete_torso_m', 'ranger_arms_m', 'ranger_legs_m', 'ranger_feet_m'] })).toContain('a sportswear top already has arms');
+    expect(lookProblems({ ...base, hair: ['hair_long'] })).toContain('a hairstyle is for the other body type');
+    // Malformed or unwearable IDs fall back to the default look.
+    expect(getLook('c1-zzzz').id).toBe(DEFAULT_LOOK);
+    const noLegs = encodeLook({ ...base, parts: base.parts.filter((p) => !p.startsWith('ranger_legs')) });
+    expect(decodeLook(noLegs)).toBeNull();
+    expect(getLook(noLegs).id).toBe(DEFAULT_LOOK);
+  });
+
+  it('keeps a valid custom look for a joining player', () => {
+    const custom = encodeLook({ body: 'female', parts: ['peasant_torso_f', 'ranger_arms_f', 'athlete_legs_f', 'ranger_feet_f'], hair: ['hair_buns'], colorways: ['peasant_dusk'], skin: '#9a6a4e', hairColor: '#8a3a2a' });
+    const match = new Match(loadArena());
+    match.addHuman('Kit', custom);
+    expect(match.roster()[0]!.look).toBe(custom);
   });
 });

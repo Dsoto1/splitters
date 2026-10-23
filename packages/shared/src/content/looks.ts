@@ -2,7 +2,8 @@
  * Preset character looks built from the shared character parts (see
  * tools/content/prepare-characters.mjs and docs/CHARACTERS.md). Every part for
  * a body type shares one skeleton, so heads, hair, outfit parts, colourways and
- * tints combine freely; the Character Designer will expose the same choices.
+ * tints combine freely. The Character Designer builds custom looks from the
+ * same catalogue; they travel as short IDs (encodeLook / decodeLook).
  */
 export type BodyType = 'male' | 'female';
 
@@ -27,7 +28,7 @@ export interface CharacterLook {
   hairColor: string | null;
 }
 
-/** Skin tones offered by the presets and, later, the Character Designer. */
+/** Skin tones offered by the presets and the Character Designer. */
 export const SKIN_TONES = ['#ffffff', '#f0d8c8', '#c89878', '#9a6a4e', '#6e4a38'] as const;
 
 const ranger = (s: 'm' | 'f', hood = true, pauldron = true): string[] => [
@@ -100,7 +101,133 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
 
 export const DEFAULT_LOOK = CORE_LOOKS[0]!.id;
 
-export const getLook = (id: string | undefined): CharacterLook => CORE_LOOKS.find((l) => l.id === id) ?? CORE_LOOKS[0]!;
+// ---------------------------------------------------------------- the part catalogue (Character Designer)
+
+export interface PartInfo {
+  id: string;
+  body: BodyType;
+  slot: PartSlot;
+  /** Outfit family, which is also the colourway family of its material. */
+  outfit: 'ranger' | 'peasant' | 'athlete';
+  label: string;
+}
+
+const SLOT_LABEL: Record<PartSlot, string> = { torso: 'Top', arms: 'Arms', legs: 'Trousers', feet: 'Feet', hood: 'Hood', pauldron: 'Pauldrons' };
+const OUTFIT_LABEL = { ranger: 'Ranger', peasant: 'Peasant', athlete: 'Sportswear' } as const;
+const OUTFIT_SLOTS: Record<PartInfo['outfit'], readonly PartSlot[]> = {
+  ranger: ['torso', 'arms', 'legs', 'feet', 'hood', 'pauldron'],
+  peasant: ['torso', 'arms', 'legs', 'feet'],
+  athlete: ['torso', 'legs', 'feet'],
+};
+
+/** Every outfit part, in a fixed order (the order custom look IDs encode). */
+export const CHARACTER_PARTS: readonly PartInfo[] = (['male', 'female'] as const).flatMap((body) =>
+  (['ranger', 'peasant', 'athlete'] as const).flatMap((outfit) =>
+    OUTFIT_SLOTS[outfit].map((slot): PartInfo => {
+      const label = outfit === 'athlete' && slot === 'feet' ? 'Bare feet' : outfit === 'athlete' && slot === 'torso' ? 'Sportswear top (bare arms)' : `${OUTFIT_LABEL[outfit]} ${SLOT_LABEL[slot].toLowerCase()}`;
+      return { id: `${outfit}_${slot}_${body === 'male' ? 'm' : 'f'}`, body, slot, outfit, label };
+    }),
+  ),
+);
+
+export const PART_SLOTS: readonly PartSlot[] = ['torso', 'arms', 'legs', 'feet', 'hood', 'pauldron'];
+export const PART_SLOT_LABELS = SLOT_LABEL;
+/** Slots a look must fill (arms are covered by a sportswear top). */
+export const REQUIRED_SLOTS: readonly PartSlot[] = ['torso', 'legs', 'feet'];
+
+export const HAIR_STYLES: Readonly<Record<BodyType, readonly { id: string; label: string }[]>> = {
+  male: [
+    { id: 'hair_simpleparted', label: 'Parted' },
+    { id: 'hair_buzzed', label: 'Buzzed' },
+    { id: 'hair_beard', label: 'Beard' },
+  ],
+  female: [
+    { id: 'hair_long', label: 'Long' },
+    { id: 'hair_buns', label: 'Buns' },
+    { id: 'hair_buzzedfemale', label: 'Buzzed' },
+  ],
+};
+
+/** Alternative colourways, by outfit family (each body has the same choices). */
+export const COLORWAYS: readonly { id: string; family: PartInfo['outfit']; body: BodyType | null; label: string }[] = [
+  { id: 'ranger_moss', family: 'ranger', body: null, label: 'Moss' },
+  { id: 'peasant_dusk', family: 'peasant', body: null, label: 'Dusk' },
+  { id: 'athlete_light_m', family: 'athlete', body: 'male', label: 'Light' },
+  { id: 'athlete_light_f', family: 'athlete', body: 'female', label: 'Light' },
+];
+
+export const HAIR_COLORS = ['#f0e0c0', '#d0a060', '#b08850', '#8a6a50', '#8a3a2a', '#5a4030', '#3a2a22', '#2a2422', '#9aa0a8'] as const;
+
+const partById = new Map(CHARACTER_PARTS.map((p) => [p.id, p]));
+export const partInfo = (id: string): PartInfo | undefined => partById.get(id);
+
+/** Why a look can't be worn (empty when it can). */
+export function lookProblems(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways'>): string[] {
+  const out: string[] = [];
+  const parts = l.parts.map((id) => partById.get(id));
+  if (parts.some((p) => !p || p.body !== l.body)) out.push('a part is for the other body type');
+  const slots = parts.filter((p): p is PartInfo => !!p).map((p) => p.slot);
+  for (const s of PART_SLOTS) if (slots.filter((x) => x === s).length > 1) out.push(`two parts in the ${SLOT_LABEL[s].toLowerCase()} slot`);
+  for (const s of REQUIRED_SLOTS) if (!slots.includes(s)) out.push(`needs ${SLOT_LABEL[s].toLowerCase()}`);
+  const bareArms = parts.some((p) => p?.outfit === 'athlete' && p.slot === 'torso');
+  if (bareArms && slots.includes('arms')) out.push('a sportswear top already has arms');
+  if (!bareArms && !slots.includes('arms')) out.push('needs arms');
+  if (l.hair.some((h) => !HAIR_STYLES[l.body].some((s) => s.id === h))) out.push('a hairstyle is for the other body type');
+  if (l.colorways.some((c) => !COLORWAYS.some((w) => w.id === c && (w.body === null || w.body === l.body)))) out.push('unknown colourway');
+  return out;
+}
+
+// ---------------------------------------------------------------- custom look IDs
+
+/**
+ * Custom looks travel as a short ID (sent in hello, kept in the roster):
+ * `c1-` + body (m/f) + part bitmask (4 hex) + hair bitmask (1 hex) +
+ * colourway bitmask (1 hex) + skin (6 hex, or "------" for none) + hair colour
+ * (6 hex or "------"). Bits follow CHARACTER_PARTS / HAIR_STYLES / COLORWAYS order.
+ */
+const CUSTOM_PREFIX = 'c1-';
+
+export function encodeLook(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'skin' | 'hairColor'>): string {
+  const bodyParts = CHARACTER_PARTS.filter((p) => p.body === l.body);
+  const bits = <T>(list: readonly T[], has: (x: T) => boolean, width: number) =>
+    list
+      .reduce((n, x, i) => (has(x) ? n | (1 << i) : n), 0)
+      .toString(16)
+      .padStart(width, '0');
+  const colour = (c: string | null) => (c ? c.slice(1).toLowerCase() : '------');
+  // Parts keep their order (the first carries the skeleton): sort the bitmask's parts back by slot on decode.
+  return [
+    CUSTOM_PREFIX,
+    l.body === 'male' ? 'm' : 'f',
+    bits(bodyParts, (p) => l.parts.includes(p.id), 4),
+    bits(HAIR_STYLES[l.body], (h) => l.hair.includes(h.id), 1),
+    bits(COLORWAYS, (c) => l.colorways.includes(c.id), 1),
+    colour(l.skin),
+    colour(l.hairColor),
+  ].join('');
+}
+
+const CUSTOM_RE = /^c1-([mf])([0-9a-f]{4})([0-9a-f])([0-9a-f])([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6})$/;
+
+/** A custom look from its ID, or null if the ID is malformed or the look can't be worn. */
+export function decodeLook(id: string): CharacterLook | null {
+  const m = CUSTOM_RE.exec(id);
+  if (!m) return null;
+  const body: BodyType = m[1] === 'm' ? 'male' : 'female';
+  const has = (mask: string, i: number) => (parseInt(mask, 16) & (1 << i)) !== 0;
+  const parts = CHARACTER_PARTS.filter((p) => p.body === body)
+    .filter((_, i) => has(m[2]!, i))
+    .sort((a, b) => PART_SLOTS.indexOf(a.slot) - PART_SLOTS.indexOf(b.slot))
+    .map((p) => p.id);
+  const hair = HAIR_STYLES[body].filter((_, i) => has(m[3]!, i)).map((h) => h.id);
+  const colorways = COLORWAYS.filter((_, i) => has(m[4]!, i)).map((c) => c.id);
+  const colour = (s: string) => (s.startsWith('-') ? null : `#${s}`);
+  const look: CharacterLook = { id, name: 'Custom', body, head: body === 'male' ? 'head_male' : 'head_female', parts, hair, colorways, skin: colour(m[5]!), hairColor: colour(m[6]!) };
+  return lookProblems(look).length ? null : look;
+}
+
+/** A preset or custom look by ID; anything unknown or invalid falls back to the default. */
+export const getLook = (id: string | undefined): CharacterLook => CORE_LOOKS.find((l) => l.id === id) ?? (id ? decodeLook(id) : null) ?? CORE_LOOKS[0]!;
 
 /** A stable look for a Player Bot, spread across the roster. */
 export const lookForBot = (index: number): string => CORE_LOOKS[(index + 1) % CORE_LOOKS.length]!.id;

@@ -95,3 +95,20 @@ button.primary:hover { background: #ffc061; }
 #team-score .sep { color: var(--muted); }
 #team-score small { color: var(--muted); font-size: 11px; margin-left: 6px; }
 #scoreboard table.team + table.team { margin-top: 12px; }
+
+/* Character Designer */
+#designer { position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 92vw); overflow-y: auto; background: rgba(21, 24, 29, 0.94); padding: 14px 16px 20px; box-sizing: border-box; font-size: 13px; z-index: 5; }
+#designer h2 { margin: 0 0 10px; font-size: 20px; }
+#designer h3 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 600; }
+#designer .dz-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+#designer .dz-row label { width: 80px; color: var(--muted); }
+#designer .dz-row select { flex: 1; min-width: 0; }
+#designer .dz-row input:not([type]) { flex: 1; }
+#designer button.on { outline: 2px solid var(--accent); }
+#designer .dz-swatches button { width: 26px; height: 26px; padding: 0; border-radius: 50%; }
+#designer .dz-swatches button:first-child { width: auto; border-radius: 13px; padding: 0 9px; }
+#designer .dz-swatches input[type='color'] { width: 30px; height: 26px; padding: 0; border: none; background: none; }
+#designer .dz-problems { color: #ffb36b; margin: 12px 0 0; }
+#designer .dz-actions { margin-top: 16px; }
+.look-row { display: flex; gap: 6px; }
+.look-row select { flex: 1; min-width: 0; }

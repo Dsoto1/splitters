@@ -230,6 +230,29 @@ async function sandgateFlow(browser) {
   await page.context().close();
 }
 
+async function designerFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1200, height: 760 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(CLIENT);
+  await page.click('#open-designer');
+  await page.waitForFunction(() => !!window.__designer, null, { timeout: 30000 });
+  await page.click('#designer button:text-is("Female")');
+  await page.selectOption('#designer .dz-row:has(label:text-is("Top")) select', 'peasant_torso_f');
+  await page.click('#designer button:text-is("Buns")');
+  const id = await page.evaluate(() => window.__designer.lookId);
+  const problems = await page.evaluate(() => window.__designer.problems);
+  check(problems.length === 0 && id.startsWith('c1-f'), `designer builds a wearable custom look (${id} ${problems.join(', ')})`);
+  await page.click('#designer button:text-is("Save and use")');
+  await page.waitForFunction(() => !document.getElementById('menu').hidden);
+  const selected = await page.inputValue('#look');
+  check(selected === id, `the saved look is selected on the menu (${selected})`);
+  await page.click('#play-offline');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function charactersFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
@@ -273,7 +296,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, characters: charactersFlow, online: onlineFlow };
+  const flows = { editor: editorFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

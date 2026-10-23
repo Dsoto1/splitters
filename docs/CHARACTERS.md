@@ -69,8 +69,27 @@ Players pick one on the main menu (remembered locally). It's sent in `hello`
 and carried in the roster, so every client sees it. Bots get a spread of looks;
 unknown IDs fall back to the default.
 
-Mixing rules for the Character Designer:
+## Character Designer
+
+Main menu → **Design…** next to the Character picker (or `?mode=designer`).
+Players choose:
+- a body;
+- one part per slot (top, arms, trousers, feet, hood, pauldrons);
+- hair and beard, with a hair colour;
+- colourways and a skin tone (swatches or any colour).
+
+A live preview idles, runs or dances, holding a weapon of the player's choice. Each
+change rebuilds it from the shared parts.
+
+How custom looks are stored:
+- **Saving:** looks are saved in the browser (up to 24) and listed under "Your characters" in the Character picker.
+- **ID format:** a look travels as a 22-character ID (`encodeLook`): `c1-`, the body, then bitmasks of parts, hair and colourways in catalogue order, then the two colours.
+- **Validation:** the server and every client decode the ID with the same `decodeLook`. Anything malformed or unwearable becomes the default look.
+- **Catalogue:** `CHARACTER_PARTS`, `HAIR_STYLES`, `COLORWAYS`, `SKIN_TONES` and `HAIR_COLORS` in `looks.ts`. A test keeps `CHARACTER_PARTS` equal to the shipped parts.
+
+Mixing rules (`lookProblems`; the designer shows them and won't save until they're met):
 - The athlete torso includes bare arms, so it doesn't take an `arms` part.
+- A look needs a top, trousers and feet, and arms unless the top is sportswear.
 - Low-rise trousers (female peasant) show the sportswear waistband above them.
 - Athlete feet are bare feet only (no shins), so they pair with athlete legs.
 
@@ -132,8 +151,7 @@ of the model, then check them in `?mode=characters`.
 - Triangle counts are high for a 32-player shooter: a full ranger is about 19k
   with head and hair. LODs, or a further simplification pass, come before large lobbies.
 - No first-person arms yet; the viewmodel is still just the weapon.
-- The Character Designer (mixing parts, colours and tints freely) and more
-  outfits and era costumes on the same rig are the rest of M5. The free pack
-  editions hold only the Ranger and Peasant outfits; the other ten are in the
-  paid Source editions.
+- More outfits and era costumes on the same rig. The free pack editions hold
+  only the Ranger and Peasant outfits; the other ten are in the paid Source
+  editions.
 - NPCs use the plain mannequins in faction colours until faction outfits exist.
