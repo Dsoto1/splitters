@@ -170,8 +170,8 @@ async function offlineFlow(browser) {
   const inv = await page.evaluate(() => [...window.__cs.local.inventory.keys()]);
   check(inv.join(',') === '1,2', `offline match spawns with knife + pistol (${inv})`);
   await page.waitForTimeout(1500);
-  const meshes = await page.evaluate(() => document.getElementById('ammo-count').textContent);
-  check(/\d+ \/ \d+/.test(meshes ?? ''), `HUD shows ammo (${meshes})`);
+  const ammo = await page.evaluate(() => `${document.getElementById('ammo-count').textContent} / ${document.getElementById('ammo-reserve').textContent}`);
+  check(/^\d+ \/ \d+$/.test(ammo), `HUD shows ammo (${ammo})`);
   // A click is the user gesture that starts audio; bots fighting then make sounds.
   await page.click('#resume');
   await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: 15000 });
@@ -221,7 +221,7 @@ async function sandgateFlow(browser) {
   await page.goto(`${CLIENT}/?offline=sandgate`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
   await page.waitForTimeout(2000);
-  const score = (await page.textContent('#team-score')) ?? '';
+  const score = (await page.textContent('#scorebar')) ?? '';
   check(score.includes('Embers') && score.includes('Tide'), `team deathmatch shows both team scores (${score})`);
   await page.waitForFunction(() => window.__cs.view.characterCount() >= 8, null, { timeout: 20000 }).catch(() => {});
   const chars = await page.evaluate(() => window.__cs.view.characterCount());
@@ -235,19 +235,22 @@ async function designerFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(CLIENT);
-  await page.click('#open-designer');
+  await page.click('#nav-characters');
+  await page.click('.char-tile.new');
   await page.waitForFunction(() => !!window.__designer, null, { timeout: 30000 });
   await page.click('#designer button:text-is("Female")');
+  await page.click('#designer .tab:text-is("Outfit")');
   await page.selectOption('#designer .dz-row:has(label:text-is("Top")) select', 'peasant_torso_f');
+  await page.click('#designer .tab:text-is("Head")');
   await page.click('#designer button:text-is("Buns")');
   const id = await page.evaluate(() => window.__designer.lookId);
   const problems = await page.evaluate(() => window.__designer.problems);
   check(problems.length === 0 && id.startsWith('c1-f'), `designer builds a wearable custom look (${id} ${problems.join(', ')})`);
   await page.click('#designer button:text-is("Save and use")');
   await page.waitForFunction(() => !document.getElementById('menu').hidden);
-  const selected = await page.inputValue('#look');
+  const selected = await page.evaluate(() => window.__front.look);
   check(selected === id, `the saved look is selected on the menu (${selected})`);
-  await page.click('#play-offline');
+  await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
   await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: 20000 }).catch(() => {});
   check(await page.evaluate(() => window.__cs.view.hasFirstPersonArms()), 'first-person arms of the custom look hold the weapon');

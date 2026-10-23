@@ -1,0 +1,470 @@
+import {
+  CORE_LOOKS,
+  DEFAULT_COOP_RULES,
+  DEFAULT_DEATHMATCH_RULES,
+  DEFAULT_LOOK,
+  DEFAULT_TDM_RULES,
+  LOOK_BIOS,
+  getLook,
+  getWeapon,
+  partInfo,
+  type GameMode,
+  type MapDocument,
+  type MatchRules,
+} from '@chronosplit/shared';
+import type { AudioSystem } from '../audio/audio.ts';
+import { listCustomLooks } from '../designer/customLooks.ts';
+import { drawMapPlan } from './mapPlan.ts';
+import type { MenuScene } from './menuScene.ts';
+import type { PortraitRenderer } from './portraits.ts';
+
+/** A built-in map the Arcade offers. */
+export interface ArcadeMap {
+  key: string;
+  map: MapDocument;
+  blurb: string;
+  modes: GameMode[];
+  bots: number;
+}
+
+export interface ArcadeSetup {
+  map: string;
+  mode: GameMode;
+  bots: number;
+  skill: 'easy' | 'normal' | 'hard';
+  scoreLimit: number;
+  minutes: number;
+}
+
+export interface FrontEndHooks {
+  openEditor(): void;
+  openDesigner(look: string): void;
+  playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill']): void;
+  playOnline(server: string, name: string): void;
+}
+
+type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options';
+
+const MODE_LABEL: Record<GameMode, string> = { 'core.deathmatch': 'Deathmatch', 'core.tdm': 'Team Deathmatch', 'core.coop': 'Co-op' };
+const BASE_RULES: Record<GameMode, MatchRules> = { 'core.deathmatch': DEFAULT_DEATHMATCH_RULES, 'core.tdm': DEFAULT_TDM_RULES, 'core.coop': DEFAULT_COOP_RULES };
+const FAMILY_LABEL = { ranger: 'Ranger', peasant: 'Peasant', athlete: 'Sportswear' } as const;
+
+function storage(key: string, value?: string): string | null {
+  try {
+    if (value !== undefined) localStorage.setItem(key, value);
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+const el = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & { class?: string } = {}, ...children: (Node | string)[]): HTMLElementTagNameMap[K] => {
+  const e = document.createElement(tag);
+  const { class: cls, ...rest } = props;
+  if (cls) e.className = cls;
+  Object.assign(e, rest);
+  e.append(...children);
+  return e;
+};
+const kbd = (key: string, cls = '') => el('kbd', { class: cls, textContent: key });
+const hint = (key: Node, label: string) => el('span', {}, key, label);
+
+/**
+ * The front end (main menu): Home, Arcade setup, Character select, Online and
+ * Options screens over the live 3D menu scene, styled after the UI reference
+ * board. Keyboard: arrows move, Enter selects, Esc goes back, Q / E switch tabs.
+ */
+export class FrontEnd {
+  private screen: ScreenId = 'home';
+  private navIndex = 0;
+  private readonly body = el('div', { class: 'screens' });
+  private readonly status = el('p', { id: 'menu-status' });
+  private readonly footerHints = el('div', { class: 'hintbar' });
+  private setup: ArcadeSetup;
+  name: string;
+  server: string;
+  look: string;
+  private charFilter = 'all';
+  private hovered: string | null = null;
+  private keyHandler = (e: KeyboardEvent) => this.onKey(e);
+
+  constructor(
+    private readonly root: HTMLElement,
+    private readonly maps: readonly ArcadeMap[],
+    private readonly hooks: FrontEndHooks,
+    private readonly scene: MenuScene,
+    private readonly portraits: PortraitRenderer,
+    private readonly audio: AudioSystem,
+    params: URLSearchParams,
+  ) {
+    this.name = params.get('name') ?? storage('cs.name') ?? `Player${Math.floor(Math.random() * 900 + 100)}`;
+    this.server = params.get('server') ?? storage('cs.server') ?? `ws://${location.hostname || 'localhost'}:7777`;
+    this.look = getLook(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK).id;
+    const saved = JSON.parse(storage('cs.arcade') ?? 'null') as ArcadeSetup | null;
+    const first = maps.find((m) => m.key === 'sandgate') ?? maps[0]!;
+    this.setup = saved && maps.some((m) => m.key === saved.map) ? saved : { map: first.key, mode: first.modes[0]!, bots: first.bots, skill: 'normal', scoreLimit: BASE_RULES[first.modes[0]!].scoreLimit, minutes: 10 };
+    root.replaceChildren(
+      this.body,
+      this.status,
+      el('footer', { class: 'menu-footer' }, el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the ChronoSplit playtest. New: Sandgate, Team Deathmatch and the Character Designer.'), this.footerHints),
+    );
+    window.addEventListener('keydown', this.keyHandler);
+    this.go('home');
+    (window as unknown as { __front: FrontEnd }).__front = this;
+  }
+
+  setStatus(text: string): void {
+    this.status.textContent = text;
+  }
+
+  show(status = ''): void {
+    this.root.hidden = false;
+    this.setStatus(status);
+    this.scene.setLook(this.look);
+    this.go(this.screen === 'characters' ? 'characters' : 'home');
+  }
+
+  /** After the designer saves a look, select it and return to character select. */
+  useLook(look: string): void {
+    this.look = getLook(look).id;
+    storage('cs.look', this.look);
+    this.scene.setLook(this.look);
+  }
+
+  private go(screen: ScreenId): void {
+    this.screen = screen;
+    this.hovered = null;
+    this.scene.setLook(this.look);
+    this.body.replaceChildren(this.build(screen));
+    this.footerHints.replaceChildren(...this.hints(screen));
+    if (screen === 'home') (this.body.querySelector('.nav button.on') as HTMLButtonElement | null)?.focus({ preventScroll: true });
+  }
+
+  private hints(screen: ScreenId): HTMLElement[] {
+    switch (screen) {
+      case 'home':
+        return [hint(kbd('↑↓'), 'Navigate'), hint(kbd('↵', 'a'), 'Select')];
+      case 'play':
+        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Mode'), hint(kbd('↵', 'a'), 'Start')];
+      case 'characters':
+        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Filter'), hint(kbd('D', 'x'), 'Design new'), hint(kbd('C', 'y'), 'Customise'), hint(kbd('↵', 'a'), 'Select')];
+      default:
+        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('↵', 'a'), 'Confirm')];
+    }
+  }
+
+  private build(screen: ScreenId): HTMLElement {
+    switch (screen) {
+      case 'home':
+        return this.home();
+      case 'play':
+        return this.arcade();
+      case 'characters':
+        return this.characters();
+      case 'online':
+        return this.online();
+      case 'options':
+        return this.options();
+    }
+  }
+
+  // ---------------------------------------------------------------- home
+
+  private readonly navItems: { id: string; label: string; act: () => void }[] = [
+    { id: 'nav-play', label: 'Play', act: () => this.go('play') },
+    { id: 'nav-mapmaker', label: 'MapMaker', act: () => this.hooks.openEditor() },
+    { id: 'nav-characters', label: 'Characters', act: () => this.go('characters') },
+    { id: 'nav-online', label: 'Online', act: () => this.go('online') },
+    { id: 'nav-options', label: 'Options', act: () => this.go('options') },
+  ];
+
+  private home(): HTMLElement {
+    const nav = el('nav', { class: 'nav' });
+    this.navItems.forEach((item, i) => {
+      const b = el('button', { id: item.id, textContent: item.label });
+      b.classList.toggle('on', i === this.navIndex);
+      b.addEventListener('mouseenter', () => this.setNav(i));
+      b.addEventListener('click', item.act);
+      nav.append(b);
+    });
+    const featured = this.maps.find((m) => m.key === 'sandgate') ?? this.maps[0]!;
+    const plan = el('canvas');
+    const card = el(
+      'button',
+      { class: 'featured panel', title: 'Play this map' },
+      plan,
+      el('div', { class: 'meta' }, el('div', { class: 'kicker', textContent: 'Featured map' }), el('h3', { textContent: featured.map.metadata.name }), el('p', { textContent: `${featured.modes.map((m) => MODE_LABEL[m]).join(' · ')} — ${featured.blurb}` })),
+    );
+    card.addEventListener('click', () => {
+      this.pickMap(featured.key);
+      this.go('play');
+    });
+    requestAnimationFrame(() => drawMapPlan(plan, featured.map));
+    return el(
+      'div',
+      { class: 'screen home' },
+      el('h1', { class: 'logo' }, el('span', { class: 'chrono', textContent: 'Chrono' }), el('span', { class: 'split', textContent: 'Split' })),
+      el('p', { class: 'logo-sub', textContent: 'Arcade shooter · MapMaker' }),
+      nav,
+      this.badge(),
+      card,
+    );
+  }
+
+  private setNav(i: number): void {
+    this.navIndex = (i + this.navItems.length) % this.navItems.length;
+    this.body.querySelectorAll('.nav button').forEach((b, j) => b.classList.toggle('on', j === this.navIndex));
+    (this.body.querySelectorAll('.nav button')[this.navIndex] as HTMLButtonElement | undefined)?.focus({ preventScroll: true });
+  }
+
+  private badge(): HTMLElement {
+    const img = el('img', { alt: '' });
+    void this.portraits.get(this.look).then((src) => (img.src = src), () => undefined);
+    const b = el('button', { class: 'player-badge panel', title: 'Change character' }, img, el('div', {}, el('b', { textContent: this.name }), el('small', { textContent: this.lookName(this.look) })));
+    b.addEventListener('click', () => this.go('characters'));
+    return b;
+  }
+
+  private lookName(id: string): string {
+    return listCustomLooks().find((s) => s.id === id)?.name ?? getLook(id).name;
+  }
+
+  // ---------------------------------------------------------------- arcade
+
+  private pickMap(key: string): void {
+    const m = this.maps.find((x) => x.key === key);
+    if (!m) return;
+    const mode = m.modes.includes(this.setup.mode) ? this.setup.mode : m.modes[0]!;
+    this.setup = { ...this.setup, map: key, mode, bots: m.bots, scoreLimit: BASE_RULES[mode].scoreLimit };
+  }
+
+  private arcade(): HTMLElement {
+    const current = this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
+    const cards = el('div', { class: 'map-cards' });
+    for (const m of this.maps) {
+      const plan = el('canvas');
+      const card = el(
+        'button',
+        { class: `map-card${m.key === current.key ? ' on' : ''}` },
+        plan,
+        el('div', { class: 'meta' }, el('b', { textContent: m.map.metadata.name }), el('small', { textContent: m.blurb }), el('div', { class: 'mode-tags' }, ...m.modes.map((x) => el('span', { textContent: MODE_LABEL[x] })))),
+      );
+      card.dataset.map = m.key;
+      card.addEventListener('click', () => {
+        this.pickMap(m.key);
+        this.go('play');
+      });
+      cards.append(card);
+      requestAnimationFrame(() => drawMapPlan(plan, m.map));
+    }
+    const stepper = (value: number, step: number, min: number, max: number, set: (v: number) => void, fmt = (v: number) => String(v)) => {
+      const minus = el('button', { textContent: '−' });
+      const plus = el('button', { textContent: '+' });
+      minus.addEventListener('click', () => (set(Math.max(min, value - step)), this.saveSetup(), this.go('play')));
+      plus.addEventListener('click', () => (set(Math.min(max, value + step)), this.saveSetup(), this.go('play')));
+      return el('div', { class: 'stepper' }, minus, el('b', { textContent: fmt(value) }), plus);
+    };
+    const tabs = (options: readonly [string, string][], value: string, set: (v: string) => void) =>
+      el(
+        'div',
+        { class: 'tabs' },
+        ...options.map(([v, label]) => {
+          const b = el('button', { class: `tab${v === value ? ' on' : ''}`, textContent: label });
+          b.addEventListener('click', () => (set(v), this.saveSetup(), this.go('play')));
+          return b;
+        }),
+      );
+    const s = this.setup;
+    const coop = s.mode === 'core.coop';
+    const start = el('button', { class: 'primary go', id: 'arcade-start', textContent: 'Start match' });
+    start.addEventListener('click', () => this.start());
+    const panel = el(
+      'div',
+      { class: 'setup panel' },
+      el('h3', { class: 'panel-title', textContent: current.map.metadata.name }),
+      el('div', { class: 'row' }, 'Mode', tabs(current.modes.map((m) => [m, MODE_LABEL[m]] as [string, string]), s.mode, (v) => (this.setup.mode = v as GameMode, this.setup.scoreLimit = BASE_RULES[v as GameMode].scoreLimit))),
+      el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v))),
+      el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
+      ...(coop
+        ? []
+        : [
+            el('div', { class: 'row' }, s.mode === 'core.tdm' ? 'Team score' : 'Score limit', stepper(s.scoreLimit, 5, 5, 200, (v) => (this.setup.scoreLimit = v))),
+            el('div', { class: 'row' }, 'Time limit', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v}m` : '∞'))),
+          ]),
+      el('p', { class: 'map-desc', textContent: current.map.metadata.description }),
+      start,
+    );
+    return el('div', { class: 'screen play' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Arcade <em>Match</em>' })), el('div', { class: 'arcade' }, cards, panel));
+  }
+
+  private saveSetup(): void {
+    storage('cs.arcade', JSON.stringify(this.setup));
+  }
+
+  private start(): void {
+    const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
+    const base = BASE_RULES[this.setup.mode];
+    const rules: MatchRules = this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 };
+    this.saveSetup();
+    // The bot filler counts the player too.
+    this.hooks.playLocal(m.map, rules, this.setup.bots + 1, this.setup.skill);
+  }
+
+  // ---------------------------------------------------------------- character select
+
+  private characters(): HTMLElement {
+    const saved = listCustomLooks();
+    const family = (id: string) => partInfo(getLook(id).parts.find((p) => partInfo(p)?.slot === 'torso') ?? '')?.outfit ?? 'ranger';
+    const all = [...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })), ...saved.map((s) => ({ id: s.id, name: s.name, mine: true }))];
+    const filters: [string, string][] = [['all', 'All'], ['ranger', 'Ranger'], ['peasant', 'Peasant'], ['athlete', 'Sportswear'], ['mine', 'Yours']];
+    const shown = all.filter((c) => this.charFilter === 'all' || (this.charFilter === 'mine' ? c.mine : !c.mine && family(c.id) === this.charFilter));
+    const selected = this.hovered ?? this.look;
+
+    const tabs = el('div', { class: 'tabs' }, el('span', { class: 'bumper', textContent: 'Q' }));
+    for (const [v, label] of filters) {
+      const b = el('button', { class: `tab${v === this.charFilter ? ' on' : ''}`, textContent: label });
+      b.addEventListener('click', () => ((this.charFilter = v), this.go('characters')));
+      tabs.append(b);
+    }
+    tabs.append(el('span', { class: 'bumper', textContent: 'E' }));
+
+    const grid = el('div', { class: 'char-grid' });
+    for (const c of shown) {
+      const img = el('img', { alt: c.name });
+      void this.portraits.get(c.id).then((src) => (img.src = src), () => undefined);
+      const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
+      tile.dataset.look = c.id;
+      tile.addEventListener('mouseenter', () => this.preview(c.id));
+      tile.addEventListener('focus', () => this.preview(c.id));
+      tile.addEventListener('click', () => this.select(c.id));
+      grid.append(tile);
+    }
+    const design = el('button', { class: 'char-tile new', title: 'Design a new character' }, el('b', { textContent: '+' }), el('span', { textContent: 'Design new' }));
+    design.addEventListener('click', () => this.hooks.openDesigner(this.look));
+    grid.append(design);
+
+    const info = el('div', { class: 'char-info panel' });
+    this.fillInfo(info, selected);
+    return el('div', { class: 'screen characters' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Character <em>Select</em>' }), tabs), grid, info);
+  }
+
+  private fillInfo(info: HTMLElement, id: string): void {
+    const l = getLook(id);
+    const name = this.lookName(id);
+    const img = el('img', { alt: '' });
+    void this.portraits.get(id).then((src) => (img.src = src), () => undefined);
+    const outfits = [...new Set(l.parts.map((p) => partInfo(p)?.outfit).filter((x): x is 'ranger' | 'peasant' | 'athlete' => !!x))].map((o) => FAMILY_LABEL[o]).join(' / ');
+    const loadout = el('div', { class: 'loadout' }, el('h4', { textContent: 'Loadout' }), ...DEFAULT_DEATHMATCH_RULES.startingWeapons.map((w) => el('span', { textContent: getWeapon(w).displayName })));
+    const customise = el('button', { textContent: 'Customise' });
+    customise.addEventListener('click', () => this.hooks.openDesigner(id));
+    info.replaceChildren(
+      img,
+      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), el('div', { class: 'tags' }, el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits }))),
+      loadout,
+      customise,
+    );
+  }
+
+  private preview(id: string): void {
+    this.hovered = id;
+    this.scene.setLook(id);
+    const info = this.body.querySelector('.char-info');
+    if (info) this.fillInfo(info as HTMLElement, id);
+  }
+
+  private select(id: string): void {
+    this.useLook(id);
+    this.go('home');
+  }
+
+  // ---------------------------------------------------------------- online & options
+
+  private online(): HTMLElement {
+    const name = el('input', { id: 'name', value: this.name, maxLength: 24, autocomplete: 'off' });
+    const server = el('input', { id: 'server', value: this.server, autocomplete: 'off' });
+    const img = el('img', { alt: '' });
+    void this.portraits.get(this.look).then((src) => (img.src = src), () => undefined);
+    const change = el('button', { textContent: 'Change' });
+    change.addEventListener('click', () => this.go('characters'));
+    const join = el('button', { class: 'primary', id: 'join-online', type: 'submit', textContent: 'Join server' });
+    const form = el(
+      'form',
+      { class: 'form panel' },
+      el('label', {}, 'Name', name),
+      el('label', {}, 'Server', server),
+      el('label', {}, 'Character', el('div', { class: 'current-look' }, img, el('b', { textContent: this.lookName(this.look) }), change)),
+      join,
+    );
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.name = name.value.trim() || this.name;
+      this.server = server.value.trim();
+      storage('cs.name', this.name);
+      storage('cs.server', this.server);
+      this.hooks.playOnline(this.server, this.name);
+    });
+    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), form);
+  }
+
+  private options(): HTMLElement {
+    const name = el('input', { value: this.name, maxLength: 24 });
+    name.addEventListener('change', () => {
+      this.name = name.value.trim() || this.name;
+      storage('cs.name', this.name);
+    });
+    const volume = el('input', { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(this.audio.getVolume() * 100)) });
+    volume.addEventListener('input', () => {
+      this.audio.setVolume(Number(volume.value) / 100);
+      storage('cs.volume', String(this.audio.getVolume()));
+    });
+    const controls = el(
+      'div',
+      { class: 'controls' },
+      ...[
+        ['Move', 'WASD'],
+        ['Jump', 'Space'],
+        ['Fire / zoom', 'Mouse'],
+        ['Reload', 'R'],
+        ['Use', 'E'],
+        ['Weapons', '1–6 · Wheel · Q'],
+        ['Scores', 'Tab'],
+      ].map(([a, k]) => el('div', {}, el('span', { textContent: a! }), kbd(k!))),
+    );
+    return el('div', { class: 'screen options' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Game <em>Options</em>' })), el('div', { class: 'form panel' }, el('label', {}, 'Player name', name), el('label', {}, 'Volume', volume), el('h3', { class: 'panel-title', textContent: 'Controls' }), controls));
+  }
+
+  // ---------------------------------------------------------------- keyboard
+
+  private onKey(e: KeyboardEvent): void {
+    if (this.root.hidden || (e.target instanceof HTMLInputElement && e.key !== 'Escape')) return;
+    if (e.key === 'Escape' && this.screen !== 'home') {
+      e.preventDefault();
+      this.go('home');
+    } else if (this.screen === 'home' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      this.setNav(this.navIndex + (e.key === 'ArrowDown' ? 1 : -1));
+    } else if (this.screen === 'home' && e.key === 'Enter') {
+      e.preventDefault();
+      this.navItems[this.navIndex]!.act();
+    } else if (this.screen === 'play' && e.key === 'Enter') {
+      e.preventDefault();
+      this.start();
+    } else if (this.screen === 'play' && (e.key === 'q' || e.key === 'e')) {
+      const m = this.maps.find((x) => x.key === this.setup.map)!;
+      const i = m.modes.indexOf(this.setup.mode);
+      const mode = m.modes[(i + (e.key === 'e' ? 1 : m.modes.length - 1)) % m.modes.length]!;
+      this.setup = { ...this.setup, mode, scoreLimit: BASE_RULES[mode].scoreLimit };
+      this.go('play');
+    } else if (this.screen === 'characters' && (e.key === 'q' || e.key === 'e')) {
+      const order = ['all', 'ranger', 'peasant', 'athlete', 'mine'];
+      this.charFilter = order[(order.indexOf(this.charFilter) + (e.key === 'e' ? 1 : order.length - 1)) % order.length]!;
+      this.go('characters');
+    } else if (this.screen === 'characters' && e.key === 'd') {
+      this.hooks.openDesigner(this.look);
+    } else if (this.screen === 'characters' && e.key === 'c') {
+      this.hooks.openDesigner(this.hovered ?? this.look);
+    } else if (this.screen === 'characters' && e.key === 'Enter' && this.hovered) {
+      this.select(this.hovered);
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { CORE_WEAPONS, NPC_ID_BASE, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
 import { slotColor } from './view.ts';
+import { Minimap } from './minimap.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -19,7 +20,16 @@ export class Hud {
   private readonly root = $('hud');
   private readonly health = $('health');
   private readonly timer = $('timer');
-  private readonly teamScore = $('team-score');
+  private readonly modeLabel = $('mode-label');
+  private readonly sbLeft = $('sb-left');
+  private readonly sbRight = $('sb-right');
+  private readonly healthBar = $('health-bar');
+  private readonly armorBar = $('armor-bar');
+  private readonly ammoReserve = $('ammo-reserve');
+  private readonly portrait = $<HTMLImageElement>('hud-portrait');
+  private readonly target = $('target');
+  private targetTimer?: number;
+  readonly minimap = new Minimap($<HTMLCanvasElement>('minimap'));
   /** The two sides in Team Deathmatch; null in other modes. */
   private teams: readonly Faction[] | null = null;
   private lastTeamScore = '';
@@ -62,8 +72,12 @@ export class Hud {
     this.feed.replaceChildren();
     this.banner.textContent = '';
     this.timer.textContent = '';
-    this.teamScore.innerHTML = '';
+    this.modeLabel.textContent = '';
+    this.sbLeft.innerHTML = '';
+    this.sbRight.innerHTML = '';
     this.lastTeamScore = '';
+    this.portrait.removeAttribute('src');
+    this.target.hidden = true;
     this.teams = null;
     this.health.textContent = '';
     this.armor.textContent = '';
@@ -111,23 +125,52 @@ export class Hud {
     return out;
   }
 
-  /** "Embers 12 · 9 Tide" over the timer in Team Deathmatch, your team first. */
-  setTeamScore(scores: readonly ScoreEntry[], localSlot: number, limit: number): void {
-    if (!this.teams) return;
-    const totals = this.teamTotals(scores);
-    const mine = this.roster.get(localSlot)?.team;
-    const [a, b] = [...this.teams].sort((x, y) => (x.id === mine ? -1 : y.id === mine ? 1 : 0));
-    const html = [a!, b!]
-      .map((t, i) => {
-        const name = `<span class="team-name" style="color:${t.color}">${escapeHtml(t.name)}</span>`;
-        const score = `<b>${totals.get(t.id) ?? 0}</b>`;
-        return i === 0 ? `${name} ${score}` : `${score} ${name}`;
-      })
-      .join('<span class="sep">·</span>');
-    const full = `${html}${limit > 0 ? `<small>first to ${limit}</small>` : ''}`;
-    if (full === this.lastTeamScore) return;
-    this.lastTeamScore = full;
-    this.teamScore.innerHTML = full;
+  setModeLabel(text: string): void {
+    this.modeLabel.textContent = text;
+  }
+
+  setPortrait(src: string): void {
+    this.portrait.src = src;
+  }
+
+  /**
+   * The scorebar's boxes either side of the timer (reference board): your team
+   * and theirs in Team Deathmatch; you and the leader in Deathmatch; nothing
+   * in co-op.
+   */
+  setTeamScore(scores: readonly ScoreEntry[], localSlot: number, limit: number, coop = false): void {
+    let left = '';
+    let right = '';
+    const box = (value: number, label: string, color: string) => `<b style="background:${color}">${value}</b><small>${escapeHtml(label)}</small>`;
+    if (this.teams) {
+      const totals = this.teamTotals(scores);
+      const mine = this.roster.get(localSlot)?.team;
+      const [a, b] = [...this.teams].sort((x, y) => (x.id === mine ? -1 : y.id === mine ? 1 : 0));
+      left = box(totals.get(a!.id) ?? 0, a!.name, a!.color);
+      right = box(totals.get(b!.id) ?? 0, b!.name, b!.color);
+    } else if (!coop) {
+      const me = scores.find((s) => s.s === localSlot)?.k ?? 0;
+      const best = scores.filter((s) => s.s !== localSlot).reduce((m, s) => Math.max(m, s.k), 0);
+      left = box(me, 'You', '#00d1ff');
+      right = box(best, 'Leader', '#ff8a3d');
+    }
+    const key = `${left}|${right}|${limit}`;
+    if (key === this.lastTeamScore) return;
+    this.lastTeamScore = key;
+    this.sbLeft.innerHTML = left;
+    this.sbRight.innerHTML = right;
+    this.sbLeft.title = this.sbRight.title = limit > 0 ? `First to ${limit}` : '';
+  }
+
+  /** Name and health of whatever you just hit (fades after a few seconds). */
+  showTarget(name: string, frac: number, color: string): void {
+    this.target.hidden = false;
+    $('target-name').textContent = name;
+    const bar = $('target-bar');
+    bar.style.width = `${Math.max(0, Math.min(1, frac)) * 100}%`;
+    bar.style.background = color;
+    clearTimeout(this.targetTimer);
+    this.targetTimer = window.setTimeout(() => (this.target.hidden = true), 2500);
   }
 
   /** Display names for NPC actor IDs, provided by the session. */
@@ -142,6 +185,10 @@ export class Hud {
   setHealth(hp: number, armor: number, alive: boolean): void {
     this.health.textContent = alive ? String(Math.max(0, hp)) : '';
     this.armor.textContent = alive && armor > 0 ? String(armor) : '';
+    this.healthBar.style.width = `${alive ? Math.max(0, Math.min(100, hp)) : 0}%`;
+    this.healthBar.classList.toggle('low', hp <= 30);
+    this.armorBar.style.width = `${alive ? Math.max(0, Math.min(100, armor)) : 0}%`;
+    this.root.classList.toggle('dead', !alive);
   }
 
   /** Held weapon, ammo and the owned-weapons bar. */
@@ -149,9 +196,11 @@ export class Hud {
     const def = defs.find((d) => d.slot === held);
     const ammo = owned.get(held);
     this.weaponName.textContent = alive && def ? def.displayName : '';
+    this.ammoReserve.textContent = alive && def && ammo && def.magazine > 0 && !reloading ? String(ammo[1]) : '';
     if (!alive || !def || !ammo) this.ammoCount.textContent = '';
     else if (def.magazine === 0) this.ammoCount.textContent = '∞';
-    else this.ammoCount.textContent = reloading ? 'Reloading…' : `${ammo[0]} / ${ammo[1]}`;
+    else this.ammoCount.textContent = reloading ? 'Reloading…' : String(ammo[0]);
+    this.ammoCount.classList.toggle('reloading', reloading);
     this.ammoCount.classList.toggle('low', !!def && def.magazine > 0 && !!ammo && ammo[0] <= Math.ceil(def.magazine / 4));
     const key = `${alive}|${held}|${[...owned.keys()].join(',')}`;
     if (key === this.lastWeaponBar) return;

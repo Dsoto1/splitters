@@ -26,6 +26,7 @@ import {
   type ServerMessage,
   type ServerStats,
   type MatchRules,
+  PLAYER,
 } from '@chronosplit/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import type { RendererKind } from '../engine.ts';
@@ -53,6 +54,8 @@ export interface SessionOptions {
   onExit: (reason?: string) => void;
   /** Called once the map is loaded and the first frame can render. */
   onReady?: () => void;
+  /** Your character's portrait for the HUD (rendered by the menus). */
+  portrait?: Promise<string>;
 }
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -80,6 +83,8 @@ export class GameSession {
   private scores: ScoreEntry[] = [];
   private serverStats: ServerStats | null = null;
   private winner: string | null = null;
+  /** Last known health fraction of every player and NPC, for the target bar. */
+  private readonly hp = new Map<number, number>();
   private rules: MatchRules | null = null;
   private outcome: 'victory' | 'defeat' | null = null;
   /** Role and faction of each NPC seen, for names and looks. */
@@ -175,6 +180,9 @@ export class GameSession {
         this.slot = msg.slot;
         this.rules = msg.rules;
         this.hud.setTeams(msg.rules.mode === 'core.tdm' ? mapTeams(loaded.map) : null);
+        this.hud.setModeLabel(msg.rules.mode === 'core.tdm' ? 'Team Deathmatch' : msg.rules.mode === 'core.coop' ? 'Co-op Mission' : 'Deathmatch');
+        this.hud.minimap.setMap(loaded.map);
+        void this.opts.portrait?.then((src) => this.hud.setPortrait(src), () => undefined);
         const geometry = buildMapGeometry(loaded.map);
         this.map = loaded.map;
         this.view.buildMap(loaded.map, geometry);
@@ -204,6 +212,8 @@ export class GameSession {
         this.phase = msg.phase;
         this.timeLeft = msg.timeLeft;
         this.scores = msg.score;
+        for (const p of msg.players) this.hp.set(p.s, p.hp / PLAYER.maxHealth);
+        for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8] });
         this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr);
         this.taken = new Set(msg.pk);
@@ -226,6 +236,8 @@ export class GameSession {
           if (ev.e === 'shot') {
             if (ev.s === this.slot) {
               if (ev.hit.some((h) => h !== null)) this.hud.hit();
+              const target = ev.hit.find((h): h is number => h !== null && h !== undefined);
+              if (target !== undefined) this.hud.showTarget(this.hud.name(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
             } else {
               const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
               for (const to of ev.to) this.view.addTracer(from, { x: to[0], y: to[1], z: to[2] }, this.hud.team(ev.s)?.color ?? slotColor(ev.s));
@@ -403,7 +415,16 @@ export class GameSession {
     );
     this.sfx.remoteSteps(poses);
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot);
-    this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0);
+    this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0, this.rules?.mode === 'core.coop');
+    if (local) {
+      // Teammates on the minimap (co-op: every player is one).
+      const mine = this.hud.team(this.slot);
+      const coop = this.rules?.mode === 'core.coop';
+      const blips = poses
+        .filter((p) => p.slot !== this.slot && p.slot < NPC_ID_BASE && p.alive && (coop || (mine && this.hud.team(p.slot)?.id === mine.id)))
+        .map((p) => ({ x: p.x, z: p.z, color: coop ? '#2ecc71' : mine!.color }));
+      this.hud.minimap.update(local.eye.x, local.eye.z, this.input.yaw, blips);
+    }
 
     this.frames++;
     if (now - this.fpsAt >= 1000) {

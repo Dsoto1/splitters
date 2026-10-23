@@ -71,6 +71,7 @@ export class LogicPanel {
   open(focusRule?: string): void {
     this.isOpen = true;
     this.el.hidden = false;
+    this.syncTabs();
     this.focusRule = focusRule ?? null;
     this.render();
     if (focusRule) this.el.querySelector(`[data-rule="${focusRule}"]`)?.scrollIntoView({ block: 'center' });
@@ -79,6 +80,13 @@ export class LogicPanel {
   close(): void {
     this.isOpen = false;
     this.el.hidden = true;
+    this.syncTabs();
+  }
+
+  /** The top bar's Build / Logic tabs follow the panel. */
+  private syncTabs(): void {
+    document.getElementById('ed-build-btn')?.classList.toggle('on', !this.isOpen);
+    document.getElementById('ed-logic-btn')?.classList.toggle('on', this.isOpen);
   }
 
   /** New rule listening to `entity` (from the inspector's "Add rule" button). */

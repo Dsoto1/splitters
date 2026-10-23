@@ -844,6 +844,7 @@ export class EditorApp {
     });
     $('ed-test').addEventListener('click', () => this.test());
     $('ed-logic-btn').addEventListener('click', () => this.logic.toggle());
+    $('ed-build-btn').addEventListener('click', () => this.logic.close());
     $('ed-status').addEventListener('click', () => $('ed-issues').scrollIntoView({ behavior: 'smooth' }));
     $('ed-level-up').addEventListener('click', () => this.setLevel(this.level + 1));
     $('ed-level-down').addEventListener('click', () => this.setLevel(this.level - 1));

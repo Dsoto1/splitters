@@ -101,6 +101,24 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
 
 export const DEFAULT_LOOK = CORE_LOOKS[0]!.id;
 
+/** One-line bios for the presets (character select). */
+export const LOOK_BIOS: Readonly<Record<string, string>> = {
+  'core.ranger': 'A woodland scout who prefers long sightlines and longer silences.',
+  'core.huntress': 'Tracks anything that moves. Has opinions about rifles.',
+  'core.warden': 'Keeps the forest roads safe, and keeps score while doing it.',
+  'core.scout': 'First in, first out, usually carrying the flag of someone else.',
+  'core.farmhand': 'Up before dawn, armed by noon. Hits like a hay bale.',
+  'core.miller': 'Grinds grain and opponents with equal patience.',
+  'core.tracker': 'Half ranger, half drifter, fully lost on purpose.',
+  'core.pathfinder': 'Knows every shortcut, including the ones through walls.',
+  'core.drifter': 'Hooded traveller with a pauldron and no forwarding address.',
+  'core.wayfarer': 'Walked here from somewhere. Will walk away the winner.',
+  'core.brawler': 'Skipped the shirt, kept the attitude.',
+  'core.sprinter': 'Track star turned arena regular. Never stops moving.',
+  'core.champion': 'Undefeated in the ring; considering the arena a warm-up.',
+  'core.striker': 'Sports top, ranger boots, zero patience for campers.',
+};
+
 // ---------------------------------------------------------------- the part catalogue (Character Designer)
 
 export interface PartInfo {

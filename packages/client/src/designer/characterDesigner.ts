@@ -6,6 +6,8 @@ import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
+import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
+import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import {
   CHARACTER_PARTS,
@@ -31,6 +33,7 @@ import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
 import { deleteCustomLook, listCustomLooks, saveCustomLook, type SavedLook } from './customLooks.ts';
+import type { PortraitRenderer } from '../frontend/portraits.ts';
 
 type Draft = Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'skin' | 'hairColor'> & { name: string };
 
@@ -53,29 +56,47 @@ export class CharacterDesigner {
   private rebuildTimer?: number;
   private weapon: string | null = 'core.rifle';
   private readonly state: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false };
+  private tab: 'body' | 'head' | 'outfit' | 'colours' = 'body';
+  private readonly keys = (e: KeyboardEvent) => this.onKey(e);
 
   constructor(
     engine: AbstractEngine,
     canvas: HTMLCanvasElement,
     startLook: string,
     private readonly done: (lookId: string | null) => void,
+    private readonly portraits?: PortraitRenderer,
   ) {
     this.scene = new Scene(engine);
-    this.scene.clearColor = new Color4(0.13, 0.15, 0.18, 1);
-    const camera = new ArcRotateCamera('designerCam', Math.PI / 2 - 0.35, 1.3, 3.6, new Vector3(-0.6, 0.95, 0), this.scene);
+    this.scene.clearColor = new Color4(0.043, 0.059, 0.102, 1);
+    const camera = new ArcRotateCamera('designerCam', Math.PI / 2 - 0.3, 1.32, 3.4, new Vector3(0, 0.95, 0), this.scene);
     camera.lowerRadiusLimit = 1.4;
     camera.upperRadiusLimit = 6;
     camera.wheelPrecision = 60;
     camera.minZ = 0.05;
     camera.attachControl(canvas, true);
-    new HemisphericLight('hemi', new Vector3(0.3, 1, -0.4), this.scene).intensity = 0.95;
-    new DirectionalLight('key', new Vector3(-0.5, -1, 0.8), this.scene).intensity = 0.7;
-    const floor = CreateDisc('designerFloor', { radius: 1.6, tessellation: 48 }, this.scene);
+    const hemi = new HemisphericLight('hemi', new Vector3(0.3, 1, 0.4), this.scene);
+    hemi.intensity = 0.9;
+    hemi.groundColor = new Color3(0.1, 0.12, 0.2);
+    new DirectionalLight('key', new Vector3(-0.5, -0.8, -0.9), this.scene).intensity = 2.2;
+    const fill = new DirectionalLight('fill', new Vector3(0.6, -0.3, -1), this.scene);
+    fill.intensity = 0.8;
+    fill.specular = Color3.Black();
+    const rim = new PointLight('rim', new Vector3(0, 2.4, -1.4), this.scene);
+    rim.diffuse = Color3.FromHexString('#00d1ff');
+    rim.intensity = 2;
+    rim.range = 4;
+    const floor = CreateDisc('designerFloor', { radius: 1.3, tessellation: 64 }, this.scene);
     floor.rotation.x = Math.PI / 2;
     const fm = new StandardMaterial('designerFloorMat', this.scene);
-    fm.diffuseColor = new Color3(0.24, 0.26, 0.3);
-    fm.specularColor = Color3.Black();
+    fm.emissiveColor = Color3.FromHexString('#16233a');
+    fm.disableLighting = true;
     floor.material = fm;
+    const ring = CreateTorus('designerRing', { diameter: 2.6, thickness: 0.025, tessellation: 96 }, this.scene);
+    ring.position.y = 0.01;
+    const rm = new StandardMaterial('designerRingMat', this.scene);
+    rm.emissiveColor = Color3.FromHexString('#00d1ff');
+    rm.disableLighting = true;
+    ring.material = rm;
     this.characters = new CharacterLibrary(this.scene);
     this.models = new ModelLibrary(this.scene);
 
@@ -85,6 +106,7 @@ export class CharacterDesigner {
 
     this.root.id = 'designer';
     document.body.append(this.root);
+    window.addEventListener('keydown', this.keys);
     this.render();
     this.rebuild();
     (window as unknown as { __designer: CharacterDesigner }).__designer = this;
@@ -105,6 +127,7 @@ export class CharacterDesigner {
   }
 
   dispose(): void {
+    window.removeEventListener('keydown', this.keys);
     clearTimeout(this.rebuildTimer);
     this.anim?.dispose();
     this.root.remove();
@@ -169,22 +192,60 @@ export class CharacterDesigner {
     this.update({ name: saved?.name ?? `My ${l.name}`, body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor });
   }
 
+  /** A random wearable look for the current body. */
+  randomize(): void {
+    const body = this.draft.body;
+    const pick = <T>(xs: readonly T[]): T => xs[Math.floor(Math.random() * xs.length)]!;
+    const of = (slot: PartSlot) => CHARACTER_PARTS.filter((p) => p.body === body && p.slot === slot);
+    const torso = pick(of('torso'));
+    const parts = [torso.id];
+    if (torso.outfit !== 'athlete') parts.push(pick(of('arms')).id);
+    parts.push(pick(of('legs')).id, pick(of('feet')).id);
+    if (Math.random() < 0.5) parts.push(pick(of('hood')).id);
+    if (Math.random() < 0.4) parts.push(pick(of('pauldron')).id);
+    const styles = HAIR_STYLES[body];
+    const hair = [pick(styles.filter((h) => h.id !== 'hair_beard')).id, ...(body === 'male' && Math.random() < 0.35 ? ['hair_beard'] : [])];
+    const outfits = new Set(parts.map((p) => partInfo(p)?.outfit));
+    const colorways = COLORWAYS.filter((c) => outfits.has(c.family) && (c.body === null || c.body === body) && Math.random() < 0.5).map((c) => c.id);
+    this.update({ parts, hair, colorways, skin: pick([null, ...SKIN_TONES.slice(1)]), hairColor: pick(HAIR_COLORS) });
+  }
+
+  private onKey(e: KeyboardEvent): void {
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+    const tabs = ['body', 'head', 'outfit', 'colours'] as const;
+    if (e.key === 'q' || e.key === 'e') {
+      this.tab = tabs[(tabs.indexOf(this.tab) + (e.key === 'e' ? 1 : tabs.length - 1)) % tabs.length]!;
+      this.render();
+    } else if (e.key === 'r') this.randomize();
+    else if (e.key === 'Escape') this.done(null);
+    else if (e.key === 'Enter' && !this.problems.length) this.save();
+  }
+
+  private save(): void {
+    const entry: SavedLook = { id: this.lookId, name: this.draft.name };
+    saveCustomLook(entry);
+    this.done(entry.id);
+  }
+
   // ---------------------------------------------------------------- panel
 
   private render(): void {
     const d = this.draft;
-    const el = this.root;
-    el.replaceChildren();
-    const h = (text: string) => {
+    const left = document.createElement('div');
+    left.className = 'dz-left panel';
+    const right = document.createElement('div');
+    right.className = 'dz-right panel';
+    const add = (parent: HTMLElement, ...children: HTMLElement[]) => parent.append(...children);
+    const h = (parent: HTMLElement, text: string) => {
       const x = document.createElement('h3');
       x.textContent = text;
-      el.append(x);
+      parent.append(x);
     };
-    const rowOf = (...children: HTMLElement[]) => {
+    const rowOf = (parent: HTMLElement, ...children: HTMLElement[]) => {
       const r = document.createElement('div');
       r.className = 'dz-row';
       r.append(...children);
-      el.append(r);
+      parent.append(r);
       return r;
     };
     const button = (label: string, on: boolean, click: () => void, title = '') => {
@@ -195,14 +256,19 @@ export class CharacterDesigner {
       b.addEventListener('click', click);
       return b;
     };
+    const tile = (label: string, on: boolean, click: () => void) => {
+      const b = button(label, on, click);
+      b.className = `dz-tile${on ? ' on' : ''}`;
+      return b;
+    };
     const select = (options: [string, string][], value: string, change: (v: string) => void) => {
       const s = document.createElement('select');
       for (const [v, l] of options) s.append(new Option(l, v, false, v === value));
       s.addEventListener('change', () => change(s.value));
       return s;
     };
-    const swatches = (colors: readonly string[], value: string | null, set: (c: string | null) => void, noneLabel: string) => {
-      const r = rowOf();
+    const swatches = (parent: HTMLElement, colors: readonly string[], value: string | null, set: (c: string | null) => void, noneLabel: string) => {
+      const r = rowOf(parent);
       r.classList.add('dz-swatches');
       r.append(button(noneLabel, value === null, () => set(null), 'No tint'));
       for (const c of colors) {
@@ -218,94 +284,101 @@ export class CharacterDesigner {
       r.append(custom);
     };
 
+    // Top bar: title and tabs (Q / E), as on the reference board.
+    const top = document.createElement('header');
+    top.className = 'dz-top';
     const title = document.createElement('h2');
-    title.textContent = 'Character Designer';
-    el.append(title);
-    const name = document.createElement('input');
-    name.value = d.name;
-    name.maxLength = 24;
-    name.placeholder = 'Name';
-    name.addEventListener('change', () => (this.draft = { ...this.draft, name: name.value.trim() || 'My character' }));
-    rowOf(name);
-
-    const saved = listCustomLooks();
-    const starts: [string, string][] = [['', 'Start from…'], ...CORE_LOOKS.map((l): [string, string] => [l.id, `Preset: ${l.name}`]), ...saved.map((s): [string, string] => [s.id, `Saved: ${s.name}`])];
-    rowOf(select(starts, '', (v) => v && this.load(v)));
-
-    h('Body');
-    rowOf(button('Male', d.body === 'male', () => this.setBody('male')), button('Female', d.body === 'female', () => this.setBody('female')));
-
-    h('Outfit');
-    const bareArms = d.parts.some((p) => partInfo(p)?.outfit === 'athlete' && partInfo(p)?.slot === 'torso');
-    for (const slot of PART_SLOTS) {
-      if (slot === 'arms' && bareArms) continue;
-      const current = d.parts.find((p) => partInfo(p)?.slot === slot) ?? '';
-      const options: [string, string][] = CHARACTER_PARTS.filter((p) => p.body === d.body && p.slot === slot).map((p) => [p.id, p.label]);
-      if (!REQUIRED_SLOTS.includes(slot) && slot !== 'arms') options.unshift(['', 'None']);
-      const label = document.createElement('label');
-      label.textContent = PART_SLOT_LABELS[slot];
-      rowOf(label, select(options, current, (v) => this.setPart(slot, v || null)));
+    title.innerHTML = 'Character <em>Designer</em>';
+    const tabs = document.createElement('div');
+    tabs.className = 'tabs';
+    const bumper = (k: string) => Object.assign(document.createElement('span'), { className: 'bumper', textContent: k });
+    tabs.append(bumper('Q'));
+    for (const [id, label] of [['body', 'Body'], ['head', 'Head'], ['outfit', 'Outfit'], ['colours', 'Colours']] as const) {
+      const b = button(label, this.tab === id, () => ((this.tab = id), this.render()));
+      b.className = `tab${this.tab === id ? ' on' : ''}`;
+      tabs.append(b);
     }
+    tabs.append(bumper('E'));
+    top.append(title, tabs);
 
-    const families = [...new Set(d.parts.map((p) => partInfo(p)?.outfit))].filter((f): f is NonNullable<typeof f> => !!f && COLORWAYS.some((c) => c.family === f));
-    if (families.length) {
-      h('Colours');
+    if (this.tab === 'body') {
+      h(left, 'Body type');
+      add(left, tile('Male', d.body === 'male', () => this.setBody('male')), tile('Female', d.body === 'female', () => this.setBody('female')));
+      h(left, 'Skin tone');
+      swatches(left, SKIN_TONES.filter((c) => c !== '#ffffff'), d.skin, (c) => this.update({ skin: c }), 'Base');
+    } else if (this.tab === 'head') {
+      h(left, 'Hair & beard');
+      add(left, ...HAIR_STYLES[d.body].map((st) => tile(st.label, d.hair.includes(st.id), () => this.update({ hair: d.hair.includes(st.id) ? d.hair.filter((x) => x !== st.id) : [...d.hair, st.id] }))));
+      h(left, 'Hair colour');
+      swatches(left, HAIR_COLORS, d.hairColor, (c) => this.update({ hairColor: c }), 'Natural');
+    } else if (this.tab === 'outfit') {
+      h(left, 'Outfit parts');
+      const bareArms = d.parts.some((p) => partInfo(p)?.outfit === 'athlete' && partInfo(p)?.slot === 'torso');
+      for (const slot of PART_SLOTS) {
+        if (slot === 'arms' && bareArms) continue;
+        const current = d.parts.find((p) => partInfo(p)?.slot === slot) ?? '';
+        const options: [string, string][] = CHARACTER_PARTS.filter((p) => p.body === d.body && p.slot === slot).map((p) => [p.id, p.label]);
+        if (!REQUIRED_SLOTS.includes(slot) && slot !== 'arms') options.unshift(['', 'None']);
+        const label = document.createElement('label');
+        label.textContent = PART_SLOT_LABELS[slot];
+        rowOf(left, label, select(options, current, (v) => this.setPart(slot, v || null)));
+      }
+    } else {
+      const families = [...new Set(d.parts.map((p) => partInfo(p)?.outfit))].filter((f): f is NonNullable<typeof f> => !!f && COLORWAYS.some((c) => c.family === f));
+      h(left, 'Colour palette');
       for (const f of families) {
         const ways = COLORWAYS.filter((c) => c.family === f && (c.body === null || c.body === d.body));
         const current = d.colorways.find((c) => ways.some((w) => w.id === c)) ?? '';
         const label = document.createElement('label');
         label.textContent = f === 'athlete' ? 'Sportswear' : f[0]!.toUpperCase() + f.slice(1);
-        rowOf(
-          label,
-          select([['', 'Original'], ...ways.map((w): [string, string] => [w.id, w.label])], current, (v) =>
-            this.update({ colorways: [...d.colorways.filter((c) => !ways.some((w) => w.id === c)), ...(v ? [v] : [])] }),
-          ),
-        );
+        rowOf(left, label, select([['', 'Original'], ...ways.map((w): [string, string] => [w.id, w.label])], current, (v) => this.update({ colorways: [...d.colorways.filter((c) => !ways.some((w) => w.id === c)), ...(v ? [v] : [])] })));
       }
+      h(left, 'Skin');
+      swatches(left, SKIN_TONES.filter((c) => c !== '#ffffff'), d.skin, (c) => this.update({ skin: c }), 'Base');
+      h(left, 'Hair');
+      swatches(left, HAIR_COLORS, d.hairColor, (c) => this.update({ hairColor: c }), 'Natural');
     }
+    h(left, 'Preview');
+    const pose = (label: string, on: boolean, st: Partial<MotionState>) => tile(label, on, () => (Object.assign(this.state, { speed: 0, celebrate: false, ...st }), this.render()));
+    add(left, pose('Idle', this.state.speed === 0 && !this.state.celebrate, {}), pose('Run', this.state.speed > 0, { speed: 6 }), pose('Dance', this.state.celebrate, { celebrate: true }));
+    const weapon = (label: string, id: string | null) => tile(label, this.weapon === id, () => ((this.weapon = id), this.render(), this.rebuild()));
+    add(left, weapon('Unarmed', null), weapon('Pistol', 'core.pistol'), weapon('Rifle', 'core.rifle'), weapon('Shotgun', 'core.shotgun'));
 
-    h('Hair');
-    rowOf(...HAIR_STYLES[d.body].map((s) => button(s.label, d.hair.includes(s.id), () => this.update({ hair: d.hair.includes(s.id) ? d.hair.filter((x) => x !== s.id) : [...d.hair, s.id] }))));
-    swatches(HAIR_COLORS, d.hairColor, (c) => this.update({ hairColor: c }), 'Natural');
-
-    h('Skin');
-    swatches(
-      SKIN_TONES.filter((c) => c !== '#ffffff'),
-      d.skin,
-      (c) => this.update({ skin: c }),
-      'Base',
-    );
-
-    h('Preview');
-    const pose = (label: string, on: boolean, s: Partial<MotionState>) => button(label, on, () => (Object.assign(this.state, { speed: 0, celebrate: false, ...s }), this.render()));
-    rowOf(pose('Idle', this.state.speed === 0 && !this.state.celebrate, {}), pose('Run', this.state.speed > 0, { speed: 6 }), pose('Dance', this.state.celebrate, { celebrate: true }));
-    const weapon = (label: string, id: string | null) =>
-      button(label, this.weapon === id, () => {
-        this.weapon = id;
-        this.render();
-        this.rebuild();
-      });
-    rowOf(weapon('Unarmed', null), weapon('Pistol', 'core.pistol'), weapon('Rifle', 'core.rifle'), weapon('Shotgun', 'core.shotgun'));
-
+    // Right column: name, start-from looks (portraits), problems and actions.
+    h(right, 'Name');
+    const name = document.createElement('input');
+    name.value = d.name;
+    name.maxLength = 24;
+    name.addEventListener('change', () => (this.draft = { ...this.draft, name: name.value.trim() || 'My character' }));
+    right.append(name);
+    h(right, 'Start from');
+    const grid = document.createElement('div');
+    grid.className = 'dz-looks';
+    const saved = listCustomLooks();
+    for (const l of [...CORE_LOOKS.map((x) => ({ id: x.id, name: x.name })), ...saved]) {
+      const b = document.createElement('button');
+      b.className = 'dz-look';
+      b.title = l.name;
+      const img = document.createElement('img');
+      img.alt = '';
+      void this.portraits?.get(l.id).then((src) => (img.src = src), () => undefined);
+      b.append(img);
+      b.addEventListener('click', () => this.load(l.id));
+      grid.append(b);
+    }
+    right.append(grid);
     const problems = this.problems;
     if (problems.length) {
       const p = document.createElement('p');
       p.className = 'dz-problems';
       p.textContent = `Can't wear this yet: ${problems.join('; ')}.`;
-      el.append(p);
+      right.append(p);
     }
-    const actions = rowOf(
-      button('Save and use', false, () => {
-        const entry: SavedLook = { id: this.lookId, name: this.draft.name };
-        saveCustomLook(entry);
-        this.done(entry.id);
-      }),
-      button('Back', false, () => this.done(null)),
-    );
+    const actions = rowOf(right, button('Save and use', false, () => this.save()), button('Back', false, () => this.done(null)));
     actions.className = 'dz-actions';
     (actions.firstChild as HTMLButtonElement).classList.add('primary');
     (actions.firstChild as HTMLButtonElement).disabled = problems.length > 0;
-    if (saved.some((s) => s.id === this.lookId)) {
+    if (saved.some((x) => x.id === this.lookId)) {
       actions.append(
         button('Delete saved', false, () => {
           deleteCustomLook(this.lookId);
@@ -313,5 +386,12 @@ export class CharacterDesigner {
         }),
       );
     }
+
+    // Bottom bar: controller-style hints (Randomize is clickable too).
+    const foot = document.createElement('footer');
+    foot.className = 'dz-foot hintbar';
+    foot.innerHTML = '<span><kbd>Drag</kbd>Rotate</span><span><kbd>Wheel</kbd>Zoom</span><span class="dz-random"><kbd class="y">R</kbd>Randomize</span><span><kbd class="b">Esc</kbd>Back</span><span><kbd class="a">↵</kbd>Apply</span>';
+    foot.querySelector('.dz-random')!.addEventListener('click', () => this.randomize());
+    this.root.replaceChildren(top, left, right, foot);
   }
 }

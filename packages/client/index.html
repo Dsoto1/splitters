@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ChronoSplit — Phase 0</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23ffb03b'/%3E%3C/svg%3E" />
+    <title>ChronoSplit</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%2300d1ff'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="/src/style.css" />
     <link rel="stylesheet" href="/src/editor/editor.css" />
   </head>
@@ -14,13 +14,20 @@
       <div id="crosshair"></div>
       <div id="hitmarker"></div>
       <div id="scope" hidden></div>
-      <div id="vitals"><span id="health"></span><span id="armor"></span></div>
-      <div id="ammo"><span id="weapon-name"></span><b id="ammo-count"></b></div>
+      <canvas id="minimap" width="180" height="180"></canvas>
+      <div id="vitals">
+        <img id="hud-portrait" alt="" />
+        <div class="vit">
+          <div class="vit-row hp"><b id="health"></b><div class="bar"><i id="health-bar"></i></div></div>
+          <div class="vit-row ar"><b id="armor"></b><div class="bar"><i id="armor-bar"></i></div></div>
+        </div>
+      </div>
+      <div id="ammo"><span id="weapon-name"></span><div class="ammo-line"><b id="ammo-count"></b><span id="ammo-reserve"></span></div></div>
+      <div id="target" hidden><span id="target-name"></span><div class="bar"><i id="target-bar"></i></div></div>
       <div id="weapon-bar"></div>
       <div id="powerups"></div>
       <div id="pickup-msg"></div>
-      <div id="timer"></div>
-      <div id="team-score"></div>
+      <div id="scorebar"><div id="sb-left" class="sb-box"></div><div class="sb-mid"><b id="timer"></b><small id="mode-label"></small></div><div id="sb-right" class="sb-box"></div></div>
       <div id="sc-timers"></div>
       <div id="objectives"></div>
       <div id="message"></div>
@@ -30,28 +37,11 @@
       <div id="banner"></div>
       <div id="scoreboard" hidden></div>
       <pre id="perf" hidden></pre>
-      <div id="help">WASD move · Space jump · LMB fire · RMB zoom · R reload · E use · 1–6 / wheel / Q weapons · Tab scores · F3 stats</div>
     </div>
-    <div id="menu">
-      <h1>ChronoSplit</h1>
-      <p class="sub">Vertical slice in progress</p>
-      <div id="menu-actions">
-        <button id="open-editor" class="primary">MapMaker</button>
-        <button id="play-offline">Play offline vs bots</button>
-        <button id="play-vault" title="Scenario demo: doors, buttons, traps, objectives">Play The Vault (scenario)</button>
-        <button id="play-outpost" title="Co-op mission vs NPC squads, with bot teammates">Play Outpost Siege (co-op)</button>
-        <button id="play-sandgate" title="Desert town, 5 v 5 with bots">Play Sandgate (team deathmatch)</button>
-      </div>
-      <form id="join">
-        <label>Name <input id="name" maxlength="24" autocomplete="off" /></label>
-        <label>Character <span class="look-row"><select id="look"></select><button type="button" id="open-designer" title="Make your own character">Design…</button></span></label>
-        <label>Server <input id="server" autocomplete="off" /></label>
-        <button type="submit">Play online</button>
-      </form>
-      <p id="status"></p>
-    </div>
+    <div id="menu" hidden></div>
     <div id="pause" hidden>
-      <button id="resume" class="primary">Click to play</button>
+      <h2 class="pause-title">Paused</h2>
+      <button id="resume" class="primary">Resume</button>
       <button id="exitmatch">Leave</button>
       <label class="volume">Volume <input id="volume" type="range" min="0" max="100" step="5" /></label>
       <p class="hint">Esc again to leave</p>
@@ -60,6 +50,7 @@
     <div id="editor" hidden>
       <header id="ed-top">
         <button id="ed-home" title="Main menu">◀ Menu</button>
+        <span class="ed-brand"><i>Chrono</i><b>Split</b> <small>MapMaker</small></span>
         <input id="ed-name" maxlength="80" aria-label="Map name" />
         <span id="ed-dirty" title="Unsaved changes"></span>
         <div class="group">
@@ -75,7 +66,10 @@
           <button id="ed-redo" title="Ctrl+Y">↷</button>
         </div>
         <button id="ed-status" class="pill">Checking…</button>
-        <button id="ed-logic-btn" title="Scenario logic: objectives, variables, timers, rules (L)">⚙ Logic</button>
+        <div class="tabs ed-modes">
+          <button id="ed-build-btn" class="tab on" title="Place and paint pieces">Build</button>
+          <button id="ed-logic-btn" class="tab" title="Scenario logic: objectives, variables, timers, rules (L)">Logic</button>
+        </div>
         <div class="spacer"></div>
         <label class="inline">Bots <select id="ed-bots"></select></label>
         <label class="inline">Skill <select id="ed-skill"><option>easy</option><option selected>normal</option><option>hard</option></select></label>
