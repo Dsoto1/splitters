@@ -1,0 +1,1752 @@
+{
+  "format": "chronosplit.map",
+  "formatVersion": 8,
+  "metadata": {
+    "id": "jungle_steps",
+    "name": "Jungle Steps",
+    "author": "ChronoSplit",
+    "description": "An overgrown temple ruin split by a river gorge, made in the spirit of the classic jungle-temple bomb map. Embers camp in the south, Tide in the north. Cross by the long high bridge over the ravine (sniper rifle halfway, an 8 m fall if you get knocked off), the stone double-doors causeway in the middle, or the sunken river route through the gorge, reached by stair blocks at either end, where rockets wait in the culvert and heavy armour in the far nook.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 4,
+      "max": 12
+    },
+    "supportedModes": [
+      "core.tdm",
+      "core.deathmatch"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.ruins",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 10,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.yard_ruins",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.yard_ruins",
+        "x": 2,
+        "y": 10,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 10,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.tower",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.tower",
+        "x": 4,
+        "y": 10,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.yard_crates",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.yard_crates",
+        "x": 1,
+        "y": 9,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 9,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.terrace",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.terrace",
+        "x": 3,
+        "y": 9,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 9,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.stairs_open",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.stairs_open",
+        "x": 1,
+        "y": 8,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 7,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.bridge",
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.bridge",
+        "x": 1,
+        "y": 5,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.bridge",
+        "x": 1,
+        "y": 6,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.yard_ruins",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.yard_ruins",
+        "x": 2,
+        "y": 8,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:W": "arch"
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.room_pillar",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "arch"
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.room_pillar",
+        "x": 3,
+        "y": 8,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "arch"
+        }
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "wide"
+        }
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 8,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:S": "wide"
+        }
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "half"
+        }
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 7,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "half"
+        }
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.terrace",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "half"
+        }
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.terrace",
+        "x": 2,
+        "y": 7,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "half"
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "half"
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 7,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:W": "half"
+        }
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.yard_wall",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.yard_wall",
+        "x": 4,
+        "y": 7,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open",
+          "0,0,0:N": "half",
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "half",
+          "0,0,0:W": "arch"
+        }
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "half"
+        }
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 6,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "half"
+        }
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.corridor_clear",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "window",
+          "0,0,0:W": "window"
+        }
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.corridor",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.corridor",
+        "x": 5,
+        "y": 9,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 9,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.yard_crates",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.yard_crates",
+        "x": 6,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.room_columns",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "window"
+        }
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.room_columns",
+        "x": 5,
+        "y": 7,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:E": "window"
+        }
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 4,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 6,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_057",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 4,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 6,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_059",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 4,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_060",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 6,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_061",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_062",
+        "tile": "core.yard_ruins",
+        "x": 1,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_064",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_065",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_066",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_067",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_068",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_069",
+        "tile": "core.stairs",
+        "x": 6,
+        "y": 4,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_070",
+        "tile": "core.stairs",
+        "x": 6,
+        "y": 6,
+        "z": -1,
+        "rotation": 3
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "spawn_071",
+      "position": [
+        6,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 0.2,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_072",
+      "position": [
+        6,
+        0,
+        82
+      ],
+      "kind": "spawn",
+      "yaw": 2.941592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_073",
+      "position": [
+        14,
+        0,
+        -1
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_074",
+      "position": [
+        14,
+        0,
+        81
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_075",
+      "position": [
+        24,
+        0,
+        -1
+      ],
+      "kind": "spawn",
+      "yaw": -0.2,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_076",
+      "position": [
+        24,
+        0,
+        81
+      ],
+      "kind": "spawn",
+      "yaw": 3.3415926535897933,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_077",
+      "position": [
+        7,
+        0,
+        10
+      ],
+      "kind": "spawn",
+      "yaw": 0.3,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_078",
+      "position": [
+        7,
+        0,
+        70
+      ],
+      "kind": "spawn",
+      "yaw": 2.8415926535897933,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_079",
+      "position": [
+        17,
+        0,
+        10
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_080",
+      "position": [
+        17,
+        0,
+        70
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_081",
+      "position": [
+        33,
+        0,
+        10
+      ],
+      "kind": "spawn",
+      "yaw": -0.4,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_082",
+      "position": [
+        33,
+        0,
+        70
+      ],
+      "kind": "spawn",
+      "yaw": 3.541592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "pickup_083",
+      "position": [
+        8,
+        4,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_084",
+      "position": [
+        32,
+        -4,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_085",
+      "position": [
+        58,
+        -4,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_086",
+      "position": [
+        8,
+        -4,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_087",
+      "position": [
+        44,
+        -4,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_088",
+      "position": [
+        16,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_089",
+      "position": [
+        16,
+        0,
+        64
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_090",
+      "position": [
+        24,
+        0,
+        18
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sawed_off",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_091",
+      "position": [
+        24,
+        0,
+        62
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sawed_off",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_092",
+      "position": [
+        8,
+        4,
+        25
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_093",
+      "position": [
+        8,
+        4,
+        55
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_094",
+      "position": [
+        48,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_095",
+      "position": [
+        48,
+        0,
+        64
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_096",
+      "position": [
+        8,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_097",
+      "position": [
+        8,
+        0,
+        56
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_098",
+      "position": [
+        26,
+        0,
+        30
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_099",
+      "position": [
+        26,
+        0,
+        50
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_100",
+      "position": [
+        48,
+        0,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_101",
+      "position": [
+        48,
+        0,
+        74
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_102",
+      "position": [
+        38,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_103",
+      "position": [
+        38,
+        0,
+        56
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_104",
+      "position": [
+        32,
+        0,
+        30
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_105",
+      "position": [
+        32,
+        0,
+        50
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_106",
+      "position": [
+        16,
+        0,
+        7
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_107",
+      "position": [
+        16,
+        0,
+        73
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_108",
+      "position": [
+        0,
+        -4,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_109",
+      "position": [
+        0,
+        -4,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_110",
+      "position": [
+        3,
+        0,
+        3
+      ],
+      "kind": "prop",
+      "model": "prop.palm",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_111",
+      "position": [
+        3,
+        0,
+        77
+      ],
+      "kind": "prop",
+      "model": "prop.palm",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_112",
+      "position": [
+        30,
+        0,
+        -2.5
+      ],
+      "kind": "prop",
+      "model": "prop.tree_tall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_113",
+      "position": [
+        30,
+        0,
+        82.5
+      ],
+      "kind": "prop",
+      "model": "prop.tree_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_114",
+      "position": [
+        27,
+        0,
+        3
+      ],
+      "kind": "prop",
+      "model": "prop.rock_large",
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_115",
+      "position": [
+        27,
+        0,
+        77
+      ],
+      "kind": "prop",
+      "model": "prop.rock_large",
+      "yaw": 2.641592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_116",
+      "position": [
+        12,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.column",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_117",
+      "position": [
+        12,
+        0,
+        53
+      ],
+      "kind": "prop",
+      "model": "prop.column",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_118",
+      "position": [
+        21,
+        0,
+        28
+      ],
+      "kind": "prop",
+      "model": "prop.stone_wall_damaged",
+      "yaw": 0,
+      "scale": 1.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_119",
+      "position": [
+        21,
+        0,
+        52
+      ],
+      "kind": "prop",
+      "model": "prop.stone_wall_damaged",
+      "yaw": 3.141592653589793,
+      "scale": 1.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_120",
+      "position": [
+        3,
+        -4,
+        35
+      ],
+      "kind": "prop",
+      "model": "prop.rocks_tall",
+      "yaw": 0.4,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_121",
+      "position": [
+        3,
+        -4,
+        45
+      ],
+      "kind": "prop",
+      "model": "prop.rocks_tall",
+      "yaw": 2.741592653589793,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_122",
+      "position": [
+        14,
+        -4,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.rock_large",
+      "yaw": 1.2,
+      "scale": 1.3,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_123",
+      "position": [
+        14,
+        -4,
+        46
+      ],
+      "kind": "prop",
+      "model": "prop.rock_large",
+      "yaw": 1.9415926535897932,
+      "scale": 1.3,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_124",
+      "position": [
+        13,
+        -4,
+        37
+      ],
+      "kind": "prop",
+      "model": "prop.log",
+      "yaw": 0.4,
+      "scale": 1.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_125",
+      "position": [
+        13,
+        -4,
+        43
+      ],
+      "kind": "prop",
+      "model": "prop.log",
+      "yaw": 2.741592653589793,
+      "scale": 1.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_126",
+      "position": [
+        49,
+        0,
+        21
+      ],
+      "kind": "prop",
+      "model": "prop.palm_bent",
+      "yaw": 2.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_127",
+      "position": [
+        49,
+        0,
+        59
+      ],
+      "kind": "prop",
+      "model": "prop.palm_bent",
+      "yaw": 0.7415926535897932,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_128",
+      "position": [
+        54,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_129",
+      "position": [
+        54,
+        0,
+        70
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 2.941592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_130",
+      "position": [
+        36,
+        0,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.stone_wall",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_131",
+      "position": [
+        36,
+        0,
+        47
+      ],
+      "kind": "prop",
+      "model": "prop.stone_wall",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_132",
+      "position": [
+        36,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.obelisk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_133",
+      "position": [
+        36,
+        0,
+        64
+      ],
+      "kind": "prop",
+      "model": "prop.obelisk",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_134",
+      "position": [
+        6,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.pillar",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_135",
+      "position": [
+        6,
+        0,
+        50
+      ],
+      "kind": "prop",
+      "model": "prop.pillar",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_136",
+      "position": [
+        44,
+        0,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.stump",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_137",
+      "position": [
+        44,
+        0,
+        71
+      ],
+      "kind": "prop",
+      "model": "prop.stump",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_138",
+      "position": [
+        10,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.grass_tuft",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        10,
+        0,
+        78
+      ],
+      "kind": "prop",
+      "model": "prop.grass_tuft",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        20,
+        0,
+        5
+      ],
+      "kind": "prop",
+      "model": "prop.plant_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        20,
+        0,
+        75
+      ],
+      "kind": "prop",
+      "model": "prop.plant_small",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
+        30,
+        0,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.grass_tuft",
+      "yaw": 1,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        30,
+        0,
+        47
+      ],
+      "kind": "prop",
+      "model": "prop.grass_tuft",
+      "yaw": 2.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        46,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.plant_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_145",
+      "position": [
+        46,
+        0,
+        50
+      ],
+      "kind": "prop",
+      "model": "prop.plant_small",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        18,
+        -4,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.grass_tuft",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        18,
+        -4,
+        50
+      ],
+      "kind": "prop",
+      "model": "prop.grass_tuft",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        26,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.lantern",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_149",
+      "position": [
+        26,
+        0,
+        66
+      ],
+      "kind": "prop",
+      "model": "prop.lantern",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        44,
+        -4,
+        41
+      ],
+      "kind": "prop",
+      "model": "prop.rowboat",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_151",
+      "position": [
+        52,
+        -4,
+        38
+      ],
+      "kind": "prop",
+      "model": "prop.rock_medium",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        20,
+        -4,
+        42
+      ],
+      "kind": "prop",
+      "model": "prop.rock_medium",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_153",
+      "position": [
+        14,
+        -4,
+        45
+      ],
+      "kind": "prop",
+      "model": "prop.rocks_tall",
+      "yaw": 2,
+      "scale": 0.7,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        24,
+        -4,
+        38
+      ],
+      "kind": "prop",
+      "model": "prop.grass_tuft",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        38,
+        -4,
+        42
+      ],
+      "kind": "prop",
+      "model": "prop.grass_tuft",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -8,
+      -8
+    ],
+    "max": [
+      64,
+      88
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "teamSetup": {
+    "sizes": [
+      5,
+      5
+    ]
+  },
+  "dependencies": []
+}

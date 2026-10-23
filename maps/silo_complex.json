@@ -1,0 +1,1463 @@
+{
+  "format": "chronosplit.map",
+  "formatVersion": 8,
+  "metadata": {
+    "id": "silo_complex",
+    "name": "Silo Complex",
+    "author": "ChronoSplit",
+    "description": "A buried silo complex in the spirit of GoldenEye's Complex: one vast two-storey floor of pillars and crates, a catwalk ring a storey up, and a loop of concrete rooms and corridors with doorways in from all four sides. Open stairs climb to the catwalk landings; the railgun sits on the north landing, heavy armour on the south, and the auto shotgun in the dead centre of the floor.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 2,
+      "max": 12
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.bunker",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.room_columns",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:W": "high",
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.room_columns",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "high",
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.room_columns",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "high",
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.room_columns",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "high",
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.room_pillar",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.room_pillar",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.room_pillar",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "wide"
+        }
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.room_pillar",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.room_pillar",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:W": "wide"
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.room_pillar",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.room_cover",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.room_cover",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:W": "open",
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.room_pillar",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.room_pillar",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.stairs_open",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 1,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.stairs_open",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 3,
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.platform_rail",
+        "x": 4,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.platform_rail",
+        "x": 4,
+        "y": 4,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.bridge",
+        "x": 3,
+        "y": 1,
+        "z": 1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.bridge",
+        "x": 4,
+        "y": 2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.bridge",
+        "x": 4,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.platform_rail",
+        "x": 3,
+        "y": 4,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.bridge",
+        "x": 2,
+        "y": 4,
+        "z": 1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.bridge",
+        "x": 1,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.bridge",
+        "x": 1,
+        "y": 2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.room_cover",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.corridor",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.junction_t",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.junction_t",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.corridor",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.room",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.corridor",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.room",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "slit"
+        }
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.junction_t",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.corridor",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.room_columns",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.corridor",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.junction_t",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.junction_t",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.corridor",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.room",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.corridor",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.room_ledge",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 1,
+        "edges": {
+          "0,0,0:N": "slit"
+        }
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.junction_t",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.corridor",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.stairwell",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.stairwell",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.room",
+        "x": 2,
+        "y": 0,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "window"
+        }
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.room",
+        "x": 3,
+        "y": 0,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "windows",
+          "0,0,0:E": "window"
+        }
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.room",
+        "x": 3,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open",
+          "0,0,0:E": "window"
+        }
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.room",
+        "x": 2,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:W": "window"
+        }
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "prop_055",
+      "position": [
+        5.4,
+        0,
+        5.4
+      ],
+      "kind": "prop",
+      "model": "prop.container_tall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_056",
+      "position": [
+        34.6,
+        0,
+        34.6
+      ],
+      "kind": "prop",
+      "model": "prop.container_tall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_057",
+      "position": [
+        34.4,
+        0,
+        5.6
+      ],
+      "kind": "prop",
+      "model": "prop.barrier_high",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_058",
+      "position": [
+        5.6,
+        0,
+        34.4
+      ],
+      "kind": "prop",
+      "model": "prop.barrier_high",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_059",
+      "position": [
+        26.5,
+        0,
+        9.5
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_060",
+      "position": [
+        13.5,
+        0,
+        30.5
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_061",
+      "position": [
+        34.5,
+        0,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.machine",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_062",
+      "position": [
+        5.4,
+        0,
+        25
+      ],
+      "kind": "prop",
+      "model": "prop.machine_window",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_063",
+      "position": [
+        10,
+        0,
+        13.5
+      ],
+      "kind": "prop",
+      "model": "prop.piston",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_064",
+      "position": [
+        30,
+        0,
+        26.5
+      ],
+      "kind": "prop",
+      "model": "prop.piston",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_065",
+      "position": [
+        13.4,
+        0,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_066",
+      "position": [
+        26.6,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "destructible_067",
+      "position": [
+        19.2,
+        0,
+        4.8
+      ],
+      "kind": "destructible",
+      "model": "gas",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_068",
+      "position": [
+        20.8,
+        0,
+        35.2
+      ],
+      "kind": "destructible",
+      "model": "gas",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_069",
+      "position": [
+        9,
+        0,
+        5
+      ],
+      "kind": "destructible",
+      "model": "barrel",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_070",
+      "position": [
+        31,
+        0,
+        35
+      ],
+      "kind": "destructible",
+      "model": "barrel",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "prop_071",
+      "position": [
+        -2.6,
+        0,
+        -2.6
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        -2.6,
+        0,
+        -1
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        43,
+        0,
+        -3
+      ],
+      "kind": "prop",
+      "model": "prop.computer",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        42.6,
+        0,
+        1
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        41.4,
+        0,
+        1
+      ],
+      "kind": "prop",
+      "model": "prop.office_chair",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "position": [
+        9,
+        0,
+        3
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        10,
+        0,
+        3.1
+      ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "position": [
+        30,
+        0,
+        3.2
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "position": [
+        41.2,
+        0,
+        43
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "position": [
+        -3.2,
+        0,
+        42
+      ],
+      "kind": "prop",
+      "model": "prop.kitchen_cabinet",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "position": [
+        -3.2,
+        0,
+        40.5
+      ],
+      "kind": "prop",
+      "model": "prop.kitchen_cabinet",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "position": [
+        2.6,
+        0,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.skip",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "position": [
+        37.2,
+        0,
+        32
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "position": [
+        32,
+        0,
+        36.8
+      ],
+      "kind": "prop",
+      "model": "prop.warning_sign",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "position": [
+        42.2,
+        0,
+        18.6
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "position": [
+        42.8,
+        0,
+        13.4
+      ],
+      "kind": "prop",
+      "model": "prop.screen_panel",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "destructible_087",
+      "position": [
+        6,
+        0,
+        37
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_088",
+      "position": [
+        43.2,
+        0,
+        10
+      ],
+      "kind": "destructible",
+      "model": "gas",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "prop_089",
+      "position": [
+        25,
+        4,
+        -2.2
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "position": [
+        23,
+        4,
+        42.4
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "position": [
+        14,
+        4,
+        -2
+      ],
+      "kind": "prop",
+      "model": "prop.holo_table",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "position": [
+        13.6,
+        4,
+        42.4
+      ],
+      "kind": "prop",
+      "model": "prop.screen_panel",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_093",
+      "position": [
+        1,
+        0,
+        1
+      ],
+      "kind": "spawn",
+      "yaw": 0.7853981633974483,
+      "faction": null
+    },
+    {
+      "id": "spawn_094",
+      "position": [
+        39,
+        0,
+        -1
+      ],
+      "kind": "spawn",
+      "yaw": -0.7853981633974483,
+      "faction": null
+    },
+    {
+      "id": "spawn_095",
+      "position": [
+        39,
+        0,
+        39
+      ],
+      "kind": "spawn",
+      "yaw": -2.356194490192345,
+      "faction": null
+    },
+    {
+      "id": "spawn_096",
+      "position": [
+        1,
+        0,
+        39
+      ],
+      "kind": "spawn",
+      "yaw": 2.356194490192345,
+      "faction": null
+    },
+    {
+      "id": "spawn_097",
+      "position": [
+        8,
+        0,
+        -1.5
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_098",
+      "position": [
+        38,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_099",
+      "position": [
+        32,
+        0,
+        41.5
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_100",
+      "position": [
+        -1.5,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_101",
+      "position": [
+        24,
+        4,
+        1
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_102",
+      "position": [
+        16,
+        4,
+        39
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_103",
+      "position": [
+        9.5,
+        0,
+        9.5
+      ],
+      "kind": "spawn",
+      "yaw": 0.7853981633974483,
+      "faction": null
+    },
+    {
+      "id": "spawn_104",
+      "position": [
+        30.5,
+        0,
+        30.5
+      ],
+      "kind": "spawn",
+      "yaw": -2.356194490192345,
+      "faction": null
+    },
+    {
+      "id": "pickup_105",
+      "position": [
+        24,
+        4,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_106",
+      "position": [
+        16,
+        4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_107",
+      "position": [
+        20,
+        0,
+        20
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_auto_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_108",
+      "position": [
+        42,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_laser_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_109",
+      "position": [
+        1.5,
+        0,
+        -1
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_110",
+      "position": [
+        40,
+        0,
+        -1.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_111",
+      "position": [
+        1,
+        0,
+        41
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sawed_off",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_112",
+      "position": [
+        26,
+        4,
+        1
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_113",
+      "position": [
+        17,
+        4,
+        39
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_hand_cannon",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_114",
+      "position": [
+        2.4,
+        1.5,
+        26.5
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_115",
+      "position": [
+        32,
+        0,
+        -1
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_116",
+      "position": [
+        38.5,
+        0,
+        41
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_117",
+      "position": [
+        9,
+        0,
+        31
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_118",
+      "position": [
+        31,
+        0,
+        9
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_119",
+      "position": [
+        25,
+        4,
+        41
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_120",
+      "position": [
+        24,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_121",
+      "position": [
+        16,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_122",
+      "position": [
+        40,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_cells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_123",
+      "position": [
+        0,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_light",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_124",
+      "position": [
+        8,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_125",
+      "position": [
+        40,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.mines",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_126",
+      "position": [
+        0,
+        0,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": null,
+  "teamSetup": null,
+  "dependencies": []
+}

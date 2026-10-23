@@ -1,0 +1,1617 @@
+{
+  "format": "chronosplit.map",
+  "formatVersion": 8,
+  "metadata": {
+    "id": "gallows_yard",
+    "name": "Gallows Yard",
+    "author": "ChronoSplit",
+    "description": "A walled castle courtyard crowded with tomb blocks of every height, made in the spirit of the classic tombstone-courtyard arena. Embers and Tide each hold a gatehouse at one end; its roof runs into a raised walkway along the far wall, over a covered arcade and across a narrow bridge. Open stairs climb out of the graves, and jump pads throw you up onto the gallows in the middle, where the railgun waits above the rocket launcher.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 2,
+      "max": 10
+    },
+    "supportedModes": [
+      "core.tdm",
+      "core.deathmatch"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.castle",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.room",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.room",
+        "x": 8,
+        "y": 3,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.room_dais",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 3,
+        "edges": {
+          "0,0,0:S": "arch"
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.room_dais",
+        "x": 8,
+        "y": 2,
+        "z": 0,
+        "rotation": 1,
+        "edges": {
+          "0,0,0:S": "arch"
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.room",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.room",
+        "x": 8,
+        "y": 1,
+        "z": 0,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.stairwell",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.stairwell",
+        "x": 8,
+        "y": 4,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.platform_rail",
+        "x": 8,
+        "y": 3,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.platform_rail",
+        "x": 8,
+        "y": 2,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.platform_rail",
+        "x": 8,
+        "y": 1,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.yard_wall",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.yard_wall",
+        "x": 7,
+        "y": 3,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.stairs_open",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 1,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.stairs_open",
+        "x": 6,
+        "y": 3,
+        "z": 0,
+        "rotation": 3,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.terrace",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.terrace",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.stairs_open",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 3,
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.stairs_open",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 1,
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.yard_ruins",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.yard_ruins",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.stairs_open",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 1,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.stairs_open",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 3,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.yard_crates",
+        "x": 7,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.yard_crates",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.yard_ruins",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.yard_ruins",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "arch",
+          "0,0,0:W": "arch"
+        }
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.platform_rail",
+        "x": 8,
+        "y": 0,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.platform_rail",
+        "x": 7,
+        "y": 0,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_057",
+        "tile": "core.platform_rail",
+        "x": 6,
+        "y": 0,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.platform_rail",
+        "x": 3,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_059",
+        "tile": "core.platform_rail",
+        "x": 5,
+        "y": 0,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_060",
+        "tile": "core.platform_rail",
+        "x": 5,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_061",
+        "tile": "core.platform_rail",
+        "x": 3,
+        "y": 0,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_062",
+        "tile": "core.platform_rail",
+        "x": 6,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": 0,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_064",
+        "tile": "core.platform_rail",
+        "x": 7,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_065",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 0,
+        "z": 1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_066",
+        "tile": "core.bridge",
+        "x": 4,
+        "y": 4,
+        "z": 1,
+        "rotation": 1,
+        "edges": {
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_067",
+        "tile": "core.bridge",
+        "x": 4,
+        "y": 0,
+        "z": 1,
+        "rotation": 3,
+        "edges": {
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_068",
+        "tile": "core.platform_rail",
+        "x": 4,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "open"
+        }
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "pad_069",
+      "position": [
+        20,
+        0,
+        16
+      ],
+      "kind": "pad",
+      "yaw": 1.5707963267948966,
+      "power": 16,
+      "push": 9.3
+    },
+    {
+      "id": "pad_070",
+      "position": [
+        44,
+        0,
+        16
+      ],
+      "kind": "pad",
+      "yaw": 4.71238898038469,
+      "power": 16,
+      "push": 9.3
+    },
+    {
+      "id": "spawn_071",
+      "position": [
+        -2,
+        0,
+        7
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_072",
+      "position": [
+        66,
+        0,
+        25
+      ],
+      "kind": "spawn",
+      "yaw": 4.71238898038469,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_073",
+      "position": [
+        2,
+        0,
+        9
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_074",
+      "position": [
+        62,
+        0,
+        23
+      ],
+      "kind": "spawn",
+      "yaw": 4.71238898038469,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_075",
+      "position": [
+        2.5,
+        0,
+        13
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_076",
+      "position": [
+        61.5,
+        0,
+        19
+      ],
+      "kind": "spawn",
+      "yaw": 4.71238898038469,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_077",
+      "position": [
+        -2,
+        0,
+        23
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_078",
+      "position": [
+        66,
+        0,
+        9
+      ],
+      "kind": "spawn",
+      "yaw": 4.71238898038469,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_079",
+      "position": [
+        2,
+        0,
+        25
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_080",
+      "position": [
+        62,
+        0,
+        7
+      ],
+      "kind": "spawn",
+      "yaw": 4.71238898038469,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_081",
+      "position": [
+        -1,
+        4,
+        9
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_082",
+      "position": [
+        65,
+        4,
+        23
+      ],
+      "kind": "spawn",
+      "yaw": 4.71238898038469,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_083",
+      "position": [
+        -1,
+        4,
+        22
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_084",
+      "position": [
+        65,
+        4,
+        10
+      ],
+      "kind": "spawn",
+      "yaw": 4.71238898038469,
+      "faction": "tide"
+    },
+    {
+      "id": "pickup_085",
+      "position": [
+        32,
+        4,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_086",
+      "position": [
+        32,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_087",
+      "position": [
+        32,
+        4,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_088",
+      "position": [
+        32,
+        4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_089",
+      "position": [
+        32,
+        0,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_090",
+      "position": [
+        32,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_091",
+      "position": [
+        12,
+        0,
+        1
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sawed_off",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_092",
+      "position": [
+        52,
+        0,
+        31
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sawed_off",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_093",
+      "position": [
+        0,
+        0,
+        27
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_094",
+      "position": [
+        64,
+        0,
+        5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_095",
+      "position": [
+        8,
+        4,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_096",
+      "position": [
+        56,
+        4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_097",
+      "position": [
+        40,
+        4,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_plasma",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_098",
+      "position": [
+        24,
+        4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_plasma",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_099",
+      "position": [
+        11,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_100",
+      "position": [
+        53,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_101",
+      "position": [
+        -1,
+        4,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_102",
+      "position": [
+        65,
+        4,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_103",
+      "position": [
+        -2,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_104",
+      "position": [
+        66,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_105",
+      "position": [
+        26,
+        0,
+        20
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_106",
+      "position": [
+        38,
+        0,
+        12
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_107",
+      "position": [
+        44,
+        0,
+        31
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_108",
+      "position": [
+        20,
+        0,
+        1
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_109",
+      "position": [
+        20,
+        4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_cells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_110",
+      "position": [
+        44,
+        4,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_cells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_111",
+      "position": [
+        23,
+        0,
+        11
+      ],
+      "kind": "prop",
+      "model": "prop.crypt",
+      "yaw": 0,
+      "scale": 0.9,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_112",
+      "position": [
+        41,
+        0,
+        21
+      ],
+      "kind": "prop",
+      "model": "prop.crypt",
+      "yaw": 3.141592653589793,
+      "scale": 0.9,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_113",
+      "position": [
+        10,
+        0,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.stone_wall",
+      "yaw": 1.5707963267948966,
+      "scale": 2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_114",
+      "position": [
+        54,
+        0,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.stone_wall",
+      "yaw": 4.71238898038469,
+      "scale": 2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_115",
+      "position": [
+        25,
+        0,
+        25
+      ],
+      "kind": "prop",
+      "model": "prop.crypt",
+      "yaw": 0.2,
+      "scale": 0.35,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_116",
+      "position": [
+        39,
+        0,
+        7
+      ],
+      "kind": "prop",
+      "model": "prop.crypt",
+      "yaw": 3.3415926535897933,
+      "scale": 0.35,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_117",
+      "position": [
+        15,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.gravestone_cross",
+      "yaw": 1.5707963267948966,
+      "scale": 2.5,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_118",
+      "position": [
+        49,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.gravestone_cross",
+      "yaw": 4.71238898038469,
+      "scale": 2.5,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_119",
+      "position": [
+        9,
+        0,
+        21
+      ],
+      "kind": "prop",
+      "model": "prop.crypt",
+      "yaw": 0,
+      "scale": 0.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_120",
+      "position": [
+        55,
+        0,
+        11
+      ],
+      "kind": "prop",
+      "model": "prop.crypt",
+      "yaw": 3.141592653589793,
+      "scale": 0.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_121",
+      "position": [
+        27,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.gravestone_round",
+      "yaw": 0,
+      "scale": 2.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_122",
+      "position": [
+        37,
+        0,
+        22
+      ],
+      "kind": "prop",
+      "model": "prop.gravestone_round",
+      "yaw": 3.141592653589793,
+      "scale": 2.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_123",
+      "position": [
+        6,
+        0,
+        31
+      ],
+      "kind": "prop",
+      "model": "prop.obelisk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_124",
+      "position": [
+        58,
+        0,
+        1
+      ],
+      "kind": "prop",
+      "model": "prop.obelisk",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_125",
+      "position": [
+        24,
+        0,
+        29.5
+      ],
+      "kind": "prop",
+      "model": "prop.column",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_126",
+      "position": [
+        40,
+        0,
+        2.5
+      ],
+      "kind": "prop",
+      "model": "prop.column",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_127",
+      "position": [
+        8,
+        0,
+        29.5
+      ],
+      "kind": "prop",
+      "model": "prop.column",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_128",
+      "position": [
+        56,
+        0,
+        2.5
+      ],
+      "kind": "prop",
+      "model": "prop.column",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_129",
+      "position": [
+        21,
+        0,
+        3
+      ],
+      "kind": "prop",
+      "model": "prop.coffin_old",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_130",
+      "position": [
+        43,
+        0,
+        29
+      ],
+      "kind": "prop",
+      "model": "prop.coffin_old",
+      "yaw": 4.71238898038469,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_131",
+      "position": [
+        3.6,
+        4,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.banner",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_132",
+      "position": [
+        60.4,
+        4,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.banner",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_133",
+      "position": [
+        -2.2,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.fire_basket",
+      "yaw": 0,
+      "scale": 0.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_134",
+      "position": [
+        66.2,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.fire_basket",
+      "yaw": 3.141592653589793,
+      "scale": 0.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_135",
+      "position": [
+        0,
+        0.75,
+        16.5
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_136",
+      "position": [
+        64,
+        0.75,
+        15.5
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_137",
+      "position": [
+        16,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.grave",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_138",
+      "position": [
+        48,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.grave",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        28,
+        0,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.lantern",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        36,
+        0,
+        -1
+      ],
+      "kind": "prop",
+      "model": "prop.lantern",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        35,
+        4,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.flag",
+      "yaw": 0,
+      "scale": 0.8,
+      "solid": false,
+      "tint": null
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -8,
+      -8
+    ],
+    "max": [
+      72,
+      40
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "teamSetup": {
+    "sizes": [
+      4,
+      4
+    ]
+  },
+  "dependencies": []
+}
