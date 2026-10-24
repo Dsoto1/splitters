@@ -42,7 +42,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder'];
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
 interface Visual {
@@ -168,6 +168,8 @@ export class ScenarioVisuals {
         return this.encounter(name, e);
       case 'pad':
         return this.pad(name);
+      case 'ladder':
+        return this.ladder(name, e);
       case 'block':
         return this.block(name, e);
       case 'water':
@@ -325,6 +327,16 @@ export class ScenarioVisuals {
   private flowing: { tex: Texture; speed: number }[] = [];
 
   /** Jump pad: a glowing ring on a dark plate with a chevron pointing where it throws you. */
+  /** Two wooden rails and rungs every 30 cm, standing just off the wall. */
+  private ladder(name: string, e: Extract<MapEntity, { kind: 'ladder' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const wood = this.mat('ladderWood', '#8a5d33');
+    const h = e.height + 0.9;
+    for (const x of [-e.width / 2, e.width / 2]) this.box(`${name}_rail${x}`, root, [0.08, h, 0.08], [x, h / 2, 0.1], wood);
+    for (let y = 0.3, i = 0; y < h - 0.1; y += 0.3, i++) this.box(`${name}_rung${i}`, root, [e.width, 0.05, 0.05], [0, y, 0.1], wood);
+    return { root };
+  }
+
   private pad(name: string): Visual {
     const root = new TransformNode(name, this.scene);
     const plate = CreateCylinder(`${name}_plate`, { diameter: 2.2, height: 0.12, tessellation: 24 }, this.scene);

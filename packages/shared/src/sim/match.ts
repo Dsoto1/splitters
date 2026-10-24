@@ -31,7 +31,8 @@ import {
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
-import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapPads, padLandings, sanitizeInput, stepMovement, type JumpPad, type MoveState, type PlayerInput } from './movement.ts';
+import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+  padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, isTeamMode, type MatchRules } from './rules.ts';
@@ -250,6 +251,7 @@ export class Match {
   private projectiles: Projectile[] = [];
   private zones: Zone[] = [];
   private readonly pads: JumpPad[];
+  private readonly ladders: Ladder[];
   private readonly liquids: LiquidBox[];
   private readonly mounts: MountRt[] = [];
   /** Collider handle -> mount, so shots and blasts can hurt vehicles. */
@@ -274,7 +276,7 @@ export class Match {
     this.killY = mapKillY(this.geometry, map);
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map));
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), padLandings(mapPads(map.entities), this.physics));
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), navLinks(map.entities, this.physics));
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -292,6 +294,7 @@ export class Match {
       if (def) this.addMount(index, def, { x: e.position[0], y: e.position[1], z: e.position[2] }, e.yaw, e.faction, e.respawnSeconds);
     });
     this.pads = mapPads(map.entities);
+    this.ladders = mapLadders(map.entities);
     this.liquids = mapLiquids(map.entities);
     this.phaseEndTick = this.roundEndTick();
     const match = this;
@@ -782,7 +785,7 @@ export class Match {
         }
       } else {
         const was = c.move.pos;
-        c.move = applyPads(this.pads, stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn }));
+        c.move = applyPads(this.pads, stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders }));
         c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / TICK_DT;
         if (c.jetFuel !== null) c.jetFuel = stepJetFuel(c.jetFuel, !!c.move.jet);
       }

@@ -4,6 +4,7 @@ import {
   OIL_TRACTION,
   applyPads,
   type JumpPad,
+  type Ladder,
   type LiquidBox,
   JET,
   stepJetFuel,
@@ -63,6 +64,7 @@ export class LocalPlayer {
   /** The map's jump pads (launches are predicted like the server's). */
   pads: JumpPad[] = [];
   liquids: LiquidBox[] = [];
+  ladders: Ladder[] = [];
   /** Jetpack fuel units (see JET), or null without a jetpack. */
   jetFuel: number | null = null;
   /** Seated in a turret or vehicle: the server moves you, so movement isn't predicted. */
@@ -137,7 +139,7 @@ export class LocalPlayer {
   /** Same order as the server: move with the current boost, then count the boost down. */
   private move(state: MoveState, input: PlayerInput): MoveState {
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
-    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet }));
+    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders }));
     if (this.jetFuel !== null) this.jetFuel = stepJetFuel(this.jetFuel, !!next.jet);
     if (this.speedTicks > 0) this.speedTicks--;
     return next;

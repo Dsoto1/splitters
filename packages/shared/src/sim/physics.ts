@@ -153,7 +153,13 @@ export class PhysicsWorld {
     collider.setTranslation({ x: feet.x, y: startY + centerY, z: feet.z });
     this.controller.computeColliderMovement(collider, { x: delta.x, y: delta.y - START_LIFT, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, WORLD_ONLY_QUERY);
     const m = this.controller.computedMovement();
-    const next = { x: feet.x + m.x, y: startY + m.y, z: feet.z + m.z };
+    let next = { x: feet.x + m.x, y: startY + m.y, z: feet.z + m.z };
+    // The controller can let a capsule creep into a gap a little smaller than it (a standing
+    // player through a window): refuse a move that ends inside the level when it didn't start there.
+    if (!this.headroom(next, height) && this.headroom(feet, height)) {
+      const upright = { x: feet.x, y: next.y, z: feet.z };
+      next = this.headroom(upright, height) ? upright : { ...feet };
+    }
     collider.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
     return { feet: next, grounded: this.controller.computedGrounded(), movedY: m.y + START_LIFT };
   }

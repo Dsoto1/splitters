@@ -187,9 +187,10 @@ export function edgeSegments(style: ResolvedEdge, half: number, height: number):
     case 'arch':
       return [[-half, -half + 0.75, 0, height, t], [half - 0.75, half, 0, height, t], [-half + 0.75, half - 0.75, top(3.4), height, t]];
     case 'window':
-      return [[-half, -1.3, 0, height, t], [1.3, half, 0, height, t], [-1.3, 1.3, 0, 1, t], [-1.3, 1.3, top(2.4), height, t]];
+      // Sill 0.9 m, opening 1.6 m: jump and crouch (legs tucked) to climb through.
+      return [[-half, -1.3, 0, height, t], [1.3, half, 0, height, t], [-1.3, 1.3, 0, 0.9, t], [-1.3, 1.3, top(2.5), height, t]];
     case 'windows':
-      return [[-half, -2.7, 0, height, t], [-0.8, 0.8, 0, height, t], [2.7, half, 0, height, t], [-2.7, -0.8, 0, 1, t], [0.8, 2.7, 0, 1, t], [-2.7, -0.8, top(2.4), height, t], [0.8, 2.7, top(2.4), height, t]];
+      return [[-half, -2.7, 0, height, t], [-0.8, 0.8, 0, height, t], [2.7, half, 0, height, t], [-2.7, -0.8, 0, 0.9, t], [0.8, 2.7, 0, 0.9, t], [-2.7, -0.8, top(2.5), height, t], [0.8, 2.7, top(2.5), height, t]];
     case 'slit':
       return [[-half, -1.5, 0, height, t], [1.5, half, 0, height, t], [-1.5, 1.5, 0, 1.25, t], [-1.5, 1.5, top(1.6), height, t]];
     case 'half':
@@ -242,13 +243,13 @@ function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, n
     case 'window':
       base(-half, half);
       cornice(-half, half);
-      window(-1.3, 1.3, 1, 2.4);
+      window(-1.3, 1.3, 0.9, 2.5);
       return out;
     case 'windows':
       base(-half, half);
       cornice(-half, half);
-      window(-2.7, -0.8, 1, 2.4);
-      window(0.8, 2.7, 1, 2.4);
+      window(-2.7, -0.8, 0.9, 2.5);
+      window(0.8, 2.7, 0.9, 2.5);
       return out;
     case 'slit':
       base(-half, half);

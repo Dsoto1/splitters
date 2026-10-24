@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_SPRINT, PLAYER, SPRINT, STANCES, PhysicsWorld, bodyHeightOf, buildMapGeometry, emptyInput, initPhysics, stepMovement, type MoveState, type PlayerInput } from '../src/index.ts';
+import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_SPRINT, PLAYER, SPRINT, STANCES, PhysicsWorld, bodyHeightOf, buildMapGeometry, emptyInput, initPhysics, mapLadders, stepMovement, type MoveEnv, type MoveState, type PlayerInput } from '../src/index.ts';
 import { loadArena, makeMap } from './helpers.ts';
 
 beforeAll(() => initPhysics());
@@ -108,4 +108,52 @@ describe('player movement', () => {
     expect(up.stance).toBeUndefined();
     expect(up.grounded).toBe(true);
   });
+
+  it('jumps and crouches (legs tucked) through a window, which a standing jump cannot', () => {
+    const map = makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0, edges: { '0,0,0:N': 'window' } }]);
+    const physics = new PhysicsWorld(buildMapGeometry(map));
+    const attempt = (crouch: boolean) => {
+      const c = physics.createPlayerCollider();
+      let s: MoveState = { pos: { x: 0, y: 0, z: 0.5 }, velY: 0, grounded: true };
+      let jumped = -1;
+      let furthest = 0;
+      for (let t = 0; t < 120; t++) {
+        let buttons = 0;
+        if (jumped < 0 && s.pos.z > 1.6) {
+          buttons = BUTTON_JUMP;
+          jumped = t;
+        } else if (crouch && jumped >= 0 && t > jumped + 6) buttons = BUTTON_CROUCH;
+        s = stepMovement(physics, c, s, { ...emptyInput(t), forward: 1, buttons });
+        furthest = Math.max(furthest, s.pos.z);
+      }
+      physics.removeCollider(c);
+      return furthest;
+    };
+    expect(attempt(false)).toBeLessThan(3.6); // stopped by the wall
+    expect(attempt(true)).toBeGreaterThan(4.6); // out through the window
+  });
+
+  it('climbs a ladder up a wall, and lets go with a jump', () => {
+    const map = makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }]);
+    const physics = new PhysicsWorld(buildMapGeometry(map));
+    const env: MoveEnv = { ladders: mapLadders([{ kind: 'ladder', position: [0, 0, 3.5], yaw: Math.PI, height: 4, width: 0.9 }]) };
+    const c = physics.createPlayerCollider();
+    let s: MoveState = { pos: { x: 0, y: 0, z: 2.4 }, velY: 0, grounded: true };
+    let maxY = 0;
+    let climbed = false;
+    for (let t = 0; t < 150; t++) {
+      s = stepMovement(physics, c, s, { ...emptyInput(t), forward: 1 }, 1, undefined, 1, env);
+      climbed ||= !!s.climb;
+      maxY = Math.max(maxY, s.pos.y);
+    }
+    expect(climbed).toBe(true);
+    expect(maxY).toBeGreaterThan(3.9); // up onto the top of the wall
+    // Halfway up, a jump pushes you off it, back into the room.
+    let h: MoveState = { pos: { x: 0, y: 2, z: 3.05 }, velY: 0, grounded: false };
+    h = stepMovement(physics, c, h, { ...emptyInput(0), forward: 1, buttons: BUTTON_JUMP }, 1, undefined, 1, env);
+    for (let t = 1; t < 40; t++) h = stepMovement(physics, c, h, { ...emptyInput(t) }, 1, undefined, 1, env);
+    expect(h.pos.z).toBeLessThan(2.4);
+    physics.removeCollider(c);
+  });
 });
+

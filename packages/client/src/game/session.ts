@@ -3,6 +3,7 @@ import {
   CORE_WEAPONS,
   THROWABLE_DEFS,
   predictThrow,
+  mapLadders,
   mapPads,
   mountToWorld,
   viewDirection,
@@ -321,6 +322,7 @@ export class GameSession {
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
         this.local = new LocalPlayer(physics);
         this.local.pads = mapPads(loaded.map.entities);
+        this.local.ladders = mapLadders(loaded.map.entities);
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.scenario = new ScenarioState(loaded.map, physics);
         this.mounts = new MountState(loaded.map, physics);

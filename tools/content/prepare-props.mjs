@@ -205,7 +205,7 @@ function shellBoxes(size, tris) {
 
 /**
  * Collision as several boxes in the prop's own space, [minX, minY, minZ, maxX, maxY, maxZ]:
- * `stairs` climb toward +Z in steps a player can walk up (ramps too); `frame`
+ * `stairs` climb toward +Z (or +X with `climbs: "+x"`) in steps a player can walk up (ramps too); `frame`
  * keeps a doorway open between its posts and under its lintel; `shell` follows
  * the footprint (see shellBoxes).
  */
@@ -215,6 +215,8 @@ function collisionBoxes(p, size, tris) {
   const pts = tris.flat();
   if (p.collide === 'stairs') {
     const n = Math.max(1, Math.ceil(h / STEP_RISE));
+    // `climbs: "+x"` for models whose steps rise along x instead of z.
+    if (p.climbs === '+x') return Array.from({ length: n }, (_, i) => [-w / 2 + (w * i) / n, 0, -d / 2, w / 2, (h * (i + 1)) / n, d / 2].map(round));
     return Array.from({ length: n }, (_, i) => [-w / 2, 0, -d / 2 + (d * i) / n, w / 2, (h * (i + 1)) / n, d / 2].map(round));
   }
   if (p.collide === 'frame') {

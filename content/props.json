@@ -2369,7 +2369,7 @@
       "name": "Stone Stairs",
       "category": "Castle & Siege",
       "height": 2.0,
-      "collide": "box"
+      "collide": "stairs"
     },
     {
       "id": "drawbridge",
@@ -2630,7 +2630,8 @@
       "name": "Wooden Stairs",
       "category": "Town & Market",
       "height": 2.0,
-      "collide": "box"
+      "collide": "stairs",
+      "climbs": "+x"
     },
     {
       "id": "awning",

@@ -106,6 +106,7 @@ import {
   PhysicsWorld,
   initPhysics,
   mapPads,
+  navLinks,
   padLandings,
   fitBounds,
   CORE_WEAPONS,
@@ -177,6 +178,7 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   door_locked: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#e0412f"/><rect x="23" y="34" width="10" height="9" rx="1" fill="#e0412f"/><path d="M25 34v-3a3 3 0 0 1 6 0v3" stroke="#e0412f" stroke-width="2" fill="none"/>',
   flag: '<ellipse cx="28" cy="48" rx="16" ry="5" fill="#2a2f3a" stroke="#e2703a" stroke-width="2"/><rect x="18" y="8" width="3" height="40" fill="#c9ccd2"/><path d="M21 10h22l-5 8 5 8H21z" fill="#e2703a"/>',
   hill: '<ellipse cx="28" cy="38" rx="22" ry="9" fill="#f2f2f2" fill-opacity=".2" stroke="#f2f2f2" stroke-width="2"/><path d="M14 38V26M42 38V26M28 47V35M28 29V17" stroke="#f2f2f2" stroke-width="2"/><path d="M22 14l6-8 6 8z" fill="#f2c14e"/>',
+  ladder: '<rect x="17" y="6" width="4" height="44" fill="#9a6b3d"/><rect x="35" y="6" width="4" height="44" fill="#9a6b3d"/><path d="M19 12h18M19 20h18M19 28h18M19 36h18M19 44h18" stroke="#c79a5e" stroke-width="3"/>',
   pad: '<ellipse cx="28" cy="42" rx="20" ry="7" fill="#2a2f3a"/><ellipse cx="28" cy="41" rx="15" ry="5" fill="#36d6ff"/><path d="M20 30l8-10 8 10M20 22l8-10 8 10" stroke="#36d6ff" stroke-width="3" fill="none"/>',
   button: '<rect x="24" y="24" width="8" height="26" fill="#3a3f48"/><rect x="17" y="12" width="22" height="16" rx="2" fill="#c9ccd2"/><circle cx="28" cy="20" r="5" fill="#3fd26b"/>',
   crate: '<rect x="12" y="14" width="32" height="32" fill="#9a6b3d"/><path d="M12 14L44 46M12 18h32M12 42h32" stroke="#6e4a28" stroke-width="3"/>',
@@ -2358,6 +2360,12 @@ export class EditorApp {
         number('Radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 2, 20) }));
         el.append(small('King of the Hill: the hill moves between hills in the order they were placed, every minute. A team scores a point per second while it alone stands inside.'));
         break;
+      case 'ladder':
+        number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
+        number('Height (m)', e.height, 0.5, (v) => ({ height: Math.max(1, Math.min(24, v)) }));
+        number('Width (m)', e.width, 0.1, (v) => ({ width: Math.max(0.5, Math.min(3, v)) }));
+        el.append(small('Put its foot against a wall, facing out (R turns it). Players and bots walk into it to climb and jump to let go. 4 m reaches the next level.'));
+        break;
       case 'pad':
         number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
         number('Launch up (m/s)', e.power, 1, (v) => ({ power: Math.max(2, Math.min(40, v)) }));
@@ -2443,7 +2451,7 @@ export class EditorApp {
         const geometry = buildMapGeometry(doc);
         await initPhysics();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(doc));
-        const nav = NavWorld.build(geometry, mapTerrainMesh(doc), padLandings(mapPads(doc.entities), physics));
+        const nav = NavWorld.build(geometry, mapTerrainMesh(doc), navLinks(doc.entities, physics));
         physics.free();
         this.navIssues = validateNavigation(doc, nav);
         nav.destroy();

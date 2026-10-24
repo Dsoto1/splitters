@@ -268,6 +268,7 @@ export const SCENARIO_PALETTE = [
   { key: 'door_locked', label: 'Locked Door', search: 'door locked key gate vault' },
   { key: 'button', label: 'Button', search: 'button switch lever press use' },
   { key: 'pad', label: 'Jump Pad', search: 'jump pad launch bounce boost trampoline' },
+  { key: 'ladder', label: 'Ladder', search: 'ladder climb wall up rungs' },
   { key: 'flag', label: 'Flag Base', search: 'flag base ctf capture the flag team objective' },
   { key: 'hill', label: 'Hill', search: 'hill king of the hill koth zone objective control point' },
   { key: 'crate', label: 'Crate', search: 'crate box destructible break cover' },
@@ -320,6 +321,8 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('button'), kind: 'button', ...base, label: 'Press', once: false, cooldownSeconds: 1, startEnabled: true };
     case 'pad':
       return { id: newId('pad'), kind: 'pad', ...base, power: 14, push: 6 };
+    case 'ladder':
+      return { id: newId('ladder'), kind: 'ladder', ...base, height: 4, width: 0.9 };
     case 'crate':
     case 'barrel':
     case 'wall':

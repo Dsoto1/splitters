@@ -21,6 +21,7 @@ import {
   loadMap,
   mapPads,
   mapTeams,
+  navLinks,
   padLandings,
   mapTerrainMesh,
   newMapDocument,
@@ -245,7 +246,7 @@ export class MapBuilder {
     await Promise.all([initPhysics(), initNavigation()]);
     const geometry = buildMapGeometry(loaded.map);
     const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
-    const nav = NavWorld.build([...geometry, ...propBoxes(loaded.map, true), ...blockBoxes(loaded.map, true)], mapTerrainMesh(loaded.map), padLandings(mapPads(loaded.map.entities), physics));
+    const nav = NavWorld.build([...geometry, ...propBoxes(loaded.map, true), ...blockBoxes(loaded.map, true)], mapTerrainMesh(loaded.map), navLinks(loaded.map.entities, physics));
     physics.free();
     const issues = [...validateMap(loaded.map), ...validateNavigation(loaded.map, nav)];
     nav.destroy();

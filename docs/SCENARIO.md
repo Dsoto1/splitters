@@ -14,6 +14,7 @@ Try it: main menu → **Play The Vault**, or MapMaker → Open… → **The Vaul
 | **Crate** | Breakable cover (60 HP). | Health, explosives only |
 | **Explosive Barrel** | Explodes when destroyed (4.5 m blast) and sets off nearby barrels. | Health |
 | **Breakable Wall** | Wall panel that fills a doorway (250 HP). Tick "explosives only" for a reinforced wall that needs grenades. | Health, explosives only |
+| **Ladder** | Wooden ladder up a wall. Put its foot against the wall facing out (R turns it). Walk into it to climb, look down or back off to go down, jump to let go. Bots use ladders both ways. | Facing, height (1-24 m; 4 m reaches the next level), width |
 | **Trigger Zone** | Invisible box (drawn in MapMaker only). Fires "Players enter zone" / "Player leaves zone". | Size; fires for any player, once N players are inside, or once every living player is inside |
 
 ### Traps

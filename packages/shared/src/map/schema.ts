@@ -18,7 +18,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 11;
+export const MAP_FORMAT_VERSION = 12;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -276,6 +276,19 @@ export const PadEntity = EntityBase.extend({
 });
 
 /**
+ * A ladder up a wall. Position is the foot of the ladder against the wall; it
+ * faces `yaw` (away from the wall, the way you face when you step off it) and
+ * climbs `height` metres. Walk into it to climb, back off or look down to go
+ * down, jump to let go.
+ */
+export const LadderEntity = EntityBase.extend({
+  kind: z.literal('ladder'),
+  yaw: Yaw,
+  height: z.number().min(1).max(24).default(4),
+  width: z.number().min(0.5).max(3).default(0.9),
+});
+
+/**
  * A free block: a box of any size, at any height (sky platforms, stepping
  * stones, ledges), in any material. Position is the centre of its base.
  * solid: plain level geometry. breakable: shoot or blow it apart.
@@ -327,7 +340,7 @@ export const HillEntity = EntityBase.extend({
   radius: z.number().min(2).max(20).default(5),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity]);
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -435,6 +448,7 @@ export type EncounterEntity = z.infer<typeof EncounterEntity>;
 export type PropEntity = z.infer<typeof PropEntity>;
 export type MountEntity = z.infer<typeof MountEntity>;
 export type PadEntity = z.infer<typeof PadEntity>;
+export type LadderEntity = z.infer<typeof LadderEntity>;
 export type BlockEntity = z.infer<typeof BlockEntity>;
 export type BloodSettings = z.infer<typeof BloodSettings>;
 export type BloodAmount = (typeof BLOOD_AMOUNTS)[number];

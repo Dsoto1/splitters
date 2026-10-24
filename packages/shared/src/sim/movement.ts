@@ -60,6 +60,8 @@ export interface MoveState {
   sprint?: boolean;
   /** Ran dry: no sprinting until stamina is back to SPRINT.restart. */
   winded?: boolean;
+  /** On a ladder this tick. */
+  climb?: boolean;
 }
 
 /** Current stance of a move state. */
@@ -73,6 +75,53 @@ export const bodyHeightOf = (s: MoveState): number => STANCES[stanceOf(s)].heigh
 export interface MoveEnv {
   liquids?: readonly LiquidBox[];
   jet?: boolean;
+  ladders?: readonly Ladder[];
+}
+
+/** A ladder as movement sees it: its foot against the wall, facing out from the wall, how tall and wide. */
+export interface Ladder {
+  pos: Vec3;
+  yaw: number;
+  height: number;
+  width: number;
+}
+
+/** Climbing speed on a ladder (m/s). */
+export const CLIMB_SPEED = 3.2;
+
+/** The ladders of a map (shared by the server and client prediction). */
+export function mapLadders(entities: readonly { kind: string; position: [number, number, number]; yaw?: number; height?: number; width?: number }[]): Ladder[] {
+  return entities.filter((e) => e.kind === 'ladder').map((e) => ({ pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, yaw: e.yaw ?? 0, height: e.height ?? 4, width: e.width ?? 0.9 }));
+}
+
+/** The ladder a player standing at `feet` is on (within reach of its face), if any. */
+export function ladderAt(ladders: readonly Ladder[], feet: Vec3): Ladder | null {
+  for (const l of ladders) {
+    const fx = Math.sin(l.yaw);
+    const fz = Math.cos(l.yaw);
+    const dx = feet.x - l.pos.x;
+    const dz = feet.z - l.pos.z;
+    const out = dx * fx + dz * fz;
+    const side = dx * fz - dz * fx;
+    if (out < -0.3 || out > 0.75 || Math.abs(side) > l.width / 2 + 0.2) continue;
+    if (feet.y < l.pos.y - 0.2 || feet.y > l.pos.y + l.height + 0.5) continue;
+    return l;
+  }
+  return null;
+}
+
+/**
+ * Navmesh links up and down each ladder (for bots): from just in front of
+ * its foot to the floor at its top, and back.
+ */
+export function ladderLinks(ladders: readonly Ladder[]): { start: Vec3; end: Vec3 }[] {
+  return ladders.flatMap((l) => {
+    const fx = Math.sin(l.yaw);
+    const fz = Math.cos(l.yaw);
+    const bottom = { x: l.pos.x + fx * 0.7, y: l.pos.y, z: l.pos.z + fz * 0.7 };
+    const top = { x: l.pos.x - fx * 0.9, y: l.pos.y + l.height, z: l.pos.z - fz * 0.9 };
+    return [{ start: bottom, end: top }, { start: top, end: bottom }];
+  });
 }
 
 export const emptyInput = (seq = 0): PlayerInput => ({ seq, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0 });
@@ -109,12 +158,22 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   }
   if (want === 2 && !state.grounded) want = was === 2 ? 2 : 1;
   let stance: Stance = was;
-  if (want > was) stance = want;
-  else if (want < was) {
-    // Rise as far as the headroom allows.
+  if (want > was) {
+    stance = want;
+    // Crouching in the air tucks your legs up (your head stays where it was): jump, then
+    // crouch, and you clear a window sill or a crate you couldn't jump onto standing.
+    if (!state.grounded && was === 0 && want === 1) {
+      const tucked = { ...state.pos, y: state.pos.y + STANCES[0].height - STANCES[1].height };
+      if (physics.headroom(tucked, STANCES[1].height)) state = { ...state, pos: tucked };
+    }
+  } else if (want < was) {
+    // Rise as far as the headroom allows; in the air, standing up drops your legs back down.
     for (let s = want; s < was; s++) {
-      if (physics.headroom(state.pos, STANCES[s].height)) {
+      const drop = !state.grounded && was === 1 && s === 0 ? STANCES[0].height - STANCES[1].height : 0;
+      const feet = drop ? { ...state.pos, y: state.pos.y - drop } : state.pos;
+      if (physics.headroom(feet, STANCES[s].height)) {
         stance = s as Stance;
+        if (drop) state = { ...state, pos: feet };
         break;
       }
     }
@@ -164,7 +223,34 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   let velY = state.velY;
   const jump = jumpPressed;
   let jet = false;
-  if (chest) {
+  const ladder = !chest && env.ladders?.length ? ladderAt(env.ladders, state.pos) : null;
+  if (ladder) {
+    // On a ladder: walking into it climbs (looking well down, or backing off, climbs down), no gravity,
+    // a little sideways movement, and jump lets go, pushing you off it.
+    const fx = Math.sin(ladder.yaw);
+    const fz = Math.cos(ladder.yaw);
+    const facing = -(sin * fx + cos * fz);
+    const top = ladder.pos.y + ladder.height;
+    let climb = 0;
+    if (input.forward > 0.3) climb = facing > -0.2 && input.pitch > -0.6 ? 1 : -1;
+    else if (input.forward < -0.3) climb = -1;
+    if (jump) {
+      velY = 4.5;
+      vx = quantize(fx * 3);
+      vz = quantize(fz * 3);
+    } else {
+      velY = climb * CLIMB_SPEED;
+      if (state.grounded && climb < 0) velY = 0;
+      // Only sideways movement on the rungs, unless stepping off at the top or the bottom.
+      const lateral = (wx * fz - wz * fx) * 0.5;
+      const atTop = state.pos.y > top - 0.15 && climb > 0;
+      const offBottom = state.grounded && climb < 0;
+      if (!offBottom) {
+        wx = lateral * fz + (atTop ? -fx * 2 : 0);
+        wz = -lateral * fx + (atTop ? -fz * 2 : 0);
+      }
+    }
+  } else if (chest) {
     // Swimming: you sink slowly, water drags, jump swims up; near the surface it hops you out.
     velY -= PLAYER.gravity * 0.15 * dt;
     velY *= Math.pow(0.9, dt * 60);
@@ -202,6 +288,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     ...(rest ? { rest } : {}),
     ...(sprint ? { sprint } : {}),
     ...(winded ? { winded } : {}),
+    ...(ladder && !jump ? { climb: true } : {}),
   };
 }
 
@@ -257,4 +344,9 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld): { 
     }
   }
   return out;
+}
+
+/** Every one-way navmesh link a map needs for bots: jump pad flights and ladders up and down. */
+export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0], physics: PhysicsWorld): { start: Vec3; end: Vec3 }[] {
+  return [...padLandings(mapPads(entities), physics), ...ladderLinks(mapLadders(entities))];
 }

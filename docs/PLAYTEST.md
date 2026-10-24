@@ -18,7 +18,8 @@ Jump straight into any map with `http://localhost:5173/?offline=<map>`, e.g.
 | --- | --- |
 | W A S D, Space | Move, jump (jumping also stands you up) |
 | Shift | Sprint while moving forward: faster, uses the stamina bar (yellow; red when you've run dry). Firing stops a sprint |
-| C / Z | Crouch / lie prone (toggles): slower, smaller target, steadier aim |
+| C / Z | Crouch / lie prone (toggles): slower, smaller target, steadier aim. Crouch in mid-air to tuck your legs up: jump, then C, to climb through a window or onto a high ledge |
+| Ladders | Walk into one to climb; look down or back off to climb down; jump to let go |
 | Mouse, left / right button | Aim, fire / zoom or alt-fire |
 | 1–9 | Pick a weapon slot (press again to cycle weapons in that slot) |
 | R | Reload |
