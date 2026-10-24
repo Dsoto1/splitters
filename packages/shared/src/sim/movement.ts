@@ -19,6 +19,8 @@ export const BUTTON_SPRINT = 128;
 /** Wants to crouch / lie prone (held state; the client turns toggle keys into it). */
 export const BUTTON_CROUCH = 256;
 export const BUTTON_PRONE = 512;
+/** Walking speed while aiming down the sights. */
+export const ADS_SPEED = 0.75;
 /** Ask to respawn now (stuck somewhere): you die where you stand and come back as usual. Counts as a suicide. */
 export const BUTTON_RESPAWN = 1024;
 const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN;
@@ -188,7 +190,9 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   let stamina = state.stamina ?? 1;
   let rest = state.rest ?? 0;
   let winded = state.winded ?? false;
-  const sprint = (input.buttons & BUTTON_SPRINT) !== 0 && (input.buttons & BUTTON_FIRE) === 0 && input.forward > 0.3 && stance === 0 && !winded && stamina > 0;
+  // Aiming down the sights (or through a scope): no sprinting, and you walk at 75%.
+  const aiming = (input.buttons & BUTTON_ZOOM) !== 0;
+  const sprint = !aiming && (input.buttons & BUTTON_SPRINT) !== 0 && (input.buttons & BUTTON_FIRE) === 0 && input.forward > 0.3 && stance === 0 && !winded && stamina > 0;
   if (sprint) {
     // Quantised here (not just on output) so running dry is seen the same on server and client.
     stamina = quantize(Math.max(0, stamina - SPRINT.drain * dt));
@@ -197,7 +201,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   } else if (rest > 0) rest--;
   else stamina = quantize(Math.min(1, stamina + SPRINT.regen * dt));
   if (winded && stamina >= SPRINT.restart) winded = false;
-  speedScale *= STANCES[stance].speed * (sprint ? SPRINT.speed : 1);
+  speedScale *= STANCES[stance].speed * (sprint ? SPRINT.speed : 1) * (aiming ? ADS_SPEED : 1);
 
   // Horizontal wish velocity in the yaw frame (see viewDirection for axes).
   const sin = Math.sin(input.yaw);

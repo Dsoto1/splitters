@@ -2033,9 +2033,14 @@ function movementSpread(c: Combatant, def: Trigger): number {
 }
 
 /** Scoped: a third of the spread. Scope weapons fired unscoped: a wide no-scope cone (NPCs aim their own way). */
+/** Spread while aiming down the sights of an unscoped gun. */
+const ADS_SPREAD = 0.55;
+
 function aimSpread(c: Combatant, def: Trigger, spread: number): number {
   const w = getWeapon(def.id);
-  if (!w.view.zoomFov || def.alt || c.npc) return spread;
+  if (def.alt || c.npc) return spread;
+  // Aiming down the sights tightens every gun; scopes most of all.
+  if (!w.view.zoomFov) return c.prevButtons & BUTTON_ZOOM ? spread * ADS_SPREAD : spread;
   if (c.prevButtons & BUTTON_ZOOM) return spread * 0.35;
   return spread + (w.view.zoomFov < 0.5 ? 0.05 : 0.012);
 }

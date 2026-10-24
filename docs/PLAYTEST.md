@@ -17,6 +17,8 @@ Jump straight into any map with `http://localhost:5173/?offline=<map>`, e.g.
 | Key | Does |
 | --- | --- |
 | W A S D, Space | Move, jump (jumping also stands you up) |
+| Right mouse | Aim down the sights (any gun): tighter spread, slight zoom, slower walk. Scoped guns look through the scope; the wheel switches to the long zoom |
+| Middle mouse / V | The held weapon's second trigger (alt fire); knives swing heavy with right mouse |
 | Shift | Sprint while moving forward: faster, uses the stamina bar (yellow; red when you've run dry). Firing stops a sprint |
 | C / Z | Crouch / lie prone (toggles): slower, smaller target, steadier aim. Crouch in mid-air to tuck your legs up: jump, then C, to climb through a window or onto a high ledge |
 | K (or Respawn in the pause menu) | Stuck? Die where you stand and respawn (counts as a suicide) |

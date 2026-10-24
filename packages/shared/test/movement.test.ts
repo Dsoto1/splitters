@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_SPRINT, PLAYER, SPRINT, STANCES, PhysicsWorld, bodyHeightOf, buildMapGeometry, emptyInput, initPhysics, mapLadders, stepMovement, type MoveEnv, type MoveState, type PlayerInput } from '../src/index.ts';
+import { ADS_SPEED, BUTTON_ZOOM, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_SPRINT, PLAYER, SPRINT, STANCES, PhysicsWorld, bodyHeightOf, buildMapGeometry, emptyInput, initPhysics, mapLadders, stepMovement, type MoveEnv, type MoveState, type PlayerInput } from '../src/index.ts';
 import { loadArena, makeMap } from './helpers.ts';
 
 beforeAll(() => initPhysics());
@@ -155,5 +155,12 @@ describe('player movement', () => {
     expect(h.pos.z).toBeLessThan(2.4);
     physics.removeCollider(c);
   });
-});
 
+  it('walks slower and cannot sprint while aiming down the sights', () => {
+    const physics = singleRoom();
+    const start: MoveState = { pos: { x: 0.3, y: 0, z: -3 }, velY: 0, grounded: true };
+    const walk = run(physics, start, { forward: 1 }, 15);
+    const aim = run(physics, start, { forward: 1, buttons: BUTTON_ZOOM | BUTTON_SPRINT }, 15);
+    expect(aim.pos.z - start.pos.z).toBeCloseTo((walk.pos.z - start.pos.z) * ADS_SPEED, 1);
+  });
+});

@@ -52,8 +52,10 @@ export class InputState {
   /** Respawn asked for (K, or the pause menu): sent with the next input. */
   respawnQueued = false;
   proneOn = false;
-  /** Set by the session: the held weapon has a second trigger (RMB fires it instead of zooming). */
+  /** Set by the session: right mouse fires the held weapon's second trigger instead of aiming (melee heavy swings). */
   altTrigger = false;
+  /** Middle mouse (or V): the held weapon's second trigger. */
+  private altDown = false;
   /** Weapon slot requested with number keys (0 = none pending). */
   private slotRequest = 0;
   /** Mouse wheel steps since last read (+ = next weapon). */
@@ -107,7 +109,7 @@ export class InputState {
       'blur',
       () => {
         this.keys.clear();
-        this.fireDown = this.zoomDown = this.throwAiming = false;
+        this.fireDown = this.zoomDown = this.altDown = this.throwAiming = false;
       },
       opts,
     );
@@ -118,6 +120,7 @@ export class InputState {
       const press = this.locked || e.target === canvas;
       this.fireDown = (e.buttons & 1) !== 0 && (press || this.fireDown);
       this.zoomDown = (e.buttons & 2) !== 0 && (press || this.zoomDown);
+      this.altDown = (e.buttons & 4) !== 0 && (press || this.altDown);
     };
     window.addEventListener('pointerdown', buttons, opts);
     window.addEventListener('pointerup', buttons, opts);
@@ -189,8 +192,10 @@ export class InputState {
     if (this.jumpQueued || this.keys.has('Space')) buttons |= BUTTON_JUMP;
     if (this.fireDown) buttons |= BUTTON_FIRE;
     if (this.reloadQueued) buttons |= BUTTON_RELOAD;
-    // Right mouse: the held weapon's second trigger if it has one, otherwise zoom.
+    // Right mouse aims down the sights (or scopes); melee weapons swing heavy with it instead.
     if (this.zoomDown) buttons |= this.altTrigger ? BUTTON_ALT : BUTTON_ZOOM;
+    // Middle mouse or V: the second trigger (grenade launcher, alt fire…).
+    if (this.altDown || this.keys.has('KeyV')) buttons |= BUTTON_ALT;
     if (this.throwQueued) buttons |= BUTTON_THROW;
     // Shift sprints, except through a scope, where it holds your breath.
     if (this.keys.has('ShiftLeft') && !this.zoomDown) buttons |= BUTTON_SPRINT;

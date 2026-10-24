@@ -600,7 +600,7 @@ export class GameView {
   }
 
   /** Position the viewmodel: offset, bob while moving, recoil, and dips for raising/reloading. */
-  updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean }): void {
+  updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean; ads?: number }): void {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     this.viewRoot.setEnabled(!o.hidden && !!def);
     this.fpArms?.root.setEnabled(!o.hidden && !!def);
@@ -608,13 +608,18 @@ export class GameView {
     if (!def) return;
     this.kickAmount = Math.max(0, this.kickAmount - dt * 6);
     if (o.moving) this.bobPhase += dt * 9;
-    const bob = o.moving ? 1 : 0;
-    const [x, y, z] = def.view.viewOffset;
+    const ads = o.ads ?? 0;
+    const bob = (o.moving ? 1 : 0) * (1 - ads * 0.8);
+    const [vx, vy, vz] = def.view.viewOffset;
+    // Aiming down the sights: the gun comes to the centre, up to the eye line, and a little closer.
+    const x = vx * (1 - ads);
+    const y = vy + (-0.065 - vy) * ads;
+    const z = vz - 0.06 * ads;
     const melee = def.kind === 'melee';
     this.viewRoot.position.set(
       x + Math.sin(this.bobPhase) * 0.012 * bob,
       y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - o.reload * 0.08,
-      z - this.kickAmount * (melee ? -0.25 : 0.06),
+      z - this.kickAmount * (melee ? -0.25 : 0.06) * (1 - ads * 0.5),
     );
     this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
     const flashing = performance.now() < this.flashUntil;

@@ -65,6 +65,8 @@ import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 
 /** Match events that only make effects, skipped while the tab is hidden. */
+/** Field of view while aiming down the sights, as a fraction of the normal one. */
+const ADS_FOV = 0.72;
 const HIDDEN_SKIP = new Set(['shot', 'melee', 'arc', 'explode', 'throw']);
 
 export interface SessionOptions {
@@ -158,6 +160,11 @@ export class GameSession {
   private breathSpent = false;
   /** Smoothed eye height above the feet (crouching and prone lower it). */
   private eyeOffset: number | null = null;
+  /** Camera field of view now (eases for aiming down the sights), the scope's zoom level, and how far the gun is up to the eye. */
+  private fov = DEFAULT_FOV;
+  private zoomLevel = 0;
+  private scopedNow = false;
+  private adsAmount = 0;
   private readonly markers = markerSetting();
   /** Health and armour last frame, and where the latest shot at you (or blast) came from, for the damage flash. */
   private lastHealth = 100;
@@ -575,7 +582,9 @@ export class GameSession {
         if (next) this.requestWeapon(next);
       }
       const wheel = this.input.takeWheel();
-      if (wheel) {
+      // Through a scope the wheel steps between its zoom levels instead of switching weapons.
+      if (wheel && this.scopedNow && local.weapon?.view.zoomFov) this.zoomLevel = wheel > 0 ? 1 : 0;
+      else if (wheel) {
         const owned = local.ownedCodes();
         const i = owned.indexOf(this.wantWeapon || local.held);
         const next = owned[(((i + wheel) % owned.length) + owned.length) % owned.length];
@@ -622,8 +631,17 @@ export class GameSession {
       local.seatGun = seatGun ?? null;
       local.unarmed = seatDef?.role === 'driver' && !seatGun;
       const weapon = local.alive && !handsBusy ? local.weapon : undefined;
-      const zoomed = !!weapon?.view.zoomFov && this.input.zooming && local.raiseTicks === 0 && local.reloadTicks === 0;
-      const fov = zoomed ? weapon!.view.zoomFov! : DEFAULT_FOV;
+      const ready = local.raiseTicks === 0 && local.reloadTicks === 0;
+      const zoomed = !!weapon?.view.zoomFov && this.input.zooming && ready;
+      // Aiming down the sights of any other gun: a slight zoom and the gun brought up to the eye.
+      const ads = !!weapon && !weapon.view.zoomFov && weapon.kind !== 'melee' && this.input.zooming && ready;
+      if (!zoomed) this.zoomLevel = 0;
+      this.scopedNow = zoomed;
+      const wantFov = zoomed ? weapon!.view.zoomFov! * (this.zoomLevel ? 0.45 : 1) : ads ? DEFAULT_FOV * ADS_FOV : DEFAULT_FOV;
+      // Scopes snap; sights ease in and out.
+      this.fov = zoomed ? wantFov : this.fov + (wantFov - this.fov) * Math.min(1, dt * 14);
+      this.adsAmount += ((ads ? 1 : 0) - this.adsAmount) * Math.min(1, dt * 14);
+      const fov = this.fov;
       this.input.sensitivityScale = fov / DEFAULT_FOV;
       if (ride && seatDef) {
         const feet = mountToWorld(ride.shown.pos, ride.shown.yaw, seatDef.offset);
@@ -645,7 +663,7 @@ export class GameSession {
       }
       this.view.setViewmodel(weapon);
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, (weapon.reloadTicks - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed });
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed, ads: this.adsAmount });
       this.hud.setScope(zoomed);
       this.updateScopeSway(dt, zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
@@ -671,7 +689,7 @@ export class GameSession {
         const path = predictThrow(spec, local.state.pos, this.input.yaw, this.input.pitch, 0.12, (o, d, len) => this.view.raycastLevel(o, d, len));
         this.view.throwArc.show(path, spec.mine?.triggerRadius ?? spec.splashRadius);
       } else this.view.throwArc.hide();
-      this.input.altTrigger = !!local.weapon?.alt;
+      this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max);
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
       this.updateScenarioHud(local, now);
