@@ -43,6 +43,16 @@ Things that make every playtest worse. Small, high value.
 | 24 | **[ux]** MapMaker: is ▶ Play the same as Test? | Merge into one clearly named button. |
 | 25 | **[ux]** Vehicle with a gun needs a proper reticle | |
 
+### Sprint 1 status (Oct 24)
+
+Done: 1–9, 11–16, 18–25 (crouch/prone stand-up, seams, tab-away freeze, mouse sensitivity + Safari scaling,
+crosshair styles + hit markers, map list scroll, upward bullets, bot hip-swing, climbable boulders,
+squad spacing, imported maps hidden, calmer ragdolls, damage indicator, railgun, team markers,
+pause/scoreboard info, version number, MapMaker boundary/preview/camera/Play Test, gunner's reticle).
+
+Left for later: **10** characters that look like they shrink (needs a repro), **17** knife grip, slash and
+sounds (needs new CC0 sounds and a grip pose).
+
 ## Sprint 2 — Gunplay, weapons and characters
 
 | # | Item |
