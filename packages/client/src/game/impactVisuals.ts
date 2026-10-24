@@ -126,8 +126,10 @@ export class ImpactVisuals {
     // Brighter than the team colour, so rounds read against any background.
     mesh.instancedBuffers.color = new Color4(Math.min(1, c.r * 0.6 + 0.5), Math.min(1, c.g * 0.6 + 0.5), Math.min(1, c.b * 0.6 + 0.45), 1);
     mesh.isPickable = false;
-    mesh.rotationQuaternion = Quaternion.FromLookDirectionLH(d, Vector3.Up());
-    mesh.scaling.set(1, 1, 0.01);
+    // From +z to the flight direction directly: a look-at with an "up" breaks for shots fired
+    // nearly straight up or down, which turned the streak sideways into a flat disc.
+    mesh.rotationQuaternion = new Quaternion();
+    Quaternion.FromUnitVectorsToRef(Vector3.Forward(), d, mesh.rotationQuaternion);
     mesh.position.copyFrom(a);
     // Your own rounds start a little out from the muzzle: right at the gun they'd smear across the view.
     this.bullets.push({ mesh, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), onArrive });

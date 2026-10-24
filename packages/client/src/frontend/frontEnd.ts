@@ -17,12 +17,13 @@ import {
   type MapDocument,
   type MatchRules,
 } from '@chronosplit/shared';
+import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { drawMapPlan } from './mapPlan.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
-import { CROSSHAIR_COLOURS, CROSSHAIR_STYLES, crosshairSetting, saveCrosshair } from '../game/crosshair.ts';
+import { CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
 
@@ -504,6 +505,16 @@ export class FrontEnd {
     });
     const fullscreen = el('button', { type: 'button' });
     bindFullscreenButton(fullscreen);
+    const mouse = loadMousePrefs();
+    const sens = el('input', { type: 'range', min: '0.2', max: '4', step: '0.1', value: String(mouse.sensitivity) });
+    const sensVal = el('output', { textContent: `${mouse.sensitivity.toFixed(1)}×` });
+    const invert = el('input', { type: 'checkbox', checked: mouse.invertY });
+    const mouseChanged = () => {
+      saveMousePrefs({ sensitivity: Number(sens.value) || 1, invertY: invert.checked });
+      sensVal.textContent = `${(Number(sens.value) || 1).toFixed(1)}×`;
+    };
+    sens.addEventListener('input', mouseChanged);
+    invert.addEventListener('change', mouseChanged);
     const controls = el(
       'div',
       { class: 'controls' },
@@ -548,6 +559,8 @@ export class FrontEnd {
       );
     };
     renderPick();
+    const hitStyle = el('select', {}, ...HITMARKER_STYLES.map((h) => el('option', { value: h, textContent: { ticks: 'Ticks (Infinite Warfare style)', diamond: 'Diamond', off: 'Off' }[h], selected: h === hitmarkerSetting() })));
+    hitStyle.addEventListener('change', () => saveHitmarker(hitStyle.value as HitmarkerStyle));
     return el(
       'div',
       { class: 'screen options' },
@@ -558,9 +571,12 @@ export class FrontEnd {
         el('label', {}, 'Player name', name),
         el('label', {}, 'Volume', volume),
         el('label', {}, 'Display', fullscreen),
+        el('label', {}, 'Mouse sensitivity', el('span', { class: 'row' }, sens, sensVal)),
+        el('label', {}, 'Invert look', invert),
         el('h3', { class: 'panel-title', textContent: 'Crosshair' }),
         crosshairs,
         colours,
+        el('label', {}, 'Hit marker', hitStyle),
         el('h3', { class: 'panel-title', textContent: 'Controls' }),
         controls,
       ),

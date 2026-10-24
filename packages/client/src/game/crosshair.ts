@@ -37,3 +37,30 @@ export function applyCrosshair(setting: CrosshairSetting = crosshairSetting()): 
   el.dataset.style = setting.style;
   el.style.setProperty('--xh', setting.colour);
 }
+
+/** Hit-marker styles (Options): the classic diamond, Infinite-Warfare-style ticks that pop, or none. */
+export const HITMARKER_STYLES = ['ticks', 'diamond', 'off'] as const;
+export type HitmarkerStyle = (typeof HITMARKER_STYLES)[number];
+const HIT_KEY = 'cs.hitmarker';
+
+export function hitmarkerSetting(): HitmarkerStyle {
+  try {
+    return HITMARKER_STYLES.find((s) => s === localStorage.getItem(HIT_KEY)) ?? 'ticks';
+  } catch {
+    return 'ticks';
+  }
+}
+
+export function saveHitmarker(style: HitmarkerStyle): void {
+  try {
+    localStorage.setItem(HIT_KEY, style);
+  } catch {
+    // Private mode: the choice lasts until the page closes.
+  }
+  applyHitmarker(style);
+}
+
+export function applyHitmarker(style: HitmarkerStyle = hitmarkerSetting()): void {
+  const el = document.getElementById('hitmarker');
+  if (el) el.dataset.style = style;
+}

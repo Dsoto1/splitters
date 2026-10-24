@@ -1,6 +1,33 @@
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
+const MOUSE_PREF_KEY = 'chronosplit.mouse';
+/** Safari reports locked-pointer movement at roughly half the scale of other browsers. */
+const BROWSER_SCALE = /^((?!chrome|chromium|android|crios|fxios).)*safari/i.test(navigator.userAgent) ? 2 : 1;
+
+/** The player's mouse settings, kept between sessions. */
+export interface MousePrefs {
+  /** Multiplier on look speed (0.2–4). */
+  sensitivity: number;
+  invertY: boolean;
+}
+
+export function loadMousePrefs(): MousePrefs {
+  try {
+    const p = JSON.parse(localStorage.getItem(MOUSE_PREF_KEY) ?? '{}') as Partial<MousePrefs>;
+    return { sensitivity: Math.min(4, Math.max(0.2, Number(p.sensitivity) || 1)), invertY: p.invertY === true };
+  } catch {
+    return { sensitivity: 1, invertY: false };
+  }
+}
+
+export function saveMousePrefs(p: MousePrefs): void {
+  try {
+    localStorage.setItem(MOUSE_PREF_KEY, JSON.stringify(p));
+  } catch {
+    // Private windows: the setting lasts for this session.
+  }
+}
 const PITCH_LIMIT = 1.5;
 
 /** Keyboard + pointer-lock mouse. View angles accumulate here; movement is sampled once per tick. */
@@ -9,6 +36,8 @@ export class InputState {
   pitch = 0;
   /** Zoomed aim lowers mouse sensitivity by this factor (set by the session). */
   sensitivityScale = 1;
+  /** The player's own look settings (Options / pause menu). */
+  mouse: MousePrefs = loadMousePrefs();
   private keys = new Set<string>();
   private fireDown = false;
   private zoomDown = false;
@@ -103,9 +132,9 @@ export class InputState {
       (e) => {
         buttons(e);
         if (!this.locked || e.pointerType === 'touch') return;
-        const s = MOUSE_SENSITIVITY * this.sensitivityScale;
+        const s = MOUSE_SENSITIVITY * this.sensitivityScale * this.mouse.sensitivity * BROWSER_SCALE;
         this.yaw += e.movementX * s;
-        this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - e.movementY * s));
+        this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - e.movementY * s * (this.mouse.invertY ? -1 : 1)));
       },
       opts,
     );

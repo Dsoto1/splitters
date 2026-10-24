@@ -146,7 +146,8 @@ export class PhysicsWorld {
     // Crouching and prone shrink the capsule.
     const half = Math.max(0.01, (height - PLAYER.radius * 2) / 2);
     const shape = collider.shape as RAPIER.Capsule;
-    if (Math.abs(shape.halfHeight - half) > 1e-4) collider.setHalfHeight(half);
+    // A new shape rather than setHalfHeight, which left a grown capsule sunk into the floor.
+    if (Math.abs(shape.halfHeight - half) > 1e-4) collider.setShape(new RAPIER.Capsule(half, PLAYER.radius));
     const centerY = height / 2;
     const startY = feet.y + START_LIFT;
     collider.setTranslation({ x: feet.x, y: startY + centerY, z: feet.z });

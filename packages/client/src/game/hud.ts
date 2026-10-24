@@ -1,6 +1,6 @@
 import { CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
 import { slotColor } from './view.ts';
-import { applyCrosshair } from './crosshair.ts';
+import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
 import { Minimap } from './minimap.ts';
 
@@ -76,6 +76,7 @@ export class Hud {
 
   show(): void {
     applyCrosshair();
+    applyHitmarker();
     this.root.hidden = false;
   }
 
@@ -473,10 +474,13 @@ export class Hud {
 
   /** Hit confirmation on the crosshair (red and longer for a head hit). */
   hit(head = false): void {
+    // Restart the pop animation on every hit.
+    this.hitmarker.classList.remove('on');
+    void this.hitmarker.offsetWidth;
     this.hitmarker.classList.add('on');
     this.hitmarker.classList.toggle('head', head);
     clearTimeout(this.hitTimer);
-    this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on', 'head'), head ? 140 : 70);
+    this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on', 'head'), head ? 220 : 140);
   }
 
   /** "HEADSHOT" call-out for a kill you made with a head hit. */

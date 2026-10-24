@@ -52,13 +52,16 @@ import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
 import { ModeHud } from './modeHud.ts';
 import { statusColor } from './arsenalVisuals.ts';
-import { InputState } from './input.ts';
+import { InputState, saveMousePrefs } from './input.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
 import { ScenarioState } from './scenarioState.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
+
+/** Match events that only make effects, skipped while the tab is hidden. */
+const HIDDEN_SKIP = new Set(['shot', 'melee', 'arc', 'explode', 'throw']);
 
 export interface SessionOptions {
   engine: AbstractEngine;
@@ -169,6 +172,23 @@ export class GameSession {
     $('resume').addEventListener('click', lock, { signal });
     $('exitmatch').addEventListener('click', () => this.exit(), { signal });
     $('exitmatch').textContent = opts.exitLabel;
+    // Mouse sensitivity and invert, saved for next time.
+    const sens = $('mouse-sens') as HTMLInputElement;
+    const sensVal = $('mouse-sens-val');
+    const invert = $('mouse-invert') as HTMLInputElement;
+    const showMouse = () => {
+      sens.value = String(this.input.mouse.sensitivity);
+      sensVal.textContent = `${this.input.mouse.sensitivity.toFixed(1)}×`;
+      invert.checked = this.input.mouse.invertY;
+    };
+    showMouse();
+    const mouseChanged = () => {
+      this.input.mouse = { sensitivity: Number(sens.value) || 1, invertY: invert.checked };
+      saveMousePrefs(this.input.mouse);
+      showMouse();
+    };
+    sens.addEventListener('input', mouseChanged, { signal });
+    invert.addEventListener('change', mouseChanged, { signal });
     // The player's own blood switch; the map sets the colour and amount.
     const bloodBox = $('blood-toggle') as HTMLInputElement;
     bloodBox.checked = this.view.blood.enabled;
@@ -344,7 +364,10 @@ export class GameSession {
         let poses: ReturnType<Interpolator['sample']> | undefined;
         const posesNow = () => (poses ??= this.interp.sample());
         for (const ev of msg.ev) {
-          this.sfx.event(ev, posesNow, performance.now());
+          // In a background tab nothing draws, so effects would only pile up (blood, bullets,
+          // sounds) and all land at once when you come back: skip the purely visual ones.
+          if (document.hidden && HIDDEN_SKIP.has(ev.e)) continue;
+          if (!document.hidden) this.sfx.event(ev, posesNow, performance.now());
           this.modeHud?.event(ev);
           if (ev.e === 'shot') {
             const def = CORE_WEAPONS[ev.w];

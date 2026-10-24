@@ -161,14 +161,14 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .xh { position: relative; display: block; }
 #crosshair::before, .xh::before { left: 8px; top: 0; width: 2px; height: 18px; }
 #crosshair::after, .xh::after { top: 8px; left: 0; height: 2px; width: 18px; }
-[data-style='dot']::before { left: 6px; top: 6px; width: 6px; height: 6px; border-radius: 50%; }
-[data-style='dot']::after { display: none; }
-[data-style='circle']::before { left: 1px; top: 1px; width: 12px; height: 12px; border-radius: 50%; background: none; border: 2px solid var(--xh); }
-[data-style='circle']::after { left: 8px; top: 8px; width: 2px; height: 2px; }
-[data-style='chevron']::before { left: 3px; top: 7px; width: 9px; height: 2px; transform: rotate(35deg); transform-origin: right; }
-[data-style='chevron']::after { left: 9px; top: 7px; width: 9px; height: 2px; transform: rotate(-35deg); transform-origin: left; }
-[data-style='gap']::before { left: 8px; top: 0; width: 2px; height: 18px; background: linear-gradient(var(--xh) 0 6px, transparent 6px 12px, var(--xh) 12px); box-shadow: none; }
-[data-style='gap']::after { top: 8px; left: 0; height: 2px; width: 18px; background: linear-gradient(90deg, var(--xh) 0 6px, transparent 6px 12px, var(--xh) 12px); box-shadow: none; }
+#crosshair[data-style='dot']::before, .xh[data-style='dot']::before { left: 6px; top: 6px; width: 6px; height: 6px; border-radius: 50%; }
+#crosshair[data-style='dot']::after, .xh[data-style='dot']::after { display: none; }
+#crosshair[data-style='circle']::before, .xh[data-style='circle']::before { left: 1px; top: 1px; width: 12px; height: 12px; border-radius: 50%; background: none; border: 2px solid var(--xh); }
+#crosshair[data-style='circle']::after, .xh[data-style='circle']::after { left: 8px; top: 8px; width: 2px; height: 2px; }
+#crosshair[data-style='chevron']::before, .xh[data-style='chevron']::before { left: 3px; top: 7px; width: 9px; height: 2px; transform: rotate(35deg); transform-origin: right; }
+#crosshair[data-style='chevron']::after, .xh[data-style='chevron']::after { left: 9px; top: 7px; width: 9px; height: 2px; transform: rotate(-35deg); transform-origin: left; }
+#crosshair[data-style='gap']::before, .xh[data-style='gap']::before { left: 8px; top: 0; width: 2px; height: 18px; background: linear-gradient(var(--xh) 0 6px, transparent 6px 12px, var(--xh) 12px); box-shadow: none; }
+#crosshair[data-style='gap']::after, .xh[data-style='gap']::after { top: 8px; left: 0; height: 2px; width: 18px; background: linear-gradient(90deg, var(--xh) 0 6px, transparent 6px 12px, var(--xh) 12px); box-shadow: none; }
 .crosshair-pick { display: flex; gap: 8px; margin: 6px 0 10px; }
 .xh-opt { width: 46px; height: 46px; padding: 0; display: flex; align-items: center; justify-content: center; background: var(--deep-space); }
 .xh-opt.on, .xh-col.on { outline: 2px solid var(--cyan); outline-offset: 1px; }
@@ -176,6 +176,14 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #hitmarker { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; opacity: 0; border: 2px solid var(--danger); transform: rotate(45deg); transition: opacity 0.15s; }
 #hitmarker.on { opacity: 1; transition: none; }
 #hitmarker.head { border-color: #ff2a2a; border-width: 3px; width: 38px; height: 38px; margin: -19px 0 0 -19px; }
+/* Infinite-Warfare-style hit marker: four diagonal ticks around an open centre that pop out; red for head hits. */
+#hitmarker[data-style='ticks'] { border: none; transform: none; width: 30px; height: 30px; margin: -15px 0 0 -15px; }
+#hitmarker[data-style='ticks']::before, #hitmarker[data-style='ticks']::after { content: ''; position: absolute; left: 14px; top: 0; width: 2px; height: 30px; background: linear-gradient(#fff 0 9px, transparent 9px 21px, #fff 21px); filter: drop-shadow(0 0 1px #000); transform: rotate(45deg); }
+#hitmarker[data-style='ticks']::after { transform: rotate(-45deg); }
+#hitmarker[data-style='ticks'].on { animation: hit-pop 0.14s ease-out; }
+#hitmarker[data-style='ticks'].head::before, #hitmarker[data-style='ticks'].head::after { background: linear-gradient(#ff3030 0 10px, transparent 10px 20px, #ff3030 20px); }
+@keyframes hit-pop { 0% { transform: scale(1.45); } 100% { transform: scale(1); } }
+#hitmarker[data-style='off'] { display: none; }
 #headshot { position: absolute; left: 50%; top: 38%; transform: translateX(-50%); font: 700 italic 26px var(--font-display); letter-spacing: 0.12em; color: #ff3b3b; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8); opacity: 0; pointer-events: none; }
 #headshot.on { animation: headshot-pop 0.9s ease-out; }
 @keyframes headshot-pop { 0% { opacity: 0; transform: translateX(-50%) scale(1.6); } 12% { opacity: 1; transform: translateX(-50%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }

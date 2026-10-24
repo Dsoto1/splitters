@@ -90,6 +90,11 @@ describe('player movement', () => {
     expect(crouched.pos.z - start.pos.z).toBeCloseTo((walked.pos.z - start.pos.z) * STANCES[1].speed, 1);
     const prone = run(physics, start, { buttons: BUTTON_PRONE }, 5);
     expect(prone.stance).toBe(2);
+    // Getting up again leaves you standing on the floor, not sunk into it.
+    const risen = run(physics, prone, {}, 20);
+    expect(risen.stance).toBeUndefined();
+    expect(risen.pos.y).toBeCloseTo(start.pos.y, 1);
+    expect(risen.grounded).toBe(true);
     // Crawl under the slab crouched, then try to stand: no room, so you stay down.
     let under = run(physics, start, { forward: 1, buttons: BUTTON_CROUCH }, 200);
     expect(under.pos.z).toBeGreaterThan(1.6);
