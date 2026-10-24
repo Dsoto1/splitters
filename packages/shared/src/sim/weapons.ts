@@ -569,9 +569,10 @@ function arsenal(): Record<string, WeaponDefinition> {
     }),
     // ---------------------------------------------------------------- 5: precision
     weapon({
-      id: 'core.railgun', displayName: 'Railgun', kind: 'hitscan', slot: 5, windupTicks: 36, windupResets: true,
-      damage: 90, spread: 0, fireIntervalTicks: 40, range: 320, magazine: 4, reserveMax: 16, pickupAmmo: 8, reloadTicks: 110, raiseTicks: 28,
-      ammo: 'cells', pierce: 3, knockback: 4, recoil: { kick: 0.06, bloom: 0, maxBloom: 0, recover: 0 }, botDesirability: 0.7, botRange: [15, 150],
+      // Charges briefly, then one body hit kills an unarmoured player.
+      id: 'core.railgun', displayName: 'Railgun', kind: 'hitscan', slot: 5, windupTicks: 24, windupResets: true,
+      damage: 100, spread: 0, fireIntervalTicks: 40, range: 320, magazine: 4, reserveMax: 16, pickupAmmo: 8, reloadTicks: 110, raiseTicks: 28,
+      ammo: 'cells', pierce: 3, knockback: 6, recoil: { kick: 0.09, bloom: 0, maxBloom: 0, recover: 0 }, botDesirability: 0.7, botRange: [15, 150],
       view: longarm('railgun', 1.1, '#5fe0ff', { zoomFov: 0.5, sound: 'fire.railgun', beam: true }),
     }),
     // ---------------------------------------------------------------- 6: lobbers

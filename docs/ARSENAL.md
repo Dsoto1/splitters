@@ -57,7 +57,7 @@ recipes.
 | 4 | Sawed-Off | Two barrels, 14 pellets, knockback |
 | 4 | Auto Shotgun | Automatic, big recoil |
 | 4 | Flak Cannon | Seven shards that ricochet twice |
-| 5 | Railgun | Charges for 0.6 s, then pierces up to four players |
+| 5 | Railgun | Charges for 0.4 s, then pierces up to four players; one body hit kills an unarmoured player |
 | 6 | Disc Launcher | Fast disc, big knockback (disc-jumping works) |
 | 6 | Bubble Blaster | Slow, floating toxic bubbles that bounce off walls up to 7 times, then burst into a poison cloud |
 | 6 | Goo Gun | Lobbed goo that slows and leaves a sticky puddle |

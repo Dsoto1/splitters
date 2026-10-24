@@ -561,7 +561,14 @@ export class GameView {
 
   /** Recoil kick and muzzle flash for a predicted shot. */
   kick(def: WeaponDefinition): void {
-    this.kickAmount = Math.min(1, this.kickAmount + (def.kind === 'melee' ? 0.9 : def.pellets > 1 || def.projectile ? 1 : 0.45));
+    const rail = def.id === 'core.railgun';
+    this.kickAmount = Math.min(1, this.kickAmount + (def.kind === 'melee' ? 0.9 : rail || def.pellets > 1 || def.projectile ? 1 : 0.45));
+    if (rail) {
+      // The rail slams back with a big blue-white flash.
+      this.flashUntil = performance.now() + 80;
+      kickFlash(this.flash, 2);
+      return;
+    }
     if (def.kind === 'melee' || def.view.beam) return;
     this.flashUntil = performance.now() + 45;
     kickFlash(this.flash, def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1);
@@ -1049,7 +1056,11 @@ export class GameView {
 
   /** A shot's trail: beam weapons draw beams, everything else tracers. */
   addShot(def: WeaponDefinition | undefined, from: Vec3, to: Vec3, color: string, ttlMs = 90): void {
-    if (def?.view.beam) this.addBeam(from, to, def.view.tracer, def.id === 'core.railgun' ? 0.09 : 0.04, def.id === 'core.railgun' ? 400 : 90);
+    if (def?.id === 'core.railgun') {
+      // A thick glowing rail that lingers, with a hot white core that snaps off first.
+      this.addBeam(from, to, def.view.tracer, 0.14, 750);
+      this.addBeam(from, to, '#ffffff', 0.04, 220);
+    } else if (def?.view.beam) this.addBeam(from, to, def.view.tracer, 0.04, 90);
     else this.addTracer(from, to, color, ttlMs);
   }
 

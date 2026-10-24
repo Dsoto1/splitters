@@ -208,9 +208,12 @@ describe('props', () => {
     map.entities.push(prop('p1', 'prop.rock_large', 2, 0), prop('p2', 'prop.rug', -2, 0), prop('p3', 'prop.rock_medium', 0, 2, { solid: false }), prop('p4', 'prop.tree', -2, -2, { scale: 2 }));
     expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
     const boxes = buildMapGeometry(map).filter((b) => b.kind === 'prop');
-    expect(boxes.map((b) => b.sourceId)).toEqual(['p1', 'p4']);
+    // A boulder collides as two rounded tiers (a low one you can hop onto, a narrower top).
+    expect(boxes.map((b) => b.sourceId)).toEqual(['p1', 'p1', 'p4']);
+    expect(boxes[0]!.max[1]).toBeLessThanOrEqual(0.7 + 1e-6);
+    expect(boxes[1]!.max[0] - boxes[1]!.min[0]).toBeLessThan(boxes[0]!.max[0] - boxes[0]!.min[0]);
     // A tree only blocks at its trunk, scaled.
-    const tree = boxes[1]!;
+    const tree = boxes[2]!;
     expect(tree.max[0] - tree.min[0]).toBeCloseTo(1);
     expect(tree.max[1]).toBeCloseTo(10);
     // Turned 45°, the collision covers the turned crate's footprint.

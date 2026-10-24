@@ -1,3 +1,4 @@
+import { PLAYER } from '../sim/constants.ts';
 import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, type EdgeStyle, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { getProp } from '../content/props.ts';
@@ -303,6 +304,9 @@ export function isBreakableProp(e: MapEntity): boolean {
 }
 
 /** Collision of solid props: the prop's box, scaled and turned (as its axis-aligned bounds). */
+/** Natural rocks and boulders (not logs or stumps), which collide as rounded tiers. */
+const isRock = (def: { id: string; category: string }): boolean => def.category === 'Rocks & Wood' && /rock|boulder|stone|cliff/.test(def.id);
+
 export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   const out: WorldBox[] = [];
   for (const e of map.entities) {
@@ -332,6 +336,15 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
     const [w, h, d] = def.collision.map((v) => v * e.scale) as [number, number, number];
     const hx = (w * Math.abs(c) + d * Math.abs(s)) / 2;
     const hz = (w * Math.abs(s) + d * Math.abs(c)) / 2;
+    if (isRock(def) && h > PLAYER.maxStepHeight) {
+      // Rocks are round, not crates: a wide low tier you can hop onto and a narrower top,
+      // so big rocks can be climbed over and their corners don't snag you.
+      const low = Math.min(h * 0.5, 0.7);
+      out.push({ min: [x - hx * 0.85, y, z - hz * 0.85], max: [x + hx * 0.85, y + low, z + hz * 0.85], kind: 'prop', sourceId: e.id });
+      out.push({ min: [x - hx * 0.55, y + low, z - hz * 0.55], max: [x + hx * 0.55, y + h * 0.92, z + hz * 0.55], kind: 'prop', sourceId: e.id });
+      continue;
+    }
+    if (isRock(def)) continue; // pebbles: walk straight over them
     out.push({ min: [x - hx, y, z - hz], max: [x + hx, y + h, z + hz], kind: 'prop', sourceId: e.id });
   }
   return out;
