@@ -147,6 +147,9 @@ export class GameSession {
   private covers?: CoverState;
   /** Seconds of UAV sweep left for your side: enemies show on the minimap. */
   private uav = 0;
+  /** H: a camera over your shoulder, to see your own character. */
+  private thirdPerson = false;
+  private tpClose = false;
   /** Seconds your minimap stays jammed (enemy Counter-UAV), and your kill streak. */
   private jam = 0;
   private streak = 0;
@@ -194,6 +197,10 @@ export class GameSession {
     this.showStats = opts.showStats;
     this.input.onToggle.set('F3', () => (this.showStats = !this.showStats));
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
+    this.input.onToggle.set('KeyH', () => {
+      this.thirdPerson = !this.thirdPerson;
+      this.hud.pickup(this.thirdPerson ? 'Third-person view (H to go back)' : 'First-person view');
+    });
     this.input.onToggle.set('KeyQ', () => {
       if (this.lastWeapon && this.local?.inventory.has(this.lastWeapon)) this.requestWeapon(this.lastWeapon);
     });
@@ -739,11 +746,24 @@ export class GameSession {
         const eye = local.eye;
         const offset = eye.y - local.state.pos.y;
         this.eyeOffset = this.eyeOffset === null || !local.alive ? offset : this.eyeOffset + (offset - this.eyeOffset) * Math.min(1, dt * 12);
-        this.view.setCamera({ x: eye.x, y: local.state.pos.y + this.eyeOffset, z: eye.z }, this.input.yaw, this.input.pitch, fov);
+        const head = { x: eye.x, y: local.state.pos.y + this.eyeOffset, z: eye.z };
+        if (this.thirdPerson && local.alive) {
+          // Over the right shoulder, pulled in where a wall is in the way.
+          const fwd = viewDirection(this.input.yaw, this.input.pitch);
+          const right = { x: Math.cos(this.input.yaw), y: 0, z: -Math.sin(this.input.yaw) };
+          const off = { x: -fwd.x * 3 + right.x * 0.6, y: -fwd.y * 3 + 0.35, z: -fwd.z * 3 + right.z * 0.6 };
+          const len = Math.hypot(off.x, off.y, off.z);
+          const dir = { x: off.x / len, y: off.y / len, z: off.z / len };
+          const hit = local.physics.raycastWorld(head, dir, len);
+          const d = hit === null ? len : Math.max(0.3, hit - 0.25);
+          // Squeezed in against a wall: your own body would fill the screen, so it isn't drawn.
+          this.tpClose = d < 1.6;
+          this.view.setCamera({ x: head.x + dir.x * d, y: head.y + dir.y * d, z: head.z + dir.z * d }, this.input.yaw, this.input.pitch, fov);
+        } else this.view.setCamera(head, this.input.yaw, this.input.pitch, fov);
       }
       this.view.setViewmodel(weapon);
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, (weapon.reloadTicks - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed, ads: this.adsAmount });
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride), ads: this.adsAmount });
       this.hud.setScope(zoomed);
       this.updateScopeSway(dt, zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
@@ -801,16 +821,19 @@ export class GameSession {
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
+    // Third person: your own character drawn where prediction has you (not the delayed server copy).
+    const self = this.thirdPerson && !this.tpClose && local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
+    if (self && local) Object.assign(self, { x: local.state.pos.x, y: local.state.pos.y, z: local.state.pos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held });
     this.view.updateAvatars(
       poses,
-      this.slot,
+      self ? -1 : this.slot,
       (id) => {
         const npc = this.npcLook(id);
         // About half of each squad uses the female mannequin.
         if (npc?.creature) return npc.size === 1 ? { creature: npc.creature } : { creature: npc.creature, size: npc.size };
         if (npc) return { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1 } };
         const role = npcLookRole(this.looks.get(id));
-        if (role && NPC_ROLE_SPECS[role].creature && isCreature(role)) return { creature: role };
+        if (role && NPC_ROLE_SPECS[role].creature && isCreature(role)) return { creature: role, armed: true };
         const size = this.sizeOf(id);
         return size === 1 ? { look: this.looks.get(id) } : { look: this.looks.get(id), size };
       },

@@ -97,7 +97,7 @@ export class LocalPlayer {
   corrections = 0;
   lastCorrection = 0;
 
-  constructor(private readonly physics: PhysicsWorld) {
+  constructor(readonly physics: PhysicsWorld) {
     this.collider = physics.createPlayerCollider();
   }
 

@@ -116,6 +116,21 @@ sounds (needs new CC0 sounds and a grip pose).
 
 ### 6a. System maps (fix what we have)
 - Most system maps and the co-op scenario are **too small** — scale them up.
+- **Size and spawn audit (Oct 24)** — playable area, smallest first:
+
+  | Map | Size (m) | Spawns | Team bases | Modes | Action |
+  |---|---|---|---|---|---|
+  | Phase0 Arena | 27×27 | 8 | — | DM | Rebuild as a 2–4 player duel map, or retire |
+  | M3 Vault | 43×19 | 8 | — | DM | Widen to ~60×40; second floor |
+  | Creature Lab | 27×36 | 4 | — | Co-op | Grow to a 3–4 room mission |
+  | M4 Outpost | 43×24 | 4 | — | Co-op | Grow to a 3–4 room mission |
+  | Citadel | 36×35 | 10 | — | DM | Expand to ~60×60, add a lower level |
+  | Ridge Camp, Felicity Yard, Lantern Quarter, Silo Complex, Step Temple, Bottling, Skyward, Sky Islands | 44–91 per side | 8–13 | **none** | DM, TDM | Add team bases at opposite ends (the rotating spawns cover them until then) |
+  | Gallows Yard, Twin Spires, Reactor, Dockside, Bunker Cross, Jungle Steps, Rail Stockyard, Sandgate | 60–90 per side | 10–28 | yes | TDM (+CTF/KOTH on some) | OK; check spawn counts against 16 players |
+  | Backwoods, Canyon, Frost Basin, St. John's | 150–290 per side | 16–40 | yes | TDM (+ more) | Large; good for 24+ players and vehicles |
+
+- **Size targets per mode** (playable floor, not the bounding box): duel 2–4 players ≈ 800–1,500 m²; deathmatch 8 ≈ 2,500–4,000 m²; TDM 16 ≈ 5,000–8,000 m² with a base per team 60–100 m apart; CTF symmetric, bases 80–140 m apart with three routes; KOTH 3–5 hill spots on contested ground; Elimination compact (≈3,000 m²) with three lanes.
+- ✅ **TDM spawns on maps without team bases now rotate** (Oct 24): you spawn away from enemies, out of their sight, and near your teammates, so each side keeps a working area wherever the fight is. Teammates can also spawn beside a teammate who is out of the fight (Sprint 2 #15).
 - Interiors: **thoughtful prop placement** (furniture against walls, rooms that read as kitchens/offices) instead of random scatter. Build an interior-dressing helper per room type.
 - Crossfire homage: remake it from the original's layout reference.
 - Map cards: show **one image** per map — a real aerial/player-camera screenshot — and let the user cycle to the grid layout.

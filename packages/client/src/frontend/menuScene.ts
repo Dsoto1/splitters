@@ -130,7 +130,11 @@ export class MenuScene {
         ch.root.scaling.scaleInPlace(Math.min(1, (PLAYER.height * 1.15) / Math.max(0.5, max.y - min.y)));
         ch.root.rotation.y = 0.45;
         this.anim?.dispose();
-        this.anim = new CreatureAnimator(this.scene, ch);
+        const anim = new CreatureAnimator(this.scene, ch, true);
+        this.anim = anim;
+        // Players in creature skins carry guns, like everyone else.
+        const w = getWeapon('core.rifle');
+        void this.models.instantiate(w.view.model, `menuHeroRifle_${token}`).then((node) => (token === this.token ? anim.hold(node) : node.dispose()));
       });
       return;
     }

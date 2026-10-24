@@ -90,3 +90,28 @@ describe('squad play', () => {
     expect(beside).toBeGreaterThanOrEqual(2);
   });
 });
+
+describe('rotating team spawns (maps without team bases)', () => {
+  it('spawns you away from the enemy and near your team', () => {
+    const tiles = [];
+    for (let x = 0; x < 5; x++) for (let y = 0; y < 2; y++) tiles.push({ id: `y${x}_${y}`, tile: 'core.yard', x, y, z: 0, rotation: 0 as const });
+    // Shared spawns at both ends of the yard.
+    const map = makeMap(tiles, [[2, 0, 3], [2, 0, 12], [37, 0, 3], [37, 0, 12]]);
+    const match = new Match(map, { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2], respawnDelayTicks: 1, squadSpawn: false });
+    const me = match.addHuman('me')!;
+    const others = [0, 1, 2].map((i) => match.addHuman(`p${i}`)!);
+    const mate = others.find((o) => o.faction === me.faction)!;
+    const foes = others.filter((o) => o.faction !== me.faction);
+    for (let i = 0; i < 5; i++) match.step();
+    let west = 0;
+    for (let k = 0; k < 8; k++) {
+      // The enemy holds the east end; my teammate is in the west.
+      for (const f of foes) f.move = { pos: { x: 34, y: 0, z: 8 }, velY: 0, grounded: true };
+      mate.move = { pos: { x: 6, y: 0, z: 8 }, velY: 0, grounded: true };
+      kill(match, me, me);
+      for (let i = 0; i < 4; i++) match.step();
+      if (me.alive && me.move.pos.x < 20) west++;
+    }
+    expect(west).toBe(8);
+  });
+});

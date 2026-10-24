@@ -22,6 +22,7 @@ import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import {
+  armsLookFor,
   PLAYER,
   POWERUP_DAMAGE_BIT,
   angleDelta,
@@ -538,7 +539,7 @@ export class GameView {
     root.parent = this.camera;
     const arms = { look, anim: null as CharacterAnimator | null, root };
     this.fpArms = arms;
-    void this.characters.create({ look, armsOnly: true }, 'fpArmsChar').then((ch) => {
+    void this.characters.create({ look: armsLookFor(look), armsOnly: true }, 'fpArmsChar').then((ch) => {
       if (this.fpArms !== arms) return ch.dispose();
       // Same size as the full character (fitted to the player height: the head joint sits
       // about 0.2 m below the top of the head), placed so the eyes are at the camera.
@@ -787,8 +788,18 @@ export class GameView {
         if (root.isDisposed()) return ch.dispose();
         ch.root.parent = root;
         if (spec.size && spec.size !== 1) ch.root.scaling.setAll(spec.size);
-        a.anim = new CreatureAnimator(this.scene, ch);
+        if (spec.armed) {
+          // A player in a creature skin is drawn no bigger than the player's own hitbox (big aliens shrink to fit).
+          const { min, max } = ch.root.getHierarchyBoundingVectors(true);
+          const tall = max.y - min.y;
+          if (tall > PLAYER.height * 1.1) ch.root.scaling.scaleInPlace((PLAYER.height * 1.1) / tall);
+        }
+        a.anim = new CreatureAnimator(this.scene, ch, !!spec.armed);
         placeholder.setEnabled(false);
+        // Hand over the gun it was holding as a capsule.
+        const slotNow = a.weaponSlot;
+        a.weaponSlot = -1;
+        if (spec.armed && slotNow >= 0) this.setAvatarWeapon(a, slotNow);
       });
       return a;
     }

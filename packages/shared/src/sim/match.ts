@@ -42,7 +42,7 @@ import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
 import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
-import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, relation } from './npc.ts';
+import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, relation, validLookId } from './npc.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, zoneMultiplier, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -581,7 +581,7 @@ export class Match {
   addHuman(name: string, look?: string): Combatant | null {
     const c = this.addCombatant('human', name);
     if (c) {
-      c.look = getLook(look).id;
+      c.look = validLookId(look);
       this.applyBodySize(c);
     }
     return c;
@@ -2059,9 +2059,18 @@ export class Match {
     const candidates = own.length ? own : shared.length ? shared : this.spawnPoints;
     let best = candidates[0];
     let bestScore = -Infinity;
+    // Team modes on shared spawns: the sides rotate. Spawns near your teammates and out of
+    // enemy sight win, so each team keeps an area of its own wherever the fight has moved.
+    const rotating = !!this.teams && c.faction !== null && !own.length;
+    const mates = rotating ? this.combatants().filter((o) => o !== c && o.alive && o.faction === c.faction) : [];
     for (const sp of candidates) {
       const nearest = enemies.reduce((m, e) => Math.min(m, horizontalDistance(sp.pos, e.move.pos) + Math.abs(sp.pos.y - e.move.pos.y) * 2), 100);
-      const score = nearest + this.rng() * 3;
+      let score = nearest + this.rng() * 3;
+      if (rotating) {
+        score += Math.min(3, mates.filter((m) => horizontalDistance(m.move.pos, sp.pos) < 25).length) * 8;
+        const head = { x: sp.pos.x, y: sp.pos.y + 1.6, z: sp.pos.z };
+        if (enemies.some((e) => horizontalDistance(e.move.pos, sp.pos) < 45 && this.physics.lineOfSight({ x: e.move.pos.x, y: e.move.pos.y + 1.6, z: e.move.pos.z }, head))) score -= 40;
+      }
       if (score > bestScore) {
         bestScore = score;
         best = sp;

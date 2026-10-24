@@ -2,6 +2,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { Observer } from '@babylonjs/core/Misc/observable';
 import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { CreatureInstance } from '../content/creatures.ts';
 import type { MotionState, OneShot } from './characterAnimator.ts';
 
@@ -48,10 +49,15 @@ export class CreatureAnimator {
   private readonly hipScale: number;
   private bob = 0;
 
+  /** A player wearing this creature: its club is put away and it carries the player's gun. */
+  private weapon: TransformNode | null = null;
+
   constructor(
     private readonly scene: Scene,
     readonly ch: CreatureInstance,
+    private readonly armed = false,
   ) {
+    if (armed) for (const m of ch.meshes) if (/mace|stick|club/i.test(m.name)) m.setEnabled(false);
     this.alien = ch.spec.body === 'alien' || !ch.clips.has('walk');
     this.baseY = ch.body.position.y;
     this.hipScale = ch.hipHeight / RIG_HIPS;
@@ -59,9 +65,30 @@ export class CreatureAnimator {
     this.observer = scene.onBeforeRenderObservable.add(() => this.animateBody());
   }
 
-  /** Creatures hold no weapon: whatever the game hands them is dropped. */
+  /** NPC creatures hold no weapon (whatever they're handed is dropped); a player's creature carries its gun. */
   hold(weapon: TransformNode | null): void {
-    weapon?.dispose();
+    this.weapon?.dispose();
+    this.weapon = null;
+    if (!weapon) return;
+    if (!this.armed) return weapon.dispose();
+    this.weapon = weapon;
+    weapon.parent = this.ch.root;
+    weapon.rotationQuaternion = null;
+    // Gun models point down -Z; creatures face +Z.
+    weapon.rotation.set(0, Math.PI, 0);
+    this.placeWeapon();
+  }
+
+  /** In the right hand when there is one; aliens (no hands) carry it floating at the chest. */
+  private placeWeapon(): void {
+    const w = this.weapon;
+    if (!w) return;
+    const hand = this.ch.joints.get('hand_r');
+    if (hand && !this.alien) {
+      this.ch.root.computeWorldMatrix(true);
+      const inv = Matrix.Invert(this.ch.root.getWorldMatrix());
+      w.position.copyFrom(Vector3.TransformCoordinates(hand.getAbsolutePosition(), inv));
+    } else w.position.set(-0.28, 1.05, 0.45);
   }
 
   /** Creatures are never ragdolled (their skeletons aren't ours); they play their death instead. */
@@ -171,6 +198,7 @@ export class CreatureAnimator {
 
   /** Procedural body motion (every frame, also while lying dead). */
   private animateBody(): void {
+    this.placeWeapon();
     const body = this.ch.body;
     const now = performance.now();
     let tilt = this.lean;
@@ -208,6 +236,7 @@ export class CreatureAnimator {
 
   dispose(): void {
     this.scene.onBeforeRenderObservable.remove(this.observer);
+    this.weapon?.dispose();
     this.ch.dispose();
   }
 }

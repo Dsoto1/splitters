@@ -17,7 +17,7 @@ import { GLB, versioned } from '../assetUrl.ts';
 
 /** What an avatar is drawn as: a character (player look or soldier NPC), or a creature. */
 /** A character, NPC or creature to draw; `size` scales a player's body (small and large looks). */
-export type AvatarSpec = CharacterSpec & { creature?: CreatureKind; size?: number };
+export type AvatarSpec = CharacterSpec & { creature?: CreatureKind; size?: number; /** A player in a creature skin: carries guns instead of its club. */ armed?: boolean };
 
 export interface CreatureInstance {
   kind: CreatureKind;

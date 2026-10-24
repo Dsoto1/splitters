@@ -1,4 +1,4 @@
-import { getLook } from '../content/looks.ts';
+import { encodeLook, getLook } from '../content/looks.ts';
 import { CORE_BOT_PROFILES, type BotProfile } from '../bots/profile.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type Faction, type MapDocument, type NpcRole, type Relation } from '../map/schema.ts';
 
@@ -165,3 +165,16 @@ export const NPC_LOOKS: readonly { id: string; name: string; role: NpcRole }[] =
 export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56703c', gunner: '#9a7440', heavy: '#474d58', sniper: '#3f5a36' };
 /** A look ID kept as is when valid (presets, custom looks, NPC skins), else the default. */
 export const validLookId = (id: string | undefined): string => (npcLookRole(id) ? id! : getLook(id).id);
+
+/** First-person arm colour for each NPC skin (creature hide, soldier uniform). */
+const NPC_ARM_COLORS: Record<NpcRole, string> = { trooper: '#4f7a2c', gunner: '#a8782c', heavy: '#3c4450', sniper: '#3a6a28', imp: '#e0302a', puglin: '#7ab830', cyclops: '#3a7cf0', oculus: '#f07020', scolitex: '#20c8b0' };
+
+/**
+ * The look whose arms you see in first person: your own, or for an NPC skin
+ * bare arms tinted that NPC's colour (so a cyclops player sees blue hands).
+ */
+export function armsLookFor(look: string): string {
+  const role = npcLookRole(look);
+  if (!role) return look;
+  return encodeLook({ body: 'male', parts: ['athlete_torso_m', 'peasant_legs_m', 'peasant_feet_m'], hair: [], colorways: [], skin: NPC_ARM_COLORS[role], hairColor: null });
+}
