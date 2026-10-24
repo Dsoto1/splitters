@@ -54,6 +54,7 @@ import { bindFullscreenButton, pageHoldsEscape } from '../fullscreen.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
+import { CoverState } from './coverState.ts';
 import { ModeHud } from './modeHud.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
@@ -139,6 +140,9 @@ export class GameSession {
   private zones: ZoneSnapshot[] = [];
   /** Turrets, sentries and vehicles, and your seat in one: [mount entity index, seat, gun heat %]. */
   private mounts?: MountState;
+  private covers?: CoverState;
+  /** Seconds of UAV sweep left for your side: enemies show on the minimap. */
+  private uav = 0;
   private seat: [number, number, number] | null = null;
   private localStatus = 0;
   private lastWeapon = 0;
@@ -350,6 +354,7 @@ export class GameSession {
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.scenario = new ScenarioState(loaded.map, physics);
         this.mounts = new MountState(loaded.map, physics);
+        this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7));
         this.scenario.apply(msg.sc);
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
@@ -378,7 +383,9 @@ export class GameSession {
         this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr);
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt);
+        this.covers?.apply(msg.cv);
         this.seat = msg.me?.mo ?? null;
+        this.uav = msg.me?.uv ?? 0;
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         this.taken = new Set(msg.pk);
@@ -410,6 +417,12 @@ export class GameSession {
             const muzzle = mine ? null : this.view.muzzleOf(ev.s);
             const color = def?.view.tracer ?? '#ffd36b';
             const strength = Math.min(2.5, Math.max(0.6, (def?.damage ?? 20) / 25));
+            if (def?.grapple) {
+              // The rope, from the hand out to the hook.
+              const t = ev.to[0];
+              if (t) this.view.addBeam(muzzle ?? { x: eye.x, y: eye.y - 0.25, z: eye.z }, { x: t[0], y: t[1], z: t[2] }, color, 0.025, 450);
+              continue;
+            }
             ev.to.forEach((t, i) => {
               const to = { x: t[0], y: t[1], z: t[2] };
               const victim = ev.hit[i] ?? null;
@@ -699,7 +712,7 @@ export class GameSession {
       } else this.view.throwArc.hide();
       this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
-      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max);
+      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav);
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
       this.updateScenarioHud(local, now);
     }
@@ -761,6 +774,14 @@ export class GameSession {
       const blips = poses
         .filter((p) => p.slot !== this.slot && p.slot < NPC_ID_BASE && p.alive && (coop || (mine && this.hud.team(p.slot)?.id === mine.id)))
         .map((p) => ({ x: p.x, z: p.z, color: coop ? '#2ecc71' : mine!.color }));
+      // A UAV sweep puts every enemy (and hostile NPC) on the map too.
+      if (this.uav > 0) {
+        for (const p of poses) {
+          if (p.slot === this.slot || !p.alive || blips.length > 64) continue;
+          const ally = p.slot < NPC_ID_BASE && (coop || (mine && this.hud.team(p.slot)?.id === mine.id));
+          if (!ally) blips.push({ x: p.x, z: p.z, color: '#ff3b3b' });
+        }
+      }
       this.hud.minimap.update(local.eye.x, local.eye.z, this.input.yaw, blips);
     }
 

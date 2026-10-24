@@ -27,6 +27,7 @@ import {
   type Tuple3,
   type ZoneSnapshot,
   type MountSnapshot,
+  type CoverSnapshot,
 } from '../protocol.ts';
 import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
@@ -209,6 +210,19 @@ interface Zone {
 }
 
 const MAX_ZONES = 48;
+/** Deployed sandbag walls standing at once; the oldest goes when another lands. */
+const MAX_COVERS = 16;
+
+interface Cover {
+  id: number;
+  /** Ground point under its centre. */
+  pos: Vec3;
+  yaw: number;
+  half: Vec3;
+  health: number;
+  max: number;
+  body: RAPIER.Collider;
+}
 /** Per-tick damage of hazards and status effects. */
 const BURN_DPS = 12;
 const POISON_DPS = 9;
@@ -268,6 +282,10 @@ export class Match {
   /** Collider handle -> mount, so shots and blasts can hurt vehicles. */
   private readonly mountBodies = new Map<number, MountRt>();
   private nextProjectileId = 1;
+  private covers: Cover[] = [];
+  /** UAV sweeps running: side (team, or one player in free-for-all) -> tick it ends. */
+  private readonly uavUntil = new Map<string, number>();
+  private nextCoverId = 1;
   /** Positions of everyone at recent ticks, for lag-compensated hitscan. */
   private readonly history = new Map<number, Map<number, Vec3 & { h: number }>>();
   /** Bot AI time spent in the most recent tick, for instrumentation. */
@@ -974,6 +992,11 @@ export class Match {
       return;
     }
 
+    const grapple = getWeapon(def.id).grapple;
+    if (grapple) {
+      this.fireGrapple(shooter, eye, aim, def, grapple.speed);
+      return;
+    }
     const heal = getWeapon(def.id).heal;
     if (heal) {
       this.useMedkit(shooter, eye, aim, heal, def.range);
@@ -1283,6 +1306,72 @@ export class Match {
       }
       this.pendingEvents.push({ e: 'msg', text: 'Airstrike inbound!', secs: 3 });
     }
+    if (spec.cover) this.deployCover(p, at, spec.cover);
+  }
+
+  /** A sandbag wall on the ground where it landed, square to the thrower; nothing when someone stands in the way. */
+  private deployCover(p: Projectile, at: Vec3, cover: NonNullable<ProjectileSpec['cover']>): void {
+    const owner = this.actor(p.owner);
+    const yaw = owner?.yaw ?? Math.atan2(p.vel.x, p.vel.z);
+    // Back off a wall it struck so the bags sit in front of it.
+    const back = { x: -Math.sin(yaw) * 0.35, z: -Math.cos(yaw) * 0.35 };
+    const from = { x: at.x + back.x, y: at.y + 0.4, z: at.z + back.z };
+    const down = this.physics.raycastHit(from, { x: 0, y: -1, z: 0 }, 6);
+    if (!down) return;
+    const pos = { x: from.x, y: from.y - down.dist, z: from.z };
+    const half = { x: cover.half[0], y: cover.half[1], z: cover.half[2] };
+    const reach = Math.hypot(half.x, half.z) + PLAYER.radius;
+    for (const c of this.actors()) {
+      if (c.alive && Math.hypot(c.move.pos.x - pos.x, c.move.pos.z - pos.z) < reach && c.move.pos.y < pos.y + half.y * 2 && c.move.pos.y + PLAYER.height > pos.y) {
+        // Hand the bag back rather than wasting it.
+        if (owner?.alive && (!owner.throwable || owner.throwable.kind === 'sandbag')) owner.throwable = { kind: 'sandbag', count: Math.min(THROWABLE_DEFS.sandbag.max, (owner.throwable?.count ?? 0) + 1) };
+        return;
+      }
+    }
+    const body = this.physics.createBox({ x: pos.x, y: pos.y + half.y, z: pos.z }, half, yaw);
+    this.physics.commit();
+    this.covers.push({ id: this.nextCoverId++, pos, yaw, half, health: cover.health, max: cover.health, body });
+    if (this.covers.length > MAX_COVERS) this.removeCover(this.covers[0]!);
+  }
+
+  private removeCover(cv: Cover): void {
+    this.covers = this.covers.filter((c) => c !== cv);
+    this.physics.removeCollider(cv.body);
+    this.physics.commit();
+  }
+
+  private damageCover(cv: Cover, amount: number): void {
+    cv.health -= amount;
+    if (cv.health > 0) return;
+    this.removeCover(cv);
+  }
+
+  /**
+   * Hook the surface you're aiming at and get yanked toward it: the launch is
+   * aimed a little above the hook (gravity pulls the arc down) and capped so
+   * a long throw doesn't fling you through the far wall.
+   */
+  private fireGrapple(shooter: Combatant, eye: Vec3, aim: Vec3, def: { id: string; range: number }, speed: number): void {
+    const dist = this.physics.raycastWorld(eye, aim, def.range);
+    if (dist === null || dist < 1.5) {
+      this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to: [tuple(add(eye, scale(aim, dist ?? def.range)))], hit: [null] });
+      return;
+    }
+    const hook = add(eye, scale(aim, dist));
+    const feet = shooter.move.pos;
+    const to = { x: hook.x - feet.x, y: hook.y - feet.y - 0.6, z: hook.z - feet.z };
+    const flat = Math.hypot(to.x, to.z);
+    const t = Math.max(0.25, Math.hypot(flat, to.y) / speed);
+    const h = flat || 1;
+    const along = Math.min(speed, flat / t);
+    shooter.move = {
+      ...shooter.move,
+      vx: (to.x / h) * along,
+      vz: (to.z / h) * along,
+      velY: Math.min(speed * 1.1, Math.max(4, to.y / t + PLAYER.gravity * t * 0.5)),
+      grounded: false,
+    };
+    this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to: [tuple(hook)], hit: [null] });
   }
 
   /** Heal the hurt teammate you're aiming at within reach, or else yourself. */
@@ -1490,6 +1579,11 @@ export class Match {
 
   /** Damage whatever mount owns this collider; false when it isn't one. */
   private damageMountBody(handle: number, amount: number, attacker: Combatant | null): boolean {
+    const cv = this.covers.find((c) => c.body.handle === handle);
+    if (cv) {
+      this.damageCover(cv, amount);
+      return true;
+    }
     const m = this.mountBodies.get(handle);
     if (!m) return false;
     this.damageMount(m, amount, attacker);
@@ -1776,6 +1870,11 @@ export class Match {
       const d = Math.max(0, distance(at, centre) - Math.min(m.def.half[0], m.def.half[2]));
       if (d <= radius) this.damageMount(m, (damage + (edge - damage) * (d / radius)) * boost, owner);
     }
+    for (const cv of [...this.covers]) {
+      const d = Math.max(0, distance(at, { x: cv.pos.x, y: cv.pos.y + cv.half.y, z: cv.pos.z }) - cv.half.x);
+      // Bags soak blasts well: explosives are the way through, just slower than you'd like.
+      if (d <= radius) this.damageCover(cv, (damage + (edge - damage) * (d / radius)) * boost * 1.5);
+    }
     this.scenario.splash(at, radius, damage * boost, edge * boost, owner?.slot ?? null, this.physics);
   }
 
@@ -1896,6 +1995,10 @@ export class Match {
         if (c.jetFuel === JET.max) return false;
         c.jetFuel = JET.max;
         return true;
+      case 'uav':
+        this.uavUntil.set(this.uavSide(c), this.tick + e.seconds * TICK_RATE);
+        this.pendingEvents.push({ e: 'msg', text: `${c.name}: UAV online`, secs: 3 });
+        return true;
       case 'powerup':
         if (e.powerup === 'speed') c.speedTicks = e.seconds * TICK_RATE;
         else c.damageTicks = e.seconds * TICK_RATE;
@@ -1987,6 +2090,8 @@ export class Match {
     for (const id of [...this.npcs.keys()]) this.removeNpc(id);
     this.encounters.reset();
     this.scenario.reset();
+    for (const cv of [...this.covers]) this.removeCover(cv);
+    this.uavUntil.clear();
     for (const c of this.combatants()) {
       c.kills = 0;
       c.deaths = 0;
@@ -2032,6 +2137,10 @@ export class Match {
     });
   }
 
+  private uavSide(c: Combatant): string {
+    return this.teams && c.faction ? `team:${c.faction}` : `slot:${c.slot}`;
+  }
+
   /** The owning player's inventory and timers. */
   privateState(slot: number): PrivateState | undefined {
     const c = this.slots[slot];
@@ -2046,6 +2155,7 @@ export class Match {
       sp: c.speedTicks,
       dm: c.damageTicks,
       ...(c.jetFuel !== null ? { jp: c.jetFuel } : {}),
+      ...((this.uavUntil.get(this.uavSide(c)) ?? 0) > this.tick ? { uv: Math.ceil((this.uavUntil.get(this.uavSide(c))! - this.tick) / TICK_RATE) } : {}),
       ...(c.move.stamina !== undefined || c.move.rest || c.move.winded ? { sta: [Math.round((c.move.stamina ?? 1) * 1000), c.move.rest ?? 0, c.move.winded ? 1 : 0] as [number, number, number] } : {}),
     };
   }
@@ -2077,6 +2187,7 @@ export class Match {
       pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)]),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
       ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
+      ...(this.covers.length ? { cv: this.covers.map((c): CoverSnapshot => [c.id, r3(c.pos.x), r3(c.pos.y), r3(c.pos.z), r3(c.yaw), Math.ceil((Math.max(0, c.health) / c.max) * 100)]) } : {}),
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),

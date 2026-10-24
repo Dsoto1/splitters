@@ -65,6 +65,8 @@ export interface PrivateState {
   dm: number;
   /** Jetpack fuel units (see JET); absent without a jetpack. */
   jp?: number;
+  /** Seconds of UAV sweep left for your side (enemies on the minimap). */
+  uv?: number;
   /** Stamina for sprinting, when not full: [stamina ×1000, rest ticks, winded 0/1]. */
   sta?: [number, number, number];
 }
@@ -83,6 +85,8 @@ export const FX_SWIM = 64;
  * pitch, health %, alive 0/1, ...occupant slot per seat (-1 = empty)].
  */
 export type MountSnapshot = number[];
+/** Deployed cover (sandbags): [id, x, y (ground), z, yaw, health %]. */
+export type CoverSnapshot = [number, number, number, number, number, number];
 
 /** A ground hazard or field: [index into ZONE_KINDS, x, y, z, radius, seconds left]. */
 export type ZoneSnapshot = [number, number, number, number, number, number];
@@ -248,6 +252,8 @@ export type ServerMessage =
       zn?: ZoneSnapshot[];
       /** Turrets, sentries and vehicles, when the map has any. */
       mt?: MountSnapshot[];
+      /** Deployed cover walls, when any stand (absent means none). */
+      cv?: CoverSnapshot[];
       /** Receiving player's private state (absent while not in the match). */
       me?: PrivateState;
       /** Scenario state changes (absent when nothing changed). */

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_FIRE, BUTTON_THROW, DEFAULT_DEATHMATCH_RULES, getWeapon, initPhysics, weaponCode, type GameEvent, type ThrowableKind } from '../src/index.ts';
+import { BUTTON_FIRE, BUTTON_THROW, DEFAULT_DEATHMATCH_RULES, getItem, getWeapon, initPhysics, weaponCode, type GameEvent, type ThrowableKind } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -91,5 +91,78 @@ describe('Worms-style specials and the guided rocket', () => {
     }
     expect(seen).toBe(true);
     expect(north).toBeGreaterThan(5); // swung north of the line it was fired along (z = 4)
+  });
+});
+
+describe('deployable cover', () => {
+  it('sandbags land as a wall that stops bullets until shot apart', () => {
+    const { match, me, input } = setup('sandbag');
+    input(me, Math.PI / 2, 0, BUTTON_THROW);
+    let snap = match.snapshot([]);
+    for (let t = 0; t < 120; t++) {
+      match.step();
+      snap = match.snapshot([]);
+      if (snap.cv?.length) break;
+    }
+    expect(snap.cv?.length).toBe(1);
+    const [, x, y] = snap.cv![0]!;
+    expect(x).toBeGreaterThan(1);
+    expect(y).toBeCloseTo(0, 1);
+    // A crouched enemy behind it can't be shot through it.
+    const foe = match.addHuman('foe')!;
+    for (let i = 0; i < 3; i++) match.step();
+    foe.move = { pos: { x: x + 1.5, y: 0, z: 4 }, velY: 0, grounded: true };
+    const rifle = getWeapon('core.rifle')!;
+    me.weapons.set(weaponCode(rifle), { def: rifle, mag: 999, reserve: 999, alt: 0 });
+    me.current = weaponCode(rifle);
+    me.health = me.maxHealth = 10_000;
+    const pitch = Math.atan2(0.5 - (me.move.pos.y + 1.6), x - me.move.pos.x);
+    const before = foe.health;
+    // Aim low at the bags, then hold fire until they break.
+    let broke = -1;
+    for (let t = 0; t < 600 && broke < 0; t++) {
+      input(me, Math.PI / 2, pitch, BUTTON_FIRE);
+      foe.move = { pos: { x: x + 1.5, y: 0, z: 4 }, velY: 0, grounded: true };
+      match.step();
+      if (t === 20) expect(foe.health).toBe(before);
+      if (!match.snapshot([]).cv) broke = t;
+    }
+    expect(broke).toBeGreaterThan(20);
+  });
+});
+
+describe('grapple hook', () => {
+  it('yanks you toward the spot you hooked', () => {
+    const { match, me, input } = setup();
+    const hook = getWeapon('core.grapple')!;
+    me.weapons.set(weaponCode(hook), { def: hook, mag: 0, reserve: 0, alt: 0 });
+    me.current = weaponCode(hook);
+    for (let t = 0; t < 20; t++) {
+      input(me, Math.PI / 2, 0, 0);
+      match.step();
+    }
+    const start = { ...me.move.pos };
+    input(me, Math.PI / 2, -0.15, BUTTON_FIRE);
+    let top = 0;
+    for (let t = 0; t < 40; t++) {
+      if (t) input(me, Math.PI / 2, -0.15, 0);
+      const ev = match.step();
+      if (process.env.DBG) for (const e of ev) console.log(JSON.stringify(e));
+      top = Math.max(top, me.move.pos.y);
+    }
+    expect(me.move.pos.x - start.x).toBeGreaterThan(5);
+    expect(top).toBeGreaterThan(0.3);
+  });
+});
+
+describe('UAV', () => {
+  it('runs a sweep for your side that times out', () => {
+    const { match, me } = setup();
+    const applied = (match as unknown as { applyItem: (c: Combatant, i: unknown) => boolean }).applyItem(me, getItem('core.uav'));
+    expect(applied).toBe(true);
+    match.step();
+    expect(match.privateState(me.slot)?.uv).toBe(20);
+    for (let t = 0; t < 21 * 60; t++) match.step();
+    expect(match.privateState(me.slot)?.uv).toBeUndefined();
   });
 });

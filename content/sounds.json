@@ -763,6 +763,12 @@
       "range": "mid",
       "jitter": 0.05
     },
+    "pickup.uav": {
+      "synth": "beep",
+      "variants": 1,
+      "gain": 0.45,
+      "range": "near"
+    },
     "pickup.jetpack": {
       "gain": 0.6,
       "range": "mid",

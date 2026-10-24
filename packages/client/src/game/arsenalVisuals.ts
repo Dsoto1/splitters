@@ -41,7 +41,7 @@ function mat(scene: Scene, hex: string, emissive = 0, alpha = 1): StandardMateri
 }
 
 /** Projectile looks this module draws; others are drawn by the view. */
-export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb']);
+export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag']);
 
 export function createArsenalProjectile(scene: Scene, id: number, look: ProjectileVisual): TransformNode {
   const node = new TransformNode(`proj_${id}`, scene);
@@ -158,6 +158,9 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
     }
     case 'bomblet':
       add(CreateSphere(`bomblet_${id}`, { diameter: 0.14, segments: 6 }, scene)).material = mat(scene, '#2a2d33', 0.1);
+      break;
+    case 'sandbag':
+      add(CreateCylinder(`sandbag_${id}`, { diameter: 0.32, height: 0.55, tessellation: 8 }, scene)).material = mat(scene, '#b39b6b');
       break;
     case 'bomb': {
       const b = add(CreateCylinder(`bomb_${id}`, { diameterTop: 0.3, diameterBottom: 0.12, height: 0.7, tessellation: 10 }, scene));

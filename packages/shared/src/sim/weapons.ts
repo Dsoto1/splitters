@@ -21,7 +21,7 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
-  'holy', 'banana', 'sheep', 'bomblet', 'bomb',
+  'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -109,6 +109,8 @@ export interface ProjectileSpec {
   walker?: { speed: number };
   /** Where it bursts, calls in `count` bombs falling from `height` m in a line `spacing` m apart along the thrower's facing. */
   airstrike?: { count: number; spacing: number; height: number; bomb: ProjectileSpec };
+  /** Deployable cover: where it lands it becomes a solid wall (half extents, metres) facing the thrower, with its own health. */
+  cover?: { half: [number, number, number]; health: number };
 }
 
 /**
@@ -210,6 +212,8 @@ export interface WeaponDefinition {
   ammo?: AmmoType;
   /** A medical tool: each use heals the teammate you aim at (or yourself) by this much instead of hurting. */
   heal?: number;
+  /** A grapple: fired at a surface within `range`, it yanks you toward the hook point at about `speed` m/s. */
+  grapple?: { speed: number };
   alt?: AltFire;
   /** Trigger behaviour (default `auto`). */
   fireMode?: FireMode;
@@ -463,6 +467,27 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [0, 0],
     view: { model: 'procedural/medkit', viewOffset: [0.2, -0.2, 0.42], tracer: '#ffffff', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, -0.02, 0] } },
   },
+  'core.grapple': {
+    id: 'core.grapple',
+    displayName: 'Grapple Hook',
+    kind: 'melee',
+    slot: 1,
+    fireMode: 'semi',
+    damage: 0,
+    pellets: 1,
+    spread: 0,
+    fireIntervalTicks: 50,
+    range: 32,
+    magazine: 0,
+    reserveMax: 0,
+    pickupAmmo: 0,
+    reloadTicks: 0,
+    raiseTicks: 15,
+    grapple: { speed: 17 },
+    botDesirability: 0,
+    botRange: [0, 0],
+    view: sidearm('flare_gun', 0.32, '#d8d2c0', { sound: 'fire.flare' }),
+  },
 };
 
 // Helpers are function declarations: CORE_WEAPONS calls arsenal() while the module is still loading.
@@ -702,7 +727,7 @@ function arsenal(): Record<string, WeaponDefinition> {
 }
 
 /** Thrown equipment (G): one kind carried at a time, with a count. */
-export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike'] as const;
+export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike', 'sandbag'] as const;
 export type ThrowableKind = (typeof THROWABLES)[number];
 export interface ThrowableDefinition {
   kind: ThrowableKind;
@@ -791,6 +816,14 @@ export const THROWABLE_DEFS: Record<ThrowableKind, ThrowableDefinition> = {
       speed: 14, gravity: 14, fuseSeconds: 2, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'flare', bounce: 0.3,
       airstrike: { count: 5, spacing: 3.5, height: 30, bomb: { speed: 0, gravity: 20, fuseSeconds: 4, splashRadius: 4.5, splashDamage: 110, splashEdgeDamage: 15, selfDamageScale: 0.8, visual: 'bomb' } },
     },
+  },
+  sandbag: {
+    kind: 'sandbag',
+    displayName: 'Sandbags',
+    max: 3,
+    throwIntervalTicks: 40,
+    // Tossed a few metres ahead; where it lands it becomes a waist-high wall facing you.
+    projectile: { speed: 7, gravity: 16, fuseSeconds: 1.5, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'sandbag', cover: { half: [0.95, 0.5, 0.3], health: 300 } },
   },
 };
 /** Weapon IDs used for kill credit of thrown equipment. */

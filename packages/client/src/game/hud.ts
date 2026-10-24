@@ -388,8 +388,9 @@ export class Hud {
     el.style.boxShadow = color ? `inset 0 0 120px 30px ${color}88` : 'none';
   }
 
-  setPowerups(speedSeconds: number, damageSeconds: number, jetFuel: number | null = null): void {
+  setPowerups(speedSeconds: number, damageSeconds: number, jetFuel: number | null = null, uavSeconds = 0): void {
     const parts: string[] = [];
+    if (uavSeconds > 0) parts.push(`<span style="color:#9fe8ff">UAV ${Math.ceil(uavSeconds)}</span>`);
     // Jetpack fuel as a little gauge: ten blocks.
     if (jetFuel !== null) {
       const n = Math.round(jetFuel * 10);

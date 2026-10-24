@@ -891,7 +891,7 @@ export class BotBrain {
    */
   private considerGrenade(view: BotWorldView, target: CombatantView | undefined): void {
     const tick = view.tick;
-    if (this.throwPlan || tick < this.nextThrow || !(view.throwables ?? 0) || !view.throwable || view.throwable === 'mine') return;
+    if (this.throwPlan || tick < this.nextThrow || !(view.throwables ?? 0) || !view.throwable || view.throwable === 'mine' || view.throwable === 'sandbag') return;
     if (this.rng() > 0.25 + this.tactical * 0.5) return;
     const me = view.self;
     const eye = { x: me.pos.x, y: me.pos.y + STANCES[me.stance ?? 0].eye, z: me.pos.z };

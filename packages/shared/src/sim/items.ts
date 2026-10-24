@@ -15,7 +15,9 @@ export type ItemEffect =
   | { kind: 'weapon'; weapon: string }
   | { kind: 'powerup'; powerup: 'speed' | 'damage'; seconds: number }
   /** A jetpack: hold jump in the air to fly; fuel recharges while you don't. Lost when you die. */
-  | { kind: 'jetpack' };
+  | { kind: 'jetpack' }
+  /** A UAV sweep: every enemy shows on your team's minimaps (yours alone in free-for-all) for a while. */
+  | { kind: 'uav'; seconds: number };
 
 export interface ItemDefinition {
   id: string;
@@ -65,13 +67,16 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   item('gas_grenades', 'Gas Grenades', { kind: 'throwable', throwable: 'toxic', count: 2 }, 25, 0.4),
   item('vortex_grenades', 'Vortex Grenades', { kind: 'throwable', throwable: 'vortex', count: 1 }, 35, 0.5),
   item('weapon_medkit', 'Medkit', { kind: 'weapon', weapon: 'core.medkit' }, 30, 0.5),
+  item('weapon_grapple', 'Grapple Hook', { kind: 'weapon', weapon: 'core.grapple' }, 30, 0.3),
   item('holy_bomb', 'Holy Bomb', { kind: 'throwable', throwable: 'holy', count: 1 }, 60, 0.55),
   item('cluster_bombs', 'Cluster Bombs', { kind: 'throwable', throwable: 'cluster', count: 1 }, 40, 0.5),
   item('sheep', 'Sheep', { kind: 'throwable', throwable: 'sheep', count: 1 }, 45, 0.55),
   item('airstrike', 'Airstrike Flare', { kind: 'throwable', throwable: 'airstrike', count: 1 }, 60, 0.5),
+  item('sandbags', 'Sandbags', { kind: 'throwable', throwable: 'sandbag', count: 2 }, 30, 0.35),
   item('powerup_speed', 'Speed Boost', { kind: 'powerup', powerup: 'speed', seconds: 15 }, 60, 0.6),
   item('powerup_damage', 'Double Damage', { kind: 'powerup', powerup: 'damage', seconds: 15 }, 60, 0.85),
   item('jetpack', 'Jetpack', { kind: 'jetpack' }, 45, 0.6),
+  item('uav', 'UAV Uplink', { kind: 'uav', seconds: 20 }, 75, 0.5),
 ];
 
 const byId = new Map(CORE_ITEMS.map((i) => [i.id, i]));

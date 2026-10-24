@@ -84,6 +84,17 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       part(CreateCylinder(`${name}_jpnoz${x}`, { diameterTop: 0.1, diameterBottom: 0.16, height: 0.1, tessellation: 10 }, scene), mat(scene, '#2a2d33')).position.set(x, -0.3, 0);
     }
     part(CreateCylinder(`${name}_jpglow`, { diameter: 0.6, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ff9a3d', 0.7)).position.y = -0.42;
+  } else if (fx.kind === 'uav') {
+    // A little quad drone: body, four arms and rotor discs.
+    part(CreateBox(`${name}_uavbody`, { width: 0.26, height: 0.1, depth: 0.26 }, scene), mat(scene, '#3a3f48'));
+    for (const [x, z] of [[1, 1], [1, -1], [-1, 1], [-1, -1]] as const) {
+      const arm = part(CreateBox(`${name}_uavarm${x}${z}`, { width: 0.04, height: 0.03, depth: 0.26 }, scene), mat(scene, '#2a2d33'));
+      arm.position.set(x * 0.09, 0, z * 0.09);
+      arm.rotation.y = Math.atan2(x, z);
+      const rotor = part(CreateCylinder(`${name}_uavrotor${x}${z}`, { diameter: 0.22, height: 0.01, tessellation: 16 }, scene), mat(scene, '#9fe8ff', 0.6));
+      rotor.position.set(x * 0.18, 0.07, z * 0.18);
+    }
+    part(CreateSphere(`${name}_uaveye`, { diameter: 0.08, segments: 8 }, scene), mat(scene, '#ff3b3b', 0.9)).position.set(0, -0.06, 0.1);
   } else {
     part(CreateSphere(`${name}_pu`, { diameter: 0.5, segments: 12 }, scene), mat(scene, fx.powerup === 'speed' ? '#36d6ff' : '#c03cff', 0.9));
   }
@@ -91,7 +102,7 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
 }
 
 /** Grenade colour per kind on pickups. */
-const THROWABLE_COLORS: Partial<Record<string, string>> = { frag: '#5e6a46', sticky: '#5ad24a', incendiary: '#ff7a2a', toxic: '#a8ff3a', vortex: '#b07aff', holy: '#ffd24a', cluster: '#f5d33a', sheep: '#f4f2ea', airstrike: '#ff4a2a' };
+const THROWABLE_COLORS: Partial<Record<string, string>> = { frag: '#5e6a46', sticky: '#5ad24a', incendiary: '#ff7a2a', toxic: '#a8ff3a', vortex: '#b07aff', holy: '#ffd24a', cluster: '#f5d33a', sheep: '#f4f2ea', airstrike: '#ff4a2a', sandbag: '#b39b6b' };
 
 /** Stripe colour per ammo type (pickups and MapMaker icons). */
 const AMMO_COLORS: Record<AmmoType, string> = { light: '#f2e28a', rifle: '#e8a33a', shells: '#d8483a', sniper: '#5ab4e6', explosive: '#7a8a3a', cells: '#7dffb0', fuel: '#ff7a2a', chem: '#9a5ae0' };
@@ -115,5 +126,7 @@ export function itemColor(itemId: string): string {
       return fx.powerup === 'speed' ? '#36d6ff' : '#c03cff';
     case 'jetpack':
       return '#ff9a3d';
+    case 'uav':
+      return '#9fe8ff';
   }
 }
