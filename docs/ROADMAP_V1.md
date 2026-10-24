@@ -160,9 +160,9 @@ Also requested: **Egypt** theme (builds on Imperial Arena + desert), **portals**
 
 ---
 
-## Open decisions for you
+## Decisions (Oct 24)
 
-1. **Hide imported/original maps** now? (Notes say yes — Sprint 1 #13 assumes so.)
-2. **Bomb or hostage** mode — recommend adding bomb first.
-3. **Hosting shape on AWS** — cheapest start is one EC2 instance behind CloudFront; Fargate scales better. Recommend starting with EC2.
-4. Map storage size per user depends on map size limits; measure the largest map first, then set slot counts.
+1. **Imported/original maps are hidden** from the map list until the importer produces maps we're happy with.
+2. **Bomb mode first**; hostage later.
+3. **AWS: start with one EC2 instance** (behind CloudFront); move to Fargate when it needs to scale.
+4. **Map storage**: measure the largest map first, then set per-user slot counts.
