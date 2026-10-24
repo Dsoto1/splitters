@@ -30,9 +30,9 @@ import {
   type CoverSnapshot,
 } from '../protocol.ts';
 import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
-import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
+import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
-import { BUTTON_ALT, EMOTE_DANCE, QUICK_MESSAGES, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_ALT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
@@ -116,6 +116,13 @@ export interface Combatant {
   /** Dancing until this tick (emote); and the next tick a quick message or emote may be sent. */
   emoteUntil?: number;
   sayAt?: number;
+  pingAt?: number;
+  /** Tick it last took damage (squad spawns avoid teammates in a fight). */
+  hurtAt?: number;
+  /** Kills since this one last died (kill-streak rewards). */
+  streak?: number;
+  /** A teammate's order to a bot: follow them, or hold a spot, until `until`. */
+  order?: { kind: 'follow' | 'hold'; leader: number; pos: Vec3; until: number };
   /** NPC details. */
   /** `damage`: the encounter's damage multiplier (MapMaker). */
   npc?: { encounter: string; role: NpcRole; removeAt: number; damage: number };
@@ -286,6 +293,8 @@ export class Match {
   private covers: Cover[] = [];
   /** UAV sweeps running: side (team, or one player in free-for-all) -> tick it ends. */
   private readonly uavUntil = new Map<string, number>();
+  /** Counter-UAVs running: the jamming side -> tick it ends (everyone else's minimap is jammed). */
+  private readonly jamUntil = new Map<string, number>();
   private nextCoverId = 1;
   /** Positions of everyone at recent ticks, for lag-compensated hitscan. */
   private readonly history = new Map<number, Map<number, Vec3 & { h: number }>>();
@@ -701,7 +710,7 @@ export class Match {
         c.queue.push({ seq: c.lastSeq + 1, forward: 0, right: 0, yaw: c.yaw, pitch: c.pitch, buttons: 0 });
         continue;
       }
-      const orderGoal = npc ? this.encounters.goalFor(c.slot) : coop ? this.coopGoal(c, hostiles) : (this.mode?.botGoal(c, hostiles) ?? null);
+      const orderGoal = npc ? this.encounters.goalFor(c.slot) : (this.teammateOrder(c) ?? (coop ? this.coopGoal(c, hostiles) : (this.mode?.botGoal(c, hostiles) ?? null)));
       const allies = c.faction === null ? undefined : factionViews.get(c.faction);
       const input = c.bot.think({
         tick: this.tick,
@@ -806,6 +815,19 @@ export class Match {
     return human ? { pos: human.move.pos, radius: 4 } : null;
   }
 
+  /** Where a teammate told this bot to be ("Follow me!" / "Hold here!"), while the order lasts. */
+  private teammateOrder(c: Combatant): { pos: Vec3; radius: number } | null {
+    const o = c.order;
+    if (!o || this.tick > o.until) return null;
+    if (o.kind === 'hold') return { pos: o.pos, radius: 3 };
+    const leader = this.actor(o.leader);
+    if (!leader?.alive) {
+      c.order = undefined;
+      return null;
+    }
+    return { pos: leader.move.pos, radius: 4 };
+  }
+
   private applyInputs(c: Combatant): void {
     const n = Math.min(MAX_INPUTS_PER_TICK, c.queue.length);
     for (let i = 0; i < n; i++) {
@@ -814,10 +836,17 @@ export class Match {
       c.yaw = input.yaw;
       c.pitch = input.pitch;
       if (!c.alive) continue;
-      if (input.say && this.rules.emotes !== false && !c.npc && this.tick >= (c.sayAt ?? 0)) {
+      if (input.say === PING && !c.npc && this.tick >= (c.pingAt ?? 0)) {
+        c.pingAt = this.tick + Math.round(TICK_RATE * 0.75);
+        this.ping(c);
+      } else if (input.say && !c.npc && this.tick >= (c.sayAt ?? 0)) {
         c.sayAt = this.tick + TICK_RATE;
-        if (input.say === EMOTE_DANCE) c.emoteUntil = this.tick + TICK_RATE * 3;
-        else if (input.say <= QUICK_MESSAGES.length) this.pendingEvents.push({ e: 'say', s: c.slot, m: input.say, ...(this.teams && c.faction ? { team: c.faction } : {}) });
+        // Follow / hold orders reach your team's bots even with the pop-ups turned off.
+        if (input.say === SAY_FOLLOW || input.say === SAY_HOLD) this.orderBots(c, input.say === SAY_FOLLOW ? 'follow' : 'hold');
+        if (this.rules.emotes !== false) {
+          if (input.say === EMOTE_DANCE) c.emoteUntil = this.tick + TICK_RATE * 3;
+          else if (input.say <= QUICK_MESSAGES.length) this.pendingEvents.push({ e: 'say', s: c.slot, m: input.say, ...(this.teams && c.faction ? { team: c.faction } : {}) });
+        }
       }
       // Moving or shooting ends a dance.
       if (c.emoteUntil && (input.forward || input.right || input.buttons & BUTTON_FIRE)) c.emoteUntil = undefined;
@@ -1899,6 +1928,7 @@ export class Match {
       dmg -= absorbed;
     }
     victim.health -= dmg;
+    victim.hurtAt = this.tick;
     if (victim.health <= 0) this.kill(victim, attacker === victim ? null : attacker, weapon, head);
   }
 
@@ -1909,6 +1939,11 @@ export class Match {
     this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon, ...(head ? { hs: 1 as const } : {}) });
     // Only players score; NPC kills of players count as the player's death.
     if (killer && !killer.npc) killer.kills++;
+    victim.streak = 0;
+    if (killer && killer !== victim && !killer.npc && killer.alive) {
+      killer.streak = (killer.streak ?? 0) + 1;
+      this.streakReward(killer);
+    }
     if (victim.npc) {
       victim.npc.removeAt = this.tick + TICK_RATE * 2;
       this.encounters.onNpcKilled(victim.slot, killer?.slot ?? null);
@@ -2032,7 +2067,10 @@ export class Match {
         best = sp;
       }
     }
-    const sp = best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 };
+    // Team modes: usually beside a teammate who's out of the fight, else the safest spawn point.
+    const sp = (this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null) ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 };
+    c.streak = 0;
+    c.order = undefined;
     c.move = { pos: { ...sp.pos }, velY: 0, grounded: false };
     c.yaw = sp.yaw;
     c.pitch = 0;
@@ -2095,6 +2133,7 @@ export class Match {
     this.scenario.reset();
     for (const cv of [...this.covers]) this.removeCover(cv);
     this.uavUntil.clear();
+    this.jamUntil.clear();
     for (const c of this.combatants()) {
       c.kills = 0;
       c.deaths = 0;
@@ -2144,6 +2183,99 @@ export class Match {
     return this.teams && c.faction ? `team:${c.faction}` : `slot:${c.slot}`;
   }
 
+  /** Under an enemy Counter-UAV: the minimap shows static. */
+  private jammed(c: Combatant): number {
+    const side = this.uavSide(c);
+    let until = 0;
+    for (const [jammer, end] of this.jamUntil) if (jammer !== side && end > until) until = end;
+    return until > this.tick ? until : 0;
+  }
+
+  /** Mark what you're aiming at for your side: an enemy in your sights, or the spot. */
+  private ping(c: Combatant): void {
+    const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
+    const dir = viewDirection(c.yaw, c.pitch);
+    const wall = this.physics.raycastWorld(eye, dir, 150) ?? 150;
+    let target: Combatant | null = null;
+    let best = wall;
+    for (const o of this.actors()) {
+      if (!o.alive || o === c || !this.hostile(c, o)) continue;
+      const d = rayCapsule(eye, dir, o.move.pos, PLAYER.radius * o.size + 0.35, bodyHeightOf(o.move, o.size));
+      if (d !== null && d < best) {
+        best = d;
+        target = o;
+      }
+    }
+    if (best >= 150 && !target) return;
+    const at = target ? { x: target.move.pos.x, y: target.move.pos.y + 1, z: target.move.pos.z } : add(eye, scale(dir, best));
+    this.pendingEvents.push({ e: 'ping', s: c.slot, p: tuple(at), ...(target ? { t: target.slot } : {}), ...(this.teams && c.faction ? { team: c.faction } : {}) });
+  }
+
+  /** "Follow me!" / "Hold here!": your side's bots nearby do it for a while. */
+  private orderBots(c: Combatant, kind: 'follow' | 'hold'): void {
+    for (const b of this.combatants()) {
+      if (b.kind !== 'bot' || !b.alive || b === c || this.hostile(c, b)) continue;
+      // Free-for-all has no side to order.
+      if (!this.teams && this.rules.mode !== 'core.coop') continue;
+      if (horizontalDistance(b.move.pos, c.move.pos) > 30) continue;
+      b.order = { kind, leader: c.slot, pos: { ...c.move.pos }, until: this.tick + TICK_RATE * 40 };
+    }
+  }
+
+  /** Kill-streak rewards, earned at these streaks. */
+  private streakReward(c: Combatant): void {
+    if (this.rules.killstreaks === false || c.npc) return;
+    const r = STREAK_REWARDS.findIndex((x) => x.kills === c.streak);
+    if (r < 0) return;
+    const reward = STREAK_REWARDS[r]!;
+    this.pendingEvents.push({ e: 'streak', s: c.slot, r });
+    const side = this.uavSide(c);
+    switch (reward.id) {
+      case 'uav':
+        this.uavUntil.set(side, Math.max(this.uavUntil.get(side) ?? 0, this.tick + TICK_RATE * 20));
+        break;
+      case 'supply':
+        // Heal and restock you and every teammate within 15 m.
+        for (const o of this.actors()) {
+          if (!o.alive || o.npc || (o !== c && (this.hostile(c, o) || horizontalDistance(o.move.pos, c.move.pos) > 15))) continue;
+          const healed = Math.min(50, o.maxHealth - o.health);
+          o.health += healed;
+          for (const w of o.weapons.values()) w.reserve = Math.max(w.reserve, w.def.reserveMax);
+          if (healed > 0) this.pendingEvents.push({ e: 'heal', s: c.slot, t: o.slot, n: Math.round(healed) });
+        }
+        break;
+      case 'counter_uav':
+        this.jamUntil.set(side, this.tick + TICK_RATE * 20);
+        break;
+      case 'airstrike':
+        c.throwable = { kind: 'airstrike', count: 1 };
+        break;
+    }
+  }
+
+  /**
+   * Team modes: a spot beside a teammate nobody is shooting at (no enemy
+   * within 20 m, not hurt in the last few seconds), or null.
+   */
+  private squadSpawnSpot(c: Combatant): { pos: Vec3; yaw: number } | null {
+    if (!this.teams || !c.faction || this.rules.squadSpawn === false || c.kind === 'npc') return null;
+    const enemies = this.actors().filter((o) => o.alive && this.hostile(c, o));
+    const mates = this.combatants().filter((o) => o !== c && o.alive && !o.mount && o.faction === c.faction && o.move.grounded && this.tick - (o.hurtAt ?? -Infinity) > TICK_RATE * 4 && !enemies.some((e) => distance(e.move.pos, o.move.pos) < 20));
+    if (!mates.length) return null;
+    const mate = mates[Math.floor(this.rng() * mates.length)]!;
+    for (const a of [Math.PI, Math.PI / 2, -Math.PI / 2, 0, (3 * Math.PI) / 4, (-3 * Math.PI) / 4]) {
+      const yaw = mate.yaw + a;
+      const pos = { x: mate.move.pos.x + Math.sin(yaw) * 1.4, y: mate.move.pos.y, z: mate.move.pos.z + Math.cos(yaw) * 1.4 };
+      // Clear of walls, with floor under it, and not through a wall from the teammate.
+      if (!this.physics.headroom({ x: pos.x, y: pos.y + 0.05, z: pos.z }, PLAYER.height)) continue;
+      const floor = this.physics.raycastWorld({ x: pos.x, y: pos.y + 0.5, z: pos.z }, { x: 0, y: -1, z: 0 }, 1.5);
+      if (floor === null) continue;
+      if (!this.physics.lineOfSight({ x: mate.move.pos.x, y: mate.move.pos.y + 1, z: mate.move.pos.z }, { x: pos.x, y: pos.y + 1, z: pos.z })) continue;
+      return { pos: { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z }, yaw: mate.yaw };
+    }
+    return null;
+  }
+
   /** The owning player's inventory and timers. */
   privateState(slot: number): PrivateState | undefined {
     const c = this.slots[slot];
@@ -2158,6 +2290,8 @@ export class Match {
       sp: c.speedTicks,
       dm: c.damageTicks,
       ...(c.jetFuel !== null ? { jp: c.jetFuel } : {}),
+      ...(this.jammed(c) ? { jm: Math.ceil((this.jammed(c) - this.tick) / TICK_RATE) } : {}),
+      ...(c.streak ? { ks: c.streak } : {}),
       ...((this.uavUntil.get(this.uavSide(c)) ?? 0) > this.tick ? { uv: Math.ceil((this.uavUntil.get(this.uavSide(c))! - this.tick) / TICK_RATE) } : {}),
       ...(c.move.stamina !== undefined || c.move.rest || c.move.winded ? { sta: [Math.round((c.move.stamina ?? 1) * 1000), c.move.rest ?? 0, c.move.winded ? 1 : 0] as [number, number, number] } : {}),
     };

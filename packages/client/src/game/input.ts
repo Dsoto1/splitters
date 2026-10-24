@@ -1,4 +1,4 @@
-import { EMOTE_DANCE, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
+import { EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'chronosplit.mouse';
@@ -96,6 +96,7 @@ export class InputState {
         // B opens the quick-message menu; N dances.
         if (e.code === 'KeyB' && !e.repeat) this.msgMenu = !this.msgMenu;
         if (e.code === 'KeyN' && !e.repeat) this.sayQueued = EMOTE_DANCE;
+        if (e.code === 'KeyT' && !e.repeat) this.sayQueued = PING;
         const digit = /^Digit([1-9])$/.exec(e.code);
         if (digit && this.msgMenu) {
           if (Number(digit[1]) <= QUICK_MESSAGES.length) this.sayQueued = Number(digit[1]);

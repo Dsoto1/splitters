@@ -67,6 +67,10 @@ export interface PrivateState {
   jp?: number;
   /** Seconds of UAV sweep left for your side (enemies on the minimap). */
   uv?: number;
+  /** Seconds your minimap stays jammed by an enemy Counter-UAV. */
+  jm?: number;
+  /** Your kill streak (kills since you last died), when above zero. */
+  ks?: number;
   /** Stamina for sprinting, when not full: [stamina ×1000, rest ticks, winded 0/1]. */
   sta?: [number, number, number];
 }
@@ -125,6 +129,10 @@ export type GameEvent =
   | { e: 'heal'; s: number; t: number; n: number }
   /** A quick message (QUICK_MESSAGES index + 1) from player `s`; team modes send it to their team only (`team`). */
   | { e: 'say'; s: number; m: number; team?: string }
+  /** A ping from `s` at `p` (an enemy when `t` is set); team modes send it to their team only (`team`). */
+  | { e: 'ping'; s: number; p: Tuple3; t?: number; team?: string }
+  /** A kill-streak reward: `s` earned `r` (index into STREAK_REWARDS). */
+  | { e: 'streak'; s: number; r: number }
   /** Sound cue from a logic rule (alarm, chime, buzzer, boom); positionless. */
   | { e: 'cue'; cue: string }
   /** Objective changed state (index into OBJECTIVE_STATES). */

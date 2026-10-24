@@ -361,7 +361,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #mode-status .ms em { font-style: normal; color: #f2f2f2; }
 #mode-status .me { color: #f2c14e; border-color: #f2c14e; }
 @keyframes ms-blink { 50% { opacity: 0.45; } }
-#mode-markers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+#mode-markers, #ping-markers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .mode-marker { position: absolute; transform: translate(-50%, -100%); text-align: center; font: 700 12px var(--font-display); text-shadow: 0 1px 3px #000; }
 .mode-marker b { display: block; font-size: 20px; line-height: 22px; }
 .mode-marker span { color: #f2f2f2; }

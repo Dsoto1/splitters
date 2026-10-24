@@ -50,6 +50,10 @@ export interface MatchRules {
   emotes?: boolean;
   /** How bots play: each character's own way (mixed, default), all arena-style or all tactical. */
   botStyle?: 'mixed' | 'arena' | 'tactical';
+  /** Kill-streak rewards (UAV, supply pulse, Counter-UAV, airstrike). Default true. */
+  killstreaks?: boolean;
+  /** Team modes: respawn beside a teammate who isn't in a fight, when one is free. Default true. */
+  squadSpawn?: boolean;
 }
 
 export const DEFAULT_DEATHMATCH_RULES: MatchRules = {

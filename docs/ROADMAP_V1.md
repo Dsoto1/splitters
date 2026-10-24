@@ -71,7 +71,7 @@ sounds (needs new CC0 sounds and a grip pose).
 | 12 | ✅ **[feature]** NPCs: custom health/attack values and scalable sizes in MapMaker — Health / Damage / Size % on each encounter |
 | 13 | ✅ **[feature]** Clan tags on names (Options) |
 | 14 | ✅ **[feature]** Emotes (dance etc.) and quick-message pop-ups, with a server setting to turn them off — B: messages, N: dance; arcade "Emotes & messages" |
-| 15 | ✅ **[feature]** Squad/team support: UAV scan — pickup shows enemies on your team's minimap for 20 s |
+| 15 | ✅ **[feature]** Squad/team support: UAV pickup; kill streaks (3 UAV, 5 Supply Pulse, 7 Counter-UAV, 9 Airstrike); pings (T); "Follow me!" / "Hold here!" order your team's bots; respawn beside a teammate out of the fight (arcade toggles for streaks and squad spawns) |
 
 ## Sprint 3 — AI
 

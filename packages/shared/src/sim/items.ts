@@ -88,3 +88,15 @@ export const ARMOR_ABSORB = 2 / 3;
 export const SPEED_BOOST = 1.35;
 export const DAMAGE_BOOST = 2;
 export const PICKUP_RADIUS = 1.1;
+
+/**
+ * Kill-streak rewards (kills without dying), for your whole side: a UAV
+ * sweep, a supply pulse (heals and restocks you and teammates within 15 m),
+ * a Counter-UAV that jams enemy minimaps, and an airstrike flare.
+ */
+export const STREAK_REWARDS = [
+  { kills: 3, id: 'uav', name: 'UAV' },
+  { kills: 5, id: 'supply', name: 'Supply Pulse' },
+  { kills: 7, id: 'counter_uav', name: 'Counter-UAV' },
+  { kills: 9, id: 'airstrike', name: 'Airstrike' },
+] as const;

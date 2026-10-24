@@ -153,17 +153,32 @@ export class Hud {
    * arrow at the screen edge pointing the way when it is behind you or off
    * to the side (`edge`: its bearing in radians, 0 ahead, clockwise).
    */
-  setModeMarkers(list: { id: string; x: number; y: number; color: string; label: string; icon: string; edge?: number }[]): void {
+  setModeMarkers(list: ScreenMarker[]): void {
+    this.drawMarkers(this.modeMarkers, list);
+  }
+
+  /** Team pings (T), drawn like the objective markers on their own layer. */
+  setPingMarkers(list: ScreenMarker[]): void {
+    let layer = document.getElementById('ping-markers');
+    if (!layer) {
+      layer = document.createElement('div');
+      layer.id = 'ping-markers';
+      this.modeMarkers.after(layer);
+    }
+    this.drawMarkers(layer, list);
+  }
+
+  private drawMarkers(layer: HTMLElement, list: ScreenMarker[]): void {
     const seen = new Set<string>();
     for (const m of list) {
       seen.add(m.id);
-      let el = this.modeMarkers.querySelector<HTMLElement>(`[data-id="${m.id}"]`);
+      let el = layer.querySelector<HTMLElement>(`[data-id="${m.id}"]`);
       if (!el) {
         el = document.createElement('div');
         el.dataset.id = m.id;
         el.className = 'mode-marker';
         el.innerHTML = '<i></i><b></b><span></span>';
-        this.modeMarkers.append(el);
+        layer.append(el);
       }
       el.style.left = `${m.x}px`;
       el.style.top = `${m.y}px`;
@@ -173,7 +188,7 @@ export class Hud {
       el.querySelector('b')!.textContent = m.icon;
       el.querySelector('span')!.textContent = m.label;
     }
-    for (const el of [...this.modeMarkers.children] as HTMLElement[]) if (!seen.has(el.dataset.id ?? '')) el.remove();
+    for (const el of [...layer.children] as HTMLElement[]) if (!seen.has(el.dataset.id ?? '')) el.remove();
   }
 
   /** Team scores: the objective mode's, else kills per team from the per-player scores. */
@@ -388,8 +403,10 @@ export class Hud {
     el.style.boxShadow = color ? `inset 0 0 120px 30px ${color}88` : 'none';
   }
 
-  setPowerups(speedSeconds: number, damageSeconds: number, jetFuel: number | null = null, uavSeconds = 0): void {
+  setPowerups(speedSeconds: number, damageSeconds: number, jetFuel: number | null = null, uavSeconds = 0, jamSeconds = 0, streak = ''): void {
     const parts: string[] = [];
+    if (streak) parts.push(`<span style="color:#ffd24a">${escapeHtml(streak)}</span>`);
+    if (jamSeconds > 0) parts.push(`<span style="color:#ff5a5a">MINIMAP JAMMED ${Math.ceil(jamSeconds)}</span>`);
     if (uavSeconds > 0) parts.push(`<span style="color:#9fe8ff">UAV ${Math.ceil(uavSeconds)}</span>`);
     // Jetpack fuel as a little gauge: ten blocks.
     if (jetFuel !== null) {
@@ -468,7 +485,7 @@ export class Hud {
     if (!el) {
       el = document.createElement('div');
       el.id = 'msg-menu';
-      el.innerHTML = `<b>Quick message</b>${messages.map((m, i) => `<div><kbd>${i + 1}</kbd> ${escapeHtml(m)}</div>`).join('')}<small>N: dance · B: close</small>`;
+      el.innerHTML = `<b>Quick message</b>${messages.map((m, i) => `<div><kbd>${i + 1}</kbd> ${escapeHtml(m)}</div>`).join('')}<small>1 &amp; 7 also order your team's bots · T: ping · N: dance · B: close</small>`;
       this.root.append(el);
     }
     el.hidden = !open;
@@ -599,4 +616,15 @@ export class Hud {
     if (botStates.length) out.push('', 'bots', ...botStates);
     this.perf.textContent = out.join('\n');
   }
+}
+
+/** A marker on screen at a world point, or an arrow at the edge pointing the way (`edge`: bearing, radians). */
+export interface ScreenMarker {
+  id: string;
+  x: number;
+  y: number;
+  color: string;
+  label: string;
+  icon: string;
+  edge?: number;
 }

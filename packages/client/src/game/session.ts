@@ -21,6 +21,8 @@ import {
   NPC_ROLES,
   NPC_ROLE_SPECS,
   isCreature,
+  STREAK_REWARDS,
+  type Vec3,
   npcLookRole,
   type CreatureKind,
   OBJECTIVE_STATES,
@@ -55,6 +57,7 @@ import { bindFullscreenButton, pageHoldsEscape } from '../fullscreen.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
+import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
 import { ModeHud } from './modeHud.ts';
 import { statusColor } from './arsenalVisuals.ts';
@@ -144,6 +147,12 @@ export class GameSession {
   private covers?: CoverState;
   /** Seconds of UAV sweep left for your side: enemies show on the minimap. */
   private uav = 0;
+  /** Seconds your minimap stays jammed (enemy Counter-UAV), and your kill streak. */
+  private jam = 0;
+  private streak = 0;
+  /** Team pings on screen: where, who (an enemy when `target` is set), until when. */
+  private pings: { id: number; at: Vec3; target?: number; until: number; from: number }[] = [];
+  private nextPingId = 1;
   private seat: [number, number, number] | null = null;
   private localStatus = 0;
   private lastWeapon = 0;
@@ -387,6 +396,8 @@ export class GameSession {
         this.covers?.apply(msg.cv);
         this.seat = msg.me?.mo ?? null;
         this.uav = msg.me?.uv ?? 0;
+        this.jam = msg.me?.jm ?? 0;
+        this.streak = msg.me?.ks ?? 0;
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         this.taken = new Set(msg.pk);
@@ -489,6 +500,22 @@ export class GameSession {
             // Team modes: only your own team hears it.
             const mine = this.hud.team(this.slot)?.id;
             if (!ev.team || !mine || ev.team === mine) this.hud.say(ev.s, QUICK_MESSAGES[ev.m - 1] ?? '');
+          } else if (ev.e === 'ping') {
+            const mine = this.hud.team(this.slot)?.id;
+            if (ev.team ? ev.team === mine : ev.s === this.slot) {
+              // One ping per player at a time.
+              this.pings = this.pings.filter((p) => p.from !== ev.s);
+              this.pings.push({ id: this.nextPingId++, at: { x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ...(ev.t !== undefined ? { target: ev.t } : {}), until: performance.now() + (ev.t !== undefined ? 4000 : 6000), from: ev.s });
+              if (ev.s !== this.slot) this.hud.say(ev.s, ev.t !== undefined ? 'Enemy here!' : 'Look here!');
+            }
+          } else if (ev.e === 'streak') {
+            const reward = STREAK_REWARDS[ev.r];
+            if (reward) {
+              const mine = this.hud.team(this.slot)?.id;
+              const ally = ev.s === this.slot || (!!mine && this.hud.team(ev.s)?.id === mine);
+              if (ev.s === this.slot) this.hud.showMessage(`${reward.name}! ${reward.kills} kill streak`, 3);
+              else this.hud.say(ev.s, `${reward.name} (${reward.kills} kill streak)${ally ? '' : ' — enemy'}`);
+            }
           } else if (ev.e === 'heal') {
             if (ev.t === this.slot) this.hud.pickup(ev.s === this.slot ? `+${ev.n} health` : `${this.hud.name(ev.s)} healed you +${ev.n}`);
             else if (ev.s === this.slot) this.hud.pickup(`Healed ${this.hud.name(ev.t)} +${ev.n}`);
@@ -577,6 +604,37 @@ export class GameSession {
       const eye = local.eye;
       this.hud.setMarker(screen && { ...screen, dist: Math.hypot(p.x - eye.x, p.y - eye.y, p.z - eye.z) });
     } else this.hud.setMarker(null);
+  }
+
+  /** "STREAK 4 · Supply Pulse at 5", while streaks are on and you have one. */
+  private streakLabel(): string {
+    if (!this.streak || this.rules?.killstreaks === false) return '';
+    const next = STREAK_REWARDS.find((r) => r.kills > this.streak);
+    return `STREAK ${this.streak}${next ? ` · ${next.name} at ${next.kills}` : ''}`;
+  }
+
+  /** Team pings as screen markers (or edge arrows), following a pinged enemy while they're seen. */
+  private updatePings(local: LocalPlayer, poses: readonly { slot: number; x: number; y: number; z: number; alive: boolean }[], now: number): void {
+    this.pings = this.pings.filter((p) => p.until > now);
+    const eye = local.eye;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const list: ScreenMarker[] = [];
+    for (const p of this.pings) {
+      const pose = p.target !== undefined ? poses.find((q) => q.slot === p.target && q.alive) : undefined;
+      const at = pose ? { x: pose.x, y: pose.y + 2.2, z: pose.z } : { x: p.at.x, y: p.at.y + 0.6, z: p.at.z };
+      const enemy = p.target !== undefined;
+      const color = enemy ? '#ff3b3b' : '#ffd24a';
+      const label = `${p.from === this.slot ? '' : `${this.hud.name(p.from)} · `}${Math.round(Math.hypot(at.x - eye.x, at.y - eye.y, at.z - eye.z))} m`;
+      const screen = this.view.project(at);
+      if (screen && screen.x > 30 && screen.x < w - 30 && screen.y > 60 && screen.y < h - 30) list.push({ id: `ping${p.id}`, x: screen.x, y: screen.y, color, icon: enemy ? '◆' : '●', label });
+      else {
+        const bearing = Math.atan2(at.x - eye.x, at.z - eye.z) - this.input.yaw;
+        const a = Math.atan2(Math.sin(bearing), Math.cos(bearing));
+        list.push({ id: `ping${p.id}`, x: w / 2 + Math.sin(a) * (w / 2 - 70), y: h / 2 - Math.cos(a) * (h / 2 - 70), color, icon: enemy ? '◆' : '●', label, edge: a });
+      }
+    }
+    this.hud.setPingMarkers(list);
   }
 
   private requestWeapon(slot: number): void {
@@ -713,7 +771,7 @@ export class GameSession {
       } else this.view.throwArc.hide();
       this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
-      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav);
+      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel());
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
       this.updateScenarioHud(local, now);
     }
@@ -777,6 +835,8 @@ export class GameSession {
       const blips = poses
         .filter((p) => p.slot !== this.slot && p.slot < NPC_ID_BASE && p.alive && (coop || (mine && this.hud.team(p.slot)?.id === mine.id)))
         .map((p) => ({ x: p.x, z: p.z, color: coop ? '#2ecc71' : mine!.color }));
+      // Pings show on the minimap too.
+      for (const p of this.pings) blips.push({ x: p.at.x, z: p.at.z, color: p.target !== undefined ? '#ff3b3b' : '#ffd24a' });
       // A UAV sweep puts every enemy (and hostile NPC) on the map too.
       if (this.uav > 0) {
         for (const p of poses) {
@@ -785,7 +845,9 @@ export class GameSession {
           if (!ally) blips.push({ x: p.x, z: p.z, color: '#ff3b3b' });
         }
       }
-      this.hud.minimap.update(local.eye.x, local.eye.z, this.input.yaw, blips);
+      // Jammed by an enemy Counter-UAV: no blips at all.
+      this.hud.minimap.update(local.eye.x, local.eye.z, this.input.yaw, this.jam > 0 ? [] : blips);
+      this.updatePings(local, poses, now);
     }
 
     this.frames++;

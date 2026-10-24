@@ -59,6 +59,9 @@ export interface ArcadeSetup {
   emotes?: boolean;
   /** How bots play. Absent = mixed (each character its own way). */
   botStyle?: 'arena' | 'tactical';
+  /** Kill-streak rewards and spawning beside teammates. Absent = on. */
+  killstreaks?: boolean;
+  squadSpawn?: boolean;
 }
 
 export interface FrontEndHooks {
@@ -353,7 +356,9 @@ export class FrontEnd {
       el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
       el('div', { class: 'row', title: 'On: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. Off: everyone plays at standard size.' }, 'Character sizes', tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on'))),
       el('div', { class: 'row', title: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).' }, 'Bot style', tabs([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => (this.setup.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical')))),
-      el('div', { class: 'row', title: 'Quick messages (B, then 1-6) and the dance emote (N).' }, 'Emotes & messages', tabs([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => (this.setup.emotes = v === 'on'))),
+      el('div', { class: 'row', title: 'Rewards for kills without dying: 3 UAV, 5 Supply Pulse (heal + ammo for nearby teammates), 7 Counter-UAV (jams enemy minimaps), 9 Airstrike.' }, 'Kill streaks', tabs([['on', 'On'], ['off', 'Off']], s.killstreaks === false ? 'off' : 'on', (v) => (this.setup.killstreaks = v === 'on'))),
+      el('div', { class: 'row', title: 'Team modes: respawn beside a teammate who is out of the fight, when one is free.' }, 'Spawn on teammates', tabs([['on', 'On'], ['off', 'Off']], s.squadSpawn === false ? 'off' : 'on', (v) => (this.setup.squadSpawn = v === 'on'))),
+      el('div', { class: 'row', title: 'Quick messages (B, then 1-7; 1 "Follow me!" and 7 "Hold here!" also order your team\'s bots), the dance emote (N). Pings (T) always work.' }, 'Emotes & messages', tabs([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => (this.setup.emotes = v === 'on'))),
       ...(coop
         ? []
         : [
@@ -374,7 +379,7 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}) };
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.

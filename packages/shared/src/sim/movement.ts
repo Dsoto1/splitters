@@ -44,7 +44,12 @@ export interface PlayerInput {
 }
 
 /** Quick messages players can send (keys 1-6 while the quick-message menu is open). */
-export const QUICK_MESSAGES = ['Follow me!', 'Need backup!', 'Enemy spotted!', 'On my way!', 'Thanks!', 'Nice shot!'] as const;
+export const QUICK_MESSAGES = ['Follow me!', 'Need backup!', 'Enemy spotted!', 'On my way!', 'Thanks!', 'Nice shot!', 'Hold here!'] as const;
+/** QUICK_MESSAGES numbers that are also orders to your team's bots. */
+export const SAY_FOLLOW = 1;
+export const SAY_HOLD = 7;
+/** `say` value for a ping: marks what you're aiming at for your team. */
+export const PING = 101;
 /** `say` value for the dance emote. */
 export const EMOTE_DANCE = 100;
 
