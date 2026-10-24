@@ -71,8 +71,8 @@ export class EffectsWorld {
         .setRotation(rot)
         .setLinvel(o.vel?.x ?? 0, o.vel?.y ?? 0, o.vel?.z ?? 0)
         .setAngvel(o.spin ?? { x: 0, y: 0, z: 0 })
-        .setLinearDamping(0.1)
-        .setAngularDamping(layer === 'ragdoll' ? 0.8 : 0.2)
+        .setLinearDamping(layer === 'ragdoll' ? 0.6 : 0.1)
+        .setAngularDamping(layer === 'ragdoll' ? 1.6 : 0.2)
         .setCcdEnabled(true),
     );
     const desc = shape.kind === 'box' ? RAPIER.ColliderDesc.cuboid(shape.half.x, shape.half.y, shape.half.z) : shape.kind === 'capsule' ? RAPIER.ColliderDesc.capsule(shape.halfHeight, shape.radius) : RAPIER.ColliderDesc.ball(shape.radius);

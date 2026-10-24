@@ -625,7 +625,9 @@ async function physicsfxFlow(browser) {
   for (let i = 0; i < 6; i++) {
     await page.waitForTimeout(150);
     const s = await page.evaluate(() => {
-      const a = window.__cs.view.avatars.get(window.__botSlot);
+      // A killed body leaves the live avatars for the corpse list as soon as it ragdolls.
+      const v = window.__cs.view;
+      const a = v.avatars.get(window.__botSlot) ?? v.corpses.findLast((c) => c.slot === window.__botSlot)?.a;
       const head = a?.anim?.ch.joints.get('Head');
       return { rag: !!a?.ragdoll, head: head ? head.getAbsolutePosition().y : null };
     });

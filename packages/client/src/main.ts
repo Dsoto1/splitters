@@ -123,11 +123,14 @@ class App {
       this.portraits = new PortraitRenderer(this.engine);
       setWeaponIconSource(new ModelThumbnails(this.engine));
       const maps = arcadeMaps();
-      // Imported maps join the end of the list once their chunk has loaded (the menu does not wait for them).
-      void importedMaps().then(
-        (files) => maps.push(...arcadeEntries(files, 'Imported')),
-        (e: unknown) => console.warn('imported maps failed to load', e),
-      );
+      // Imported maps stay out of the list until the importer rebuilds them properly
+      // (docs/ROADMAP_V1.md); they still open directly with ?offline=<name> or ?imported.
+      if (params.has('imported')) {
+        void importedMaps().then(
+          (files) => maps.push(...arcadeEntries(files, 'Imported')),
+          (e: unknown) => console.warn('imported maps failed to load', e),
+        );
+      }
       this.front = new FrontEnd($('menu'), maps, {
         openEditor: () => void this.openEditor(),
         openDesigner: (look) => void this.openDesigner(look),

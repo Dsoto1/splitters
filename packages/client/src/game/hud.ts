@@ -483,6 +483,25 @@ export class Hud {
     this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on', 'head'), head ? 220 : 140);
   }
 
+  /**
+   * You took damage: the screen edge flashes red, with an arc pointing at the
+   * attacker when we know where it came from (radians, 0 = straight ahead, + = right).
+   */
+  hurt(direction: number | null, amount: number): void {
+    const el = document.getElementById('hurt');
+    if (!el) return;
+    el.style.setProperty('--hurt-dir', `${direction ?? 0}rad`);
+    el.classList.toggle('dir', direction !== null);
+    el.style.setProperty('opacity', String(Math.min(1, 0.45 + amount / 40)));
+    el.classList.add('on');
+    clearTimeout(this.hurtTimer);
+    this.hurtTimer = window.setTimeout(() => {
+      el.classList.remove('on');
+      el.style.removeProperty('opacity');
+    }, 90);
+  }
+  private hurtTimer = 0;
+
   /** "HEADSHOT" call-out for a kill you made with a head hit. */
   headshot(): void {
     const el = document.getElementById('headshot');

@@ -184,6 +184,11 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #hitmarker[data-style='ticks'].head::before, #hitmarker[data-style='ticks'].head::after { background: linear-gradient(#ff3030 0 10px, transparent 10px 20px, #ff3030 20px); }
 @keyframes hit-pop { 0% { transform: scale(1.45); } 100% { transform: scale(1); } }
 #hitmarker[data-style='off'] { display: none; }
+/* Taking damage: the screen edge flashes red, and an arc on a ring shows where it came from. */
+#hurt { position: absolute; inset: 0; opacity: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(200, 0, 0, 0.55) 100%); transition: opacity 0.6s ease-out; }
+#hurt.on { opacity: 1; transition: none; }
+#hurt i { position: absolute; left: 50%; top: 50%; width: 220px; height: 220px; margin: -110px 0 0 -110px; border-radius: 50%; border-top: 6px solid rgba(255, 40, 40, 0.9); filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.8)); opacity: 0; transform: rotate(var(--hurt-dir, 0rad)); }
+#hurt.dir i { opacity: 1; }
 #headshot { position: absolute; left: 50%; top: 38%; transform: translateX(-50%); font: 700 italic 26px var(--font-display); letter-spacing: 0.12em; color: #ff3b3b; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8); opacity: 0; pointer-events: none; }
 #headshot.on { animation: headshot-pop 0.9s ease-out; }
 @keyframes headshot-pop { 0% { opacity: 0; transform: translateX(-50%) scale(1.6); } 12% { opacity: 1; transform: translateX(-50%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }

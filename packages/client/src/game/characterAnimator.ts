@@ -169,8 +169,9 @@ export class CharacterAnimator {
 
     // Backpedal by playing the run in reverse; strafe by turning the hips toward the motion.
     const back = s.speed > 0.5 && Math.abs(s.moveAngle) > Math.PI * 0.6;
-    const side = s.speed > 0.5 && !back ? Math.max(-1.1, Math.min(1.1, s.moveAngle)) : back ? Math.max(-0.6, Math.min(0.6, Math.PI - Math.abs(s.moveAngle))) * -Math.sign(s.moveAngle) : 0;
-    this.twist += (side - this.twist) * Math.min(1, dt * 10);
+    const side = s.speed > 0.5 && !back ? Math.max(-0.7, Math.min(0.7, s.moveAngle)) : back ? Math.max(-0.5, Math.min(0.5, Math.PI - Math.abs(s.moveAngle))) * -Math.sign(s.moveAngle) : 0;
+    // Eased slowly: bots dodging left and right while they shoot would otherwise swing their hips back and forth.
+    this.twist += (side - this.twist) * Math.min(1, dt * 4);
 
     let want: Clip;
     const low = (s.stance ?? 0) > 0;

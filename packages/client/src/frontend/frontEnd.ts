@@ -252,6 +252,9 @@ export class FrontEnd {
 
   // ---------------------------------------------------------------- arcade
 
+  /** Scroll position of the map list, kept across redraws of the play screen. */
+  private mapScroll = 0;
+
   private pickMap(key: string): void {
     const m = this.maps.find((x) => x.key === key);
     if (!m) return;
@@ -262,6 +265,9 @@ export class FrontEnd {
   private arcade(): HTMLElement {
     const current = this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
     const cards = el('div', { class: 'map-cards' });
+    // Picking a map redraws this screen: keep the list where it was instead of jumping to the top.
+    cards.addEventListener('scroll', () => (this.mapScroll = cards.scrollTop), { passive: true });
+    requestAnimationFrame(() => (cards.scrollTop = this.mapScroll));
     // Grouped maps (many, e.g. imported ones) draw their plans only once they scroll into view.
     const lazy = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver((seen) => {
       for (const e of seen) {

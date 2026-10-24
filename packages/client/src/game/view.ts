@@ -259,11 +259,15 @@ export class GameView {
   bodies: BodiesSetting = bodiesPreference();
 
   /** Remember a push on a player (from a hit or a blast) so their ragdoll flies the right way if it kills them. */
-  pushPlayer(slot: number, v: Vec3): void {
+  pushPlayer(slot: number, v: Vec3, max = 3.5): void {
     const now = performance.now();
     const old = this.pushes.get(slot);
     const keep = old && now - old.t < 250 ? old.v : { x: 0, y: 0, z: 0 };
-    this.pushes.set(slot, { v: { x: keep.x + v.x, y: keep.y + v.y, z: keep.z + v.z }, t: now });
+    // Bursts stack, but bodies drop and slump rather than fly: cap the total (blasts allow more).
+    const sum = { x: keep.x + v.x, y: keep.y + v.y, z: keep.z + v.z };
+    const flat = Math.hypot(sum.x, sum.z);
+    const k = flat > max ? max / flat : 1;
+    this.pushes.set(slot, { v: { x: sum.x * k, y: Math.min(sum.y, max * 0.6), z: sum.z * k }, t: now });
     const anim = this.avatars.get(slot)?.anim;
     if (anim instanceof CreatureAnimator) anim.flinch();
   }
@@ -280,7 +284,7 @@ export class GameView {
       const dist = Math.hypot(d.x, d.y, d.z);
       if (dist > radius * 1.5) continue;
       const k = (8 * (1 - dist / (radius * 1.5))) / Math.max(0.3, dist);
-      this.pushPlayer(slot, { x: d.x * k, y: 4 + Math.max(0, d.y) * k, z: d.z * k });
+      this.pushPlayer(slot, { x: d.x * k, y: 4 + Math.max(0, d.y) * k, z: d.z * k }, 8);
     }
   }
 
@@ -378,7 +382,7 @@ export class GameView {
     const body = this.physics?.raycastRagdoll(o.eye, dir, len);
     if (body) {
       const at = { x: o.eye.x + dir.x * body.dist, y: o.eye.y + dir.y * body.dist, z: o.eye.z + dir.z * body.dist };
-      body.body.applyImpulseAtPoint({ x: dir.x * 9 * o.strength, y: dir.y * 9 * o.strength + 1, z: dir.z * 9 * o.strength }, at, true);
+      body.body.applyImpulseAtPoint({ x: dir.x * 4 * o.strength, y: dir.y * 4 * o.strength + 0.4, z: dir.z * 4 * o.strength }, at, true);
       this.blood.hit(at, dir, o.strength);
     }
     if (o.victim !== null) {

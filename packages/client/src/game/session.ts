@@ -149,6 +149,10 @@ export class GameSession {
   private breathSpent = false;
   /** Smoothed eye height above the feet (crouching and prone lower it). */
   private eyeOffset: number | null = null;
+  /** Health and armour last frame, and where the latest shot at you (or blast) came from, for the damage flash. */
+  private lastHealth = 100;
+  private lastArmor = 0;
+  private hurtFrom: { x: number; z: number; at: number } | null = null;
   private kibPerSec = 0;
 
   constructor(private readonly opts: SessionOptions) {
@@ -380,10 +384,11 @@ export class GameSession {
               const to = { x: t[0], y: t[1], z: t[2] };
               const victim = ev.hit[i] ?? null;
               const zone = ev.z?.[i] ?? 0;
+              if (victim === this.slot) this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
               if (victim !== null) {
                 const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
                 const len = Math.hypot(d.x, d.y, d.z) || 1;
-                this.view.pushPlayer(victim, { x: (d.x / len) * 2.5 * strength, y: zone === 1 ? 1.4 : 0.8, z: (d.z / len) * 2.5 * strength });
+                this.view.pushPlayer(victim, { x: (d.x / len) * 1.4 * strength, y: zone === 1 ? 0.8 : 0.4, z: (d.z / len) * 1.4 * strength });
               }
               // Your own rounds are already in the air (drawn when you fired); only your hits land here.
               if (mine) {
@@ -418,6 +423,7 @@ export class GameSession {
           } else if (ev.e === 'arc') {
             this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })));
           } else if (ev.e === 'explode') {
+            this.hurtFrom = { x: ev.p[0], z: ev.p[2], at: performance.now() };
             this.view.explosion({ x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ev.r);
             this.view.blast({ x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ev.r);
           } else if (ev.e === 'pickup') {
@@ -621,6 +627,16 @@ export class GameSession {
       this.hud.setScope(zoomed);
       this.updateScopeSway(dt, zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
+      // Took damage since last frame: flash, pointing at the latest shot or blast near you.
+      const lost = this.lastHealth + this.lastArmor - local.health - local.armor;
+      if (local.alive && lost > 0) {
+        const from = this.hurtFrom && performance.now() - this.hurtFrom.at < 400 ? this.hurtFrom : null;
+        const pos = local.state.pos;
+        const dir = from && Math.hypot(from.x - pos.x, from.z - pos.z) > 0.5 ? Math.atan2(from.x - pos.x, from.z - pos.z) - this.input.yaw : null;
+        this.hud.hurt(dir, lost);
+      }
+      this.lastHealth = local.health;
+      this.lastArmor = local.armor;
       this.hud.setStamina(local.state.stamina ?? 1, !!local.state.winded, local.alive, local.state.stance ?? 0);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2]);
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
