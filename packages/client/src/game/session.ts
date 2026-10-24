@@ -306,6 +306,7 @@ export class GameSession {
         const teams = isTeamMode(msg.rules.mode) ? mapTeams(loaded.map, msg.rules.mode === 'core.ctf' ? 2 : (msg.rules.teamSizes?.length ?? 2)) : null;
         this.hud.setTeams(teams);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
+        this.hud.setMapName(loaded.map.metadata.name);
         this.sfx.myTeam = () => this.hud.team(this.slot)?.id ?? null;
         this.hud.minimap.setMap(loaded.map);
         void this.opts.portrait?.then((src) => this.hud.setPortrait(src), () => undefined);

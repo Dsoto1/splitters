@@ -108,7 +108,6 @@
           <button id="ed-entities-btn" class="tab" data-ws="entities" title="Entities: NPCs, spawns and pickups, vehicles, doors and traps">Entities</button>
           <button id="ed-logic-btn" class="tab" data-ws="logic" title="Scenario logic: objectives, variables, timers, rules (L)">Logic</button>
           <button id="ed-env-btn" class="tab" data-ws="environment" title="Environment: materials and paint, plants, terrain; sky and backdrop in Map properties"><span class="wide">Environment</span><span class="narrow">Env</span></button>
-          <button id="ed-test-tab" class="tab" data-ws="test" title="Play the map now (F5)">Test</button>
         </div>
         <div class="spacer"></div>
         <button id="ed-grid" class="ed-toggle on" aria-pressed="true" title="Grid lines on the level being edited"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="wide">Grid</span></button>
@@ -116,7 +115,7 @@
         <label class="ed-pick" title="Map theme"><span class="wide">Theme</span><select id="ed-theme" title="Map theme"></select></label>
         <select id="ed-bots" title="Bots in TEST"></select>
         <select id="ed-skill" title="Bot skill in TEST"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select>
-        <button id="ed-test" class="primary" title="F5">▶ TEST</button>
+        <button id="ed-test" class="primary" title="Play the map now with these bots (F5)">▶ PLAY TEST</button>
       </header>
       <aside id="ed-palette">
         <div class="tabs ed-pal-tabs" id="ed-pal-tabs">
@@ -229,6 +228,7 @@
         <button id="ed-level-up" class="lv-step" title="Up a level (Page Up or ])">▲ Up <kbd>PgUp</kbd></button>
         <div id="ed-level-list" class="lv-list"></div>
         <button id="ed-level-down" class="lv-step" title="Down a level (Page Down or [)">▼ Down <kbd>PgDn</kbd></button>
+        <button id="ed-reset-view" class="lv-step" title="Back to the overview of this level (Home)">⌂ Reset view <kbd>Home</kbd></button>
         <label class="lv-all" title="Show the levels above this one too (H)"><input type="checkbox" id="ed-showall" /> Show all <kbd>H</kbd></label>
       </nav>
       <footer id="ed-bottom">

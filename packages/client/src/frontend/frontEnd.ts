@@ -226,6 +226,7 @@ export class FrontEnd {
       { class: 'screen home' },
       el('h1', { class: 'logo' }, el('span', { class: 'chrono', textContent: 'Chrono' }), el('span', { class: 'split', textContent: 'Split' })),
       el('p', { class: 'logo-sub', textContent: 'Arcade shooter · MapMaker' }),
+      el('p', { class: 'logo-version', textContent: `v${__APP_VERSION__}` }),
       nav,
       this.badge(),
       card,

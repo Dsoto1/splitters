@@ -379,6 +379,7 @@ export class EditorApp {
     this.bindUi();
     this.bindInput();
     this.view.focus({ x: 0, y: 0, z: 0 });
+    $('ed-reset-view').addEventListener('click', () => this.resetView());
     if (restored) this.toast(`Restored your last session (${new Date(restored.savedAt).toLocaleString()})`);
   }
 
@@ -822,6 +823,12 @@ export class EditorApp {
     if (this.run('Duplicate', r.command)) this.setSelection(r.selection);
   }
 
+  /** Home: the starting overview of the level being edited. */
+  private resetView(): void {
+    this.view.resetView({ x: 0, y: this.level * this.doc.classicStructure.levelHeight, z: 0 });
+    this.toast('View reset (Home)');
+  }
+
   private focusSelection(): void {
     const target = this.selectionCenter();
     if (target) this.view.focus(target);
@@ -1144,7 +1151,9 @@ export class EditorApp {
       (e) => {
         if (!this.active || e.target !== canvas()) return;
         e.preventDefault();
-        this.view.dolly(-Math.sign(e.deltaY) * 3 * (e.shiftKey ? 3 : 1));
+        // Mouse wheels send big steps, touchpads many small ones: move by how far it scrolled.
+        const px = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+        this.view.dolly(Math.max(-3, Math.min(3, -px * 0.03)) * (e.shiftKey ? 3 : 1));
         this.updatePointer(e.clientX, e.clientY);
       },
       { passive: false },
@@ -1184,6 +1193,9 @@ export class EditorApp {
           break;
         case 'KeyF':
           this.focusSelection();
+          break;
+        case 'Home':
+          this.resetView();
           break;
         case 'KeyL':
           this.logic.toggle();

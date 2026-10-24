@@ -368,3 +368,8 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .mode-marker i { display: none; }
 .mode-marker.edge { transform: translate(-50%, -50%); }
 .mode-marker.edge i { display: block; width: 0; height: 0; margin: 0 auto 2px; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid currentColor; }
+
+#scoreboard .sb-head { flex-basis: 100%; width: 100%; margin-bottom: 8px; font: 600 14px var(--font-display); letter-spacing: 0.06em; color: var(--muted, #9aa7bd); text-transform: uppercase; }
+#scoreboard .sb-head b { color: var(--text); }
+#pause .pause-title small { display: block; margin-top: 4px; font-size: 14px; font-weight: 500; letter-spacing: 0.08em; opacity: 0.75; }
+.logo-version { margin: 2px 0 0; font: 500 12px var(--font-display); letter-spacing: 0.14em; opacity: 0.6; }

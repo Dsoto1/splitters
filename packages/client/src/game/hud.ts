@@ -190,6 +190,14 @@ export class Hud {
     this.modeLabel.textContent = text;
   }
 
+  /** The map's name, shown on the pause screen and the scoreboard. */
+  private mapName = '';
+  setMapName(name: string): void {
+    this.mapName = name;
+    const title = document.querySelector('#pause .pause-title');
+    if (title) title.innerHTML = `Paused <small>${escapeHtml(name)} · ${escapeHtml(this.modeLabel.textContent ?? '')}</small>`;
+  }
+
   setPortrait(src: string): void {
     this.portrait.src = src;
   }
@@ -520,15 +528,18 @@ export class Hud {
       return `<tr class="${s.s === localSlot ? 'me' : ''}"><td><span style="color:${color}">●</span> ${escapeHtml(this.name(s.s))}${p?.bot ? ' <small>(bot)</small>' : ''}</td><td>${s.k}</td><td>${s.d}</td></tr>`;
     };
     const sorted = [...scores].sort((a, b) => b.k - a.k || a.d - b.d);
+    // Map, mode and time left over the tables.
+    const clock = this.timer.textContent ? ` · ${escapeHtml(this.timer.textContent)} left` : '';
+    const head = `<div class="sb-head"><b>${escapeHtml(this.mapName)}</b> · ${escapeHtml(this.modeLabel.textContent ?? '')}${clock}</div>`;
     if (!this.teams) {
-      this.scoreboard.innerHTML = `<table><tr><th>Player</th><th>Kills</th><th>Deaths</th></tr>${sorted.map(row).join('')}</table>`;
+      this.scoreboard.innerHTML = `${head}<table><tr><th>Player</th><th>Kills</th><th>Deaths</th></tr>${sorted.map(row).join('')}</table>`;
       return;
     }
     // Team Deathmatch: one table per team, the higher score first.
     const totals = this.teamTotals(scores);
     const teams = [...this.teams].sort((a, b) => (totals.get(b.id) ?? 0) - (totals.get(a.id) ?? 0));
     this.scoreboard.classList.toggle('many', teams.length > 2);
-    this.scoreboard.innerHTML = teams
+    this.scoreboard.innerHTML = head + teams
       .map((t) => {
         const rows = sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row).join('');
         return `<table class="team"><tr><th style="color:${t.color}">${escapeHtml(t.name)} <b>${totals.get(t.id) ?? 0}</b></th><th>Kills</th><th>Deaths</th></tr>${rows}</table>`;

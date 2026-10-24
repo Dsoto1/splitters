@@ -1,4 +1,5 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
+import '@babylonjs/core/Rendering/edgesRenderer';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
@@ -104,8 +105,9 @@ export class EditorView {
       return m;
     };
     this.mat = {
-      ghostOk: flat('ghostOk', '#58d68d', 0.45),
-      ghostBad: flat('ghostBad', '#ff5a4f', 0.45),
+      // Light fill plus edge lines: big pieces (plazas, tall halls) shouldn't wall off the view.
+      ghostOk: flat('ghostOk', '#58d68d', 0.18),
+      ghostBad: flat('ghostBad', '#ff5a4f', 0.25),
       outline: flat('outline', '#ffb03b', 1, true),
       outlineBad: flat('outlineBad', '#ff5a4f', 1, true),
       hover: flat('hover', '#ffffff', 1, true),
@@ -134,11 +136,27 @@ export class EditorView {
     this.camera.position.x += s * forward + c * right;
     this.camera.position.z += c * forward - s * right;
     this.camera.position.y += up;
+    this.clampCamera();
   }
 
   dolly(amount: number): void {
     const d = viewDirection(this.yaw, this.pitch);
     this.camera.position.addInPlace(new Vector3(d.x * amount, d.y * amount, d.z * amount));
+    this.clampCamera();
+  }
+
+  /** Keep the camera out of the ground and within reach of the map (touchpads zoom fast). */
+  private clampCamera(): void {
+    const p = this.camera.position;
+    p.y = Math.max(-12, Math.min(260, p.y));
+    p.x = Math.max(-400, Math.min(400, p.x));
+    p.z = Math.max(-400, Math.min(400, p.z));
+  }
+
+  /** Back to the starting view over `target`, looking north. */
+  resetView(target: Vec3): void {
+    this.yaw = 0;
+    this.focus(target);
   }
 
   look(dYaw: number, dPitch: number): void {
@@ -486,6 +504,9 @@ export class EditorView {
       this.ghost = new Mesh('ghost', this.scene);
       boxVertexData(buildMapGeometry(single)).applyToMesh(this.ghost);
       this.ghost.isPickable = false;
+      this.ghost.enableEdgesRendering();
+      this.ghost.edgesWidth = 3;
+      this.ghost.edgesColor = new Color4(0.75, 1, 0.8, 0.9);
       this.ghostKey = key;
     }
     const { cellSize, levelHeight } = doc.classicStructure;
