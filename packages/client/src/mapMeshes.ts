@@ -132,7 +132,11 @@ export class MapStyler {
       // Partly overlapping pieces would still put faces in the same plane: grow each box by its
       // own small amount (2-14 mm, far enough apart for the depth buffer at range) so one wins.
       const g = 0.002 * (1 + (Math.imul(i + 1, 2654435761) >>> 0) % 7);
-      const b: WorldBox = { ...raw, min: [raw.min[0] - g, raw.min[1] - g, raw.min[2] - g], max: [raw.max[0] + g, raw.max[1] + g, raw.max[2] + g] };
+      // Walls and trim run up to the next level's floor top: their tops go a little *down*
+      // instead, so the floor above always wins (otherwise white wall tops showed through
+      // the floor as strips). Floors grow up as before.
+      const top = raw.kind === 'floor' ? g : -g;
+      const b: WorldBox = { ...raw, min: [raw.min[0] - g, raw.min[1] - g, raw.min[2] - g], max: [raw.max[0] + g, raw.max[1] + top, raw.max[2] + g] };
       const tile = tiles.get(b.sourceId);
       // Free blocks carry their own material on every face.
       const own = b.surface ? { material: coreMaterials.get(b.surface.material), tint: b.surface.tint } : null;
