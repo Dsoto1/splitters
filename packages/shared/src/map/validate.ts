@@ -183,7 +183,8 @@ export const MAP_BUDGETS = {
   props: 1500,
   /** Different prop models (each is a download and a set of draw calls). */
   propModels: 80,
-  blocks: 600,
+  /** Solid free blocks: merged into the level's meshes like tiles, so mostly a navmesh build-time cost. */
+  blocks: 3000,
   /** Breakable, crumbling and trapdoor blocks (each is simulated and sent to players). */
   dynamicBlocks: 150,
   liquids: 32,
@@ -201,7 +202,7 @@ function budgetIssues(map: MapDocument): ValidationIssue[] {
   over('tiles', map.classicStructure.tiles.length, MAP_BUDGETS.tiles, 'tiles');
   over('props', props.length, MAP_BUDGETS.props, 'props');
   over('prop_models', new Set(props.map((x) => x.model)).size, MAP_BUDGETS.propModels, 'different prop models');
-  over('blocks', e.filter((x) => x.kind === 'block').length, MAP_BUDGETS.blocks, 'blocks');
+  over('blocks', e.filter((x) => x.kind === 'block' && x.behaviour === 'solid').length, MAP_BUDGETS.blocks, 'solid blocks');
   over('dynamic_blocks', e.filter((x) => x.kind === 'block' && x.behaviour !== 'solid').length, MAP_BUDGETS.dynamicBlocks, 'breakable, crumbling or trapdoor blocks');
   over('liquids', e.filter((x) => x.kind === 'water').length, MAP_BUDGETS.liquids, 'bodies of water, lava, acid or swamp');
   over('active', e.filter((x) => ['door', 'trap', 'zone', 'encounter', 'mount', 'pad', 'button'].includes(x.kind)).length, MAP_BUDGETS.active, 'doors, traps, zones, squads, vehicles, pads and buttons');

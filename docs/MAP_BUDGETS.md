@@ -17,7 +17,7 @@ the map format (4,096 entities, terrain 161 × 161 vertices).
 | Tiles | 1,500 | Merged into a few meshes; mostly a navmesh build-time cost. |
 | Props | 1,500 | Untinted props are GPU instances (one draw call per model), so the cost is mostly in the variety of models (next row). |
 | Different prop models | 80 | Each model is a download (≈20–100 KB) and one draw call per part. |
-| Free blocks | 600 | Solid blocks become level geometry and cost almost nothing. |
+| Solid free blocks | 3,000 | Merged into the level's meshes by material, like tiles (a castle hall is a few hundred blocks); the cost is mostly the navmesh build when the map loads. |
 | Breakable / crumbling / trapdoor blocks | 150 | Each is simulated every tick and its state is sent to players. |
 | Bodies of liquid | 32 | Each is a see-through surface (transparency is expensive). |
 | Active pieces | 300 | Doors, traps, zones, NPC squads, vehicles, pads and buttons think every tick. |
