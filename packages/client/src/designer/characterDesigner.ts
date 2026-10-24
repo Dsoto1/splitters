@@ -12,6 +12,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import {
   CHARACTER_PARTS,
   COLORWAYS,
+  BODY_SIZES,
   CORE_LOOKS,
   HAIR_COLORS,
   HAIR_STYLES,
@@ -35,7 +36,7 @@ import { CharacterAnimator, type MotionState } from '../game/characterAnimator.t
 import { deleteCustomLook, listCustomLooks, saveCustomLook, type SavedLook } from './customLooks.ts';
 import type { PortraitRenderer } from '../frontend/portraits.ts';
 
-type Draft = Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'skin' | 'hairColor'> & { name: string };
+type Draft = Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'skin' | 'hairColor' | 'size'> & { name: string };
 
 const sx = (body: BodyType) => (body === 'male' ? 'm' : 'f');
 
@@ -102,7 +103,7 @@ export class CharacterDesigner {
 
     const saved = listCustomLooks().find((s) => s.id === startLook);
     const l = getLook(startLook);
-    this.draft = { name: saved?.name ?? (l.name === 'Custom' ? 'My character' : `My ${l.name}`), body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor };
+    this.draft = { name: saved?.name ?? (l.name === 'Custom' ? 'My character' : `My ${l.name}`), body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor, size: l.size };
 
     this.root.id = 'designer';
     document.body.append(this.root);
@@ -148,7 +149,8 @@ export class CharacterDesigner {
     const ch = await this.characters.create({ look: this.lookId }, `designer_${token}`);
     if (token !== this.token || this.scene.isDisposed) return ch.dispose();
     const { min, max } = ch.root.getHierarchyBoundingVectors(true);
-    ch.root.scaling.scaleInPlace(PLAYER.height / Math.max(0.5, max.y - min.y));
+    // Standing height for the chosen size (small and large characters are drawn to scale).
+    ch.root.scaling.scaleInPlace((PLAYER.height * BODY_SIZES[this.draft.size ?? 'standard'].scale) / Math.max(0.5, max.y - min.y));
     this.anim?.dispose();
     this.anim = new CharacterAnimator(this.scene, ch);
     if (this.weapon) {
@@ -189,7 +191,7 @@ export class CharacterDesigner {
   private load(id: string): void {
     const l = getLook(id);
     const saved = listCustomLooks().find((s) => s.id === id);
-    this.update({ name: saved?.name ?? `My ${l.name}`, body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor });
+    this.update({ name: saved?.name ?? `My ${l.name}`, body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor, size: l.size });
   }
 
   /** A random wearable look for the current body. */
@@ -304,6 +306,14 @@ export class CharacterDesigner {
     if (this.tab === 'body') {
       h(left, 'Body type');
       add(left, tile('Male', d.body === 'male', () => this.setBody('male')), tile('Female', d.body === 'female', () => this.setBody('female')));
+      h(left, 'Size');
+      add(
+        left,
+        ...(['small', 'standard', 'large'] as const).map((z) =>
+          tile(BODY_SIZES[z].label, (d.size ?? 'standard') === z, () => this.update({ size: z === 'standard' ? undefined : z })),
+        ),
+      );
+      left.append(Object.assign(document.createElement('p'), { className: 'dz-note', textContent: 'Small: a smaller, quicker target that fits through gaps others must crouch for, 85 health. Large: bigger, slower, 115 health. Hosts can turn sizes off.' }));
       h(left, 'Skin tone');
       swatches(left, SKIN_TONES.filter((c) => c !== '#ffffff'), d.skin, (c) => this.update({ skin: c }), 'Base');
     } else if (this.tab === 'head') {

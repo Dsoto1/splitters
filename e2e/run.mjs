@@ -962,7 +962,7 @@ async function charactersFlow(browser) {
   await page.goto(`${CLIENT}/?mode=characters`);
   await page.waitForFunction(() => window.__charsReady === true, null, { timeout: 30000 });
   const n = await page.evaluate(() => window.__charAnimators.length);
-  check(n === 18, `character viewer builds every look and NPC (${n})`);
+  check(n === 20, `character viewer builds every look and NPC (${n})`);
   const lod = await page.evaluate(() => window.__charAnimators.flatMap((a) => a.ch.meshes).filter((m) => m.getLODLevels?.().length).length);
   check(lod > 100, `character meshes have low-detail levels (${lod})`);
   for (const label of ['Rifle', 'Run', 'shoot', 'Death', 'Idle']) {

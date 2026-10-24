@@ -200,3 +200,22 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   at the top of a scolitex hit or miss as if they were player-sized.
 - The aliens have no walk, attack or death clips of their own (procedural
   motion stands in).
+
+## Character sizes
+
+Every look is small, standard or large (`size` on the look; custom looks add
+`-s` / `-l` to their ID, and the Character Designer has a Size choice on the
+Body tab). Presets: Sprout is small, Bulwark is large, everyone else standard.
+
+| Size | Body (height, width, eyes) | Speed | Health |
+|---|---|---|---|
+| Small | × 0.78 (1.40 m tall) | × 1.06 | 85 |
+| Standard | 1.80 m | × 1 | 100 |
+| Large | × 1.18 (2.12 m tall) | × 0.94 | 115 |
+
+The body size is the hit box and the collision capsule, so small characters
+are harder to hit and fit through gaps others must crouch for (a 1.6 m
+ceiling, a low window), and large ones are easier to hit and must crouch
+under openings a little over 2 m. Health pickups fill up to the size's
+health. The match setting **Character sizes: Matter / All equal**
+(`MatchRules.bodySizes`) makes everyone play and look standard.

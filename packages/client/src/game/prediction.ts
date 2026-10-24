@@ -65,6 +65,8 @@ export class LocalPlayer {
   pads: JumpPad[] = [];
   liquids: LiquidBox[] = [];
   ladders: Ladder[] = [];
+  /** Your body size (BODY_SIZES scale), the same the server uses. */
+  scale = 1;
   /** Jetpack fuel units (see JET), or null without a jetpack. */
   jetFuel: number | null = null;
   /** Seated in a turret or vehicle: the server moves you, so movement isn't predicted. */
@@ -101,7 +103,7 @@ export class LocalPlayer {
 
   /** Where your eyes are (they drop when you crouch or go prone). */
   get eye(): Vec3 {
-    return { x: this.state.pos.x, y: this.state.pos.y + eyeHeightOf(this.state), z: this.state.pos.z };
+    return { x: this.state.pos.x, y: this.state.pos.y + eyeHeightOf(this.state, this.scale), z: this.state.pos.z };
   }
 
   get weapon(): WeaponDefinition | undefined {
@@ -139,7 +141,7 @@ export class LocalPlayer {
   /** Same order as the server: move with the current boost, then count the boost down. */
   private move(state: MoveState, input: PlayerInput): MoveState {
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
-    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders }));
+    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale }));
     if (this.jetFuel !== null) this.jetFuel = stepJetFuel(this.jetFuel, !!next.jet);
     if (this.speedTicks > 0) this.speedTicks--;
     return next;

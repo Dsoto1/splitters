@@ -47,6 +47,8 @@ export interface ArcadeSetup {
   minutes: number;
   /** Team modes: players per team (2–8 teams; Capture the Flag uses the first two); bots fill every team. */
   teams?: number[];
+  /** Small and large characters play differently (false: everyone standard). Absent = on. */
+  sizes?: boolean;
 }
 
 export interface FrontEndHooks {
@@ -329,6 +331,7 @@ export class FrontEnd {
       el('div', { class: 'row' }, 'Mode', tabs(current.modes.map((m) => [m, MODE_LABEL[m]] as [string, string]), s.mode, (v) => (this.setup.mode = v as GameMode, this.setup.scoreLimit = BASE_RULES[v as GameMode].scoreLimit))),
       ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, s.mode === 'core.ctf') : [el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
       el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
+      el('div', { class: 'row', title: 'On: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. Off: everyone plays at standard size.' }, 'Character sizes', tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on'))),
       ...(coop
         ? []
         : [
@@ -349,7 +352,7 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 };
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.

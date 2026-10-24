@@ -22,6 +22,19 @@ export const PLAYER = {
 } as const;
 
 /** Standing, crouching and prone: body height, eye height and speed (× runSpeed). */
+/**
+ * Character sizes. Small: a smaller, quicker target that fits through gaps
+ * others must crouch for, with less health. Large: a bigger, slower target
+ * that must crouch under some openings, with more health. `scale` sizes the
+ * body (height, width, eyes); match setting `bodySizes: false` makes everyone standard.
+ */
+export type BodySize = 'small' | 'standard' | 'large';
+export const BODY_SIZES: Record<BodySize, { scale: number; speed: number; health: number; label: string }> = {
+  small: { scale: 0.78, speed: 1.06, health: 85, label: 'Small' },
+  standard: { scale: 1, speed: 1, health: 100, label: 'Standard' },
+  large: { scale: 1.18, speed: 0.94, health: 115, label: 'Large' },
+};
+
 export const STANCES = [
   { height: 1.8, eye: 1.6, speed: 1 },
   { height: 1.2, eye: 1.02, speed: 0.48 },

@@ -1,0 +1,13 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'] });
+const p = await (await b.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+const logs = [];
+p.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') logs.push(m.type() + ': ' + m.text().slice(0, 300)); });
+p.on('pageerror', (e) => logs.push('pageerror: ' + e.message.slice(0, 300)));
+p.on('requestfailed', (r) => logs.push('reqfail: ' + r.url() + ' ' + r.failure()?.errorText));
+p.on('response', (r) => { if (r.status() >= 400) logs.push('http ' + r.status() + ' ' + r.url()); });
+await p.goto('http://localhost:5199/');
+await p.waitForTimeout(30000);
+await p.screenshot({ path: process.argv[2] });
+console.log(logs.slice(0, 30).join('\n'));
+await b.close();

@@ -790,6 +790,7 @@ export class GameView {
       if (root.isDisposed()) return ch.dispose();
       ch.root.parent = root;
       fitCharacter(ch);
+      if (spec.size && spec.size !== 1) ch.root.scaling.scaleInPlace(spec.size);
       a.anim = new CharacterAnimator(this.scene, ch);
       placeholder.setEnabled(false);
       // Move the held weapon from the capsule to the hand.

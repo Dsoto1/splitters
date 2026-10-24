@@ -786,6 +786,8 @@ export interface ShotTarget {
   feet: Vec3;
   /** Body height (crouching and prone players are shorter); standing when absent. */
   height?: number;
+  /** Body radius (small and large characters); standard when absent. */
+  radius?: number;
 }
 
 export interface ShotResult {
@@ -820,7 +822,7 @@ export function resolveHitscan(origin: Vec3, dir: Vec3, range: number, worldDist
   let distance = worldDistance ?? range;
   let hitSlot: number | null = null;
   for (const t of targets) {
-    const d = rayCapsule(origin, dir, t.feet, PLAYER.radius, t.height ?? PLAYER.height);
+    const d = rayCapsule(origin, dir, t.feet, t.radius ?? PLAYER.radius, t.height ?? PLAYER.height);
     if (d !== null && d < distance) {
       distance = d;
       hitSlot = t.slot;

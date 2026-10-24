@@ -28,7 +28,7 @@ import {
   type ZoneSnapshot,
   type MountSnapshot,
 } from '../protocol.ts';
-import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
+import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
@@ -40,7 +40,7 @@ import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
 import { chargeIntoMelee } from './creatures.ts';
-import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
+import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, relation } from './npc.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, zoneMultiplier, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 
@@ -108,6 +108,10 @@ export interface Combatant {
   faction: string | null;
   /** Movement speed multiplier (NPC roles are slower). */
   speedMul: number;
+  /** Body size scale (BODY_SIZES): height, width and eyes. 1 for standard. */
+  size: number;
+  /** Health on spawn and the most health pickups can give. */
+  maxHealth: number;
   /** NPC details. */
   npc?: { encounter: string; role: NpcRole; removeAt: number };
   /** Character look (players and bots). */
@@ -462,6 +466,7 @@ export class Match {
       move: { pos: { ...pos }, velY: 0, grounded: false },
       yaw,
       health: spec.health,
+      maxHealth: spec.health,
       alive: true,
       weapons: new Map([[weaponCode(def), { def, mag: def.magazine, reserve: def.reserveMax, alt: def.alt?.max ?? 0 }]]),
       current: weaponCode(def),
@@ -480,6 +485,8 @@ export class Match {
       look: DEFAULT_LOOK,
       faction: kind === 'npc' ? null : this.playerFaction,
       speedMul: 1,
+      size: 1,
+      maxHealth: PLAYER.maxHealth,
       collider: this.physics.createPlayerCollider(),
       move: { pos: { x: 0, y: 0, z: 0 }, velY: 0, grounded: false },
       yaw: 0,
@@ -537,7 +544,10 @@ export class Match {
 
   addHuman(name: string, look?: string): Combatant | null {
     const c = this.addCombatant('human', name);
-    if (c) c.look = getLook(look).id;
+    if (c) {
+      c.look = getLook(look).id;
+      this.applyBodySize(c);
+    }
     return c;
   }
 
@@ -545,12 +555,22 @@ export class Match {
     const c = this.addCombatant('bot', name);
     if (c) {
       c.look = lookForBot(c.slot);
+      this.applyBodySize(c);
       c.bot = new BotBrain(c.slot, profile, difficulty, this.seed);
       c.bot.onSpawn(c.yaw);
       // Bots choose routes from the navmesh's sample places: build them now, not mid-match.
       this.nav.places();
     }
     return c;
+  }
+
+  /** Small and large looks play differently unless the match turns body sizes off. */
+  private applyBodySize(c: Combatant): void {
+    const spec = BODY_SIZES[this.rules.bodySizes === false ? 'standard' : bodySizeOf(c.look)];
+    c.size = spec.scale;
+    c.speedMul = spec.speed;
+    c.maxHealth = spec.health;
+    if (!c.alive) c.health = spec.health;
   }
 
   private addCombatant(kind: Combatant['kind'], name: string): Combatant | null {
@@ -785,7 +805,7 @@ export class Match {
         }
       } else {
         const was = c.move.pos;
-        c.move = applyPads(this.pads, stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders }));
+        c.move = applyPads(this.pads, stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size }));
         c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / TICK_DT;
         if (c.jetFuel !== null) c.jetFuel = stepJetFuel(c.jetFuel, !!c.move.jet);
       }
@@ -907,7 +927,7 @@ export class Match {
 
   /** Launch a projectile from the eye along the aim (lifted a little for throws, so they arc). */
   private launch(shooter: Combatant, spec: ProjectileSpec, weapon: string, lift = 0, spread = 0): void {
-    const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move), z: shooter.move.pos.z };
+    const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
     const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : viewDirection(shooter.yaw, shooter.pitch), spread);
     this.projectiles.push({
       id: this.nextProjectileId++,
@@ -922,7 +942,7 @@ export class Match {
   }
 
   private fire(shooter: Combatant, def: Trigger, viewTick: number): void {
-    const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move), z: shooter.move.pos.z };
+    const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
     const aim = viewDirection(shooter.yaw, shooter.pitch);
     // Bloom from sustained fire widens the spread; each shot adds more. So does
     // shooting on the run or in the air; aiming down a scope tightens it, and a
@@ -970,7 +990,7 @@ export class Match {
         // Piercing rounds go through players (not walls): everyone along the line, nearest first.
         const wallAt = world?.dist ?? def.range;
         const along = targets
-          .map((t) => ({ slot: t.slot, d: rayCapsule(eye, dir, t.feet, PLAYER.radius, t.height) }))
+          .map((t) => ({ slot: t.slot, d: rayCapsule(eye, dir, t.feet, t.radius ?? PLAYER.radius, t.height) }))
           .filter((t): t is { slot: number; d: number } => t.d !== null && t.d < wallAt)
           .sort((a, b) => a.d - b.d)
           .slice(0, def.pierce + 1);
@@ -1077,7 +1097,7 @@ export class Match {
    * resolved against recorded positions at the tick they were viewing
    * (bounded by MAX_REWIND_TICKS). Bots see the present.
    */
-  private targetsFor(shooter: Combatant, viewTick: number): { slot: number; feet: Vec3; height: number }[] {
+  private targetsFor(shooter: Combatant, viewTick: number): { slot: number; feet: Vec3; height: number; radius: number }[] {
     let past: Map<number, Vec3 & { h: number }> | undefined;
     if (shooter.kind === 'human' && viewTick > 0) {
       const t = Math.max(this.tick - MAX_REWIND_TICKS, Math.min(this.tick, viewTick));
@@ -1088,13 +1108,13 @@ export class Match {
       .filter((o) => o.alive && this.hostile(shooter, o))
       .map((o) => {
         const then = past?.get(o.slot);
-        return { slot: o.slot, feet: then ?? o.move.pos, height: then?.h ?? bodyHeightOf(o.move) };
+        return { slot: o.slot, feet: then ?? o.move.pos, height: then?.h ?? bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size };
       });
   }
 
   private recordHistory(): void {
     const snap = new Map<number, Vec3 & { h: number }>();
-    for (const c of this.actors()) if (c.alive) snap.set(c.slot, { ...c.move.pos, h: bodyHeightOf(c.move) });
+    for (const c of this.actors()) if (c.alive) snap.set(c.slot, { ...c.move.pos, h: bodyHeightOf(c.move, c.size) });
     this.history.set(this.tick, snap);
     this.history.delete(this.tick - HISTORY_TICKS);
   }
@@ -1137,7 +1157,7 @@ export class Match {
       for (const c of this.actors()) {
         if (!c.alive || (c === owner && p.age < OWNER_GRACE_TICKS)) continue;
         if (owner && c !== owner && !this.hostile(owner, c)) continue;
-        const d = rayCapsule(p.pos, dir, c.move.pos, PLAYER.radius, bodyHeightOf(c.move));
+        const d = rayCapsule(p.pos, dir, c.move.pos, PLAYER.radius * c.size, bodyHeightOf(c.move, c.size));
         if (d !== null && d <= len && (hitDist === null || d < hitDist)) {
           hitDist = d;
           victim = c;
@@ -1675,8 +1695,8 @@ export class Match {
     const e = item.effect;
     switch (e.kind) {
       case 'health':
-        if (c.health >= PLAYER.maxHealth) return false;
-        c.health = Math.min(PLAYER.maxHealth, c.health + e.amount);
+        if (c.health >= c.maxHealth) return false;
+        c.health = Math.min(c.maxHealth, c.health + e.amount);
         return true;
       case 'armor':
         if (c.armor >= MAX_ARMOR) return false;
@@ -1765,7 +1785,7 @@ export class Match {
     c.move = { pos: { ...sp.pos }, velY: 0, grounded: false };
     c.yaw = sp.yaw;
     c.pitch = 0;
-    c.health = PLAYER.maxHealth;
+    c.health = c.maxHealth;
     c.armor = 0;
     c.alive = true;
     c.burnTicks = c.poisonTicks = c.slowTicks = c.frozenTicks = 0;

@@ -44,6 +44,8 @@ export interface MatchRules {
   flagReturnSeconds?: number;
   /** King of the Hill: seconds before the hill moves to the next spot (default 60). */
   hillSeconds?: number;
+  /** Small and large characters play differently (BODY_SIZES); false makes everyone standard. Default true. */
+  bodySizes?: boolean;
 }
 
 export const DEFAULT_DEATHMATCH_RULES: MatchRules = {

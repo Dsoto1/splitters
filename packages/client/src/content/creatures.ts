@@ -15,7 +15,8 @@ import type { CharacterSpec } from './characters.ts';
  */
 
 /** What an avatar is drawn as: a character (player look or soldier NPC), or a creature. */
-export type AvatarSpec = CharacterSpec & { creature?: CreatureKind };
+/** A character, NPC or creature to draw; `size` scales a player's body (small and large looks). */
+export type AvatarSpec = CharacterSpec & { creature?: CreatureKind; size?: number };
 
 export interface CreatureInstance {
   kind: CreatureKind;

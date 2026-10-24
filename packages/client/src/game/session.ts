@@ -1,5 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
+  BODY_SIZES,
+  bodySizeOf,
   CORE_WEAPONS,
   THROWABLE_DEFS,
   predictThrow,
@@ -117,6 +119,11 @@ export class GameSession {
   private npcInfo = new Map<number, { role: number; faction: number }>();
   /** Character look of each player slot (from the roster). */
   private looks = new Map<number, string>();
+
+  /** A player's body scale: their look's size, unless the match plays everyone at standard size. */
+  private sizeOf(slot: number): number {
+    return this.rules?.bodySizes === false ? 1 : BODY_SIZES[bodySizeOf(this.looks.get(slot))].scale;
+  }
   private botStates: string[] = [];
   private outbox: PlayerInput[] = [];
   private showStats: boolean;
@@ -323,6 +330,7 @@ export class GameSession {
         this.local = new LocalPlayer(physics);
         this.local.pads = mapPads(loaded.map.entities);
         this.local.ladders = mapLadders(loaded.map.entities);
+        this.local.scale = this.sizeOf(this.slot);
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.scenario = new ScenarioState(loaded.map, physics);
         this.mounts = new MountState(loaded.map, physics);
@@ -341,6 +349,7 @@ export class GameSession {
         this.hud.setRoster(msg.players);
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
         this.view.setLocalLook(this.looks.get(this.slot));
+        if (this.local) this.local.scale = this.sizeOf(this.slot);
         for (const p of msg.players) this.view.characters.preload({ look: p.look });
         break;
       case 'snapshot': {
@@ -692,7 +701,9 @@ export class GameSession {
         const npc = this.npcLook(id);
         // About half of each squad uses the female mannequin.
         if (npc?.creature) return { creature: npc.creature };
-        return npc ? { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1 } } : { look: this.looks.get(id) };
+        if (npc) return { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1 } };
+        const size = this.sizeOf(id);
+        return size === 1 ? { look: this.looks.get(id) } : { look: this.looks.get(id), size };
       },
       this.phase === 'intermission',
       (id) => {

@@ -67,15 +67,17 @@ export interface MoveState {
 /** Current stance of a move state. */
 export const stanceOf = (s: MoveState): Stance => s.stance ?? 0;
 /** Eye height above the feet in this state. */
-export const eyeHeightOf = (s: MoveState): number => STANCES[stanceOf(s)].eye;
+export const eyeHeightOf = (s: MoveState, scale = 1): number => STANCES[stanceOf(s)].eye * scale;
 /** Body (capsule) height in this state. */
-export const bodyHeightOf = (s: MoveState): number => STANCES[stanceOf(s)].height;
+export const bodyHeightOf = (s: MoveState, scale = 1): number => STANCES[stanceOf(s)].height * scale;
 
 /** What else shapes a step: liquids to swim or wade in, and whether a jetpack has fuel. */
 export interface MoveEnv {
   liquids?: readonly LiquidBox[];
   jet?: boolean;
   ladders?: readonly Ladder[];
+  /** Body size (BODY_SIZES scale): heights, width and eyes scale with it. */
+  scale?: number;
 }
 
 /** A ladder as movement sees it: its foot against the wall, facing out from the wall, how tall and wide. */
@@ -150,6 +152,8 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
 export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, state: MoveState, input: PlayerInput, speedScale = 1, dt: number = TICK_DT, traction = 1, env: MoveEnv = {}): MoveState {
   // Stance: what you ask for, unless there's no room to stand (or crouch) up. Jumping gets you up first.
   let jumpPressed = (input.buttons & BUTTON_JUMP) !== 0;
+  const k = env.scale ?? 1;
+  const radius = PLAYER.radius * k;
   const was = stanceOf(state);
   let want: Stance = input.buttons & BUTTON_PRONE ? 2 : input.buttons & BUTTON_CROUCH ? 1 : 0;
   if (jumpPressed && was > 0) {
@@ -163,15 +167,15 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     // Crouching in the air tucks your legs up (your head stays where it was): jump, then
     // crouch, and you clear a window sill or a crate you couldn't jump onto standing.
     if (!state.grounded && was === 0 && want === 1) {
-      const tucked = { ...state.pos, y: state.pos.y + STANCES[0].height - STANCES[1].height };
-      if (physics.headroom(tucked, STANCES[1].height)) state = { ...state, pos: tucked };
+      const tucked = { ...state.pos, y: state.pos.y + (STANCES[0].height - STANCES[1].height) * k };
+      if (physics.headroom(tucked, STANCES[1].height * k, radius)) state = { ...state, pos: tucked };
     }
   } else if (want < was) {
     // Rise as far as the headroom allows; in the air, standing up drops your legs back down.
     for (let s = want; s < was; s++) {
-      const drop = !state.grounded && was === 1 && s === 0 ? STANCES[0].height - STANCES[1].height : 0;
+      const drop = !state.grounded && was === 1 && s === 0 ? (STANCES[0].height - STANCES[1].height) * k : 0;
       const feet = drop ? { ...state.pos, y: state.pos.y - drop } : state.pos;
-      if (physics.headroom(feet, STANCES[s].height)) {
+      if (physics.headroom(feet, STANCES[s].height * k, radius)) {
         stance = s as Stance;
         if (drop) state = { ...state, pos: feet };
         break;
@@ -266,7 +270,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   }
 
   const desiredY = velY * dt;
-  const moved = physics.moveCharacter(collider, state.pos, { x: (wx + vx) * dt, y: desiredY, z: (wz + vz) * dt }, STANCES[stance].height);
+  const moved = physics.moveCharacter(collider, state.pos, { x: (wx + vx) * dt, y: desiredY, z: (wz + vz) * dt }, STANCES[stance].height * k, radius);
   let grounded = moved.grounded;
   if (grounded && velY < 0) velY = 0;
   // Bumped a ceiling while rising.

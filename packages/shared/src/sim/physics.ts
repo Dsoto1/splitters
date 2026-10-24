@@ -142,12 +142,12 @@ export class PhysicsWorld {
    * geometry. Other players never block movement, which keeps client
    * prediction independent of remote player positions.
    */
-  moveCharacter(collider: RAPIER.Collider, feet: Vec3, delta: Vec3, height: number = PLAYER.height): { feet: Vec3; grounded: boolean; movedY: number } {
-    // Crouching and prone shrink the capsule.
-    const half = Math.max(0.01, (height - PLAYER.radius * 2) / 2);
+  moveCharacter(collider: RAPIER.Collider, feet: Vec3, delta: Vec3, height: number = PLAYER.height, radius: number = PLAYER.radius): { feet: Vec3; grounded: boolean; movedY: number } {
+    // Crouching and prone shrink the capsule; small and large characters have their own.
+    const half = Math.max(0.01, (height - radius * 2) / 2);
     const shape = collider.shape as RAPIER.Capsule;
     // A new shape rather than setHalfHeight, which left a grown capsule sunk into the floor.
-    if (Math.abs(shape.halfHeight - half) > 1e-4) collider.setShape(new RAPIER.Capsule(half, PLAYER.radius));
+    if (Math.abs(shape.halfHeight - half) > 1e-4 || Math.abs(shape.radius - radius) > 1e-4) collider.setShape(new RAPIER.Capsule(half, radius));
     const centerY = height / 2;
     const startY = feet.y + START_LIFT;
     collider.setTranslation({ x: feet.x, y: startY + centerY, z: feet.z });
@@ -156,17 +156,17 @@ export class PhysicsWorld {
     let next = { x: feet.x + m.x, y: startY + m.y, z: feet.z + m.z };
     // The controller can let a capsule creep into a gap a little smaller than it (a standing
     // player through a window): refuse a move that ends inside the level when it didn't start there.
-    if (!this.headroom(next, height) && this.headroom(feet, height)) {
+    if (!this.headroom(next, height, radius) && this.headroom(feet, height, radius)) {
       const upright = { x: feet.x, y: next.y, z: feet.z };
-      next = this.headroom(upright, height) ? upright : { ...feet };
+      next = this.headroom(upright, height, radius) ? upright : { ...feet };
     }
     collider.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
     return { feet: next, grounded: this.controller.computedGrounded(), movedY: m.y + START_LIFT };
   }
 
   /** Whether a player body `height` tall fits standing at `feet` (room to stand or crouch up). */
-  headroom(feet: Vec3, height: number): boolean {
-    const r = PLAYER.radius - 0.03;
+  headroom(feet: Vec3, height: number, radius: number = PLAYER.radius): boolean {
+    const r = radius - 0.03;
     const half = Math.max(0.01, height / 2 - r);
     const hit = this.world.intersectionWithShape({ x: feet.x, y: feet.y + height / 2 + 0.03, z: feet.z }, { x: 0, y: 0, z: 0, w: 1 }, new RAPIER.Capsule(half, r), undefined, WORLD_ONLY_QUERY);
     return !hit;

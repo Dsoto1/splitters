@@ -26,6 +26,8 @@ export interface CharacterLook {
   skin: string | null;
   /** Hair tint multiplied over the hair texture, or null for none. */
   hairColor: string | null;
+  /** Body size (BODY_SIZES); absent = standard. */
+  size?: 'small' | 'large';
 }
 
 /** Skin tones offered by the presets and the Character Designer. */
@@ -45,6 +47,9 @@ const peasant = (s: 'm' | 'f'): string[] => [`peasant_torso_${s}`, `peasant_arms
 export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.ranger', name: 'Ranger', body: 'male', head: 'head_male', parts: ranger('m'), hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50' },
   { id: 'core.huntress', name: 'Huntress', body: 'female', head: 'head_female', parts: ranger('f'), hair: ['hair_long'], colorways: [], skin: null, hairColor: '#b08850' },
+  // Two sizes off the standard: Sprout is small and quick, Bulwark big and tough.
+  { id: 'core.sprout', name: 'Sprout', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c07a40', size: 'small' },
+  { id: 'core.bulwark', name: 'Bulwark', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large' },
   { id: 'core.warden', name: 'Warden', body: 'male', head: 'head_male', parts: ranger('m'), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#3a3030' },
   { id: 'core.scout', name: 'Scout', body: 'female', head: 'head_female', parts: ranger('f', true, false), hair: ['hair_buns'], colorways: ['ranger_moss'], skin: SKIN_TONES[2], hairColor: '#4a3428' },
   { id: 'core.farmhand', name: 'Farmhand', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c09060' },
@@ -206,11 +211,11 @@ export function lookProblems(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 
  * Custom looks travel as a short ID (sent in hello, kept in the roster):
  * `c1-` + body (m/f) + part bitmask (4 hex) + hair bitmask (1 hex) +
  * colourway bitmask (1 hex) + skin (6 hex, or "------" for none) + hair colour
- * (6 hex or "------"). Bits follow CHARACTER_PARTS / HAIR_STYLES / COLORWAYS order.
+ * (6 hex or "------"), then "-s" (small) or "-l" (large) for a size other than standard. Bits follow CHARACTER_PARTS / HAIR_STYLES / COLORWAYS order.
  */
 const CUSTOM_PREFIX = 'c1-';
 
-export function encodeLook(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'skin' | 'hairColor'>): string {
+export function encodeLook(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'skin' | 'hairColor' | 'size'>): string {
   const bodyParts = CHARACTER_PARTS.filter((p) => p.body === l.body);
   const bits = <T>(list: readonly T[], has: (x: T) => boolean, width: number) =>
     list
@@ -227,10 +232,12 @@ export function encodeLook(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'c
     bits(COLORWAYS, (c) => l.colorways.includes(c.id), 1),
     colour(l.skin),
     colour(l.hairColor),
+    // Size travels as an optional suffix, so standard looks keep their old IDs.
+    l.size === 'small' ? '-s' : l.size === 'large' ? '-l' : '',
   ].join('');
 }
 
-const CUSTOM_RE = /^c1-([mf])([0-9a-f]{4})([0-9a-f])([0-9a-f])([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6})$/;
+const CUSTOM_RE = /^c1-([mf])([0-9a-f]{4})([0-9a-f])([0-9a-f])([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6})(-[sl])?$/;
 
 /** A custom look from its ID, or null if the ID is malformed or the look can't be worn. */
 export function decodeLook(id: string): CharacterLook | null {
@@ -245,7 +252,7 @@ export function decodeLook(id: string): CharacterLook | null {
   const hair = HAIR_STYLES[body].filter((_, i) => has(m[3]!, i)).map((h) => h.id);
   const colorways = COLORWAYS.filter((_, i) => has(m[4]!, i)).map((c) => c.id);
   const colour = (s: string) => (s.startsWith('-') ? null : `#${s}`);
-  const look: CharacterLook = { id, name: 'Custom', body, head: body === 'male' ? 'head_male' : 'head_female', parts, hair, colorways, skin: colour(m[5]!), hairColor: colour(m[6]!) };
+  const look: CharacterLook = { id, name: 'Custom', body, head: body === 'male' ? 'head_male' : 'head_female', parts, hair, colorways, skin: colour(m[5]!), hairColor: colour(m[6]!), ...(m[7] ? { size: m[7] === '-s' ? ('small' as const) : ('large' as const) } : {}) };
   return lookProblems(look).length ? null : look;
 }
 
@@ -284,3 +291,6 @@ export function textureFor(material: string, look: CharacterLook): string | null
   if (colorway) return colorway;
   return family === 'athlete' ? `athlete_${sex}` : family;
 }
+
+/** A look's body size (custom or preset); standard when it has none. */
+export const bodySizeOf = (look: string | undefined): 'small' | 'standard' | 'large' => getLook(look).size ?? 'standard';
