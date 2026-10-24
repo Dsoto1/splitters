@@ -706,7 +706,7 @@ export class GameView {
           airborne: !p.grounded && !seated.has(p.slot),
           alive: p.alive,
           pitch: p.pitch,
-          celebrate: celebrate && p.alive,
+          celebrate: (celebrate || !!p.emote) && p.alive,
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
         });

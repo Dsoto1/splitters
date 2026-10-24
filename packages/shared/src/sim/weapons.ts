@@ -208,6 +208,8 @@ export interface WeaponDefinition {
   projectile?: ProjectileSpec;
   /** Ammunition family (absent for melee). */
   ammo?: AmmoType;
+  /** A medical tool: each use heals the teammate you aim at (or yourself) by this much instead of hurting. */
+  heal?: number;
   alt?: AltFire;
   /** Trigger behaviour (default `auto`). */
   fireMode?: FireMode;
@@ -440,6 +442,27 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   ...arsenal(),
   ...mountWeapons(),
+  // Added after the rest so existing weapon codes stay the same.
+  'core.medkit': {
+    id: 'core.medkit',
+    displayName: 'Medkit',
+    kind: 'melee',
+    slot: 1,
+    damage: 0,
+    pellets: 1,
+    spread: 0,
+    fireIntervalTicks: 75,
+    range: 3,
+    magazine: 0,
+    reserveMax: 0,
+    pickupAmmo: 0,
+    reloadTicks: 0,
+    raiseTicks: 15,
+    heal: 25,
+    botDesirability: 0,
+    botRange: [0, 0],
+    view: { model: 'procedural/medkit', viewOffset: [0.2, -0.2, 0.42], tracer: '#ffffff', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, -0.02, 0] } },
+  },
 };
 
 // Helpers are function declarations: CORE_WEAPONS calls arsenal() while the module is still loading.

@@ -116,7 +116,7 @@ export class LocalPlayer {
   }
 
   /** Predict one tick. Returns the input to send and any predicted shot. */
-  tick(sample: { forward: number; right: number; buttons: number }, yaw: number, pitch: number, weapon: number, viewTick: number): { input: PlayerInput; shot: PredictedShot | null } {
+  tick(sample: { forward: number; right: number; buttons: number; say?: number }, yaw: number, pitch: number, weapon: number, viewTick: number): { input: PlayerInput; shot: PredictedShot | null } {
     const input: PlayerInput = { seq: ++this.seq, ...sample, yaw, pitch, weapon, viewTick };
     let shot: PredictedShot | null = null;
     if (this.alive) {

@@ -28,6 +28,8 @@ export interface RemotePose {
   state?: string;
   /** Crouching (1) or prone (2). */
   stance?: number;
+  /** Dancing (emote). */
+  emote?: boolean;
   sprinting?: boolean;
 }
 
@@ -112,6 +114,7 @@ export class Interpolator {
         grounded: pb.g === 1,
         ...(pb.sn ? { stance: pb.sn } : {}),
         ...(pb.sr ? { sprinting: true } : {}),
+        ...(pb.em ? { emote: true } : {}),
         weapon: pb.w,
         powerups: pb.pu,
         status: pb.fx ?? 0,

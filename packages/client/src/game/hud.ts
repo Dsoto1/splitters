@@ -449,6 +449,30 @@ export class Hud {
     window.setTimeout(() => line.remove(), 5000);
   }
 
+  /** A quick message in the feed: "Name: Enemy spotted!". */
+  say(slot: number, text: string): void {
+    if (!text) return;
+    const line = document.createElement('div');
+    const color = this.team(slot)?.color ?? slotColor(slot);
+    line.className = 'say';
+    line.innerHTML = `<span style="color:${color}">${escapeHtml(this.name(slot))}:</span> ${escapeHtml(text)}`;
+    this.feed.prepend(line);
+    while (this.feed.children.length > 5) this.feed.lastChild?.remove();
+    window.setTimeout(() => line.remove(), 6000);
+  }
+
+  /** The quick-message menu (B): the numbered messages, or hidden. */
+  setMessageMenu(open: boolean, messages: readonly string[]): void {
+    let el = document.getElementById('msg-menu');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'msg-menu';
+      el.innerHTML = `<b>Quick message</b>${messages.map((m, i) => `<div><kbd>${i + 1}</kbd> ${escapeHtml(m)}</div>`).join('')}<small>N: dance · B: close</small>`;
+      this.root.append(el);
+    }
+    el.hidden = !open;
+  }
+
   /** Active objectives, plus completed/failed ones while they fade out. */
   setObjectives(list: { text: string; state: 'active' | 'complete' | 'failed' | 'gone' }[]): void {
     const key = JSON.stringify(list);

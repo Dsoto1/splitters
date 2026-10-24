@@ -155,7 +155,7 @@ describe('extended arsenal', () => {
     expect(WEAPONS_BY_SLOT.length).toBeGreaterThanOrEqual(30);
     const models = new Set((JSON.parse(readFileSync(new URL('../../../content/models.json', import.meta.url), 'utf8')) as { models: { out: string }[] }).models.map((m) => m.out));
     for (const w of WEAPONS_BY_SLOT) {
-      expect(models.has(w.view.model), `${w.id} model`).toBe(true);
+      expect(models.has(w.view.model) || w.view.model.startsWith('procedural/'), `${w.id} model`).toBe(true);
       expect(weaponByCode(weaponCode(w))).toBe(w);
       if (w.id !== 'core.knife' && w.id !== 'core.pistol') expect(CORE_ITEMS.some((i) => i.effect.kind === 'weapon' && i.effect.weapon === w.id), `${w.id} pickup`).toBe(true);
       expect(w.slot).toBeGreaterThanOrEqual(1);

@@ -1,5 +1,6 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
+  QUICK_MESSAGES,
   BODY_SIZES,
   bodySizeOf,
   CORE_WEAPONS,
@@ -470,6 +471,13 @@ export class GameSession {
             this.outcome = null;
             this.view.clearCorpses();
             this.npcInfo.clear();
+          } else if (ev.e === 'say') {
+            // Team modes: only your own team hears it.
+            const mine = this.hud.team(this.slot)?.id;
+            if (!ev.team || !mine || ev.team === mine) this.hud.say(ev.s, QUICK_MESSAGES[ev.m - 1] ?? '');
+          } else if (ev.e === 'heal') {
+            if (ev.t === this.slot) this.hud.pickup(ev.s === this.slot ? `+${ev.n} health` : `${this.hud.name(ev.s)} healed you +${ev.n}`);
+            else if (ev.s === this.slot) this.hud.pickup(`Healed ${this.hud.name(ev.t)} +${ev.n}`);
           } else if (ev.e === 'msg') {
             this.hud.showMessage(ev.text, ev.secs);
           } else if (ev.e === 'obj') {
@@ -690,6 +698,7 @@ export class GameSession {
         this.view.throwArc.show(path, spec.mine?.triggerRadius ?? spec.splashRadius);
       } else this.view.throwArc.hide();
       this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
+      this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max);
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
       this.updateScenarioHud(local, now);

@@ -1,5 +1,8 @@
 import type { Scene } from '@babylonjs/core/scene';
-import type { AssetContainer } from '@babylonjs/core/assetContainer';
+import { AssetContainer } from '@babylonjs/core/assetContainer';
+import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 // Side-effect import: registers the glTF 2.0 loader plugin.
@@ -22,6 +25,10 @@ export class ModelLibrary {
   /** `path` is relative to public/models, or to public itself for placeable props ("props/…"). */
   load(path: string): Promise<AssetContainer> {
     let p = this.containers.get(path);
+    if (!p && path.startsWith('procedural/')) {
+      p = Promise.resolve(proceduralModel(this.scene, path));
+      this.containers.set(path, p);
+    }
     if (!p) {
       p = LoadAssetContainerAsync(versioned(/^(props|creatures)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB);
       this.containers.set(path, p);
@@ -42,4 +49,44 @@ export class ModelLibrary {
     for (const m of root.getChildMeshes()) m.isPickable = false;
     return root;
   }
+}
+
+/**
+ * Small models built from boxes in code ("procedural/<name>"), for kit we have
+ * no model file for. Built into an AssetContainer so they load like any GLB.
+ */
+function proceduralModel(scene: Scene, path: string): AssetContainer {
+  const c = new AssetContainer(scene);
+  const material = (name: string, hex: string, emissive = 0) => {
+    const m = new StandardMaterial(`${path}_${name}`, scene);
+    m.diffuseColor = Color3.FromHexString(hex);
+    m.specularColor = new Color3(0.15, 0.15, 0.15);
+    if (emissive) m.emissiveColor = Color3.FromHexString(hex).scale(emissive);
+    scene.removeMaterial(m);
+    c.materials.push(m);
+    return m;
+  };
+  const root = new TransformNode(`${path}_root`, scene);
+  scene.removeTransformNode(root);
+  c.transformNodes.push(root);
+  const box = (name: string, size: [number, number, number], at: [number, number, number], m: StandardMaterial) => {
+    const b = CreateBox(`${path}_${name}`, { width: size[0], height: size[1], depth: size[2] }, scene);
+    b.position.set(...at);
+    b.material = m;
+    b.parent = root;
+    scene.removeMesh(b);
+    c.meshes.push(b);
+  };
+  if (path === 'procedural/medkit') {
+    // A white first-aid case with a red cross and a dark handle, held like a pistol (barrel along +z).
+    const white = material('white', '#eeeeea');
+    const red = material('red', '#d8262c', 0.35);
+    const dark = material('dark', '#2a2d33');
+    box('case', [0.2, 0.15, 0.26], [0, 0, 0.05], white);
+    box('crossV', [0.04, 0.11, 0.005], [0, 0, -0.083], red);
+    box('crossH', [0.11, 0.04, 0.005], [0, 0, -0.083], red);
+    box('crossV2', [0.205, 0.11, 0.04], [0, 0, 0.05], red);
+    box('handle', [0.05, 0.03, 0.1], [0, 0.09, 0.05], dark);
+  }
+  return c;
 }

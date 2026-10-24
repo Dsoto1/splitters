@@ -46,6 +46,8 @@ export interface MatchRules {
   hillSeconds?: number;
   /** Small and large characters play differently (BODY_SIZES); false makes everyone standard. Default true. */
   bodySizes?: boolean;
+  /** Quick messages and emotes (default true). */
+  emotes?: boolean;
 }
 
 export const DEFAULT_DEATHMATCH_RULES: MatchRules = {

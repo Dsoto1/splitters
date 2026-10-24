@@ -64,6 +64,7 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   item('incendiaries', 'Incendiaries', { kind: 'throwable', throwable: 'incendiary', count: 2 }, 25, 0.45),
   item('gas_grenades', 'Gas Grenades', { kind: 'throwable', throwable: 'toxic', count: 2 }, 25, 0.4),
   item('vortex_grenades', 'Vortex Grenades', { kind: 'throwable', throwable: 'vortex', count: 1 }, 35, 0.5),
+  item('weapon_medkit', 'Medkit', { kind: 'weapon', weapon: 'core.medkit' }, 30, 0.5),
   item('holy_bomb', 'Holy Bomb', { kind: 'throwable', throwable: 'holy', count: 1 }, 60, 0.55),
   item('cluster_bombs', 'Cluster Bombs', { kind: 'throwable', throwable: 'cluster', count: 1 }, 40, 0.5),
   item('sheep', 'Sheep', { kind: 'throwable', throwable: 'sheep', count: 1 }, 45, 0.55),

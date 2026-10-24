@@ -1,4 +1,4 @@
-import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
+import { EMOTE_DANCE, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'chronosplit.mouse';
@@ -51,6 +51,10 @@ export class InputState {
   crouchOn = false;
   /** Respawn asked for (K, or the pause menu): sent with the next input. */
   respawnQueued = false;
+  /** The quick-message menu is open (B): digits pick a message instead of a weapon. */
+  msgMenu = false;
+  /** A quick message or emote to send with the next input. */
+  private sayQueued = 0;
   proneOn = false;
   /** Set by the session: right mouse fires the held weapon's second trigger instead of aiming (melee heavy swings). */
   altTrigger = false;
@@ -89,8 +93,14 @@ export class InputState {
         if ((e.code === 'Space' || e.code === 'ShiftLeft') && !e.repeat) this.crouchOn = this.proneOn = false;
         // Hold G to aim a throw (the arc shows), let go to throw.
         if (e.code === 'KeyG' && !e.repeat) this.throwAiming = true;
+        // B opens the quick-message menu; N dances.
+        if (e.code === 'KeyB' && !e.repeat) this.msgMenu = !this.msgMenu;
+        if (e.code === 'KeyN' && !e.repeat) this.sayQueued = EMOTE_DANCE;
         const digit = /^Digit([1-9])$/.exec(e.code);
-        if (digit) this.slotRequest = Number(digit[1]);
+        if (digit && this.msgMenu) {
+          if (Number(digit[1]) <= QUICK_MESSAGES.length) this.sayQueued = Number(digit[1]);
+          this.msgMenu = false;
+        } else if (digit) this.slotRequest = Number(digit[1]);
       },
       opts,
     );
@@ -177,7 +187,7 @@ export class InputState {
   }
 
   /** Sample movement axes and buttons for one simulation tick. */
-  sample(): { forward: number; right: number; buttons: number } {
+  sample(): { forward: number; right: number; buttons: number; say?: number } {
     // Automation hook for browser tests and screenshots (no pointer lock in headless browsers).
     const auto = (window as unknown as { __autoInput?: { forward?: number; right?: number; buttons?: number; once?: number } }).__autoInput;
     if (auto) {
@@ -208,6 +218,8 @@ export class InputState {
     this.reloadQueued = false;
     this.useQueued = false;
     this.throwQueued = false;
-    return { forward: axis('KeyW', 'KeyS'), right: axis('KeyD', 'KeyA'), buttons };
+    const say = this.sayQueued;
+    this.sayQueued = 0;
+    return { forward: axis('KeyW', 'KeyS'), right: axis('KeyD', 'KeyA'), buttons, ...(say ? { say } : {}) };
   }
 }

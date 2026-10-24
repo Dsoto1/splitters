@@ -31,7 +31,7 @@ import {
 import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
-import { BUTTON_ALT, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_ALT, EMOTE_DANCE, QUICK_MESSAGES, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
@@ -112,6 +112,9 @@ export interface Combatant {
   size: number;
   /** Health on spawn and the most health pickups can give. */
   maxHealth: number;
+  /** Dancing until this tick (emote); and the next tick a quick message or emote may be sent. */
+  emoteUntil?: number;
+  sayAt?: number;
   /** NPC details. */
   npc?: { encounter: string; role: NpcRole; removeAt: number };
   /** Character look (players and bots). */
@@ -790,6 +793,13 @@ export class Match {
       c.yaw = input.yaw;
       c.pitch = input.pitch;
       if (!c.alive) continue;
+      if (input.say && this.rules.emotes !== false && !c.npc && this.tick >= (c.sayAt ?? 0)) {
+        c.sayAt = this.tick + TICK_RATE;
+        if (input.say === EMOTE_DANCE) c.emoteUntil = this.tick + TICK_RATE * 3;
+        else if (input.say <= QUICK_MESSAGES.length) this.pendingEvents.push({ e: 'say', s: c.slot, m: input.say, ...(this.teams && c.faction ? { team: c.faction } : {}) });
+      }
+      // Moving or shooting ends a dance.
+      if (c.emoteUntil && (input.forward || input.right || input.buttons & BUTTON_FIRE)) c.emoteUntil = undefined;
       // Stuck (or just wants out): die here and respawn like any other death.
       if (input.buttons & BUTTON_RESPAWN && !c.npc) {
         this.kill(c, null, 'core.respawn');
@@ -964,6 +974,11 @@ export class Match {
       return;
     }
 
+    const heal = getWeapon(def.id).heal;
+    if (heal) {
+      this.useMedkit(shooter, eye, aim, heal, def.range);
+      return;
+    }
     const targets = this.targetsFor(shooter, viewTick);
     if (def.kind === 'melee') {
       // Three short rays in a narrow fan make melee forgiving without a full sweep.
@@ -1268,6 +1283,25 @@ export class Match {
       }
       this.pendingEvents.push({ e: 'msg', text: 'Airstrike inbound!', secs: 3 });
     }
+  }
+
+  /** Heal the hurt teammate you're aiming at within reach, or else yourself. */
+  private useMedkit(shooter: Combatant, eye: Vec3, aim: Vec3, amount: number, range: number): void {
+    let best: Combatant | null = null;
+    let bestD = range;
+    for (const c of this.actors()) {
+      if (c === shooter || !c.alive || this.hostile(shooter, c) || c.health >= c.maxHealth) continue;
+      const d = rayCapsule(eye, aim, c.move.pos, PLAYER.radius * c.size + 0.3, bodyHeightOf(c.move, c.size));
+      if (d !== null && d <= bestD) {
+        best = c;
+        bestD = d;
+      }
+    }
+    const target = best ?? (shooter.health < shooter.maxHealth ? shooter : null);
+    if (!target) return;
+    const n = Math.min(amount, target.maxHealth - target.health);
+    target.health += n;
+    this.pendingEvents.push({ e: 'heal', s: shooter.slot, t: target.slot, n });
   }
 
   private spawnProjectile(owner: number, spec: ProjectileSpec, weapon: string, pos: Vec3, vel: Vec3): void {
@@ -1992,6 +2026,7 @@ export class Match {
       if (fx) s.fx = fx;
       if (c.bot) s.st = c.bot.state;
       if (c.move.stance) s.sn = c.move.stance;
+      if (c.emoteUntil && this.tick < c.emoteUntil) s.em = 1;
       if (c.move.sprint) s.sr = 1;
       return s;
     });

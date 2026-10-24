@@ -219,7 +219,7 @@ class App {
   }
 
   playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard'): void {
-    this.startSession(new LocalTransport(map, { name: this.front!.name || 'Player', look: this.front!.look, botFill, difficulty, rules }), {
+    this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       onExit: (reason) => void this.showMenu(reason ?? ''),

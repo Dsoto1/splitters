@@ -49,6 +49,8 @@ export interface ArcadeSetup {
   teams?: number[];
   /** Small and large characters play differently (false: everyone standard). Absent = on. */
   sizes?: boolean;
+  /** Quick messages and emotes allowed. Absent = on. */
+  emotes?: boolean;
 }
 
 export interface FrontEndHooks {
@@ -104,6 +106,13 @@ export class FrontEnd {
   private readonly footerHints = el('div', { class: 'hintbar' });
   private setup: ArcadeSetup;
   name: string;
+  /** Clan tag shown in front of your name ("[TAG] Name"), up to 5 letters or digits. */
+  clan = '';
+
+  /** Your name as other players see it, with the clan tag. */
+  get displayName(): string {
+    return this.clan ? `[${this.clan}] ${this.name}` : this.name;
+  }
   server: string;
   look: string;
   private charFilter = 'all';
@@ -120,6 +129,7 @@ export class FrontEnd {
     params: URLSearchParams,
   ) {
     this.name = params.get('name') ?? storage('cs.name') ?? `Player${Math.floor(Math.random() * 900 + 100)}`;
+    this.clan = storage('cs.clan') ?? '';
     this.server = params.get('server') ?? storage('cs.server') ?? `ws://${location.hostname || 'localhost'}:7777`;
     this.look = getLook(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK).id;
     const saved = JSON.parse(storage('cs.arcade') ?? 'null') as ArcadeSetup | null;
@@ -332,6 +342,7 @@ export class FrontEnd {
       ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, s.mode === 'core.ctf') : [el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
       el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
       el('div', { class: 'row', title: 'On: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. Off: everyone plays at standard size.' }, 'Character sizes', tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on'))),
+      el('div', { class: 'row', title: 'Quick messages (B, then 1-6) and the dance emote (N).' }, 'Emotes & messages', tabs([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => (this.setup.emotes = v === 'on'))),
       ...(coop
         ? []
         : [
@@ -352,7 +363,7 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}) };
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.
@@ -497,13 +508,19 @@ export class FrontEnd {
       this.server = server.value.trim();
       storage('cs.name', this.name);
       storage('cs.server', this.server);
-      this.hooks.playOnline(this.server, this.name);
+      this.hooks.playOnline(this.server, this.displayName);
     });
     return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), form);
   }
 
   private options(): HTMLElement {
     const name = el('input', { value: this.name, maxLength: 24 });
+    const clan = el('input', { value: this.clan, maxLength: 5, placeholder: 'none' });
+    clan.addEventListener('change', () => {
+      this.clan = clan.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 5).toUpperCase();
+      clan.value = this.clan;
+      storage('cs.clan', this.clan);
+    });
     name.addEventListener('change', () => {
       this.name = name.value.trim() || this.name;
       storage('cs.name', this.name);
@@ -586,6 +603,7 @@ export class FrontEnd {
         'div',
         { class: 'form panel' },
         el('label', {}, 'Player name', name),
+        el('label', {}, 'Clan tag', clan),
         el('label', {}, 'Volume', volume),
         el('label', {}, 'Display', fullscreen),
         el('label', {}, 'Mouse sensitivity', el('span', { class: 'row' }, sens, sensVal)),

@@ -39,7 +39,14 @@ export interface PlayerInput {
   weapon?: number;
   /** Server tick the player was looking at when this input was made (lag compensation). */
   viewTick?: number;
+  /** A quick message (1-QUICK_MESSAGES.length) or emote (EMOTE_DANCE) sent with this input. */
+  say?: number;
 }
+
+/** Quick messages players can send (keys 1-6 while the quick-message menu is open). */
+export const QUICK_MESSAGES = ['Follow me!', 'Need backup!', 'Enemy spotted!', 'On my way!', 'Thanks!', 'Nice shot!'] as const;
+/** `say` value for the dance emote. */
+export const EMOTE_DANCE = 100;
 
 export interface MoveState {
   /** Feet position. */
@@ -144,6 +151,7 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
     pitch: Math.max(-1.55, Math.min(1.55, finite(i.pitch))),
     buttons: Math.trunc(finite(i.buttons)) & ALL_BUTTONS,
     weapon: Math.max(0, Math.min(255, Math.trunc(finite(i.weapon ?? 0)))),
+    ...(i.say ? { say: Math.max(0, Math.min(255, Math.trunc(finite(i.say)))) } : {}),
     viewTick: Math.max(0, Math.trunc(finite(i.viewTick ?? 0))),
   };
 }

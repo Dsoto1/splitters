@@ -235,7 +235,7 @@ function readMapFile(path: string): MapDocument {
 }
 
 function sanitizeName(name: string): string {
-  const clean = name.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 24);
+  const clean = name.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 32); // name (24) plus a clan tag
   return clean || 'Player';
 }
 
@@ -266,6 +266,7 @@ export function parseClientMessage(text: string): ClientMessage | null {
         // Optional fields: weapon selection and the tick the player was viewing (lag compensation).
         if (typeof r.weapon === 'number') input.weapon = r.weapon;
         if (typeof r.viewTick === 'number') input.viewTick = r.viewTick;
+        if (typeof r.say === 'number') input.say = r.say;
         inputs.push(input);
       }
       return { t: 'input', inputs };

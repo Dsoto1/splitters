@@ -41,6 +41,8 @@ export interface PlayerSnapshot {
   st?: string;
   /** Crouching (1) or prone (2); absent when standing. */
   sn?: 1 | 2;
+  /** Dancing (emote). */
+  em?: 1;
   /** Sprinting this tick. */
   sr?: 1;
 }
@@ -115,6 +117,10 @@ export type GameEvent =
   // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
   /** Creator message from a logic rule. */
   | { e: 'msg'; text: string; secs: number }
+  /** A medkit use: `s` healed `t` (maybe themselves) by `n`. */
+  | { e: 'heal'; s: number; t: number; n: number }
+  /** A quick message (QUICK_MESSAGES index + 1) from player `s`; team modes send it to their team only (`team`). */
+  | { e: 'say'; s: number; m: number; team?: string }
   /** Sound cue from a logic rule (alarm, chime, buzzer, boom); positionless. */
   | { e: 'cue'; cue: string }
   /** Objective changed state (index into OBJECTIVE_STATES). */

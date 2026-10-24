@@ -378,3 +378,9 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #crosshair.gunner { width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: conic-gradient(rgba(255, 70, 50, 0.55) calc(var(--heat, 0) * 1%), transparent 0); -webkit-mask: radial-gradient(circle, transparent 28px, #000 29px, #000 31px, transparent 32px); mask: radial-gradient(circle, transparent 28px, #000 29px, #000 31px, transparent 32px); }
 #crosshair.gunner::before { left: 31px; top: -6px; width: 2px; height: 76px; background: linear-gradient(var(--xh) 0 14px, transparent 14px 62px, var(--xh) 62px); }
 #crosshair.gunner::after { top: 31px; left: -6px; height: 2px; width: 76px; background: linear-gradient(90deg, var(--xh) 0 14px, transparent 14px 62px, var(--xh) 62px); }
+
+#feed .say { font-style: italic; }
+#msg-menu { position: absolute; left: 24px; top: 40%; padding: 10px 14px; background: rgba(12, 16, 26, 0.85); border-left: 3px solid var(--cyan, #00d1ff); font: 500 14px var(--font-display); color: var(--text); }
+#msg-menu b { display: block; margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+#msg-menu kbd { display: inline-block; min-width: 18px; text-align: center; margin-right: 6px; background: #2a3142; border-radius: 3px; }
+#msg-menu small { display: block; margin-top: 6px; opacity: 0.7; }
