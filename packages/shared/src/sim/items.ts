@@ -33,7 +33,7 @@ const EXTENDED_WEAPON_ITEMS: ItemDefinition[] = [
   ['pulse_pistol', 15], ['hand_cannon', 20], ['gilded_pistol', 60], ['flare_gun', 20], ['machine_pistol', 15],
   ['burst_rifle', 15], ['laser_rifle', 25], ['marksman', 20], ['sawed_off', 15], ['auto_shotgun', 20], ['flak', 25],
   ['railgun', 35], ['disc_launcher', 25], ['bubble_blaster', 20], ['goo_gun', 20], ['oil_slicker', 20],
-  ['lmg', 30], ['nailgun', 20], ['swarm', 35], ['singularity', 45], ['arc_caster', 25], ['flamethrower', 25], ['freeze_ray', 25],
+  ['lmg', 30], ['nailgun', 20], ['swarm', 35], ['guided', 40], ['singularity', 45], ['arc_caster', 25], ['flamethrower', 25], ['freeze_ray', 25],
 ].map(([name, respawn]) => item(`weapon_${name}`, weaponName(`core.${name}`), { kind: 'weapon', weapon: `core.${name}` }, respawn as number, 0.55 + Math.min(0.35, (respawn as number) / 120)));
 
 export const CORE_ITEMS: readonly ItemDefinition[] = [
@@ -64,6 +64,10 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   item('incendiaries', 'Incendiaries', { kind: 'throwable', throwable: 'incendiary', count: 2 }, 25, 0.45),
   item('gas_grenades', 'Gas Grenades', { kind: 'throwable', throwable: 'toxic', count: 2 }, 25, 0.4),
   item('vortex_grenades', 'Vortex Grenades', { kind: 'throwable', throwable: 'vortex', count: 1 }, 35, 0.5),
+  item('holy_bomb', 'Holy Bomb', { kind: 'throwable', throwable: 'holy', count: 1 }, 60, 0.55),
+  item('cluster_bombs', 'Cluster Bombs', { kind: 'throwable', throwable: 'cluster', count: 1 }, 40, 0.5),
+  item('sheep', 'Sheep', { kind: 'throwable', throwable: 'sheep', count: 1 }, 45, 0.55),
+  item('airstrike', 'Airstrike Flare', { kind: 'throwable', throwable: 'airstrike', count: 1 }, 60, 0.5),
   item('powerup_speed', 'Speed Boost', { kind: 'powerup', powerup: 'speed', seconds: 15 }, 60, 0.6),
   item('powerup_damage', 'Double Damage', { kind: 'powerup', powerup: 'damage', seconds: 15 }, 60, 0.85),
   item('jetpack', 'Jetpack', { kind: 'jetpack' }, 45, 0.6),

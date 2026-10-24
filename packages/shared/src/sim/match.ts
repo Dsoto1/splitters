@@ -189,6 +189,10 @@ interface Projectile {
   /** Sticky projectiles riding on a player: whose, and where on them. */
   stuckTo?: number;
   stuckOffset?: Vec3;
+  /** Walkers (the sheep): on the ground, which way they're heading, and ticks until they may hop again. */
+  walking?: boolean;
+  heading?: Vec3;
+  hopIn?: number;
 }
 
 /** A ground hazard or field (see ZONE_KINDS). */
@@ -1150,7 +1154,12 @@ export class Match {
         keep.push(p);
         continue;
       }
+      if (p.walking) {
+        if (this.walk(p, owner ?? null)) keep.push(p);
+        continue;
+      }
       if (spec.homing && owner) this.steer(p, owner, spec.homing);
+      if (spec.guided && owner?.alive) this.guide(p, owner, spec.guided.turnRate);
       if (spec.drag) p.vel = scale(p.vel, Math.max(0, 1 - spec.drag * TICK_DT));
       p.vel = { x: p.vel.x, y: p.vel.y - spec.gravity * TICK_DT, z: p.vel.z };
       const delta = scale(p.vel, TICK_DT);
@@ -1176,6 +1185,17 @@ export class Match {
           if (spec.status) this.applyStatus(victim, spec.status, owner ?? null, p.weapon);
           p.stuckTo = victim.slot;
           p.stuckOffset = { x: at.x - victim.move.pos.x, y: Math.min(PLAYER.height, Math.max(0.3, at.y - victim.move.pos.y)), z: at.z - victim.move.pos.z };
+          keep.push(p);
+          continue;
+        }
+        if (!victim && wall && spec.walker && wall.normal.y > 0.6) {
+          // Landed: off it goes, the way it was thrown.
+          const h = Math.hypot(p.vel.x, p.vel.z);
+          p.heading = h > 0.1 ? { x: p.vel.x / h, y: 0, z: p.vel.z / h } : { x: Math.sin(owner?.yaw ?? 0), y: 0, z: Math.cos(owner?.yaw ?? 0) };
+          p.pos = add(at, scale(wall.normal, 0.05));
+          p.vel = { x: 0, y: 0, z: 0 };
+          p.walking = true;
+          p.hopIn = 0;
           keep.push(p);
           continue;
         }
@@ -1228,6 +1248,92 @@ export class Match {
     // Flames, flares and real explosions set oil alight.
     if (spec.ignites || spec.splashDamage >= 30) this.ignite(at, Math.max(1, spec.splashRadius));
     if (spec.zone) this.spawnZone(spec.zone, at, p.owner, p.weapon);
+    if (spec.cluster) {
+      // Bomblets thrown out and up all round.
+      for (let i = 0; i < spec.cluster.count; i++) {
+        const a = ((i + this.rng() * 0.6) / spec.cluster.count) * Math.PI * 2;
+        const up = 0.55 + this.rng() * 0.35;
+        const out = Math.sqrt(1 - up * up);
+        this.spawnProjectile(p.owner, spec.cluster.spec, p.weapon, { x: at.x, y: at.y + 0.2, z: at.z }, scale({ x: Math.cos(a) * out, y: up, z: Math.sin(a) * out }, spec.cluster.speed));
+      }
+    }
+    if (spec.airstrike) {
+      // Bombs in a line along the thrower's facing, falling from high above the marker.
+      const yaw = owner?.yaw ?? 0;
+      const f = { x: Math.sin(yaw), y: 0, z: Math.cos(yaw) };
+      const n = spec.airstrike.count;
+      for (let i = 0; i < n; i++) {
+        const off = (i - (n - 1) / 2) * spec.airstrike.spacing;
+        this.spawnProjectile(p.owner, spec.airstrike.bomb, p.weapon, { x: at.x + f.x * off, y: at.y + spec.airstrike.height + i * 1.5, z: at.z + f.z * off }, { x: 0, y: -8, z: 0 });
+      }
+      this.pendingEvents.push({ e: 'msg', text: 'Airstrike inbound!', secs: 3 });
+    }
+  }
+
+  private spawnProjectile(owner: number, spec: ProjectileSpec, weapon: string, pos: Vec3, vel: Vec3): void {
+    this.projectiles.push({ id: this.nextProjectileId++, owner, spec, weapon, pos, vel, ticksLeft: Math.round(spec.fuseSeconds * TICK_RATE), age: OWNER_GRACE_TICKS });
+  }
+
+  /** Laser-guided rockets turn toward whatever their shooter is aiming at. */
+  private guide(p: Projectile, owner: Combatant, turnRate: number): void {
+    const eye = { x: owner.move.pos.x, y: owner.move.pos.y + eyeHeightOf(owner.move, owner.size), z: owner.move.pos.z };
+    const look = viewDirection(owner.yaw, owner.pitch);
+    const hit = this.physics.raycastWorld(eye, look, 300);
+    const target = add(eye, scale(look, hit ?? 300));
+    const to = sub(target, p.pos);
+    const d = Math.hypot(to.x, to.y, to.z);
+    if (d < 0.5) return;
+    const speed = Math.hypot(p.vel.x, p.vel.y, p.vel.z) || 1;
+    const k = Math.min(1, turnRate * TICK_DT);
+    p.vel = scale(normalize(add(scale(p.vel, (1 - k) / speed), scale(to, k / d))), speed);
+  }
+
+  /**
+   * A walker's step on the ground: forward at its pace, falling when the ground
+   * drops away, hopping at low obstacles and turning at walls. Bursts on an enemy
+   * (or when the fuse runs out). Returns whether it is still going.
+   */
+  private walk(p: Projectile, owner: Combatant | null): boolean {
+    const spec = p.spec;
+    const speed = spec.walker!.speed;
+    if (--p.ticksLeft <= 0 || p.pos.y < this.killY) {
+      this.explode(p, p.pos);
+      return false;
+    }
+    for (const c of this.actors()) {
+      if (!c.alive || (owner && c === owner) || (owner && !this.hostile(owner, c))) continue;
+      if (horizontalDistance(c.move.pos, p.pos) < 0.9 && Math.abs(c.move.pos.y + 0.6 - p.pos.y) < 1.4) {
+        this.explode(p, p.pos);
+        return false;
+      }
+    }
+    let h = p.heading!;
+    if (p.hopIn) p.hopIn--;
+    const ahead = this.physics.raycastWorld({ x: p.pos.x, y: p.pos.y + 0.3, z: p.pos.z }, h, 0.5);
+    if (ahead !== null) {
+      // Something in the way: hop it if it's low, otherwise turn.
+      const high = this.physics.raycastWorld({ x: p.pos.x, y: p.pos.y + 1.3, z: p.pos.z }, h, 0.6);
+      if (high === null && !p.hopIn && p.vel.y === 0) {
+        p.vel = { x: 0, y: 6, z: 0 };
+        p.hopIn = 30;
+      } else if (p.vel.y === 0) {
+        h = p.heading = { x: h.z, y: 0, z: -h.x };
+      }
+    }
+    let vy = p.vel.y - spec.gravity * TICK_DT;
+    const next = { x: p.pos.x + h.x * speed * TICK_DT, y: p.pos.y + vy * TICK_DT, z: p.pos.z + h.z * speed * TICK_DT };
+    if (this.physics.raycastWorld({ x: next.x, y: next.y + 0.3, z: next.z }, h, 0.2) !== null) {
+      next.x = p.pos.x;
+      next.z = p.pos.z;
+    }
+    const ground = vy <= 0 ? this.physics.raycastWorld({ x: next.x, y: p.pos.y + 0.3, z: next.z }, { x: 0, y: -1, z: 0 }, 0.3 + Math.max(0.05, -vy * TICK_DT)) : null;
+    if (ground !== null) {
+      next.y = p.pos.y + 0.3 - ground;
+      vy = 0;
+    }
+    p.vel = { x: 0, y: vy, z: 0 };
+    p.pos = next;
+    return true;
   }
 
   /** Swarm missiles turn toward the nearest enemy ahead of them that they can see. */

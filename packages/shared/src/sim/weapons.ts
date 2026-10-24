@@ -21,6 +21,7 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
+  'holy', 'banana', 'sheep', 'bomblet', 'bomb',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -100,6 +101,14 @@ export interface ProjectileSpec {
   status?: StatusHit;
   /** Sets oil alight where it bursts (flames, flares, explosions do by default when they have splash damage). */
   ignites?: boolean;
+  /** Flies where its shooter is aiming, turning up to `turnRate` rad/s (laser-guided rockets). */
+  guided?: { turnRate: number };
+  /** Bursts into `count` bomblets thrown out at `speed` m/s (cluster bombs). */
+  cluster?: { count: number; speed: number; spec: ProjectileSpec };
+  /** Once it lands it walks along the ground at `speed` m/s, hopping over low obstacles and turning at walls; bursts on contact with an enemy or when the fuse runs out. */
+  walker?: { speed: number };
+  /** Where it bursts, calls in `count` bombs falling from `height` m in a line `spacing` m apart along the thrower's facing. */
+  airstrike?: { count: number; spacing: number; height: number; bomb: ProjectileSpec };
 }
 
 /**
@@ -631,6 +640,14 @@ function arsenal(): Record<string, WeaponDefinition> {
       view: longarm('swarm', 0.6, '#ffb347', { sound: 'fire.swarm' }),
     }),
     weapon({
+      // Laser-guided: the rocket flies wherever you keep your crosshair. Slow, so steer it round corners.
+      id: 'core.guided', displayName: 'Guided Rocket', kind: 'projectile', slot: 8, fireMode: 'semi',
+      fireIntervalTicks: 75, magazine: 1, reserveMax: 6, pickupAmmo: 3, reloadTicks: 90, raiseTicks: 32, ammo: 'explosive',
+      projectile: { speed: 17, gravity: 0, fuseSeconds: 8, splashRadius: 5, splashDamage: 130, splashEdgeDamage: 20, selfDamageScale: 0.6, visual: 'rocket', impactDamage: 35, guided: { turnRate: 3.2 } },
+      botDesirability: 0.7, botRange: [10, 60],
+      view: { model: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ff4a3a', sound: 'fire.rockets', hold: { style: 'long', grip: [0, -0.12, -0.18], support: [0, -0.1, 0.18], shoulder: [0, 0.02, -0.5] } },
+    }),
+    weapon({
       id: 'core.singularity', displayName: 'Singularity Cannon', kind: 'projectile', slot: 8, fireMode: 'semi',
       fireIntervalTicks: 90, magazine: 1, reserveMax: 4, pickupAmmo: 2, reloadTicks: 110, raiseTicks: 34, ammo: 'cells',
       projectile: { speed: 13, gravity: 0, fuseSeconds: 1.6, splashRadius: 1, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'vortex', zone: { kind: 'singularity', radius: 8, seconds: 2.4 } },
@@ -662,7 +679,7 @@ function arsenal(): Record<string, WeaponDefinition> {
 }
 
 /** Thrown equipment (G): one kind carried at a time, with a count. */
-export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex'] as const;
+export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike'] as const;
 export type ThrowableKind = (typeof THROWABLES)[number];
 export interface ThrowableDefinition {
   kind: ThrowableKind;
@@ -713,6 +730,44 @@ export const THROWABLE_DEFS: Record<ThrowableKind, ThrowableDefinition> = {
     max: 2,
     throwIntervalTicks: 60,
     projectile: { speed: 15, gravity: 14, fuseSeconds: 1.5, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'vortex', bounce: 0.3, zone: { kind: 'singularity', radius: 7, seconds: 2 } },
+  },
+  // ---------------------------------------------------------------- Worms-style specials
+  holy: {
+    kind: 'holy',
+    displayName: 'Holy Bomb',
+    max: 1,
+    throwIntervalTicks: 90,
+    // Heavy, slow fuse, enormous blast: get well clear.
+    projectile: { speed: 12, gravity: 16, fuseSeconds: 3, splashRadius: 9, splashDamage: 200, splashEdgeDamage: 30, selfDamageScale: 1, visual: 'holy', bounce: 0.25, knockback: 16 },
+  },
+  cluster: {
+    kind: 'cluster',
+    displayName: 'Cluster Bomb',
+    max: 2,
+    throwIntervalTicks: 60,
+    projectile: {
+      speed: 15, gravity: 14, fuseSeconds: 2.2, splashRadius: 3, splashDamage: 50, splashEdgeDamage: 10, selfDamageScale: 0.8, visual: 'banana', bounce: 0.4,
+      cluster: { count: 6, speed: 7, spec: { speed: 7, gravity: 14, fuseSeconds: 1.4, splashRadius: 3, splashDamage: 55, splashEdgeDamage: 8, selfDamageScale: 0.8, visual: 'bomblet', bounce: 0.35, maxBounces: 1 } },
+    },
+  },
+  sheep: {
+    kind: 'sheep',
+    displayName: 'Sheep',
+    max: 1,
+    throwIntervalTicks: 90,
+    // Lands, waddles off the way it was thrown, hops over low things, and goes off on the first enemy it bumps into.
+    projectile: { speed: 9, gravity: 14, fuseSeconds: 7, splashRadius: 5, splashDamage: 130, splashEdgeDamage: 20, selfDamageScale: 0.8, visual: 'sheep', walker: { speed: 3.2 }, knockback: 10 },
+  },
+  airstrike: {
+    kind: 'airstrike',
+    displayName: 'Airstrike Flare',
+    max: 1,
+    throwIntervalTicks: 120,
+    // A flare that marks the spot: two seconds later five bombs fall in a line along the way you threw it.
+    projectile: {
+      speed: 14, gravity: 14, fuseSeconds: 2, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'flare', bounce: 0.3,
+      airstrike: { count: 5, spacing: 3.5, height: 30, bomb: { speed: 0, gravity: 20, fuseSeconds: 4, splashRadius: 4.5, splashDamage: 110, splashEdgeDamage: 15, selfDamageScale: 0.8, visual: 'bomb' } },
+    },
   },
 };
 /** Weapon IDs used for kill credit of thrown equipment. */

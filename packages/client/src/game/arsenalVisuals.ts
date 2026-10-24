@@ -41,7 +41,7 @@ function mat(scene: Scene, hex: string, emissive = 0, alpha = 1): StandardMateri
 }
 
 /** Projectile looks this module draws; others are drawn by the view. */
-export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt']);
+export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb']);
 
 export function createArsenalProjectile(scene: Scene, id: number, look: ProjectileVisual): TransformNode {
   const node = new TransformNode(`proj_${id}`, scene);
@@ -122,6 +122,51 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
       band.material = mat(scene, '#c8ff40', 0.8);
       break;
     }
+    case 'holy': {
+      // A golden orb with a cross on top.
+      add(CreateSphere(`holy_${id}`, { diameter: 0.34, segments: 12 }, scene)).material = mat(scene, '#ffd24a', 0.6);
+      const v = add(CreateCylinder(`holyV_${id}`, { diameter: 0.04, height: 0.22, tessellation: 6 }, scene));
+      v.position.y = 0.25;
+      v.material = mat(scene, '#fff2b0', 0.8);
+      const h = add(CreateCylinder(`holyH_${id}`, { diameter: 0.04, height: 0.14, tessellation: 6 }, scene));
+      h.position.y = 0.28;
+      h.rotation.z = Math.PI / 2;
+      h.material = mat(scene, '#fff2b0', 0.8);
+      break;
+    }
+    case 'banana': {
+      // A bunch of bombs that looks a lot like fruit.
+      for (const [i, a] of [-0.5, 0, 0.5].entries()) {
+        const b = add(CreateCylinder(`banana_${id}_${i}`, { diameterTop: 0.03, diameterBottom: 0.08, height: 0.3, tessellation: 8 }, scene));
+        b.rotation.z = a;
+        b.position.x = a * 0.12;
+        b.material = mat(scene, '#f5d33a', 0.2);
+      }
+      break;
+    }
+    case 'sheep': {
+      add(CreateSphere(`sheep_${id}`, { diameter: 0.6, segments: 8 }, scene)).material = mat(scene, '#f4f2ea');
+      const head = add(CreateSphere(`sheepHead_${id}`, { diameter: 0.26, segments: 8 }, scene));
+      head.position.set(0, 0.12, 0.34);
+      head.material = mat(scene, '#22201e');
+      for (const [x, z] of [[-0.15, -0.15], [0.15, -0.15], [-0.15, 0.15], [0.15, 0.15]] as const) {
+        const leg = add(CreateCylinder(`sheepLeg_${id}_${x}_${z}`, { diameter: 0.06, height: 0.24, tessellation: 6 }, scene));
+        leg.position.set(x, -0.28, z);
+        leg.material = mat(scene, '#22201e');
+      }
+      break;
+    }
+    case 'bomblet':
+      add(CreateSphere(`bomblet_${id}`, { diameter: 0.14, segments: 6 }, scene)).material = mat(scene, '#2a2d33', 0.1);
+      break;
+    case 'bomb': {
+      const b = add(CreateCylinder(`bomb_${id}`, { diameterTop: 0.3, diameterBottom: 0.12, height: 0.7, tessellation: 10 }, scene));
+      b.material = mat(scene, '#4a5340');
+      const fin = add(CreateCylinder(`bombFin_${id}`, { diameter: 0.34, height: 0.04, tessellation: 4 }, scene));
+      fin.position.y = 0.36;
+      fin.material = mat(scene, '#3a3f30');
+      break;
+    }
     case 'bolt':
     default:
       add(CreateSphere(`bolt_${id}`, { diameter: 0.18, segments: 6 }, scene)).material = mat(scene, '#c69bff', 1);
@@ -160,7 +205,14 @@ export function animateArsenalProjectile(node: TransformNode, look: ProjectileVi
     }
     case 'molotov':
     case 'gas':
+    case 'banana':
+    case 'holy':
       node.rotation.x += 0.25;
+      break;
+    case 'sheep':
+      // Faces the way it walks, with a bob in its step.
+      if (moved.x * moved.x + moved.z * moved.z > 1e-6) node.rotation.y = Math.atan2(moved.x, moved.z);
+      node.rotation.z = Math.sin(now * 0.03) * 0.12;
       break;
     default:
       break;
