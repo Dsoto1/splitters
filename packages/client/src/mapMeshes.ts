@@ -121,12 +121,16 @@ export class MapStyler {
     for (const m of this.meshes) m.dispose();
     const tiles = new Map<string, TilePlacement>(doc.classicStructure.tiles.map((t) => [t.id, t]));
     const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
+    const hidden = containedBoxes(boxes);
     for (let i = 0; i < boxes.length; i++) {
       const raw = boxes[i]!;
       if (raw.kind === 'prop' || raw.kind === 'barrier') continue; // drawn by the prop's model / invisible
-      // Overlapping pieces would put two faces in exactly the same place, which flicker as
-      // they fight for depth: grow each box by its own tiny amount (1-5 mm) so one always wins.
-      const g = 0.001 * (1 + (i * 2654435761 >>> 0) % 5);
+      // A box wholly inside another (the shared wall of two neighbouring rooms) is never seen,
+      // and its faces would sit exactly on the outer box's and flicker.
+      if (hidden.has(i)) continue;
+      // Partly overlapping pieces would still put faces in the same plane: grow each box by its
+      // own small amount (2-14 mm, far enough apart for the depth buffer at range) so one wins.
+      const g = 0.002 * (1 + (Math.imul(i + 1, 2654435761) >>> 0) % 7);
       const b: WorldBox = { ...raw, min: [raw.min[0] - g, raw.min[1] - g, raw.min[2] - g], max: [raw.max[0] + g, raw.max[1] + g, raw.max[2] + g] };
       const tile = tiles.get(b.sourceId);
       // Free blocks carry their own material on every face.
@@ -282,4 +286,28 @@ export class MapStyler {
     }
     return mat;
   }
+}
+
+/**
+ * Indices of axis-aligned boxes that lie wholly inside another (exact duplicates keep
+ * the first). Neighbouring rooms each build their shared wall, giving identical boxes.
+ */
+export function containedBoxes(boxes: readonly WorldBox[]): Set<number> {
+  const out = new Set<number>();
+  const eps = 1e-4;
+  // Sort by x extent so only boxes overlapping in x are compared.
+  const order = boxes.map((_, i) => i).filter((i) => !boxes[i]!.yaw && boxes[i]!.kind !== 'prop' && boxes[i]!.kind !== 'barrier').sort((a, b) => boxes[a]!.min[0] - boxes[b]!.min[0]);
+  for (let a = 0; a < order.length; a++) {
+    const i = order[a]!;
+    const bi = boxes[i]!;
+    for (let c = a + 1; c < order.length; c++) {
+      const j = order[c]!;
+      const bj = boxes[j]!;
+      if (bj.min[0] > bi.max[0] + eps) break;
+      const inside = (p: WorldBox, q: WorldBox) => p.min.every((v, k) => v >= q.min[k]! - eps) && p.max.every((v, k) => v <= q.max[k]! + eps);
+      if (inside(bj, bi) && !out.has(i)) out.add(j);
+      else if (inside(bi, bj) && !out.has(j)) out.add(i);
+    }
+  }
+  return out;
 }

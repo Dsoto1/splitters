@@ -53,6 +53,7 @@ import { MountState } from './mountState.ts';
 import { ModeHud } from './modeHud.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
+import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
@@ -149,6 +150,7 @@ export class GameSession {
   private breathSpent = false;
   /** Smoothed eye height above the feet (crouching and prone lower it). */
   private eyeOffset: number | null = null;
+  private readonly markers = markerSetting();
   /** Health and armour last frame, and where the latest shot at you (or blast) came from, for the damage flash. */
   private lastHealth = 100;
   private lastArmor = 0;
@@ -690,9 +692,12 @@ export class GameSession {
       },
       this.phase === 'intermission',
       (id) => {
+        // Allies get a calm marker (your choice in Options), enemies a red one so they read as the bad guys.
         const mine = this.hud.team(this.slot);
         const theirs = id < NPC_ID_BASE ? this.hud.team(id) : undefined;
-        return mine && theirs && mine.id === theirs.id ? mine.color : null;
+        if (mine && theirs && mine.id === theirs.id) return this.markers.ally === 'team' ? mine.color : this.markers.ally;
+        if (mine && theirs) return this.markers.enemy;
+        return null;
       },
       this.mounts?.riders(),
     );

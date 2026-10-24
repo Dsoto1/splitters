@@ -800,7 +800,10 @@ export class GameView {
       a.tag = undefined;
     }
     if (!color || a.tag) return;
-    const mesh = CreateDisc(`${a.root.name}_tag`, { radius: 0.11, tessellation: 4 }, this.scene);
+    // Allies: a diamond; enemies (red by default): a downward triangle, so the two read apart at a glance.
+    const enemy = color.toLowerCase() === '#ff3b3b';
+    const mesh = CreateDisc(`${a.root.name}_tag`, { radius: enemy ? 0.13 : 0.11, tessellation: enemy ? 3 : 4 }, this.scene);
+    if (enemy) mesh.rotation.z = -Math.PI / 2;
     const mat = new StandardMaterial(`${a.root.name}_tagmat`, this.scene);
     mat.emissiveColor = Color3.FromHexString(color);
     mat.disableLighting = true;

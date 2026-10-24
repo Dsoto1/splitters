@@ -615,7 +615,7 @@ export class BotBrain {
     }
 
     if (moveYaw !== null && this.hazardAhead(view, moveYaw)) moveYaw = null;
-    if (moveYaw !== null) moveYaw = this.separate(view, moveYaw);
+    moveYaw = this.separate(view, moveYaw);
 
     let forward = 0;
     let right = 0;
@@ -1190,8 +1190,11 @@ export class BotBrain {
     this.pitch = clamp(this.pitch, -1.5, 1.5);
   }
 
-  /** Teammates don't stack up: steer a little away from any ally right in front. */
-  private separate(view: BotWorldView, moveYaw: number): number {
+  /**
+   * Teammates don't stack up: steer away from allies close by, and step aside when
+   * standing on top of one (squads walking one navmesh path would otherwise move as a clump).
+   */
+  private separate(view: BotWorldView, moveYaw: number | null): number | null {
     if (!view.allies?.length) return moveYaw;
     const me = view.self.pos;
     let px = 0;
@@ -1201,13 +1204,17 @@ export class BotBrain {
       const dx = me.x - a.pos.x;
       const dz = me.z - a.pos.z;
       const d = Math.hypot(dx, dz);
-      if (d > 2 || d < 1e-3 || Math.abs(a.pos.y - me.y) > 1.5) continue;
-      px += (dx / d) * (2 - d);
-      pz += (dz / d) * (2 - d);
+      if (d > 2.2 || Math.abs(a.pos.y - me.y) > 1.5) continue;
+      // Exactly on top of each other: split by slot so the two go opposite ways.
+      const ux = d < 1e-3 ? (view.self.slot < a.slot ? 1 : -1) : dx / d;
+      const uz = d < 1e-3 ? 0 : dz / d;
+      px += ux * (2.2 - d);
+      pz += uz * (2.2 - d);
     }
     if (!px && !pz) return moveYaw;
-    const mx = Math.sin(moveYaw) + px * 0.8;
-    const mz = Math.cos(moveYaw) + pz * 0.8;
+    if (moveYaw === null) return Math.hypot(px, pz) > 1.4 ? Math.atan2(px, pz) : null;
+    const mx = Math.sin(moveYaw) + px;
+    const mz = Math.cos(moveYaw) + pz;
     return Math.atan2(mx, mz);
   }
 

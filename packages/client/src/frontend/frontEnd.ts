@@ -23,7 +23,7 @@ import { listCustomLooks } from '../designer/customLooks.ts';
 import { drawMapPlan } from './mapPlan.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
-import { CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
+import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
 
@@ -568,6 +568,12 @@ export class FrontEnd {
     renderPick();
     const hitStyle = el('select', {}, ...HITMARKER_STYLES.map((h) => el('option', { value: h, textContent: { ticks: 'Ticks (Infinite Warfare style)', diamond: 'Diamond', off: 'Off' }[h], selected: h === hitmarkerSetting() })));
     hitStyle.addEventListener('change', () => saveHitmarker(hitStyle.value as HitmarkerStyle));
+    const markers = markerSetting();
+    const allySel = el('select', {}, ...ALLY_MARKER_COLOURS.map((c) => el('option', { value: c, textContent: { team: 'Team colour', '#3ad1ff': 'Cyan', '#2ecc71': 'Green', '#ffffff': 'White' }[c], selected: c === markers.ally })));
+    const enemySel = el('select', {}, el('option', { value: '#ff3b3b', textContent: 'Red', selected: markers.enemy !== null }), el('option', { value: '', textContent: 'Off', selected: markers.enemy === null }));
+    const saveMarks = () => saveMarkers({ ally: allySel.value, enemy: enemySel.value || null });
+    allySel.addEventListener('change', saveMarks);
+    enemySel.addEventListener('change', saveMarks);
     return el(
       'div',
       { class: 'screen options' },
@@ -584,6 +590,8 @@ export class FrontEnd {
         crosshairs,
         colours,
         el('label', {}, 'Hit marker', hitStyle),
+        el('label', {}, 'Teammate marker', allySel),
+        el('label', {}, 'Enemy marker', enemySel),
         el('h3', { class: 'panel-title', textContent: 'Controls' }),
         controls,
       ),

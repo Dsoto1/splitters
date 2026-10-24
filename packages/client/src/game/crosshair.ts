@@ -64,3 +64,33 @@ export function applyHitmarker(style: HitmarkerStyle = hitmarkerSetting()): void
   const el = document.getElementById('hitmarker');
   if (el) el.dataset.style = style;
 }
+
+/** Markers over players' heads (Options): allies in a chosen colour, enemies optionally in red. */
+export interface MarkerSetting {
+  /** 'team' uses your team's own colour. */
+  ally: 'team' | string;
+  /** null hides enemy markers. */
+  enemy: string | null;
+}
+export const ALLY_MARKER_COLOURS = ['team', '#3ad1ff', '#2ecc71', '#ffffff'] as const;
+export const ENEMY_MARKER_COLOURS = ['#ff3b3b', null] as const;
+const MARKER_KEY = 'cs.markers';
+
+export function markerSetting(): MarkerSetting {
+  try {
+    const raw = JSON.parse(localStorage.getItem(MARKER_KEY) ?? 'null') as Partial<MarkerSetting> | null;
+    const ally = ALLY_MARKER_COLOURS.find((c) => c === raw?.ally) ?? '#3ad1ff';
+    const enemy = raw && 'enemy' in raw ? (ENEMY_MARKER_COLOURS.find((c) => c === raw.enemy) ?? null) : '#ff3b3b';
+    return { ally, enemy };
+  } catch {
+    return { ally: '#3ad1ff', enemy: '#ff3b3b' };
+  }
+}
+
+export function saveMarkers(setting: MarkerSetting): void {
+  try {
+    localStorage.setItem(MARKER_KEY, JSON.stringify(setting));
+  } catch {
+    // Private mode: the choice lasts until the page closes.
+  }
+}

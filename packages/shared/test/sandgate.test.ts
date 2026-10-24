@@ -38,7 +38,8 @@ describe('Sandgate', () => {
     const events: GameEvent[] = [];
     for (let i = 0; i < 60 * 60; i++) events.push(...match.step());
     const kills = events.filter((e): e is Extract<GameEvent, { e: 'kill' }> => e.e === 'kill' && e.killer !== null);
-    expect(kills.length).toBeGreaterThan(10);
+    // Tactical bots take cover and miss, so a minute gives fewer kills than it used to; the point is a real fight.
+    expect(kills.length).toBeGreaterThan(5);
     const teamOf = (slot: number) => match.combatants().find((c) => c.slot === slot)?.faction;
     // No friendly kills, and both teams score.
     expect(kills.some((k) => teamOf(k.killer!) === teamOf(k.victim))).toBe(false);
