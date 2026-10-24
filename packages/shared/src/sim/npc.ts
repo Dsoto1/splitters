@@ -1,3 +1,4 @@
+import { getLook } from '../content/looks.ts';
 import { CORE_BOT_PROFILES, type BotProfile } from '../bots/profile.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type Faction, type MapDocument, type NpcRole, type Relation } from '../map/schema.ts';
 
@@ -148,3 +149,19 @@ export function relation(factions: readonly Faction[], a: string | null, b: stri
 }
 
 export const PLAYERS_FACTION_INFO: Faction = { id: PLAYERS_FACTION, name: 'Players', color: '#4aa3e6', relations: {} };
+
+/**
+ * NPCs as player skins: look IDs `npc:<role>`. Only the looks change; a
+ * player in one keeps the player's hitbox, health and weapons.
+ */
+export const NPC_LOOK_PREFIX = 'npc:';
+export const npcLookRole = (look: string | undefined): NpcRole | null => {
+  if (!look?.startsWith(NPC_LOOK_PREFIX)) return null;
+  const role = look.slice(NPC_LOOK_PREFIX.length);
+  return role in NPC_ROLE_SPECS ? (role as NpcRole) : null;
+};
+export const NPC_LOOKS: readonly { id: string; name: string; role: NpcRole }[] = (Object.keys(NPC_ROLE_SPECS) as NpcRole[]).map((role) => ({ id: `${NPC_LOOK_PREFIX}${role}`, name: NPC_ROLE_SPECS[role].label, role }));
+/** Soldier NPC skins: a uniform colour per role so they read apart. */
+export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56703c', gunner: '#9a7440', heavy: '#474d58', sniper: '#3f5a36' };
+/** A look ID kept as is when valid (presets, custom looks, NPC skins), else the default. */
+export const validLookId = (id: string | undefined): string => (npcLookRole(id) ? id! : getLook(id).id);

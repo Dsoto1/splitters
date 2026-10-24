@@ -57,21 +57,21 @@ sounds (needs new CC0 sounds and a grip pose).
 
 | # | Item |
 |---|---|
-| 1 | **[feature]** Aim down sights on every gun (ADS pose, FOV zoom, lower spread); longer zoom levels on some scopes |
-| 2 | **[content]** Many more guns, with better firing/explosion FX |
-| 3 | **[content]** Worms-style weapons: holy-grenade-style bomb, banana-style cluster, sheep-style walking bomb, airstrike, ninja rope |
-| 4 | **[content]** Heavy weapons, including a **guided rocket** (Half-Life-style laser guided) |
-| 5 | **[feature]** Grapple hook |
-| 6 | ✅ **[feature]** Jetpack fuel (already uses fuel and recharges) — add a visible fuel gauge |
-| 7 | **[feature]** Medical tool: heal yourself and teammates |
-| 8 | **[feature]** Deployable cover: sandbags, barriers |
-| 9 | **[feature]** Hit boxes scale with the character (big skins bigger, small "oddjob" types smaller) |
-| 10 | **[content]** More character variety: police, army, animal skins, tuxedo and Siamese cats (our monkey slot) |
-| 11 | **[feature]** NPC characters selectable as player skins |
-| 12 | **[feature]** NPCs: custom health/attack values and scalable sizes in MapMaker |
-| 13 | **[feature]** Clan tags on names |
-| 14 | **[feature]** Emotes (dance etc.) and quick-message pop-ups, with a server setting to turn them off |
-| 15 | **[feature]** Squad/team support: UAV scan and similar team abilities |
+| 1 | ✅ **[feature]** Aim down sights on every gun (ADS pose, FOV zoom, lower spread); longer zoom levels on some scopes — RMB aims (V / middle mouse = alt fire), wheel steps scope zoom |
+| 2 | 🟡 **[content]** Many more guns, with better firing/explosion FX — guided rocket, medkit, grapple and five specials added; more guns and an FX pass still to do |
+| 3 | ✅ **[content]** Worms-style weapons: holy-grenade-style bomb, banana-style cluster, sheep-style walking bomb, airstrike, ninja rope (the grapple) |
+| 4 | ✅ **[content]** Heavy weapons, including a **guided rocket** (Half-Life-style laser guided: the rocket follows your aim) |
+| 5 | ✅ **[feature]** Grapple hook — fire at a surface within 32 m and get yanked toward it |
+| 6 | ✅ **[feature]** Jetpack fuel (already uses fuel and recharges) — HUD gauge shows it |
+| 7 | ✅ **[feature]** Medical tool: heal yourself and teammates (Medkit pickup: aim at a hurt teammate, or use on yourself) |
+| 8 | ✅ **[feature]** Deployable cover: sandbags (throwable, lands as a waist-high wall that can be shot or blown apart) |
+| 9 | ✅ **[feature]** Hit boxes scale with the character (big skins bigger, small "oddjob" types smaller) — Small / Standard / Large with speed and health trade-offs; arcade setting to turn off |
+| 10 | ⏳ **[content]** More character variety: police, army, animal skins, tuxedo and Siamese cats (our monkey slot) — needs licensed human-made models (Quaternius / CC0); none in hand yet |
+| 11 | ✅ **[feature]** NPC characters selectable as player skins — NPCs tab in Character Select (soldiers and creatures; looks only) |
+| 12 | ✅ **[feature]** NPCs: custom health/attack values and scalable sizes in MapMaker — Health / Damage / Size % on each encounter |
+| 13 | ✅ **[feature]** Clan tags on names (Options) |
+| 14 | ✅ **[feature]** Emotes (dance etc.) and quick-message pop-ups, with a server setting to turn them off — B: messages, N: dance; arcade "Emotes & messages" |
+| 15 | ✅ **[feature]** Squad/team support: UAV scan — pickup shows enemies on your team's minimap for 20 s |
 
 ## Sprint 3 — AI
 

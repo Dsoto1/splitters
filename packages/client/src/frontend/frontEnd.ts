@@ -1,5 +1,9 @@
 import {
   CORE_LOOKS,
+  NPC_LOOKS,
+  NPC_ROLE_SPECS,
+  npcLookRole,
+  validLookId,
   DEFAULT_LOOK,
   DEFAULT_RULES,
   MODE_LABELS,
@@ -131,7 +135,7 @@ export class FrontEnd {
     this.name = params.get('name') ?? storage('cs.name') ?? `Player${Math.floor(Math.random() * 900 + 100)}`;
     this.clan = storage('cs.clan') ?? '';
     this.server = params.get('server') ?? storage('cs.server') ?? `ws://${location.hostname || 'localhost'}:7777`;
-    this.look = getLook(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK).id;
+    this.look = validLookId(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK);
     const saved = JSON.parse(storage('cs.arcade') ?? 'null') as ArcadeSetup | null;
     const first = maps.find((m) => m.key === 'sandgate') ?? maps[0]!;
     this.setup = saved && maps.some((m) => m.key === saved.map) ? saved : { map: first.key, mode: first.modes[0]!, bots: first.bots, skill: 'normal', scoreLimit: BASE_RULES[first.modes[0]!].scoreLimit, minutes: 10 };
@@ -158,7 +162,7 @@ export class FrontEnd {
 
   /** After the designer saves a look, select it and return to character select. */
   useLook(look: string): void {
-    this.look = getLook(look).id;
+    this.look = validLookId(look);
     storage('cs.look', this.look);
     this.scene.setLook(this.look);
   }
@@ -260,6 +264,8 @@ export class FrontEnd {
   }
 
   private lookName(id: string): string {
+    const npc = NPC_LOOKS.find((l) => l.id === id);
+    if (npc) return npc.name;
     return listCustomLooks().find((s) => s.id === id)?.name ?? getLook(id).name;
   }
 
@@ -413,9 +419,14 @@ export class FrontEnd {
   private characters(): HTMLElement {
     const saved = listCustomLooks();
     const family = (id: string) => partInfo(getLook(id).parts.find((p) => partInfo(p)?.slot === 'torso') ?? '')?.outfit ?? 'ranger';
-    const all = [...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })), ...saved.map((s) => ({ id: s.id, name: s.name, mine: true }))];
-    const filters: [string, string][] = [['all', 'All'], ['ranger', 'Ranger'], ['peasant', 'Peasant'], ['athlete', 'Sportswear'], ['mine', 'Yours']];
-    const shown = all.filter((c) => this.charFilter === 'all' || (this.charFilter === 'mine' ? c.mine : !c.mine && family(c.id) === this.charFilter));
+    const all = [
+      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
+      ...NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
+      ...saved.map((s) => ({ id: s.id, name: s.name, mine: true })),
+    ];
+    const filters: [string, string][] = [['all', 'All'], ['ranger', 'Ranger'], ['peasant', 'Peasant'], ['athlete', 'Sportswear'], ['npc', 'NPCs'], ['mine', 'Yours']];
+    const groupOf = (id: string) => (npcLookRole(id) ? 'npc' : family(id));
+    const shown = all.filter((c) => this.charFilter === 'all' || (this.charFilter === 'mine' ? c.mine : !c.mine && groupOf(c.id) === this.charFilter));
     const selected = this.hovered ?? this.look;
 
     const tabs = el('div', { class: 'tabs' }, el('span', { class: 'bumper', textContent: 'Q' }));
@@ -464,6 +475,13 @@ export class FrontEnd {
     );
     const customise = el('button', { textContent: 'Customise' });
     customise.addEventListener('click', () => this.hooks.openDesigner(id));
+    const role = npcLookRole(id);
+    if (role) {
+      // An NPC skin: their look only; you keep a player's body, health and loadout.
+      const kind = NPC_ROLE_SPECS[role].creature ? 'Creature' : 'Soldier';
+      info.replaceChildren(img, el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: `Play as the ${name}. Looks only: same hitbox, health and loadout as everyone else.` }), el('div', { class: 'tags' }, el('span', { textContent: 'NPC' }), el('span', { textContent: kind }))), loadout);
+      return;
+    }
     info.replaceChildren(
       img,
       el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), el('div', { class: 'tags' }, el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits }))),

@@ -154,9 +154,9 @@ export interface ScenarioSnapshot {
 
 /**
  * One NPC: [actor id, x, y, z, yaw, pitch, health %, role (index into NPC_ROLES),
- * faction (index into the map's factions), alive 0/1, held weapon code].
+ * faction (index into the map's factions), alive 0/1, held weapon code, body size (only when not 1)].
  */
-export type NpcSnapshot = [number, number, number, number, number, number, number, number, number, 0 | 1, number];
+export type NpcSnapshot = [number, number, number, number, number, number, number, number, number, 0 | 1, number, number?];
 
 export const TRAP_ENABLED = 1;
 export const TRAP_ACTIVE = 2;

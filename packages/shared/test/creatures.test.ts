@@ -154,3 +154,21 @@ describe('sci-fi kit set pieces', () => {
     expect(boxes.length).toBe(3);
   });
 });
+
+describe('encounter tuning (MapMaker health / damage / size)', () => {
+  it('scales the squad\'s health and body size, and shows the size in snapshots', () => {
+    const map = hall({ trooper: 0, gunner: 0, heavy: 0, imp: 1 });
+    Object.assign(map.entities.find((e) => e.kind === 'encounter')!, { health: 2, damage: 1.5, size: 1.6 });
+    const loaded = loadMap(map);
+    expect(loaded.ok).toBe(true);
+    if (!loaded.ok) return;
+    const match = new Match(loaded.map, DEFAULT_COOP_RULES, 5);
+    match.addHuman('me');
+    for (let i = 0; i < 5; i++) match.step();
+    const npc = match.npcSnapshots()[0]!;
+    expect(npc[11]).toBeCloseTo(1.6);
+    const c = (match as unknown as { npcs: Map<number, { maxHealth: number; size: number; npc: { damage: number } }> }).npcs.get(npc[0])!;
+    expect(c.maxHealth).toBe(NPC_ROLE_SPECS.imp.health * 2);
+    expect(c.npc.damage).toBe(1.5);
+  });
+});

@@ -13,7 +13,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
-import { PLAYER, firstPersonArms, getLook, materialTint, textureFor, type BodyType, type CharacterLook } from '@chronosplit/shared';
+import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook } from '@chronosplit/shared';
 import { GLB, versioned } from '../assetUrl.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes. */
@@ -104,6 +104,9 @@ export class CharacterLibrary {
   }
 
   async create(spec: CharacterSpec, name: string): Promise<CharacterInstance> {
+    // A soldier NPC chosen as a player skin is drawn like that NPC (creatures go through the CreatureLibrary).
+    const role = spec.armsOnly ? null : npcLookRole(spec.look);
+    if (role && !NPC_ROLE_SPECS[role].creature) spec = { npc: { color: NPC_LOOK_COLORS[role] ?? '#d04a3a', scale: 1, female: role === 'sniper' } };
     const rig = await this.load('rig.glb');
     const holder = new TransformNode(name, this.scene);
     const meshes: AbstractMesh[] = [];

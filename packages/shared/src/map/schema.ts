@@ -238,6 +238,10 @@ export const EncounterEntity = EntityBase.extend({
   orderTarget: StableId.nullable().default(null),
   startActive: z.boolean().default(true),
   difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'),
+  /** Multipliers on the roles' own health and damage, and their body size (hitbox too); absent = 1. */
+  health: z.number().min(0.25).max(10).optional(),
+  damage: z.number().min(0).max(5).optional(),
+  size: z.number().min(0.5).max(2.5).optional(),
 });
 
 /** A placed prop (furniture, crates, trees, machines…) from the prop catalog. Position is the centre of its footprint on the floor. */

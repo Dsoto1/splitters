@@ -632,7 +632,7 @@ export class EditorApp {
     if (this.showAll || this.onTerrain(e)) return true;
     const h = this.doc.classicStructure.levelHeight;
     const bottom = e.position[1];
-    const top = bottom + ('size' in e ? e.size[1] : e.kind === 'prop' ? (getProp(e.model)?.size[1] ?? 1) * e.scale : 2);
+    const top = bottom + ('size' in e && Array.isArray(e.size) ? e.size[1] : e.kind === 'prop' ? (getProp(e.model)?.size[1] ?? 1) * e.scale : 2);
     return top >= this.level * h - 0.5 && bottom < (this.level + 1) * h - 0.1;
   }
 
@@ -2346,6 +2346,15 @@ export class EditorApp {
         }
         choose('Skill', [['easy', 'easy'], ['normal', 'normal'], ['hard', 'hard']], e.difficulty, (v) => ({ difficulty: v as typeof e.difficulty }));
         toggle('Active at start', e.startActive, (v) => ({ startActive: v }));
+        // Per-encounter tuning as percentages of the roles' own numbers (100 = unchanged).
+        const pct = (x: number | undefined) => Math.round((x ?? 1) * 100);
+        const ratio = (v: number, lo: number, hi: number) => {
+          const r = clamp(Math.round(v) / 100, lo, hi);
+          return r === 1 ? undefined : r;
+        };
+        number('Health (%)', pct(e.health), 25, (v) => ({ health: ratio(v, 0.25, 10) }));
+        number('Damage (%)', pct(e.damage), 25, (v) => ({ damage: ratio(v, 0, 5) }));
+        number('Size (%)', pct(e.size), 10, (v) => ({ size: ratio(v, 0.5, 2.5) }));
         el.append(small(`${rosterSize(e.roster)} in the first wave, then ${e.reinforcements} reinforcements (+${e.perPlayer} per extra player). Factions are edited in the Logic panel (L).`));
         break;
       }

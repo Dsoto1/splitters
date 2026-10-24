@@ -21,6 +21,7 @@ import {
   NPC_ROLES,
   NPC_ROLE_SPECS,
   isCreature,
+  npcLookRole,
   type CreatureKind,
   OBJECTIVE_STATES,
   mapFactions,
@@ -120,7 +121,7 @@ export class GameSession {
   private rules: MatchRules | null = null;
   private outcome: 'victory' | 'defeat' | null = null;
   /** Role and faction of each NPC seen, for names and looks. */
-  private npcInfo = new Map<number, { role: number; faction: number }>();
+  private npcInfo = new Map<number, { role: number; faction: number; size: number }>();
   /** Character look of each player slot (from the roster). */
   private looks = new Map<number, string>();
 
@@ -379,7 +380,7 @@ export class GameSession {
         this.scores = msg.score;
         for (const p of msg.players) this.hp.set(p.s, p.hp / PLAYER.maxHealth);
         for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
-        for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8] });
+        for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8], size: n[11] ?? 1 });
         this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr);
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt);
@@ -521,12 +522,12 @@ export class GameSession {
     }
   }
 
-  private npcLook(id: number): { color: string; scale: number; label: string; creature?: CreatureKind } | undefined {
+  private npcLook(id: number): { color: string; scale: number; size: number; label: string; creature?: CreatureKind } | undefined {
     const info = this.npcInfo.get(id);
     if (!info || !this.map) return undefined;
     const faction = mapFactions(this.map)[info.faction];
     const role = NPC_ROLES[info.role] ?? 'trooper';
-    return { color: faction?.color ?? '#d04a3a', scale: NPC_ROLE_SPECS[role].scale, label: `${faction?.name ?? 'Enemy'} ${NPC_ROLE_SPECS[role].label}`, ...(isCreature(role) ? { creature: role } : {}) };
+    return { color: faction?.color ?? '#d04a3a', scale: NPC_ROLE_SPECS[role].scale * info.size, size: info.size, label: `${faction?.name ?? 'Enemy'} ${NPC_ROLE_SPECS[role].label}`, ...(isCreature(role) ? { creature: role } : {}) };
   }
 
   /** Objectives, timers, the Use prompt and the objective marker. */
@@ -748,8 +749,10 @@ export class GameSession {
       (id) => {
         const npc = this.npcLook(id);
         // About half of each squad uses the female mannequin.
-        if (npc?.creature) return { creature: npc.creature };
+        if (npc?.creature) return npc.size === 1 ? { creature: npc.creature } : { creature: npc.creature, size: npc.size };
         if (npc) return { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1 } };
+        const role = npcLookRole(this.looks.get(id));
+        if (role && NPC_ROLE_SPECS[role].creature && isCreature(role)) return { creature: role };
         const size = this.sizeOf(id);
         return size === 1 ? { look: this.looks.get(id) } : { look: this.looks.get(id), size };
       },

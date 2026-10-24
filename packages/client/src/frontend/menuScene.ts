@@ -9,7 +9,9 @@ import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { PLAYER, getWeapon } from '@chronosplit/shared';
+import { PLAYER, getWeapon, isCreature, npcLookRole } from '@chronosplit/shared';
+import { CreatureLibrary } from '../content/creatures.ts';
+import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
@@ -24,7 +26,8 @@ export class MenuScene {
   readonly characters: CharacterLibrary;
   private readonly models: ModelLibrary;
   private readonly camera: FreeCamera;
-  private anim: CharacterAnimator | null = null;
+  private anim: CharacterAnimator | CreatureAnimator | null = null;
+  private creatures: CreatureLibrary | null = null;
   private look = '';
   private token = 0;
   private t = 0;
@@ -117,6 +120,20 @@ export class MenuScene {
     if (look === this.look) return;
     this.look = look;
     const token = ++this.token;
+    const role = npcLookRole(look);
+    if (role && isCreature(role)) {
+      this.creatures ??= new CreatureLibrary(this.scene);
+      void this.creatures.create(role, `menuHero_${token}`).then((ch) => {
+        if (token !== this.token) return ch.dispose();
+        const { min, max } = ch.root.getHierarchyBoundingVectors(true);
+        // Big ones shrink to fit the plinth; small ones stay their size.
+        ch.root.scaling.scaleInPlace(Math.min(1, (PLAYER.height * 1.15) / Math.max(0.5, max.y - min.y)));
+        ch.root.rotation.y = 0.45;
+        this.anim?.dispose();
+        this.anim = new CreatureAnimator(this.scene, ch);
+      });
+      return;
+    }
     void this.characters.create({ look }, `menuHero_${token}`).then(async (ch) => {
       if (token !== this.token) return ch.dispose();
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);

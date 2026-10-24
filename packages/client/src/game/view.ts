@@ -786,6 +786,7 @@ export class GameView {
       void this.creatures.create(spec.creature, `creature_${slot}`).then((ch) => {
         if (root.isDisposed()) return ch.dispose();
         ch.root.parent = root;
+        if (spec.size && spec.size !== 1) ch.root.scaling.setAll(spec.size);
         a.anim = new CreatureAnimator(this.scene, ch);
         placeholder.setEnabled(false);
       });

@@ -117,7 +117,8 @@ export interface Combatant {
   emoteUntil?: number;
   sayAt?: number;
   /** NPC details. */
-  npc?: { encounter: string; role: NpcRole; removeAt: number };
+  /** `damage`: the encounter's damage multiplier (MapMaker). */
+  npc?: { encounter: string; role: NpcRole; removeAt: number; damage: number };
   /** Character look (players and bots). */
   look: string;
   name: string;
@@ -487,11 +488,12 @@ export class Match {
       ...this.blankCombatant(id, 'npc', spec.label),
       faction: e.faction,
       speedMul: spec.speed,
-      npc: { encounter: e.id, role, removeAt: Infinity },
+      npc: { encounter: e.id, role, removeAt: Infinity, damage: e.damage ?? 1 },
       move: { pos: { ...pos }, velY: 0, grounded: false },
       yaw,
-      health: spec.health,
-      maxHealth: spec.health,
+      health: spec.health * (e.health ?? 1),
+      maxHealth: spec.health * (e.health ?? 1),
+      size: e.size ?? 1,
       alive: true,
       weapons: new Map([[weaponCode(def), { def, mag: def.magazine, reserve: def.reserveMax, alt: def.alt?.max ?? 0 }]]),
       current: weaponCode(def),
@@ -1888,7 +1890,7 @@ export class Match {
     // No friendly fire; hazards (no attacker) and your own grenades still hurt.
     if (attacker && attacker !== victim && !this.hostile(attacker, victim)) return;
     if (attacker?.npc && !victim.npc) amount *= NPC_DAMAGE_TO_PLAYERS;
-    if (attacker?.npc) amount *= NPC_ROLE_SPECS[attacker.npc.role].damage ?? 1;
+    if (attacker?.npc) amount *= (NPC_ROLE_SPECS[attacker.npc.role].damage ?? 1) * attacker.npc.damage;
     let dmg = attacker && attacker !== victim && attacker.damageTicks > 0 ? amount * DAMAGE_BOOST : amount;
     if (victim.armor > 0) {
       const absorbed = Math.min(victim.armor, dmg * ARMOR_ABSORB);
@@ -2166,8 +2168,9 @@ export class Match {
     const r2 = (v: number) => Math.round(v * 100) / 100;
     return [...this.npcs.values()].map((c) => {
       const role = NPC_ROLES.indexOf(c.npc!.role);
-      const spec = NPC_ROLE_SPECS[c.npc!.role];
-      return [c.slot, r2(c.move.pos.x), r2(c.move.pos.y), r2(c.move.pos.z), r3(c.yaw), r3(c.pitch), Math.ceil((Math.max(0, c.health) / spec.health) * 100), role, Math.max(0, factions.findIndex((f) => f.id === c.faction)), c.alive ? 1 : 0, c.current];
+      const snap: NpcSnapshot = [c.slot, r2(c.move.pos.x), r2(c.move.pos.y), r2(c.move.pos.z), r3(c.yaw), r3(c.pitch), Math.ceil((Math.max(0, c.health) / c.maxHealth) * 100), role, Math.max(0, factions.findIndex((f) => f.id === c.faction)), c.alive ? 1 : 0, c.current];
+      if (c.size !== 1) snap.push(r2(c.size));
+      return snap;
     });
   }
 
