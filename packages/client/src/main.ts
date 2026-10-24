@@ -18,6 +18,7 @@ import { createEngine, type RendererKind } from './engine.ts';
 import { EditorApp, type TestRequest } from './editor/editorApp.ts';
 import { LocalTransport } from './game/localTransport.ts';
 import { NetTransport } from './game/netTransport.ts';
+import { PeerTransport, cleanJoinCode } from './game/peerLink.ts';
 import { CharacterDesigner } from './designer/characterDesigner.ts';
 import { FrontEnd, type ArcadeMap } from './frontend/frontEnd.ts';
 import { MenuScene } from './frontend/menuScene.ts';
@@ -136,6 +137,7 @@ class App {
         openDesigner: (look) => void this.openDesigner(look),
         playLocal: (map, rules, bots, skill) => this.playLocal(map, rules, bots, skill),
         playOnline: (server, name) => void this.playOnline(server, name),
+        joinCode: (code, name) => void this.joinCode(code, name),
       }, this.menuScene, this.portraits, audio, params);
       this.engine.runRenderLoop(() => this.frame());
     })();
@@ -222,7 +224,19 @@ class App {
     this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
+      hostable: true,
       onExit: (reason) => void this.showMenu(reason ?? ''),
+    });
+  }
+
+  /** Join a friend's hosted game (Host game) by its code. */
+  async joinCode(code: string, name: string): Promise<void> {
+    await this.init();
+    this.front!.setStatus('Connecting…');
+    this.startSession(new PeerTransport(cleanJoinCode(code), name, this.front!.look), {
+      exitLabel: 'Leave match',
+      exitOnF5: false,
+      onExit: (reason) => void this.showMenu(reason ? `Disconnected: ${reason}` : ''),
     });
   }
 
@@ -236,7 +250,7 @@ class App {
     });
   }
 
-  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; onExit: (reason?: string) => void; onReady?: () => void }): void {
+  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; onExit: (reason?: string) => void; onReady?: () => void }): void {
     $('menu').hidden = true;
     this.mode = 'game';
     this.session = new GameSession({
@@ -247,6 +261,7 @@ class App {
       audio,
       exitLabel: o.exitLabel,
       exitOnF5: o.exitOnF5,
+      hostable: !!o.hostable,
       showStats: params.has('stats'),
       onReady: o.onReady,
       portrait: this.portraits?.get(this.front!.look),
@@ -284,5 +299,6 @@ else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('offline')) {
   const which = params.get('offline');
   void app.playOffline(which || 'arena', params.get('gamemode'));
-} else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.front!.server, app.front!.name));
+} else if (params.has('join')) void app.init().then(() => app.joinCode(params.get('join') ?? '', app.front!.displayName || 'Player'));
+else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.front!.server, app.front!.name));
 else void app.showMenu();

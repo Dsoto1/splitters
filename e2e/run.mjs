@@ -992,6 +992,50 @@ async function onlineFlow(browser) {
   check(a.errors.length + b.errors.length === 0, `no page errors (${[...a.errors, ...b.errors].join('; ')})`);
 }
 
+/** Host game: one browser hosts its offline match with a code, a second joins by link (through a local PeerJS broker). */
+async function hostgameFlow(browser) {
+  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  start('node', ['-e', `import('peer').then(({ PeerServer }) => PeerServer({ port: ${PEER_PORT}, path: '/', host: '127.0.0.1' }))`]);
+  await sleep(1500);
+  const peer = `&peer=127.0.0.1:${PEER_PORT}`;
+  const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+  const errors = [];
+  host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  await host.goto(`${CLIENT}/?offline=arena${peer}`);
+  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await host.evaluate(() => document.getElementById('host-game').click());
+  await host.waitForFunction(() => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? ''), null, { timeout: 20000 });
+  const code = await host.evaluate(() => document.querySelector('#host-info .host-code b').textContent);
+  check(/^[A-Z0-9]{6}$/.test(code), `hosting opens a join code (${code})`);
+  const friend = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+  friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
+  await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
+  await friend.goto(`${CLIENT}/?join=${code}${peer}`);
+  const joined = await friend.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 40000 }).then(() => true, () => false);
+  check(joined, 'a friend joins the hosted match by its link');
+  if (joined) {
+    await friend.waitForTimeout(2500);
+    const seen = await host.evaluate(() => window.__match.combatants().filter((c) => c.kind === 'human').map((c) => c.name));
+    check(seen.length === 2 && seen.includes('Friend'), `the host's match has both players (${seen.join(', ')})`);
+    const moved = await friend.evaluate(async () => {
+      const y0 = window.__cs.local.state.pos;
+      window.__autoInput = { forward: 1 };
+      await new Promise((r) => setTimeout(r, 1500));
+      window.__autoInput = { forward: 0 };
+      const y1 = window.__cs.local.state.pos;
+      return Math.hypot(y1.x - y0.x, y1.z - y0.z);
+    });
+    const onHost = await host.evaluate(() => {
+      const f = window.__match.combatants().find((c) => c.name === 'Friend');
+      return f ? f.move.pos : null;
+    });
+    check(moved > 1 && !!onHost, `the friend moves and the host's match follows (${moved.toFixed(1)} m)`);
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await host.context().close();
+  await friend.context().close();
+}
+
 try {
   start('pnpm', ['--filter', '@chronosplit/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
   start('pnpm', ['--filter', '@chronosplit/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1' });
@@ -1000,7 +1044,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, webgpu: webgpuFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

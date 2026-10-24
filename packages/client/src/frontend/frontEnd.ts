@@ -73,6 +73,8 @@ export interface FrontEndHooks {
   openDesigner(look: string): void;
   playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill']): void;
   playOnline(server: string, name: string): void;
+  /** Join a friend's hosted game by its code. */
+  joinCode(code: string, name: string): void;
 }
 
 type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options';
@@ -547,7 +549,20 @@ export class FrontEnd {
       storage('cs.server', this.server);
       this.hooks.playOnline(this.server, this.displayName);
     });
-    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), form);
+    // A friend hosting from their own match (pause menu → Host game) gives you a six-letter code.
+    const code = el('input', { id: 'join-code', placeholder: 'ABC123', maxLength: 7, autocomplete: 'off' });
+    code.style.textTransform = 'uppercase';
+    const joinCode = el('button', { class: 'primary', id: 'join-by-code', type: 'submit', textContent: 'Join by code' });
+    const codeForm = el('form', { class: 'form panel' }, el('h4', { textContent: "Join a friend's game" }), el('label', {}, 'Code', code), joinCode, el('p', { class: 'hint', textContent: 'Your friend hosts from their match: Esc → Host game, then sends you the code or link.' }));
+    codeForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const c = code.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (c.length !== 6) return void (code.style.outline = '2px solid #e74c3c');
+      this.name = name.value.trim() || this.name;
+      storage('cs.name', this.name);
+      this.hooks.joinCode(c, this.displayName);
+    });
+    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), form, codeForm);
   }
 
   private options(): HTMLElement {

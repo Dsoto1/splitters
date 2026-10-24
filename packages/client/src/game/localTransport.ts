@@ -7,6 +7,8 @@ import {
   TICK_RATE,
   getWeapon,
   initPhysics,
+  parseClientMessage,
+  sanitizeName,
   weaponCode,
   type BotDifficulty,
   type GameEvent,
@@ -16,6 +18,14 @@ import {
   type ServerMessage,
 } from '@chronosplit/shared';
 import type { Transport } from './transport.ts';
+
+/** A friend's connection to a match this browser hosts (a WebRTC data channel, or anything that moves text). */
+export interface RemoteLink {
+  send(text: string): void;
+  onMessage(cb: (text: string) => void): void;
+  onClose(cb: () => void): void;
+  close(): void;
+}
 
 export interface LocalMatchOptions {
   name: string;
@@ -42,6 +52,13 @@ export class LocalTransport implements Transport {
   private teardown?: () => void;
   /** Time from start() to the welcome message, for the TEST transition budget. */
   startupMs = 0;
+  /** Friends playing in this match (Host game), and the hook that lets them in once it's running. */
+  private remotes = new Set<{ link: RemoteLink; slot: number | null }>();
+  private admit?: (link: RemoteLink) => void;
+  /** Players connected from elsewhere (Host game). */
+  get guests(): number {
+    return [...this.remotes].filter((r) => r.slot !== null).length;
+  }
 
   constructor(
     private readonly map: MapDocument,
@@ -69,7 +86,49 @@ export class LocalTransport implements Transport {
       me.current = weaponCode(def);
       me.raiseTicks = 0;
     };
-    new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]).rebalance(Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));
+    const bots = new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]);
+    const botFill = Math.min(this.opts.botFill, MAX_PLAYER_SLOTS);
+    bots.rebalance(botFill);
+    // Host game: friends join like they would a dedicated server (same messages, same checks).
+    const rosterToAll = () => {
+      const msg: ServerMessage = { t: 'roster', players: match.roster() };
+      onMessage(msg);
+      const text = JSON.stringify(msg);
+      for (const r of this.remotes) if (r.slot !== null) r.link.send(text);
+    };
+    this.admit = (link) => {
+      const r = { link, slot: null as number | null };
+      this.remotes.add(r);
+      link.onMessage((text) => {
+        const msg = parseClientMessage(text);
+        if (!msg) return;
+        if (msg.t === 'hello' && r.slot === null) {
+          if (msg.protocol !== PROTOCOL_VERSION) {
+            link.send(JSON.stringify({ t: 'reject', reason: `protocol ${msg.protocol} unsupported (host speaks ${PROTOCOL_VERSION})` }));
+            return link.close();
+          }
+          const bot = match.combatants().find((c) => c.kind === 'bot');
+          if (match.combatants().length >= MAX_PLAYER_SLOTS && bot) match.remove(bot.slot);
+          const player = match.addHuman(sanitizeName(msg.name), msg.look);
+          if (!player) {
+            link.send(JSON.stringify({ t: 'reject', reason: 'match full' }));
+            return link.close();
+          }
+          r.slot = player.slot;
+          bots.rebalance(botFill);
+          link.send(JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() } satisfies ServerMessage));
+          rosterToAll();
+        } else if (msg.t === 'input' && r.slot !== null) match.queueInputs(r.slot, msg.inputs);
+        else if (msg.t === 'ping') link.send(JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
+      });
+      link.onClose(() => {
+        this.remotes.delete(r);
+        if (r.slot === null || this.stopped) return;
+        match.remove(r.slot);
+        bots.rebalance(botFill);
+        rosterToAll();
+      });
+    };
     this.queueInputs = (inputs) => match.queueInputs(me.slot, inputs);
     this.teardown = () => match.destroy();
 
@@ -95,7 +154,17 @@ export class LocalTransport implements Transport {
         const s = performance.now();
         events.push(...match.step());
         if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
-          onMessage({ t: 'snapshot', ack: me.lastSeq, me: match.privateState(me.slot), ...match.snapshot(events) });
+          const snap = match.snapshot(events);
+          onMessage({ t: 'snapshot', ack: me.lastSeq, me: match.privateState(me.slot), ...snap });
+          if (this.remotes.size) {
+            // Serialise the shared part once; each guest gets its own ack and private state.
+            const body = JSON.stringify(snap);
+            for (const r of this.remotes) {
+              if (r.slot === null) continue;
+              const mine = match.privateState(r.slot);
+              r.link.send(`{"t":"snapshot","ack":${match.slots[r.slot]?.lastSeq ?? 0},${mine ? `"me":${JSON.stringify(mine)},` : ''}${body.slice(1)}`);
+            }
+          }
           events = [];
         }
         const ms = performance.now() - s;
@@ -127,11 +196,19 @@ export class LocalTransport implements Transport {
     loop();
   }
 
+  /** Let a friend into this match (Host game). Links arriving before the match has loaded are turned away. */
+  accept(link: RemoteLink): void {
+    if (this.admit && !this.stopped) this.admit(link);
+    else link.close();
+  }
+
   sendInputs(inputs: PlayerInput[]): void {
     if (inputs.length) this.queueInputs?.(inputs);
   }
 
   close(): void {
+    for (const r of this.remotes) r.link.close();
+    this.remotes.clear();
     this.stopped = true;
     clearTimeout(this.timer);
     this.teardown?.();

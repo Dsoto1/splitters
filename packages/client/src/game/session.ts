@@ -58,6 +58,7 @@ import { bindFullscreenButton, pageHoldsEscape } from '../fullscreen.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
+import { LocalTransport } from './localTransport.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
 import { ModeHud } from './modeHud.ts';
@@ -87,6 +88,8 @@ export interface SessionOptions {
   showStats: boolean;
   /** F5 leaves the match (MapMaker TEST toggles with F5). */
   exitOnF5: boolean;
+  /** An in-browser match friends can be let into (pause menu → Host game). */
+  hostable?: boolean;
   /** Called when the player leaves or the transport closes. `reason` is set for unexpected closes. */
   onExit: (reason?: string) => void;
   /** Called once the map is loaded and the first frame can render. */
@@ -150,6 +153,8 @@ export class GameSession {
   private uav = 0;
   /** H: a camera over your shoulder, to see your own character. */
   private thirdPerson = false;
+  /** The join code's registration while this match is hosted for friends. */
+  private peerHost?: { close(): void };
   private tpClose = false;
   /** Your position as drawn this frame (blended between prediction ticks). */
   private drawnPos: Vec3 = { x: 0, y: 0, z: 0 };
@@ -226,6 +231,14 @@ export class GameSession {
       { signal },
     );
     $('exitmatch').textContent = opts.exitLabel;
+    // Host game: open a join code so friends' browsers can connect to this match.
+    const hostBtn = $('host-game') as HTMLButtonElement;
+    const hostInfo = $('host-info');
+    hostBtn.hidden = !opts.hostable || !(opts.transport instanceof LocalTransport);
+    hostInfo.hidden = true;
+    hostBtn.textContent = 'Host game (invite friends)';
+    hostBtn.disabled = false;
+    hostBtn.addEventListener('click', () => void this.startHosting(hostBtn, hostInfo), { signal });
     // Mouse sensitivity and invert, saved for next time.
     const sens = $('mouse-sens') as HTMLInputElement;
     const sensVal = $('mouse-sens-val');
@@ -327,9 +340,39 @@ export class GameSession {
     $('pause').hidden = this.input.locked || !this.local || this.closed;
   }
 
+  /** Open a join code for this match and show it (with an invite link) in the pause menu. */
+  private async startHosting(btn: HTMLButtonElement, info: HTMLElement): Promise<void> {
+    const local = this.opts.transport;
+    if (!(local instanceof LocalTransport) || this.peerHost) return;
+    btn.disabled = true;
+    btn.textContent = 'Opening a join code…';
+    try {
+      const { PeerHost } = await import('./peerLink.ts');
+      const host = new PeerHost((link) => local.accept(link));
+      this.peerHost = host;
+      const code = await host.start();
+      if (this.closed) return host.close();
+      const peer = new URLSearchParams(location.search).get('peer');
+      const link = `${location.origin}${location.pathname}?join=${code}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}`;
+      // "localhost" only works on this machine: friends need the address the game is served from.
+      const onlyHere = /^(localhost|127\.|\[::1\])/.test(location.hostname);
+      btn.hidden = true;
+      info.hidden = false;
+      info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.</p>${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
+      info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
+      this.hud.showMessage(`Hosting: join code ${code}`, 5);
+    } catch (e) {
+      this.peerHost = undefined;
+      btn.disabled = false;
+      btn.textContent = 'Host game (invite friends)';
+      this.hud.showMessage(`Couldn't host: ${(e as Error).message}`, 5);
+    }
+  }
+
   exit(reason?: string): void {
     if (this.closed) return;
     this.closed = true;
+    this.peerHost?.close();
     if (document.pointerLockElement) document.exitPointerLock();
     this.opts.transport.close();
     this.abort.abort();

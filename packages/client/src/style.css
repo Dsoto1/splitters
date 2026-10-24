@@ -388,3 +388,10 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 /* Aiming down the sights: a holographic red dot in a faint ring at screen centre. */
 #reddot { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; border: 1.5px solid rgba(255, 70, 110, 0.75); box-shadow: 0 0 6px rgba(255, 60, 100, 0.55); pointer-events: none; opacity: 0; transition: opacity 0.05s linear; }
 #reddot::after { content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: #ff3a6a; box-shadow: 0 0 5px #ff3a6a; }
+
+/* Host game: the join code and invite link in the pause menu. */
+#host-info { display: flex; flex-direction: column; gap: 6px; align-items: stretch; padding: 10px 12px; border: 1px solid rgba(0, 209, 255, 0.4); border-radius: 6px; background: rgba(0, 20, 30, 0.5); max-width: 360px; }
+#host-info .host-code { font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; }
+#host-info .host-code b { font-size: 26px; color: #00d1ff; margin-left: 8px; letter-spacing: 0.2em; }
+#host-info input { font: inherit; font-size: 12px; padding: 4px 6px; background: rgba(0, 0, 0, 0.35); color: #cfe; border: 1px solid rgba(255, 255, 255, 0.2); }
+#host-info .hint { margin: 0; font-size: 11px; opacity: 0.75; }
