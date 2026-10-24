@@ -430,6 +430,20 @@ export class Hud {
     this.scope.hidden = !on;
   }
 
+  /** Aiming down the sights (0..1): the crosshair fades out and a red-dot reticle takes its place. */
+  setAds(amount: number): void {
+    let dot = document.getElementById('reddot');
+    if (!dot) {
+      dot = document.createElement('div');
+      dot.id = 'reddot';
+      document.getElementById('crosshair')?.after(dot);
+    }
+    const on = amount > 0.6;
+    dot.style.opacity = on ? String(Math.min(1, (amount - 0.6) / 0.3)) : '0';
+    const cross = document.getElementById('crosshair');
+    if (cross) cross.style.opacity = String(1 - Math.min(1, amount * 1.6));
+  }
+
   /** Breath meter under the scope (spent: it has to recover before you can hold again). */
   setBreath(breath: number, spent: boolean): void {
     if (this.scope.hidden) return;

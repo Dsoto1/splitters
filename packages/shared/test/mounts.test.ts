@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_FIRE, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, PLAYER, initPhysics, validateMap, type GameEvent, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
+import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, PLAYER, initPhysics, validateMap, type GameEvent, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -87,6 +87,29 @@ describe('turrets, sentries and vehicles', () => {
     expect(a.mount).toBeUndefined();
     d.run(30, () => d.input(a, {}));
     expect(a.move.pos.y).toBeGreaterThan(-0.5);
+  });
+
+  it('hard turns at speed drift (hovercraft most, the handbrake breaks grip)', () => {
+    const slideOf = (model: string, brake: boolean) => {
+      const match = new Match(yard([{ position: [4, 0, 2], model: model as 'buggy', yaw: 0, faction: null, respawnSeconds: null }]), rules);
+      const d = new Driver(match);
+      const me = match.addHuman('me')!;
+      d.run(2);
+      place(me, 4, 0.5);
+      use(d, me);
+      expect(me.mount).toBeTruthy();
+      d.run(60, () => d.input(me, { forward: 1 }));
+      let most = 0;
+      d.run(30, () => {
+        d.input(me, { forward: 1, right: 1, buttons: brake ? BUTTON_JUMP : 0 });
+        most = Math.max(most, Math.abs((match as unknown as { mounts: { slide: number }[] }).mounts[0]!.slide));
+      });
+      return most;
+    };
+    const kart = slideOf('kart', false);
+    const speeder = slideOf('speeder', false);
+    expect(speeder).toBeGreaterThan(kart * 2);
+    expect(slideOf('kart', true)).toBeGreaterThan(kart * 1.5);
   });
 
   it("a turret's aim is held within its arc", () => {

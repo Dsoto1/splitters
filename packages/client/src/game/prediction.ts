@@ -101,6 +101,22 @@ export class LocalPlayer {
     this.collider = physics.createPlayerCollider();
   }
 
+  /** Position at the start of the latest predicted tick (drawing blends from it to `state.pos`). */
+  private prevPos: Vec3 | null = null;
+
+  /**
+   * Where to draw you between ticks: prediction runs at 60 Hz, screens often refresh faster,
+   * so without blending the camera and your third-person body step instead of gliding.
+   * `alpha` is how far into the next tick (0..1); big jumps (respawns, teleports) snap.
+   */
+  renderPos(alpha: number): Vec3 {
+    const p = this.prevPos;
+    const c = this.state.pos;
+    if (!p || Math.hypot(c.x - p.x, c.y - p.y, c.z - p.z) > 2) return c;
+    const k = Math.min(1, Math.max(0, alpha));
+    return { x: p.x + (c.x - p.x) * k, y: p.y + (c.y - p.y) * k, z: p.z + (c.z - p.z) * k };
+  }
+
   /** Where your eyes are (they drop when you crouch or go prone). */
   get eye(): Vec3 {
     return { x: this.state.pos.x, y: this.state.pos.y + eyeHeightOf(this.state, this.scale), z: this.state.pos.z };
@@ -118,6 +134,7 @@ export class LocalPlayer {
   /** Predict one tick. Returns the input to send and any predicted shot. */
   tick(sample: { forward: number; right: number; buttons: number; say?: number }, yaw: number, pitch: number, weapon: number, viewTick: number): { input: PlayerInput; shot: PredictedShot | null } {
     const input: PlayerInput = { seq: ++this.seq, ...sample, yaw, pitch, weapon, viewTick };
+    this.prevPos = { ...this.state.pos };
     let shot: PredictedShot | null = null;
     if (this.alive) {
       if (weapon && weapon !== this.held && this.inventory.has(weapon)) {

@@ -32,7 +32,7 @@ import {
 import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
-import { BUTTON_ALT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_ALT, BUTTON_JUMP, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
@@ -94,7 +94,11 @@ interface MountRt {
   probe: RAPIER.Collider | null;
   faction: string | null;
   /** The driver's controls this tick. */
-  drive: { forward: number; right: number };
+  /** Driver's controls: throttle, steering and the handbrake (jump). */
+  drive: { forward: number; right: number; brake?: boolean };
+  /** Sideways slide (m/s along the vehicle's right), kept between ticks so it drifts. */
+  slide: number;
+  airborne: boolean;
   cooldown: number;
   /** Who damaged it last (credit for the explosion). */
   lastHitBy: number | null;
@@ -862,7 +866,7 @@ export class Match {
       if (seat) {
         // In a turret or vehicle: no walking. Drivers steer; gunners' aim stays within the gun's arc.
         const m = this.mounts[c.mount!.index]!;
-        if (seat.role === 'driver') m.drive = { forward: input.forward, right: input.right };
+        if (seat.role === 'driver') m.drive = { forward: input.forward, right: input.right, brake: !!(input.buttons & BUTTON_JUMP) };
         if (seat.arc !== undefined) {
           const d = Math.atan2(Math.sin(c.yaw - m.yaw), Math.cos(c.yaw - m.yaw));
           c.yaw = m.yaw + Math.max(-seat.arc, Math.min(seat.arc, d));
@@ -1538,6 +1542,8 @@ export class Match {
       probe,
       faction,
       drive: { forward: 0, right: 0 },
+      slide: 0,
+      airborne: false,
       cooldown: 0,
       lastHitBy: null,
       runOver: new Map(),
@@ -1650,7 +1656,8 @@ export class Match {
     m.pos = { ...m.home.pos };
     m.yaw = m.aimYaw = m.home.yaw;
     m.aimPitch = 0;
-    m.speed = m.velY = 0;
+    m.speed = m.velY = m.slide = 0;
+    m.airborne = false;
     m.push = { x: 0, z: 0 };
     m.lastHitBy = null;
     for (const g of m.guns) if (g) g.heat = 0;
@@ -1683,25 +1690,54 @@ export class Match {
   }
 
   /**
-   * Arcade driving: throttle toward a target speed, steer harder the faster
-   * you go, slide along walls (a crash halves your speed), fall with gravity,
-   * and run down anyone in the way.
+   * Arcade driving with weight. Throttle pushes along the heading; the tyres
+   * (or hover pads) only kill part of any sideways slide each tick, so
+   * turning hard at speed drifts, the handbrake (jump) breaks grip for a
+   * powerslide, and hovercraft glide. Steering is sharpest at mid speed.
+   * Going over a crest keeps the climb's upward speed, so ramps launch you;
+   * in the air there's little steering and no throttle, and a hard landing
+   * dents the vehicle. Walls bleed speed, less for heavy ones.
    */
   private driveVehicle(m: MountRt): void {
     const v = m.def.vehicle!;
-    const { forward, right } = m.drive;
+    const { forward, right, brake } = m.drive;
+    const mass = v.mass ?? 1;
+    const grounded = !m.airborne || !!v.hover;
     const target = forward > 0 ? v.maxSpeed * forward : forward < 0 ? -v.reverseSpeed * -forward : 0;
     const braking = target === 0 || Math.sign(target) !== Math.sign(m.speed);
-    const rate = (target === 0 ? v.accel * (v.hover ? 0.35 : 0.8) : braking ? v.accel * 1.8 : v.accel) * TICK_DT;
-    m.speed += Math.max(-rate, Math.min(rate, target - m.speed));
-    const grip = Math.min(1, Math.abs(m.speed) / 5);
-    m.yaw += right * v.turnRate * TICK_DT * grip * (m.speed >= 0 ? 1 : -1);
+    let rate = (target === 0 ? v.accel * (v.hover ? 0.35 : 0.8) : braking ? v.accel * 1.8 : v.accel) * TICK_DT;
+    if (!grounded) rate = 0;
+    if (brake && grounded) rate = Math.max(rate, v.accel * 1.2 * TICK_DT);
+    m.speed += Math.max(-rate, Math.min(rate, (brake ? 0 : target) - m.speed));
+    // Steering: needs some speed, tightest around half speed, a little lazier flat out; barely any in the air.
+    const frac = Math.min(1, Math.abs(m.speed) / v.maxSpeed);
+    const steer = Math.min(1, Math.abs(m.speed) / 5) * (1 - 0.35 * frac * frac) * (grounded ? 1 : 0.2) * (brake ? 1.35 : 1);
+    const turn = right * v.turnRate * TICK_DT * steer * (m.speed >= 0 ? 1 : -1);
+    m.yaw += turn;
+    // Turning swings the heading out from under the momentum: that becomes slide, which grip then eats.
+    m.slide += -m.speed * Math.sin(turn);
+    const grip = grounded ? (v.grip ?? (v.hover ? 0.06 : 0.25)) * (brake ? 0.25 : 1) : 0;
+    m.slide *= 1 - grip;
+    if (Math.abs(m.slide) < 0.02) m.slide = 0;
     m.velY -= PLAYER.gravity * TICK_DT;
     const dir = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
-    const delta = { x: (dir.x * m.speed + m.push.x) * TICK_DT, y: m.velY * TICK_DT, z: (dir.z * m.speed + m.push.z) * TICK_DT };
-    const moved = this.physics.moveVehicle(m.probe!, m.body, m.pos, delta);
-    if (moved.grounded && m.velY < 0) m.velY = 0;
-    if (moved.blocked > 0.6 && Math.abs(m.speed) > 4) m.speed *= 0.5;
+    const side = { x: Math.cos(m.yaw), z: -Math.sin(m.yaw) };
+    const vx = dir.x * m.speed + side.x * m.slide + m.push.x;
+    const vz = dir.z * m.speed + side.z * m.slide + m.push.z;
+    const startY = m.pos.y;
+    const moved = this.physics.moveVehicle(m.probe!, m.body, m.pos, { x: vx * TICK_DT, y: m.velY * TICK_DT, z: vz * TICK_DT });
+    const climbed = (moved.feet.y - startY) / TICK_DT;
+    if (moved.grounded) {
+      // Hard landing: the heavier and faster it comes down, the more it hurts.
+      if (m.airborne && m.velY < -11 && !v.hover) this.damageMount(m, (-m.velY - 11) * 6 * mass, null);
+      // On the ground the vertical speed follows the slope, so leaving a ramp keeps the climb.
+      m.velY = Math.max(0, Math.min(climbed, 14));
+      m.airborne = false;
+    } else m.airborne = true;
+    if (moved.blocked > 0.6 && Math.abs(m.speed) > 4) {
+      m.speed *= Math.min(0.8, 0.4 + mass * 0.1);
+      m.slide *= 0.5;
+    }
     m.pos = moved.feet;
     const decay = moved.grounded ? 0.9 : 0.99;
     m.push = { x: m.push.x * decay, z: m.push.z * decay };

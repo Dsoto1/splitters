@@ -106,9 +106,9 @@ sounds (needs new CC0 sounds and a grip pose).
 
 | # | Item |
 |---|---|
-| 1 | **[feel]** Driving physics: suspension, weight, gravity, air time (currently flat) |
+| 1 | 🟡 **[feel]** Driving physics: suspension, weight, gravity, air time — ✅ momentum and drift (per-vehicle grip; hovercraft glide), handbrake powerslides (jump), speed-sensitive steering, ramps launch you, little air control, hard landings damage, weight softens crashes; drawn suspension (slope tilt, squat/dive, lean, landing bounce). Next: per-vehicle tuning pass in play, vehicle-vs-vehicle ramming |
 | 2 | **[feature]** Damage states (smoke → fire → wreck) and **explosions with blast radius that hurt players** |
-| 3 | **[content]** New vehicles: military transport, cars, trucks, bus, Halo-style flyers (reference board: "24 vehicle lineup") |
+| 3 | **[content]** New vehicles: military transport, cars, trucks, bus, Halo-style flyers (reference board: "24 vehicle lineup") — each lineup entry maps to a handling class we already simulate: **wheeled light** (Scrap Buggy, Gun Jeep, Golf Cart, Attack Trike, Scout Bike, Victorian Car, Ice Cream Truck, Forklift), **wheeled heavy** (Armored Rover, Halftrack, Desert War Rig, Steam Tractor, Pirate Landship), **tracked** (Mini Tank: slow, turns on the spot), **hover** (Hover Skiff, Hover Bike, Hover Tank, Snow Sled, Alien Saucer), **flyers** (Dropship, Gunship: new flight model needed), **walkers/mounts** (Walker Mech, Dinosaur Mount, Roman Chariot: legged animation, new). Needs human-made models (Kenney Car Kit / Quaternius packs) — no generated art |
 | 4 | **[feature]** Gliders and parachutes; an airplane set piece you can spawn in and jump out of |
 | 5 | **[feature]** Vehicle upgrades and cosmetic skins (from the reference board) — later |
 

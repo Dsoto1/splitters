@@ -150,6 +150,8 @@ export class GameSession {
   /** H: a camera over your shoulder, to see your own character. */
   private thirdPerson = false;
   private tpClose = false;
+  /** Your position as drawn this frame (blended between prediction ticks). */
+  private drawnPos: Vec3 = { x: 0, y: 0, z: 0 };
   /** Seconds your minimap stays jammed (enemy Counter-UAV), and your kill streak. */
   private jam = 0;
   private streak = 0;
@@ -742,11 +744,13 @@ export class GameSession {
           this.view.setCamera({ x: eye.x - back.x * dist, y: eye.y - back.y * dist + 1, z: eye.z - back.z * dist }, this.input.yaw, this.input.pitch - 0.15, DEFAULT_FOV);
         } else this.view.setCamera(eye, this.input.yaw, this.input.pitch, DEFAULT_FOV);
       } else {
-        // The view eases down and up as you crouch, go prone or stand.
+        // The view eases down and up as you crouch, go prone or stand; between ticks it glides.
         const eye = local.eye;
         const offset = eye.y - local.state.pos.y;
         this.eyeOffset = this.eyeOffset === null || !local.alive ? offset : this.eyeOffset + (offset - this.eyeOffset) * Math.min(1, dt * 12);
-        const head = { x: eye.x, y: local.state.pos.y + this.eyeOffset, z: eye.z };
+        const drawn = local.renderPos(this.acc / TICK_DT);
+        this.drawnPos = drawn;
+        const head = { x: drawn.x, y: drawn.y + this.eyeOffset, z: drawn.z };
         if (this.thirdPerson && local.alive) {
           // Over the right shoulder, pulled in where a wall is in the way.
           const fwd = viewDirection(this.input.yaw, this.input.pitch);
@@ -765,6 +769,7 @@ export class GameSession {
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, (weapon.reloadTicks - local.reloadTicks) / 10) : 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride), ads: this.adsAmount });
       this.hud.setScope(zoomed);
+      this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount);
       this.updateScopeSway(dt, zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
       // Took damage since last frame: flash, pointing at the latest shot or blast near you.
@@ -823,7 +828,7 @@ export class GameSession {
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
     // Third person: your own character drawn where prediction has you (not the delayed server copy).
     const self = this.thirdPerson && !this.tpClose && local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
-    if (self && local) Object.assign(self, { x: local.state.pos.x, y: local.state.pos.y, z: local.state.pos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held });
+    if (self && local) Object.assign(self, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held });
     this.view.updateAvatars(
       poses,
       self ? -1 : this.slot,

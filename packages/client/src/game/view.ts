@@ -507,6 +507,10 @@ export class GameView {
   // ---------------------------------------------------------------- viewmodel
 
   /** Show the held weapon in first person (undefined hides it, e.g. while dead or scoped). */
+  /** Viewmodel's top (where a sight sits) and rear, in its own space: placing it for aiming down the sights. */
+  private sightTop = 0.1;
+  private stockZ = -0.3;
+
   setViewmodel(def: WeaponDefinition | undefined): void {
     if (def?.id === this.viewWeapon) return;
     this.viewWeapon = def?.id;
@@ -517,7 +521,10 @@ export class GameView {
     void this.models.instantiate(def.view.model, `view_${def.id}`).then((node) => {
       if (load !== this.viewLoad) return node.dispose();
       // Measure before parenting, in the model's own space.
-      this.muzzleZ = node.getHierarchyBoundingVectors(true).max.z;
+      const bounds = node.getHierarchyBoundingVectors(true);
+      this.muzzleZ = bounds.max.z;
+      this.sightTop = bounds.max.y;
+      this.stockZ = bounds.min.z;
       node.parent = this.viewRoot;
       // Draw on top of the world so the gun never clips into walls.
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
@@ -612,10 +619,14 @@ export class GameView {
     const ads = o.ads ?? 0;
     const bob = (o.moving ? 1 : 0) * (1 - ads * 0.8);
     const [vx, vy, vz] = def.view.viewOffset;
-    // Aiming down the sights: the gun comes to the centre, up to the eye line, and a little closer.
+    // Aiming down the sights: the gun comes to the centre with the top of the receiver (where
+    // the sight sits) just under the eye line, and far enough forward that the stock stays
+    // out of view, so you look along the gun at the target (see the red dot on the HUD).
+    const adsY = -(this.sightTop + 0.006);
+    const adsZ = Math.max(vz, 0.2 - this.stockZ);
     const x = vx * (1 - ads);
-    const y = vy + (-0.065 - vy) * ads;
-    const z = vz - 0.06 * ads;
+    const y = vy + (adsY - vy) * ads;
+    const z = vz + (adsZ - vz) * ads;
     const melee = def.kind === 'melee';
     this.viewRoot.position.set(
       x + Math.sin(this.bobPhase) * 0.012 * bob,
@@ -1041,11 +1052,73 @@ export class GameView {
         }
       }
       node.rotation.y = m.shown.yaw;
+      if (m.def.kind === 'vehicle' && m.alive) this.suspend(m, node);
       if (m.def.kind !== 'vehicle') {
         const gun = mountGun(node);
         if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
       }
     }
+  }
+
+  /** Per vehicle: drawn tilt, landing bounce and the last pose (to read speed, acceleration and turning). */
+  private suspension = new Map<number, { pitch: number; roll: number; bounce: number; bounceVel: number; pos: Vec3; yaw: number; speed: number; t: number; air: boolean }>();
+
+  /**
+   * Visual suspension: the body settles to the slope under its wheels (or
+   * pads), squats when it accelerates and dives when it brakes, leans out of
+   * turns, and bounces on its springs when it lands. Drawing only; the
+   * simulation's collision box stays level.
+   */
+  private suspend(m: ClientMount, node: TransformNode): void {
+    const now = performance.now();
+    const p = m.shown.pos;
+    let st = this.suspension.get(m.index);
+    if (!st) this.suspension.set(m.index, (st = { pitch: 0, roll: 0, bounce: 0, bounceVel: 0, pos: { ...p }, yaw: m.shown.yaw, speed: 0, t: now, air: false }));
+    const dt = Math.min(0.1, Math.max(0.001, (now - st.t) / 1000));
+    const fwd = { x: Math.sin(m.shown.yaw), z: Math.cos(m.shown.yaw) };
+    const speed = ((p.x - st.pos.x) * fwd.x + (p.z - st.pos.z) * fwd.z) / dt;
+    const accel = (speed - st.speed) / dt;
+    const yawRate = Math.atan2(Math.sin(m.shown.yaw - st.yaw), Math.cos(m.shown.yaw - st.yaw)) / dt;
+    const fell = (st.pos.y - p.y) / dt;
+    // Ground under the four corners.
+    const [hx, , hz] = m.def.half;
+    const side = { x: Math.cos(m.shown.yaw), z: -Math.sin(m.shown.yaw) };
+    const groundAt = (f: number, r: number) => {
+      const o = { x: p.x + fwd.x * f + side.x * r, y: p.y + 1.5, z: p.z + fwd.z * f + side.z * r };
+      const hit = this.raycastLevel(o, { x: 0, y: -1, z: 0 }, 4);
+      return hit ? o.y - hit.dist : null;
+    };
+    const front = groundAt(hz * 0.8, 0);
+    const back = groundAt(-hz * 0.8, 0);
+    const left = groundAt(0, -hx * 0.8);
+    const rightG = groundAt(0, hx * 0.8);
+    const under = groundAt(0, 0);
+    const air = !m.def.vehicle?.hover && (under === null || p.y - under > 0.35);
+    let pitch = 0;
+    let roll = 0;
+    if (!air) {
+      if (front !== null && back !== null) pitch = -Math.atan2(front - back, hz * 1.6);
+      if (left !== null && rightG !== null) roll = Math.atan2(rightG - left, hx * 1.6);
+    } else pitch = st.pitch * 0.98;
+    // Squat under power, dive under brakes, lean out of the turn; hovercraft bank into it instead.
+    const hover = !!m.def.vehicle?.hover;
+    pitch += Math.max(-0.08, Math.min(0.08, -accel * 0.006));
+    roll += Math.max(-0.12, Math.min(0.12, yawRate * speed * (hover ? -0.006 : 0.004)));
+    // Springs: landing compresses them, then it rocks back.
+    if (st.air && !air) st.bounceVel -= Math.min(4, Math.max(1, fell * 0.25));
+    st.bounceVel += (-st.bounce * 90 - st.bounceVel * 9) * dt;
+    st.bounce += st.bounceVel * dt;
+    const k = Math.min(1, dt * 10);
+    st.pitch += (pitch - st.pitch) * k;
+    st.roll += (roll - st.roll) * k;
+    node.rotation.x = st.pitch;
+    node.rotation.z = st.roll;
+    node.position.y += Math.max(-0.25, Math.min(0.15, st.bounce)) + (hover ? Math.sin(now / 260 + m.index) * 0.04 : 0);
+    st.pos = { ...p };
+    st.yaw = m.shown.yaw;
+    st.speed = speed;
+    st.t = now;
+    st.air = air;
   }
 
   /** Ground hazards and fields from the latest snapshot. */

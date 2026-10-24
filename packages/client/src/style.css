@@ -384,3 +384,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #msg-menu b { display: block; margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
 #msg-menu kbd { display: inline-block; min-width: 18px; text-align: center; margin-right: 6px; background: #2a3142; border-radius: 3px; }
 #msg-menu small { display: block; margin-top: 6px; opacity: 0.7; }
+
+/* Aiming down the sights: a holographic red dot in a faint ring at screen centre. */
+#reddot { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; border: 1.5px solid rgba(255, 70, 110, 0.75); box-shadow: 0 0 6px rgba(255, 60, 100, 0.55); pointer-events: none; opacity: 0; transition: opacity 0.05s linear; }
+#reddot::after { content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: #ff3a6a; box-shadow: 0 0 5px #ff3a6a; }

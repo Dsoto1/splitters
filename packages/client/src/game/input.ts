@@ -166,7 +166,8 @@ export class InputState {
   }
 
   get zooming(): boolean {
-    return this.locked && this.zoomDown;
+    // Tests can hold the aim with window.__autoInput = { zoom: true }.
+    return (this.locked && this.zoomDown) || !!(window as unknown as { __autoInput?: { zoom?: boolean } }).__autoInput?.zoom;
   }
 
   held(code: string): boolean {

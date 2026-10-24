@@ -47,6 +47,10 @@ export interface MountDef {
     turnRate: number;
     /** Hovercraft drift more and ride a little higher. */
     hover?: boolean;
+    /** Share of sideways slide killed per tick (tyre grip; hovercraft low, so they drift). Default 0.25, hover 0.06. */
+    grip?: number;
+    /** Weight in tonnes: heavier ones shrug off pushes, lose less speed in crashes and land harder. Default 1. */
+    mass?: number;
   };
   sentry?: { weapon: string; range: number; turnRate: number };
   /** One line for MapMaker. */
@@ -107,7 +111,7 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     enterRadius: 2.6,
     respawnSeconds: 30,
     blast: { radius: 3.5, damage: 70 },
-    vehicle: { maxSpeed: 20, reverseSpeed: 7, accel: 16, turnRate: 2.6 },
+    vehicle: { maxSpeed: 20, reverseSpeed: 7, accel: 16, turnRate: 2.6, grip: 0.32, mass: 0.4 },
     blurb: 'One seat, very quick, no gun: run them over',
   },
   speeder: {
@@ -124,7 +128,7 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     enterRadius: 3,
     respawnSeconds: 40,
     blast: { radius: 4, damage: 80 },
-    vehicle: { maxSpeed: 24, reverseSpeed: 8, accel: 14, turnRate: 2.1, hover: true },
+    vehicle: { maxSpeed: 24, reverseSpeed: 8, accel: 14, turnRate: 2.1, hover: true, grip: 0.07, mass: 0.6 },
     blurb: 'A hovering two-seater: the pilot fires twin blasters ahead, the passenger shoots their own gun',
   },
   buggy: {
@@ -143,7 +147,7 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     enterRadius: 3.2,
     respawnSeconds: 45,
     blast: { radius: 4.5, damage: 90 },
-    vehicle: { maxSpeed: 18, reverseSpeed: 7, accel: 10, turnRate: 1.8 },
+    vehicle: { maxSpeed: 18, reverseSpeed: 7, accel: 10, turnRate: 1.8, grip: 0.22, mass: 1.4 },
     blurb: 'Four seats: a driver, a gunner on the roof machine gun and two passengers with their own weapons',
   },
   hauler: {
@@ -164,7 +168,7 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     enterRadius: 4,
     respawnSeconds: 60,
     blast: { radius: 5, damage: 100 },
-    vehicle: { maxSpeed: 13, reverseSpeed: 5, accel: 6, turnRate: 1.1, hover: true },
+    vehicle: { maxSpeed: 13, reverseSpeed: 5, accel: 6, turnRate: 1.1, hover: true, grip: 0.05, mass: 3 },
     blurb: 'A slow hovering transport for six: a pilot, a rocket gunner and four passengers',
   },
 };
