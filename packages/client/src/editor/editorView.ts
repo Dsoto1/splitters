@@ -531,7 +531,9 @@ export class EditorView {
       this.ghost?.dispose();
       const single: MapDocument = { ...doc, classicStructure: { ...doc.classicStructure, tiles: [{ id: 'ghost', tile, x: 0, y: 0, z: 0, rotation }] } };
       this.ghost = new Mesh('ghost', this.scene);
-      boxVertexData(buildMapGeometry(single)).applyToMesh(this.ghost);
+      // Only the piece itself: the rest of the map's geometry (its boundary walls, terrain edge,
+      // blocks and props) would otherwise come along as a huge green box following the pointer.
+      boxVertexData(buildMapGeometry(single).filter((b) => b.sourceId === 'ghost')).applyToMesh(this.ghost);
       this.ghost.isPickable = false;
       this.ghost.enableEdgesRendering();
       this.ghost.edgesWidth = 3;

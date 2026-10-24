@@ -85,7 +85,8 @@ export class NavWorld {
     const start = this.closestPoint(a);
     const end = this.closestPoint(b);
     if (!start || !end) return null;
-    const r = this.query.computePath(start, end, { halfExtents: { x: 0.5, y: 1, z: 0.5 }, maxPathPolys: 512 });
+    // Big maps (a whole campus, many stairs) need long corridors: 512 polygons cut routes short.
+    const r = this.query.computePath(start, end, { halfExtents: { x: 0.5, y: 1, z: 0.5 }, maxPathPolys: 4096 });
     if (!r.success || r.path.length === 0) return null;
     const last = r.path[r.path.length - 1]!;
     // A partial path (destination polygon unreachable) ends short of the goal.
