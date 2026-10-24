@@ -54,6 +54,17 @@ export interface MatchRules {
   killstreaks?: boolean;
   /** Team modes: respawn beside a teammate who isn't in a fight, when one is free. Default true. */
   squadSpawn?: boolean;
+  /** Gravity multiple (1 normal); absent: the map's own (MapMaker), else normal. */
+  gravity?: number;
+  /** Long falls hurt; absent: the map's own setting, else off. */
+  fallDamage?: boolean;
+  /** Team modes: whether shots and blasts hurt teammates (full or half damage). Default off. */
+  friendlyFire?: 'off' | 'half' | 'on';
+}
+
+/** The gravity multiple and fall damage a match plays with: its own rules, else the map's, else normal / off. */
+export function matchPhysics(rules: MatchRules, map: { physics?: { gravity: number; fallDamage: boolean } | null }): { gravity: number; fallDamage: boolean } {
+  return { gravity: rules.gravity ?? map.physics?.gravity ?? 1, fallDamage: rules.fallDamage ?? map.physics?.fallDamage ?? false };
 }
 
 export const DEFAULT_DEATHMATCH_RULES: MatchRules = {

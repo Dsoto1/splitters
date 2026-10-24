@@ -411,6 +411,13 @@ export const TeamSetup = z.object({
   sizes: z.array(z.number().int().min(1).max(16)).min(2).max(8),
 });
 
+/** Map-wide physics: gravity as a multiple of normal (0.25 = moon, 2 = heavy) and whether long falls hurt. */
+export const MapPhysics = z.object({
+  gravity: z.number().min(0.2).max(3).default(1),
+  fallDamage: z.boolean().default(false),
+});
+export type MapPhysics = z.infer<typeof MapPhysics>;
+
 export const MapDocument = z.object({
   format: z.literal(MAP_FORMAT),
   formatVersion: z.literal(MAP_FORMAT_VERSION),
@@ -427,6 +434,8 @@ export const MapDocument = z.object({
   bounds: MapBounds.nullable().default(null),
   /** What surrounds the play area, or none (the theme's backdrop). */
   backdrop: BackdropSchema.nullable().default(null),
+  /** Gravity and fall damage for this map, or none (normal gravity, no fall damage). Matches can override both. */
+  physics: MapPhysics.nullable().default(null),
   /** Blood colour and amount, or none (dark red, light). */
   blood: BloodSettings.nullable().default(null),
   /** Recommended teams for team modes, or none (two even teams). */

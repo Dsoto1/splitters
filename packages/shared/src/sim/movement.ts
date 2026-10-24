@@ -94,6 +94,8 @@ export interface MoveEnv {
   ladders?: readonly Ladder[];
   /** Body size (BODY_SIZES scale): heights, width and eyes scale with it. */
   scale?: number;
+  /** Gravity multiple (map / match setting); 1 = normal. */
+  gravity?: number;
 }
 
 /** A ladder as movement sees it: its foot against the wall, facing out from the wall, how tall and wide. */
@@ -170,6 +172,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   // Stance: what you ask for, unless there's no room to stand (or crouch) up. Jumping gets you up first.
   let jumpPressed = (input.buttons & BUTTON_JUMP) !== 0;
   const k = env.scale ?? 1;
+  const g = env.gravity ?? 1;
   const radius = PLAYER.radius * k;
   const was = stanceOf(state);
   let want: Stance = input.buttons & BUTTON_PRONE ? 2 : input.buttons & BUTTON_CROUCH ? 1 : 0;
@@ -275,17 +278,17 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     }
   } else if (chest) {
     // Swimming: you sink slowly, water drags, jump swims up; near the surface it hops you out.
-    velY -= PLAYER.gravity * 0.15 * dt;
+    velY -= PLAYER.gravity * g * 0.15 * dt;
     velY *= Math.pow(0.9, dt * 60);
     if (jump) velY = state.pos.y + SWIM_DEPTH + 0.35 > chest.max.y ? Math.max(velY, 4.6) : Math.min(velY + 14 * dt, 3.2);
   } else {
     if (state.grounded && jump) velY = PLAYER.jumpSpeed;
     else if (jump && env.jet && !state.grounded) {
       // Jetpack: thrust while jump is held in the air.
-      velY = Math.min(velY + (JET.accel + PLAYER.gravity) * dt, Math.max(velY, JET.maxUp));
+      velY = Math.min(velY + (JET.accel + PLAYER.gravity * g) * dt, Math.max(velY, JET.maxUp));
       jet = true;
     }
-    velY -= PLAYER.gravity * dt;
+    velY -= PLAYER.gravity * g * dt;
   }
 
   const desiredY = velY * dt;
@@ -348,14 +351,14 @@ export function applyPads(pads: readonly JumpPad[], state: MoveState): MoveState
  * link from the pad to its landing). Traces the flight with gravity and
  * returns the first floor hit on the way down; pads that never land are left out.
  */
-export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld): { start: Vec3; end: Vec3 }[] {
+export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3 }[] {
   const out: { start: Vec3; end: Vec3 }[] = [];
   for (const p of pads) {
     let pos = { x: p.pos.x, y: p.pos.y + 0.9, z: p.pos.z };
     let vy = p.vy;
     for (let t = 0; t < 6; t += TICK_DT) {
       const next = { x: pos.x + p.vx * TICK_DT, y: pos.y + vy * TICK_DT, z: pos.z + p.vz * TICK_DT };
-      vy -= PLAYER.gravity * TICK_DT;
+      vy -= PLAYER.gravity * gravity * TICK_DT;
       if (vy < 0) {
         const down = physics.raycastWorld({ x: next.x, y: next.y, z: next.z }, { x: 0, y: -1, z: 0 }, 1.0 + Math.abs(vy * TICK_DT));
         if (down !== null) {
@@ -370,6 +373,6 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld): { 
 }
 
 /** Every one-way navmesh link a map needs for bots: jump pad flights and ladders up and down. */
-export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0], physics: PhysicsWorld): { start: Vec3; end: Vec3 }[] {
-  return [...padLandings(mapPads(entities), physics), ...ladderLinks(mapLadders(entities))];
+export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3 }[] {
+  return [...padLandings(mapPads(entities), physics, gravity), ...ladderLinks(mapLadders(entities))];
 }

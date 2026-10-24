@@ -35,6 +35,7 @@ export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns:
     teamSetup: null,
     backdrop: null,
     blood: null,
+    physics: null,
     dependencies: [],
   };
 }

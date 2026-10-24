@@ -1,5 +1,5 @@
 import type { ScenarioLogic } from '../map/logic.ts';
-import type { BloodSettings, Faction, MapBounds, MapDocument, MapEntity, TeamSetup, TilePlacement } from '../map/schema.ts';
+import type { BloodSettings, Faction, MapPhysics, MapBounds, MapDocument, MapEntity, TeamSetup, TilePlacement } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
 import type { Backdrop } from '../map/backdrop.ts';
 
@@ -26,6 +26,7 @@ export type EditCommand =
   | { kind: 'setTeamSetup'; before: TeamSetup | null; after: TeamSetup | null }
   | { kind: 'setBackdrop'; before: Backdrop | null; after: Backdrop | null }
   | { kind: 'setBlood'; before: BloodSettings | null; after: BloodSettings | null }
+  | { kind: 'setPhysics'; before: MapPhysics | null; after: MapPhysics | null }
   | { kind: 'batch'; commands: EditCommand[] };
 
 export class CommandError extends Error {}
@@ -89,6 +90,8 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       return { ...doc, backdrop: cmd.after };
     case 'setBlood':
       return { ...doc, blood: cmd.after };
+    case 'setPhysics':
+      return { ...doc, physics: cmd.after };
     case 'batch':
       return cmd.commands.reduce(applyCommand, doc);
   }
@@ -126,6 +129,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setBackdrop', before: cmd.after, after: cmd.before };
     case 'setBlood':
       return { kind: 'setBlood', before: cmd.after, after: cmd.before };
+    case 'setPhysics':
+      return { kind: 'setPhysics', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -153,6 +158,7 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setTeamSetup':
     case 'setBackdrop':
     case 'setBlood':
+    case 'setPhysics':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':
       return cmd.commands.every(isEmptyCommand);

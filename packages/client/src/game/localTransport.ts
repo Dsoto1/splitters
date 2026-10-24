@@ -88,7 +88,10 @@ export class LocalTransport implements Transport {
     const loop = () => {
       if (this.stopped) return;
       const now = performance.now();
-      for (let n = 0; now >= next && n < 5; n++) {
+      // A background tab only wakes us about once a second: then catch up to real time, so the
+      // match (and the bots shooting an idle or tabbed-out player) keeps going at full speed.
+      const hidden = document.hidden;
+      for (let n = 0; now >= next && n < (hidden ? 150 : 5); n++) {
         const s = performance.now();
         events.push(...match.step());
         if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
@@ -102,7 +105,7 @@ export class LocalTransport implements Transport {
         ticks++;
         next += tickMs;
       }
-      if (now - next > tickMs * 10) next = now;
+      if (now - next > tickMs * (hidden ? 300 : 10)) next = now;
       if (now - statsAt >= 1000) {
         statsAt = now;
         const all = match.combatants();

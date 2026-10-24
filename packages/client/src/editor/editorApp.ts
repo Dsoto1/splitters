@@ -95,6 +95,7 @@ import {
   BLOOD_AMOUNTS,
   DEFAULT_BLOOD,
   type BloodSettings,
+  type MapPhysics,
   type BackdropGround,
   type SceneryId,
   type SkyId,
@@ -1580,6 +1581,27 @@ export class EditorApp {
     el.append(small('Hit sprays, splats and pools. Players can still switch blood off in the pause menu.'));
   }
 
+  // ---------------------------------------------------------------- gravity and falls
+
+  /** Map physics: gravity (moon to heavy) and fall damage; arcade and servers can override both. */
+  private renderPhysicsPanel(el: HTMLElement): void {
+    const head = document.createElement('h3');
+    head.textContent = 'Gravity & falls';
+    el.append(head);
+    const p: MapPhysics = this.doc.physics ?? { gravity: 1, fallDamage: false };
+    const set = (after: MapPhysics) => this.run('Change physics', { kind: 'setPhysics', before: this.doc.physics, after: after.gravity === 1 && !after.fallDamage ? null : after });
+    const gravity = document.createElement('select');
+    gravity.id = 'ed-gravity';
+    for (const [v, label] of [[0.25, 'Moon (¼)'], [0.5, 'Low (½)'], [0.75, 'Light (¾)'], [1, 'Normal'], [1.5, 'Heavy (1½×)'], [2, 'Crushing (2×)']] as const) gravity.append(new Option(label, String(v), false, Math.abs(p.gravity - v) < 0.01));
+    gravity.addEventListener('change', () => set({ ...p, gravity: Number(gravity.value) }));
+    const fall = document.createElement('select');
+    fall.id = 'ed-fall-damage';
+    fall.append(new Option('Off', 'off', false, !p.fallDamage), new Option('On', 'on', false, p.fallDamage));
+    fall.addEventListener('change', () => set({ ...p, fallDamage: fall.value === 'on' }));
+    el.append(row('Gravity', gravity), row('Fall damage', fall));
+    el.append(small('Gravity changes jumps, falls and jump-pad arcs. With fall damage on, drops past about 5 m hurt and about 16 m kill (jump pads, ladders and water are safe). Match settings can override both.'));
+  }
+
   // ---------------------------------------------------------------- boundary
 
   /** Map properties: walls round the play area, fitted to the map in one click. */
@@ -2116,6 +2138,7 @@ export class EditorApp {
 
       this.renderBackdropPanel(el);
       this.renderBloodPanel(el);
+      this.renderPhysicsPanel(el);
       if (doc.terrain && doc.entities.some((e) => e.kind === 'prop')) {
         const settle = button('Settle all props on ground', () => this.settleProps());
         settle.id = 'ed-settle-all';

@@ -22,6 +22,7 @@ import {
   NPC_ROLE_SPECS,
   isCreature,
   STREAK_REWARDS,
+  matchPhysics,
   type Vec3,
   npcLookRole,
   type CreatureKind,
@@ -370,6 +371,7 @@ export class GameSession {
         this.local.pads = mapPads(loaded.map.entities);
         this.local.ladders = mapLadders(loaded.map.entities);
         this.local.scale = this.sizeOf(this.slot);
+        this.local.gravity = matchPhysics(msg.rules, loaded.map).gravity;
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.scenario = new ScenarioState(loaded.map, physics);
         this.mounts = new MountState(loaded.map, physics);

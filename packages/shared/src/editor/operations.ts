@@ -164,6 +164,7 @@ export function newMapDocument(name = 'Untitled Map', now: Date = new Date()): M
     teamSetup: null,
     backdrop: null,
     blood: null,
+    physics: null,
     dependencies: [],
   };
 }

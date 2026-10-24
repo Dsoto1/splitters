@@ -30,6 +30,7 @@ const room: MapDocument = {
   teamSetup: null,
   backdrop: null,
     blood: null,
+    physics: null,
   dependencies: [],
 };
 

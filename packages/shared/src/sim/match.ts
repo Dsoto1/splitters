@@ -36,7 +36,7 @@ import { BUTTON_ALT, BUTTON_JUMP, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW,
   padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
-import { DEFAULT_DEATHMATCH_RULES, isTeamMode, type MatchRules } from './rules.ts';
+import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, type MatchRules } from './rules.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
@@ -121,6 +121,9 @@ export interface Combatant {
   emoteUntil?: number;
   sayAt?: number;
   pingAt?: number;
+  /** Highest point of the current fall, and whether a jump pad threw you (fall damage). */
+  fallPeak?: number;
+  padFlight?: boolean;
   /** Tick it last took damage (squad spawns avoid teammates in a fight). */
   hurtAt?: number;
   /** Kills since this one last died (kill-streak rewards). */
@@ -266,6 +269,8 @@ export class Match {
   readonly geometry: WorldBox[];
   /** Falling below this height kills (some way under the lowest floor). */
   readonly killY: number;
+  /** Gravity multiple and fall damage in force (match rules over the map's own). */
+  readonly phys: { gravity: number; fallDamage: boolean };
   readonly physics: PhysicsWorld;
   readonly nav: NavWorld;
   readonly slots: (Combatant | null)[] = new Array(MAX_PLAYER_SLOTS).fill(null);
@@ -317,9 +322,10 @@ export class Match {
   ) {
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
+    this.phys = matchPhysics(rules, map);
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map));
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), navLinks(map.entities, this.physics));
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), navLinks(map.entities, this.physics, this.phys.gravity));
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -878,7 +884,10 @@ export class Match {
         }
       } else {
         const was = c.move.pos;
-        c.move = applyPads(this.pads, stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size }));
+        const before = c.move;
+        const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity });
+        c.move = applyPads(this.pads, stepped);
+        this.trackFall(c, before, c.move !== stepped);
         c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / TICK_DT;
         if (c.jetFuel !== null) c.jetFuel = stepJetFuel(c.jetFuel, !!c.move.jet);
       }
@@ -1950,11 +1959,41 @@ export class Match {
     return attacker.damageTicks > 0 ? amount * DAMAGE_BOOST : amount;
   }
 
+  /**
+   * Fall damage (when the match or map has it on): the drop from the top of
+   * the fall to where you land, weighted by gravity, past 5 m hurts and about
+   * 16 m kills. Jump-pad flights, ladders and water landings are free.
+   */
+  private trackFall(c: Combatant, before: MoveState, padded: boolean): void {
+    const m = c.move;
+    if (padded || m.climb || m.swim) {
+      c.fallPeak = undefined;
+      c.padFlight = padded || c.padFlight;
+      return;
+    }
+    if (!m.grounded) {
+      c.fallPeak = Math.max(c.fallPeak ?? before.pos.y, m.pos.y);
+      return;
+    }
+    const peak = c.fallPeak;
+    const free = c.padFlight;
+    c.fallPeak = undefined;
+    c.padFlight = false;
+    if (!this.phys.fallDamage || peak === undefined || free || before.grounded) return;
+    const drop = (peak - m.pos.y) * this.phys.gravity;
+    if (drop > 5) this.damage(c, (drop - 5) * 9, null, 'core.fall');
+  }
+
   /** Apply damage through armor and the attacker's damage boost. */
   private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string, head = false): void {
     if (!victim.alive || this.phase !== 'playing') return;
     // No friendly fire; hazards (no attacker) and your own grenades still hurt.
-    if (attacker && attacker !== victim && !this.hostile(attacker, victim)) return;
+    if (attacker && attacker !== victim && !this.hostile(attacker, victim)) {
+      // Friendly fire (team modes and co-op, when the match turns it on): players hurt teammates, NPCs never do.
+      const ff = this.rules.friendlyFire ?? 'off';
+      if (ff === 'off' || attacker.npc || victim.npc) return;
+      if (ff === 'half') amount *= 0.5;
+    }
     if (attacker?.npc && !victim.npc) amount *= NPC_DAMAGE_TO_PLAYERS;
     if (attacker?.npc) amount *= (NPC_ROLE_SPECS[attacker.npc.role].damage ?? 1) * attacker.npc.damage;
     let dmg = attacker && attacker !== victim && attacker.damageTicks > 0 ? amount * DAMAGE_BOOST : amount;
@@ -1974,9 +2013,11 @@ export class Match {
     victim.health = 0;
     this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon, ...(head ? { hs: 1 as const } : {}) });
     // Only players score; NPC kills of players count as the player's death.
-    if (killer && !killer.npc) killer.kills++;
+    // Team kills cost a point and earn no streak.
+    const teamKill = !!killer && killer !== victim && !this.hostile(killer, victim);
+    if (killer && !killer.npc) killer.kills += teamKill ? -1 : 1;
     victim.streak = 0;
-    if (killer && killer !== victim && !killer.npc && killer.alive) {
+    if (killer && killer !== victim && !killer.npc && killer.alive && !teamKill) {
       killer.streak = (killer.streak ?? 0) + 1;
       this.streakReward(killer);
     }
