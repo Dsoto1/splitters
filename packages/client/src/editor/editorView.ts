@@ -14,7 +14,7 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import type { MapDocument, MapEntity, Rotation, TerrainData, Vec3, WorldBox } from '@chronosplit/shared';
+import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@chronosplit/shared';
 import { DESTRUCTIBLE_SPECS, MAX_TEAMS, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@chronosplit/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
@@ -492,6 +492,35 @@ export class EditorView {
   }
 
   /** Translucent preview of a tile about to be placed. */
+  private propGhost: { model: string; node: TransformNode } | null = null;
+
+  /** A see-through preview of a prop where it would be placed (null hides it). */
+  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number): void {
+    if (!model || !at) {
+      this.propGhost?.node.setEnabled(false);
+      return;
+    }
+    if (this.propGhost?.model !== model) {
+      this.propGhost?.node.dispose(false, true);
+      const e = { id: 'ghost', kind: 'prop', position: [0, 0, 0], model, yaw: 0, scale: 1, solid: false, tint: null } as unknown as PropEntity;
+      const node = createPropNode(this.scene, this.models, e, 'propGhost', false);
+      this.propGhost = { model, node };
+      // Fade every mesh as the model loads in.
+      const fade = () => {
+        for (const m of node.getChildMeshes()) {
+          m.visibility = 0.55;
+          m.isPickable = false;
+        }
+      };
+      fade();
+      node.onAfterWorldMatrixUpdateObservable.add(fade);
+    }
+    const node = this.propGhost.node;
+    node.setEnabled(true);
+    node.position.set(at[0], at[1], at[2]);
+    node.rotation.y = yaw;
+  }
+
   setGhost(doc: MapDocument, tile: string | null, cell: [number, number, number] | null, rotation: Rotation, ok: boolean): void {
     if (!tile || !cell) {
       this.ghost?.setEnabled(false);

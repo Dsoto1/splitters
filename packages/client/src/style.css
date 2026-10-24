@@ -373,3 +373,8 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #scoreboard .sb-head b { color: var(--text); }
 #pause .pause-title small { display: block; margin-top: 4px; font-size: 14px; font-weight: 500; letter-spacing: 0.08em; opacity: 0.75; }
 .logo-version { margin: 2px 0 0; font: 500 12px var(--font-display); letter-spacing: 0.14em; opacity: 0.6; }
+
+/* Gunner's reticle on vehicle and turret guns: a wide ring with ticks and a centre dot; the ring fills red with heat. */
+#crosshair.gunner { width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: conic-gradient(rgba(255, 70, 50, 0.55) calc(var(--heat, 0) * 1%), transparent 0); -webkit-mask: radial-gradient(circle, transparent 28px, #000 29px, #000 31px, transparent 32px); mask: radial-gradient(circle, transparent 28px, #000 29px, #000 31px, transparent 32px); }
+#crosshair.gunner::before { left: 31px; top: -6px; width: 2px; height: 76px; background: linear-gradient(var(--xh) 0 14px, transparent 14px 62px, var(--xh) 62px); }
+#crosshair.gunner::after { top: 31px; left: -6px; height: 2px; width: 76px; background: linear-gradient(90deg, var(--xh) 0 14px, transparent 14px 62px, var(--xh) 62px); }

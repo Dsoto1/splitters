@@ -641,6 +641,8 @@ export class GameSession {
       this.lastHealth = local.health;
       this.lastArmor = local.armor;
       this.hud.setStamina(local.state.stamina ?? 1, !!local.state.winded, local.alive, local.state.stance ?? 0);
+      // On a vehicle or turret gun the crosshair becomes a gunner's reticle (heat shown round it).
+      this.hud.setGunnerReticle(seatGun && this.seat ? this.seat[2] : null);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2]);
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
       this.hud.setThrowable(local.throwable, local.alive);

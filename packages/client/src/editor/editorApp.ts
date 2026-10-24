@@ -652,10 +652,7 @@ export class EditorApp {
       const name = getItem(this.tool.item)?.displayName ?? 'pickup';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'pickup', position: p, item: this.tool.item, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'prop' && this.hoverPoint) {
-      const free = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
-      const p: [number, number, number] = [free ? Math.round(this.hoverPoint.x * 100) / 100 : snap(this.hoverPoint.x, this.snapStep(0.25)), this.level * this.doc.classicStructure.levelHeight, free ? Math.round(this.hoverPoint.z * 100) / 100 : snap(this.hoverPoint.z, this.snapStep(0.25))];
-      // On the terrain, bedded into the slope rather than at the level's height.
-      if (this.hoverOnTerrain && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model: this.tool.model, position: p, yaw: this.propYaw, scale: 1 }) ?? p[1];
+      const p = this.propSpot(this.tool.model)!;
       const id = newId('prop');
       const name = getProp(this.tool.model)?.displayName ?? 'prop';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p, model: this.tool.model, yaw: this.propYaw, scale: 1, solid: true, tint: null }] })) this.setSelection({ tiles: [], entities: [id] });
@@ -821,6 +818,15 @@ export class EditorApp {
     const r = duplicateCommand(this.doc, this.selection);
     if ('error' in r) return this.toast(`Can't duplicate: ${r.error}`, true);
     if (this.run('Duplicate', r.command)) this.setSelection(r.selection);
+  }
+
+  /** Where a prop of `model` goes under the pointer (snapped; Shift for free placement; bedded into terrain). */
+  private propSpot(model: string): [number, number, number] | null {
+    if (!this.hoverPoint) return null;
+    const free = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+    const p: [number, number, number] = [free ? Math.round(this.hoverPoint.x * 100) / 100 : snap(this.hoverPoint.x, this.snapStep(0.25)), this.level * this.doc.classicStructure.levelHeight, free ? Math.round(this.hoverPoint.z * 100) / 100 : snap(this.hoverPoint.z, this.snapStep(0.25))];
+    if (this.hoverOnTerrain && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model, position: p, yaw: this.propYaw, scale: 1 }) ?? p[1];
+    return p;
   }
 
   /** Home: the starting overview of the level being edited. */
@@ -1026,6 +1032,8 @@ export class EditorApp {
     } else $('ed-target').textContent = '';
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
+    // Props show their real model where they'd land, see-through, before you click.
+    this.view.setPropGhost(this.tool.kind === 'prop' && !this.looking ? this.tool.model : null, this.tool.kind === 'prop' ? this.propSpot(this.tool.model) : null, this.propYaw);
     if (this.tool.kind === 'tile' && cell) {
       const ok = checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok;
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);

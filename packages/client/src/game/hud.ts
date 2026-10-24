@@ -320,6 +320,14 @@ export class Hud {
 
   /** `owned` and `held` are weapon codes; the bar shows slots 1–9, with a pip per extra weapon carried in a slot. */
   /** Riding as a passenger or gunner: the seat's gun (heat) instead of your own. */
+  /** Swap the crosshair for a gunner's reticle while on a mounted gun; `heat` (0-100) fills its ring. */
+  setGunnerReticle(heat: number | null): void {
+    const el = document.getElementById('crosshair');
+    if (!el) return;
+    el.classList.toggle('gunner', heat !== null);
+    if (heat !== null) el.style.setProperty('--heat', String(Math.min(100, heat)));
+  }
+
   setMountedGun(name: string, heat: number): void {
     this.weaponName.textContent = name;
     this.ammoReserve.textContent = '';
