@@ -97,6 +97,10 @@ sounds (needs new CC0 sounds and a grip pose).
 | 9 | **[question]** Bomb and hostage modes — worth adding for the CS-style maps (recommend yes, bomb first) |
 | 10 | **[feature]** Co-op/scenario chains: link scenarios through a playlist or custom link |
 | 11 | **[feature]** Easier LAN: show the join address on the host screen, auto-discover games on the LAN |
+| 12 | **[feature]** Custom maps on servers, CS-style: maps travel with the join (already true); cache them by content hash, "Save this map" to your MapMaker library (author's choice), server list shows map name + preview. **Maps only, built from our suite — no custom assets** |
+| 13 | **[tech]** Smaller snapshots (binary + delta) — ~5–10× less bandwidth; needed before player hosting or ~50 matches |
+| 14 | **[feature]** Player-hosted matches (WebRTC, host simulates in a worker): "Host game" / "Join by code" for private matches; tiny signaling server + TURN relay (relay hides IPs) |
+| 15 | **[tech]** Multi-match launcher: one process per match, a few per core, plus a lobby/server list for public dedicated servers |
 
 ## Sprint 5 — Vehicles
 
@@ -176,3 +180,4 @@ Also requested: **Egypt** theme (builds on Imperial Arena + desert), **portals**
 2. **Bomb mode first**; hostage later.
 3. **AWS: start with one EC2 instance** (behind CloudFront); move to Fargate when it needs to scale.
 4. **Map storage**: measure the largest map first, then set per-user slot counts.
+5. **Custom content on servers is maps only**: hosts build with our suite (tiles, props, textures, NPCs, logic); no uploaded models, textures or sounds.
