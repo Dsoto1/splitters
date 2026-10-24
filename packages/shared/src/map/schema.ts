@@ -201,7 +201,7 @@ export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper', 'imp', 'puglin
 /** The creature kinds among NPC_ROLES (their own bodies and clips, not the soldier rig). */
 export const CREATURE_ROLES = ['imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const satisfies readonly (typeof NPC_ROLES)[number][];
 const squadCount = z.number().int().min(0).max(16);
-export const SQUAD_ORDERS = ['hold', 'attack', 'defend', 'patrol', 'follow'] as const;
+export const SQUAD_ORDERS = ['hold', 'attack', 'defend', 'patrol', 'follow', 'roam'] as const;
 
 /**
  * An NPC encounter: a squad of a faction's soldiers that spawns around this

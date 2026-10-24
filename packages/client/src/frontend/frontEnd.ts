@@ -1,5 +1,7 @@
 import {
+  CHARACTER_PROFILES,
   CORE_LOOKS,
+  type BotProfile,
   NPC_LOOKS,
   NPC_ROLE_SPECS,
   npcLookRole,
@@ -55,6 +57,8 @@ export interface ArcadeSetup {
   sizes?: boolean;
   /** Quick messages and emotes allowed. Absent = on. */
   emotes?: boolean;
+  /** How bots play. Absent = mixed (each character its own way). */
+  botStyle?: 'arena' | 'tactical';
 }
 
 export interface FrontEndHooks {
@@ -348,6 +352,7 @@ export class FrontEnd {
       ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, s.mode === 'core.ctf') : [el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
       el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
       el('div', { class: 'row', title: 'On: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. Off: everyone plays at standard size.' }, 'Character sizes', tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on'))),
+      el('div', { class: 'row', title: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).' }, 'Bot style', tabs([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => (this.setup.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical')))),
       el('div', { class: 'row', title: 'Quick messages (B, then 1-6) and the dance emote (N).' }, 'Emotes & messages', tabs([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => (this.setup.emotes = v === 'on'))),
       ...(coop
         ? []
@@ -369,7 +374,7 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}) };
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.
@@ -482,9 +487,11 @@ export class FrontEnd {
       info.replaceChildren(img, el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: `Play as the ${name}. Looks only: same hitbox, health and loadout as everyone else.` }), el('div', { class: 'tags' }, el('span', { textContent: 'NPC' }), el('span', { textContent: kind }))), loadout);
       return;
     }
+    const bot = CHARACTER_PROFILES[id];
+    const style = bot ? botStyleLine(bot) : '';
     info.replaceChildren(
       img,
-      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), el('div', { class: 'tags' }, el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits }))),
+      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits }))),
       loadout,
       customise,
     );
@@ -680,4 +687,13 @@ function swatch(color: string): HTMLElement {
   s.className = 'swatch';
   s.style.background = color;
   return s;
+}
+
+/** How a character plays as a bot, in a line: its style, two strongest traits and favourite weapon. */
+function botStyleLine(p: BotProfile): string {
+  const style = p.tags.includes('ARENA') ? 'Arena' : p.tags.includes('TACTICAL') ? 'Tactical' : p.tags.includes('BERSERKER') ? 'Berserker' : p.tags.includes('SNIPER') ? 'Sniper' : 'Balanced';
+  const traits: [keyof BotProfile, string][] = [['aggression', 'aggressive'], ['accuracy', 'accurate'], ['selfPreservation', 'cautious'], ['tacticalAwareness', 'tactical'], ['itemGreed', 'item hunter'], ['exploration', 'explorer'], ['pursuitPersistence', 'relentless'], ['teamLoyalty', 'team player'], ['objectivePriority', 'objective-minded'], ['rangePreference', 'long range']];
+  const top = traits.map(([k, label]) => [p[k] as number, label] as const).filter(([v]) => v >= 70).sort((a, b) => b[0] - a[0]).slice(0, 2).map(([, l]) => l);
+  const fav = p.weaponPreferences[0] ? getWeapon(p.weaponPreferences[0]).displayName : null;
+  return `As a bot: ${style}${top.length ? ` · ${top.join(', ')}` : ''}${fav ? ` · favours the ${fav}` : ''}`;
 }

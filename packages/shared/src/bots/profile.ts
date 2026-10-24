@@ -121,3 +121,44 @@ export const CORE_BOT_PROFILES: readonly BotProfile[] = [
 
 /** Does the profile carry this behaviour tag? */
 export const hasTag = (p: BotProfile, tag: string): boolean => p.tags.includes(tag);
+
+type Traits = Partial<Omit<BotProfile, 'id' | 'displayName'>>;
+const character = (id: string, displayName: string, traits: Traits): BotProfile => ({ ...base, id, displayName, tags: [], ...traits });
+
+/**
+ * Each preset character plays its own way as a bot: stats, tendencies and
+ * favourite weapons, in keeping with its bio. ARENA characters strafe-jump
+ * and time items; TACTICAL ones hold angles and use cover and stance.
+ */
+export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.fromEntries(
+  [
+    character('core.ranger', 'Ranger', { rangePreference: 85, accuracy: 70, aggression: 40, tacticalAwareness: 70, tags: ['SNIPER', 'TACTICAL'], weaponPreferences: ['core.sniper', 'core.marksman', 'core.rifle'] }),
+    character('core.huntress', 'Huntress', { rangePreference: 70, accuracy: 72, pursuitPersistence: 80, tacticalAwareness: 60, tags: ['TACTICAL'], weaponPreferences: ['core.rifle', 'core.marksman', 'core.burst_rifle'] }),
+    character('core.sprout', 'Sprout', { aggression: 70, itemGreed: 80, exploration: 75, rangePreference: 30, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.machine_pistol', 'core.nailgun'] }),
+    character('core.bulwark', 'Bulwark', { aggression: 65, selfPreservation: 30, riskTolerance: 75, rangePreference: 25, tags: ['SUPPRESSOR'], weaponPreferences: ['core.lmg', 'core.auto_shotgun', 'core.rockets'] }),
+    character('core.warden', 'Warden', { teamLoyalty: 85, objectivePriority: 80, tacticalAwareness: 80, selfPreservation: 60, tags: ['TACTICAL', 'SUPPRESSOR'], weaponPreferences: ['core.rifle', 'core.lmg', 'core.shotgun'] }),
+    character('core.scout', 'Scout', { objectivePriority: 90, aggression: 60, exploration: 70, rangePreference: 35, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.sawed_off', 'core.pulse_pistol'] }),
+    character('core.farmhand', 'Farmhand', { aggression: 75, meleePreference: 55, rangePreference: 15, accuracy: 40, riskTolerance: 70, tags: ['BERSERKER'], weaponPreferences: ['core.shotgun', 'core.sawed_off', 'core.auto_shotgun'] }),
+    character('core.miller', 'Miller', { aggression: 30, selfPreservation: 75, tacticalAwareness: 75, pursuitPersistence: 25, rangePreference: 60, tags: ['TACTICAL'], weaponPreferences: ['core.marksman', 'core.launcher', 'core.rifle'] }),
+    character('core.tracker', 'Tracker', { exploration: 85, pursuitPersistence: 85, tacticalAwareness: 60, tags: ['EXPLORER'], weaponPreferences: ['core.burst_rifle', 'core.rifle', 'core.laser_rifle'] }),
+    character('core.pathfinder', 'Pathfinder', { exploration: 95, itemGreed: 75, aggression: 55, tags: ['EXPLORER', 'ARENA'], weaponPreferences: ['core.disc_launcher', 'core.plasma', 'core.railgun'] }),
+    character('core.drifter', 'Drifter', { aggression: 45, selfPreservation: 70, riskTolerance: 30, rangePreference: 65, tags: ['SURVIVOR'], weaponPreferences: ['core.hand_cannon', 'core.marksman', 'core.flare_gun'] }),
+    character('core.wayfarer', 'Wayfarer', { tacticalAwareness: 65, teamLoyalty: 70, objectivePriority: 70, tags: [], weaponPreferences: ['core.rifle', 'core.launcher', 'core.smg'] }),
+    character('core.brawler', 'Brawler', { aggression: 95, meleePreference: 80, selfPreservation: 15, rangePreference: 5, riskTolerance: 90, accuracy: 35, tags: ['BERSERKER', 'RECKLESS'], weaponPreferences: ['core.shotgun', 'core.flamethrower', 'core.knife'] }),
+    character('core.sprinter', 'Sprinter', { aggression: 80, itemGreed: 85, reactionSpeed: 75, rangePreference: 30, tacticalAwareness: 30, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.plasma', 'core.disc_launcher'] }),
+    character('core.champion', 'Champion', { accuracy: 80, reactionSpeed: 80, aggression: 75, itemGreed: 80, tags: ['ARENA'], weaponPreferences: ['core.railgun', 'core.rockets', 'core.plasma'] }),
+    character('core.striker', 'Striker', { aggression: 85, pursuitPersistence: 90, riskTolerance: 75, rangePreference: 30, tags: ['ARENA'], weaponPreferences: ['core.rockets', 'core.auto_shotgun', 'core.smg'] }),
+  ].map((p) => [p.id, p]),
+);
+
+/** Overall bot style for a match: each character's own, or everyone arena / tactical. */
+export type BotStyle = 'mixed' | 'arena' | 'tactical';
+export const BOT_STYLES: readonly BotStyle[] = ['mixed', 'arena', 'tactical'];
+
+/** The profile a bot plays with: its character's own when it has one, under the match's style. */
+export function profileFor(look: string, fallback: BotProfile, style: BotStyle = 'mixed'): BotProfile {
+  const own = CHARACTER_PROFILES[look] ?? fallback;
+  if (style === 'mixed') return own;
+  const tags = own.tags.filter((t) => t !== 'ARENA' && t !== 'TACTICAL');
+  return { ...own, tags: [...tags, style === 'arena' ? 'ARENA' : 'TACTICAL'] };
+}

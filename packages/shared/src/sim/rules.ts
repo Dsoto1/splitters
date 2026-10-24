@@ -48,6 +48,8 @@ export interface MatchRules {
   bodySizes?: boolean;
   /** Quick messages and emotes (default true). */
   emotes?: boolean;
+  /** How bots play: each character's own way (mixed, default), all arena-style or all tactical. */
+  botStyle?: 'mixed' | 'arena' | 'tactical';
 }
 
 export const DEFAULT_DEATHMATCH_RULES: MatchRules = {

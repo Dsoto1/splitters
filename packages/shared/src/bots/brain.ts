@@ -29,6 +29,8 @@ export interface CombatantView {
   human?: boolean;
   /** Sitting in a turret or vehicle. */
   mounted?: boolean;
+  /** On the ground (not jumping or falling). */
+  grounded?: boolean;
 }
 
 export interface PickupView {
@@ -36,6 +38,8 @@ export interface PickupView {
   item: ItemDefinition;
   pos: Vec3;
   available: boolean;
+  /** Seconds until a taken pickup comes back (arena bots time items). */
+  respawnIn?: number;
 }
 
 export interface InventoryView {
@@ -150,6 +154,7 @@ export class BotBrain {
   private lastPathTick = -Infinity;
   private strafeDir = 1;
   private nextStrafeFlip = 0;
+  private nextHop = 0;
   private yaw = 0;
   private pitch = 0;
   private stuckCheck: { tick: number; pos: Vec3 } | null = null;
@@ -311,6 +316,16 @@ export class BotBrain {
     return hasTag(this.profile, 'BERSERKER');
   }
 
+  /** Arena style (Quake feel): keeps moving, strafe-jumps, times the item respawns, rarely takes cover. */
+  private get arena(): boolean {
+    return hasTag(this.profile, 'ARENA');
+  }
+
+  /** Tactical style (Counter-Strike feel): slow and careful, holds angles, uses cover and stance a lot. */
+  private get methodical(): boolean {
+    return hasTag(this.profile, 'TACTICAL');
+  }
+
   /** How tactically this bot plays (difficulty × personality), 0..1. */
   private get tactical(): number {
     return this.difficulty.tactics * (0.35 + (this.profile.tacticalAwareness / 100) * 0.9);
@@ -357,7 +372,9 @@ export class BotBrain {
 
     // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
     const threat = target?.pos ?? (underFire ? this.threatFrom : null);
-    if (threat && !this.berserker && this.rng() < 0.5 + this.tactical) {
+    // Better bots take cover far more often; arena bots mostly keep moving instead.
+    const coverChance = this.arena ? this.tactical * 0.4 : 0.15 + this.tactical * 1.7 + (this.methodical ? 0.3 : 0);
+    if (threat && !this.berserker && this.rng() < coverChance) {
       const dist = horizontalDistance(me.pos, threat);
       const held = this.heldWeapon(view);
       const lowAmmo = !!held && held.def.magazine > 0 && held.mag <= Math.ceil(held.def.magazine * 0.25);
@@ -488,7 +505,7 @@ export class BotBrain {
           else if (dist < 14) strafe = true;
           // Holding at range: crouch to steady the aim; snipers lie down.
           if (moveYaw === null && !backOff && !strafe) {
-            stance = this.wantsProne(view, dist) ? 2 : dist > 13 ? 1 : 0;
+            stance = this.wantsProne(view, dist) ? 2 : dist > 13 && !this.arena && this.tactical > 0.25 ? 1 : 0;
           }
         }
         if (!sprint) aimAtTarget(t);
@@ -496,6 +513,13 @@ export class BotBrain {
       }
       case 'chase': {
         const lk = this.lastKnown!;
+        // Tactical bots hold the angle where the enemy vanished before pushing it.
+        if (this.methodical && tick - lk.tick < TICK_RATE * (1 + this.tactical) && this.canSee(view, ctx.eye, lk.pos)) {
+          this.lookAt(view, lk.pos, 1.2);
+          lookDone = true;
+          stance = this.tactical > 0.5 ? 1 : 0;
+          break;
+        }
         const far = horizontalDistance(me.pos, lk.pos) > 25;
         moveYaw = this.followPathTo(view, lk.pos, false);
         // Rejoin a fight that has moved away at a run; close in carefully.
@@ -669,6 +693,11 @@ export class BotBrain {
     else if (stance === 2) buttons |= BUTTON_PRONE;
     else if (stance === 1) buttons |= BUTTON_CROUCH;
 
+    // Arena bots bunny-hop while they strafe or run (harder to hit, faster through the air).
+    if (this.arena && me.grounded && (strafe || (forward > 0.6 && !sprint)) && tick >= this.nextHop && stance === 0) {
+      this.jumpNext = true;
+      this.nextHop = tick + Math.round(TICK_RATE * (0.5 + this.rng() * 0.6));
+    }
     if (this.checkStuck(view, forward !== 0 || right !== 0) || this.jumpNext) {
       buttons |= BUTTON_JUMP;
       this.jumpNext = false;
@@ -694,7 +723,8 @@ export class BotBrain {
 
   /** Searching and clearing at a walk, not a run (berserkers don't bother). */
   private careful(): boolean {
-    return !this.berserker && this.tactical > 0.3;
+    if (this.methodical) return true;
+    return !this.berserker && !this.arena && this.tactical > 0.3;
   }
 
   private reacted(view: BotWorldView, target: CombatantView): boolean {
@@ -706,7 +736,9 @@ export class BotBrain {
   private wantsProne(view: BotWorldView, dist: number): boolean {
     const def = this.heldDef(view);
     const scoped = !!def?.view.zoomFov;
-    return hasTag(this.profile, 'SNIPER') && dist > 22 && (scoped || (def?.botRange[0] ?? 0) >= 10) && view.tick - this.underFireTick > TICK_RATE * 2;
+    // Snipers lie down at range; so do the most tactical bots with a scope on a long sightline.
+    const sniper = hasTag(this.profile, 'SNIPER') || (this.methodical && this.tactical > 0.75 && scoped && dist > 28);
+    return sniper && dist > 22 && (scoped || (def?.botRange[0] ?? 0) >= 10) && view.tick - this.underFireTick > TICK_RATE * 2;
   }
 
   /**
@@ -1073,7 +1105,9 @@ export class BotBrain {
     let best: { pos: Vec3; score: number } | null = null;
     const owned = new Map(view.inventory.map((w) => [w.def.id, w]));
     for (const p of view.pickups) {
-      if (!p.available) continue;
+      // Arena bots time the respawns: head for an item that will be back by the time they get there.
+      const timed = this.arena && p.respawnIn !== undefined && p.respawnIn < horizontalDistance(me.pos, p.pos) / 5 + 1;
+      if (!p.available && !timed) continue;
       const e = p.item.effect;
       if (only && e.kind !== only) continue;
       let need = 0;

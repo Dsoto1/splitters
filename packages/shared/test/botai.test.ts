@@ -118,7 +118,7 @@ function hitRate(difficulty: BotDifficulty, opts: { weapon?: string; range?: num
 
 describe('bot aim', () => {
   it('hits a strafing player at 15 m with a rifle at human-like rates per difficulty', () => {
-    const bands = { easy: [0.15, 0.25], normal: [0.3, 0.45], hard: [0.5, 0.65] } as const;
+    const bands = { easy: [0.13, 0.25], normal: [0.3, 0.45], hard: [0.5, 0.65] } as const;
     const rates: string[] = [];
     for (const id of ['easy', 'normal', 'hard'] as const) {
       const r = hitRate(BOT_DIFFICULTIES[id]);

@@ -35,6 +35,8 @@ interface EncounterRt {
   queue: NpcRole[];
   /** Patrol leg per member: 0 = home, 1 = target. */
   legs: Map<number, number>;
+  /** Roamers: where each member is wandering to now. */
+  wander: Map<number, Vec3>;
 }
 
 /** Members re-share sightings this often. */
@@ -60,7 +62,7 @@ export class Encounters {
   }
 
   private fresh(e: EncounterEntity): EncounterRt {
-    return { e, active: false, budget: 0, spawned: 0, members: [], nextSpawn: 0, order: e.order, cleared: false, queue: [], legs: new Map() };
+    return { e, active: false, budget: 0, spawned: 0, members: [], nextSpawn: 0, order: e.order, cleared: false, queue: [], legs: new Map(), wander: new Map() };
   }
 
   /** Back to the start (new round). The match removes the NPCs themselves. */
@@ -165,6 +167,11 @@ export class Encounters {
     for (const m of living) this.host.npc(m)!.brain.alert(seen.pos, seen.tick);
   }
 
+  /** Roamers keep moving with nobody near (they don't doze off like guards). */
+  roaming(npcId: number): boolean {
+    return this.byNpc.get(npcId)?.order === 'roam';
+  }
+
   /** Where a member should be when not fighting. */
   goalFor(npcId: number): { pos: Vec3; radius: number } | null {
     const r = this.byNpc.get(npcId);
@@ -203,6 +210,16 @@ export class Encounters {
           }
         }
         return best ? { pos: best, radius: 2 } : { pos: ring(home, 1.5), radius: 1.5 };
+      }
+      case 'roam': {
+        // Wander between places all over the map, a new one each time it gets there; fights whatever it meets.
+        let goal = r.wander.get(npcId);
+        if (!goal || horizontalDistance(me.pos, goal) < 3) {
+          const places = this.host.nav.places();
+          goal = places.length ? places[Math.floor(this.host.random() * places.length)]! : ring(home, 6);
+          r.wander.set(npcId, goal);
+        }
+        return { pos: goal, radius: 2.5 };
       }
       case 'follow': {
         let best: Vec3 | null = null;

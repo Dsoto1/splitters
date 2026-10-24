@@ -1,6 +1,6 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { BotBrain, type CombatantView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
-import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
+import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
@@ -578,12 +578,13 @@ export class Match {
     return c;
   }
 
-  addBot(name: string, profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal): Combatant | null {
+  /** `asCharacter`: play the look's own profile (under the match's bot style) instead of `profile` when it has one. */
+  addBot(name: string, profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal, asCharacter = false): Combatant | null {
     const c = this.addCombatant('bot', name);
     if (c) {
       c.look = lookForBot(c.slot);
       this.applyBodySize(c);
-      c.bot = new BotBrain(c.slot, profile, difficulty, this.seed);
+      c.bot = new BotBrain(c.slot, asCharacter ? profileFor(c.look, profile, this.rules.botStyle) : profile, difficulty, this.seed);
       c.bot.onSpawn(c.yaw);
       // Bots choose routes from the navmesh's sample places: build them now, not mid-match.
       this.nav.places();
@@ -665,7 +666,7 @@ export class Match {
     const t0 = performance.now();
     const actors = this.actors();
     const views = new Map(actors.map((c) => [c.slot, toView(c)]));
-    const pickups: PickupView[] = this.pickups.map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt }));
+    const pickups: PickupView[] = this.pickups.map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }));
     const npcPickups: PickupView[] = [];
     const blockers = this.scenario.blockers();
     const hazards = this.scenario.hazards();
@@ -696,7 +697,7 @@ export class Match {
       const aware = this.mode && !c.npc ? this.mode.botAwareness(c) : Infinity;
       const npc = c.npc;
       // Dormant NPCs (no enemy within earshot of the squad's area) skip thinking entirely.
-      if (npc && c.alive && !c.bot.lastSeen && !hostiles.some((o) => horizontalDistance(o.move.pos, c.move.pos) < 70)) {
+      if (npc && c.alive && !c.bot.lastSeen && !this.encounters.roaming(c.slot) && !hostiles.some((o) => horizontalDistance(o.move.pos, c.move.pos) < 70)) {
         c.queue.push({ seq: c.lastSeq + 1, forward: 0, right: 0, yaw: c.yaw, pitch: c.pitch, buttons: 0 });
         continue;
       }
@@ -2214,6 +2215,7 @@ function toView(c: Combatant): CombatantView {
   if (stance) v.stance = stance;
   if (c.kind === 'human') v.human = true;
   if (c.mount) v.mounted = true;
+  if (c.move.grounded) v.grounded = true;
   return v;
 }
 
@@ -2253,7 +2255,7 @@ export class BotFiller {
       const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
       const name = BOT_NAMES[this.counter % BOT_NAMES.length]!;
       this.counter++;
-      if (!this.match.addBot(name, profile, this.difficulty)) break;
+      if (!this.match.addBot(name, profile, this.difficulty, true)) break;
     }
   }
 }

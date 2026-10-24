@@ -123,7 +123,7 @@ export const ACTION_INFO: Record<ActionType, { label: string; target: TargetKind
   end_round: { label: 'End the round', target: null, states: ['instigator wins', 'nobody wins', 'players win', 'players lose'] },
   encounter_start: { label: 'Start encounter', target: 'encounter' },
   encounter_stop: { label: 'Stop reinforcements', target: 'encounter' },
-  encounter_order: { label: 'Order squad to', target: 'encounter', states: ['hold', 'attack', 'defend', 'patrol', 'follow'] },
+  encounter_order: { label: 'Order squad to', target: 'encounter', states: ['hold', 'attack', 'defend', 'patrol', 'follow', 'roam'] },
 };
 
 export const LogicWhen = z.object({

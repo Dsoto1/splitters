@@ -77,10 +77,10 @@ sounds (needs new CC0 sounds and a grip pose).
 
 | # | Item |
 |---|---|
-| 1 | ✅ Cover, crouching, sniping, hanging back (shipped in the AI rework) — tune so **better bots use it more** |
-| 2 | **[feature]** Per-character stats/tendencies drive strategy and weapon choice (profiles exist; expose and widen them per character) |
-| 3 | **[feature]** Alternative bot "personalities": arena-style (Quake 3 feel: strafe-jump, item timing) and tactical (Counter-Strike feel: objectives, economy-free rush/hold) |
-| 4 | **[feature]** NPC/dino/orc roamers for themed maps |
+| 1 | ✅ Cover, crouching, sniping, hanging back (shipped in the AI rework) — tune so **better bots use it more** — cover chance now scales steeply with skill (easy ≈ 60%, normal/hard always); crouching at range needs some skill; top tactical bots go prone on long scoped sightlines |
+| 2 | ✅ **[feature]** Per-character stats/tendencies drive strategy and weapon choice — every preset character has its own bot profile (traits, style, favourite weapons); Character Select shows "As a bot: …" |
+| 3 | ✅ **[feature]** Alternative bot "personalities": arena-style (Quake 3 feel: strafe-jump, item timing) and tactical (Counter-Strike feel: objectives, economy-free rush/hold) — arcade "Bot style": Mixed / Arena / Tactical |
+| 4 | 🟡 **[feature]** NPC/dino/orc roamers for themed maps — new "roam" squad order + "Roaming Monsters" MapMaker preset (works with every NPC); dino/orc models still needed (Quaternius packs) |
 
 ## Sprint 4 — Modes, matches and servers
 
