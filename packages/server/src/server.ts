@@ -89,7 +89,9 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const rebalanceBots = () => bots.rebalance(botFill);
   rebalanceBots();
 
-  const wss = new WebSocketServer({ port: opts.port, host: opts.host, maxPayload: 64 * 1024 });
+  // Snapshots are JSON with lots of repetition: compressing them cuts the traffic several times over
+  // (browsers decompress on their own). Small messages aren't worth it.
+  const wss = new WebSocketServer({ port: opts.port, host: opts.host, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
 
   wss.on('connection', (ws) => {
     const client: Client = { ws, slot: null, bytesOut: 0 };

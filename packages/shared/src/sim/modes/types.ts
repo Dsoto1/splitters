@@ -25,6 +25,8 @@ export interface ModeHost {
   respawn(c: Combatant): void;
   /** Height of the floor under a point (within a few metres), or null over a drop. */
   groundBelow(p: Vec3): number | null;
+  /** A big explosion (Bomb mode), credited to `by`. */
+  explode(at: Vec3, radius: number, damage: number, by: Combatant | null): void;
 }
 
 /** Where a Player Bot should go when it is not fighting, and how close counts as there. */

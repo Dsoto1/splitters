@@ -24,7 +24,7 @@ import {
   type Liquid,
   type MapEntity,
 } from '@chronosplit/shared';
-import { createFlagBase, createFlagModel, createHillModel } from './flagVisuals.ts';
+import { createFlagBase, createFlagModel, createHillModel, createBombsiteModel } from './flagVisuals.ts';
 
 /** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */
 export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: number; depthAlpha: number; shine: number; flow: number }> = {
@@ -42,7 +42,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite'];
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
 interface Visual {
@@ -176,6 +176,7 @@ export class ScenarioVisuals {
         return this.water(name, e);
       case 'flag':
       case 'hill':
+      case 'bombsite':
         return this.objective(name, e);
     }
   }
@@ -188,7 +189,9 @@ export class ScenarioVisuals {
    * team's colour, or a hill's area. In a match the mode draws these itself
    * (and only in its own mode).
    */
-  private objective(name: string, e: Extract<MapEntity, { kind: 'flag' | 'hill' }>): Visual {
+  private objective(name: string, e: Extract<MapEntity, { kind: 'flag' | 'hill' | 'bombsite' }>): Visual {
+    // Bomb sites always show (they're part of the level in every mode, like painted site markings).
+    if (e.kind === 'bombsite') return { root: createBombsiteModel(this.scene, e.radius, e.label, name) };
     if (!this.opts.editor) return { root: new TransformNode(name, this.scene) };
     if (e.kind === 'hill') return { root: createHillModel(this.scene, e.radius, name) };
     const color = this.teamColor(e.team);

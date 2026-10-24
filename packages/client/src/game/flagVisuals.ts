@@ -7,7 +7,10 @@ import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder'
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { FLAG_CARRIED, FLAG_DROPPED, type Faction, type MapDocument, type ModeSnapshot, type Vec3 } from '@chronosplit/shared';
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
+import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
+import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
+import { BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type MapDocument, type ModeSnapshot, type Vec3 } from '@chronosplit/shared';
 import type { RemotePose } from './interpolation.ts';
 
 const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();
@@ -72,6 +75,34 @@ export function createHillModel(scene: Scene, radius: number, name: string, colo
     const post = part(CreateBox(`${name}_post${i}`, { width: 0.12, height: 1.4, depth: 0.12 }, scene), root, mat(scene, color, 0.7, 0.6));
     post.position.set(Math.sin(a) * radius, 0.7, Math.cos(a) * radius);
   }
+  return root;
+}
+
+/** A bomb site: an orange area with its letter floating over it. */
+export function createBombsiteModel(scene: Scene, radius: number, label: string, name: string): TransformNode {
+  const root = createHillModel(scene, radius, name, '#ff7a2a');
+  const tex = new DynamicTexture(`${name}_tex`, { width: 128, height: 128 }, scene, false);
+  tex.hasAlpha = true;
+  const ctx = tex.getContext() as CanvasRenderingContext2D;
+  ctx.clearRect(0, 0, 128, 128);
+  ctx.fillStyle = '#ff7a2a';
+  ctx.font = 'bold 104px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label.slice(0, 2), 64, 70);
+  tex.update();
+  const m = new StandardMaterial(`${name}_labelmat`, scene);
+  m.diffuseTexture = tex;
+  m.emissiveColor = Color3.FromHexString('#ff7a2a');
+  m.useAlphaFromDiffuseTexture = true;
+  m.disableLighting = true;
+  m.backFaceCulling = false;
+  const plane = CreatePlane(`${name}_label`, { size: 1.6 }, scene);
+  plane.material = m;
+  plane.billboardMode = MeshClass.BILLBOARDMODE_Y;
+  plane.position.y = 2.8;
+  plane.parent = root;
+  plane.isPickable = false;
   return root;
 }
 
@@ -162,9 +193,27 @@ export class ModeVisuals {
       }
       h.node.rotation.y = t * 0.3;
     }
+    // Bomb: a dark case with a red light, on the carrier's back, lying where it fell, or planted (blinking faster as the fuse runs down).
+    const bm = md?.bm;
+    if (bm) {
+      this.bomb ??= createBombModel(this.scene);
+      const [state, x, y, z, carrier, secs] = bm;
+      const pose = state === BOMB_CARRIED ? poses.find((p) => p.slot === carrier) : undefined;
+      const show = state === BOMB_DROPPED || state === BOMB_PLANTED || (state === BOMB_CARRIED && carrier !== localSlot && !!pose);
+      this.bomb.root.setEnabled(show);
+      if (pose) {
+        this.bomb.root.position.set(pose.x - Math.sin(pose.yaw) * 0.32, pose.y + 1.05, pose.z - Math.cos(pose.yaw) * 0.32);
+        this.bomb.root.rotation.y = pose.yaw;
+      } else this.bomb.root.position.set(x, y + 0.12, z);
+      const rate = state === BOMB_PLANTED ? Math.max(1.5, 12 - secs * 0.25) : 1;
+      this.bomb.light.setEnabled(Math.sin(t * Math.PI * 2 * rate) > 0);
+    } else this.bomb?.root.setEnabled(false);
   }
 
+  private bomb?: { root: TransformNode; light: Mesh };
+
   dispose(): void {
+    this.bomb?.root.dispose(false, false);
     for (const f of this.flags) {
       f.base.dispose(false, false);
       f.flag.dispose(false, false);
@@ -173,4 +222,15 @@ export class ModeVisuals {
     this.flags.length = 0;
     this.hills.clear();
   }
+}
+
+/** The bomb: a small dark case with a blinking red light on top. */
+function createBombModel(scene: Scene): { root: TransformNode; light: Mesh } {
+  const root = new TransformNode('bomb', scene);
+  part(CreateBox('bomb_case', { width: 0.42, height: 0.2, depth: 0.28 }, scene), root, mat(scene, '#2d2a26'));
+  const pad = part(CreateBox('bomb_pad', { width: 0.2, height: 0.03, depth: 0.14 }, scene), root, mat(scene, '#3a6a3a', 0.3));
+  pad.position.y = 0.115;
+  const light = part(CreateSphere('bomb_light', { diameter: 0.07, segments: 8 }, scene), root, mat(scene, '#ff2a2a', 1));
+  light.position.set(0.13, 0.13, 0.07);
+  return { root, light };
 }

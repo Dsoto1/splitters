@@ -18,7 +18,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 12;
+export const MAP_FORMAT_VERSION = 13;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -344,7 +344,14 @@ export const HillEntity = EntityBase.extend({
   radius: z.number().min(2).max(20).default(5),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity]);
+/** Bomb mode: a site the attackers plant the bomb at (labelled A, B, …). */
+export const BombsiteEntity = EntityBase.extend({
+  kind: z.literal('bombsite'),
+  label: z.string().min(1).max(2).default('A'),
+  radius: z.number().min(2).max(12).default(4),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -468,6 +475,7 @@ export type BloodAmount = (typeof BLOOD_AMOUNTS)[number];
 export type WaterEntity = z.infer<typeof WaterEntity>;
 export type FlagEntity = z.infer<typeof FlagEntity>;
 export type HillEntity = z.infer<typeof HillEntity>;
+export type BombsiteEntity = z.infer<typeof BombsiteEntity>;
 export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
 export type Liquid = (typeof LIQUIDS)[number];
 export type Faction = z.infer<typeof Faction>;

@@ -65,7 +65,7 @@ import { ModeHud } from './modeHud.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { markerSetting } from './crosshair.ts';
-import { Interpolator } from './interpolation.ts';
+import { Interpolator, type RemotePose } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
 import { ScenarioState } from './scenarioState.ts';
@@ -205,6 +205,9 @@ export class GameSession {
     this.showStats = opts.showStats;
     this.input.onToggle.set('F3', () => (this.showStats = !this.showStats));
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
+    this.input.onToggle.set('Space', () => {
+      if (this.local && !this.local.alive) this.spectateNext = true;
+    });
     this.input.onToggle.set('KeyH', () => {
       this.thirdPerson = !this.thirdPerson;
       this.hud.pickup(this.thirdPerson ? 'Third-person view (H to go back)' : 'First-person view');
@@ -406,7 +409,7 @@ export class GameSession {
         const geometry = buildMapGeometry(loaded.map);
         this.map = loaded.map;
         this.view.buildMap(loaded.map, geometry);
-        if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
+        if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
@@ -660,6 +663,26 @@ export class GameSession {
     } else this.hud.setMarker(null);
   }
 
+  /** Who you watch while out of an Elimination or Bomb round (Space: the next teammate). */
+  private spectating = -1;
+
+  private spectateTarget(now: number): RemotePose | null {
+    const mode = this.rules?.mode;
+    if (mode !== 'core.elim' && mode !== 'core.bomb') return null;
+    if (this.phase !== 'playing') return null;
+    const mine = this.hud.team(this.slot)?.id;
+    const mates = this.interp.sample(now).filter((p) => p.alive && p.slot !== this.slot && p.slot < NPC_ID_BASE && this.hud.team(p.slot)?.id === mine);
+    if (!mates.length) return null;
+    if (this.spectateNext) {
+      this.spectateNext = false;
+      const i = mates.findIndex((p) => p.slot === this.spectating);
+      this.spectating = mates[(i + 1) % mates.length]!.slot;
+    }
+    return mates.find((p) => p.slot === this.spectating) ?? ((this.spectating = mates[0]!.slot), mates[0]!);
+  }
+
+  private spectateNext = false;
+
   /** "STREAK 4 · Supply Pulse at 5", while streaks are on and you have one. */
   private streakLabel(): string {
     if (!this.streak || this.rules?.killstreaks === false) return '';
@@ -796,7 +819,20 @@ export class GameSession {
         const drawn = local.renderPos(this.acc / TICK_DT);
         this.drawnPos = drawn;
         const head = { x: drawn.x, y: drawn.y + this.eyeOffset, z: drawn.z };
-        if (this.thirdPerson && local.alive) {
+        const watch = !local.alive ? this.spectateTarget(now) : null;
+        if (watch) {
+          // Out of the round: watch a teammate who's still in it, from over their shoulder.
+          const fwd = viewDirection(watch.yaw, 0.25);
+          const at = { x: watch.x, y: watch.y + 1.7, z: watch.z };
+          const back = { x: -fwd.x, y: 0.35, z: -fwd.z };
+          const len = Math.hypot(back.x, back.y, back.z);
+          const dir = { x: back.x / len, y: back.y / len, z: back.z / len };
+          const hit = local.physics.raycastWorld(at, dir, 3.2);
+          const d = hit === null ? 3.2 : Math.max(0.4, hit - 0.25);
+          this.view.setCamera({ x: at.x + dir.x * d, y: at.y + dir.y * d, z: at.z + dir.z * d }, watch.yaw, -0.2, fov);
+          this.hud.setSpectating(this.hud.name(watch.slot));
+        } else if (this.thirdPerson && local.alive) {
+          this.hud.setSpectating(null);
           // Over the right shoulder, pulled in where a wall is in the way.
           const fwd = viewDirection(this.input.yaw, this.input.pitch);
           const right = { x: Math.cos(this.input.yaw), y: 0, z: -Math.sin(this.input.yaw) };
@@ -808,7 +844,10 @@ export class GameSession {
           // Squeezed in against a wall: your own body would fill the screen, so it isn't drawn.
           this.tpClose = d < 1.6;
           this.view.setCamera({ x: head.x + dir.x * d, y: head.y + dir.y * d, z: head.z + dir.z * d }, this.input.yaw, this.input.pitch, fov);
-        } else this.view.setCamera(head, this.input.yaw, this.input.pitch, fov);
+        } else {
+          this.hud.setSpectating(null);
+          this.view.setCamera(head, this.input.yaw, this.input.pitch, fov);
+        }
       }
       this.view.setViewmodel(weapon);
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, (weapon.reloadTicks - local.reloadTicks) / 10) : 0;

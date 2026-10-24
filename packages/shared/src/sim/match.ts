@@ -161,6 +161,8 @@ export interface Combatant {
   damageTicks: number;
   /** Trigger state: buttons last input, spin-up/charge, semi-auto latch, burst in progress, spread bloom. */
   prevButtons: number;
+  /** Tick this player last pressed Use (E): objective modes read it (Bomb: plant / defuse). */
+  useTick?: number;
   windup: number;
   semiLatch: boolean;
   burstLeft: number;
@@ -412,6 +414,10 @@ export class Match {
           groundBelow: (p) => {
             const hit = this.physics.raycastHit(p, { x: 0, y: -1, z: 0 }, 8);
             return hit ? p.y - hit.dist : null;
+          },
+          explode: (at, radius, damage, by) => {
+            this.pendingEvents.push({ e: 'explode', s: by?.slot ?? -1, p: tuple(at), r: radius });
+            this.splash(at, radius, damage, damage * 0.15, by, 'core.bomb', 1, 8);
           },
         })
       : null;
@@ -899,6 +905,7 @@ export class Match {
       if (c.reloadTicks > 0 && --c.reloadTicks === 0) this.finishReload(c);
 
       if (input.buttons & BUTTON_USE) {
+        c.useTick = this.tick;
         // Get out, get in, or use whatever you are looking at.
         if (c.mount) this.leaveMount(c, true);
         else if (!this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);

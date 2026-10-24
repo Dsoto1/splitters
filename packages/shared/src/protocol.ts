@@ -122,6 +122,8 @@ export type GameEvent =
   | { e: 'hill'; a: 'move' | 'hold'; i: number; team: string | null }
   /** Elimination: `team` won round `round` (null: a draw), or round `round` started. */
   | { e: 'elim'; a: 'win' | 'start'; round: number; team: string | null }
+  /** Bomb mode: picked up, dropped, planted (at site entity `i`), defused or exploded; `s` who did it (null: nobody). */
+  | { e: 'bomb'; a: 'pickup' | 'drop' | 'plant' | 'defuse' | 'explode'; s: number | null; i?: number; p?: Tuple3 }
   // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
   /** Creator message from a logic rule. */
   | { e: 'msg'; text: string; secs: number }
@@ -224,7 +226,19 @@ export interface ModeSnapshot {
   hl?: [number, number, number];
   /** Elimination: [round, seconds until the next round starts (0 while in play), ...players alive per team]. */
   el?: number[];
+  /**
+   * Bomb: [state (BOMB_*), x, y, z, carrier slot (-1 none), seconds left on the fuse (planted),
+   * plant/defuse progress 0-100 (-1 none), who is planting/defusing (-1 none), site entity index (-1 none)].
+   */
+  bm?: [number, number, number, number, number, number, number, number, number];
 }
+
+/** Bomb states in ModeSnapshot.bm. */
+export const BOMB_CARRIED = 0;
+export const BOMB_DROPPED = 1;
+export const BOMB_PLANTED = 2;
+export const BOMB_DEFUSED = 3;
+export const BOMB_EXPLODED = 4;
 
 export type ServerMessage =
   | {

@@ -88,17 +88,17 @@ sounds (needs new CC0 sounds and a grip pose).
 |---|---|
 | 1 | **[feature]** 48 v 48 (96 players), and **players take over bots** in live matches |
 | 2 | **[ux]** Team setup: host defines teams (count, size, name, colour, leader) instead of a long dropdown |
-| 3 | **[feature]** Friendly-fire toggle and many more match settings |
-| 4 | **[feature]** Elimination: spectate remaining players or your corpse after you're out |
+| 3 | ✅ **[feature]** Friendly-fire toggle and many more match settings — friendly fire (off/half/full), gravity, fall damage, kill streaks, squad spawns, bot style, emotes, body sizes |
+| 4 | ✅ **[feature]** Elimination: spectate remaining players or your corpse after you're out — out of an Elimination or Bomb round you watch a living teammate from over their shoulder; Space cycles |
 | 5 | **[feature]** Fort-building mode like SourceForts (build phase then CTF) over any map |
 | 6 | **[feature]** Ricochet-style mode (disc arenas) and a Team Fortress-style class mode |
 | 7 | **[feature]** Race mode + **road/track tool** in MapMaker (draw road, set laps); podracer-style race with shooters on the side |
 | 8 | **[feature]** Tribal spear mode: only throwable spears, hold one, one-hit impale, go fetch more |
-| 9 | **[question]** Bomb and hostage modes — worth adding for the CS-style maps (recommend yes, bomb first) |
+| 9 | 🟡 **[feature]** Bomb and hostage modes — ✅ **Bomb**: rounds; attackers (first team) carry the bomb (drops on death), plant at a Bomb Site (E, hold still 3 s), 40 s fuse, defenders defuse (E at the bomb, hold still 5 s); new MapMaker "Bomb Site" (format v13); Sandgate has sites A and B; bots plant, defend and defuse. Hostage still to do |
 | 10 | **[feature]** Co-op/scenario chains: link scenarios through a playlist or custom link |
 | 11 | **[feature]** Easier LAN: show the join address on the host screen, auto-discover games on the LAN |
 | 12 | **[feature]** Custom maps on servers, CS-style: maps travel with the join (already true); cache them by content hash, "Save this map" to your MapMaker library (author's choice), server list shows map name + preview. **Maps only, built from our suite — no custom assets** |
-| 13 | **[tech]** Smaller snapshots (binary + delta) — ~5–10× less bandwidth; needed before player hosting or ~50 matches |
+| 13 | 🟡 **[tech]** Smaller snapshots (binary + delta) — ✅ dedicated server compresses its messages (~4× smaller snapshots). Still to do: binary + delta for player hosting (WebRTC) and bigger matches |
 | 14 | 🟡 **[feature]** Player-hosted matches: ✅ "Host game" (pause menu) gives a 6-letter code + invite link; friends join by link or Online → Join by code and take bots' places (WebRTC data channels, PeerJS broker; `pnpm dev:peer` + `?peer=` for your own). Next: TURN relay (some strict networks can't connect directly; also hides IPs), smaller snapshots (#13), host in a worker |
 | 15 | **[tech]** Multi-match launcher: one process per match, a few per core, plus a lobby/server list for public dedicated servers |
 

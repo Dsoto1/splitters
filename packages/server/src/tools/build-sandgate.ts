@@ -144,6 +144,17 @@ run('Add pickups', {
   entities: pickups.map(([item, x, z]) => ({ id: id('pickup'), kind: 'pickup' as const, item: `core.${item}`, position: [x, 0, z] as [number, number, number], respawnSeconds: null })),
 });
 
+// ---------------------------------------------------------------- bomb sites
+
+// Bomb mode: the two north squares are the sites (Embers attack from the south, Tide defend).
+run('Add bomb sites', {
+  kind: 'addEntities',
+  entities: [
+    { id: id('site'), kind: 'bombsite', position: [12, 0, 54], label: 'A', radius: 6 },
+    { id: id('site'), kind: 'bombsite', position: [74, 0, 54], label: 'B', radius: 6 },
+  ],
+});
+
 // ---------------------------------------------------------------- map settings
 
 run('Change theme', setThemeCommand(history.doc, 'core.desert'));
@@ -154,7 +165,7 @@ run('Edit map', {
     id: 'sandgate',
     author: 'ChronoSplit',
     description:
-      'A sun-baked desert town for Team Deathmatch. Embers spawn in the south, Tide in the north. A long street runs up the west side, mid doors split the centre, covered tunnels wind up the east, and two crate-filled squares wait at the north end.',
+      'A sun-baked desert town for Team Deathmatch. Embers spawn in the south, Tide in the north. A long street runs up the west side, mid doors split the centre, covered tunnels wind up the east, and two crate-filled squares wait at the north end: bomb sites A and B in Bomb mode.',
     recommendedPlayers: { min: 4, max: 16 },
     supportedModes: ['core.tdm', 'core.deathmatch'],
   },

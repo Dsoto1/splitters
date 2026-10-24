@@ -630,6 +630,7 @@ function selectionSize(e: MapEntity): number {
     case 'encounter':
       return e.radius * 2 + 0.4;
     case 'hill':
+    case 'bombsite':
       return e.radius * 2 + 0.4;
     case 'flag':
       return 2.6;

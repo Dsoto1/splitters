@@ -209,6 +209,12 @@ export class SessionAudio {
         if (ev.a === 'move') this.audio.play('objective.new');
         else if (ev.team !== null) this.audio.play(ev.team === this.myTeam() ? 'cue.chime' : 'cue.buzzer', { gain: 0.6 });
         break;
+      case 'bomb':
+        if (ev.a === 'plant') this.audio.play('cue.alarm');
+        else if (ev.a === 'defuse') this.audio.play('objective.complete');
+        else if (ev.a === 'pickup' && ev.s === me) this.audio.play('pickup.powerup');
+        else if (ev.a === 'drop') this.audio.play('message');
+        break;
       case 'elim':
         if (ev.a === 'start') this.audio.play('announce.fight');
         else this.audio.play(ev.team === null ? 'announce.tie' : ev.team === this.myTeam() ? 'announce.win' : 'announce.lose');

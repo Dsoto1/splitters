@@ -1,11 +1,11 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 5,
+  "formatVersion": 13,
   "metadata": {
     "id": "sandgate",
     "name": "Sandgate",
     "author": "ChronoSplit",
-    "description": "A sun-baked desert town for Team Deathmatch. Embers spawn in the south, Tide in the north. A long street runs up the west side, mid doors split the centre, covered tunnels wind up the east, and two crate-filled squares wait at the north end.",
+    "description": "A sun-baked desert town for Team Deathmatch. Embers spawn in the south, Tide in the north. A long street runs up the west side, mid doors split the centre, covered tunnels wind up the east, and two crate-filled squares wait at the north end: bomb sites A and B in Bomb mode.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -872,6 +872,28 @@
       "kind": "pickup",
       "item": "core.powerup_damage",
       "respawnSeconds": null
+    },
+    {
+      "id": "site_096",
+      "position": [
+        12,
+        0,
+        54
+      ],
+      "kind": "bombsite",
+      "label": "A",
+      "radius": 6
+    },
+    {
+      "id": "site_097",
+      "position": [
+        74,
+        0,
+        54
+      ],
+      "kind": "bombsite",
+      "label": "B",
+      "radius": 6
     }
   ],
   "factions": [],
@@ -881,5 +903,11 @@
     "objectives": [],
     "rules": []
   },
+  "terrain": null,
+  "bounds": null,
+  "backdrop": null,
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
   "dependencies": []
 }

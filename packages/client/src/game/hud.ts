@@ -430,6 +430,18 @@ export class Hud {
     this.scope.hidden = !on;
   }
 
+  /** While out of the round: whom you're watching (null hides it). */
+  setSpectating(name: string | null): void {
+    let el = document.getElementById('spectating');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'spectating';
+      document.getElementById('crosshair')?.after(el);
+    }
+    el.hidden = !name;
+    if (name) el.textContent = `Watching ${name} · Space: next teammate`;
+  }
+
   /** Aiming down the sights (0..1): the crosshair fades out and a red-dot reticle takes its place. */
   setAds(amount: number): void {
     let dot = document.getElementById('reddot');

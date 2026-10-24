@@ -272,6 +272,7 @@ export const SCENARIO_PALETTE = [
   { key: 'ladder', label: 'Ladder', search: 'ladder climb wall up rungs' },
   { key: 'flag', label: 'Flag Base', search: 'flag base ctf capture the flag team objective' },
   { key: 'hill', label: 'Hill', search: 'hill king of the hill koth zone objective control point' },
+  { key: 'bombsite', label: 'Bomb Site', search: 'bomb site plant defuse objective counter strike cs a b' },
   { key: 'crate', label: 'Crate', search: 'crate box destructible break cover' },
   { key: 'barrel', label: 'Explosive Barrel', search: 'barrel explosive destructible red boom' },
   { key: 'wall', label: 'Breakable Wall', search: 'wall breakable destructible breach' },
@@ -315,6 +316,11 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     }
     case 'hill':
       return { id: newId('hill'), kind: 'hill', position, radius: 5 };
+    case 'bombsite': {
+      // A, then B, then C…
+      const n = doc?.entities.filter((e) => e.kind === 'bombsite').length ?? 0;
+      return { id: newId('site'), kind: 'bombsite', position, label: String.fromCharCode(65 + Math.min(n, 25)), radius: 4 };
+    }
     case 'door':
     case 'door_locked':
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: key === 'door_locked', auto: key === 'door' };
@@ -386,7 +392,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {

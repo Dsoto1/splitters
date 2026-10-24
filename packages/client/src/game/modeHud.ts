@@ -1,4 +1,4 @@
-import { FLAG_CARRIED, FLAG_DROPPED, type Faction, type GameEvent, type MapDocument, type ModeSnapshot, type Vec3 } from '@chronosplit/shared';
+import { BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type GameEvent, type MapDocument, type ModeSnapshot, type Vec3 } from '@chronosplit/shared';
 import { ModeVisuals } from './flagVisuals.ts';
 import type { Hud } from './hud.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -25,7 +25,7 @@ export class ModeHud {
     private readonly slot: () => number,
   ) {
     this.visuals = new ModeVisuals(view.scene, map, teams, mode);
-    hud.waitLabel = mode === 'core.elim' ? 'Out until the next round' : 'Respawning…';
+    hud.waitLabel = mode === 'core.elim' || mode === 'core.bomb' ? 'Out until the next round' : 'Respawning…';
   }
 
   /** Flags drawn (for tests). */
@@ -84,10 +84,37 @@ export class ModeHud {
     } else if (ev.e === 'hill') {
       if (ev.a === 'move') this.hud.showMessage('The hill has moved!', 2.5);
       else if (ev.team !== null) this.hud.showMessage(ev.team === mine ? 'Your team holds the hill' : `${this.teamName(ev.team)} hold the hill!`, 2);
+    } else if (ev.e === 'bomb') {
+      const attacker = mine === this.teams[0]?.id;
+      const site = ev.i !== undefined ? this.siteLabel(ev.i) : '';
+      const text =
+        ev.a === 'plant'
+          ? attacker
+            ? `Bomb planted at ${site}! Defend it`
+            : `Bomb planted at ${site}! Defuse it`
+          : ev.a === 'defuse'
+            ? 'Bomb defused!'
+            : ev.a === 'explode'
+              ? 'The bomb exploded!'
+              : ev.a === 'pickup'
+                ? ev.s === me
+                  ? 'You have the bomb: plant it at a site (E, then hold still)'
+                  : attacker
+                    ? `${name(ev.s)} has the bomb`
+                    : ''
+                : attacker
+                  ? 'The bomb has been dropped!'
+                  : '';
+      if (text) this.hud.showMessage(text, 3);
     } else if (ev.e === 'elim') {
       if (ev.a === 'start') this.hud.showMessage(`Round ${ev.round}: fight!`, 2);
       else this.hud.showMessage(ev.team === null ? `Round ${ev.round} drawn` : ev.team === mine ? `Your team wins round ${ev.round}!` : `${this.teamName(ev.team)} win round ${ev.round}`, 3);
     }
+  }
+
+  private siteLabel(i: number): string {
+    const e = this.map.entities[i];
+    return e?.kind === 'bombsite' ? e.label : '?';
   }
 
   /** Per frame: world visuals, the status line and objective markers. */
@@ -145,6 +172,24 @@ export class ModeHud {
       const [round, next, ...alive] = md.el;
       const counts = this.teams.map((t, i) => `<span style="color:${t.color}">${alive[i] ?? 0}</span>`).join(' v ');
       parts.push(`<span class="ms" data-round="${round}" style="color:#f2f2f2"><em>Round ${round} · ${next ? `next round in ${next}s` : `${counts} standing`}</em></span>`);
+    }
+    if (md.bm) {
+      const [state, x, y, z, carrier, secs, progress, actor, site] = md.bm;
+      const attacker = mine === this.teams[0]?.id;
+      const me = this.slot();
+      const at = { x, y, z };
+      let word = '';
+      if (state === BOMB_PLANTED) word = `Planted at ${this.siteLabel(site)} · ${secs}s`;
+      else if (state === BOMB_DROPPED) word = 'Dropped';
+      else if (state === BOMB_CARRIED) word = carrier === me ? 'You carry it' : attacker ? `Carried by ${escapeHtml(this.hud.name(carrier))}` : 'With the attackers';
+      parts.push(`<span class="ms" data-bomb="${state}" style="color:${state === BOMB_PLANTED ? '#ff4a3a' : '#ffb03b'}"><b>✱</b><em>Bomb: ${word}</em></span>`);
+      if (progress >= 0 && actor === me) parts.push(`<span class="ms" style="color:#fff"><em>${state === BOMB_PLANTED ? 'Defusing' : 'Planting'} ${progress}% — hold still</em></span>`);
+      if (state === BOMB_PLANTED) mark('bomb', at, '#ff4a3a', '✱', attacker ? 'Defend' : 'Defuse');
+      else if (attacker && state === BOMB_DROPPED) mark('bomb', at, '#ffb03b', '✱', 'Pick up');
+      // Attackers see the sites to go to; defenders see theirs to hold.
+      if (state !== BOMB_PLANTED) {
+        for (const [i, e] of this.map.entities.entries()) if (e.kind === 'bombsite') mark(`site_${i}`, { x: e.position[0], y: e.position[1], z: e.position[2] }, '#ff7a2a', e.label, attacker ? (carrier === me ? 'Plant' : 'Site') : 'Guard');
+      }
     }
     this.hud.setModeStatus(parts.join(''));
     this.hud.setModeMarkers(markers);

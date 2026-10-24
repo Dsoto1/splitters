@@ -2,10 +2,10 @@ import type { MapDocument } from '../map/schema.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb';
 
 /** Every mode, in menu order. */
-export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.coop'];
+export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.coop'];
 
 export const MODE_LABELS: Record<GameMode, string> = {
   'core.deathmatch': 'Deathmatch',
@@ -13,11 +13,12 @@ export const MODE_LABELS: Record<GameMode, string> = {
   'core.ctf': 'Capture the Flag',
   'core.koth': 'King of the Hill',
   'core.elim': 'Elimination',
+  'core.bomb': 'Bomb',
   'core.coop': 'Co-op',
 };
 
 /** Modes played in teams (factions from mapTeams). */
-export const isTeamMode = (mode: string): boolean => mode === 'core.tdm' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.elim';
+export const isTeamMode = (mode: string): boolean => mode === 'core.tdm' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.elim' || mode === 'core.bomb';
 
 export const isGameMode = (mode: string): mode is GameMode => (GAME_MODES as readonly string[]).includes(mode);
 
@@ -152,6 +153,21 @@ export const DEFAULT_ELIM_RULES: MatchRules = {
   intermissionTicks: TICK_RATE * 6,
 };
 
+/**
+ * Bomb: rounds like Elimination. The first team attacks with the bomb (plant
+ * it at a bomb site, then keep it from being defused until it blows); the
+ * second defends. Score limit counts rounds won.
+ */
+export const DEFAULT_BOMB_RULES: MatchRules = {
+  mode: 'core.bomb',
+  scoreLimit: 7,
+  timeLimitSeconds: 1500,
+  respawnDelayTicks: Math.round(TICK_RATE * 2),
+  startingWeapons: ['core.knife', 'core.pistol', 'core.rifle'],
+  startingGrenades: 1,
+  intermissionTicks: TICK_RATE * 6,
+};
+
 export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.deathmatch': DEFAULT_DEATHMATCH_RULES,
   'core.tdm': DEFAULT_TDM_RULES,
@@ -159,6 +175,7 @@ export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.ctf': DEFAULT_CTF_RULES,
   'core.koth': DEFAULT_KOTH_RULES,
   'core.elim': DEFAULT_ELIM_RULES,
+  'core.bomb': DEFAULT_BOMB_RULES,
 };
 
 /** Capture the Flag needs a flag base for each of its two teams. */
@@ -169,8 +186,12 @@ export function hasFlagBases(map: MapDocument): boolean {
 /** King of the Hill needs at least one hill spot. */
 export const hasHills = (map: MapDocument): boolean => map.entities.some((e) => e.kind === 'hill');
 
-/** Can this map run the mode at all (CTF without flag bases or KOTH without hills can't)? */
+/** Bomb mode needs at least one bomb site. */
+export const hasBombsites = (map: MapDocument): boolean => map.entities.some((e) => e.kind === 'bombsite');
+
+/** Can this map run the mode at all (CTF without flag bases, KOTH without hills or Bomb without sites can't)? */
 export function mapCanRun(map: MapDocument, mode: GameMode): boolean {
+  if (mode === 'core.bomb') return hasBombsites(map);
   if (mode === 'core.ctf') return hasFlagBases(map);
   if (mode === 'core.koth') return hasHills(map);
   return true;
@@ -187,13 +208,14 @@ export function playableModes(map: MapDocument): GameMode[] {
   if (hasFlagBases(map) && !out.includes('core.ctf')) out.push('core.ctf');
   if (hasHills(map) && !out.includes('core.koth')) out.push('core.koth');
   if (out.includes('core.tdm') && !out.includes('core.elim')) out.push('core.elim');
+  if (hasBombsites(map) && !out.includes('core.bomb')) out.push('core.bomb');
   return out;
 }
 
 /** Default rules for a mode on a map (team modes take the map's recommended teams; CTF is always two). */
 export function rulesForMode(map: MapDocument, mode: GameMode): MatchRules {
   const base = DEFAULT_RULES[mode];
-  if (mode === 'core.ctf') return { ...base, teamSizes: [...(map.teamSetup?.sizes.slice(0, 2) ?? [8, 8])] };
+  if (mode === 'core.ctf' || mode === 'core.bomb') return { ...base, teamSizes: [...(map.teamSetup?.sizes.slice(0, 2) ?? [8, 8])] };
   if (isTeamMode(mode) && map.teamSetup) return { ...base, teamSizes: [...map.teamSetup.sizes] };
   return base;
 }
