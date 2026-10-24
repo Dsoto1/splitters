@@ -12,6 +12,7 @@ import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { CORE_THEMES, SKIES, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@chronosplit/shared';
 import type { MapStyler } from './mapMeshes.ts';
+import { versioned } from './assetUrl.ts';
 
 /**
  * Everything past the play area, drawn but never collided with: a photo sky
@@ -85,7 +86,7 @@ export class BackdropVisuals {
     mat.fogEnabled = false;
     mat.diffuseColor = Color3.Black();
     mat.specularColor = Color3.Black();
-    const tex = sky.file ? new Texture(`${import.meta.env.BASE_URL}${sky.file}`, this.scene, true, false) : starfield(this.scene);
+    const tex = sky.file ? new Texture(versioned(`${import.meta.env.BASE_URL}${sky.file}`), this.scene, true, false) : starfield(this.scene);
     tex.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MODE;
     mat.reflectionTexture = tex;
     mat.reflectionTexture.level = dim;

@@ -18,6 +18,7 @@ const HAZARD_DEATHS: Record<string, string> = {
   'core.trap_laser': 'was sliced by a laser',
   'core.barrel': 'was caught in a barrel blast',
   'core.fall': 'fell',
+  'core.respawn': 'respawned',
   'core.lava': 'melted in lava',
   'core.acid': 'dissolved in acid',
   'core.drown': 'drowned',

@@ -7,6 +7,7 @@ import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type TilePlacement, type WorldBox } from '@chronosplit/shared';
 import { materialPixels } from './materials/patterns.ts';
+import { versioned } from './assetUrl.ts';
 
 /**
  * Faces of a box: corners (clockwise from outside, Babylon's front face),
@@ -253,7 +254,7 @@ export class MapStyler {
     const key = `${id}_${map}`;
     let tex = this.images.get(key);
     if (!tex) {
-      tex = new Texture(`${import.meta.env.BASE_URL}textures/${key}.jpg`, this.scene, false, true, Texture.TRILINEAR_SAMPLINGMODE);
+      tex = new Texture(versioned(`${import.meta.env.BASE_URL}textures/${key}.jpg`), this.scene, false, true, Texture.TRILINEAR_SAMPLINGMODE);
       tex.anisotropicFilteringLevel = 8;
       this.images.set(key, tex);
     }

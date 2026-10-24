@@ -1,4 +1,4 @@
-import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
+import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'chronosplit.mouse';
@@ -49,6 +49,8 @@ export class InputState {
   throwAiming = false;
   /** Crouch / prone toggles (C, Z). */
   crouchOn = false;
+  /** Respawn asked for (K, or the pause menu): sent with the next input. */
+  respawnQueued = false;
   proneOn = false;
   /** Set by the session: the held weapon has a second trigger (RMB fires it instead of zooming). */
   altTrigger = false;
@@ -72,6 +74,7 @@ export class InputState {
         if (e.code === 'Space') this.jumpQueued = true;
         if (e.code === 'KeyR') this.reloadQueued = true;
         if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
+        if (e.code === 'KeyK' && !e.repeat) this.respawnQueued = true;
         // C crouches and Z lies prone (toggles); jumping or sprinting gets you up.
         if (e.code === 'KeyC' && !e.repeat) {
           this.crouchOn = !this.crouchOn;
@@ -194,6 +197,8 @@ export class InputState {
     if (this.crouchOn) buttons |= BUTTON_CROUCH;
     if (this.proneOn) buttons |= BUTTON_PRONE;
     if (this.useQueued) buttons |= BUTTON_USE;
+    if (this.respawnQueued) buttons |= BUTTON_RESPAWN;
+    this.respawnQueued = false;
     this.jumpQueued = false;
     this.reloadQueued = false;
     this.useQueued = false;

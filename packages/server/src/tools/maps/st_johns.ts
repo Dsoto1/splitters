@@ -389,8 +389,12 @@ box(gymNotch.x0, 0, gymNotch.z0, gymNotch.x1, 7, gymNotch.z1, STONE);
 battlements(gymNotch, 7);
 // Gerber pool at the east end: a raised deck round the water.
 const pool: Rect = { x0: X(1022), x1: gym.x1 - 2, z0: gym.z0 + 3, z1: gym.z1 - 3 };
-for (const part of minus({ x0: pool.x0 - 2, x1: pool.x1, z0: pool.z0 - 1.5, z1: pool.z1 + 1.5 }, pool)) slab(part, 0, 1.4, { material: 'white_tiles' });
+for (const part of minus({ x0: pool.x0 - 2, x1: gym.x1 - T, z0: pool.z0 - 1.5, z1: pool.z1 + 1.5 }, pool)) slab(part, 0, 1.4, { material: 'white_tiles' });
 m.water([(pool.x0 + pool.x1) / 2, 0, (pool.z0 + pool.z1) / 2], [pool.x1 - pool.x0, 1.3, pool.z1 - pool.z0]);
+// Ways out of the water: steps up the west end, a ladder at the east end.
+const poolMid = (pool.z0 + pool.z1) / 2;
+for (let i = 0; i < 6; i++) box(pool.x0 + i * 0.5, 0, poolMid - 1.5, pool.x0 + (i + 1) * 0.5, 1.4 - i * (1.1 / 6), poolMid + 1.5, { material: 'white_tiles' });
+m.add({ kind: 'ladder', position: [pool.x1, 0.1, poolMid], yaw: -P, height: 1.3, width: 1 });
 // Steps up to the deck from the gym floor.
 for (let i = 0; i < 6; i++) box(pool.x0 - 2 - (6 - i) * 0.5, 0, pool.z1 - 4, pool.x0 - 2 - (5 - i) * 0.5, (i + 1) * (1.4 / 6), pool.z1 - 1, { material: 'white_tiles' });
 // Basketball court lines and hoops.

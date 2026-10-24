@@ -31,7 +31,7 @@ import {
 import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
-import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_ALT, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
@@ -786,6 +786,11 @@ export class Match {
       c.yaw = input.yaw;
       c.pitch = input.pitch;
       if (!c.alive) continue;
+      // Stuck (or just wants out): die here and respawn like any other death.
+      if (input.buttons & BUTTON_RESPAWN && !c.npc) {
+        this.kill(c, null, 'core.respawn');
+        continue;
+      }
 
       if (input.weapon && input.weapon !== c.current && c.weapons.has(input.weapon)) this.switchTo(c, input.weapon);
 

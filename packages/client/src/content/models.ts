@@ -4,6 +4,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 // Side-effect import: registers the glTF 2.0 loader plugin.
 import '@babylonjs/loaders/glTF/2.0';
+import { GLB, versioned } from '../assetUrl.ts';
 
 /** Base URL of built content (packages/client/public/models). */
 export const MODEL_BASE = `${import.meta.env.BASE_URL}models/`;
@@ -22,7 +23,7 @@ export class ModelLibrary {
   load(path: string): Promise<AssetContainer> {
     let p = this.containers.get(path);
     if (!p) {
-      p = LoadAssetContainerAsync(/^(props|creatures)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`, this.scene);
+      p = LoadAssetContainerAsync(versioned(/^(props|creatures)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB);
       this.containers.set(path, p);
     }
     return p;

@@ -14,6 +14,7 @@ import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
 import { PLAYER, firstPersonArms, getLook, materialTint, textureFor, type BodyType, type CharacterLook } from '@chronosplit/shared';
+import { GLB, versioned } from '../assetUrl.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes. */
 export const LOD_DISTANCE = 18;
@@ -86,7 +87,7 @@ export class CharacterLibrary {
   private load(file: string): Promise<AssetContainer> {
     let p = this.files.get(file);
     if (!p) {
-      p = LoadAssetContainerAsync(`${CHARACTER_BASE}${file}`, this.scene);
+      p = LoadAssetContainerAsync(versioned(`${CHARACTER_BASE}${file}`), this.scene, GLB);
       this.files.set(file, p);
     }
     return p;
@@ -258,7 +259,7 @@ export class CharacterLibrary {
     let t = this.textures.get(id);
     if (!t) {
       // glTF textures are not flipped vertically.
-      t = new Texture(`${CHARACTER_BASE}textures/${id}.jpg`, this.scene, false, false);
+      t = new Texture(versioned(`${CHARACTER_BASE}textures/${id}.jpg`), this.scene, false, false);
       this.textures.set(id, t);
     }
     return t;

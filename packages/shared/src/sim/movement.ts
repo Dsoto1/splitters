@@ -19,7 +19,9 @@ export const BUTTON_SPRINT = 128;
 /** Wants to crouch / lie prone (held state; the client turns toggle keys into it). */
 export const BUTTON_CROUCH = 256;
 export const BUTTON_PRONE = 512;
-const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE;
+/** Ask to respawn now (stuck somewhere): you die where you stand and come back as usual. Counts as a suicide. */
+export const BUTTON_RESPAWN = 1024;
+const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {

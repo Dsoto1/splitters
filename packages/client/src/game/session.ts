@@ -185,6 +185,14 @@ export class GameSession {
     opts.canvas.addEventListener('click', lock, { signal });
     $('resume').addEventListener('click', lock, { signal });
     $('exitmatch').addEventListener('click', () => this.exit(), { signal });
+    $('respawn-now').addEventListener(
+      'click',
+      () => {
+        this.input.respawnQueued = true;
+        lock();
+      },
+      { signal },
+    );
     $('exitmatch').textContent = opts.exitLabel;
     // Mouse sensitivity and invert, saved for next time.
     const sens = $('mouse-sens') as HTMLInputElement;

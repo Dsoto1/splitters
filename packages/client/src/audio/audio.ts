@@ -1,6 +1,7 @@
 import type { Vec3 } from '@chronosplit/shared';
 import soundManifest from '../../../../content/sounds.json';
 import { SYNTH_RATE, synthesize, type SynthRecipe } from './synth.ts';
+import { versioned } from '../assetUrl.ts';
 
 export const SOUND_BASE = `${import.meta.env.BASE_URL}sounds/`;
 
@@ -121,7 +122,7 @@ export class AudioSystem {
             const files = def.variants as { file: string }[];
             list = await Promise.all(
               files.map(async (_, i) => {
-                const res = await fetch(`${SOUND_BASE}${id}_${i}.ogg`);
+                const res = await fetch(versioned(`${SOUND_BASE}${id}_${i}.ogg`));
                 if (!res.ok) throw new Error(`${res.status}`);
                 return ctx.decodeAudioData(await res.arrayBuffer());
               }),

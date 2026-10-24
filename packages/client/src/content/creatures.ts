@@ -7,6 +7,7 @@ import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
 import { CREATURE_SPECS, type CreatureKind, type CreatureSpec } from '@chronosplit/shared';
 import type { CharacterSpec } from './characters.ts';
+import { GLB, versioned } from '../assetUrl.ts';
 
 /**
  * Creature NPCs (imps, puglins, aliens): models with their own skeletons and
@@ -43,7 +44,7 @@ export class CreatureLibrary {
   private load(kind: CreatureKind): Promise<AssetContainer> {
     let p = this.files.get(kind);
     if (!p) {
-      p = LoadAssetContainerAsync(`${import.meta.env.BASE_URL}${CREATURE_SPECS[kind].model}`, this.scene);
+      p = LoadAssetContainerAsync(versioned(`${import.meta.env.BASE_URL}${CREATURE_SPECS[kind].model}`), this.scene, GLB);
       this.files.set(kind, p);
     }
     return p;
