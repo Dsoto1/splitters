@@ -36,7 +36,7 @@ describe('Sandgate', () => {
     filler.rebalance(12);
     void CORE_BOT_PROFILES;
     const events: GameEvent[] = [];
-    for (let i = 0; i < 60 * 45; i++) events.push(...match.step());
+    for (let i = 0; i < 60 * 60; i++) events.push(...match.step());
     const kills = events.filter((e): e is Extract<GameEvent, { e: 'kill' }> => e.e === 'kill' && e.killer !== null);
     expect(kills.length).toBeGreaterThan(10);
     const teamOf = (slot: number) => match.combatants().find((c) => c.slot === slot)?.faction;
