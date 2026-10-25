@@ -19,8 +19,9 @@ for (const x of [-5, 5]) m.tile('platform_rail', x, 0, 1);
 for (const y of [-4, 4]) m.tile('platform_rail', 0, y, 2);
 // Pads: deck edge -> towers (west/east), deck middle -> perches (north/south), perches/towers back down by dropping.
 const P = Math.PI / 2;
-m.pad([-18, 0, 0], -P, 14, 22).pad([18, 0, 0], P, 14, 22);
-m.pad([0, 0, 10], 0, 18, 19).pad([0, 0, -10], Math.PI, 18, 19);
+// Aimed at the middle of each landing, high enough to clear its railing (the push fades in the air, so these are solved, not guessed).
+for (const s of [-1, 1]) m.padTo([s * 18, 0, 0], [s * 40, 4, 0], 17);
+for (const s of [-1, 1]) m.padTo([0, 0, s * 10], [0, 8, s * 32], 21);
 // Cover on the deck.
 m.prop('crate_large', [-6, 0, 4], 0.3).prop('crate_large', [6, 0, -4], -0.3).prop('crate_small', [8, 0, 6]).prop('crate_small', [-8, 0, -6]);
 m.prop('metal_panel', [0, 0, 0], P);

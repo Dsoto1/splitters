@@ -69,9 +69,9 @@ m.block([21, 2.6, 0], [20, 0.4, 3], 'solid', { material: 'pbr_planks' });
 
 // A sky platform over the pond, reached by the jump pad on the north side or by jetpack.
 m.block([0, 12, 0], [6, 0.5, 6], 'solid', { material: 'pbr_marble_black' });
-m.pad([0, 3, 8], Math.PI, 21, 4);
+m.padTo([0, 3, 8], [0, 12, 1], 21);
 // Pads home from the outer islands.
-m.pad([0, 4, 33], Math.PI, 12, 16).pad([0, 2, -33], 0, 13, 16);
+m.padTo([0, 4, 33], [6, 3, 7], 12).padTo([0, 2, -33], [-6, 3, -7], 13);
 
 // Breakable cover.
 for (const [x, z, yaw] of [[-6, 9, 0], [6, -9, 0], [44, -4, 0.4], [36, 5, -0.3], [-4, 44, 0.2], [4, -44, -0.2]] as const) m.block([x, x === 44 || x === 36 ? 3 : z > 30 ? 4 : z < -30 ? 2 : 3, z], [2.4, 1.2, 1], 'breakable', { material: 'pbr_planks', yaw, health: 90, respawn: 20 });

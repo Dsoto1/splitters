@@ -299,7 +299,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   if (velY > 0 && moved.movedY < desiredY - 1e-4) velY = 0;
   if (velY > 0) grounded = false;
 
-  const decay = grounded ? (traction < 1 ? 0.975 : 0.86) : 0.99;
+  const decay = grounded ? (traction < 1 ? 0.975 : 0.86) : AIR_PUSH_DECAY;
   vx = Math.abs(vx * decay) < 0.02 ? 0 : quantize(vx * decay);
   vz = Math.abs(vz * decay) < 0.02 ? 0 : quantize(vz * decay);
   return {
@@ -317,6 +317,9 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     ...(ladder && !jump ? { climb: true } : {}),
   };
 }
+
+/** How much of a push (pads, knockback) is left after each tick in the air. */
+export const AIR_PUSH_DECAY = 0.99;
 
 /** A jump pad as movement sees it. */
 export interface JumpPad {
@@ -356,9 +359,14 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gra
   for (const p of pads) {
     let pos = { x: p.pos.x, y: p.pos.y + 0.9, z: p.pos.z };
     let vy = p.vy;
+    let vx = p.vx;
+    let vz = p.vz;
     for (let t = 0; t < 6; t += TICK_DT) {
-      const next = { x: pos.x + p.vx * TICK_DT, y: pos.y + vy * TICK_DT, z: pos.z + p.vz * TICK_DT };
+      const next = { x: pos.x + vx * TICK_DT, y: pos.y + vy * TICK_DT, z: pos.z + vz * TICK_DT };
       vy -= PLAYER.gravity * gravity * TICK_DT;
+      // The push fades in the air as it does in movement (AIR_PUSH_DECAY), so the landing is where you really come down.
+      vx *= AIR_PUSH_DECAY;
+      vz *= AIR_PUSH_DECAY;
       if (vy < 0) {
         const down = physics.raycastWorld({ x: next.x, y: next.y, z: next.z }, { x: 0, y: -1, z: 0 }, 1.0 + Math.abs(vy * TICK_DT));
         if (down !== null) {

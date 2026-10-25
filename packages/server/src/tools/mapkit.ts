@@ -10,6 +10,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
+  AIR_PUSH_DECAY,
+  PLAYER,
+  TICK_DT,
   CORE_PROPS,
   EditHistory,
   addSpawnCommand,
@@ -204,6 +207,41 @@ export class MapBuilder {
   /** King of the Hill: a hill spot (the hill moves between them in the order they are added). */
   hill(at: V3, radius = 5): this {
     return this.add({ kind: 'hill', position: at, radius });
+  }
+
+  /**
+   * A jump pad at `from` aimed to land you at `to` (both feet positions), with
+   * `power` m/s of lift: the push is solved by flying the launch tick by tick
+   * as movement does (gravity, and the push fading in the air).
+   */
+  padTo(from: V3, to: V3, power: number): this {
+    const dx = to[0] - from[0];
+    const dz = to[2] - from[2];
+    const want = Math.hypot(dx, dz);
+    const flight = (push: number): number | null => {
+      let y = from[1];
+      let vy = power;
+      let v = push;
+      let d = 0;
+      for (let t = 0; t < 8; t += TICK_DT) {
+        d += v * TICK_DT;
+        y += vy * TICK_DT;
+        vy -= PLAYER.gravity * TICK_DT;
+        v *= AIR_PUSH_DECAY;
+        if (vy < 0 && y <= to[1]) return d;
+      }
+      return null;
+    };
+    if (flight(0) === null) throw new Error(`${this.id}: a pad with ${power} m/s of lift never comes down to ${to[1]} m`);
+    let lo = 0;
+    let hi = 80;
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      if ((flight(mid) ?? Infinity) < want) lo = mid;
+      else hi = mid;
+    }
+    if (lo > 40) throw new Error(`${this.id}: the pad at ${from} needs ${lo.toFixed(1)} m/s of push (40 at most): give it more lift`);
+    return this.pad(from, +Math.atan2(dx, dz).toFixed(4), power, +lo.toFixed(2));
   }
 
   /** A jump pad throwing you `power` m/s up and `push` m/s along `yaw`. */
