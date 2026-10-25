@@ -25,6 +25,7 @@ import {
 } from '@chronosplit/shared';
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/peerLink.ts';
+import { installTooltips } from './tooltip.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { drawMapPlan } from './mapPlan.ts';
@@ -96,6 +97,26 @@ const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: nu
   'core.bomb': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
   'core.hostage': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
 };
+/** One line on each mode, for its (i). */
+const MODE_TIPS: Partial<Record<GameMode, string>> = {
+  'core.deathmatch': 'Everyone for themselves. Most kills wins.',
+  'core.tdm': 'Teams score a point per kill. First team to the score wins.',
+  'core.ctf': "Grab the enemy flag from their base and bring it to yours while your own flag is home.",
+  'core.koth': 'Stand on the hill to score seconds for your team; the hill moves now and then.',
+  'core.elim': 'Rounds with no respawns: wipe out the other teams to win the round.',
+  'core.bomb': 'Attackers plant the bomb at site A or B (stand still, E); defenders stop them or defuse it. No respawns in a round.',
+  'core.hostage': 'Rescuers lead hostages (E beside one) to the exit zone; guards hold them. No respawns in a round.',
+  'core.coop': 'Work through the mission with bot squadmates against the map\'s enemies.',
+};
+
+/** A small (i) that explains something when hovered or focused (see the tooltip in FrontEnd). */
+function infoTip(text: string): HTMLElement {
+  const i = el('span', { class: 'info', tabIndex: 0, textContent: 'i' });
+  i.dataset.tip = text;
+  i.setAttribute('aria-label', text);
+  return i;
+}
+
 const FAMILY_LABEL = { ranger: 'Ranger', peasant: 'Peasant', athlete: 'Sportswear' } as const;
 
 function storage(key: string, value?: string): string | null {
@@ -155,6 +176,7 @@ export class FrontEnd {
   ) {
     this.name = params.get('name') ?? storage('cs.name') ?? `Player${Math.floor(Math.random() * 900 + 100)}`;
     this.clan = storage('cs.clan') ?? '';
+    installTooltips();
     this.server = params.get('server') ?? storage('cs.server') ?? `ws://${location.hostname || 'localhost'}:7777`;
     this.look = validLookId(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK);
     const saved = JSON.parse(storage('cs.arcade') ?? 'null') as ArcadeSetup | null;
@@ -294,6 +316,8 @@ export class FrontEnd {
 
   /** Scroll position of the map list, kept across redraws of the play screen. */
   private mapScroll = 0;
+  /** The Arcade panel's "More rules" fold is open. */
+  private moreRules = false;
 
   private pickMap(key: string): void {
     const m = this.maps.find((x) => x.key === key);
@@ -359,33 +383,76 @@ export class FrontEnd {
       );
     const s = this.setup;
     const coop = s.mode === 'core.coop';
-    const start = el('button', { class: 'primary go', id: 'arcade-start', textContent: 'Start match' });
+    const twoTeams = s.mode === 'core.ctf' || s.mode === 'core.bomb' || s.mode === 'core.hostage';
+    const start = el('button', { class: 'primary go', id: 'arcade-start' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
     start.addEventListener('click', () => this.start());
+    // A setting row: its name with an (i) explaining it on hover, then the control.
+    const row = (label: string, tip: string | null, control: HTMLElement) => el('div', { class: 'row' }, el('span', { class: 'row-label' }, label, ...(tip ? [infoTip(tip)] : [])), control);
+    // Extra rules sit folded away; the fold says how many differ from the defaults.
+    const extras: { label: string; tip: string; changed: boolean; value: string; control: HTMLElement }[] = [
+      { label: 'Weapons', tip: 'Spears only: everyone holds one throwing spear. One hit kills; go and fetch it back. No other weapons, ammo or grenades.', changed: !!s.spears, value: 'Spears only', control: tabs([['normal', 'Normal'], ['spears', 'Spears only']], s.spears ? 'spears' : 'normal', (v) => (this.setup.spears = v === 'spears' || undefined)) },
+      { label: 'Bot style', tip: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', changed: !!s.botStyle, value: `${s.botStyle === 'arena' ? 'Arena' : 'Tactical'} bots`, control: tabs([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => (this.setup.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical'))) },
+      { label: 'Character sizes', tip: 'Matter: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. All equal: everyone plays at standard size.', changed: s.sizes === false, value: 'Equal sizes', control: tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on')) },
+      { label: 'Gravity', tip: "Map: whatever the map was built with (normal unless its maker changed it).", changed: s.gravity !== undefined, value: `${s.gravity === 0.4 ? 'Low' : s.gravity === 1.6 ? 'Heavy' : 'Normal'} gravity`, control: tabs([['map', 'Map'], ['0.4', 'Low'], ['1', 'Normal'], ['1.6', 'Heavy']], s.gravity === undefined ? 'map' : String(s.gravity), (v) => (this.setup.gravity = v === 'map' ? undefined : Number(v))) },
+      { label: 'Fall damage', tip: "Drops past about 5 m hurt; about 16 m kills. Map: the map's own setting.", changed: s.fallDamage !== undefined, value: `Fall damage ${s.fallDamage ? 'on' : 'off'}`, control: tabs([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => (this.setup.fallDamage = v === 'map' ? undefined : v === 'on')) },
+      { label: 'Friendly fire', tip: 'Team modes and co-op: whether your shots and blasts hurt teammates. Team kills cost a point.', changed: !!s.friendlyFire, value: `Friendly fire ${s.friendlyFire === 'half' ? 'half' : 'full'}`, control: tabs([['off', 'Off'], ['half', 'Half'], ['on', 'Full']], s.friendlyFire ?? 'off', (v) => (this.setup.friendlyFire = v === 'off' ? undefined : (v as 'half' | 'on'))) },
+      { label: 'Kill streaks', tip: 'Rewards for kills without dying: 3 UAV, 5 Supply Pulse (heal + ammo for nearby teammates), 7 Counter-UAV (jams enemy minimaps), 9 Airstrike.', changed: s.killstreaks === false, value: 'No kill streaks', control: tabs([['on', 'On'], ['off', 'Off']], s.killstreaks === false ? 'off' : 'on', (v) => (this.setup.killstreaks = v === 'on')) },
+      { label: 'Spawn on teammates', tip: 'Team modes: respawn beside a teammate who is out of the fight, when one is free.', changed: s.squadSpawn === false, value: 'No squad spawns', control: tabs([['on', 'On'], ['off', 'Off']], s.squadSpawn === false ? 'off' : 'on', (v) => (this.setup.squadSpawn = v === 'on')) },
+      { label: 'Emotes & messages', tip: 'Quick messages (B, then 1-7; 1 "Follow me!" and 7 "Hold here!" also order your team\'s bots), the dance emote (N). Pings (T) always work.', changed: s.emotes === false, value: 'No emotes', control: tabs([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => (this.setup.emotes = v === 'on')) },
+    ];
+    const changed = extras.filter((x) => x.changed);
+    const more = el('details', { class: 'setup-more' }) as HTMLDetailsElement;
+    more.open = this.moreRules;
+    more.addEventListener('toggle', () => (this.moreRules = more.open));
+    const reset = el('button', { class: 'link', textContent: 'Reset', title: 'Back to the standard rules' });
+    reset.hidden = !changed.length;
+    reset.addEventListener('click', (e) => {
+      e.preventDefault();
+      for (const k of ['spears', 'botStyle', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes'] as const) delete this.setup[k];
+      this.saveSetup();
+      this.go('play');
+    });
+    more.append(
+      el('summary', {}, el('span', { textContent: 'More rules' }), el('small', { textContent: changed.length ? `${changed.length} changed` : 'standard' }), reset),
+      ...extras.map((x) => row(x.label, x.tip, x.control)),
+    );
+    const players = isTeamMode(s.mode) ? this.teamSizes(current.map, twoTeams).reduce((a, b) => a + b, 0) : s.bots + 1;
+    const modeTabs = el(
+      'div',
+      { class: 'mode-pick' },
+      ...current.modes.map((m) => {
+        const b = el('button', { class: `mode-chip${m === s.mode ? ' on' : ''}` }, el('b', { textContent: MODE_LABEL[m] }), infoTip(MODE_TIPS[m] ?? MODE_LABEL[m]));
+        b.addEventListener('click', () => {
+          this.setup.mode = m;
+          this.setup.scoreLimit = BASE_RULES[m].scoreLimit;
+          this.saveSetup();
+          this.go('play');
+        });
+        return b;
+      }),
+    );
+    const about = [current.map.metadata.description, current.map.metadata.author && current.map.metadata.author !== 'ChronoSplit' ? `Map by ${current.map.metadata.author}` : ''].filter(Boolean).join('\n\n');
+    const plan = el('canvas', { class: 'setup-plan' });
+    requestAnimationFrame(() => drawMapPlan(plan, current.map));
     const panel = el(
       'div',
       { class: 'setup panel' },
-      el('h3', { class: 'panel-title', textContent: current.map.metadata.name }),
-      el('div', { class: 'row' }, 'Mode', tabs(current.modes.map((m) => [m, MODE_LABEL[m]] as [string, string]), s.mode, (v) => (this.setup.mode = v as GameMode, this.setup.scoreLimit = BASE_RULES[v as GameMode].scoreLimit))),
-      ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, s.mode === 'core.ctf' || s.mode === 'core.bomb' || s.mode === 'core.hostage') : [el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
-      el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
-      el('div', { class: 'row', title: 'On: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. Off: everyone plays at standard size.' }, 'Character sizes', tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on'))),
-      el('div', { class: 'row', title: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).' }, 'Bot style', tabs([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => (this.setup.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical')))),
-      el('div', { class: 'row', title: 'Spears only: everyone holds one throwing spear. One hit kills; go and fetch it back. No other weapons, ammo or grenades.' }, 'Weapons', tabs([['normal', 'Normal'], ['spears', 'Spears only']], s.spears ? 'spears' : 'normal', (v) => (this.setup.spears = v === 'spears' || undefined))),
-      el('div', { class: 'row', title: 'Map: whatever the map was built with (normal unless its maker changed it).' }, 'Gravity', tabs([['map', 'Map'], ['0.4', 'Low'], ['1', 'Normal'], ['1.6', 'Heavy']], s.gravity === undefined ? 'map' : String(s.gravity), (v) => (this.setup.gravity = v === 'map' ? undefined : Number(v)))),
-      el('div', { class: 'row', title: 'Drops past about 5 m hurt; about 16 m kills. Map: the map\'s own setting.' }, 'Fall damage', tabs([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => (this.setup.fallDamage = v === 'map' ? undefined : v === 'on'))),
-      el('div', { class: 'row', title: 'Team modes and co-op: whether your shots and blasts hurt teammates. Team kills cost a point.' }, 'Friendly fire', tabs([['off', 'Off'], ['half', 'Half'], ['on', 'Full']], s.friendlyFire ?? 'off', (v) => (this.setup.friendlyFire = v === 'off' ? undefined : (v as 'half' | 'on')))),
-      el('div', { class: 'row', title: 'Rewards for kills without dying: 3 UAV, 5 Supply Pulse (heal + ammo for nearby teammates), 7 Counter-UAV (jams enemy minimaps), 9 Airstrike.' }, 'Kill streaks', tabs([['on', 'On'], ['off', 'Off']], s.killstreaks === false ? 'off' : 'on', (v) => (this.setup.killstreaks = v === 'on'))),
-      el('div', { class: 'row', title: 'Team modes: respawn beside a teammate who is out of the fight, when one is free.' }, 'Spawn on teammates', tabs([['on', 'On'], ['off', 'Off']], s.squadSpawn === false ? 'off' : 'on', (v) => (this.setup.squadSpawn = v === 'on'))),
-      el('div', { class: 'row', title: 'Quick messages (B, then 1-7; 1 "Follow me!" and 7 "Hold here!" also order your team\'s bots), the dance emote (N). Pings (T) always work.' }, 'Emotes & messages', tabs([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => (this.setup.emotes = v === 'on'))),
-      ...(coop
-        ? []
-        : [
-            ((row) => el('div', { class: 'row' }, row.label, stepper(s.scoreLimit, row.step, row.min, row.max, (v) => (this.setup.scoreLimit = v))))(SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 }),
-            el('div', { class: 'row' }, 'Time limit', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v}m` : '∞'))),
-          ]),
-      el('p', { class: 'map-desc', textContent: current.map.metadata.description }),
-      ...(current.map.metadata.author && current.map.metadata.author !== 'ChronoSplit' ? [el('p', { class: 'map-credit', textContent: `Map by ${current.map.metadata.author}` })] : []),
-      start,
+      el('div', { class: 'setup-head' }, plan, el('div', {}, el('small', { textContent: 'Map' }), el('h3', {}, current.map.metadata.name, ...(about ? [infoTip(about)] : [])), el('p', { class: 'setup-sub', textContent: `${MODE_LABEL[s.mode]} · ${players} players${coop ? '' : ` · ${s.minutes ? `${s.minutes} min` : 'no time limit'}`}` }))),
+      el('div', { class: 'setup-body' },
+        el('section', {}, el('h4', { textContent: 'Mode' }), modeTabs),
+        el('section', {}, el('h4', { textContent: coop ? 'Squad' : 'Players' }),
+          ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, twoTeams) : [row(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
+          row('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill'])))),
+        ...(coop
+          ? []
+          : [
+              el('section', {}, el('h4', { textContent: 'To win' }),
+                ((r) => row(r.label, 'The match ends when someone reaches this.', stepper(s.scoreLimit, r.step, r.min, r.max, (v) => (this.setup.scoreLimit = v)))) (SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 }),
+                row('Time limit', 'When time runs out the highest score wins. ∞: no limit.', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v} min` : '∞')))),
+            ]),
+        more,
+      ),
+      el('div', { class: 'setup-foot' }, ...(changed.length ? [el('div', { class: 'rule-chips' }, ...changed.map((x) => el('span', { textContent: x.value })))] : []), start),
     );
     return el('div', { class: 'screen play' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Arcade <em>Match</em>' })), el('div', { class: 'arcade' }, cards, panel));
   }

@@ -98,7 +98,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #menu-status:empty { display: none; }
 
 /* Arcade (Play) */
-.arcade { display: grid; grid-template-columns: 1fr min(340px, 34vw); gap: 18px; margin-top: 18px; height: calc(100% - 70px); }
+.arcade { display: grid; grid-template-columns: 1fr clamp(380px, 36vw, 500px); gap: 18px; margin-top: 18px; height: calc(100% - 70px); }
 .map-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); grid-auto-rows: max-content; gap: 14px; align-content: start; overflow-y: auto; padding: 2px; }
 .map-card { padding: 0; text-align: left; text-transform: none; letter-spacing: 0; overflow: hidden; border-radius: 4px; background: var(--glass); }
 .map-card canvas { display: block; width: 100%; height: 130px; background: var(--surface-1); }
@@ -108,16 +108,46 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .map-card.on { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan), 0 0 24px rgba(0, 209, 255, 0.25); }
 .map-group { grid-column: 1 / -1; margin: 10px 0 0; font: 700 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-bottom: 6px; }
 .map-credit { margin: 0; color: var(--muted); font: 500 13px var(--font-body); }
-.setup { padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+.setup { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
 .setup .tabs { flex-wrap: wrap; }
 .setup .tabs .tab { padding: 5px 9px; font-size: 12px; }
-.setup .row { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 10px; color: var(--muted); font: 600 13px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
+.setup .row { display: grid; grid-template-columns: 132px 1fr; align-items: center; gap: 10px; color: var(--muted); font: 600 13px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
 .stepper { display: flex; align-items: center; gap: 6px; }
 .stepper b { min-width: 36px; text-align: center; font: 700 18px var(--font-display); color: var(--text); }
 .stepper button { padding: 4px 10px; }
 .mode-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
 .mode-tags span { font: 700 10px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; background: rgba(0, 209, 255, 0.14); color: var(--cyan); }
-.setup .go { margin-top: auto; font-size: 18px; padding: 12px; }
+.setup .go { width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 20px; padding: 14px; letter-spacing: 0.08em; }
+.setup .go kbd { font-size: 12px; }
+/* Arcade setup: map header, grouped sections, folded extra rules, start bar. */
+.setup-head { display: grid; grid-template-columns: 92px 1fr; gap: 14px; align-items: center; padding: 16px 18px 14px; background: linear-gradient(90deg, rgba(0, 209, 255, 0.10), transparent 70%); border-bottom: 1px solid var(--line); }
+.setup-plan { width: 92px; height: 70px; background: var(--surface-1); border: 1px solid var(--line); border-radius: 3px; }
+.setup-head small { color: var(--cyan); font: 700 11px var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; }
+.setup-head h3 { margin: 2px 0; display: flex; align-items: center; gap: 8px; font: italic 800 26px/1.05 var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
+.setup-sub { margin: 0; color: var(--muted); font: 600 13px var(--font-display); letter-spacing: 0.04em; }
+.setup-body { flex: 1; overflow-y: auto; padding: 6px 18px 12px; display: flex; flex-direction: column; gap: 4px; }
+.setup-body section { display: flex; flex-direction: column; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.setup-body h4, .setup-more summary { margin: 0; color: var(--text); font: 700 12px var(--font-display); letter-spacing: 0.18em; text-transform: uppercase; }
+.setup-body h4::before { content: ''; display: inline-block; width: 3px; height: 11px; margin-right: 8px; background: var(--orange); transform: skewX(-15deg); vertical-align: -1px; }
+.row-label { display: inline-flex; align-items: center; gap: 6px; }
+.mode-pick { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.mode-chip { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 9px 10px; text-align: left; background: var(--surface-1); clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+.mode-chip b { font: 700 13px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
+.mode-chip.on { background: linear-gradient(90deg, rgba(0, 209, 255, 0.28), rgba(0, 209, 255, 0.08)); border-color: var(--cyan); box-shadow: inset 3px 0 0 var(--cyan); }
+.setup-more { padding: 12px 0; }
+.setup-more summary { display: flex; align-items: center; gap: 10px; cursor: pointer; list-style: none; padding: 4px 0; }
+.setup-more summary::-webkit-details-marker { display: none; }
+.setup-more summary::before { content: '▸'; color: var(--cyan); transition: transform 0.15s; }
+.setup-more[open] summary::before { transform: rotate(90deg); }
+.setup-more summary small { color: var(--muted); font: 600 11px var(--font-display); letter-spacing: 0.08em; }
+.setup-more summary .link { margin-left: auto; padding: 2px 8px; font-size: 11px; }
+.setup-more .row { margin-top: 10px; }
+.setup-foot { padding: 12px 18px 16px; border-top: 1px solid var(--line); background: rgba(5, 9, 18, 0.55); display: flex; flex-direction: column; gap: 10px; }
+.rule-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rule-chips span { padding: 3px 8px; font: 600 11px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--orange); border: 1px solid rgba(255, 179, 71, 0.45); background: rgba(255, 179, 71, 0.08); }
+.info { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(142, 162, 192, 0.6); color: var(--muted); font: italic 700 11px/1 Georgia, serif; text-transform: none; letter-spacing: 0; cursor: help; }
+.info:hover, .info:focus-visible { color: var(--deep-space); background: var(--cyan); border-color: var(--cyan); outline: none; }
+.tip-card { position: fixed; left: 0; top: 0; z-index: 1000; max-width: 300px; padding: 10px 12px; white-space: pre-line; pointer-events: none; color: var(--text); font: 500 13px/1.4 var(--font-body); background: rgba(11, 15, 26, 0.96); border: 1px solid var(--cyan); border-left-width: 3px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
 .form { display: flex; flex-direction: column; gap: 12px; width: min(420px, 90vw); padding: 18px; margin-top: 18px; }
 .form label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
 .form .current-look { display: flex; align-items: center; gap: 12px; }
@@ -336,7 +366,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 /* Arcade team layout */
 .team-layout { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .team-layout select { background: var(--panel-2, #1b2335); color: inherit; border: 1px solid var(--line); padding: 4px 6px; font: inherit; }
-.team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin: 4px 0 8px; }
+.team-grid { display: grid; grid-template-columns: 1fr; gap: 6px; margin: 0; }
 .team-size { display: flex; align-items: center; gap: 6px; font-size: 13px; }
 .team-size > span:nth-child(2) { flex: 1; }
 .team-size .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
@@ -400,4 +430,4 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 
 /* Arcade team rows: colour picker and name box beside each team's size. */
 .team-size .team-color { width: 26px; height: 22px; padding: 0; border: 1px solid rgba(255, 255, 255, 0.25); background: none; cursor: pointer; }
-.team-size .team-name { width: 110px; font: inherit; padding: 2px 6px; background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); }
+.team-size .team-name { flex: 1; min-width: 0; font: inherit; padding: 2px 6px; background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); }
