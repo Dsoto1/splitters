@@ -1,0 +1,3996 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 17,
+  "metadata": {
+    "id": "temple",
+    "name": "Temple",
+    "author": "Tile Trigger",
+    "description": "A compact sandstone temple in the spirit of GoldenEye's Temple: a two-storey hall with a sunken pit at its heart, walkways and a balcony round it, long colonnades with galleries above, twin stairs to the altar at the north end and an overgrown courtyard on the east side. Body armour waits in the pit; the rockets sit on the altar.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 2,
+      "max": 10
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm",
+      "core.koth"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.temple",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.room",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "wide"
+        },
+        "options": {
+          "layout": "empty"
+        }
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.room",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:W": "door"
+        },
+        "options": {
+          "layout": "empty"
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.room",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "door"
+        },
+        "options": {
+          "layout": "empty"
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.room",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "arch",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "layout": "empty"
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.room",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "arch"
+        },
+        "options": {
+          "layout": "empty"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.room",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "arch",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "layout": "empty"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.room_sunken",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "half"
+        }
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.stairs",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "railing",
+          "0,0,1:S": "railing",
+          "0,0,0:N": "wall",
+          "0,0,1:N": "window"
+        }
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.stairs",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "railing",
+          "0,0,1:N": "railing",
+          "0,0,0:S": "wall",
+          "0,0,1:S": "window"
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.room",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "arch"
+        }
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.room_columns",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.room_columns",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.room_columns",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "arch"
+        }
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.room",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.room",
+        "x": 1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.room",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "arch",
+          "0,0,0:E": "window"
+        }
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.room_columns",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.room_columns",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "door"
+        }
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.room_columns",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "arch",
+          "0,0,0:E": "window"
+        }
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.room",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.room",
+        "x": 5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door"
+        }
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.room",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.room",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.room",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.room",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "arch"
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.room",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "arch",
+          "0,0,0:N": "wide"
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.room",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.room",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.stairs",
+        "x": 2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.stairs",
+        "x": 4,
+        "y": 6,
+        "z": 0,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.room",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.stairs",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.room",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.room",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.yard_ruins",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_grass",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_rock",
+            "tint": "#b8a888"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high",
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_grass",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_rock",
+            "tint": "#b8a888"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_grass",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_rock",
+            "tint": "#b8a888"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.stairs_open",
+        "x": 6,
+        "y": 4,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_grass",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_rock",
+            "tint": "#b8a888"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.yard_ruins",
+        "x": 6,
+        "y": 6,
+        "z": 0,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_grass",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_rock",
+            "tint": "#b8a888"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "high",
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.bridge",
+        "x": 2,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "door"
+        }
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.bridge",
+        "x": 4,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "door"
+        }
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "windows",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.platform_rail",
+        "x": 3,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        }
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.platform_rail",
+        "x": 4,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#dcc59a"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "windows",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.room",
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "arch",
+          "0,0,0:W": "window"
+        }
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.room",
+        "x": 1,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.room",
+        "x": 1,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "arch"
+        }
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.room",
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "slit"
+        }
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.room",
+        "x": 5,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "arch",
+          "0,0,0:E": "window"
+        }
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.room",
+        "x": 5,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "windows"
+        }
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.room",
+        "x": 5,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "arch"
+        }
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.room",
+        "x": 5,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "window"
+        }
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.room",
+        "x": 2,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.room",
+        "x": 3,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "windows",
+          "0,0,0:E": "arch",
+          "0,0,0:W": "arch",
+          "0,0,0:S": "window"
+        }
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.room",
+        "x": 4,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_057",
+        "tile": "core.room",
+        "x": 3,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.platform_rail",
+        "x": 3,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_059",
+        "tile": "core.room",
+        "x": 0,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#d8c49c"
+          },
+          "walls": {
+            "material": "core.sandstone",
+            "tint": "#e6d2a8"
+          }
+        }
+      },
+      {
+        "id": "tile_060",
+        "tile": "core.platform_rail",
+        "x": 6,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "prop_061",
+      "position": [
+        12.7,
+        2.1,
+        26.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_062",
+      "position": [
+        13.195,
+        2.5,
+        26.6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_063",
+      "position": [
+        35.3,
+        2.1,
+        21.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_064",
+      "position": [
+        34.805,
+        2.5,
+        21.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_065",
+      "position": [
+        26.6,
+        2.1,
+        12.7
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_066",
+      "position": [
+        26.6,
+        2.5,
+        13.195
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_067",
+      "position": [
+        21.4,
+        2.1,
+        12.7
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_068",
+      "position": [
+        21.4,
+        2.5,
+        13.195
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_069",
+      "position": [
+        16,
+        0.9,
+        35.38
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_070",
+      "position": [
+        32,
+        0.9,
+        35.38
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_071",
+      "position": [
+        14,
+        4.9,
+        35.38
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        34,
+        4.9,
+        35.38
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        18,
+        6.1,
+        35.3
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_074",
+      "position": [
+        18,
+        6.5,
+        34.805
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        30,
+        6.1,
+        35.3
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_076",
+      "position": [
+        30,
+        6.5,
+        34.805
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        27.2,
+        -1.5,
+        20.6
+      ],
+      "kind": "prop",
+      "model": "prop.rn_column_broken",
+      "yaw": 0,
+      "scale": 1.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "position": [
+        27.2,
+        -1.5,
+        24.4
+      ],
+      "kind": "prop",
+      "model": "prop.rn_column_broken",
+      "yaw": 0,
+      "scale": 1.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "position": [
+        27,
+        0,
+        27.2
+      ],
+      "kind": "prop",
+      "model": "prop.rn_column_broken",
+      "yaw": 0,
+      "scale": 1.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "position": [
+        21.2,
+        0,
+        13.2
+      ],
+      "kind": "prop",
+      "model": "prop.rn_column_round",
+      "yaw": 0,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "position": [
+        26.8,
+        0,
+        13.2
+      ],
+      "kind": "prop",
+      "model": "prop.rn_column_round",
+      "yaw": 0,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "position": [
+        13.4,
+        0,
+        34.6
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_stag",
+      "yaw": 3.741592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "position": [
+        34.6,
+        0,
+        34.6
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_stag",
+      "yaw": 2.541592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "position": [
+        13,
+        0,
+        31.8
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "position": [
+        35,
+        0,
+        31.8
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "position": [
+        21.2,
+        0,
+        34.9
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn_broken",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_087",
+      "position": [
+        13.1,
+        0,
+        21.1
+      ],
+      "kind": "prop",
+      "model": "prop.dg_vase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "position": [
+        34.9,
+        0,
+        21.1
+      ],
+      "kind": "prop",
+      "model": "prop.dg_vase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "position": [
+        21,
+        4,
+        35
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "position": [
+        27,
+        4,
+        35
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "position": [
+        24,
+        4,
+        35.1
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "position": [
+        11.3,
+        2.1,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_093",
+      "position": [
+        10.805,
+        2.5,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_094",
+      "position": [
+        11.3,
+        2.1,
+        29.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_095",
+      "position": [
+        10.805,
+        2.5,
+        29.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_096",
+      "position": [
+        4.7,
+        6.1,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_097",
+      "position": [
+        5.195,
+        6.5,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_098",
+      "position": [
+        11.379999999999999,
+        4.9,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_099",
+      "position": [
+        5.2,
+        0,
+        5.2
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": 0.7853981633974483,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_100",
+      "position": [
+        5,
+        0,
+        43
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "position": [
+        5.1,
+        0,
+        42.1
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn_broken",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_102",
+      "position": [
+        5.1,
+        4,
+        5.1
+      ],
+      "kind": "prop",
+      "model": "prop.dg_vase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "position": [
+        5.1,
+        4,
+        34.9
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "position": [
+        5.4,
+        0,
+        50.6
+      ],
+      "kind": "prop",
+      "model": "prop.rn_column_broken",
+      "yaw": 0.3,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "position": [
+        6,
+        2.1,
+        51.3
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_106",
+      "position": [
+        6,
+        2.5,
+        50.805
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_107",
+      "position": [
+        36.7,
+        2.1,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_108",
+      "position": [
+        37.195,
+        2.5,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_109",
+      "position": [
+        36.7,
+        2.1,
+        29.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_110",
+      "position": [
+        37.195,
+        2.5,
+        29.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_111",
+      "position": [
+        43.3,
+        6.1,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_112",
+      "position": [
+        42.805,
+        6.5,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_113",
+      "position": [
+        36.62,
+        4.9,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_114",
+      "position": [
+        42.8,
+        0,
+        5.2
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": -0.7853981633974483,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_115",
+      "position": [
+        43,
+        0,
+        43
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_116",
+      "position": [
+        42.9,
+        0,
+        42.1
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn_broken",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_117",
+      "position": [
+        42.9,
+        4,
+        5.1
+      ],
+      "kind": "prop",
+      "model": "prop.dg_vase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_118",
+      "position": [
+        42.9,
+        4,
+        34.9
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_119",
+      "position": [
+        42.6,
+        0,
+        50.6
+      ],
+      "kind": "prop",
+      "model": "prop.rn_column_broken",
+      "yaw": 0.3,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_120",
+      "position": [
+        42,
+        2.1,
+        51.3
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_121",
+      "position": [
+        42,
+        2.5,
+        50.805
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_122",
+      "position": [
+        16,
+        2.1,
+        4.7
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_123",
+      "position": [
+        16,
+        2.5,
+        5.195
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_124",
+      "position": [
+        32,
+        2.1,
+        4.7
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_125",
+      "position": [
+        32,
+        2.5,
+        5.195
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_126",
+      "position": [
+        21.2,
+        0,
+        5.2
+      ],
+      "kind": "prop",
+      "model": "prop.dg_pedestal",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_127",
+      "position": [
+        26.8,
+        0,
+        5.2
+      ],
+      "kind": "prop",
+      "model": "prop.dg_pedestal",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_128",
+      "position": [
+        21.2,
+        1.1,
+        5.2
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 0.9,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_129",
+      "position": [
+        26.8,
+        1.1,
+        5.2
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 0.9,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_130",
+      "position": [
+        12.7,
+        2.1,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_131",
+      "position": [
+        13.195,
+        2.5,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_132",
+      "position": [
+        35.3,
+        2.1,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_133",
+      "position": [
+        34.805,
+        2.5,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_134",
+      "position": [
+        13.2,
+        0,
+        42.6
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": 2.741592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_135",
+      "position": [
+        34.8,
+        0,
+        42.6
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": 3.541592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_136",
+      "position": [
+        24,
+        0,
+        50.9
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_137",
+      "position": [
+        22.8,
+        0,
+        51
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_138",
+      "position": [
+        25.2,
+        0,
+        51
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        21.1,
+        0,
+        50.9
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        26.9,
+        0,
+        50.9
+      ],
+      "kind": "prop",
+      "model": "prop.dg_vase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        20.7,
+        2.1,
+        48
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_142",
+      "position": [
+        21.195,
+        2.5,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        24,
+        4,
+        50.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_pedestal",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        24,
+        5.1,
+        50.6
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_145",
+      "position": [
+        22.6,
+        4,
+        50.8
+      ],
+      "kind": "prop",
+      "model": "prop.dg_coin_pile",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        21.6,
+        4.9,
+        51.38
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        26.4,
+        4.9,
+        51.38
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        24,
+        6.1,
+        51.3
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_149",
+      "position": [
+        24,
+        6.5,
+        50.805
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        20.7,
+        6.1,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_151",
+      "position": [
+        21.195,
+        6.5,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        21.6,
+        6.1,
+        4.7
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_153",
+      "position": [
+        21.6,
+        6.5,
+        5.195
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        16,
+        4.9,
+        4.620000000000001
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        32,
+        4.9,
+        4.620000000000001
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        13.1,
+        4,
+        5.1
+      ],
+      "kind": "prop",
+      "model": "prop.dg_vase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        34.9,
+        4,
+        5.1
+      ],
+      "kind": "prop",
+      "model": "prop.dg_vase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_158",
+      "position": [
+        -3.3,
+        2.1,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_159",
+      "position": [
+        -2.8049999999999997,
+        2.5,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        -2.4,
+        0,
+        5.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        2.8,
+        0,
+        5.1
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        -2.9,
+        0,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.dg_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        -2.9,
+        0,
+        34.9
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_164",
+      "position": [
+        -2.8,
+        0,
+        33.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_165",
+      "position": [
+        0,
+        1.6,
+        35.35
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_166",
+      "position": [
+        -3.3,
+        2.1,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_167",
+      "position": [
+        -2.8049999999999997,
+        2.5,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_168",
+      "position": [
+        -3.3,
+        6.1,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_169",
+      "position": [
+        -2.8049999999999997,
+        6.5,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_170",
+      "position": [
+        -2.6,
+        0,
+        21.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_skull",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_171",
+      "position": [
+        -2.9,
+        0,
+        26.8
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn_broken",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_172",
+      "position": [
+        -2.9,
+        4,
+        26.9
+      ],
+      "kind": "prop",
+      "model": "prop.dg_vase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_173",
+      "position": [
+        50,
+        0,
+        17.5
+      ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
+      "yaw": 0.6,
+      "scale": 0.9,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_174",
+      "position": [
+        50.2,
+        0,
+        42.2
+      ],
+      "kind": "prop",
+      "model": "prop.nt_palm_curved",
+      "yaw": 2.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_175",
+      "position": [
+        45.6,
+        0,
+        46.6
+      ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree_2",
+      "yaw": 1.4,
+      "scale": 0.95,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_176",
+      "position": [
+        50.6,
+        0,
+        13.6
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 0.4,
+      "scale": 1.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_177",
+      "position": [
+        50.7,
+        0,
+        22.5
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 2.2,
+      "scale": 1.1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_178",
+      "position": [
+        45.4,
+        0,
+        42.8
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 1.1,
+      "scale": 1.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_179",
+      "position": [
+        50.6,
+        0,
+        48.8
+      ],
+      "kind": "prop",
+      "model": "prop.nt_fern_wide",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_180",
+      "position": [
+        45.4,
+        0,
+        8.6
+      ],
+      "kind": "prop",
+      "model": "prop.nt_fern_wide",
+      "yaw": 1.9,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_181",
+      "position": [
+        45.4,
+        0,
+        18.6
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 0.9,
+      "scale": 1.1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_182",
+      "position": [
+        50.6,
+        0,
+        26.6
+      ],
+      "kind": "prop",
+      "model": "prop.nt_boulder_moss",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_183",
+      "position": [
+        46.5,
+        0,
+        15.5
+      ],
+      "kind": "prop",
+      "model": "prop.rn_column_broken",
+      "yaw": 0,
+      "scale": 1.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_184",
+      "position": [
+        49.6,
+        0,
+        37.6
+      ],
+      "kind": "prop",
+      "model": "prop.rn_wall_broken",
+      "yaw": 0,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_185",
+      "position": [
+        45.4,
+        0,
+        21.4
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn_broken",
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_186",
+      "position": [
+        51.3,
+        2.1,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_187",
+      "position": [
+        50.805,
+        2.5,
+        14
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_188",
+      "position": [
+        51.3,
+        2.1,
+        41
+      ],
+      "kind": "prop",
+      "model": "prop.dg_wall_torch",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_189",
+      "position": [
+        50.805,
+        2.5,
+        41
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa552",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_190",
+      "position": [
+        51,
+        4,
+        21
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_191",
+      "position": [
+        51,
+        4,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_192",
+      "position": [
+        1,
+        0,
+        9
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_193",
+      "position": [
+        1,
+        0,
+        31
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_194",
+      "position": [
+        1,
+        4,
+        25
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_195",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_196",
+      "position": [
+        8,
+        0,
+        41
+      ],
+      "kind": "spawn",
+      "yaw": 2.356194490192345,
+      "faction": null
+    },
+    {
+      "id": "spawn_197",
+      "position": [
+        40,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_198",
+      "position": [
+        40,
+        0,
+        41
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_199",
+      "position": [
+        47,
+        0,
+        9.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_200",
+      "position": [
+        46.5,
+        0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_201",
+      "position": [
+        24,
+        0,
+        6.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_202",
+      "position": [
+        24,
+        0,
+        41
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_203",
+      "position": [
+        8,
+        4,
+        25
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_204",
+      "position": [
+        40,
+        4,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_205",
+      "position": [
+        24,
+        4,
+        7
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_206",
+      "position": [
+        24,
+        4,
+        33.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_207",
+      "position": [
+        8,
+        0,
+        49
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_208",
+      "position": [
+        40,
+        0,
+        49
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "pickup_209",
+      "position": [
+        24,
+        -1.5,
+        22
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_210",
+      "position": [
+        24,
+        4,
+        48.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_211",
+      "position": [
+        24,
+        4,
+        41
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_212",
+      "position": [
+        48.5,
+        4,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_213",
+      "position": [
+        48,
+        0,
+        46
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_214",
+      "position": [
+        8,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_215",
+      "position": [
+        40,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_216",
+      "position": [
+        24,
+        4,
+        9
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_217",
+      "position": [
+        0,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_218",
+      "position": [
+        24,
+        0,
+        48.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_219",
+      "position": [
+        24,
+        4,
+        31
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_220",
+      "position": [
+        47,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_auto_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_221",
+      "position": [
+        8,
+        0,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_222",
+      "position": [
+        8,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_light",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_223",
+      "position": [
+        40,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_light",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_224",
+      "position": [
+        40,
+        4,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_light",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_225",
+      "position": [
+        16,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_226",
+      "position": [
+        8,
+        4,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_227",
+      "position": [
+        -1,
+        0,
+        7
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_228",
+      "position": [
+        32,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_229",
+      "position": [
+        47,
+        0,
+        38
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_230",
+      "position": [
+        16,
+        4,
+        25.5
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_231",
+      "position": [
+        32,
+        4,
+        25.5
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_232",
+      "position": [
+        16,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_233",
+      "position": [
+        32,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_234",
+      "position": [
+        40,
+        0,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_235",
+      "position": [
+        8,
+        4,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_236",
+      "position": [
+        40,
+        4,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_237",
+      "position": [
+        0,
+        0,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_238",
+      "position": [
+        24,
+        0,
+        15
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_239",
+      "position": [
+        8,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_240",
+      "position": [
+        40,
+        4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "hill_241",
+      "position": [
+        24,
+        -1.5,
+        22.5
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_242",
+      "position": [
+        24,
+        4,
+        32.5
+      ],
+      "kind": "hill",
+      "radius": 4.5
+    },
+    {
+      "id": "hill_243",
+      "position": [
+        24,
+        0,
+        15.5
+      ],
+      "kind": "hill",
+      "radius": 4.5
+    },
+    {
+      "id": "spawn_244",
+      "position": [
+        -2.4,
+        0.05,
+        31.27
+      ],
+      "kind": "spawn",
+      "yaw": 1.77,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_245",
+      "position": [
+        -2.13,
+        1.88,
+        15.13
+      ],
+      "kind": "spawn",
+      "yaw": 1.19,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_246",
+      "position": [
+        -1.73,
+        0.05,
+        10.33
+      ],
+      "kind": "spawn",
+      "yaw": 1.05,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_247",
+      "position": [
+        2.13,
+        0.05,
+        10.13
+      ],
+      "kind": "spawn",
+      "yaw": 0.97,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_248",
+      "position": [
+        2.13,
+        2.72,
+        16.87
+      ],
+      "kind": "spawn",
+      "yaw": 1.2,
+      "faction": "embers"
+    },
+    {
+      "id": "flag_249",
+      "position": [
+        -2.47,
+        4.05,
+        24.2
+      ],
+      "kind": "flag",
+      "yaw": 1.51,
+      "team": "embers"
+    },
+    {
+      "id": "spawn_250",
+      "position": [
+        50.33,
+        4.05,
+        24.8
+      ],
+      "kind": "spawn",
+      "yaw": -1.53,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_251",
+      "position": [
+        50.33,
+        0.05,
+        43.93
+      ],
+      "kind": "spawn",
+      "yaw": -2.19,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_252",
+      "position": [
+        50.27,
+        0.05,
+        23.87
+      ],
+      "kind": "spawn",
+      "yaw": -1.49,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_253",
+      "position": [
+        50.27,
+        0.05,
+        40.27
+      ],
+      "kind": "spawn",
+      "yaw": -2.09,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_254",
+      "position": [
+        50.2,
+        0.05,
+        19.6
+      ],
+      "kind": "spawn",
+      "yaw": -1.33,
+      "faction": "tide"
+    },
+    {
+      "id": "flag_255",
+      "position": [
+        50.33,
+        0.05,
+        8.67
+      ],
+      "kind": "flag",
+      "yaw": -0.97,
+      "team": "tide"
+    },
+    {
+      "id": "light_256",
+      "position": [
+        8,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_257",
+      "position": [
+        8,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_258",
+      "position": [
+        8,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_259",
+      "position": [
+        8,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_260",
+      "position": [
+        40,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_261",
+      "position": [
+        40,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_262",
+      "position": [
+        40,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_263",
+      "position": [
+        40,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_264",
+      "position": [
+        16,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_265",
+      "position": [
+        24,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_266",
+      "position": [
+        32,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_267",
+      "position": [
+        24,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_268",
+      "position": [
+        24,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_269",
+      "position": [
+        0,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc480",
+      "intensity": 0.85,
+      "range": 9,
+      "fixture": "ceiling"
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": null,
+  "backdrop": {
+    "sky": "dusk",
+    "scenery": "forest",
+    "ground": "moss",
+    "haze": 0.5
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      5,
+      5
+    ]
+  },
+  "dependencies": []
+}
