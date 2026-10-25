@@ -289,6 +289,7 @@ m.hill(at(0, 0, 0), 5).hill(at(-2, 1, 0), 5).hill(at(2, -1, 0), 5);
 m.furnish();
 // Enough team spawns for a full match.
 await m.fillTeamSpawns(8);
+m.lightRooms();
 m.meta({
   description:
     'Two concrete bunkers face each other across an open yard split by a dry canal. Snipe from the galleries, run the tunnels under the flanks, grab the railgun from the north storeroom, and if the yard gets crowded, hit the button deep in the south bunker: an alarm, the blast doors seal, and six seconds later an airstrike levels everything outside.',

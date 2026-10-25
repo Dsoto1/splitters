@@ -173,6 +173,7 @@ m.logic({
 });
 
 m.bounds('invisible');
+m.lightRooms();
 m.meta({
   description:
     'A co-op night raid on a blacked-out city block. Fight up the street through the Syndicate checkpoint (or round it through the shop and the house), clear the substation and set the charges, hold it against the counter-attack from the north and the west until they blow, then take the gas station for evac.',

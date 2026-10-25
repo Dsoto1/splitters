@@ -639,20 +639,24 @@ async function physicsfxFlow(browser) {
     window.__botSlot = bot.slot;
     window.__autoInput = { buttons: 0 };
   });
-  await page.waitForTimeout(1200);
-  await page.evaluate(() => {
+  await page.waitForTimeout(T(1200));
+  const standing = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
     const bot = m.slots[window.__botSlot];
+    const standing = window.__cs.view.avatars.get(bot.slot)?.anim?.ch.joints.get('Head')?.getAbsolutePosition().y ?? null;
     window.__cs.view.pushPlayer(bot.slot, { x: (bot.move.pos.x - me.move.pos.x) * 1.2, y: 2, z: (bot.move.pos.z - me.move.pos.z) * 1.2 });
     m.damage(bot, 500, me, 'core.pistol');
+    return standing;
   });
   await page.addStyleTag({ content: '#pause { display: none !important; }' });
   // Sample the fall while the body is down (the bot respawns 2-3 s after dying).
-  const track = [];
+  // Measured from where its head was before the shot (a slow runner may sample it already down);
+  // stop as soon as it has dropped, before the bot gets up again 2-3 s later.
+  const track = standing === null ? [] : [standing];
   let ragdolled = false;
-  for (let i = 0; i < 6; i++) {
-    await page.waitForTimeout(150);
+  for (let i = 0; i < 12 && !(ragdolled && track.length && track[0] - Math.min(...track) > 0.5); i++) {
+    await page.waitForTimeout(T(150) / 2);
     const s = await page.evaluate(() => {
       // A killed body leaves the live avatars for the corpse list as soon as it ragdolls.
       const v = window.__cs.view;
@@ -665,7 +669,7 @@ async function physicsfxFlow(browser) {
   }
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-ragdoll.png` });
   const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat').length }));
-  check(ragdolled && track[0] - Math.min(...track) > 0.5, `the killed bot drops as a ragdoll (head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
+  check(ragdolled && track[0] - Math.min(...track) > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
   // Debris chunks are real bodies: they land and rest on the ground.
   await page.evaluate(() => {

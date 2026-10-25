@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 14,
+  "formatVersion": 15,
   "metadata": {
     "id": "crossroads",
     "name": "Crossroads",
@@ -2648,6 +2648,370 @@
       "yaw": 0,
       "health": null,
       "explosiveOnly": false
+    },
+    {
+      "id": "light_209",
+      "position": [
+        8,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_210",
+      "position": [
+        16,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_211",
+      "position": [
+        48,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_212",
+      "position": [
+        56,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_213",
+      "position": [
+        64,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_214",
+      "position": [
+        72,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_215",
+      "position": [
+        64,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_216",
+      "position": [
+        72,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_217",
+      "position": [
+        64,
+        7.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_218",
+      "position": [
+        72,
+        7.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_219",
+      "position": [
+        64,
+        7.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_220",
+      "position": [
+        72,
+        7.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_221",
+      "position": [
+        8,
+        3.45,
+        64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_222",
+      "position": [
+        16,
+        3.45,
+        64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_223",
+      "position": [
+        8,
+        3.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_224",
+      "position": [
+        16,
+        3.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_225",
+      "position": [
+        8,
+        7.45,
+        64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_226",
+      "position": [
+        16,
+        7.45,
+        64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_227",
+      "position": [
+        8,
+        7.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_228",
+      "position": [
+        16,
+        7.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_229",
+      "position": [
+        48,
+        7.1,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 14,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_230",
+      "position": [
+        56,
+        7.1,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 14,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_231",
+      "position": [
+        64,
+        7.1,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 14,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_232",
+      "position": [
+        48,
+        7.1,
+        56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 14,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_233",
+      "position": [
+        56,
+        7.1,
+        56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 14,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_234",
+      "position": [
+        64,
+        7.1,
+        56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 14,
+      "fixture": "bulb"
     }
   ],
   "factions": [],

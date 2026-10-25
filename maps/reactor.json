@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 14,
+  "formatVersion": 15,
   "metadata": {
     "id": "reactor",
     "name": "Reactor",
@@ -1508,6 +1508,76 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "light_136",
+      "position": [
+        40,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_137",
+      "position": [
+        40,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_138",
+      "position": [
+        48,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_139",
+      "position": [
+        56,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_140",
+      "position": [
+        40,
+        -0.55,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
     }
   ],
   "factions": [],

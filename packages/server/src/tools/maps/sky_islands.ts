@@ -89,6 +89,7 @@ m.pickup('weapon_shotgun', [8, 3, -2]).pickup('weapon_smg', [-8, 3, 2]).pickup('
 m.pickup('health_small', [0, 3, 9]).pickup('health_small', [0, 3, -9]).pickup('ammo_explosive', [42, 3, 6]).pickup('ammo_sniper', [-4, 2, -40]);
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(5);
+m.lightRooms();
 m.meta({
   description: 'Five grassy islands floating over the peaks, joined by crumbling stepping stones and one plank bridge that holds. Swim in the centre pond, ride the pad to the sky platform for double damage, grab a jetpack on the far islands, and think twice before stepping on the trapdoors over the lava for the railgun.',
   modes: ['core.deathmatch', 'core.tdm'],

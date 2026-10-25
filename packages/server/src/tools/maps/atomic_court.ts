@@ -110,6 +110,7 @@ m.pickup('ammo', [4, 0, 44]).pickup('ammo', [60, 0, 20]).pickup('grenades', [44,
 m.pickup('health_small', [16, 0, 60]).pickup('health_small', [48, 0, 4]).pickup('armor_small', [64, 0, 40]).pickup('armor_small', [0, 0, 24]);
 
 m.bounds('invisible');
+m.lightRooms();
 m.meta({
   description:
     'A tiny cul-de-sac in the desert: two two-storey houses face each other across a street blocked by a school bus and a truck, each with a garage, a lawn and a fenced backyard. Fast and close, for 2–12 players; the flags are in the backyards and King of the Hill moves between the bus and the two upstairs landings.',

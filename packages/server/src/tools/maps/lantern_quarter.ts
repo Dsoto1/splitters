@@ -114,6 +114,7 @@ m.prop('crate_small', [26.5, 0, 15]).prop('barrel', [21.5, 0, 6]).prop('lantern'
 m.bounds('invisible');
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(6);
+m.lightRooms();
 m.meta({
   description:
     'A two-storey restaurant on a neon-lit night street: a double-height dining hall with a gallery all round, a kitchen with a serving hatch and back stairs, private dining rooms with balconies over the street and the office upstairs (rockets). Outside, shopfronts line the street and an alley loops round the back from one end to the other. An homage in spirit to the classic restaurant-and-street map.',

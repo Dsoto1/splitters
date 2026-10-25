@@ -78,6 +78,7 @@ m.pickup('health_small', [-8, 0, 2]).pickup('health_small', [8, 0, 2]).pickup('h
 m.pickup('armor_small', [-30, 4, 10]).pickup('armor_small', [30, 4, 10]).pickup('ammo', [-6, 0, -16]).pickup('ammo', [6, 0, -16]);
 
 m.bounds('invisible');
+m.lightRooms();
 m.meta({
   description:
     'Metal decks adrift in space, joined only by jump pads. Hold the yard, ride the pads out to the float for rockets, up to the perch for the railgun, or across to the wings; miss a landing and the void takes you.',

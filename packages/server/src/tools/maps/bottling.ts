@@ -160,6 +160,7 @@ m.pickup('ammo_light', at(1, 2, 0)).pickup('mines', at(7, 4, 0, -1, -2.5)).picku
 
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(5);
+m.lightRooms();
 m.meta({
   description:
     'A sealed bottling works, in the spirit of GoldenEye\'s Facility: tiled washrooms with a ceiling vent you can drop through, long service corridors, a two-storey server lab, and the great tank hall where walkways cross between the tank tops. The railgun waits on the walkway junction; the gilded pistol hides in the stalls below the vent.',

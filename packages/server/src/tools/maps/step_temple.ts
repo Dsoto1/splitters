@@ -151,6 +151,7 @@ m.pickup('weapon_laser_rifle', [16, 0, 6.5]).pickup('weapon_smg', [16, 0, 25.5])
 
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(6);
+m.lightRooms();
 m.meta({
   description:
     'A stepped marble temple round a pillared court, in the spirit of GoldenEye\'s Temple. Cloisters and side chambers ring the court; stairs climb to galleries that look down over half walls, and four bridges meet on a railed platform above the dais. Take the railgun from the platform and you are in everyone\'s sights; the heavy armour waits at the foot of the dais below.',

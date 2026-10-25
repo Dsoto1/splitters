@@ -18,6 +18,8 @@ import {
   EditHistory,
   addSpawnCommand,
   blockBoxes,
+  buildOccupancy,
+  rotateXZ,
   buildMapGeometry,
   propBoxes,
   fitBounds,
@@ -92,6 +94,9 @@ const THEME_FURNISH: Record<string, FurnishStyle> = {
   castle: 'tavern', desert: 'tavern', tomb: 'tavern', ruins: 'tavern', temple: 'tavern',
   factory: 'store', prototype: 'store', volcano: 'store',
 };
+
+/** Buildings with a roof of their own, for `lightRooms`: lit on every storey, or under the roof only. */
+const ROOFED: Record<string, 'all' | 'top'> = { house: 'all', shop: 'all', bunker: 'all', warehouse: 'top' };
 
 export class MapBuilder {
   readonly history: EditHistory;
@@ -253,7 +258,9 @@ export class MapBuilder {
   /**
    * A ceiling light in every roofed room: each single-cell room, corridor or
    * stairwell with a floor straight above it gets a panel just under that
-   * floor. `skip` leaves cells out (open-plan halls, outdoor-feeling spaces).
+   * floor, and so does every cell of a building with a roof of its own (house,
+   * shop, bunker; a warehouse under its roof only). `skip` leaves cells out
+   * (open-plan halls, outdoor-feeling spaces).
    */
   lightRooms(o: { color?: string; intensity?: number; range?: number; fixture?: LightFixture; skip?: (x: number, y: number, z: number) => boolean } = {}): this {
     this.flush();
@@ -265,6 +272,16 @@ export class MapBuilder {
       if (!/^core\.(room|room_pillar|room_columns|room_cover|corridor)$/.test(t.tile)) continue;
       if (!above.has(`${t.x},${t.y},${t.z + 1}`) || o.skip?.(t.x, t.y, t.z)) continue;
       this.light([t.x * cell, t.z * level + level - 0.55, t.y * cell], o);
+    }
+    for (const occ of buildOccupancy(this.doc).cells.values()) {
+      const roofed = ROOFED[occ.def.id.replace(/^core\./, '')];
+      if (!roofed || (roofed === 'top' && occ.level !== Math.max(...occ.def.cells.map((c) => c[2])))) continue;
+      const [rx, ry] = rotateXZ(occ.local[0], occ.local[1], occ.placement.rotation);
+      const [x, y, z] = [occ.placement.x + rx, occ.placement.y + ry, occ.placement.z + occ.level];
+      if (o.skip?.(x, y, z)) continue;
+      // A warehouse light hangs below the trusses, with a whole hall to fill.
+      if (roofed === 'top') this.light([x * cell, z * level + level - 0.9, y * cell], { ...o, fixture: 'bulb', range: Math.max(o.range ?? 9, 14) });
+      else this.light([x * cell, z * level + level - 0.55, y * cell], o);
     }
     return this;
   }

@@ -149,6 +149,7 @@ m.bounds('invisible', 2);
 m.furnish();
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(6);
+m.lightRooms();
 m.meta({
   description:
     'A walled yard between brick buildings. The north block is two storeys of offices with windows over the yard; a railed walkway crosses to the south block upstairs, carrying the heavy armour. The garage roof holds the sniper rifle, the vent housing in the middle of the yard drops into the pump room and the rockets, and service tunnels loop from the garage under the south block to the loading dock. An homage in spirit to a classic compact deathmatch yard.',

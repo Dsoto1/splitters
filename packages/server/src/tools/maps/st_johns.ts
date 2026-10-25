@@ -532,6 +532,7 @@ m.flag(west, [pole[0] + 4, 0, pole[2]], P).flag(east, [68, 0.12, -3], -P);
 m.hill([X(693), 0.12, Z(740) - 3], 5).hill([pole[0], 0, pole[2] + 8], 6).hill([-8, 0, -30], 5);
 
 m.bounds('invisible', 3, { min: [-124, -138], max: [112, 130] });
+m.lightRooms();
 m.meta({
   description:
     "A look-alike of the St. John's Northwestern Military Academy campus in Delafield, Wisconsin: grey lannonstone halls built like castles, with towers, turrets and battlements, set round the Stangeland Field of Flags and its flagpole. Climb DeKoven Hall to its roof for the sniper rifle and the mounted gun, take the railgun from upstairs in Smythe Hall, rockets from the Noble Victory chapel, and the damage boost from the Gerber pool in the gymnasium. The west team holds the parade field and Hazelwood Hall, the east team the gym and the old church across Church Street.",

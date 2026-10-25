@@ -35,6 +35,7 @@ m.pickup('weapon_shotgun', [-12, 0, 0]).pickup('weapon_burst_rifle', [12, 0, 0])
 m.pickup('ammo_explosive', [-6, 0, -6]).pickup('ammo_cells', [6, 0, 6]).pickup('powerup_damage', [0, 0, -6]);
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(4);
+m.lightRooms();
 m.meta({
   description: 'Floating decks in open space, joined by jump pads. Ride the pads up to the towers and the high perches (railgun north, heavy armour south); fall off and you are gone. Homage to the classic arena in the sky.',
   modes: ['core.deathmatch', 'core.tdm'],

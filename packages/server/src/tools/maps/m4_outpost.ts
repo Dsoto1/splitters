@@ -62,6 +62,7 @@ m.pickup('health_small', [26, 0, 16]);
 m.pickup('ammo', [22, 0, -16]);
 m.breakable('crate', [-2, 0, 10.5]).breakable('barrel', [2, 0, -10.5]);
 
+m.lightRooms();
 m.meta({
   description: 'Fight through the courtyard (or round its flanks), open the gate, hold the uplink while the Syndicate storms in from north and south, then reach evac.',
   modes: ['core.coop'],

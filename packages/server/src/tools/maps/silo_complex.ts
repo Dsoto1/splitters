@@ -129,6 +129,7 @@ m.pickup('grenades', at(1, 5, 0)).pickup('mines', at(5, 1, 0)).pickup('ammo', at
 m.furnish();
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(6);
+m.lightRooms();
 m.meta({
   description:
     'A buried silo complex in the spirit of GoldenEye\'s Complex: one vast two-storey floor of pillars and crates, a catwalk ring a storey up, and a loop of concrete rooms and corridors with doorways in from all four sides. Open stairs climb to the catwalk landings; the railgun sits on the north landing, heavy armour on the south, and the auto shotgun in the dead centre of the floor.',

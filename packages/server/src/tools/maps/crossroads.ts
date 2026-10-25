@@ -131,6 +131,7 @@ m.breakable('gas', [6, 0, 58]);
 m.breakable('glass', [14, 0, 10.2]);
 
 m.bounds('invisible');
+m.lightRooms();
 m.meta({
   description:
     'A downtown block where an avenue crosses a street. Embers come up from the south past a corner shop and a sandbagged bunker; Tide hold the north. Bomb site A is the gas station under its canopy, B the warehouse floor; in Hostage Rescue the hostages wait upstairs in the house and on the warehouse mezzanine. Parked cars, bus stops and barriers are the cover on the open streets, and a fire escape climbs to the warehouse’s upper door.',

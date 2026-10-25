@@ -50,6 +50,7 @@ m.pickup('health_small', [14, 0, -14]);
 // Cover in the hall.
 m.breakable('crate', [1.5, 0, -9]).breakable('crate', [6.5, 0, -15]).breakable('barrel', [7, 0, -9.5]);
 
+m.lightRooms();
 m.meta({
   description: 'Break into the vault: find the control, blow the wall, grab the prize. Loops through a south hall, a west passage and the north rooms keep the fight moving.',
   modes: ['core.deathmatch'],

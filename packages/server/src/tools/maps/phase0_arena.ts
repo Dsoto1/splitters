@@ -6,6 +6,7 @@
 import { MapBuilder } from '../mapkit.ts';
 
 const m = MapBuilder.extend('phase0_arena');
+m.lightRooms();
 m.meta({
   description: 'Duel arena: a graybox loop around a pillar hall with an upper floor. Tight and fast, for 2–4 players.',
   modes: ['core.deathmatch'],

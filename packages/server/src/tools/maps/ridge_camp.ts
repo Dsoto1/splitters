@@ -114,6 +114,7 @@ m.bounds('invisible');
 m.furnish();
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(5);
+m.lightRooms();
 m.meta({
   description:
     'A stone keep round an open courtyard, four storeys of fighting: a sunken pit with the rocket launcher, the courtyard and its cloister, a U of railed ledges reached by stairs and a long ramp, and a high deck over the north colonnade that only the jump pad reaches, holding the railgun. An homage in spirit to the great multi-level stone arenas.',

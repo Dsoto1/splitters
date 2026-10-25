@@ -105,6 +105,7 @@ m.pickup('ammo_shells', at(1, 4)).pickup('ammo', at(5, 2)).pickup('ammo', at(2, 
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(4);
 m.bounds('invisible');
+m.lightRooms();
 m.meta({
   description:
     'A two-storey techbase hall: an atrium open to the roof with double damage on its dais, a corridor loop round it, a railed balcony above, and the edge — a ledge with no railing outside the balcony, over a lava pit, where the railgun waits. A small arena for 2–8 players.',

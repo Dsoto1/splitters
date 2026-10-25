@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 12,
+  "formatVersion": 15,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -102506,6 +102506,7 @@
     "ground": "grass",
     "haze": 0.4
   },
+  "physics": null,
   "blood": null,
   "teamSetup": {
     "sizes": [

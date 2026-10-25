@@ -109,6 +109,7 @@ m.logic({
     { id: 'rule_brute', name: 'Brute down: win', enabled: true, once: true, when: { event: 'encounter_cleared', target: 'enc_brute' }, if: [], do: [act('objective', 'obj_brute', 'complete'), say('Lab secured.', 4), { type: 'end_round', target: null, value: 0, text: '', state: 'players win' }] },
   ],
 });
+m.lightRooms();
 m.meta({
   description: 'Co-op: a research station built from the sci-fi kit. Hold the deck against imps and puglins, push into the specimen bay for the spitting cyclops and oculus aliens, then face the scolitex brute in containment.',
   modes: ['core.coop'],

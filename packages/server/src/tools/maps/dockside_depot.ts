@@ -275,6 +275,7 @@ m.hostage([30, 0, 44], Math.PI).hostage([34, 0, 44], Math.PI).hostage([29.5, 4, 
 m.rescue([14, 0, 6], 5);
 
 m.bounds('invisible');
+m.lightRooms();
 m.meta({
   description:
     'A two-storey warehouse on a floodlit industrial lot at dusk. Tide hold the warehouse: an open hall of crates and shelving behind the loading door, catwalks and offices upstairs, a bridge across the middle. Embers come in off the road through the parking lot of trucks and containers, by the side door from the alley, the front door off the east lane, up the fire escape to the roof and down its hatches, or through the cramped air duct into the offices. In Hostage Rescue, Embers bring the four hostages out to the lot.',

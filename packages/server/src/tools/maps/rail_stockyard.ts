@@ -214,6 +214,7 @@ m.hill([40, -4, 28], 5).hill([24, 0, 16], 5).hill([40, 0, 40], 4);
 m.furnish();
 // Enough team spawns for a full match.
 await m.fillTeamSpawns(6);
+m.lightRooms();
 m.meta({
   description:
     'A railway goods yard at dusk. Weave between boxcars and cargo stacks in the open yard, drop into the sunken loading pit, slip through the culvert beneath the tracks, or run the dock catwalk between the two brick sheds and their windows over the yard. The railgun waits on the crane perch above the pit, and the only way out to it is a bare girder from the west shed roof, in plain sight of everyone.',

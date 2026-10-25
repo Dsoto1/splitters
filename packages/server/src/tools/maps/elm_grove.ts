@@ -116,6 +116,7 @@ m.pickup('health_small', [68, 0, 54]).pickup('health_small', [0, 0, 8]).pickup('
 m.pickup('ammo_rifle', [72, 0, 20]).pickup('ammo_shells', [8, 0, 38]).pickup('ammo_sniper', [48, 4, 48]).pickup('grenades', [36, 0, 22]).pickup('grenades', [56, 0, 62]);
 
 m.bounds('invisible');
+m.lightRooms();
 m.meta({
   description:
     'A cul-de-sac of five homes off a main street at sunset. Embers hold the turnaround at the end of the grove, Tide come off the main street past the corner shop and the gas station. Two-storey houses with gardens either side of the road, side yards to slip between them, and the road itself for the brave.',

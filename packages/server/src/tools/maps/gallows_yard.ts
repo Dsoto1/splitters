@@ -156,6 +156,7 @@ m.bounds('invisible');
 m.teams([4, 4]);
 // Furniture in the bare rooms, for what they are in this theme.
 m.furnish();
+m.lightRooms();
 m.meta({
   description:
     "A walled castle courtyard crowded with tomb blocks of every height, made in the spirit of the classic tombstone-courtyard arena. Embers and Tide each hold a gatehouse at one end; its roof runs into a raised walkway along the far wall, over a covered arcade and across a narrow bridge. Open stairs climb out of the graves, and jump pads throw you up onto the gallows in the middle, where the railgun waits above the rocket launcher.",
