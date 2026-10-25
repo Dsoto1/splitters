@@ -178,6 +178,8 @@ m.prop('grass_tuft', [24, -4, 38], 0, 1, false).prop('grass_tuft', [38, -4, 42],
 
 m.bounds('invisible');
 m.teams([5, 5]);
+// Furniture in the bare rooms, for what they are in this theme.
+m.furnish();
 m.meta({
   description:
     'An overgrown temple ruin split by a river gorge, made in the spirit of the classic jungle-temple bomb map. Embers camp in the south, Tide in the north. Cross by the long high bridge over the ravine (sniper rifle halfway, an 8 m fall if you get knocked off), the stone double-doors causeway in the middle, or the sunken river route through the gorge, reached by stair blocks at either end, where rockets wait in the culvert and heavy armour in the far nook.',

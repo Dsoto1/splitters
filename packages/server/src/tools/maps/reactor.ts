@@ -149,6 +149,8 @@ m.prop('crate_small', [42.5, 4, 46]);
 
 m.bounds('invisible');
 m.teams([5, 5]);
+// Furniture in the bare rooms, for what they are in this theme.
+m.furnish();
 m.meta({
   description:
     'A cooling plant on the edge of a container yard, built in the spirit of the classic reactor-plant bomb map. Embers push in from the yard; Tide hold the control room between the two sites. Upstairs is the two-storey reactor hall with its gallery; downstairs, the coolant basement, reached by the ramp room, a long secret tunnel or the control stairwell. Climb onto the roof for the railgun and a hatch down into the plant.',

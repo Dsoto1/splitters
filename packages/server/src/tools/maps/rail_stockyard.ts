@@ -210,6 +210,8 @@ m.flag(embers, [3, 0, 26], P).flag(tide, [77, 0, 26], -P);
 // King of the Hill: the loading pit, the south-west yard, the open yard by the dock.
 m.hill([40, -4, 28], 5).hill([24, 0, 16], 5).hill([40, 0, 40], 4);
 
+// Furniture in the bare rooms, for what they are in this theme.
+m.furnish();
 // Enough team spawns for a full match.
 await m.fillTeamSpawns(6);
 m.meta({

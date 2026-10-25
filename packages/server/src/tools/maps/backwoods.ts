@@ -576,6 +576,8 @@ for (let n = 0; n < 2000 && flowers < 40; n++) {
 // ================================================================ map settings
 
 m.bounds('invisible', 4, { min: [-76, -96], max: [68, 80] });
+// Furniture in the bare rooms, for what they are in this theme.
+m.furnish();
 m.meta({
   description:
     'A big wooden lodge on the high ground above a creek. Defenders hold the house: a stone lower floor with the garage and cellars, the main floor with its back deck and front porch, and upstairs bedrooms whose windows and balcony watch the whole yard. Attackers come out of the pine woods across the creek and pick a way in: straight up the yard past the barn and the hay bales, round the road to the garage doors, or through the long drain from the creek that comes up in the cellar. Sniper rifle in the barn hayloft, rockets in the drain, big armour in the shed.',

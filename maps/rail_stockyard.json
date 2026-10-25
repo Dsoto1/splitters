@@ -3986,7 +3986,63 @@
       "radius": 4
     },
     {
-      "id": "spawn_294",
+      "id": "prop_294",
+      "position": [
+        5.49,
+        4,
+        37.37
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_295",
+      "position": [
+        10.35,
+        4,
+        37.1
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_296",
+      "position": [
+        10.52,
+        4,
+        42.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_297",
+      "position": [
+        4.93,
+        4,
+        43.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_298",
       "position": [
         2.33,
         4.05,
@@ -3997,7 +4053,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_295",
+      "id": "spawn_299",
       "position": [
         73.53,
         4.05,

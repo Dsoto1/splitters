@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 14,
   "metadata": {
     "id": "jungle_steps",
     "name": "Jungle Steps",
@@ -1720,6 +1720,118 @@
       "scale": 1,
       "solid": false,
       "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        37.58,
+        0,
+        21.1
+      ],
+      "kind": "prop",
+      "model": "prop.table",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        43.07,
+        0,
+        20.93
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_158",
+      "position": [
+        43.26,
+        0,
+        27.35
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_159",
+      "position": [
+        37.09,
+        0,
+        26.91
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        37,
+        0,
+        52.83
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        42.9,
+        0,
+        53.58
+      ],
+      "kind": "prop",
+      "model": "prop.table_cloth",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        43.15,
+        0,
+        59.15
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        36.93,
+        0,
+        59.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -1742,6 +1854,9 @@
     "style": "invisible",
     "height": 8
   },
+  "backdrop": null,
+  "physics": null,
+  "blood": null,
   "teamSetup": {
     "sizes": [
       5,

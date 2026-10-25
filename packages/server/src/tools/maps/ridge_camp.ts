@@ -110,6 +110,8 @@ m.prop('lightpost', [-19, -4, -28]).prop('lightpost', [19, -4, -28]);
 m.prop('lantern', [-19, 4, 4], 0, 1, false).prop('lantern', [19, 4, 4], 0, 1, false);
 
 m.bounds('invisible');
+// Furniture in the bare rooms, for what they are in this theme.
+m.furnish();
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(5);
 m.meta({

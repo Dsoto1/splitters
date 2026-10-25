@@ -322,6 +322,8 @@ for (let n = 0; n < 400 && placed.length < 190; n++) {
 // ---------------------------------------------------------------- map settings
 
 m.teams([8, 8]);
+// Furniture in the bare rooms, for what they are in this theme.
+m.furnish();
 // Enough team spawns for a full match.
 await m.fillTeamSpawns(8);
 m.meta({

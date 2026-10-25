@@ -125,6 +125,8 @@ m.pickup('health_small', at(1, 4, 0, 1, -1)).pickup('health_small', at(4, 1, 0, 
 m.pickup('ammo_rifle', at(3, 0, 0)).pickup('ammo_shells', at(2, 5, 0)).pickup('ammo_cells', at(5, 3, 0)).pickup('ammo_light', at(0, 2, 0));
 m.pickup('grenades', at(1, 5, 0)).pickup('mines', at(5, 1, 0)).pickup('ammo', at(0, 4, 0));
 
+// Furniture in the bare rooms, for what they are in this theme.
+m.furnish();
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(6);
 m.meta({

@@ -1632,7 +1632,273 @@
       "tint": null
     },
     {
-      "id": "spawn_145",
+      "id": "prop_145",
+      "position": [
+        -2.51,
+        0,
+        13.37
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        2.35,
+        0,
+        13.1
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        2.52,
+        0,
+        18.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        -3.07,
+        0,
+        19.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_149",
+      "position": [
+        5.1,
+        0,
+        13.1
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        10.63,
+        0,
+        13.49
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_151",
+      "position": [
+        11.15,
+        0,
+        19.15
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        5.36,
+        0,
+        18.52
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_153",
+      "position": [
+        -26.51,
+        0,
+        -18.63
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        -21.65,
+        0,
+        -18.9
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        -21.48,
+        0,
+        -13.36
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        -27.07,
+        0,
+        -12.93
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        -18.9,
+        0,
+        -18.9
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_158",
+      "position": [
+        -13.37,
+        0,
+        -18.51
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_159",
+      "position": [
+        -12.85,
+        0,
+        -12.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        -18.64,
+        0,
+        -13.48
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        5.49,
+        0,
+        -18.63
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        10.35,
+        0,
+        -18.9
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        10.52,
+        0,
+        -13.36
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_164",
       "position": [
         -24.88,
         4.05,
@@ -1643,7 +1909,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_146",
+      "id": "spawn_165",
       "position": [
         -24.8,
         0.05,
@@ -1654,7 +1920,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_147",
+      "id": "spawn_166",
       "position": [
         -24.4,
         0.05,
@@ -1665,7 +1931,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_148",
+      "id": "spawn_167",
       "position": [
         -24.2,
         0.05,
@@ -1676,18 +1942,18 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_149",
+      "id": "spawn_168",
       "position": [
         -24.2,
         -3.62,
         -3.73
       ],
       "kind": "spawn",
-      "yaw": 1.51,
+      "yaw": 1.5,
       "faction": "embers"
     },
     {
-      "id": "spawn_150",
+      "id": "spawn_169",
       "position": [
         -24.2,
         -0.02,
@@ -1698,7 +1964,7 @@
       "faction": "embers"
     },
     {
-      "id": "flag_151",
+      "id": "flag_170",
       "position": [
         -25,
         0.05,
@@ -1709,18 +1975,18 @@
       "team": "embers"
     },
     {
-      "id": "spawn_152",
+      "id": "spawn_171",
       "position": [
         25.4,
         2.48,
         17.53
       ],
       "kind": "spawn",
-      "yaw": -2.24,
+      "yaw": -2.23,
       "faction": "tide"
     },
     {
-      "id": "spawn_153",
+      "id": "spawn_172",
       "position": [
         24.53,
         -2.5,
@@ -1731,7 +1997,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_154",
+      "id": "spawn_173",
       "position": [
         24.4,
         -3.95,
@@ -1742,7 +2008,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_155",
+      "id": "spawn_174",
       "position": [
         24.2,
         -0.03,
@@ -1753,7 +2019,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_156",
+      "id": "spawn_175",
       "position": [
         24,
         1.32,
@@ -1764,7 +2030,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_157",
+      "id": "spawn_176",
       "position": [
         22.13,
         0.05,
@@ -1775,7 +2041,7 @@
       "faction": "tide"
     },
     {
-      "id": "flag_158",
+      "id": "flag_177",
       "position": [
         25.99,
         2.23,
@@ -1786,7 +2052,7 @@
       "team": "tide"
     },
     {
-      "id": "hill_159",
+      "id": "hill_178",
       "position": [
         -2.13,
         -3.95,
@@ -1796,7 +2062,7 @@
       "radius": 5
     },
     {
-      "id": "hill_160",
+      "id": "hill_179",
       "position": [
         -1.8,
         4.05,
@@ -1806,11 +2072,11 @@
       "radius": 5
     },
     {
-      "id": "hill_161",
+      "id": "hill_180",
       "position": [
-        5.4,
+        1.4,
         0.05,
-        8.8
+        11.47
       ],
       "kind": "hill",
       "radius": 5

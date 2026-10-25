@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 9,
+  "formatVersion": 14,
   "metadata": {
     "id": "gallows_yard",
     "name": "Gallows Yard",
@@ -1585,6 +1585,174 @@
       "scale": 0.8,
       "solid": false,
       "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
+        3.07,
+        0,
+        4.93
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        3.26,
+        0,
+        11.35
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        -2.91,
+        0,
+        10.91
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_145",
+      "position": [
+        66.9,
+        0,
+        21.58
+      ],
+      "kind": "prop",
+      "model": "prop.table_cloth",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        67.15,
+        0,
+        27.15
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        60.93,
+        0,
+        27.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        3.28,
+        0,
+        20.97
+      ],
+      "kind": "prop",
+      "model": "prop.side_table",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_149",
+      "position": [
+        3.13,
+        0,
+        27.13
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        -2.91,
+        0,
+        26.91
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_151",
+      "position": [
+        67.07,
+        0,
+        4.93
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        67.26,
+        0,
+        11.35
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_153",
+      "position": [
+        61.09,
+        0,
+        10.91
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -1613,6 +1781,8 @@
     "ground": "grass",
     "haze": 0.6
   },
+  "physics": null,
+  "blood": null,
   "teamSetup": {
     "sizes": [
       4,

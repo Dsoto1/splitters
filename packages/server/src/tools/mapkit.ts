@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
+  CORE_PROPS,
   EditHistory,
   addSpawnCommand,
   blockBoxes,
@@ -52,6 +53,41 @@ import { NavWorld, initNavigation, validateNavigation } from '@chronosplit/share
 type V3 = [number, number, number];
 /** Any entity without its ID (one per kind, so object literals are checked against the right kind). */
 type NewEntity = MapEntity extends infer E ? (E extends MapEntity ? Omit<E, 'id'> & { id?: string } : never) : never;
+
+/** What a room is furnished as: four corner pieces per room, the sets taken in turn. */
+export type FurnishStyle = 'home' | 'office' | 'barracks' | 'tavern' | 'store';
+const FURNISH: Record<FurnishStyle, string[][]> = {
+  home: [
+    ['fridge', 'kitchen_cabinet', 'stove', 'table'],
+    ['sofa', 'bookcase', 'armchair', 'tv_cabinet'],
+    ['bed', 'coat_rack', 'side_table', 'floor_lamp'],
+  ],
+  office: [
+    ['desk', 'bookcase', 'desk', 'potted_plant'],
+    ['bookcase_wide', 'desk', 'floor_lamp', 'desk'],
+    ['shelf_boxes', 'metal_crate', 'desk', 'bookcase'],
+  ],
+  barracks: [
+    ['bunk_bed', 'metal_crate', 'bunk_bed', 'shelf_bags'],
+    ['table', 'crate_large', 'shelf_boxes', 'barrel'],
+  ],
+  tavern: [
+    ['table', 'barrel', 'bench', 'dungeon_barrel'],
+    ['bookcase', 'table_cloth', 'crate_small', 'barrel'],
+    ['bed', 'side_table', 'coat_rack', 'dungeon_barrel'],
+  ],
+  store: [
+    ['shelf_boxes', 'crate_large', 'shelf_bags', 'barrel'],
+    ['metal_crate', 'shelf_boxes', 'crate_small', 'shelf_bags'],
+  ],
+};
+const THEME_FURNISH: Record<string, FurnishStyle> = {
+  city: 'home', manor: 'home', saloon: 'home', garden: 'home', harbour: 'home',
+  lab: 'office', station: 'office', neon: 'office',
+  bunker: 'barracks', arctic: 'barracks', canyon: 'barracks', forest: 'barracks',
+  castle: 'tavern', desert: 'tavern', tomb: 'tavern', ruins: 'tavern', temple: 'tavern',
+  factory: 'store', prototype: 'store', volcano: 'store',
+};
 
 export class MapBuilder {
   readonly history: EditHistory;
@@ -360,6 +396,50 @@ export class MapBuilder {
         this.spawn([r(best.x), r(best.y), r(best.z)], mate.yaw, team);
         this.flush();
       }
+    }
+    return this;
+  }
+
+
+  /**
+   * Furnish the map's bare rooms (plain, pillar, column and low-cover rooms
+   * with no props in them yet) for what they'd be in this theme: kitchens,
+   * living rooms and bedrooms in homes; offices and stores in factories and
+   * labs; bunks and kit in bunkers and camps; tables and barrels in castles
+   * and towns. Pieces stand in the corners, backs to the wall, so doorways
+   * and the middle of the room stay clear; corners near spawns, pickups and
+   * other set pieces are left empty.
+   */
+  furnish(style?: FurnishStyle): this {
+    this.flush();
+    const theme = this.doc.classicStructure.theme.replace(/^core\./, '');
+    const sets = FURNISH[style ?? THEME_FURNISH[theme] ?? 'store'];
+    const cell = this.doc.classicStructure.cellSize;
+    const level = this.doc.classicStructure.levelHeight;
+    const props = this.doc.entities.filter((e) => e.kind === 'prop');
+    const marks = this.doc.entities.filter((e) => e.kind !== 'prop').map((e) => e.position);
+    const rooms = this.doc.classicStructure.tiles.filter((t) => /^core\.room(_pillar|_columns|_cover)?$/.test(t.tile));
+    let n = 0;
+    for (const t of rooms) {
+      const [cx, y, cz] = [t.x * cell, t.z * level, t.y * cell];
+      if (props.some((p) => Math.abs(p.position[0] - cx) < cell / 2 && Math.abs(p.position[2] - cz) < cell / 2 && Math.abs(p.position[1] - y) < level / 2)) continue;
+      const set = sets[n++ % sets.length]!;
+      set.forEach((model, i) => {
+        // Corners round the room; even ones back onto the north/south wall, odd ones the east/west.
+        const sx = i === 1 || i === 2 ? 1 : -1;
+        const sz = i >= 2 ? 1 : -1;
+        const def = CORE_PROPS.find((p) => p.id === `prop.${model}`);
+        if (!def) throw new Error(`furnish: no prop ${model}`);
+        const [w, , d] = def.size;
+        const alongZ = i % 2 === 0; // backs onto a z wall (north/south)
+        const [fx, fz] = alongZ ? [w, d] : [d, w];
+        const inner = cell / 2 - 0.55; // inside face of the wall, with a hand's gap
+        const px = cx + sx * (inner - fx / 2);
+        const pz = cz + sz * (inner - fz / 2);
+        if (marks.some((m) => Math.hypot(m[0] - px, m[2] - pz) < 1.6 + Math.max(fx, fz) / 2 && Math.abs(m[1] - y) < 2)) return;
+        const yaw = alongZ ? (sz > 0 ? Math.PI : 0) : sx > 0 ? -Math.PI / 2 : Math.PI / 2;
+        this.prop(model, [+px.toFixed(2), y, +pz.toFixed(2)], +yaw.toFixed(4));
+      });
     }
     return this;
   }

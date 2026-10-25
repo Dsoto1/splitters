@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 9,
+  "formatVersion": 14,
   "metadata": {
     "id": "reactor",
     "name": "Reactor",
@@ -1354,6 +1354,160 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "prop_125",
+      "position": [
+        37.49,
+        0,
+        21.37
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_126",
+      "position": [
+        42.35,
+        0,
+        21.1
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_127",
+      "position": [
+        42.52,
+        0,
+        26.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_128",
+      "position": [
+        36.93,
+        0,
+        27.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_129",
+      "position": [
+        37.1,
+        0,
+        29.1
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_130",
+      "position": [
+        42.63,
+        0,
+        29.49
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_131",
+      "position": [
+        43.15,
+        0,
+        35.15
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_132",
+      "position": [
+        37.36,
+        0,
+        34.52
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_133",
+      "position": [
+        53.49,
+        0,
+        37.37
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_134",
+      "position": [
+        58.35,
+        0,
+        37.1
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_135",
+      "position": [
+        52.93,
+        0,
+        43.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -1382,6 +1536,8 @@
     "ground": "gravel",
     "haze": 0.5
   },
+  "physics": null,
+  "blood": null,
   "teamSetup": {
     "sizes": [
       5,

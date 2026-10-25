@@ -285,6 +285,8 @@ m.flag(north, at(0, 3, 0, 0, 1), Math.PI).flag(south, at(0, -3, 0, 0, -1), 0);
 // King of the Hill: the bridge, then the yard either side of the canal.
 m.hill(at(0, 0, 0), 5).hill(at(-2, 1, 0), 5).hill(at(2, -1, 0), 5);
 
+// Furniture in the bare rooms, for what they are in this theme.
+m.furnish();
 // Enough team spawns for a full match.
 await m.fillTeamSpawns(8);
 m.meta({

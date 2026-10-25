@@ -4045,7 +4045,175 @@
       "tint": null
     },
     {
-      "id": "spawn_318",
+      "id": "prop_318",
+      "position": [
+        -10.88,
+        0,
+        -2.36
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_319",
+      "position": [
+        -5.1,
+        0,
+        -2.9
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_320",
+      "position": [
+        -5.12,
+        0,
+        2.36
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_321",
+      "position": [
+        -10.64,
+        0,
+        2.52
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_322",
+      "position": [
+        -2.42,
+        0,
+        -2.9
+      ],
+      "kind": "prop",
+      "model": "prop.table",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_323",
+      "position": [
+        2.35,
+        0,
+        -2.9
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_324",
+      "position": [
+        2.51,
+        0,
+        2.63
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_325",
+      "position": [
+        -3.07,
+        0,
+        3.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_326",
+      "position": [
+        -2.88,
+        4,
+        -2.36
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_327",
+      "position": [
+        2.9,
+        4,
+        -2.9
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_328",
+      "position": [
+        2.88,
+        4,
+        2.36
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_329",
+      "position": [
+        -2.64,
+        4,
+        2.52
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_330",
       "position": [
         23.87,
         11.92,
@@ -4056,7 +4224,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_319",
+      "id": "spawn_331",
       "position": [
         -9.33,
         12.05,
@@ -4067,7 +4235,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_320",
+      "id": "spawn_332",
       "position": [
         -7.8,
         12.05,
@@ -4078,7 +4246,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_321",
+      "id": "spawn_333",
       "position": [
         -23.57,
         11.92,

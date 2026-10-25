@@ -145,6 +145,8 @@ m.prop('pipe_valve', [-17, -4, -18.6]).prop('pipe_glass', [11.6, -4, -18.6]).pro
 // ---------------------------------------------------------------- map settings
 
 m.bounds('invisible', 2);
+// Furniture in the bare rooms, for what they are in this theme.
+m.furnish();
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(6);
 m.meta({
