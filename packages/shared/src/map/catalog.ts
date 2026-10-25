@@ -54,7 +54,7 @@ export const EDGE_STYLE_LABELS: Record<EdgeStyle, string> = {
 };
 
 /** Palette groups in MapMaker (after the reference board's tile browser). */
-export const TILE_CATEGORIES = ['Rooms', 'Large', 'Curves', 'Corridors', 'Vertical', 'Open', 'Special'] as const;
+export const TILE_CATEGORIES = ['Rooms', 'Large', 'Buildings', 'Curves', 'Corridors', 'Vertical', 'Open', 'Special'] as const;
 export type TileCategory = (typeof TILE_CATEGORIES)[number];
 
 /** Axis-aligned box in tile-local metres: X/Z relative to the cell centre, Y relative to the tile's base floor. */
@@ -799,6 +799,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
     open: true,
     solids: [box(-3, 0, 2, -2, 3.2, 3), box(2, 0, 2, 3, 1.4, 3), box(-3, 0, -3, -2, 0.8, -2), box(0.5, 0, -2.5, 3.2, 0.9, -1.4)],
   },
+  ...buildings(),
   ...roundCorners(),
   roundTower(),
   curvedCorridor(),
@@ -826,6 +827,221 @@ export const CORE_TILES: readonly TileDefinition[] = [
     solids: [rail(-4, 1.5, -1.6, 1.5), rail(1.6, 1.5, 4, 1.5)],
   },
 ];
+
+// ---------------------------------------------------------------- buildings
+
+/** A thin interior wall (wall paint) along x or z, from a0 to a1, with openings [g0, g1] left out. */
+function partition(axis: 'x' | 'z', at: number, a0: number, a1: number, gaps: readonly (readonly [number, number])[] = [], y0 = 0, y1 = 3.5, t = 0.12): LocalBox[] {
+  const out: LocalBox[] = [];
+  let from = a0;
+  for (const [g0, g1] of [...gaps].sort((a, b) => a[0] - b[0])) {
+    if (g0 > from) out.push(axis === 'x' ? box(from, y0, at - t, g0, y1, at + t) : box(at - t, y0, from, at + t, y1, g0));
+    from = g1;
+  }
+  if (a1 > from) out.push(axis === 'x' ? box(from, y0, at - t, a1, y1, at + t) : box(at - t, y0, from, at + t, y1, a1));
+  return out.map((b) => ({ ...b, kind: 'wall' as const }));
+}
+
+/** Decorative only (the theme's trim paint): frames, beams, lines. */
+function trim(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): LocalBox {
+  return { min: [x0, y0, z0], max: [x1, y1, z1], kind: 'trim' };
+}
+
+/** A street lamp: a pole with an arm reaching over the road (`dir` +1 east, -1 west). */
+function lamp(x: number, z: number, dir: 1 | -1): LocalBox[] {
+  return [box(x - 0.1, 0, z - 0.1, x + 0.1, 4.6, z + 0.1), trim(Math.min(x, x + dir * 1.4), 4.4, z - 0.06, Math.max(x, x + dir * 1.4), 4.55, z + 0.06), trim(x + dir * 1.2 - 0.25, 4.2, z - 0.18, x + dir * 1.2 + 0.25, 4.4, z + 0.18)];
+}
+
+/**
+ * Whole buildings as single pieces, with their insides laid out: rooms,
+ * stairs, counters and shelving as solid blocks, interior walls in the wall
+ * paint and frames and beams in the trim paint, so they take any theme.
+ */
+function buildings(): TileDefinition[] {
+  return [
+    {
+      id: 'core.house',
+      category: 'Buildings',
+      displayName: 'House',
+      blurb: '2 × 2 cells, two storeys: living room, kitchen, stair hall, two rooms upstairs, windows all round',
+      cells: footprint(2, 2, 2),
+      floors: [0],
+      ports: [
+        { side: 'S', level: 0, cell: [0, 0] },
+        { side: 'E', level: 0, cell: [1, 0] },
+        { side: 'N', level: 0, cell: [1, 1] },
+      ],
+      edgeDefault: 'window',
+      // The upper floor, open over the stairs (x -1..7 along the north wall, with room to walk on at the foot).
+      extraFloors: [box(-4, 3.5, -4, 12, 4, 8.5), box(7, 3.5, 8.5, 12, 4, 12)],
+      solids: [
+        ...flight('x', 1, -1, 8.6, 11.6, 16),
+        rail(-1, 8.5, 7, 8.5, 4),
+        // Ground floor: living room (south-west), kitchen (south-east), stair hall (north).
+        ...partition('x', 4, -4, 12, [[0.5, 2.5], [8.5, 10.5]]),
+        ...partition('z', 4, -4, 4, [[-1, 1]]),
+        box(9, 0, -3.7, 11.7, 0.95, -0.8),
+        box(6, 0, 0.6, 8, 0.95, 2),
+        box(-3.6, 0, -3.7, -0.4, 0.75, -2.7),
+        // Upstairs: two rooms either side of a landing.
+        ...partition('z', 4, -4, 8.5, [[2.5, 4.5]], 4, 7.5),
+        box(-3.6, 4, -3.7, -1, 4.5, -1.6),
+        box(9.6, 4, -3.7, 11.7, 4.5, -1),
+        // A flat roof with a parapet, and trim at the eaves and between the floors.
+        box(-4, 8, -4, 12, 8.35, 12),
+        trim(-4, 8.35, -4, 12, 8.8, -3.7),
+        trim(-4, 8.35, 11.7, 12, 8.8, 12),
+        trim(-4, 8.35, -3.7, -3.7, 8.8, 11.7),
+        trim(11.7, 8.35, -3.7, 12, 8.8, 11.7),
+        trim(-3.75, 3.75, -3.75, 11.75, 3.95, -3.6),
+        trim(-3.75, 3.75, 11.6, 11.75, 3.95, 11.75),
+      ],
+    },
+    {
+      id: 'core.warehouse',
+      category: 'Buildings',
+      displayName: 'Warehouse',
+      blurb: '3 × 2 cells, double height: pallet stacks on the floor, a mezzanine along the back reached by stairs',
+      cells: footprint(3, 2, 2),
+      floors: [0],
+      ports: [
+        { side: 'S', level: 0, cell: [0, 0] },
+        { side: 'S', level: 0, cell: [2, 0] },
+        { side: 'W', level: 0, cell: [0, 1] },
+        { side: 'E', level: 0, cell: [2, 0] },
+        { side: 'N', level: 1, cell: [1, 1] },
+      ],
+      edgeDefaults: { '0,0,1:S': 'windows', '1,0,1:S': 'windows', '2,0,1:S': 'windows', '0,1,1:W': 'windows', '2,1,1:E': 'windows' },
+      // The mezzanine (north half, 4 m up), with a landing at the top of the stairs.
+      extraFloors: [box(-4, 3.5, 6, 20, 4, 12), box(16, 3.5, 3, 20, 4, 6)],
+      solids: [
+        ...flight('x', 1, 8, 3, 5.4, 16),
+        rail(-4, 6, 11, 6, 4),
+        // Columns under the mezzanine and pallet stacks out on the floor.
+        box(3.8, 0, 5.8, 4.2, 3.5, 6.2),
+        box(7.8, 0, 5.8, 8.2, 3.5, 6.2),
+        box(0, 0, -2.5, 2.2, 1.2, -0.5),
+        box(0.2, 1.2, -2.3, 2, 2.3, -0.7),
+        box(6, 0, -3, 8.4, 2.4, -1),
+        box(14, 0, 0.5, 16.2, 1.2, 2.5),
+        box(16.6, 0, -3.5, 19.6, 1.2, -1.5),
+        box(-3.6, 4, 8.5, -1, 5.2, 11.6),
+        // A roof over the trusses.
+        box(-4, 8, -4, 20, 8.35, 12),
+        trim(-4, 8.35, -4, 20, 8.6, -3.7),
+        // Roof trusses.
+        ...[0, 8, 16].map((x) => trim(x - 0.15, 7.4, -4, x + 0.15, 7.8, 12)),
+        trim(-4, 7.6, 3.85, 20, 7.8, 4.15),
+      ],
+    },
+    {
+      id: 'core.bunker',
+      category: 'Buildings',
+      displayName: 'Bunker',
+      blurb: '2 × 1 cells of thick concrete: firing slits, a centre pillar, sandbag cover at the doors',
+      cells: footprint(2, 1),
+      floors: [0],
+      ports: [
+        { side: 'W', level: 0 },
+        { side: 'E', level: 0, cell: [1, 0] },
+        { side: 'S', level: 0 },
+      ],
+      edgeDefault: 'slit',
+      solids: [
+        box(3.4, 0, -0.6, 4.6, 4, 0.6),
+        // Sandbag cover inside each door, leaving a way round.
+        box(-1.6, 0, -2.4, -1, 1.1, -0.6),
+        box(9, 0, 0.6, 9.6, 1.1, 2.4),
+        box(-2.6, 0, -1.4, -0.6, 1.1, -0.8),
+        box(6, 0, 2.6, 9.5, 0.9, 3.6),
+        // A thick roof slab with a lip.
+        box(-4, 4, -4, 12, 4.9, 4),
+        trim(-4, 4.9, -4, 12, 5.05, -3.6),
+        trim(-4, 4.9, 3.6, 12, 5.05, 4),
+      ],
+    },
+    {
+      id: 'core.shop',
+      category: 'Buildings',
+      displayName: 'Shop',
+      blurb: '2 × 1 cells: a glass shopfront, shelving aisles and a counter, a stock room behind',
+      cells: footprint(2, 1),
+      floors: [0],
+      ports: [
+        { side: 'S', level: 0 },
+        { side: 'N', level: 0, cell: [1, 0] },
+      ],
+      edgeDefaults: { '1,0,0:S': 'windows', '0,0,0:N': 'window', '0,0,0:W': 'window' },
+      solids: [
+        box(-2.8, 0, -1.2, 2.2, 1.8, -0.6),
+        box(-2.8, 0, 1, 2.2, 1.8, 1.6),
+        box(-3.7, 0, 3, 2.2, 2, 3.7),
+        box(5, 0, -3.2, 6, 1.05, 0.5),
+        ...partition('z', 8, -4, 4, [[-1.4, 1.4]]),
+        box(9, 0, 2.2, 11.6, 1.6, 3.7),
+        box(10.4, 0, -3.7, 11.7, 2.2, -1.2),
+        // Pelmet over the shopfront, inside.
+        trim(-3.75, 3, -3.75, 11.75, 3.4, -3.5),
+      ],
+    },
+    {
+      id: 'core.gas_station',
+      category: 'Buildings',
+      displayName: 'Gas Station',
+      blurb: '2 × 2 cells of forecourt: a canopy on pillars over two pump islands, and a kiosk at the back',
+      cells: footprint(2, 2),
+      floors: [0],
+      ports: perimeterPorts(2, 2),
+      open: true,
+      solids: [
+        // Canopy (you can stand on it) on four pillars.
+        ...[[-1.5, -1.5], [9.5, -1.5], [-1.5, 5.5], [9.5, 5.5]].map(([x, z]) => box(x! - 0.3, 0, z! - 0.3, x! + 0.3, 5, z! + 0.3)),
+        box(-2.5, 5, -2.5, 10.5, 5.4, 6.5),
+        trim(-2.6, 5.4, -2.6, 10.6, 5.7, 6.6),
+        // Pump islands.
+        box(0.5, 0, 0.5, 7.5, 0.2, 1.7),
+        box(1.5, 0.2, 0.75, 2.3, 1.7, 1.45),
+        box(5.7, 0.2, 0.75, 6.5, 1.7, 1.45),
+        box(0.5, 0, 3.3, 7.5, 0.2, 4.5),
+        box(1.5, 0.2, 3.55, 2.3, 1.7, 4.25),
+        box(5.7, 0.2, 3.55, 6.5, 1.7, 4.25),
+        // Kiosk: a small room with a counter, door and window to the forecourt.
+        ...partition('x', 7.6, 2, 9, [[4, 6.6]], 0, 3.2, 0.15),
+        ...partition('x', 11.6, 2, 9, [], 0, 3.2, 0.15),
+        ...partition('z', 2, 7.6, 11.6, [], 0, 3.2, 0.15),
+        ...partition('z', 9, 7.6, 11.6, [[8.2, 10.8]], 0, 3.2, 0.15),
+        box(1.8, 3.2, 7.4, 9.2, 3.5, 11.8),
+        box(2.6, 0, 10.6, 6.4, 1.05, 11.4),
+      ],
+    },
+    {
+      id: 'core.street',
+      category: 'Buildings',
+      displayName: 'Street',
+      blurb: 'A road north–south with raised sidewalks, a centre line and a street lamp',
+      cells: [[0, 0, 0]],
+      floors: [0],
+      ports: ALL_SIDES,
+      open: true,
+      solids: [box(-4, 0, -4, -2.6, 0.15, 4), box(2.6, 0, -4, 4, 0.15, 4), trim(-0.08, 0, -3.2, 0.08, 0.02, -0.8), trim(-0.08, 0, 0.8, 0.08, 0.02, 3.2), ...lamp(-3.3, 3.4, 1)],
+    },
+    {
+      id: 'core.intersection',
+      category: 'Buildings',
+      displayName: 'Intersection',
+      blurb: 'Where two streets cross: sidewalk corners and crosswalks',
+      cells: [[0, 0, 0]],
+      floors: [0],
+      ports: ALL_SIDES,
+      open: true,
+      solids: [
+        ...[[-4, -4], [2.6, -4], [-4, 2.6], [2.6, 2.6]].map(([x, z]) => box(x!, 0, z!, x! + 1.4, 0.15, z! + 1.4)),
+        ...[-2, -1, 0, 1].flatMap((i) => [trim(i * 0.9 - 0.3, 0, -2.5, i * 0.9 + 0.15, 0.02, -1.9), trim(i * 0.9 - 0.3, 0, 1.9, i * 0.9 + 0.15, 0.02, 2.5), trim(-2.5, 0, i * 0.9 - 0.3, -1.9, 0.02, i * 0.9 + 0.15), trim(1.9, 0, i * 0.9 - 0.3, 2.5, 0.02, i * 0.9 + 0.15)]),
+        ...lamp(3.3, 3.3, -1),
+      ],
+    },
+  ];
+}
 
 export class TileCatalog {
   private readonly byId = new Map<string, TileDefinition>();
