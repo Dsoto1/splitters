@@ -2644,13 +2644,13 @@
       "id": "prop_218",
       "position": [
         45.11,
-        4.67,
+        4.68,
         16.34
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_birch_snow",
       "yaw": 0.428,
-      "scale": 1.25,
+      "scale": 1.02,
       "solid": true,
       "tint": null
     },
@@ -2662,9 +2662,9 @@
         -22.2
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_birch_snow",
       "yaw": 4.484,
-      "scale": 1.24,
+      "scale": 1.01,
       "solid": true,
       "tint": null
     },
@@ -2672,13 +2672,13 @@
       "id": "prop_220",
       "position": [
         84.37,
-        12.59,
+        12.75,
         -70.57
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 4.959,
-      "scale": 1.24,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -2686,13 +2686,13 @@
       "id": "prop_221",
       "position": [
         99.65,
-        34.3,
+        34.33,
         -75.78
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_birch_snow",
       "yaw": 1.364,
-      "scale": 1.33,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
@@ -2700,13 +2700,13 @@
       "id": "prop_222",
       "position": [
         92.75,
-        18.78,
+        18.96,
         -64.96
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 5.973,
-      "scale": 1.32,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -2714,13 +2714,13 @@
       "id": "prop_223",
       "position": [
         83.68,
-        19.85,
+        20.13,
         -80.18
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 2.997,
-      "scale": 1.64,
+      "scale": 1.18,
       "solid": true,
       "tint": null
     },
@@ -2728,13 +2728,13 @@
       "id": "prop_224",
       "position": [
         -100.78,
-        33.56,
+        33.59,
         70.86
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_birch_snow",
       "yaw": 4.772,
-      "scale": 1.2,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -2742,13 +2742,13 @@
       "id": "prop_225",
       "position": [
         -87.51,
-        13.03,
+        13.08,
         66.89
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree_snow",
       "yaw": 2.743,
-      "scale": 1.26,
+      "scale": 1.17,
       "solid": true,
       "tint": null
     },
@@ -2756,13 +2756,13 @@
       "id": "prop_226",
       "position": [
         -81.31,
-        5.35,
+        5.44,
         66.53
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 3.431,
-      "scale": 1.73,
+      "scale": 1.25,
       "solid": true,
       "tint": null
     },
@@ -2770,13 +2770,13 @@
       "id": "prop_227",
       "position": [
         -91.01,
-        12.73,
+        12.79,
         59.58
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree_snow",
       "yaw": 2.393,
-      "scale": 1.57,
+      "scale": 1.46,
       "solid": true,
       "tint": null
     },
@@ -2784,13 +2784,13 @@
       "id": "prop_228",
       "position": [
         -90.78,
-        22.32,
+        22.47,
         77.44
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 2.495,
-      "scale": 1.21,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -2798,13 +2798,13 @@
       "id": "prop_229",
       "position": [
         -101.33,
-        31.43,
+        31.49,
         78.2
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 0.354,
-      "scale": 1.72,
+      "scale": 1.24,
       "solid": true,
       "tint": null
     },
@@ -2812,13 +2812,13 @@
       "id": "prop_230",
       "position": [
         -47.35,
-        4.72,
+        4.73,
         -16.64
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree_snow",
       "yaw": 2.857,
-      "scale": 1.24,
+      "scale": 1.16,
       "solid": true,
       "tint": null
     },
@@ -2830,9 +2830,9 @@
         -8.4
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree_snow",
       "yaw": 2.206,
-      "scale": 1.25,
+      "scale": 1.16,
       "solid": true,
       "tint": null
     },
@@ -2840,13 +2840,13 @@
       "id": "prop_232",
       "position": [
         39.84,
-        3.58,
+        3.61,
         14.72
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 2.106,
-      "scale": 1.44,
+      "scale": 1.04,
       "solid": true,
       "tint": null
     },
@@ -2854,13 +2854,13 @@
       "id": "prop_233",
       "position": [
         -101.05,
-        6.68,
+        6.79,
         -22.46
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_birch_snow",
       "yaw": 0.345,
-      "scale": 1.42,
+      "scale": 1.15,
       "solid": true,
       "tint": null
     },
@@ -2868,13 +2868,13 @@
       "id": "prop_234",
       "position": [
         -107.32,
-        14.68,
+        14.9,
         -10.09
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 4.115,
-      "scale": 1.66,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -2886,9 +2886,9 @@
         -21.74
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 1.103,
-      "scale": 1.3,
+      "scale": 0.94,
       "solid": true,
       "tint": null
     },
@@ -2896,13 +2896,13 @@
       "id": "prop_236",
       "position": [
         -109.11,
-        19.71,
+        19.88,
         -23.94
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 2.871,
-      "scale": 1.55,
+      "scale": 1.12,
       "solid": true,
       "tint": null
     },
@@ -2910,13 +2910,13 @@
       "id": "prop_237",
       "position": [
         -93.11,
-        0.61,
+        0.65,
         -27.6
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 0.626,
-      "scale": 1.5,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
@@ -2924,13 +2924,13 @@
       "id": "prop_238",
       "position": [
         110.11,
-        23.73,
+        23.92,
         25.96
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 1.201,
-      "scale": 1.65,
+      "scale": 1.19,
       "solid": true,
       "tint": null
     },
@@ -2938,13 +2938,13 @@
       "id": "prop_239",
       "position": [
         96.91,
-        2.77,
+        2.89,
         25.69
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 4.286,
-      "scale": 1.54,
+      "scale": 1.11,
       "solid": true,
       "tint": null
     },
@@ -2952,13 +2952,13 @@
       "id": "prop_240",
       "position": [
         70.89,
-        6.78,
+        6.88,
         91.42
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 1.605,
-      "scale": 1.37,
+      "scale": 0.99,
       "solid": true,
       "tint": null
     },
@@ -2966,13 +2966,13 @@
       "id": "prop_241",
       "position": [
         -70,
-        28.84,
+        29.07,
         -104.21
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 0.332,
-      "scale": 1.62,
+      "scale": 1.17,
       "solid": true,
       "tint": null
     },
@@ -2980,13 +2980,13 @@
       "id": "prop_242",
       "position": [
         -68.89,
-        10.7,
+        10.93,
         -92.05
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_snow_tall",
       "yaw": 1.962,
-      "scale": 1.76,
+      "scale": 1.27,
       "solid": true,
       "tint": null
     },
@@ -3208,9 +3208,9 @@
         67.71
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 0.347,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3236,9 +3236,9 @@
         5.26
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 2.574,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3292,9 +3292,9 @@
         36.22
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 0.456,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3320,9 +3320,9 @@
         -7.47
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 3.616,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3390,9 +3390,9 @@
         -4.47
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 4.027,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3456,13 +3456,13 @@
       "id": "prop_276",
       "position": [
         -89.21,
-        0.95,
+        0.94,
         -43.29
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 0.298,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3568,13 +3568,13 @@
       "id": "prop_284",
       "position": [
         -67.93,
-        1.02,
+        1.01,
         -20.69
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 3.687,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3600,9 +3600,9 @@
         -40.15
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 0.66,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3614,9 +3614,9 @@
         75.17
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 3.81,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3712,9 +3712,9 @@
         3.52
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 0.26,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3782,9 +3782,9 @@
         -44.84
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 0.546,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3796,9 +3796,9 @@
         -23.02
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 0.296,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -3838,9 +3838,9 @@
         -31.44
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 3.321,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -4020,9 +4020,9 @@
         -41.62
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "prop.nt_log_snow",
       "yaw": 3.33,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -4099,6 +4099,846 @@
     {
       "id": "prop_322",
       "position": [
+        52.82,
+        3.58,
+        14.87
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.15,
+      "scale": 1.32,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_323",
+      "position": [
+        -52.82,
+        3.61,
+        -14.87
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 1.78,
+      "scale": 1.21,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_324",
+      "position": [
+        46.46,
+        3.04,
+        9.2
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.57,
+      "scale": 1.23,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_325",
+      "position": [
+        -46.46,
+        3.03,
+        -9.2
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.74,
+      "scale": 1.24,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_326",
+      "position": [
+        52.15,
+        3.11,
+        24.25
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.74,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_327",
+      "position": [
+        -52.15,
+        3.09,
+        -24.25
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.89,
+      "scale": 1.23,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_328",
+      "position": [
+        -37.8,
+        3.17,
+        -19.83
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 1.69,
+      "scale": 1.18,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_329",
+      "position": [
+        37.8,
+        3.13,
+        19.83
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.74,
+      "scale": 1.3,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_330",
+      "position": [
+        -32.66,
+        2.31,
+        -26.09
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.79,
+      "scale": 1.27,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_331",
+      "position": [
+        32.66,
+        2.28,
+        26.09
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.57,
+      "scale": 1.33,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_332",
+      "position": [
+        -35.07,
+        2.36,
+        -16.88
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 2.35,
+      "scale": 1.33,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_333",
+      "position": [
+        35.07,
+        2.39,
+        16.88
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.89,
+      "scale": 1.13,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_334",
+      "position": [
+        97.79,
+        21.72,
+        -63.47
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 0.32,
+      "scale": 1.18,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_335",
+      "position": [
+        -97.79,
+        26.12,
+        63.47
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.87,
+      "scale": 1.39,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_336",
+      "position": [
+        92.98,
+        22.47,
+        -68.43
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.71,
+      "scale": 1.1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_337",
+      "position": [
+        -92.98,
+        21.85,
+        68.43
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.96,
+      "scale": 1.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_338",
+      "position": [
+        84.54,
+        8.11,
+        -65.83
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 6.09,
+      "scale": 1.13,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_339",
+      "position": [
+        -84.54,
+        7.58,
+        65.83
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 1.32,
+      "scale": 1.18,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_340",
+      "position": [
+        -97.65,
+        28.29,
+        66.98
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 2.82,
+      "scale": 1.19,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_341",
+      "position": [
+        97.65,
+        25.37,
+        -66.98
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 2.34,
+      "scale": 1.31,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_342",
+      "position": [
+        -93.21,
+        24.8,
+        76.46
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 0.59,
+      "scale": 1.12,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_343",
+      "position": [
+        93.21,
+        30.53,
+        -76.46
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 2.22,
+      "scale": 1.11,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_344",
+      "position": [
+        -89.45,
+        18.6,
+        72.67
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.29,
+      "scale": 1.22,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_345",
+      "position": [
+        89.45,
+        21.78,
+        -72.67
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 0.28,
+      "scale": 1.12,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_346",
+      "position": [
+        -54.86,
+        2.26,
+        -25.79
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 1.2,
+      "scale": 1.19,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_347",
+      "position": [
+        54.86,
+        2.22,
+        25.79
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 0.06,
+      "scale": 1.31,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_348",
+      "position": [
+        -49.24,
+        3.72,
+        -23.46
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 0.43,
+      "scale": 1.28,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_349",
+      "position": [
+        49.24,
+        3.72,
+        23.46
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 2.46,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_350",
+      "position": [
+        -49.61,
+        4.48,
+        -17.55
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.19,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_351",
+      "position": [
+        49.61,
+        4.4,
+        17.55
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.88,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_352",
+      "position": [
+        37.93,
+        2.95,
+        28
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.05,
+      "scale": 1.24,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_353",
+      "position": [
+        -37.93,
+        2.94,
+        -28
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 0.37,
+      "scale": 1.13,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_354",
+      "position": [
+        37.07,
+        3.13,
+        23
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.8,
+      "scale": 1.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_355",
+      "position": [
+        -37.07,
+        3.11,
+        -23
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 1,
+      "scale": 1.17,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_356",
+      "position": [
+        40.73,
+        3.33,
+        25
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 2.85,
+      "scale": 1.36,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_357",
+      "position": [
+        -40.73,
+        3.34,
+        -25
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 0.4,
+      "scale": 1.39,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_358",
+      "position": [
+        26.23,
+        0.71,
+        45.8
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 2.38,
+      "scale": 1.21,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_359",
+      "position": [
+        -26.23,
+        0.71,
+        -45.8
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.34,
+      "scale": 1.17,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_360",
+      "position": [
+        22.15,
+        0.55,
+        44.29
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.01,
+      "scale": 1.21,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_361",
+      "position": [
+        -22.15,
+        0.53,
+        -44.29
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 6,
+      "scale": 1.38,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_362",
+      "position": [
+        32.39,
+        1.07,
+        47.43
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4,
+      "scale": 1.18,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_363",
+      "position": [
+        -32.39,
+        1.08,
+        -47.43
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.36,
+      "scale": 1.26,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_364",
+      "position": [
+        -27.41,
+        4.85,
+        37.49
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 6.21,
+      "scale": 1.12,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_365",
+      "position": [
+        27.41,
+        4.79,
+        -37.49
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.18,
+      "scale": 1.34,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_366",
+      "position": [
+        -26.96,
+        0.8,
+        48.4
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.04,
+      "scale": 1.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_367",
+      "position": [
+        26.96,
+        0.81,
+        -48.4
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 1.62,
+      "scale": 1.29,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_368",
+      "position": [
+        -32.97,
+        2.97,
+        43.12
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.61,
+      "scale": 1.3,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_369",
+      "position": [
+        32.97,
+        2.59,
+        -43.12
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.3,
+      "scale": 1.32,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_370",
+      "position": [
+        62.19,
+        0.43,
+        37.09
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.59,
+      "scale": 1.29,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_371",
+      "position": [
+        -62.19,
+        0.43,
+        -37.09
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.58,
+      "scale": 1.35,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_372",
+      "position": [
+        55.44,
+        0.44,
+        38.7
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 0.82,
+      "scale": 1.27,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_373",
+      "position": [
+        -55.44,
+        0.43,
+        -38.7
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.95,
+      "scale": 1.33,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_374",
+      "position": [
+        57.63,
+        0.85,
+        32.6
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 4.65,
+      "scale": 1.18,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_375",
+      "position": [
+        -57.63,
+        0.85,
+        -32.6
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 3.99,
+      "scale": 1.17,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_376",
+      "position": [
+        -61.96,
+        5.81,
+        30.68
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 2.29,
+      "scale": 1.21,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_377",
+      "position": [
+        61.96,
+        5.79,
+        -30.68
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.68,
+      "scale": 1.29,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_378",
+      "position": [
+        -52.95,
+        7.84,
+        33.95
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.58,
+      "scale": 1.38,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_379",
+      "position": [
+        52.95,
+        7.86,
+        -33.95
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 2.59,
+      "scale": 1.37,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_380",
+      "position": [
+        -59.7,
+        7.63,
+        26.7
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 1.55,
+      "scale": 1.21,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_381",
+      "position": [
+        59.7,
+        7.45,
+        -26.7
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_snow",
+      "yaw": 5.18,
+      "scale": 1.27,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_382",
+      "position": [
         -10.88,
         0,
         -2.36
@@ -4111,7 +4951,7 @@
       "tint": null
     },
     {
-      "id": "prop_323",
+      "id": "prop_383",
       "position": [
         -5.1,
         0,
@@ -4125,7 +4965,7 @@
       "tint": null
     },
     {
-      "id": "prop_324",
+      "id": "prop_384",
       "position": [
         -5.12,
         0,
@@ -4139,7 +4979,7 @@
       "tint": null
     },
     {
-      "id": "prop_325",
+      "id": "prop_385",
       "position": [
         -10.64,
         0,
@@ -4153,7 +4993,7 @@
       "tint": null
     },
     {
-      "id": "prop_326",
+      "id": "prop_386",
       "position": [
         -2.42,
         0,
@@ -4167,7 +5007,7 @@
       "tint": null
     },
     {
-      "id": "prop_327",
+      "id": "prop_387",
       "position": [
         2.35,
         0,
@@ -4181,7 +5021,7 @@
       "tint": null
     },
     {
-      "id": "prop_328",
+      "id": "prop_388",
       "position": [
         2.51,
         0,
@@ -4195,7 +5035,7 @@
       "tint": null
     },
     {
-      "id": "prop_329",
+      "id": "prop_389",
       "position": [
         -3.07,
         0,
@@ -4209,7 +5049,7 @@
       "tint": null
     },
     {
-      "id": "prop_330",
+      "id": "prop_390",
       "position": [
         -2.88,
         4,
@@ -4223,7 +5063,7 @@
       "tint": null
     },
     {
-      "id": "prop_331",
+      "id": "prop_391",
       "position": [
         2.9,
         4,
@@ -4237,7 +5077,7 @@
       "tint": null
     },
     {
-      "id": "prop_332",
+      "id": "prop_392",
       "position": [
         2.88,
         4,
@@ -4251,7 +5091,7 @@
       "tint": null
     },
     {
-      "id": "prop_333",
+      "id": "prop_393",
       "position": [
         -2.64,
         4,
@@ -4265,7 +5105,7 @@
       "tint": null
     },
     {
-      "id": "spawn_334",
+      "id": "spawn_394",
       "position": [
         23.87,
         11.92,
@@ -4276,7 +5116,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_335",
+      "id": "spawn_395",
       "position": [
         -9.33,
         12.05,
@@ -4287,7 +5127,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_336",
+      "id": "spawn_396",
       "position": [
         -7.8,
         12.05,
@@ -4298,7 +5138,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_337",
+      "id": "spawn_397",
       "position": [
         -23.57,
         11.92,
@@ -4309,7 +5149,7 @@
       "faction": "tide"
     },
     {
-      "id": "light_338",
+      "id": "light_398",
       "position": [
         -8,
         3.45,
@@ -4323,7 +5163,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_339",
+      "id": "light_399",
       "position": [
         0,
         3.45,
@@ -4337,7 +5177,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_340",
+      "id": "light_400",
       "position": [
         0,
         7.45,

@@ -24,8 +24,99 @@
  *    0   .  E   E   E   W   .   .   .     E  Embers camp (south), W watchtower
  *        0   1   2   3   4   5   6   7
  */
-import type { Rotation, Side } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, buildMapGeometry, newTerrain, paintSlopes, terrainHeightAt, type MapDocument, type Rotation, type Side, type TerrainData, type TerrainMaterial } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
+
+// ---------------------------------------------------------------- terrain round the structure
+// Scenery ground round the tiles: it sits a little under each floor along the walls (a flat apron
+// `margin` m wide), well down under the footprints (so nothing on a floor is judged floating),
+// and rises into hills away from the buildings. The play space itself is unchanged.
+type Rect4 = [number, number, number, number, number]; // x0, z0, x1, z1, floor top
+function surround(
+  doc: MapDocument,
+  o: {
+    size: number;
+    centre: [number, number];
+    margin?: number;
+    /** Desired ground height at (x, z), `d` metres from the nearest footprint (clamped to the apron). */
+    hills: (x: number, z: number, d: number) => number;
+    paint: (x: number, z: number, h: number, d: number) => TerrainMaterial;
+    plants: (x: number, z: number, h: number, d: number, g: TerrainMaterial) => number;
+  },
+): { terrain: TerrainData; ground: (x: number, z: number) => number; dist: (x: number, z: number) => number } {
+  const margin = o.margin ?? 4;
+  const rects: Rect4[] = [];
+  for (const b of buildMapGeometry(doc)) {
+    if (b.kind !== 'floor' && b.kind !== 'wall') continue;
+    rects.push([b.min[0], b.min[2], b.max[0], b.max[2], b.kind === 'floor' ? b.max[1] : b.min[1]]);
+  }
+  const rd = (x: number, z: number, r: Rect4) => Math.hypot(Math.max(r[0] - x, 0, x - r[2]), Math.max(r[1] - z, 0, z - r[3]));
+  const dist = (x: number, z: number) => rects.reduce((a, r) => Math.min(a, rd(x, z, r)), Infinity);
+  // Gameplay marks near an outer wall: the ground behind the wall drops well away, so the navmesh
+  // never snaps a spawn or pickup onto the scenery outside.
+  const marks = doc.entities.filter((e) => e.kind !== 'prop').map((e) => e.position);
+  const cap = (x: number, z: number) => {
+    let c = Infinity;
+    for (const p of marks) if (Math.hypot(p[0] - x, p[2] - z) < 3.2) c = Math.min(c, p[1] - 3.4);
+    let deep = Infinity;
+    for (const r of rects) {
+      if (x > r[0] + 0.6 && x < r[2] - 0.6 && z > r[1] + 0.6 && z < r[3] - 0.6) deep = Math.min(deep, r[4] - 3.5);
+      c = Math.min(c, r[4] - 0.4 + 0.8 * Math.max(0, rd(x, z, r) - margin));
+    }
+    return Math.min(c, deep);
+  };
+  let t = newTerrain(o.size, 2, o.centre, 'grass');
+  const heights: number[] = [];
+  for (let r = 0; r < t.rows; r++) {
+    for (let c = 0; c < t.cols; c++) {
+      const x = t.origin[0] + c * 2;
+      const z = t.origin[1] + r * 2;
+      heights.push(Math.round(Math.min(cap(x, z), o.hills(x, z, dist(x, z))) * 100));
+    }
+  }
+  t = { ...t, heights };
+  const materials: number[] = [];
+  const foliage: number[] = [];
+  for (let r = 0; r < t.rows - 1; r++) {
+    for (let c = 0; c < t.cols - 1; c++) {
+      const x = t.origin[0] + c * 2 + 1;
+      const z = t.origin[1] + r * 2 + 1;
+      const d = dist(x, z);
+      const h = terrainHeightAt(t, x, z) ?? 0;
+      const g = o.paint(x, z, h, d);
+      materials.push(TERRAIN_MATERIALS.indexOf(g));
+      // No plants growing up through floors along the walls.
+      foliage.push(d < 2 ? 0 : o.plants(x, z, h, d, g));
+    }
+  }
+  t = paintSlopes({ ...t, materials, foliage }, 38, 'stone');
+  return { terrain: t, ground: (x, z) => +(terrainHeightAt(t, x, z) ?? 0).toFixed(2), dist };
+}
+/** Gentle rolling noise (deterministic). */
+const roll = (x: number, z: number, s = 1) =>
+  Math.sin(x * 0.071 * s + 1.3) * Math.cos(z * 0.053 * s + 0.4) + 0.6 * Math.sin((x + z) * 0.037 * s + 2.1) + 0.35 * Math.cos((x - z) * 0.11 * s);
+/** Up to `count` spots in `area` that pass `ok`, at least `gap` m apart (and from `taken`), seeded. */
+function scatter(seed: number, count: number, area: [number, number, number, number], gap: number, ok: (x: number, z: number) => boolean, taken: [number, number][] = []): [number, number, number][] {
+  let s = seed >>> 0;
+  const rand = () => (s = (Math.imul(s, 1103515245) + 12345) >>> 0) / 4294967296;
+  const out: [number, number, number][] = [];
+  for (let n = 0; n < count * 40 && out.length < count; n++) {
+    const x = area[0] + rand() * (area[2] - area[0]);
+    const z = area[1] + rand() * (area[3] - area[1]);
+    const r = rand();
+    if (!ok(x, z) || taken.some(([tx, tz]) => Math.hypot(tx - x, tz - z) < gap)) continue;
+    taken.push([x, z]);
+    out.push([+x.toFixed(2), +z.toFixed(2), r]);
+  }
+  return out;
+}
+/** Smoothed steps: terraces `step` m high. */
+const terrace = (h: number, step: number) => {
+  const k = Math.floor(h / step);
+  const f = h / step - k;
+  const e = Math.min(1, Math.max(0, (f - 0.7) / 0.3));
+  return (k + e * e * (3 - 2 * e)) * step;
+};
 
 const m = new MapBuilder('jungle_steps', 'Jungle Steps');
 m.theme('ruins');
@@ -177,6 +268,56 @@ m.prop('rocks_tall', [14, -4, 45], 2, 0.7);
 m.prop('grass_tuft', [24, -4, 38], 0, 1, false).prop('grass_tuft', [38, -4, 42], 0, 1, false);
 
 m.bounds('invisible');
+
+// ---------------------------------------------------------------- the jungle round the ruin (scenery past the walls)
+// Terraced jungle hills climb away from the walls on every side; the river valley runs on out of
+// the gorge to the east and west. Fitted after the boundary, so the play area is unchanged; palms
+// and undergrowth fill the strip between the outer walls and the boundary.
+const jungle = surround(m.doc, {
+  size: 220,
+  centre: [28, 40],
+  hills: (x, z, d) => {
+    const up = Math.max(0, d - 4) * (0.42 + 0.12 * roll(x, z)) + 1.2 * roll(x, z, 0.6) * Math.min(1, d / 24);
+    let h = terrace(up, 2.4) - 0.05;
+    // The river valley out of the gorge.
+    if (x < -4 || x > 60) h = Math.min(h, -4.4 + Math.max(0, Math.abs(z - 40) - 7) * 0.55);
+    return h;
+  },
+  paint: (x, z, h, d) => (h < -3 ? 'mud' : d < 5 ? 'dirt' : roll(x, z, 1.7) > 0.9 ? 'moss' : 'grass'),
+  plants: (x, z, h, d, g) => (g === 'grass' ? (d > 14 ? 4 : 3) : g === 'moss' ? 3 : g === 'mud' ? 1 : 1),
+});
+m.terrain(jungle.terrain);
+{
+  const bx = m.doc.bounds!;
+  // Between the outer walls and the boundary: crowns lean in over the walls.
+  const outside = (x: number, z: number) => jungle.dist(x, z) > 1.8;
+  const area: [number, number, number, number] = [bx.min[0] + 0.8, bx.min[1] + 0.8, bx.max[0] - 0.8, bx.max[1] - 0.8];
+  const taken: [number, number][] = [];
+  const TREES = ['nt_palm_tall', 'nt_palm_curved', 'palm', 'palm_bent', 'nt_common_tree', 'nt_common_tree_2', 'nt_palm_tall', 'tree_tall'];
+  for (const [x, z, r] of scatter(0x7a11e, 60, area, 5, outside, taken)) {
+    m.prop(TREES[Math.floor(r * TREES.length)]!, [x, jungle.ground(x, z), z], +(r * 37).toFixed(2) % 6.28, +(0.85 + ((r * 13) % 0.4)).toFixed(2));
+  }
+  const UNDER = ['nt_bush_leafy', 'bush_large', 'nt_fern_wide', 'nt_bush_berries', 'fern', 'bush_leafy'];
+  for (const [x, z, r] of scatter(0xfe4, 60, area, 2.2, outside, taken)) {
+    m.prop(UNDER[Math.floor(r * UNDER.length)]!, [x, jungle.ground(x, z), z], +(r * 41).toFixed(2) % 6.28, +(0.9 + ((r * 7) % 0.5)).toFixed(2), false);
+  }
+}
+// Bushes to hide in on the flanks: the east path, under the bridge head, the rim and the gorge floor (mirrored).
+const hide: [string, V3, number][] = [
+  ['nt_bush_leafy', [50.6, 0, 10.6], 0.4], // east yard corner
+  ['bush_large', [50.2, 0, 8.4], 1.1],
+  ['nt_bush_berries', [50.4, 0, 25.2], 2.2], // east path by the hut
+  ['nt_bush_leafy', [49.6, 0, 27.4], 0.3],
+  ['nt_bush_leafy', [4.6, 0, 21], 1.7], // under the bridge head
+  ['bush_large', [5.2, 0, 26.6], 0.2],
+  ['nt_bush_berries', [21, 0, 26.6], 0.9], // rim, behind the half wall
+  ['nt_bush_leafy', [-2.4, -4, 29.6], 2.8], // gorge corner
+  ['bush_large', [19.6, -4, 30.4], 0.6], // gorge, by the tuft
+];
+for (const [model, p, yaw] of hide) both((q, yw) => m.prop(model, q, yw, 1.15, false), p, yaw);
+// Ruin pieces: a broken column on the rim, an urn in the corner of the lane.
+both((q, yw) => m.prop('rn_column_broken', q, yw, 1.2), [21, 0, 34.4], 0.3);
+both((q, yw) => m.prop('rn_urn', q, yw), [27.2, 0, 26.8], 0);
 m.teams([5, 5]);
 // Furniture in the bare rooms, for what they are in this theme.
 m.furnish();

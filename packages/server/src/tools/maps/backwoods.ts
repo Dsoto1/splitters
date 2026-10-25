@@ -492,6 +492,9 @@ prop('tent', g(-16, -90), 0.3).prop('tent', g(16, -90), -0.3).prop('tent', g(-22
 prop('campfire_stones', g(0, -80));
 prop('log', g(-3.6, -80), 0).prop('log', g(3.6, -80), 0).prop('log', g(0, -83.6), P2);
 prop('crate_large', g(20, -82), 0.4).prop('crate_small', g(21.5, -79.6)).prop('cargo_crate', g(-24, -88), 0.2).prop('lantern_post', g(10, -76));
+// Camp kit: a pot on the fire, packs by the tents, a fuel can by the crates, torches at the camp's mouth.
+prop('sv_cook_pot', g(0.6, -79.6), 0.5, 1, false).prop('sv_backpack', g(-13.6, -88.6), 1.2, 1, false).prop('sv_backpack', g(13.8, -88.2), -0.8, 1, false);
+prop('sv_gas_can', g(18.4, -83.4), 0.3).prop('sv_torch_stand', g(-6, -76.5)).prop('sv_torch_stand', g(6, -76.5));
 
 // Fences: the yard fence across the property (gates for the paths and the deck steps), the road fence, the creek fence.
 const fenceLine = (x0: number, z0: number, x1: number, z1: number, gaps: [number, number][] = [], model = 'fence', step = 1.15) => {
@@ -528,7 +531,7 @@ const clear = (x: number, z: number, r: number) =>
   keepOut.every(([kx, kz, kr]) => Math.hypot(kx - x, kz - z) > kr + r) && FENCES.every((f) => lineDist(x, z, f) > 1.5 + r) &&
   trees.every(([tx, tz, tr]) => Math.hypot(tx - x, tz - z) > tr + r + 1.2);
 const woodsAt = (x: number, z: number) => z < -55 || z > 58 || x < -60 || x > 56;
-const TREES = ['pine', 'pine', 'pine_tall', 'pine_tall', 'pine_round', 'pine_crooked', 'tree_round_dark', 'oak'];
+const TREES = ['pine', 'nt_pine_tall', 'pine_tall', 'nt_birch', 'pine_round', 'pine_crooked', 'nt_common_tree', 'oak', 'nt_pine_tall', 'nt_birch'];
 for (let n = 0; n < 6000 && trees.length < 230; n++) {
   const x = -76 + rand() * 144;
   const z = -96 + rand() * 176;
@@ -541,7 +544,7 @@ for (let n = 0; n < 6000 && trees.length < 230; n++) {
   const model = TREES[Math.floor(rand() * TREES.length)]!;
   prop(model, [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(rand() * 6.28).toFixed(2), +(0.85 + rand() * 0.45).toFixed(2));
 }
-const UNDERGROWTH = ['bush', 'bush_large', 'fern', 'fern', 'grass_tall'];
+const UNDERGROWTH = ['bush', 'nt_bush_leafy', 'fern', 'nt_bush_berries', 'grass_tall', 'nt_fern_wide'];
 let under = 0;
 for (let n = 0; n < 4000 && under < 150; n++) {
   const x = -76 + rand() * 144;
@@ -559,7 +562,7 @@ for (let n = 0; n < 3000 && litter < 60; n++) {
   litter++;
   trees.push([x, z, 1]);
   const pick = rand();
-  const model = pick < 0.35 ? 'rock_large' : pick < 0.6 ? 'rock_medium' : pick < 0.8 ? 'log_big' : 'stump';
+  const model = pick < 0.15 ? 'nt_boulder_moss' : pick < 0.35 ? 'rock_large' : pick < 0.6 ? 'rock_medium' : pick < 0.8 ? 'log_big' : 'stump';
   prop(model, [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(rand() * 6.28).toFixed(2), +(0.9 + rand() * 0.6).toFixed(2));
 }
 // Flowers and tufts in the yard (walk-through).
@@ -570,7 +573,29 @@ for (let n = 0; n < 2000 && flowers < 40; n++) {
   if (woodsAt(x, z) || !clear(x, z, 0.3) || underDist(x, z) < 6) continue;
   flowers++;
   const pick = rand();
-  prop(pick < 0.4 ? 'flower_yellow' : pick < 0.7 ? 'flower_purple' : 'grass_tall', [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(rand() * 6.28).toFixed(2), 1, false);
+  prop(pick < 0.3 ? 'flower_yellow' : pick < 0.5 ? 'nt_wildflowers' : pick < 0.7 ? 'flower_purple' : 'grass_tall', [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(rand() * 6.28).toFixed(2), 1, false);
+}
+
+// Bush clumps to hide in on the flanks and approaches: the barn flank, the east field by the road
+// fence, the yard side of the creek and the woods' edge on the attackers' side.
+{
+  let bseed = 0xb0511e5;
+  const brand = () => (bseed = (Math.imul(bseed, 1103515245) + 12345) >>> 0) / 4294967296;
+  const CLUMPS: P[] = [[-38, 14], [-53, 24], [37, -22], [37, 2], [-16, -32], [20, -32], [-30, -58], [30, -58]];
+  const BUSHES = ['nt_bush_leafy', 'nt_bush_berries', 'bush_large', 'nt_bush_leafy'];
+  for (const [cx, cz] of CLUMPS) {
+    let placed = 0;
+    for (let n = 0; n < 40 && placed < 4; n++) {
+      const a = brand() * 6.28;
+      const d = placed === 0 ? 0 : 1.2 + brand() * 1.4;
+      const x = cx + Math.cos(a) * d;
+      const z = cz + Math.sin(a) * d;
+      if (overDrain(x, z) || !clear(x, z, 0.6)) continue;
+      placed++;
+      trees.push([x, z, -0.6]);
+      prop(BUSHES[Math.floor(brand() * BUSHES.length)]!, [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(brand() * 6.28).toFixed(2), +(1.05 + brand() * 0.3).toFixed(2), false);
+    }
+  }
 }
 
 // ================================================================ map settings

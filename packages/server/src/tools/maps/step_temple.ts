@@ -21,8 +21,99 @@
  *   g      galleries over the cloisters, a half wall onto the court
  *   P      railed platform over the dais, joined to all four galleries by bridges (║ ═)
  */
-import type { Rotation, Side } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, buildMapGeometry, newTerrain, paintSlopes, terrainHeightAt, type MapDocument, type Rotation, type Side, type TerrainData, type TerrainMaterial } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
+
+// ---------------------------------------------------------------- terrain round the structure
+// Scenery ground round the tiles: it sits a little under each floor along the walls (a flat apron
+// `margin` m wide), well down under the footprints (so nothing on a floor is judged floating),
+// and rises into hills away from the buildings. The play space itself is unchanged.
+type Rect4 = [number, number, number, number, number]; // x0, z0, x1, z1, floor top
+function surround(
+  doc: MapDocument,
+  o: {
+    size: number;
+    centre: [number, number];
+    margin?: number;
+    /** Desired ground height at (x, z), `d` metres from the nearest footprint (clamped to the apron). */
+    hills: (x: number, z: number, d: number) => number;
+    paint: (x: number, z: number, h: number, d: number) => TerrainMaterial;
+    plants: (x: number, z: number, h: number, d: number, g: TerrainMaterial) => number;
+  },
+): { terrain: TerrainData; ground: (x: number, z: number) => number; dist: (x: number, z: number) => number } {
+  const margin = o.margin ?? 4;
+  const rects: Rect4[] = [];
+  for (const b of buildMapGeometry(doc)) {
+    if (b.kind !== 'floor' && b.kind !== 'wall') continue;
+    rects.push([b.min[0], b.min[2], b.max[0], b.max[2], b.kind === 'floor' ? b.max[1] : b.min[1]]);
+  }
+  const rd = (x: number, z: number, r: Rect4) => Math.hypot(Math.max(r[0] - x, 0, x - r[2]), Math.max(r[1] - z, 0, z - r[3]));
+  const dist = (x: number, z: number) => rects.reduce((a, r) => Math.min(a, rd(x, z, r)), Infinity);
+  // Gameplay marks near an outer wall: the ground behind the wall drops well away, so the navmesh
+  // never snaps a spawn or pickup onto the scenery outside.
+  const marks = doc.entities.filter((e) => e.kind !== 'prop').map((e) => e.position);
+  const cap = (x: number, z: number) => {
+    let c = Infinity;
+    for (const p of marks) if (Math.hypot(p[0] - x, p[2] - z) < 3.2) c = Math.min(c, p[1] - 3.4);
+    let deep = Infinity;
+    for (const r of rects) {
+      if (x > r[0] + 0.6 && x < r[2] - 0.6 && z > r[1] + 0.6 && z < r[3] - 0.6) deep = Math.min(deep, r[4] - 3.5);
+      c = Math.min(c, r[4] - 0.4 + 0.8 * Math.max(0, rd(x, z, r) - margin));
+    }
+    return Math.min(c, deep);
+  };
+  let t = newTerrain(o.size, 2, o.centre, 'grass');
+  const heights: number[] = [];
+  for (let r = 0; r < t.rows; r++) {
+    for (let c = 0; c < t.cols; c++) {
+      const x = t.origin[0] + c * 2;
+      const z = t.origin[1] + r * 2;
+      heights.push(Math.round(Math.min(cap(x, z), o.hills(x, z, dist(x, z))) * 100));
+    }
+  }
+  t = { ...t, heights };
+  const materials: number[] = [];
+  const foliage: number[] = [];
+  for (let r = 0; r < t.rows - 1; r++) {
+    for (let c = 0; c < t.cols - 1; c++) {
+      const x = t.origin[0] + c * 2 + 1;
+      const z = t.origin[1] + r * 2 + 1;
+      const d = dist(x, z);
+      const h = terrainHeightAt(t, x, z) ?? 0;
+      const g = o.paint(x, z, h, d);
+      materials.push(TERRAIN_MATERIALS.indexOf(g));
+      // No plants growing up through floors along the walls.
+      foliage.push(d < 2 ? 0 : o.plants(x, z, h, d, g));
+    }
+  }
+  t = paintSlopes({ ...t, materials, foliage }, 38, 'stone');
+  return { terrain: t, ground: (x, z) => +(terrainHeightAt(t, x, z) ?? 0).toFixed(2), dist };
+}
+/** Gentle rolling noise (deterministic). */
+const roll = (x: number, z: number, s = 1) =>
+  Math.sin(x * 0.071 * s + 1.3) * Math.cos(z * 0.053 * s + 0.4) + 0.6 * Math.sin((x + z) * 0.037 * s + 2.1) + 0.35 * Math.cos((x - z) * 0.11 * s);
+/** Up to `count` spots in `area` that pass `ok`, at least `gap` m apart (and from `taken`), seeded. */
+function scatter(seed: number, count: number, area: [number, number, number, number], gap: number, ok: (x: number, z: number) => boolean, taken: [number, number][] = []): [number, number, number][] {
+  let s = seed >>> 0;
+  const rand = () => (s = (Math.imul(s, 1103515245) + 12345) >>> 0) / 4294967296;
+  const out: [number, number, number][] = [];
+  for (let n = 0; n < count * 40 && out.length < count; n++) {
+    const x = area[0] + rand() * (area[2] - area[0]);
+    const z = area[1] + rand() * (area[3] - area[1]);
+    const r = rand();
+    if (!ok(x, z) || taken.some(([tx, tz]) => Math.hypot(tx - x, tz - z) < gap)) continue;
+    taken.push([x, z]);
+    out.push([+x.toFixed(2), +z.toFixed(2), r]);
+  }
+  return out;
+}
+/** Smoothed steps: terraces `step` m high. */
+const terrace = (h: number, step: number) => {
+  const k = Math.floor(h / step);
+  const f = h / step - k;
+  const e = Math.min(1, Math.max(0, (f - 0.7) / 0.3));
+  return (k + e * e * (3 - 2 * e)) * step;
+};
 
 const m = new MapBuilder('step_temple', 'Step Temple');
 m.theme('temple');
@@ -151,6 +242,41 @@ m.pickup('weapon_laser_rifle', [16, 0, 6.5]).pickup('weapon_smg', [16, 0, 25.5])
 
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(6);
+
+// ---------------------------------------------------------------- the jungle round the temple (scenery past the walls)
+// The temple stands on a terraced rise in the jungle: stepped hills climb away from its walls on
+// every side, thick with palms, broadleaf trees and undergrowth. Added after the team bases, so
+// the play area and its spawns are unchanged.
+const jungle = surround(m.doc, {
+  size: 240,
+  centre: [16, 16],
+  hills: (x, z, d) => terrace(Math.max(0, d - 4) * (0.38 + 0.12 * roll(x, z)) + 1.4 * roll(x, z, 0.6) * Math.min(1, d / 26), 2.6) - 0.4,
+  paint: (x, z, h, d) => (d < 5 ? 'dirt' : roll(x, z, 1.7) > 0.85 ? 'moss' : 'grass'),
+  plants: (x, z, h, d, g) => (g === 'grass' ? (d > 16 ? 4 : 3) : g === 'moss' ? 3 : 1),
+});
+m.terrain(jungle.terrain);
+{
+  const area: [number, number, number, number] = [-100, -100, 132, 132];
+  const ok = (x: number, z: number) => jungle.dist(x, z) > 2;
+  const taken: [number, number][] = [];
+  const TREES = ['nt_palm_tall', 'nt_palm_curved', 'nt_common_tree', 'nt_common_tree_2', 'nt_palm_tall', 'nt_willow'];
+  for (const [x, z, r] of scatter(0x7e391e, 170, area, 5.5, ok, taken)) {
+    m.prop(TREES[Math.floor(r * TREES.length)]!, [x, jungle.ground(x, z), z], +((r * 37) % 6.28).toFixed(2), +(0.85 + ((r * 13) % 0.4)).toFixed(2));
+  }
+  const UNDER = ['nt_bush_leafy', 'nt_fern_wide', 'nt_bush_berries', 'nt_bush_leafy', 'nt_boulder_moss'];
+  for (const [x, z, r] of scatter(0x5eed5, 140, area, 2.4, ok, taken)) {
+    const model = UNDER[Math.floor(r * UNDER.length)]!;
+    m.prop(model, [x, jungle.ground(x, z), z], +((r * 41) % 6.28).toFixed(2), +(0.9 + ((r * 7) % 0.5)).toFixed(2), model === 'nt_boulder_moss');
+  }
+}
+for (const f of frames) {
+  // The court has gone wild at its edges: bushes to hide in under the walls between the corners and the arches.
+  m.prop('nt_bush_leafy', f.pos(1, 1, 0, 1, -2.5), f.yaw(0.4), 1.15, false);
+  m.prop('nt_bush_berries', f.pos(3, 1, 0, -1, -2.5), f.yaw(2.2), 1.1, false);
+  // Fox statues guard each archway into the court, clear of the opening.
+  m.prop('rn_statue_fox', f.pos(2, 1, 0, -3.9, -3), f.yaw(0));
+  m.prop('rn_statue_fox', f.pos(2, 1, 0, 3.9, -3), f.yaw(0));
+}
 m.lightRooms();
 m.meta({
   description:

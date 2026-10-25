@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 17,
   "metadata": {
     "id": "backwoods",
     "name": "Backwoods Lodge",
@@ -4978,6 +4978,90 @@
     {
       "id": "prop_315",
       "position": [
+        0.6,
+        6.97,
+        -79.6
+      ],
+      "kind": "prop",
+      "model": "prop.sv_cook_pot",
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_316",
+      "position": [
+        -13.6,
+        6.95,
+        -88.6
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": 1.2,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_317",
+      "position": [
+        13.8,
+        6.97,
+        -88.2
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": -0.8,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_318",
+      "position": [
+        18.4,
+        6.74,
+        -83.4
+      ],
+      "kind": "prop",
+      "model": "prop.sv_gas_can",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_319",
+      "position": [
+        -6,
+        6.97,
+        -76.5
+      ],
+      "kind": "prop",
+      "model": "prop.sv_torch_stand",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_320",
+      "position": [
+        6,
+        6.97,
+        -76.5
+      ],
+      "kind": "prop",
+      "model": "prop.sv_torch_stand",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_321",
+      "position": [
         -43.42,
         3.61,
         12
@@ -4990,7 +5074,7 @@
       "tint": null
     },
     {
-      "id": "prop_316",
+      "id": "prop_322",
       "position": [
         -42.27,
         3.58,
@@ -5004,7 +5088,7 @@
       "tint": null
     },
     {
-      "id": "prop_317",
+      "id": "prop_323",
       "position": [
         -41.13,
         3.51,
@@ -5018,7 +5102,7 @@
       "tint": null
     },
     {
-      "id": "prop_318",
+      "id": "prop_324",
       "position": [
         -39.98,
         3.43,
@@ -5032,7 +5116,7 @@
       "tint": null
     },
     {
-      "id": "prop_319",
+      "id": "prop_325",
       "position": [
         -38.83,
         3.34,
@@ -5046,7 +5130,7 @@
       "tint": null
     },
     {
-      "id": "prop_320",
+      "id": "prop_326",
       "position": [
         -37.67,
         3.26,
@@ -5060,7 +5144,7 @@
       "tint": null
     },
     {
-      "id": "prop_321",
+      "id": "prop_327",
       "position": [
         -36.52,
         3.18,
@@ -5074,7 +5158,7 @@
       "tint": null
     },
     {
-      "id": "prop_322",
+      "id": "prop_328",
       "position": [
         -35.38,
         3.18,
@@ -5088,7 +5172,7 @@
       "tint": null
     },
     {
-      "id": "prop_323",
+      "id": "prop_329",
       "position": [
         -34.22,
         3.18,
@@ -5102,7 +5186,7 @@
       "tint": null
     },
     {
-      "id": "prop_324",
+      "id": "prop_330",
       "position": [
         -33.07,
         3.19,
@@ -5116,7 +5200,7 @@
       "tint": null
     },
     {
-      "id": "prop_325",
+      "id": "prop_331",
       "position": [
         -31.92,
         3.21,
@@ -5130,7 +5214,7 @@
       "tint": null
     },
     {
-      "id": "prop_326",
+      "id": "prop_332",
       "position": [
         -25.02,
         3.48,
@@ -5144,7 +5228,7 @@
       "tint": null
     },
     {
-      "id": "prop_327",
+      "id": "prop_333",
       "position": [
         -23.88,
         3.58,
@@ -5158,7 +5242,7 @@
       "tint": null
     },
     {
-      "id": "prop_328",
+      "id": "prop_334",
       "position": [
         -22.73,
         3.68,
@@ -5172,7 +5256,7 @@
       "tint": null
     },
     {
-      "id": "prop_329",
+      "id": "prop_335",
       "position": [
         -21.58,
         3.76,
@@ -5186,7 +5270,7 @@
       "tint": null
     },
     {
-      "id": "prop_330",
+      "id": "prop_336",
       "position": [
         -20.43,
         3.8,
@@ -5200,7 +5284,7 @@
       "tint": null
     },
     {
-      "id": "prop_331",
+      "id": "prop_337",
       "position": [
         -19.28,
         3.82,
@@ -5214,7 +5298,7 @@
       "tint": null
     },
     {
-      "id": "prop_332",
+      "id": "prop_338",
       "position": [
         -18.13,
         3.82,
@@ -5228,7 +5312,7 @@
       "tint": null
     },
     {
-      "id": "prop_333",
+      "id": "prop_339",
       "position": [
         -16.98,
         3.82,
@@ -5242,7 +5326,7 @@
       "tint": null
     },
     {
-      "id": "prop_334",
+      "id": "prop_340",
       "position": [
         -15.83,
         2.49,
@@ -5256,7 +5340,7 @@
       "tint": null
     },
     {
-      "id": "prop_335",
+      "id": "prop_341",
       "position": [
         -14.68,
         0.19,
@@ -5270,7 +5354,7 @@
       "tint": null
     },
     {
-      "id": "prop_336",
+      "id": "prop_342",
       "position": [
         -13.53,
         -0.18,
@@ -5284,7 +5368,7 @@
       "tint": null
     },
     {
-      "id": "prop_337",
+      "id": "prop_343",
       "position": [
         -12.38,
         -0.19,
@@ -5298,7 +5382,7 @@
       "tint": null
     },
     {
-      "id": "prop_338",
+      "id": "prop_344",
       "position": [
         -11.23,
         -0.19,
@@ -5312,7 +5396,7 @@
       "tint": null
     },
     {
-      "id": "prop_339",
+      "id": "prop_345",
       "position": [
         -2.03,
         -0.18,
@@ -5326,7 +5410,7 @@
       "tint": null
     },
     {
-      "id": "prop_340",
+      "id": "prop_346",
       "position": [
         -0.88,
         1.07,
@@ -5340,7 +5424,7 @@
       "tint": null
     },
     {
-      "id": "prop_341",
+      "id": "prop_347",
       "position": [
         0.27,
         3.37,
@@ -5354,7 +5438,7 @@
       "tint": null
     },
     {
-      "id": "prop_342",
+      "id": "prop_348",
       "position": [
         1.42,
         3.82,
@@ -5368,7 +5452,7 @@
       "tint": null
     },
     {
-      "id": "prop_343",
+      "id": "prop_349",
       "position": [
         2.57,
         3.82,
@@ -5382,7 +5466,7 @@
       "tint": null
     },
     {
-      "id": "prop_344",
+      "id": "prop_350",
       "position": [
         3.72,
         3.82,
@@ -5396,7 +5480,7 @@
       "tint": null
     },
     {
-      "id": "prop_345",
+      "id": "prop_351",
       "position": [
         4.87,
         3.84,
@@ -5410,7 +5494,7 @@
       "tint": null
     },
     {
-      "id": "prop_346",
+      "id": "prop_352",
       "position": [
         14.07,
         4.09,
@@ -5424,7 +5508,7 @@
       "tint": null
     },
     {
-      "id": "prop_347",
+      "id": "prop_353",
       "position": [
         15.22,
         3.96,
@@ -5438,7 +5522,7 @@
       "tint": null
     },
     {
-      "id": "prop_348",
+      "id": "prop_354",
       "position": [
         16.37,
         3.89,
@@ -5452,7 +5536,7 @@
       "tint": null
     },
     {
-      "id": "prop_349",
+      "id": "prop_355",
       "position": [
         17.52,
         3.83,
@@ -5466,7 +5550,7 @@
       "tint": null
     },
     {
-      "id": "prop_350",
+      "id": "prop_356",
       "position": [
         18.67,
         3.82,
@@ -5480,7 +5564,7 @@
       "tint": null
     },
     {
-      "id": "prop_351",
+      "id": "prop_357",
       "position": [
         19.82,
         3.82,
@@ -5494,7 +5578,7 @@
       "tint": null
     },
     {
-      "id": "prop_352",
+      "id": "prop_358",
       "position": [
         20.97,
         3.82,
@@ -5508,93 +5592,9 @@
       "tint": null
     },
     {
-      "id": "prop_353",
-      "position": [
-        22.12,
-        3.82,
-        12
-      ],
-      "kind": "prop",
-      "model": "prop.fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_354",
-      "position": [
-        23.27,
-        3.82,
-        12
-      ],
-      "kind": "prop",
-      "model": "prop.fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_355",
-      "position": [
-        24.42,
-        3.82,
-        12
-      ],
-      "kind": "prop",
-      "model": "prop.fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_356",
-      "position": [
-        25.57,
-        3.82,
-        12
-      ],
-      "kind": "prop",
-      "model": "prop.fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_357",
-      "position": [
-        26.72,
-        3.82,
-        12
-      ],
-      "kind": "prop",
-      "model": "prop.fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_358",
-      "position": [
-        27.87,
-        3.82,
-        12
-      ],
-      "kind": "prop",
-      "model": "prop.fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_359",
       "position": [
-        29.02,
+        22.12,
         3.82,
         12
       ],
@@ -5608,7 +5608,7 @@
     {
       "id": "prop_360",
       "position": [
-        30.17,
+        23.27,
         3.82,
         12
       ],
@@ -5622,7 +5622,7 @@
     {
       "id": "prop_361",
       "position": [
-        31.33,
+        24.42,
         3.82,
         12
       ],
@@ -5636,7 +5636,7 @@
     {
       "id": "prop_362",
       "position": [
-        32.48,
+        25.57,
         3.82,
         12
       ],
@@ -5650,7 +5650,7 @@
     {
       "id": "prop_363",
       "position": [
-        33.63,
+        26.72,
         3.82,
         12
       ],
@@ -5664,7 +5664,7 @@
     {
       "id": "prop_364",
       "position": [
-        34.78,
+        27.87,
         3.82,
         12
       ],
@@ -5678,7 +5678,7 @@
     {
       "id": "prop_365",
       "position": [
-        35.93,
+        29.02,
         3.82,
         12
       ],
@@ -5692,7 +5692,7 @@
     {
       "id": "prop_366",
       "position": [
-        37.08,
+        30.17,
         3.82,
         12
       ],
@@ -5706,7 +5706,7 @@
     {
       "id": "prop_367",
       "position": [
-        38.23,
+        31.33,
         3.82,
         12
       ],
@@ -5720,7 +5720,7 @@
     {
       "id": "prop_368",
       "position": [
-        39.38,
+        32.48,
         3.82,
         12
       ],
@@ -5734,6 +5734,90 @@
     {
       "id": "prop_369",
       "position": [
+        33.63,
+        3.82,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_370",
+      "position": [
+        34.78,
+        3.82,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_371",
+      "position": [
+        35.93,
+        3.82,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_372",
+      "position": [
+        37.08,
+        3.82,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_373",
+      "position": [
+        38.23,
+        3.82,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_374",
+      "position": [
+        39.38,
+        3.82,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_375",
+      "position": [
         42,
         3.82,
         -33.42
@@ -5746,7 +5830,7 @@
       "tint": null
     },
     {
-      "id": "prop_370",
+      "id": "prop_376",
       "position": [
         42,
         3.82,
@@ -5760,7 +5844,7 @@
       "tint": null
     },
     {
-      "id": "prop_371",
+      "id": "prop_377",
       "position": [
         42,
         3.82,
@@ -5774,7 +5858,7 @@
       "tint": null
     },
     {
-      "id": "prop_372",
+      "id": "prop_378",
       "position": [
         42,
         3.82,
@@ -5788,7 +5872,7 @@
       "tint": null
     },
     {
-      "id": "prop_373",
+      "id": "prop_379",
       "position": [
         42,
         3.82,
@@ -5802,7 +5886,7 @@
       "tint": null
     },
     {
-      "id": "prop_374",
+      "id": "prop_380",
       "position": [
         42,
         3.81,
@@ -5816,7 +5900,7 @@
       "tint": null
     },
     {
-      "id": "prop_375",
+      "id": "prop_381",
       "position": [
         42,
         3.8,
@@ -5830,7 +5914,7 @@
       "tint": null
     },
     {
-      "id": "prop_376",
+      "id": "prop_382",
       "position": [
         42,
         3.77,
@@ -5844,7 +5928,7 @@
       "tint": null
     },
     {
-      "id": "prop_377",
+      "id": "prop_383",
       "position": [
         42,
         3.76,
@@ -5858,7 +5942,7 @@
       "tint": null
     },
     {
-      "id": "prop_378",
+      "id": "prop_384",
       "position": [
         42,
         3.76,
@@ -5872,7 +5956,7 @@
       "tint": null
     },
     {
-      "id": "prop_379",
+      "id": "prop_385",
       "position": [
         42,
         3.76,
@@ -5886,7 +5970,7 @@
       "tint": null
     },
     {
-      "id": "prop_380",
+      "id": "prop_386",
       "position": [
         42,
         3.77,
@@ -5900,7 +5984,7 @@
       "tint": null
     },
     {
-      "id": "prop_381",
+      "id": "prop_387",
       "position": [
         42,
         3.78,
@@ -5914,7 +5998,7 @@
       "tint": null
     },
     {
-      "id": "prop_382",
+      "id": "prop_388",
       "position": [
         42,
         3.78,
@@ -5928,7 +6012,7 @@
       "tint": null
     },
     {
-      "id": "prop_383",
+      "id": "prop_389",
       "position": [
         42,
         3.79,
@@ -5942,7 +6026,7 @@
       "tint": null
     },
     {
-      "id": "prop_384",
+      "id": "prop_390",
       "position": [
         42,
         3.8,
@@ -5956,7 +6040,7 @@
       "tint": null
     },
     {
-      "id": "prop_385",
+      "id": "prop_391",
       "position": [
         42,
         3.82,
@@ -5970,7 +6054,7 @@
       "tint": null
     },
     {
-      "id": "prop_386",
+      "id": "prop_392",
       "position": [
         42,
         3.83,
@@ -5984,7 +6068,7 @@
       "tint": null
     },
     {
-      "id": "prop_387",
+      "id": "prop_393",
       "position": [
         42,
         3.83,
@@ -5998,7 +6082,7 @@
       "tint": null
     },
     {
-      "id": "prop_388",
+      "id": "prop_394",
       "position": [
         42,
         3.84,
@@ -6012,7 +6096,7 @@
       "tint": null
     },
     {
-      "id": "prop_389",
+      "id": "prop_395",
       "position": [
         42,
         3.84,
@@ -6026,7 +6110,7 @@
       "tint": null
     },
     {
-      "id": "prop_390",
+      "id": "prop_396",
       "position": [
         42,
         3.85,
@@ -6040,7 +6124,7 @@
       "tint": null
     },
     {
-      "id": "prop_391",
+      "id": "prop_397",
       "position": [
         42,
         3.85,
@@ -6054,7 +6138,7 @@
       "tint": null
     },
     {
-      "id": "prop_392",
+      "id": "prop_398",
       "position": [
         42,
         3.85,
@@ -6068,7 +6152,7 @@
       "tint": null
     },
     {
-      "id": "prop_393",
+      "id": "prop_399",
       "position": [
         42,
         3.86,
@@ -6082,7 +6166,7 @@
       "tint": null
     },
     {
-      "id": "prop_394",
+      "id": "prop_400",
       "position": [
         42,
         3.86,
@@ -6096,7 +6180,7 @@
       "tint": null
     },
     {
-      "id": "prop_395",
+      "id": "prop_401",
       "position": [
         42,
         3.86,
@@ -6110,7 +6194,7 @@
       "tint": null
     },
     {
-      "id": "prop_396",
+      "id": "prop_402",
       "position": [
         42,
         3.86,
@@ -6124,7 +6208,7 @@
       "tint": null
     },
     {
-      "id": "prop_397",
+      "id": "prop_403",
       "position": [
         42,
         3.86,
@@ -6138,7 +6222,7 @@
       "tint": null
     },
     {
-      "id": "prop_398",
+      "id": "prop_404",
       "position": [
         42,
         3.86,
@@ -6152,7 +6236,7 @@
       "tint": null
     },
     {
-      "id": "prop_399",
+      "id": "prop_405",
       "position": [
         42,
         3.86,
@@ -6166,7 +6250,7 @@
       "tint": null
     },
     {
-      "id": "prop_400",
+      "id": "prop_406",
       "position": [
         42,
         3.86,
@@ -6180,7 +6264,7 @@
       "tint": null
     },
     {
-      "id": "prop_401",
+      "id": "prop_407",
       "position": [
         42,
         3.86,
@@ -6194,7 +6278,7 @@
       "tint": null
     },
     {
-      "id": "prop_402",
+      "id": "prop_408",
       "position": [
         -75.42,
         3.99,
@@ -6208,7 +6292,7 @@
       "tint": null
     },
     {
-      "id": "prop_403",
+      "id": "prop_409",
       "position": [
         -74.28,
         3.99,
@@ -6222,7 +6306,7 @@
       "tint": null
     },
     {
-      "id": "prop_404",
+      "id": "prop_410",
       "position": [
         -73.13,
         3.99,
@@ -6236,7 +6320,7 @@
       "tint": null
     },
     {
-      "id": "prop_405",
+      "id": "prop_411",
       "position": [
         -60.47,
         2.89,
@@ -6250,7 +6334,7 @@
       "tint": null
     },
     {
-      "id": "prop_406",
+      "id": "prop_412",
       "position": [
         -59.32,
         2.98,
@@ -6264,7 +6348,7 @@
       "tint": null
     },
     {
-      "id": "prop_407",
+      "id": "prop_413",
       "position": [
         -58.17,
         3.3,
@@ -6278,7 +6362,7 @@
       "tint": null
     },
     {
-      "id": "prop_408",
+      "id": "prop_414",
       "position": [
         -57.02,
         3.56,
@@ -6292,7 +6376,7 @@
       "tint": null
     },
     {
-      "id": "prop_409",
+      "id": "prop_415",
       "position": [
         -55.88,
         3.74,
@@ -6306,7 +6390,7 @@
       "tint": null
     },
     {
-      "id": "prop_410",
+      "id": "prop_416",
       "position": [
         -54.73,
         3.8,
@@ -6320,7 +6404,7 @@
       "tint": null
     },
     {
-      "id": "prop_411",
+      "id": "prop_417",
       "position": [
         -53.58,
         3.8,
@@ -6334,7 +6418,7 @@
       "tint": null
     },
     {
-      "id": "prop_412",
+      "id": "prop_418",
       "position": [
         -52.43,
         3.8,
@@ -6348,7 +6432,7 @@
       "tint": null
     },
     {
-      "id": "prop_413",
+      "id": "prop_419",
       "position": [
         -45.53,
         3.8,
@@ -6362,7 +6446,7 @@
       "tint": null
     },
     {
-      "id": "prop_414",
+      "id": "prop_420",
       "position": [
         -44.38,
         3.8,
@@ -6376,7 +6460,7 @@
       "tint": null
     },
     {
-      "id": "prop_415",
+      "id": "prop_421",
       "position": [
         -43.23,
         3.8,
@@ -6390,7 +6474,7 @@
       "tint": null
     },
     {
-      "id": "prop_416",
+      "id": "prop_422",
       "position": [
         -42.08,
         3.8,
@@ -6404,7 +6488,7 @@
       "tint": null
     },
     {
-      "id": "prop_417",
+      "id": "prop_423",
       "position": [
         -40.93,
         3.8,
@@ -6418,7 +6502,7 @@
       "tint": null
     },
     {
-      "id": "prop_418",
+      "id": "prop_424",
       "position": [
         -39.78,
         3.73,
@@ -6432,7 +6516,7 @@
       "tint": null
     },
     {
-      "id": "prop_419",
+      "id": "prop_425",
       "position": [
         -38.63,
         3.61,
@@ -6446,7 +6530,7 @@
       "tint": null
     },
     {
-      "id": "prop_420",
+      "id": "prop_426",
       "position": [
         -36,
         3.82,
@@ -6460,7 +6544,7 @@
       "tint": null
     },
     {
-      "id": "prop_421",
+      "id": "prop_427",
       "position": [
         -36,
         3.82,
@@ -6474,7 +6558,7 @@
       "tint": null
     },
     {
-      "id": "prop_422",
+      "id": "prop_428",
       "position": [
         -36,
         3.82,
@@ -6488,7 +6572,7 @@
       "tint": null
     },
     {
-      "id": "prop_423",
+      "id": "prop_429",
       "position": [
         -36,
         3.82,
@@ -6502,7 +6586,7 @@
       "tint": null
     },
     {
-      "id": "prop_424",
+      "id": "prop_430",
       "position": [
         -36,
         3.82,
@@ -6516,7 +6600,7 @@
       "tint": null
     },
     {
-      "id": "prop_425",
+      "id": "prop_431",
       "position": [
         -36,
         3.82,
@@ -6530,7 +6614,7 @@
       "tint": null
     },
     {
-      "id": "prop_426",
+      "id": "prop_432",
       "position": [
         -36,
         3.82,
@@ -6544,7 +6628,7 @@
       "tint": null
     },
     {
-      "id": "prop_427",
+      "id": "prop_433",
       "position": [
         -36,
         4,
@@ -6558,7 +6642,7 @@
       "tint": null
     },
     {
-      "id": "prop_428",
+      "id": "prop_434",
       "position": [
         -36,
         4,
@@ -6572,7 +6656,7 @@
       "tint": null
     },
     {
-      "id": "prop_429",
+      "id": "prop_435",
       "position": [
         -36,
         4,
@@ -6586,7 +6670,7 @@
       "tint": null
     },
     {
-      "id": "prop_430",
+      "id": "prop_436",
       "position": [
         -36,
         -0.19,
@@ -6600,7 +6684,7 @@
       "tint": null
     },
     {
-      "id": "prop_431",
+      "id": "prop_437",
       "position": [
         -36,
         -0.19,
@@ -6614,7 +6698,7 @@
       "tint": null
     },
     {
-      "id": "prop_432",
+      "id": "prop_438",
       "position": [
         -36,
         4,
@@ -6628,7 +6712,7 @@
       "tint": null
     },
     {
-      "id": "prop_433",
+      "id": "prop_439",
       "position": [
         -36,
         4,
@@ -6642,7 +6726,7 @@
       "tint": null
     },
     {
-      "id": "prop_434",
+      "id": "prop_440",
       "position": [
         -36,
         3.82,
@@ -6656,7 +6740,7 @@
       "tint": null
     },
     {
-      "id": "prop_435",
+      "id": "prop_441",
       "position": [
         -36,
         3.82,
@@ -6670,7 +6754,7 @@
       "tint": null
     },
     {
-      "id": "prop_436",
+      "id": "prop_442",
       "position": [
         -36,
         3.82,
@@ -6684,7 +6768,7 @@
       "tint": null
     },
     {
-      "id": "prop_437",
+      "id": "prop_443",
       "position": [
         -36,
         3.77,
@@ -6698,7 +6782,7 @@
       "tint": null
     },
     {
-      "id": "prop_438",
+      "id": "prop_444",
       "position": [
         -36,
         3.68,
@@ -6712,7 +6796,7 @@
       "tint": null
     },
     {
-      "id": "prop_439",
+      "id": "prop_445",
       "position": [
         -36,
         3.54,
@@ -6726,7 +6810,7 @@
       "tint": null
     },
     {
-      "id": "prop_440",
+      "id": "prop_446",
       "position": [
         -36,
         3.38,
@@ -6740,7 +6824,7 @@
       "tint": null
     },
     {
-      "id": "prop_441",
+      "id": "prop_447",
       "position": [
         -36,
         3.3,
@@ -6754,7 +6838,7 @@
       "tint": null
     },
     {
-      "id": "prop_442",
+      "id": "prop_448",
       "position": [
         -36,
         3.24,
@@ -6768,7 +6852,7 @@
       "tint": null
     },
     {
-      "id": "prop_443",
+      "id": "prop_449",
       "position": [
         -36,
         3.2,
@@ -6782,35 +6866,35 @@
       "tint": null
     },
     {
-      "id": "prop_444",
+      "id": "prop_450",
       "position": [
         -62.57,
         4.14,
         56.91
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 3.16,
       "scale": 1.25,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_445",
+      "id": "prop_451",
       "position": [
         61.97,
         4.51,
         13.24
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 1.7,
       "scale": 1.07,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_446",
+      "id": "prop_452",
       "position": [
         -62.96,
         4.9,
@@ -6824,21 +6908,21 @@
       "tint": null
     },
     {
-      "id": "prop_447",
+      "id": "prop_453",
       "position": [
         -14.86,
         6.78,
         -90.3
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 0.92,
       "scale": 1.26,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_448",
+      "id": "prop_454",
       "position": [
         -53.69,
         5.75,
@@ -6852,161 +6936,161 @@
       "tint": null
     },
     {
-      "id": "prop_449",
+      "id": "prop_455",
       "position": [
         -70.26,
         6.24,
         12.81
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 5.64,
       "scale": 1.08,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_450",
+      "id": "prop_456",
       "position": [
         -37.38,
         4.42,
         -75.69
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 0.1,
       "scale": 1.2,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_451",
+      "id": "prop_457",
       "position": [
         0.59,
         6.38,
         -61.61
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.oak",
       "yaw": 0.59,
       "scale": 1.13,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_452",
+      "id": "prop_458",
       "position": [
         -16.95,
         6.69,
         -74.87
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 0.92,
       "scale": 0.91,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_453",
+      "id": "prop_459",
       "position": [
         57.8,
         5.97,
         73.62
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_pine_tall",
       "yaw": 4,
       "scale": 1.02,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_454",
+      "id": "prop_460",
       "position": [
         -67.75,
         5.37,
         38.61
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 2.41,
       "scale": 1.13,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_455",
+      "id": "prop_461",
       "position": [
         60.67,
         4.41,
         54.53
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 0.14,
       "scale": 0.93,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_456",
+      "id": "prop_462",
       "position": [
         -18.2,
         5.91,
         -93.49
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.nt_common_tree",
       "yaw": 2.07,
       "scale": 0.95,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_457",
+      "id": "prop_463",
       "position": [
         -20.25,
         5.78,
         -87.53
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 2.79,
       "scale": 0.94,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_458",
+      "id": "prop_464",
       "position": [
         62.3,
         4.05,
         -9.93
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.nt_common_tree",
       "yaw": 4.01,
       "scale": 1.14,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_459",
+      "id": "prop_465",
       "position": [
         -35.54,
         3.85,
         -59.3
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.oak",
       "yaw": 2.78,
       "scale": 1.11,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_460",
+      "id": "prop_466",
       "position": [
         -68.98,
         4.44,
@@ -7020,7 +7104,7 @@
       "tint": null
     },
     {
-      "id": "prop_461",
+      "id": "prop_467",
       "position": [
         39.3,
         3.97,
@@ -7034,63 +7118,63 @@
       "tint": null
     },
     {
-      "id": "prop_462",
+      "id": "prop_468",
       "position": [
         9.9,
         6.53,
         71.15
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 4.91,
       "scale": 0.88,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_463",
+      "id": "prop_469",
       "position": [
         26.69,
         5.28,
         -89.93
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 0.29,
       "scale": 1.3,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_464",
+      "id": "prop_470",
       "position": [
         -66.36,
         7.41,
         -92.07
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 4.17,
       "scale": 0.98,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_465",
+      "id": "prop_471",
       "position": [
         -22.49,
         6,
         74.42
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 4.24,
       "scale": 1.15,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_466",
+      "id": "prop_472",
       "position": [
         -67.69,
         7.26,
@@ -7104,371 +7188,371 @@
       "tint": null
     },
     {
-      "id": "prop_467",
+      "id": "prop_473",
       "position": [
         -72.1,
         7.05,
         17.27
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.oak",
       "yaw": 3.06,
       "scale": 1.12,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_468",
+      "id": "prop_474",
       "position": [
         -68.83,
         5.74,
         -59.36
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 1.03,
       "scale": 1.23,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_469",
+      "id": "prop_475",
       "position": [
         23.73,
         8.25,
         76.02
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 3.47,
       "scale": 1.07,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_470",
+      "id": "prop_476",
       "position": [
         58.81,
         3.59,
         -16.35
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 1.06,
       "scale": 1.16,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_471",
+      "id": "prop_477",
       "position": [
         -57.92,
         5.52,
         67.7
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 2.06,
       "scale": 1.13,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_472",
+      "id": "prop_478",
       "position": [
         26.7,
         6.11,
         69.75
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 1.52,
       "scale": 0.89,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_473",
+      "id": "prop_479",
       "position": [
         61.64,
         4.47,
         48.89
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.oak",
       "yaw": 0.37,
       "scale": 1.1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_474",
+      "id": "prop_480",
       "position": [
         -37.15,
         4.12,
         -93.28
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 3.99,
       "scale": 1.11,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_475",
+      "id": "prop_481",
       "position": [
         57.86,
         3.78,
         24.13
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 1.59,
       "scale": 1.21,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_476",
+      "id": "prop_482",
       "position": [
         27.59,
         4.7,
         -73.13
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 0.64,
       "scale": 1.26,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_477",
+      "id": "prop_483",
       "position": [
         -44.4,
         4.57,
         64.5
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 3.34,
       "scale": 0.85,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_478",
+      "id": "prop_484",
       "position": [
         -66.26,
         5.01,
         62.38
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 4.22,
       "scale": 1.14,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_479",
+      "id": "prop_485",
       "position": [
         62.08,
         3.56,
         -32.41
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 5.6,
       "scale": 0.9,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_480",
+      "id": "prop_486",
       "position": [
         -32.06,
         7.09,
         77.28
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 5.94,
       "scale": 1.01,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_481",
+      "id": "prop_487",
       "position": [
         -62,
         4.38,
         32.31
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 5.17,
       "scale": 0.93,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_482",
+      "id": "prop_488",
       "position": [
         58.35,
         3.81,
         17.79
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 3.32,
       "scale": 1.22,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_483",
+      "id": "prop_489",
       "position": [
         -23.67,
         4.49,
         -76.37
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 5.87,
       "scale": 1.1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_484",
+      "id": "prop_490",
       "position": [
         60.16,
         4.23,
         59.42
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 4.72,
       "scale": 1.3,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_485",
+      "id": "prop_491",
       "position": [
         -72.87,
         7.64,
         67.48
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 4.99,
       "scale": 1.24,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_486",
+      "id": "prop_492",
       "position": [
         18.55,
         6.57,
         -86.12
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 0.33,
       "scale": 1.28,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_487",
+      "id": "prop_493",
       "position": [
         38.77,
         7.31,
         76.48
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 0.8,
       "scale": 1.05,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_488",
+      "id": "prop_494",
       "position": [
         61.28,
         3.4,
         -25.82
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 3.4,
       "scale": 1.21,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_489",
+      "id": "prop_495",
       "position": [
         0.35,
         7.74,
         77.77
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 3.46,
       "scale": 1.16,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_490",
+      "id": "prop_496",
       "position": [
         61.67,
         4.62,
         -67.07
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 1.36,
       "scale": 0.92,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_491",
+      "id": "prop_497",
       "position": [
         -68.45,
         4.04,
         -10.66
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 3.64,
       "scale": 1.05,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_492",
+      "id": "prop_498",
       "position": [
         -8.69,
         5.54,
         70.93
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 6.14,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_493",
+      "id": "prop_499",
       "position": [
         -64.38,
         7.68,
@@ -7482,49 +7566,49 @@
       "tint": null
     },
     {
-      "id": "prop_494",
+      "id": "prop_500",
       "position": [
         -72.55,
         5.25,
         -13.85
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 0.52,
       "scale": 1.07,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_495",
+      "id": "prop_501",
       "position": [
         65.18,
         5.38,
         1.89
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 0.46,
       "scale": 1.27,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_496",
+      "id": "prop_502",
       "position": [
         37.68,
         3.95,
         -69.59
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 4.06,
       "scale": 0.89,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_497",
+      "id": "prop_503",
       "position": [
         -63.19,
         9.15,
@@ -7538,245 +7622,245 @@
       "tint": null
     },
     {
-      "id": "prop_498",
+      "id": "prop_504",
       "position": [
         -63.93,
         4.35,
         17.76
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 4.68,
       "scale": 0.88,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_499",
+      "id": "prop_505",
       "position": [
         48.32,
         5.69,
         72.11
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 0.63,
       "scale": 1.07,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_500",
+      "id": "prop_506",
       "position": [
         4.1,
         6.02,
         70.36
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 4.95,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_501",
+      "id": "prop_507",
       "position": [
         -57.39,
         4.02,
         61.08
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 1.89,
       "scale": 1.21,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_502",
+      "id": "prop_508",
       "position": [
         -58.5,
         5,
         -72.24
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 5.62,
       "scale": 1.26,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_503",
+      "id": "prop_509",
       "position": [
         -73.87,
         7.57,
         -72.84
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 2.11,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_504",
+      "id": "prop_510",
       "position": [
         32.96,
         6.35,
         71.43
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 1.58,
       "scale": 1.13,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_505",
+      "id": "prop_511",
       "position": [
         -65.11,
         4.1,
         11.26
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 2.36,
       "scale": 1.02,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_506",
+      "id": "prop_512",
       "position": [
         64.66,
         4.03,
         -21.06
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 1.27,
       "scale": 0.93,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_507",
+      "id": "prop_513",
       "position": [
         -71.81,
         7.54,
         -78.95
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 1,
       "scale": 0.86,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_508",
+      "id": "prop_514",
       "position": [
         -29.93,
         4.32,
         -92.95
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.nt_common_tree",
       "yaw": 1.66,
       "scale": 1.04,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_509",
+      "id": "prop_515",
       "position": [
         -50.7,
         3.94,
         59.65
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 4.01,
       "scale": 1.17,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_510",
+      "id": "prop_516",
       "position": [
         -47,
         4.98,
         -87.69
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 0.47,
       "scale": 1.3,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_511",
+      "id": "prop_517",
       "position": [
         46.14,
         4.55,
         66.52
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_pine_tall",
       "yaw": 1.04,
       "scale": 1.07,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_512",
+      "id": "prop_518",
       "position": [
         20.21,
         3.9,
         -58.96
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 2.1,
       "scale": 0.86,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_513",
+      "id": "prop_519",
       "position": [
         -11.97,
         6.41,
         75.92
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 1.26,
       "scale": 0.88,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_514",
+      "id": "prop_520",
       "position": [
         49.06,
         6.73,
         77.56
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 4.08,
       "scale": 0.93,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_515",
+      "id": "prop_521",
       "position": [
         -69.26,
         4.71,
@@ -7790,161 +7874,161 @@
       "tint": null
     },
     {
-      "id": "prop_516",
+      "id": "prop_522",
       "position": [
         62.19,
         4.39,
         -57.74
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 4.69,
       "scale": 1.27,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_517",
+      "id": "prop_523",
       "position": [
         -68.63,
         5.9,
         22.27
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.oak",
       "yaw": 1.44,
       "scale": 0.94,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_518",
+      "id": "prop_524",
       "position": [
         -72.9,
         5.84,
         46.94
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 6.21,
       "scale": 1.22,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_519",
+      "id": "prop_525",
       "position": [
         17.27,
         6.23,
         -92.68
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 4.77,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_520",
+      "id": "prop_526",
       "position": [
         -70.56,
         6.6,
         -65.78
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 4.14,
       "scale": 1.07,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_521",
+      "id": "prop_527",
       "position": [
         59.34,
         4.73,
         -83.84
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 2.61,
       "scale": 1.3,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_522",
+      "id": "prop_528",
       "position": [
         -20.05,
         4.42,
         66.32
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 2.11,
       "scale": 0.86,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_523",
+      "id": "prop_529",
       "position": [
         -34.36,
         4.19,
         -84.21
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 4.77,
       "scale": 1.15,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_524",
+      "id": "prop_530",
       "position": [
         -65.75,
         5.95,
         -73.03
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 2.44,
       "scale": 0.99,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_525",
+      "id": "prop_531",
       "position": [
         -40.33,
         7.14,
         74.55
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 4.48,
       "scale": 1.01,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_526",
+      "id": "prop_532",
       "position": [
         31.62,
         8.12,
         77.27
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 5.51,
       "scale": 1.17,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_527",
+      "id": "prop_533",
       "position": [
         19.08,
         6.19,
@@ -7958,7 +8042,7 @@
       "tint": null
     },
     {
-      "id": "prop_528",
+      "id": "prop_534",
       "position": [
         -33.04,
         3.95,
@@ -7972,77 +8056,77 @@
       "tint": null
     },
     {
-      "id": "prop_529",
+      "id": "prop_535",
       "position": [
         18.98,
         5.8,
         68.62
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 1.93,
       "scale": 1.26,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_530",
+      "id": "prop_536",
       "position": [
         57.06,
         3.79,
         33.63
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 3.45,
       "scale": 1.06,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_531",
+      "id": "prop_537",
       "position": [
         -63,
         4.54,
         43.49
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 1.72,
       "scale": 1.2,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_532",
+      "id": "prop_538",
       "position": [
         -54.62,
         7.09,
         72.45
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 1.95,
       "scale": 1.26,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_533",
+      "id": "prop_539",
       "position": [
         -61.79,
         4.33,
         49.66
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 5.65,
       "scale": 0.92,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_534",
+      "id": "prop_540",
       "position": [
         -25.98,
         4.6,
@@ -8056,21 +8140,21 @@
       "tint": null
     },
     {
-      "id": "prop_535",
+      "id": "prop_541",
       "position": [
         -17.31,
         5.82,
         73.66
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 0.63,
       "scale": 1.19,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_536",
+      "id": "prop_542",
       "position": [
         59.26,
         4.61,
@@ -8084,259 +8168,259 @@
       "tint": null
     },
     {
-      "id": "prop_537",
+      "id": "prop_543",
       "position": [
         33.8,
         3.83,
         60.71
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 5.08,
       "scale": 1.22,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_538",
+      "id": "prop_544",
       "position": [
         -65.12,
         3.7,
         -28.64
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.oak",
       "yaw": 1.37,
       "scale": 0.86,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_539",
+      "id": "prop_545",
       "position": [
         37.23,
         4.37,
         -86.49
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 4.16,
       "scale": 1.05,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_540",
+      "id": "prop_546",
       "position": [
         25.1,
         3.96,
         -60.64
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 2.87,
       "scale": 1.11,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_541",
+      "id": "prop_547",
       "position": [
         -51.09,
         4.02,
         -70.08
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 5.11,
       "scale": 1.02,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_542",
+      "id": "prop_548",
       "position": [
         -48.73,
         7.2,
         73.11
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 2.9,
       "scale": 1.01,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_543",
+      "id": "prop_549",
       "position": [
         32.06,
         4.67,
         -78.9
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 6.14,
       "scale": 0.88,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_544",
+      "id": "prop_550",
       "position": [
         24.13,
         5.33,
         -77.52
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 4.19,
       "scale": 1.17,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_545",
+      "id": "prop_551",
       "position": [
         -20.77,
         5.81,
         -82.26
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 0.14,
       "scale": 0.86,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_546",
+      "id": "prop_552",
       "position": [
         63.89,
         4.56,
         38.11
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 6.11,
       "scale": 1.04,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_547",
+      "id": "prop_553",
       "position": [
         14.16,
         5.05,
         -63.05
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 0.87,
       "scale": 1.24,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_548",
+      "id": "prop_554",
       "position": [
         39.11,
         4.19,
         -91.31
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 0.96,
       "scale": 1.28,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_549",
+      "id": "prop_555",
       "position": [
         64.21,
         4.11,
         -15.05
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 1.58,
       "scale": 1.24,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_550",
+      "id": "prop_556",
       "position": [
         -60.19,
         3.83,
         23.21
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 6.02,
       "scale": 1.16,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_551",
+      "id": "prop_557",
       "position": [
         -39.83,
         4.29,
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 4.66,
       "scale": 0.99,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_552",
+      "id": "prop_558",
       "position": [
         -38.12,
         4.84,
         66.37
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.nt_common_tree",
       "yaw": 2.33,
       "scale": 0.98,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_553",
+      "id": "prop_559",
       "position": [
         -69.95,
         4.56,
         -31.1
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 1.25,
       "scale": 1.16,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_554",
+      "id": "prop_560",
       "position": [
         -33.85,
         5.35,
         69.17
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 4.33,
       "scale": 1.08,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_555",
+      "id": "prop_561",
       "position": [
         -72.25,
         6,
@@ -8350,21 +8434,21 @@
       "tint": null
     },
     {
-      "id": "prop_556",
+      "id": "prop_562",
       "position": [
         65.71,
         6.17,
         54.88
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 3.95,
       "scale": 0.98,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_557",
+      "id": "prop_563",
       "position": [
         61.66,
         4.3,
@@ -8378,183 +8462,99 @@
       "tint": null
     },
     {
-      "id": "prop_558",
+      "id": "prop_564",
       "position": [
         -69.08,
         5.99,
         28.12
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 4.11,
       "scale": 0.89,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_559",
+      "id": "prop_565",
       "position": [
         28.57,
         5.09,
         -83.77
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 5.7,
       "scale": 1.29,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_560",
+      "id": "prop_566",
       "position": [
         51.7,
         4.06,
         64.43
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 1.76,
       "scale": 1.1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_561",
+      "id": "prop_567",
       "position": [
         -29.32,
         3.81,
         -57.96
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 0.87,
       "scale": 1.17,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_562",
+      "id": "prop_568",
       "position": [
         -46.07,
         5.01,
         -77.16
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 3.59,
       "scale": 0.97,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_563",
+      "id": "prop_569",
       "position": [
         65.39,
         6.82,
         -81.27
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 0.86,
       "scale": 1.1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_564",
+      "id": "prop_570",
       "position": [
         37.09,
         5.39,
         68.69
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
-      "yaw": 0.15,
-      "scale": 1.2,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_565",
-      "position": [
-        -68.29,
-        4.06,
-        -3.89
-      ],
-      "kind": "prop",
       "model": "prop.oak",
-      "yaw": 5.64,
-      "scale": 1.08,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_566",
-      "position": [
-        -61.08,
-        4.03,
-        -57.85
-      ],
-      "kind": "prop",
-      "model": "prop.pine_tall",
-      "yaw": 3.02,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_567",
-      "position": [
-        8.74,
-        4.58,
-        -59.02
-      ],
-      "kind": "prop",
-      "model": "prop.pine_tall",
-      "yaw": 5.99,
-      "scale": 1.14,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_568",
-      "position": [
-        62.7,
-        8.07,
-        77.93
-      ],
-      "kind": "prop",
-      "model": "prop.tree_round_dark",
-      "yaw": 4.13,
-      "scale": 0.95,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_569",
-      "position": [
-        58.55,
-        4.52,
-        -90.63
-      ],
-      "kind": "prop",
-      "model": "prop.pine_tall",
-      "yaw": 4.8,
-      "scale": 0.86,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_570",
-      "position": [
-        -60.94,
-        6.21,
-        -81.08
-      ],
-      "kind": "prop",
-      "model": "prop.pine_crooked",
-      "yaw": 3.27,
+      "yaw": 0.15,
       "scale": 1.2,
       "solid": true,
       "tint": null
@@ -8562,243 +8562,327 @@
     {
       "id": "prop_571",
       "position": [
-        -50.31,
-        5.52,
-        67.9
+        -68.29,
+        4.06,
+        -3.89
       ],
       "kind": "prop",
-      "model": "prop.pine",
-      "yaw": 5.33,
-      "scale": 1.16,
+      "model": "prop.nt_pine_tall",
+      "yaw": 5.64,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_572",
       "position": [
-        -71.43,
-        6.47,
-        32.84
+        -61.08,
+        4.03,
+        -57.85
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
-      "yaw": 2.24,
-      "scale": 0.98,
+      "model": "prop.nt_birch",
+      "yaw": 3.02,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_573",
       "position": [
-        63.37,
-        4.5,
-        27.91
+        8.74,
+        4.58,
+        -59.02
       ],
       "kind": "prop",
-      "model": "prop.oak",
-      "yaw": 1.69,
-      "scale": 1.25,
+      "model": "prop.nt_birch",
+      "yaw": 5.99,
+      "scale": 1.14,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_574",
       "position": [
-        -27.33,
-        4.22,
-        -79.14
+        62.7,
+        8.07,
+        77.93
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
-      "yaw": 2.79,
-      "scale": 1.28,
+      "model": "prop.oak",
+      "yaw": 4.13,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_575",
       "position": [
-        -5.91,
-        5.48,
-        -60.26
+        58.55,
+        4.52,
+        -90.63
       ],
       "kind": "prop",
-      "model": "prop.pine",
-      "yaw": 1.15,
-      "scale": 1.28,
+      "model": "prop.nt_birch",
+      "yaw": 4.8,
+      "scale": 0.86,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_576",
       "position": [
-        -49.34,
-        5.4,
-        -82.12
+        -60.94,
+        6.21,
+        -81.08
       ],
       "kind": "prop",
-      "model": "prop.pine",
-      "yaw": 1.6,
-      "scale": 1.12,
+      "model": "prop.nt_common_tree",
+      "yaw": 3.27,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_577",
       "position": [
-        -41.03,
-        4.65,
-        -79.4
+        -50.31,
+        5.52,
+        67.9
       ],
       "kind": "prop",
       "model": "prop.pine_tall",
-      "yaw": 0.27,
-      "scale": 1.15,
+      "yaw": 5.33,
+      "scale": 1.16,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_578",
       "position": [
-        65.23,
-        6.73,
-        65.34
+        -71.43,
+        6.47,
+        32.84
       ],
       "kind": "prop",
       "model": "prop.pine_round",
-      "yaw": 3.54,
-      "scale": 0.88,
+      "yaw": 2.24,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_579",
       "position": [
-        -25.34,
-        4.47,
-        -84.67
+        63.37,
+        4.5,
+        27.91
       ],
       "kind": "prop",
-      "model": "prop.pine",
-      "yaw": 3.86,
-      "scale": 0.92,
+      "model": "prop.nt_birch",
+      "yaw": 1.69,
+      "scale": 1.25,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_580",
       "position": [
-        5.65,
-        8.29,
-        77.99
+        -27.33,
+        4.22,
+        -79.14
       ],
       "kind": "prop",
-      "model": "prop.pine",
-      "yaw": 3.74,
-      "scale": 1.19,
+      "model": "prop.nt_birch",
+      "yaw": 2.79,
+      "scale": 1.28,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_581",
       "position": [
-        63.99,
-        4.99,
-        19.8
+        -5.91,
+        5.48,
+        -60.26
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
-      "yaw": 5.21,
-      "scale": 1.24,
+      "model": "prop.nt_pine_tall",
+      "yaw": 1.15,
+      "scale": 1.28,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_582",
       "position": [
-        -72.02,
-        10.94,
-        77.06
+        -49.34,
+        5.4,
+        -82.12
       ],
       "kind": "prop",
-      "model": "prop.pine",
-      "yaw": 5.73,
-      "scale": 1.13,
+      "model": "prop.pine_tall",
+      "yaw": 1.6,
+      "scale": 1.12,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_583",
       "position": [
-        57.66,
-        3.82,
-        43.31
+        -41.03,
+        4.65,
+        -79.4
       ],
       "kind": "prop",
-      "model": "prop.pine",
-      "yaw": 3.57,
-      "scale": 1.03,
+      "model": "prop.nt_birch",
+      "yaw": 0.27,
+      "scale": 1.15,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_584",
       "position": [
-        -44.64,
-        4.51,
-        -93.28
+        65.23,
+        6.73,
+        65.34
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
-      "yaw": 1.6,
-      "scale": 0.86,
+      "model": "prop.pine_crooked",
+      "yaw": 3.54,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_585",
       "position": [
-        -45.93,
-        3.95,
-        58.54
+        -25.34,
+        4.47,
+        -84.67
       ],
       "kind": "prop",
-      "model": "prop.pine",
-      "yaw": 3.55,
-      "scale": 1.17,
+      "model": "prop.nt_pine_tall",
+      "yaw": 3.86,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_586",
       "position": [
-        14.83,
-        3.81,
-        -57.62
+        5.65,
+        8.29,
+        77.99
       ],
       "kind": "prop",
       "model": "prop.pine_tall",
-      "yaw": 3.08,
-      "scale": 0.97,
+      "yaw": 3.74,
+      "scale": 1.19,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_587",
       "position": [
+        63.99,
+        4.99,
+        19.8
+      ],
+      "kind": "prop",
+      "model": "prop.pine_crooked",
+      "yaw": 5.21,
+      "scale": 1.24,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_588",
+      "position": [
+        -72.02,
+        10.94,
+        77.06
+      ],
+      "kind": "prop",
+      "model": "prop.nt_pine_tall",
+      "yaw": 5.73,
+      "scale": 1.13,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_589",
+      "position": [
+        57.66,
+        3.82,
+        43.31
+      ],
+      "kind": "prop",
+      "model": "prop.nt_pine_tall",
+      "yaw": 3.57,
+      "scale": 1.03,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_590",
+      "position": [
+        -44.64,
+        4.51,
+        -93.28
+      ],
+      "kind": "prop",
+      "model": "prop.pine_round",
+      "yaw": 1.6,
+      "scale": 0.86,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_591",
+      "position": [
+        -45.93,
+        3.95,
+        58.54
+      ],
+      "kind": "prop",
+      "model": "prop.nt_pine_tall",
+      "yaw": 3.55,
+      "scale": 1.17,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_592",
+      "position": [
+        14.83,
+        3.81,
+        -57.62
+      ],
+      "kind": "prop",
+      "model": "prop.pine_round",
+      "yaw": 3.08,
+      "scale": 0.97,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_593",
+      "position": [
         64.04,
         6.59,
         -90.32
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 1.56,
       "scale": 1.28,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_588",
+      "id": "prop_594",
       "position": [
         42.93,
         6.07,
@@ -8812,119 +8896,119 @@
       "tint": null
     },
     {
-      "id": "prop_589",
+      "id": "prop_595",
       "position": [
         56.92,
         3.85,
         -65.11
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 0.03,
       "scale": 1.28,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_590",
+      "id": "prop_596",
       "position": [
         -66.61,
         3.91,
         -17.49
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.oak",
       "yaw": 5.78,
       "scale": 1.17,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_591",
+      "id": "prop_597",
       "position": [
         -55.96,
         3.82,
         -60.36
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 1.5,
       "scale": 0.96,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_592",
+      "id": "prop_598",
       "position": [
         -63.68,
         5.58,
         66.28
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 4.39,
       "scale": 0.97,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_593",
+      "id": "prop_599",
       "position": [
         -72.42,
         6.15,
         -0.35
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 2.12,
       "scale": 0.91,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_594",
+      "id": "prop_600",
       "position": [
         -73.77,
         5.33,
         -22.98
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 6.2,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_595",
+      "id": "prop_601",
       "position": [
         -50.51,
         5.14,
         -93.1
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 2.73,
       "scale": 0.89,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_596",
+      "id": "prop_602",
       "position": [
         64.9,
         5.3,
         -62.37
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 3.12,
       "scale": 1.27,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_597",
+      "id": "prop_603",
       "position": [
         -55.89,
         3.9,
@@ -8938,147 +9022,147 @@
       "tint": null
     },
     {
-      "id": "prop_598",
+      "id": "prop_604",
       "position": [
         -52.59,
         5.33,
         -76.18
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 1.49,
       "scale": 0.98,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_599",
+      "id": "prop_605",
       "position": [
         -5.23,
         6.86,
         76.06
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 0.31,
       "scale": 1.26,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_600",
+      "id": "prop_606",
       "position": [
         -40.22,
         3.95,
         58.31
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 5.95,
       "scale": 1.22,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_601",
+      "id": "prop_607",
       "position": [
         58.12,
         3.88,
         7.22
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.nt_birch",
       "yaw": 0.27,
       "scale": 1.11,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_602",
+      "id": "prop_608",
       "position": [
         -51.54,
         8.68,
         77.53
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 0.63,
       "scale": 1.23,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_603",
+      "id": "prop_609",
       "position": [
         -28.85,
         4.12,
         -70.41
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 3.28,
       "scale": 0.97,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_604",
+      "id": "prop_610",
       "position": [
         18.11,
         6.78,
         -79.74
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 2.86,
       "scale": 1.28,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_605",
+      "id": "prop_611",
       "position": [
         62.75,
         6.99,
         71.63
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_pine_tall",
       "yaw": 1.89,
       "scale": 1.1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_606",
+      "id": "prop_612",
       "position": [
         33.07,
         5.02,
         -90.94
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.oak",
       "yaw": 3.73,
       "scale": 1.01,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_607",
+      "id": "prop_613",
       "position": [
         -33.57,
         4.23,
         -71.48
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 3.81,
       "scale": 0.86,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_608",
+      "id": "prop_614",
       "position": [
         -67.25,
         4.98,
@@ -9092,91 +9176,91 @@
       "tint": null
     },
     {
-      "id": "prop_609",
+      "id": "prop_615",
       "position": [
         30.23,
         4.81,
         66.38
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 5.65,
       "scale": 1.29,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_610",
+      "id": "prop_616",
       "position": [
         13.43,
         4.72,
         65.77
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 1.73,
       "scale": 1.1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_611",
+      "id": "prop_617",
       "position": [
         -43.02,
         3.89,
         -68.99
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 0.29,
       "scale": 1.16,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_612",
+      "id": "prop_618",
       "position": [
         -21.68,
         3.85,
         -59.14
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 2.66,
       "scale": 1.09,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_613",
+      "id": "prop_619",
       "position": [
         -72.5,
         5.68,
         -6.01
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 2.82,
       "scale": 1.28,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_614",
+      "id": "prop_620",
       "position": [
         64.97,
         5.9,
         59.27
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 3.98,
       "scale": 1.01,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_615",
+      "id": "prop_621",
       "position": [
         65.82,
         6.32,
@@ -9190,245 +9274,245 @@
       "tint": null
     },
     {
-      "id": "prop_616",
+      "id": "prop_622",
       "position": [
         -29.71,
         4.21,
         -86.44
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 3.22,
       "scale": 1.22,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_617",
+      "id": "prop_623",
       "position": [
         -70.25,
         5.19,
         55.2
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 0.1,
       "scale": 0.87,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_618",
+      "id": "prop_624",
       "position": [
         -69.83,
         7.82,
         -88.22
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 0.99,
       "scale": 1.01,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_619",
+      "id": "prop_625",
       "position": [
         -44.19,
         4.84,
         -83.88
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 4.38,
       "scale": 1.03,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_620",
+      "id": "prop_626",
       "position": [
         38.73,
         3.99,
         -75.87
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 0.32,
       "scale": 1.27,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_621",
+      "id": "prop_627",
       "position": [
         -3.25,
         5.76,
         70.86
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.nt_pine_tall",
       "yaw": 6.26,
       "scale": 1.26,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_622",
+      "id": "prop_628",
       "position": [
         55.4,
         3.82,
         58.75
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 5.56,
       "scale": 1.12,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_623",
+      "id": "prop_629",
       "position": [
         -44.11,
         6.01,
         70.08
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 2.11,
       "scale": 1.07,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_624",
+      "id": "prop_630",
       "position": [
         9.36,
         6.51,
         -64.16
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.nt_common_tree",
       "yaw": 4.46,
       "scale": 0.86,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_625",
+      "id": "prop_631",
       "position": [
         -46.5,
         8.53,
         77.92
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 0.92,
       "scale": 1.05,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_626",
+      "id": "prop_632",
       "position": [
         -73.67,
         7.15,
         -61.56
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 2.41,
       "scale": 1.15,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_627",
+      "id": "prop_633",
       "position": [
         57.31,
         3.87,
         2.03
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "prop.pine_crooked",
       "yaw": 1.85,
       "scale": 1.14,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_628",
+      "id": "prop_634",
       "position": [
         57.67,
         4.19,
         -75.03
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 0.16,
       "scale": 1.25,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_629",
+      "id": "prop_635",
       "position": [
         -61.62,
         6.59,
         -89.51
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 1.36,
       "scale": 0.9,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_630",
+      "id": "prop_636",
       "position": [
         30.6,
         3.87,
         -59.33
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.pine_tall",
       "yaw": 0.51,
       "scale": 1.06,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_631",
+      "id": "prop_637",
       "position": [
         22.41,
         5.83,
         -83.34
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 4.18,
       "scale": 0.92,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_632",
+      "id": "prop_638",
       "position": [
         14.91,
         8.73,
         77.44
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_pine_tall",
       "yaw": 3.23,
       "scale": 1.1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_633",
+      "id": "prop_639",
       "position": [
         33.55,
         4.34,
@@ -9442,127 +9526,43 @@
       "tint": null
     },
     {
-      "id": "prop_634",
+      "id": "prop_640",
       "position": [
         43.67,
         3.82,
         59.91
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 2.94,
       "scale": 0.96,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_635",
+      "id": "prop_641",
       "position": [
         -62.8,
         4.38,
         27.48
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 1.51,
       "scale": 1.13,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_636",
+      "id": "prop_642",
       "position": [
         57.04,
         3.84,
         -3.68
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 4.38,
-      "scale": 1.17,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_637",
-      "position": [
-        -63.65,
-        4.7,
-        -62.99
-      ],
-      "kind": "prop",
-      "model": "prop.pine_crooked",
-      "yaw": 1.62,
-      "scale": 0.87,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_638",
-      "position": [
-        -11.31,
-        4.4,
-        66.04
-      ],
-      "kind": "prop",
-      "model": "prop.pine_tall",
-      "yaw": 4.39,
-      "scale": 1.08,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_639",
-      "position": [
-        -56.49,
-        6.04,
-        -83.59
-      ],
-      "kind": "prop",
-      "model": "prop.oak",
-      "yaw": 0.67,
-      "scale": 1.21,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_640",
-      "position": [
-        -58.24,
-        8.83,
-        77.64
-      ],
-      "kind": "prop",
-      "model": "prop.tree_round_dark",
-      "yaw": 1.92,
-      "scale": 1.02,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_641",
-      "position": [
-        37.95,
-        4.18,
-        -81.8
-      ],
-      "kind": "prop",
-      "model": "prop.tree_round_dark",
-      "yaw": 3.85,
-      "scale": 1.17,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_642",
-      "position": [
-        23.71,
-        5.45,
-        -93.69
-      ],
-      "kind": "prop",
-      "model": "prop.oak",
-      "yaw": 2.71,
       "scale": 1.17,
       "solid": true,
       "tint": null
@@ -9570,103 +9570,187 @@
     {
       "id": "prop_643",
       "position": [
-        57.12,
-        3.83,
-        -57.99
+        -63.65,
+        4.7,
+        -62.99
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
-      "yaw": 4.11,
-      "scale": 1.15,
+      "model": "prop.nt_common_tree",
+      "yaw": 1.62,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_644",
       "position": [
-        -21.85,
-        5.22,
-        70.28
+        -11.31,
+        4.4,
+        66.04
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
-      "yaw": 3.86,
-      "scale": 0.95,
+      "model": "prop.nt_birch",
+      "yaw": 4.39,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_645",
       "position": [
-        24.32,
-        4.47,
-        65.14
+        -56.49,
+        6.04,
+        -83.59
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
-      "yaw": 0.52,
-      "scale": 1.19,
+      "model": "prop.nt_birch",
+      "yaw": 0.67,
+      "scale": 1.21,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_646",
       "position": [
-        -60.19,
-        3.15,
-        -30.88
+        -58.24,
+        8.83,
+        77.64
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
-      "yaw": 0.65,
-      "scale": 0.95,
+      "model": "prop.nt_pine_tall",
+      "yaw": 1.92,
+      "scale": 1.02,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_647",
       "position": [
-        -29.39,
-        5.93,
-        72.74
+        37.95,
+        4.18,
+        -81.8
       ],
       "kind": "prop",
-      "model": "prop.pine",
-      "yaw": 5,
-      "scale": 1.14,
+      "model": "prop.oak",
+      "yaw": 3.85,
+      "scale": 1.17,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_648",
       "position": [
-        56.96,
-        3.83,
-        49.01
+        23.71,
+        5.45,
+        -93.69
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
-      "yaw": 2.24,
-      "scale": 0.92,
+      "model": "prop.nt_birch",
+      "yaw": 2.71,
+      "scale": 1.17,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_649",
       "position": [
+        57.12,
+        3.83,
+        -57.99
+      ],
+      "kind": "prop",
+      "model": "prop.nt_pine_tall",
+      "yaw": 4.11,
+      "scale": 1.15,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_650",
+      "position": [
+        -21.85,
+        5.22,
+        70.28
+      ],
+      "kind": "prop",
+      "model": "prop.oak",
+      "yaw": 3.86,
+      "scale": 0.95,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_651",
+      "position": [
+        24.32,
+        4.47,
+        65.14
+      ],
+      "kind": "prop",
+      "model": "prop.pine_crooked",
+      "yaw": 0.52,
+      "scale": 1.19,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_652",
+      "position": [
+        -60.19,
+        3.15,
+        -30.88
+      ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
+      "yaw": 0.65,
+      "scale": 0.95,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_653",
+      "position": [
+        -29.39,
+        5.93,
+        72.74
+      ],
+      "kind": "prop",
+      "model": "prop.pine_tall",
+      "yaw": 5,
+      "scale": 1.14,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_654",
+      "position": [
+        56.96,
+        3.83,
+        49.01
+      ],
+      "kind": "prop",
+      "model": "prop.nt_birch",
+      "yaw": 2.24,
+      "scale": 0.92,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_655",
+      "position": [
         16.34,
         7.3,
         72.97
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "prop.nt_pine_tall",
       "yaw": 2.46,
       "scale": 0.89,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_650",
+      "id": "prop_656",
       "position": [
         44.12,
         7.13,
@@ -9680,35 +9764,35 @@
       "tint": null
     },
     {
-      "id": "prop_651",
+      "id": "prop_657",
       "position": [
         -61.01,
         3.36,
         -21.91
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "prop.nt_common_tree",
       "yaw": 2.32,
       "scale": 1.3,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_652",
+      "id": "prop_658",
       "position": [
         59.34,
         3.83,
         38.07
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "prop.pine_round",
       "yaw": 2,
       "scale": 1.14,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_653",
+      "id": "prop_659",
       "position": [
         -25.57,
         6.69,
@@ -9722,105 +9806,105 @@
       "tint": null
     },
     {
-      "id": "prop_654",
+      "id": "prop_660",
       "position": [
         64.93,
         5.16,
         45.49
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.nt_birch",
       "yaw": 4.61,
       "scale": 1.05,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_655",
+      "id": "prop_661",
       "position": [
         37.85,
         3.82,
         -58.47
       ],
       "kind": "prop",
-      "model": "prop.tree_round_dark",
+      "model": "prop.oak",
       "yaw": 2.47,
       "scale": 1.14,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_656",
+      "id": "prop_662",
       "position": [
         58.71,
         3.71,
         -11.95
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 4.14,
       "scale": 0.81,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_657",
+      "id": "prop_663",
       "position": [
         27.6,
-        4.05,
+        4,
         63.63
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 1.61,
       "scale": 0.97,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_658",
+      "id": "prop_664",
       "position": [
         60.31,
-        4.07,
+        4.03,
         -60.98
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 0.9,
       "scale": 1.21,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_659",
+      "id": "prop_665",
       "position": [
         54.96,
-        4.89,
+        5.04,
         69.63
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.fern",
       "yaw": 0.17,
       "scale": 1.24,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_660",
+      "id": "prop_666",
       "position": [
         24.93,
-        3.74,
+        3.72,
         -57.23
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 0.91,
       "scale": 0.97,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_661",
+      "id": "prop_667",
       "position": [
         58.41,
         3.39,
@@ -9834,91 +9918,91 @@
       "tint": null
     },
     {
-      "id": "prop_662",
+      "id": "prop_668",
       "position": [
         -68.6,
-        8.42,
+        8.22,
         72.68
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 1.46,
       "scale": 1.34,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_663",
+      "id": "prop_669",
       "position": [
         -41.29,
         3.82,
         -59.44
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.fern",
       "yaw": 0.62,
       "scale": 1.39,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_664",
+      "id": "prop_670",
       "position": [
         -1.3,
-        4.85,
+        4.76,
         67.21
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 1.61,
       "scale": 0.93,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_665",
+      "id": "prop_671",
       "position": [
         13.39,
-        6.92,
+        6.94,
         -88.45
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 5.66,
       "scale": 1.1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_666",
+      "id": "prop_672",
       "position": [
         51.99,
-        6.09,
+        6.05,
         74.99
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 1.86,
       "scale": 1.08,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_667",
+      "id": "prop_673",
       "position": [
         -24.55,
-        4.11,
+        4.12,
         -70.96
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 0.87,
       "scale": 0.83,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_668",
+      "id": "prop_674",
       "position": [
         -70.62,
         5.46,
@@ -9932,21 +10016,21 @@
       "tint": null
     },
     {
-      "id": "prop_669",
+      "id": "prop_675",
       "position": [
         35.06,
-        4.25,
+        4.21,
         64.83
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 3.06,
       "scale": 0.8,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_670",
+      "id": "prop_676",
       "position": [
         65.98,
         5.94,
@@ -9960,21 +10044,21 @@
       "tint": null
     },
     {
-      "id": "prop_671",
+      "id": "prop_677",
       "position": [
         64.64,
-        4.94,
+        4.85,
         24.28
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 2.54,
       "scale": 1.07,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_672",
+      "id": "prop_678",
       "position": [
         -73.22,
         7.87,
@@ -9988,21 +10072,21 @@
       "tint": null
     },
     {
-      "id": "prop_673",
+      "id": "prop_679",
       "position": [
         10.05,
-        5.02,
+        4.92,
         67.01
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 4.93,
       "scale": 1.31,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_674",
+      "id": "prop_680",
       "position": [
         -62.17,
         3.8,
@@ -10016,7 +10100,7 @@
       "tint": null
     },
     {
-      "id": "prop_675",
+      "id": "prop_681",
       "position": [
         38.25,
         3.82,
@@ -10030,7 +10114,7 @@
       "tint": null
     },
     {
-      "id": "prop_676",
+      "id": "prop_682",
       "position": [
         27.6,
         3.74,
@@ -10044,63 +10128,63 @@
       "tint": null
     },
     {
-      "id": "prop_677",
+      "id": "prop_683",
       "position": [
         -60.76,
-        4.24,
+        4.28,
         36.15
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 3.43,
       "scale": 1.12,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_678",
+      "id": "prop_684",
       "position": [
         56.6,
-        3.49,
+        3.47,
         -26.3
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 2.76,
       "scale": 1.38,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_679",
+      "id": "prop_685",
       "position": [
         -65.13,
-        3.78,
+        3.77,
         -21.36
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 0.26,
       "scale": 0.85,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_680",
+      "id": "prop_686",
       "position": [
         -24.84,
-        4.7,
+        4.68,
         -91.85
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 5.11,
       "scale": 1.3,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_681",
+      "id": "prop_687",
       "position": [
         -20.44,
         5.68,
@@ -10114,7 +10198,7 @@
       "tint": null
     },
     {
-      "id": "prop_682",
+      "id": "prop_688",
       "position": [
         -31.38,
         4.19,
@@ -10128,21 +10212,21 @@
       "tint": null
     },
     {
-      "id": "prop_683",
+      "id": "prop_689",
       "position": [
         -60.48,
-        3.55,
+        3.53,
         15.93
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 3.11,
       "scale": 1.12,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_684",
+      "id": "prop_690",
       "position": [
         7.99,
         4.73,
@@ -10156,21 +10240,21 @@
       "tint": null
     },
     {
-      "id": "prop_685",
+      "id": "prop_691",
       "position": [
         -71.56,
-        5.81,
+        5.75,
         43.22
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 5.58,
       "scale": 1.25,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_686",
+      "id": "prop_692",
       "position": [
         -25.27,
         3.81,
@@ -10184,49 +10268,49 @@
       "tint": null
     },
     {
-      "id": "prop_687",
+      "id": "prop_693",
       "position": [
         -37.84,
-        4.09,
+        4.08,
         62.39
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 1.01,
       "scale": 0.9,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_688",
+      "id": "prop_694",
       "position": [
         16.62,
-        6.62,
+        6.59,
         -89.36
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 2.36,
       "scale": 1.18,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_689",
+      "id": "prop_695",
       "position": [
         18.97,
-        7.89,
+        7.73,
         75.1
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 1.5,
       "scale": 1.39,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_690",
+      "id": "prop_696",
       "position": [
         -73.52,
         6.75,
@@ -10240,7 +10324,7 @@
       "tint": null
     },
     {
-      "id": "prop_691",
+      "id": "prop_697",
       "position": [
         -60.89,
         3.21,
@@ -10254,49 +10338,49 @@
       "tint": null
     },
     {
-      "id": "prop_692",
+      "id": "prop_698",
       "position": [
         -64.95,
-        4.63,
+        4.56,
         22.6
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 5.06,
       "scale": 1.22,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_693",
+      "id": "prop_699",
       "position": [
         -4.07,
-        6.8,
+        6.84,
         -64.24
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.nt_bush_leafy",
       "yaw": 4.87,
       "scale": 0.98,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_694",
+      "id": "prop_700",
       "position": [
         -19.6,
-        4.9,
+        4.85,
         -69.5
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 1.22,
       "scale": 0.81,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_695",
+      "id": "prop_701",
       "position": [
         -73.66,
         5.29,
@@ -10310,35 +10394,35 @@
       "tint": null
     },
     {
-      "id": "prop_696",
+      "id": "prop_702",
       "position": [
         40.9,
-        5.25,
+        5.2,
         69
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 5.6,
       "scale": 1.21,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_697",
+      "id": "prop_703",
       "position": [
         -15.6,
-        4.75,
+        4.7,
         -64.13
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 2.78,
       "scale": 0.99,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_698",
+      "id": "prop_704",
       "position": [
         63.48,
         4.92,
@@ -10352,7 +10436,7 @@
       "tint": null
     },
     {
-      "id": "prop_699",
+      "id": "prop_705",
       "position": [
         65.59,
         5.17,
@@ -10366,49 +10450,49 @@
       "tint": null
     },
     {
-      "id": "prop_700",
+      "id": "prop_706",
       "position": [
         -25.37,
         3.9,
         -62.08
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 3.94,
       "scale": 1.05,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_701",
+      "id": "prop_707",
       "position": [
         -60.47,
-        6.83,
+        7.06,
         72.91
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 5.44,
       "scale": 1.36,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_702",
+      "id": "prop_708",
       "position": [
         -66.59,
-        4.75,
+        4.72,
         51.14
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 2.54,
       "scale": 1.04,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_703",
+      "id": "prop_709",
       "position": [
         -60.85,
         5.66,
@@ -10422,21 +10506,21 @@
       "tint": null
     },
     {
-      "id": "prop_704",
+      "id": "prop_710",
       "position": [
         58.25,
-        3.35,
+        3.32,
         -29.03
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 1.9,
       "scale": 1.29,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_705",
+      "id": "prop_711",
       "position": [
         60.75,
         4.13,
@@ -10450,7 +10534,7 @@
       "tint": null
     },
     {
-      "id": "prop_706",
+      "id": "prop_712",
       "position": [
         61.98,
         4.32,
@@ -10464,77 +10548,77 @@
       "tint": null
     },
     {
-      "id": "prop_707",
+      "id": "prop_713",
       "position": [
         65.75,
-        8.67,
+        8.53,
         75.09
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 1.72,
       "scale": 1.05,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_708",
+      "id": "prop_714",
       "position": [
         29.02,
-        4.32,
+        4.37,
         -69.61
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 3.14,
       "scale": 1.31,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_709",
+      "id": "prop_715",
       "position": [
         57.43,
-        3.85,
+        3.83,
         53.46
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 4.17,
       "scale": 1.38,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_710",
+      "id": "prop_716",
       "position": [
         -68.41,
-        6.62,
+        6.72,
         -76.77
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 5.95,
       "scale": 0.97,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_711",
+      "id": "prop_717",
       "position": [
         4.35,
-        6.41,
+        6.64,
         -63.09
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.fern",
       "yaw": 2.33,
       "scale": 0.95,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_712",
+      "id": "prop_718",
       "position": [
         65.4,
         4.15,
@@ -10548,7 +10632,7 @@
       "tint": null
     },
     {
-      "id": "prop_713",
+      "id": "prop_719",
       "position": [
         -10.8,
         6.91,
@@ -10562,49 +10646,49 @@
       "tint": null
     },
     {
-      "id": "prop_714",
+      "id": "prop_720",
       "position": [
         -17.24,
-        6.65,
+        6.58,
         -85.66
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 0.74,
       "scale": 0.93,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_715",
+      "id": "prop_721",
       "position": [
         61.09,
-        4.03,
+        4,
         21.88
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 2.68,
       "scale": 0.85,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_716",
+      "id": "prop_722",
       "position": [
         63.31,
-        4.86,
+        4.8,
         5.05
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 2.74,
       "scale": 1.19,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_717",
+      "id": "prop_723",
       "position": [
         -37.73,
         4.28,
@@ -10618,77 +10702,77 @@
       "tint": null
     },
     {
-      "id": "prop_718",
+      "id": "prop_724",
       "position": [
         -73.5,
-        7.47,
+        7.4,
         20.72
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 3.49,
       "scale": 0.97,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_719",
+      "id": "prop_725",
       "position": [
         -67.27,
-        5.24,
+        5.16,
         18.89
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 4.7,
       "scale": 1.31,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_720",
+      "id": "prop_726",
       "position": [
         -38.76,
-        3.91,
+        3.97,
         -68.99
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 3.41,
       "scale": 1.21,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_721",
+      "id": "prop_727",
       "position": [
         56.42,
-        3.83,
+        3.82,
         10.77
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 5.57,
       "scale": 1.37,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_722",
+      "id": "prop_728",
       "position": [
         -35.17,
-        4.22,
+        4.26,
         -80.46
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.fern",
       "yaw": 1.57,
       "scale": 1.37,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_723",
+      "id": "prop_729",
       "position": [
         -47.18,
         3.82,
@@ -10702,7 +10786,7 @@
       "tint": null
     },
     {
-      "id": "prop_724",
+      "id": "prop_730",
       "position": [
         36.23,
         6.75,
@@ -10716,77 +10800,77 @@
       "tint": null
     },
     {
-      "id": "prop_725",
+      "id": "prop_731",
       "position": [
         56.34,
-        3.8,
+        3.79,
         29.71
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 3.91,
       "scale": 1.25,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_726",
+      "id": "prop_732",
       "position": [
         64.83,
-        4.75,
+        4.7,
         31.94
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 3.28,
       "scale": 1.13,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_727",
+      "id": "prop_733",
       "position": [
         59.6,
-        3.41,
+        3.37,
         -34.89
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 3.66,
       "scale": 1.34,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_728",
+      "id": "prop_734",
       "position": [
         64.44,
-        4.75,
+        5.03,
         16.16
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 3.64,
       "scale": 1.33,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_729",
+      "id": "prop_735",
       "position": [
         -73.39,
-        6.82,
+        7.02,
         10.91
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 4.28,
       "scale": 1.19,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_730",
+      "id": "prop_736",
       "position": [
         64.02,
         5.18,
@@ -10800,21 +10884,21 @@
       "tint": null
     },
     {
-      "id": "prop_731",
+      "id": "prop_737",
       "position": [
         -71.35,
-        5.88,
+        5.78,
         40.45
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 5.71,
       "scale": 1.39,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_732",
+      "id": "prop_738",
       "position": [
         -61.67,
         6.4,
@@ -10828,35 +10912,35 @@
       "tint": null
     },
     {
-      "id": "prop_733",
+      "id": "prop_739",
       "position": [
         8.03,
-        6.95,
+        6.94,
         -93.99
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 6.27,
       "scale": 1.31,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_734",
+      "id": "prop_740",
       "position": [
         -31.38,
         4.19,
         -77.59
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 5.12,
       "scale": 1.26,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_735",
+      "id": "prop_741",
       "position": [
         -25.9,
         4.46,
@@ -10870,49 +10954,49 @@
       "tint": null
     },
     {
-      "id": "prop_736",
+      "id": "prop_742",
       "position": [
         6.14,
-        6.48,
+        6.42,
         -63.18
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 3.89,
       "scale": 1.38,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_737",
+      "id": "prop_743",
       "position": [
         58.14,
-        5.1,
+        5.02,
         69.03
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 3.5,
       "scale": 1.4,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_738",
+      "id": "prop_744",
       "position": [
         59.05,
-        3.86,
+        3.88,
         -62.07
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 1.06,
       "scale": 1.22,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_739",
+      "id": "prop_745",
       "position": [
         -61.24,
         4.35,
@@ -10926,133 +11010,133 @@
       "tint": null
     },
     {
-      "id": "prop_740",
+      "id": "prop_746",
       "position": [
         -53.67,
-        4.05,
+        4.14,
         62.75
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 5.25,
       "scale": 1.32,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_741",
+      "id": "prop_747",
       "position": [
         -65.99,
-        4.53,
+        4.6,
         53.17
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 5.89,
       "scale": 1.02,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_742",
+      "id": "prop_748",
       "position": [
         33.25,
-        4.08,
+        4.12,
         -68.03
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.fern",
       "yaw": 2.32,
       "scale": 0.85,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_743",
+      "id": "prop_749",
       "position": [
         -8.69,
-        4.22,
+        4.12,
         -58.4
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 0.46,
       "scale": 1.05,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_744",
+      "id": "prop_750",
       "position": [
         -64.5,
-        5.95,
+        6.1,
         -76.69
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.fern",
       "yaw": 3.86,
       "scale": 1.38,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_745",
+      "id": "prop_751",
       "position": [
         -72.31,
-        8.37,
+        8.32,
         -91.67
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 0.3,
       "scale": 0.89,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_746",
+      "id": "prop_752",
       "position": [
         62.18,
-        3.93,
+        4.01,
         35.04
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 2.04,
       "scale": 1.14,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_747",
+      "id": "prop_753",
       "position": [
         -60.47,
-        4.54,
+        4.47,
         63.82
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 5.33,
       "scale": 1.01,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_748",
+      "id": "prop_754",
       "position": [
         -2.74,
-        6.8,
+        6.73,
         -63.65
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 2.23,
       "scale": 1.23,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_749",
+      "id": "prop_755",
       "position": [
         62.38,
         4.26,
@@ -11066,7 +11150,7 @@
       "tint": null
     },
     {
-      "id": "prop_750",
+      "id": "prop_756",
       "position": [
         63.54,
         4.37,
@@ -11080,49 +11164,49 @@
       "tint": null
     },
     {
-      "id": "prop_751",
+      "id": "prop_757",
       "position": [
         -67.39,
-        6.44,
+        6.35,
         67.38
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 6.03,
       "scale": 0.97,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_752",
+      "id": "prop_758",
       "position": [
         63.19,
-        5.95,
+        5.75,
         -86.63
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 2.75,
       "scale": 1.33,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_753",
+      "id": "prop_759",
       "position": [
         -68.44,
-        5.53,
+        5.61,
         17.31
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 1.56,
       "scale": 0.88,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_754",
+      "id": "prop_760",
       "position": [
         -64.19,
         6.87,
@@ -11136,49 +11220,49 @@
       "tint": null
     },
     {
-      "id": "prop_755",
+      "id": "prop_761",
       "position": [
         -32.83,
-        4.22,
+        4.21,
         -77.41
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 4.29,
       "scale": 1.4,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_756",
+      "id": "prop_762",
       "position": [
         -53.8,
-        5.5,
+        5.56,
         -91.98
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 3.54,
       "scale": 0.88,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_757",
+      "id": "prop_763",
       "position": [
         -38.1,
-        4.31,
+        4.32,
         -83.8
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.nt_bush_leafy",
       "yaw": 3.27,
       "scale": 0.83,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_758",
+      "id": "prop_764",
       "position": [
         -71.6,
         8.49,
@@ -11192,63 +11276,63 @@
       "tint": null
     },
     {
-      "id": "prop_759",
+      "id": "prop_765",
       "position": [
         61.76,
-        3.56,
+        3.57,
         -18.9
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.nt_bush_leafy",
       "yaw": 0.99,
       "scale": 1.27,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_760",
+      "id": "prop_766",
       "position": [
         -21.54,
-        6.37,
+        6.46,
         77.82
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 5.61,
       "scale": 1.15,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_761",
+      "id": "prop_767",
       "position": [
         29.66,
-        5.28,
+        5.26,
         -92.16
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 0.48,
       "scale": 1.05,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_762",
+      "id": "prop_768",
       "position": [
         65.44,
-        5.66,
+        5.58,
         50.76
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 3.39,
       "scale": 0.81,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_763",
+      "id": "prop_769",
       "position": [
         -39.88,
         3.59,
@@ -11262,63 +11346,63 @@
       "tint": null
     },
     {
-      "id": "prop_764",
+      "id": "prop_770",
       "position": [
         -66.4,
-        5.34,
+        5.36,
         -65.53
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.nt_bush_leafy",
       "yaw": 4.21,
       "scale": 0.83,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_765",
+      "id": "prop_771",
       "position": [
         -65.32,
-        4.86,
+        4.81,
         -58.27
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 5.41,
       "scale": 1.15,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_766",
+      "id": "prop_772",
       "position": [
         61.54,
-        4.73,
+        4.89,
         -75.82
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 2.2,
       "scale": 1.25,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_767",
+      "id": "prop_773",
       "position": [
         -66.75,
-        6.74,
+        6.71,
         -79.15
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 6.01,
       "scale": 0.91,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_768",
+      "id": "prop_774",
       "position": [
         65.44,
         6.84,
@@ -11332,35 +11416,35 @@
       "tint": null
     },
     {
-      "id": "prop_769",
+      "id": "prop_775",
       "position": [
         -1.59,
-        4.28,
+        4.4,
         65.66
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 1.74,
       "scale": 0.88,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_770",
+      "id": "prop_776",
       "position": [
         -4.49,
-        4.52,
+        4.49,
         66.36
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 1.15,
       "scale": 1.06,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_771",
+      "id": "prop_777",
       "position": [
         -68.2,
         3.98,
@@ -11374,21 +11458,21 @@
       "tint": null
     },
     {
-      "id": "prop_772",
+      "id": "prop_778",
       "position": [
         56.36,
-        3.79,
+        3.78,
         -8.35
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 3.93,
       "scale": 0.82,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_773",
+      "id": "prop_779",
       "position": [
         -12.78,
         6.71,
@@ -11402,105 +11486,105 @@
       "tint": null
     },
     {
-      "id": "prop_774",
+      "id": "prop_780",
       "position": [
         38.15,
-        6.24,
+        6.13,
         72.69
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 2.33,
       "scale": 1.3,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_775",
+      "id": "prop_781",
       "position": [
         58.17,
-        3.4,
+        3.37,
         -31.47
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 4.1,
       "scale": 1.07,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_776",
+      "id": "prop_782",
       "position": [
         -73.62,
-        6.38,
+        6.31,
         39.66
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 0.33,
       "scale": 1.35,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_777",
+      "id": "prop_783",
       "position": [
         -18.18,
-        3.86,
+        3.87,
         -60.71
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 0.01,
       "scale": 1.32,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_778",
+      "id": "prop_784",
       "position": [
         65.11,
-        5.48,
+        5.37,
         15.12
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 2.48,
       "scale": 0.84,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_779",
+      "id": "prop_785",
       "position": [
         -68,
-        5.84,
+        5.93,
         -69.38
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 1.39,
       "scale": 1.28,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_780",
+      "id": "prop_786",
       "position": [
         -62.66,
-        5.7,
+        5.68,
         -75.16
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 3.96,
       "scale": 0.81,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_781",
+      "id": "prop_787",
       "position": [
         -26.16,
         5.92,
@@ -11514,21 +11598,21 @@
       "tint": null
     },
     {
-      "id": "prop_782",
+      "id": "prop_788",
       "position": [
         -8.83,
         6.96,
         -93.21
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 0.64,
       "scale": 0.99,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_783",
+      "id": "prop_789",
       "position": [
         -57.77,
         6.04,
@@ -11542,63 +11626,63 @@
       "tint": null
     },
     {
-      "id": "prop_784",
+      "id": "prop_790",
       "position": [
         -65.66,
-        4.93,
+        4.88,
         24.58
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 2.82,
       "scale": 1.09,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_785",
+      "id": "prop_791",
       "position": [
         -59.85,
-        3.99,
+        4.04,
         -63.82
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 0.2,
       "scale": 0.83,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_786",
+      "id": "prop_792",
       "position": [
         -73.2,
-        7.05,
+        6.97,
         9.06
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 2.87,
       "scale": 0.95,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_787",
+      "id": "prop_793",
       "position": [
         9.19,
-        7.9,
+        8.14,
         76.61
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.fern",
       "yaw": 0.22,
       "scale": 1.26,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_788",
+      "id": "prop_794",
       "position": [
         -58.93,
         6.14,
@@ -11612,21 +11696,21 @@
       "tint": null
     },
     {
-      "id": "prop_789",
+      "id": "prop_795",
       "position": [
         -70.19,
-        8.02,
+        7.95,
         -92.05
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 3.46,
       "scale": 1.4,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_790",
+      "id": "prop_796",
       "position": [
         -22.46,
         4.23,
@@ -11640,7 +11724,7 @@
       "tint": null
     },
     {
-      "id": "prop_791",
+      "id": "prop_797",
       "position": [
         -66.67,
         9.07,
@@ -11654,21 +11738,21 @@
       "tint": null
     },
     {
-      "id": "prop_792",
+      "id": "prop_798",
       "position": [
         60.57,
-        4.91,
+        5.04,
         -87.67
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.nt_bush_leafy",
       "yaw": 3.11,
       "scale": 0.87,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_793",
+      "id": "prop_799",
       "position": [
         51.28,
         5.15,
@@ -11682,21 +11766,21 @@
       "tint": null
     },
     {
-      "id": "prop_794",
+      "id": "prop_800",
       "position": [
         59.38,
-        5.29,
+        5.33,
         69.4
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.nt_bush_leafy",
       "yaw": 4.38,
       "scale": 1.06,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_795",
+      "id": "prop_801",
       "position": [
         61.48,
         4.1,
@@ -11710,21 +11794,21 @@
       "tint": null
     },
     {
-      "id": "prop_796",
+      "id": "prop_802",
       "position": [
         -37.51,
-        5.85,
+        5.75,
         71.17
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 0.27,
       "scale": 1.34,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_797",
+      "id": "prop_803",
       "position": [
         65.76,
         4.73,
@@ -11738,21 +11822,21 @@
       "tint": null
     },
     {
-      "id": "prop_798",
+      "id": "prop_804",
       "position": [
         48.06,
         3.82,
         59.47
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.grass_tall",
       "yaw": 4.12,
       "scale": 0.89,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_799",
+      "id": "prop_805",
       "position": [
         -59.2,
         4.46,
@@ -11766,35 +11850,35 @@
       "tint": null
     },
     {
-      "id": "prop_800",
+      "id": "prop_806",
       "position": [
         1.42,
-        4.1,
+        4.47,
         -57.5
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "prop.fern",
       "yaw": 3.19,
       "scale": 1.35,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_801",
+      "id": "prop_807",
       "position": [
         -46.22,
-        4.57,
+        4.5,
         -72.99
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "prop.nt_fern_wide",
       "yaw": 1.58,
       "scale": 1.16,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_802",
+      "id": "prop_808",
       "position": [
         -68.15,
         5.3,
@@ -11808,21 +11892,21 @@
       "tint": null
     },
     {
-      "id": "prop_803",
+      "id": "prop_809",
       "position": [
         -67.62,
-        3.92,
+        3.89,
         -14.1
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "prop.nt_bush_berries",
       "yaw": 4.17,
       "scale": 1.25,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_804",
+      "id": "prop_810",
       "position": [
         -23.87,
         4.61,
@@ -11836,7 +11920,7 @@
       "tint": null
     },
     {
-      "id": "prop_805",
+      "id": "prop_811",
       "position": [
         -15.95,
         6.87,
@@ -11850,7 +11934,7 @@
       "tint": null
     },
     {
-      "id": "prop_806",
+      "id": "prop_812",
       "position": [
         56.05,
         3.71,
@@ -11864,7 +11948,7 @@
       "tint": null
     },
     {
-      "id": "prop_807",
+      "id": "prop_813",
       "position": [
         56.04,
         4.66,
@@ -11878,21 +11962,21 @@
       "tint": null
     },
     {
-      "id": "prop_808",
+      "id": "prop_814",
       "position": [
         -25.61,
-        5.52,
+        5.6,
         71.99
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_boulder_moss",
       "yaw": 1.49,
       "scale": 0.93,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_809",
+      "id": "prop_815",
       "position": [
         -73.55,
         8.68,
@@ -11906,7 +11990,7 @@
       "tint": null
     },
     {
-      "id": "prop_810",
+      "id": "prop_816",
       "position": [
         22.12,
         5.48,
@@ -11920,7 +12004,7 @@
       "tint": null
     },
     {
-      "id": "prop_811",
+      "id": "prop_817",
       "position": [
         -15.27,
         4.26,
@@ -11934,7 +12018,7 @@
       "tint": null
     },
     {
-      "id": "prop_812",
+      "id": "prop_818",
       "position": [
         -30.83,
         4.52,
@@ -11948,7 +12032,7 @@
       "tint": null
     },
     {
-      "id": "prop_813",
+      "id": "prop_819",
       "position": [
         -62.4,
         4.49,
@@ -11962,7 +12046,7 @@
       "tint": null
     },
     {
-      "id": "prop_814",
+      "id": "prop_820",
       "position": [
         61.4,
         4.67,
@@ -11976,21 +12060,21 @@
       "tint": null
     },
     {
-      "id": "prop_815",
+      "id": "prop_821",
       "position": [
         -73.98,
-        5.59,
+        5.7,
         57.84
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_boulder_moss",
       "yaw": 2.08,
       "scale": 1.19,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_816",
+      "id": "prop_822",
       "position": [
         -35.54,
         4.12,
@@ -12004,7 +12088,7 @@
       "tint": null
     },
     {
-      "id": "prop_817",
+      "id": "prop_823",
       "position": [
         20.77,
         4.19,
@@ -12018,21 +12102,21 @@
       "tint": null
     },
     {
-      "id": "prop_818",
+      "id": "prop_824",
       "position": [
         56.12,
         3.82,
         13.31
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_boulder_moss",
       "yaw": 2.81,
       "scale": 1.08,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_819",
+      "id": "prop_825",
       "position": [
         -72.31,
         5.12,
@@ -12046,21 +12130,21 @@
       "tint": null
     },
     {
-      "id": "prop_820",
+      "id": "prop_826",
       "position": [
         -73.54,
-        7.98,
+        8.08,
         -85.18
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_boulder_moss",
       "yaw": 1.63,
       "scale": 1.36,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_821",
+      "id": "prop_827",
       "position": [
         -68.35,
         6.98,
@@ -12074,7 +12158,7 @@
       "tint": null
     },
     {
-      "id": "prop_822",
+      "id": "prop_828",
       "position": [
         -23.51,
         4.8,
@@ -12088,7 +12172,7 @@
       "tint": null
     },
     {
-      "id": "prop_823",
+      "id": "prop_829",
       "position": [
         -69.58,
         4.76,
@@ -12102,21 +12186,21 @@
       "tint": null
     },
     {
-      "id": "prop_824",
+      "id": "prop_830",
       "position": [
         15.43,
-        6.77,
+        6.85,
         -72.72
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_boulder_moss",
       "yaw": 4.17,
       "scale": 0.91,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_825",
+      "id": "prop_831",
       "position": [
         4.94,
         4.78,
@@ -12130,21 +12214,21 @@
       "tint": null
     },
     {
-      "id": "prop_826",
+      "id": "prop_832",
       "position": [
         14.63,
-        6.89,
+        6.95,
         -86.48
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.84,
       "scale": 1.35,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_827",
+      "id": "prop_833",
       "position": [
         -34.15,
         4.13,
@@ -12158,49 +12242,49 @@
       "tint": null
     },
     {
-      "id": "prop_828",
+      "id": "prop_834",
       "position": [
         -55.51,
-        5.62,
+        5.73,
         -92
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_boulder_moss",
       "yaw": 1.19,
       "scale": 1.31,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_829",
+      "id": "prop_835",
       "position": [
         56.84,
-        3.5,
+        3.54,
         -20.51
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_boulder_moss",
       "yaw": 5.36,
       "scale": 1.15,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_830",
+      "id": "prop_836",
       "position": [
         -60.74,
-        3.69,
+        3.75,
         11.37
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.76,
       "scale": 1.09,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_831",
+      "id": "prop_837",
       "position": [
         -73.44,
         6.66,
@@ -12214,7 +12298,7 @@
       "tint": null
     },
     {
-      "id": "prop_832",
+      "id": "prop_838",
       "position": [
         53.72,
         5.3,
@@ -12228,7 +12312,7 @@
       "tint": null
     },
     {
-      "id": "prop_833",
+      "id": "prop_839",
       "position": [
         -64.24,
         3.41,
@@ -12242,7 +12326,7 @@
       "tint": null
     },
     {
-      "id": "prop_834",
+      "id": "prop_840",
       "position": [
         -67.8,
         5.23,
@@ -12256,7 +12340,7 @@
       "tint": null
     },
     {
-      "id": "prop_835",
+      "id": "prop_841",
       "position": [
         -73.55,
         6.97,
@@ -12270,7 +12354,7 @@
       "tint": null
     },
     {
-      "id": "prop_836",
+      "id": "prop_842",
       "position": [
         22.76,
         6.11,
@@ -12284,7 +12368,7 @@
       "tint": null
     },
     {
-      "id": "prop_837",
+      "id": "prop_843",
       "position": [
         57.25,
         4.09,
@@ -12298,7 +12382,7 @@
       "tint": null
     },
     {
-      "id": "prop_838",
+      "id": "prop_844",
       "position": [
         -35.16,
         6.19,
@@ -12312,7 +12396,7 @@
       "tint": null
     },
     {
-      "id": "prop_839",
+      "id": "prop_845",
       "position": [
         32.09,
         4.18,
@@ -12326,7 +12410,7 @@
       "tint": null
     },
     {
-      "id": "prop_840",
+      "id": "prop_846",
       "position": [
         23.44,
         3.65,
@@ -12340,7 +12424,7 @@
       "tint": null
     },
     {
-      "id": "prop_841",
+      "id": "prop_847",
       "position": [
         31.16,
         4.57,
@@ -12354,21 +12438,21 @@
       "tint": null
     },
     {
-      "id": "prop_842",
+      "id": "prop_848",
       "position": [
         11.75,
         4.39,
         0.96
       ],
       "kind": "prop",
-      "model": "prop.flower_purple",
+      "model": "prop.nt_wildflowers",
       "yaw": 5.38,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_843",
+      "id": "prop_849",
       "position": [
         5.39,
         3.8,
@@ -12382,7 +12466,7 @@
       "tint": null
     },
     {
-      "id": "prop_844",
+      "id": "prop_850",
       "position": [
         -38.51,
         3.66,
@@ -12396,21 +12480,21 @@
       "tint": null
     },
     {
-      "id": "prop_845",
+      "id": "prop_851",
       "position": [
         -41.7,
         3.41,
         -23.86
       ],
       "kind": "prop",
-      "model": "prop.flower_yellow",
+      "model": "prop.nt_wildflowers",
       "yaw": 0.65,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_846",
+      "id": "prop_852",
       "position": [
         -42.94,
         3.6,
@@ -12424,7 +12508,7 @@
       "tint": null
     },
     {
-      "id": "prop_847",
+      "id": "prop_853",
       "position": [
         -12.74,
         3.82,
@@ -12438,7 +12522,7 @@
       "tint": null
     },
     {
-      "id": "prop_848",
+      "id": "prop_854",
       "position": [
         -47.18,
         3.68,
@@ -12452,49 +12536,49 @@
       "tint": null
     },
     {
-      "id": "prop_849",
+      "id": "prop_855",
       "position": [
         -23.42,
-        3.6,
+        3.61,
         10.04
       ],
       "kind": "prop",
-      "model": "prop.flower_yellow",
+      "model": "prop.nt_wildflowers",
       "yaw": 3.37,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_850",
+      "id": "prop_856",
       "position": [
         -2.44,
-        3.03,
+        3.04,
         -24.42
       ],
       "kind": "prop",
-      "model": "prop.flower_purple",
+      "model": "prop.nt_wildflowers",
       "yaw": 2.95,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_851",
+      "id": "prop_857",
       "position": [
         14.69,
         4.54,
         1.72
       ],
       "kind": "prop",
-      "model": "prop.flower_purple",
+      "model": "prop.nt_wildflowers",
       "yaw": 5.37,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_852",
+      "id": "prop_858",
       "position": [
         12.88,
         2.66,
@@ -12508,7 +12592,7 @@
       "tint": null
     },
     {
-      "id": "prop_853",
+      "id": "prop_859",
       "position": [
         32.86,
         2.6,
@@ -12522,7 +12606,7 @@
       "tint": null
     },
     {
-      "id": "prop_854",
+      "id": "prop_860",
       "position": [
         -54.71,
         3.52,
@@ -12536,7 +12620,7 @@
       "tint": null
     },
     {
-      "id": "prop_855",
+      "id": "prop_861",
       "position": [
         32.76,
         2.72,
@@ -12550,7 +12634,7 @@
       "tint": null
     },
     {
-      "id": "prop_856",
+      "id": "prop_862",
       "position": [
         12.28,
         3.76,
@@ -12564,7 +12648,7 @@
       "tint": null
     },
     {
-      "id": "prop_857",
+      "id": "prop_863",
       "position": [
         32.05,
         3.39,
@@ -12578,7 +12662,7 @@
       "tint": null
     },
     {
-      "id": "prop_858",
+      "id": "prop_864",
       "position": [
         -18.42,
         3.82,
@@ -12592,7 +12676,7 @@
       "tint": null
     },
     {
-      "id": "prop_859",
+      "id": "prop_865",
       "position": [
         4.84,
         3.51,
@@ -12606,7 +12690,7 @@
       "tint": null
     },
     {
-      "id": "prop_860",
+      "id": "prop_866",
       "position": [
         24.92,
         3.51,
@@ -12620,7 +12704,7 @@
       "tint": null
     },
     {
-      "id": "prop_861",
+      "id": "prop_867",
       "position": [
         26.8,
         4.56,
@@ -12634,7 +12718,7 @@
       "tint": null
     },
     {
-      "id": "prop_862",
+      "id": "prop_868",
       "position": [
         -30.52,
         3.82,
@@ -12648,7 +12732,7 @@
       "tint": null
     },
     {
-      "id": "prop_863",
+      "id": "prop_869",
       "position": [
         12.01,
         3.67,
@@ -12662,7 +12746,7 @@
       "tint": null
     },
     {
-      "id": "prop_864",
+      "id": "prop_870",
       "position": [
         7.45,
         3.63,
@@ -12676,7 +12760,7 @@
       "tint": null
     },
     {
-      "id": "prop_865",
+      "id": "prop_871",
       "position": [
         4.78,
         2.58,
@@ -12690,7 +12774,7 @@
       "tint": null
     },
     {
-      "id": "prop_866",
+      "id": "prop_872",
       "position": [
         17.25,
         2.52,
@@ -12704,21 +12788,21 @@
       "tint": null
     },
     {
-      "id": "prop_867",
+      "id": "prop_873",
       "position": [
         9.51,
-        3.08,
+        3.1,
         -17.34
       ],
       "kind": "prop",
-      "model": "prop.flower_yellow",
+      "model": "prop.nt_wildflowers",
       "yaw": 3.37,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_868",
+      "id": "prop_874",
       "position": [
         -0.89,
         2.64,
@@ -12732,21 +12816,21 @@
       "tint": null
     },
     {
-      "id": "prop_869",
+      "id": "prop_875",
       "position": [
         31.79,
         2.52,
         -29.7
       ],
       "kind": "prop",
-      "model": "prop.flower_yellow",
+      "model": "prop.nt_wildflowers",
       "yaw": 4.27,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_870",
+      "id": "prop_876",
       "position": [
         -44.89,
         3.67,
@@ -12760,7 +12844,7 @@
       "tint": null
     },
     {
-      "id": "prop_871",
+      "id": "prop_877",
       "position": [
         -31.74,
         3.59,
@@ -12774,7 +12858,7 @@
       "tint": null
     },
     {
-      "id": "prop_872",
+      "id": "prop_878",
       "position": [
         4.48,
         3.71,
@@ -12788,35 +12872,35 @@
       "tint": null
     },
     {
-      "id": "prop_873",
+      "id": "prop_879",
       "position": [
         8.6,
-        2.98,
+        2.99,
         -19.08
       ],
       "kind": "prop",
-      "model": "prop.flower_yellow",
+      "model": "prop.nt_wildflowers",
       "yaw": 5.77,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_874",
+      "id": "prop_880",
       "position": [
         -41.39,
         3.82,
         -32.85
       ],
       "kind": "prop",
-      "model": "prop.flower_purple",
+      "model": "prop.nt_wildflowers",
       "yaw": 1.14,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_875",
+      "id": "prop_881",
       "position": [
         12.33,
         3.29,
@@ -12830,7 +12914,7 @@
       "tint": null
     },
     {
-      "id": "prop_876",
+      "id": "prop_882",
       "position": [
         -11.43,
         3.7,
@@ -12844,21 +12928,21 @@
       "tint": null
     },
     {
-      "id": "prop_877",
+      "id": "prop_883",
       "position": [
         10.7,
         4.27,
         0.21
       ],
       "kind": "prop",
-      "model": "prop.flower_purple",
+      "model": "prop.nt_wildflowers",
       "yaw": 2.41,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_878",
+      "id": "prop_884",
       "position": [
         2.74,
         3.82,
@@ -12872,7 +12956,7 @@
       "tint": null
     },
     {
-      "id": "prop_879",
+      "id": "prop_885",
       "position": [
         35.65,
         2.86,
@@ -12886,7 +12970,231 @@
       "tint": null
     },
     {
-      "id": "prop_880",
+      "id": "prop_886",
+      "position": [
+        -53,
+        3.71,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 1.51,
+      "scale": 1.26,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_887",
+      "position": [
+        -55.47,
+        3.73,
+        24.65
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 3.29,
+      "scale": 1.35,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_888",
+      "position": [
+        -53.42,
+        3.77,
+        25.53
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 0.38,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_889",
+      "position": [
+        -52.22,
+        3.58,
+        21.85
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 2.86,
+      "scale": 1.34,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_890",
+      "position": [
+        37,
+        3.27,
+        -22
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 4.87,
+      "scale": 1.22,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_891",
+      "position": [
+        35.45,
+        3.01,
+        -22.61
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 4.72,
+      "scale": 1.32,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_892",
+      "position": [
+        37.61,
+        3.23,
+        -24.36
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 4.39,
+      "scale": 1.14,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_893",
+      "position": [
+        36.59,
+        3.38,
+        -19.8
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 5.71,
+      "scale": 1.26,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_894",
+      "position": [
+        37,
+        3.91,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 3.05,
+      "scale": 1.18,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_895",
+      "position": [
+        36.53,
+        4.06,
+        3.28
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 0.69,
+      "scale": 1.1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_896",
+      "position": [
+        37.93,
+        4.03,
+        2.89
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 4.11,
+      "scale": 1.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_897",
+      "position": [
+        35.27,
+        3.93,
+        1.93
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 5.41,
+      "scale": 1.1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_898",
+      "position": [
+        20,
+        2.5,
+        -32
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 3.35,
+      "scale": 1.06,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_899",
+      "position": [
+        22.55,
+        2.49,
+        -31.79
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 1.05,
+      "scale": 1.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_900",
+      "position": [
+        21.86,
+        2.48,
+        -30.66
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 3.87,
+      "scale": 1.34,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_901",
+      "position": [
+        19.87,
+        2.51,
+        -33.39
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 3.38,
+      "scale": 1.12,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_902",
       "position": [
         13.12,
         4,
@@ -12900,7 +13208,7 @@
       "tint": null
     },
     {
-      "id": "prop_881",
+      "id": "prop_903",
       "position": [
         19,
         4,
@@ -12914,7 +13222,7 @@
       "tint": null
     },
     {
-      "id": "prop_882",
+      "id": "prop_904",
       "position": [
         13.1,
         4,
@@ -12928,7 +13236,7 @@
       "tint": null
     },
     {
-      "id": "prop_883",
+      "id": "prop_905",
       "position": [
         -18.54,
         4,
@@ -12942,7 +13250,7 @@
       "tint": null
     },
     {
-      "id": "prop_884",
+      "id": "prop_906",
       "position": [
         -12.83,
         4,
@@ -12956,7 +13264,7 @@
       "tint": null
     },
     {
-      "id": "prop_885",
+      "id": "prop_907",
       "position": [
         -13,
         4,
@@ -12970,7 +13278,7 @@
       "tint": null
     },
     {
-      "id": "prop_886",
+      "id": "prop_908",
       "position": [
         -19.21,
         4,
@@ -12984,7 +13292,7 @@
       "tint": null
     },
     {
-      "id": "prop_887",
+      "id": "prop_909",
       "position": [
         5.38,
         4,
@@ -12998,7 +13306,7 @@
       "tint": null
     },
     {
-      "id": "prop_888",
+      "id": "prop_910",
       "position": [
         11.13,
         4,
@@ -13012,7 +13320,7 @@
       "tint": null
     },
     {
-      "id": "prop_889",
+      "id": "prop_911",
       "position": [
         11.03,
         4,
@@ -13026,7 +13334,7 @@
       "tint": null
     },
     {
-      "id": "prop_890",
+      "id": "prop_912",
       "position": [
         4.72,
         4,
@@ -13040,7 +13348,7 @@
       "tint": null
     },
     {
-      "id": "prop_891",
+      "id": "prop_913",
       "position": [
         5.12,
         8,
@@ -13054,7 +13362,7 @@
       "tint": null
     },
     {
-      "id": "prop_892",
+      "id": "prop_914",
       "position": [
         10.97,
         8,
@@ -13068,7 +13376,7 @@
       "tint": null
     },
     {
-      "id": "prop_893",
+      "id": "prop_915",
       "position": [
         11,
         8,
@@ -13082,7 +13390,7 @@
       "tint": null
     },
     {
-      "id": "prop_894",
+      "id": "prop_916",
       "position": [
         5.1,
         8,
@@ -13096,7 +13404,7 @@
       "tint": null
     },
     {
-      "id": "prop_895",
+      "id": "prop_917",
       "position": [
         13.46,
         8,
@@ -13110,7 +13418,7 @@
       "tint": null
     },
     {
-      "id": "prop_896",
+      "id": "prop_918",
       "position": [
         19.17,
         8,
@@ -13124,7 +13432,7 @@
       "tint": null
     },
     {
-      "id": "prop_897",
+      "id": "prop_919",
       "position": [
         19,
         8,
@@ -13138,7 +13446,7 @@
       "tint": null
     },
     {
-      "id": "prop_898",
+      "id": "prop_920",
       "position": [
         12.79,
         8,
@@ -13152,7 +13460,7 @@
       "tint": null
     },
     {
-      "id": "prop_899",
+      "id": "prop_921",
       "position": [
         -2.62,
         12,
@@ -13166,7 +13474,7 @@
       "tint": null
     },
     {
-      "id": "prop_900",
+      "id": "prop_922",
       "position": [
         3.13,
         12,
@@ -13180,7 +13488,7 @@
       "tint": null
     },
     {
-      "id": "prop_901",
+      "id": "prop_923",
       "position": [
         3.03,
         12,
@@ -13194,7 +13502,7 @@
       "tint": null
     },
     {
-      "id": "prop_902",
+      "id": "prop_924",
       "position": [
         -3.28,
         12,
@@ -13208,7 +13516,7 @@
       "tint": null
     },
     {
-      "id": "prop_903",
+      "id": "prop_925",
       "position": [
         5.12,
         12,
@@ -13222,7 +13530,7 @@
       "tint": null
     },
     {
-      "id": "prop_904",
+      "id": "prop_926",
       "position": [
         10.97,
         12,
@@ -13236,7 +13544,7 @@
       "tint": null
     },
     {
-      "id": "prop_905",
+      "id": "prop_927",
       "position": [
         11,
         12,
@@ -13250,7 +13558,7 @@
       "tint": null
     },
     {
-      "id": "prop_906",
+      "id": "prop_928",
       "position": [
         5.1,
         12,
@@ -13264,7 +13572,7 @@
       "tint": null
     },
     {
-      "id": "prop_907",
+      "id": "prop_929",
       "position": [
         5.46,
         12,
@@ -13278,7 +13586,7 @@
       "tint": null
     },
     {
-      "id": "prop_908",
+      "id": "prop_930",
       "position": [
         11.17,
         12,
@@ -13292,7 +13600,7 @@
       "tint": null
     },
     {
-      "id": "prop_909",
+      "id": "prop_931",
       "position": [
         11,
         12,
@@ -13306,7 +13614,7 @@
       "tint": null
     },
     {
-      "id": "prop_910",
+      "id": "prop_932",
       "position": [
         4.79,
         12,
@@ -13320,7 +13628,7 @@
       "tint": null
     },
     {
-      "id": "prop_911",
+      "id": "prop_933",
       "position": [
         13.38,
         12,
@@ -13334,7 +13642,7 @@
       "tint": null
     },
     {
-      "id": "prop_912",
+      "id": "prop_934",
       "position": [
         19.13,
         12,
@@ -13348,7 +13656,7 @@
       "tint": null
     },
     {
-      "id": "prop_913",
+      "id": "prop_935",
       "position": [
         19.03,
         12,
@@ -13362,7 +13670,7 @@
       "tint": null
     },
     {
-      "id": "prop_914",
+      "id": "prop_936",
       "position": [
         12.72,
         12,
@@ -13376,7 +13684,7 @@
       "tint": null
     },
     {
-      "id": "light_915",
+      "id": "light_937",
       "position": [
         -16,
         7.45,
@@ -13390,7 +13698,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_916",
+      "id": "light_938",
       "position": [
         0,
         7.45,
@@ -13404,7 +13712,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_917",
+      "id": "light_939",
       "position": [
         8,
         7.45,
@@ -13418,7 +13726,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_918",
+      "id": "light_940",
       "position": [
         16,
         7.45,
@@ -13432,7 +13740,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_919",
+      "id": "light_941",
       "position": [
         -16,
         7.45,
@@ -13446,7 +13754,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_920",
+      "id": "light_942",
       "position": [
         -16,
         7.45,
@@ -13460,7 +13768,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_921",
+      "id": "light_943",
       "position": [
         8,
         7.45,
@@ -13474,7 +13782,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_922",
+      "id": "light_944",
       "position": [
         -16,
         11.45,
@@ -13488,7 +13796,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_923",
+      "id": "light_945",
       "position": [
         -8,
         11.45,
@@ -13502,7 +13810,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_924",
+      "id": "light_946",
       "position": [
         0,
         11.45,
@@ -13516,7 +13824,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_925",
+      "id": "light_947",
       "position": [
         16,
         11.45,
@@ -13530,7 +13838,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_926",
+      "id": "light_948",
       "position": [
         -16,
         11.45,
@@ -13544,7 +13852,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_927",
+      "id": "light_949",
       "position": [
         -16,
         11.45,
@@ -13558,7 +13866,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_928",
+      "id": "light_950",
       "position": [
         8,
         11.45,
@@ -13572,7 +13880,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_929",
+      "id": "light_951",
       "position": [
         16,
         11.45,
@@ -13586,7 +13894,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_930",
+      "id": "light_952",
       "position": [
         16,
         11.45,

@@ -309,7 +309,10 @@ for (const [cx, cz] of stands) {
     const z = cz + (rand() - 0.5) * 22;
     if (plateau(x, z) > 0.05 || roadDist(x, z) < 5 || pathDist(x, z) < 4 || ridges(x, z) > 0.5 || busy.some(([bx, bz, br]) => Math.hypot(bx - x, bz - z) < br + 1) || !free(x, z, 1)) continue;
     placed.push([x, z, 1]);
-    m.prop(rand() < 0.6 ? 'pine' : 'pine_crooked', [+x.toFixed(2), +(ground(x, z) - 0.1).toFixed(2), +z.toFixed(2)], +(rand() * 6).toFixed(3), +(1.2 + rand() * 0.6).toFixed(2));
+    // Snow-laden pines, with a snowy broadleaf or birch among them (scaled to the old pines' height).
+    const model = rand() < 0.6 ? 'nt_pine_snow_tall' : k % 2 ? 'nt_common_tree_snow' : 'nt_birch_snow';
+    const tall = model === 'nt_pine_snow_tall' ? 6.5 / 9 : model === 'nt_birch_snow' ? 6.5 / 8 : 6.5 / 7;
+    m.prop(model, [+x.toFixed(2), +(ground(x, z) - 0.1).toFixed(2), +z.toFixed(2)], +(rand() * 6).toFixed(3), +((1.2 + rand() * 0.6) * tall).toFixed(2));
   }
 }
 // Small stuff: flat rocks, logs and stumps.
@@ -319,7 +322,28 @@ for (let n = 0; n < 400 && placed.length < 190; n++) {
   if (!clear(x, z, 0.6) || !free(x, z, 0.6)) continue;
   placed.push([x, z, 0.6]);
   const pick = rand();
-  rock(pick < 0.75 ? 'rock_small' : pick < 0.9 ? 'log' : 'stump', x, z, pick < 0.75 ? 1.4 + rand() : 1, 0.1);
+  if (pick >= 0.75 && pick < 0.9) rock('nt_log_snow', x, z, 0.7, 0.1);
+  else rock(pick < 0.75 ? 'rock_small' : 'stump', x, z, pick < 0.75 ? 1.4 + rand() : 1, 0.1);
+}
+// Snowy bushes to hide in: clumps on the flanks of the pine stands and the feet of the ridges, mirrored.
+{
+  let bseed = 0x5a0b;
+  const brand = () => (bseed = (Math.imul(bseed, 1103515245) + 12345) >>> 0) / 4294967296;
+  const bush = (x: number, z: number) => m.prop('nt_bush_snow', [+x.toFixed(2), +(ground(x, z) - 0.05).toFixed(2), +z.toFixed(2)], +(brand() * 6.28).toFixed(2), +(1.1 + brand() * 0.3).toFixed(2), false);
+  const ok = (x: number, z: number) => plateau(x, z) < 0.05 && roadDist(x, z) > 4 && pathDist(x, z) > 3 && busy.every(([bx, bz, br]) => Math.hypot(bx - x, bz - z) > br + 1) && placed.every(([px, pz, pr]) => Math.hypot(px - x, pz - z) > pr + 1.2);
+  const centres: P[] = [...stands.slice(0, 8), [24, 40], [-24, 40], [60, 34], [-60, 34]];
+  for (const [cx, cz] of centres) {
+    let n = 0;
+    for (let tries = 0; tries < 30 && n < 3; tries++) {
+      const x = cx + (brand() - 0.5) * 18;
+      const z = cz + (brand() - 0.5) * 18;
+      if (!ok(x, z) || !ok(-x, -z)) continue;
+      placed.push([x, z, 0.7], [-x, -z, 0.7]);
+      bush(x, z);
+      bush(-x, -z);
+      n++;
+    }
+  }
 }
 
 // ---------------------------------------------------------------- map settings

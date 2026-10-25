@@ -1909,6 +1909,692 @@
       "kind": "pickup",
       "item": "core.armor_small",
       "respawnSeconds": null
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        -8.41,
+        -0.18,
+        -41.64
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 3.688,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        -9.77,
+        -0.18,
+        -40.81
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 4.162,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        -8.45,
+        -0.18,
+        -43.24
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 3.272,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        8.41,
+        -0.18,
+        41.64
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 2.309,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_158",
+      "position": [
+        7.04,
+        -0.18,
+        42.48
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 4.238,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_159",
+      "position": [
+        8.37,
+        -0.18,
+        40.04
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 0.823,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        -28.91,
+        1.45,
+        -46.92
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 5.967,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        -30.28,
+        1.11,
+        -46.09
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 4.889,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        -28.95,
+        1.22,
+        -48.52
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 5.41,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        28.91,
+        0.7,
+        46.92
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 3.99,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_164",
+      "position": [
+        27.54,
+        0.43,
+        47.76
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 4.28,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_165",
+      "position": [
+        28.87,
+        1.05,
+        45.32
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 2.796,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_166",
+      "position": [
+        -10.06,
+        0.66,
+        41.76
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 5.467,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_167",
+      "position": [
+        -11.42,
+        0.75,
+        42.6
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 5.553,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_168",
+      "position": [
+        -10.1,
+        0.67,
+        40.16
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 0.175,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_169",
+      "position": [
+        10.06,
+        -0.18,
+        -41.76
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 4.375,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_170",
+      "position": [
+        8.69,
+        -0.18,
+        -40.93
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 4.671,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_171",
+      "position": [
+        10.02,
+        -0.18,
+        -43.36
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 4.104,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_172",
+      "position": [
+        15.71,
+        -0.14,
+        -31.27
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 3.682,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_173",
+      "position": [
+        14.34,
+        -0.07,
+        -30.44
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 3.681,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_174",
+      "position": [
+        15.67,
+        -0.18,
+        -32.87
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 0.282,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_175",
+      "position": [
+        -15.71,
+        1.37,
+        31.27
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 1.394,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_176",
+      "position": [
+        -17.07,
+        1.18,
+        32.11
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 5.771,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_177",
+      "position": [
+        -15.75,
+        1.47,
+        29.68
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 2.81,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_178",
+      "position": [
+        -7.71,
+        3.78,
+        14.56
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 1.969,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_179",
+      "position": [
+        -9.07,
+        3.79,
+        15.39
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 2.999,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_180",
+      "position": [
+        -7.75,
+        3.41,
+        12.96
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 4.084,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_181",
+      "position": [
+        7.71,
+        2.91,
+        -14.56
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 0.926,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_182",
+      "position": [
+        6.34,
+        2.75,
+        -13.72
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 0.193,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_183",
+      "position": [
+        7.67,
+        3.2,
+        -16.15
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 1.424,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_184",
+      "position": [
+        -19.79,
+        1.19,
+        -41.71
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 5.212,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_185",
+      "position": [
+        -21.15,
+        1.31,
+        -40.87
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 3.914,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_186",
+      "position": [
+        -19.83,
+        1.32,
+        -43.31
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 4.668,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_187",
+      "position": [
+        19.79,
+        0.08,
+        41.71
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 5.147,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_188",
+      "position": [
+        18.42,
+        -0.17,
+        42.54
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 5.14,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_189",
+      "position": [
+        19.75,
+        0.1,
+        40.11
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 5.394,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_190",
+      "position": [
+        6.76,
+        0.58,
+        30.21
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 0.291,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_191",
+      "position": [
+        5.4,
+        0.6,
+        31.04
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 3.389,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_192",
+      "position": [
+        6.72,
+        0.72,
+        28.61
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 2.464,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_193",
+      "position": [
+        -6.76,
+        -0.18,
+        -30.21
+      ],
+      "kind": "prop",
+      "model": "prop.bush",
+      "yaw": 4.201,
+      "scale": 1.05,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_194",
+      "position": [
+        -8.13,
+        -0.18,
+        -29.37
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 5.588,
+      "scale": 1.15,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_195",
+      "position": [
+        -6.8,
+        -0.18,
+        -31.81
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 0.388,
+      "scale": 1.25,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_196",
+      "position": [
+        25.32,
+        -0.18,
+        -28.78
+      ],
+      "kind": "prop",
+      "model": "prop.nt_pine_tall",
+      "yaw": 3.602,
+      "scale": 1.11,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_197",
+      "position": [
+        31,
+        0.41,
+        26.21
+      ],
+      "kind": "prop",
+      "model": "prop.nt_birch",
+      "yaw": 1.677,
+      "scale": 0.95,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_198",
+      "position": [
+        30.12,
+        0.25,
+        15.54
+      ],
+      "kind": "prop",
+      "model": "prop.nt_pine_small",
+      "yaw": 4.282,
+      "scale": 0.88,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_199",
+      "position": [
+        -23.84,
+        1.28,
+        46.43
+      ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree_2",
+      "yaw": 2.903,
+      "scale": 0.94,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_200",
+      "position": [
+        24.21,
+        0.2,
+        -23.65
+      ],
+      "kind": "prop",
+      "model": "prop.nt_pine_tall",
+      "yaw": 2.482,
+      "scale": 0.92,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_201",
+      "position": [
+        32.87,
+        1.67,
+        38.56
+      ],
+      "kind": "prop",
+      "model": "prop.nt_birch",
+      "yaw": 1.215,
+      "scale": 0.87,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_202",
+      "position": [
+        36.33,
+        0.61,
+        31.33
+      ],
+      "kind": "prop",
+      "model": "prop.nt_pine_small",
+      "yaw": 2.735,
+      "scale": 0.89,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],

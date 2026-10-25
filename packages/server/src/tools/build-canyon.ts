@@ -284,6 +284,49 @@ run('Add pickups', {
   ],
 });
 
+// ---------------------------------------------------------------- vegetation
+// Bush clumps to hide in along the flanks of the boulder fields (mirrored, so neither side gets
+// more), and pines and birches along the feet of the walls. Off the trail, the bases, the hills,
+// the pickups and the vehicle bays; bushes never block a shot or a wheel, trees only by the walls.
+{
+  let vseed = 0xca9b05;
+  const vrand = () => ((vseed = (Math.imul(vseed, 1103515245) + 12345) >>> 0) / 4294967296);
+  const hills: [number, number, number][] = [[0, 0, 6], [24, 0, 5], [-24, -8, 5]];
+  const near = (x: number, z: number, r: number) => placed.every(([px, pz, pr]) => Math.hypot(px - x, pz - z) > r + pr + 0.8);
+  const ok = (x: number, z: number, r: number) => clear(x, z) && near(x, z, r) && hills.every(([hx, hz, hr]) => Math.hypot(hx - x, hz - z) > hr + 3);
+  const plants: MapEntity[] = [];
+  const plant = (model: string, x: number, z: number, scale: number, solid: boolean, sink: number) =>
+    plants.push({ id: id('prop'), kind: 'prop', model: `prop.${model}`, position: [+x.toFixed(2), +(ground(x, z) - sink).toFixed(2), +z.toFixed(2)], yaw: +(vrand() * 6.28).toFixed(3), scale, solid, tint: null });
+  const BUSHES = ['nt_bush_leafy', 'bush_large', 'nt_bush_berries', 'bush'];
+  let clumps = 0;
+  for (let n = 0; n < 300 && clumps < 7; n++) {
+    const z = (vrand() < 0.5 ? -1 : 1) * (14 + vrand() * 50);
+    const x = centre(z) + (vrand() - 0.5) * 56;
+    if (!ok(x, z, 1.5) || !ok(-x, -z, 1.5)) continue;
+    clumps++;
+    for (const s of [1, -1]) {
+      for (let k = 0; k < 3; k++) {
+        const a = (k / 3) * 6.28 + 0.5;
+        const bx = s * x + (k ? Math.cos(a) * 1.6 : 0);
+        const bz = s * z + (k ? Math.sin(a) * 1.6 : 0);
+        plant(BUSHES[(clumps + k) % BUSHES.length]!, bx, bz, +(1.05 + 0.1 * k).toFixed(2), false, 0.08);
+      }
+      placed.push([s * x, s * z, 2.4]);
+    }
+  }
+  const TREES = ['nt_pine_tall', 'nt_birch', 'nt_pine_small', 'nt_common_tree_2'];
+  let trees = 0;
+  for (let n = 0; n < 300 && trees < 14; n++) {
+    const z = (vrand() - 0.5) * 170;
+    const x = centre(z) + (vrand() < 0.5 ? -1 : 1) * (27 + vrand() * 5);
+    // Not on the ledge's edge: the hauler drives along it.
+    if (!ok(x, z, 2) || (x < -24 && Math.abs(z) < 50)) continue;
+    placed.push([x, z, 2]);
+    plant(TREES[trees++ % TREES.length]!, x, z, +(0.85 + vrand() * 0.3).toFixed(2), true, 0.1);
+  }
+  run('Add vegetation', { kind: 'addEntities', entities: plants });
+}
+
 // ---------------------------------------------------------------- map settings
 
 run('Change theme', setThemeCommand(history.doc, 'core.canyon'));
