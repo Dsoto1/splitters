@@ -139,7 +139,8 @@ export class Atmosphere {
   private worldly(m: AbstractMesh): boolean {
     if (m.isDisposed() || m.getTotalVertices() === 0) return false;
     if (m.renderingGroupId !== 0 || m.infiniteDistance) return false;
-    if (m.name.startsWith('backdrop_') || m.name.startsWith('shot')) return false;
+    // The backdrop (sky, ground and props past the border) stays out: it's far, and there's a lot of it.
+    for (let n: { name: string; parent: unknown } | null = m; n; n = n.parent as typeof n) if (n.name.startsWith('backdrop_')) return false;
     if (m.isDescendantOf(this.viewRoot)) return false;
     const mat = m.material as { alpha?: number; disableLighting?: boolean } | null;
     if (mat?.disableLighting) return false;

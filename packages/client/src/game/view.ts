@@ -227,7 +227,7 @@ export class GameView {
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);
-    new BackdropVisuals(this.scene, styler).build(doc, boxes);
+    new BackdropVisuals(this.scene, styler, this.models).build(doc, boxes);
     this.liquids = mapLiquids(doc.entities);
     this.physics?.free();
     try {

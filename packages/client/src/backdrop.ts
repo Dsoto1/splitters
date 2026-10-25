@@ -6,11 +6,14 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
-import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Quaternion, Vector3, Vector4 } from '@babylonjs/core/Maths/math.vector';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { CORE_THEMES, SKIES, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@chronosplit/shared';
+import { CORE_THEMES, SKIES, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@chronosplit/shared';
+import type { ModelLibrary } from './content/models.ts';
+import { createPropNode } from './game/propVisuals.ts';
 import type { MapStyler } from './mapMeshes.ts';
 import { versioned } from './assetUrl.ts';
 
@@ -29,7 +32,14 @@ export class BackdropVisuals {
   constructor(
     private readonly scene: Scene,
     private readonly styler: MapStyler,
+    /** With a model library, the belt past the border is dressed with props (in play, not in MapMaker). */
+    private readonly models?: ModelLibrary,
   ) {}
+
+  /** Props dressing the belt past the border (dropped with the rest). */
+  private nodes: TransformNode[] = [];
+  /** How the ground past the border rises, and what stands on it. */
+  private profile: BeltProfile = BELTS.none!;
 
   /** (Re)build for this map; cheap to call again when nothing changed. `dim` darkens the sky (MapMaker). */
   build(doc: MapDocument, boxes: readonly WorldBox[], dim = 1): Backdrop {
@@ -51,12 +61,18 @@ export class BackdropVisuals {
       this.scene.fogDensity = 0.0002 + backdrop.haze * 0.0014;
     } else this.scene.fogMode = 0;
     const rand = seeded(doc.metadata.id);
-    if (backdrop.ground !== 'none') this.buildGround(doc, backdrop, area);
+    this.profile = beltProfile(backdrop, doc.classicStructure.theme);
+    if (backdrop.ground !== 'none') {
+      this.buildGround(doc, backdrop, area);
+      if (backdrop.ground !== 'water') this.buildBelt(doc, area, rand);
+    }
     this.buildScenery(backdrop.scenery, area, sky, rand);
     return backdrop;
   }
 
   dispose(): void {
+    for (const n of this.nodes) n.dispose();
+    this.nodes = [];
     for (const m of this.meshes) m.dispose();
     for (const m of this.materials) m.dispose();
     this.meshes = [];
@@ -109,7 +125,8 @@ export class BackdropVisuals {
     const edgeHeights = per.map(([x, z]) => edgeHeight(doc, x, z, area.floor));
     const sorted = [...edgeHeights].sort((a, b) => a - b);
     const plain = t ? sorted[Math.floor(sorted.length / 2)]! - 0.5 : area.floor;
-    const rings = [0, 6, 20, 50, 110, 240, 500, 1100, 2400];
+    this.ground = { per, edgeHeights, plain };
+    const rings = [0, 4, 10, 18, 28, 40, 56, 80, 110, 160, 240, 360, 600, 1100, 2400];
     const positions: number[] = [];
     const uvs: number[] = [];
     const indices: number[] = [];
@@ -125,7 +142,7 @@ export class BackdropVisuals {
         const k = Math.min(1, d / 60);
         const swell = water ? 0 : Math.sin(px * 0.013) * Math.cos(pz * 0.011) * 2.5 * Math.min(1, d / 200);
         // Water sits flat; land leaves the map's edge and settles to the plain.
-        const y = water ? Math.min(area.floor, plain) - 0.4 : edgeHeights[i]! * (1 - k) + plain * k + swell - (d === 0 ? 0.02 : 0);
+        const y = water ? Math.min(area.floor, plain) - 0.4 : edgeHeights[i]! * (1 - k) + plain * k + swell + this.rise(px, pz, d) - (d === 0 ? 0.02 : 0);
         positions.push(px, y, pz);
         uvs.push(px / scale, pz / scale);
       }
@@ -169,6 +186,92 @@ export class BackdropVisuals {
     mesh.isPickable = false;
     mesh.freezeWorldMatrix();
     this.meshes.push(mesh);
+  }
+
+  private ground: { per: [number, number][]; edgeHeights: number[]; plain: number } | null = null;
+
+  /**
+   * How far the ground past the border rises at a point `d` metres out: a
+   * berm close in, so the map sits in a hollow instead of ending on a flat
+   * plain, then rolling hills that settle back down far away, under the
+   * distant scenery.
+   */
+  private rise(x: number, z: number, d: number): number {
+    const p = this.profile;
+    const n1 = Math.sin(x * 0.031 + 1.7) * Math.cos(z * 0.027 - 0.4) * 0.5 + 0.5;
+    const n2 = (Math.sin(x * 0.0071) * Math.cos(z * 0.0083 + 2) + Math.sin((x + z) * 0.013) * 0.5) / 3 + 0.5;
+    return 2 * p.berm * smooth(5, 42, d) * (0.55 + 0.45 * n1) + 1.8 * p.hills * smooth(35, 230, d) * n2 * (1 - smooth(550, 1300, d));
+  }
+
+  /** The ground height past the border at perimeter sample `i`, `d` metres out (the same surface the ground mesh draws). */
+  private heightAt(i: number, x: number, z: number, d: number, area: PlayArea): number {
+    const g = this.ground!;
+    const k = Math.min(1, d / 60);
+    const swell = Math.sin(x * 0.013) * Math.cos(z * 0.011) * 2.5 * Math.min(1, d / 200);
+    return g.edgeHeights[i]! * (1 - k) + g.plain * k + swell + this.rise(x, z, d);
+  }
+
+  /**
+   * Dress the belt past the border so the map's edge blends into the
+   * scenery: trees and rocks, cacti, ruins, containers or low city blocks,
+   * thick close in and thinning out, chosen by the theme and scenery.
+   */
+  private buildBelt(doc: MapDocument, area: PlayArea, rand: () => number): void {
+    const p = this.profile;
+    const g = this.ground;
+    if (!g || (!p.props.length && !p.buildings)) return;
+    const pick = <T>(xs: readonly T[]) => pick3(rand, xs);
+    let placed = 0;
+    const budget = Math.round(900 * p.density);
+    g.per.forEach(([x, z], i) => {
+      const dx = x - area.centre[0];
+      const dz = z - area.centre[1];
+      const l = Math.hypot(dx, dz) || 1;
+      const ox = dx / l;
+      const oz = dz / l;
+      // Three bands: close in (kept a few metres off the wall line), middle, far (bigger, fewer); things grow in small clusters.
+      for (const [d0, d1, chance] of [[7, 24, 0.75], [24, 55, 0.65], [55, 115, 0.5]] as const) {
+        if (rand() > chance * p.density) continue;
+        const cluster = 1 + Math.floor(rand() * 3);
+        const d = d0 + rand() * (d1 - d0);
+        const side = (rand() - 0.5) * 4;
+        const model = pick(p.props);
+        for (let c = 0; c < cluster && placed < budget; c++) {
+          const cd = d + (rand() - 0.5) * 6;
+          const cs = side + (rand() - 0.5) * 6;
+          const px = x + ox * cd - oz * cs;
+          const pz = z + oz * cd + ox * cs;
+          const y = this.heightAt(i, px, pz, Math.max(cd, 6), area);
+          const far = 1 + cd / 90;
+          placed++;
+          if (p.buildings && c === 0 && rand() < 0.55) {
+            this.cityBlock(doc, px, y, pz, Math.atan2(ox, oz), rand, far);
+            break;
+          }
+          if (!this.models || !p.props.length) continue;
+          // Clusters mix in a neighbour or two from the same set.
+          const m = c === 0 || rand() < 0.6 ? model : pick(p.props);
+          const e: PropEntity = { id: `belt_${i}_${d0}_${c}`, kind: 'prop', model: `prop.${m}`, position: [px, y - 0.1, pz], yaw: rand() * Math.PI * 2, scale: (1 + rand() * 0.7) * far * (/^(rock|rocks|cliff)/.test(m) ? 1.5 : 1.2), solid: false, tint: null };
+          this.nodes.push(createPropNode(this.scene, this.models, e, `backdrop_belt_${this.nodes.length}`, true, true, null));
+        }
+      }
+    });
+  }
+
+  /** A low city block past the border: a box in façade materials, its long side to the map. */
+  private cityBlock(doc: MapDocument, x: number, y: number, z: number, yaw: number, rand: () => number, far: number): void {
+    const w = (8 + rand() * 10) * Math.min(1.6, far);
+    const dpt = 8 + rand() * 8;
+    const h = (6 + rand() * 16) * Math.min(1.8, far);
+    const tile = 4;
+    const uv = (a: number, b: number) => new Vector4(0, 0, a / tile, b / tile);
+    const box = CreateBox(`backdrop_block_${this.meshes.length}`, { width: w, height: h, depth: dpt, faceUV: [uv(w, h), uv(w, h), uv(dpt, h), uv(dpt, h), uv(w, dpt), uv(w, dpt)], wrap: true }, this.scene);
+    box.position.set(x, y + h / 2 - 0.3, z);
+    box.rotation.y = yaw;
+    box.material = this.styler.surfaceMaterial(doc, pick3(rand, ['pbr_glass_facade', 'pbr_brick_red', 'pbr_concrete', 'pbr_plaster', 'pbr_siding', 'pbr_brick_old']), null);
+    box.isPickable = false;
+    box.freezeWorldMatrix();
+    this.meshes.push(box);
   }
 
   private buildScenery(kind: SceneryId, area: PlayArea, sky: SkyDefinition, rand: () => number): void {
@@ -524,4 +627,49 @@ function windows(scene: Scene, night: boolean): RawTexture {
   const tex = RawTexture.CreateRGBATexture(px, n, n, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
   tex.wrapU = tex.wrapV = Texture.WRAP_ADDRESSMODE;
   return tex;
+}
+
+function smooth(a: number, b: number, x: number): number {
+  const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+}
+
+function pick3<T>(rand: () => number, xs: readonly T[]): T {
+  return xs[Math.floor(rand() * xs.length)]!;
+}
+
+/** The belt past the border: berm and hill heights (m), what stands on it, and how thickly. */
+interface BeltProfile {
+  berm: number;
+  hills: number;
+  props: readonly string[];
+  buildings: boolean;
+  density: number;
+}
+
+const NATURE = ['oak', 'oak_dark', 'tree_round', 'tree_detailed', 'tree_fat', 'pine_tall', 'oak', 'tree_round', 'bush_large', 'bush', 'rock_large', 'log_big'] as const;
+const BELTS: Record<string, BeltProfile> = {
+  none: { berm: 2, hills: 4, props: ['rock_large', 'rock_medium', 'bush_large', 'tree_round'], buildings: false, density: 0.6 },
+  hills: { berm: 3.5, hills: 9, props: NATURE, buildings: false, density: 0.8 },
+  forest: { berm: 4, hills: 11, props: ['pine_tall', 'pine_tall_b', 'pine_round', 'pine_tall', 'oak_dark', 'tree_detailed', 'tree_cone', 'pine_tall_b', 'oak', 'bush_large', 'rock_large', 'log_big'], buildings: false, density: 1.3 },
+  mountains: { berm: 6, hills: 16, props: ['pine_tall', 'pine_round', 'pine_small', 'rock_large', 'rocks_tall', 'rock_spire_tall', 'cliff', 'rock_flat'], buildings: false, density: 0.85 },
+  peaks: { berm: 7, hills: 18, props: ['pine_tall_b', 'pine_small', 'rock_large', 'rocks_tall', 'cliff', 'cliff_corner'], buildings: false, density: 0.7 },
+  mesas: { berm: 5, hills: 10, props: ['rock_large', 'rocks_tall', 'rock_spire_tall', 'rock_flat', 'cactus_tall', 'cactus', 'debris'], buildings: false, density: 0.6 },
+  dunes: { berm: 6, hills: 9, props: ['rock_flat', 'rock_large', 'cactus', 'palm_bent', 'debris'], buildings: false, density: 0.35 },
+  city: { berm: 0.6, hills: 0, props: ['barrier', 'barrier_high', 'container', 'lightpost', 'trashcan', 'skip'], buildings: true, density: 0.9 },
+  ocean: { berm: 0.5, hills: 0, props: ['palm_tall', 'palm_short', 'rock_large', 'rock_flat'], buildings: false, density: 0.4 },
+};
+/** Themes whose surroundings are their own, whatever the scenery past them. */
+const THEME_BELTS: Record<string, Partial<BeltProfile>> = {
+  'core.factory': { props: ['container', 'container_wide', 'container_tall', 'barrier_high', 'tank_car', 'factory_box_long', 'skip', 'cone'], buildings: true },
+  'core.castle': { props: ['pine_tall', 'oak', 'pine_tall_b', 'tree_round', 'rock_large', 'stone_wall_damaged', 'bush_large', 'oak_dark'] },
+  'core.ruins': { props: ['stone_wall_damaged', 'pillar', 'rocks_tall', 'oak_dark', 'tree_detailed', 'hanging_moss', 'bush_large'] },
+  'core.manor': { props: ['iron_fence', 'iron_fence_damaged', 'pine_crooked', 'gravestone_round', 'oak_dark', 'hedge_large'] },
+  'core.saloon': { props: ['cactus_tall', 'cactus', 'rock_large', 'cart', 'town_fence', 'rocks_tall'] },
+  'core.arctic': { props: ['pine_tall_b', 'pine_small', 'rock_large', 'rocks_tall'] },
+};
+
+function beltProfile(backdrop: Backdrop, theme: string): BeltProfile {
+  const base = BELTS[backdrop.scenery] ?? BELTS.none!;
+  return { ...base, ...(THEME_BELTS[theme] ?? {}) };
 }
