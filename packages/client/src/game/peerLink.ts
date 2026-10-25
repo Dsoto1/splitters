@@ -3,7 +3,7 @@ import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMess
 import type { RemoteLink } from './localTransport.ts';
 import type { Transport } from './transport.ts';
 import { CHUNK, Unzipper, Zipper } from './peerZip.ts';
-import { hubAddress } from './hub.ts';
+import { hubAddress, hubSetting } from './hub.ts';
 
 /**
  * Host game / Join by code: friends connect straight to the host's browser
@@ -223,17 +223,24 @@ export class PeerTransport implements Transport {
       peer.destroy();
       onClose(reason);
     };
+    // Name the broker: a "localhost" hub from someone else's invite link points at this computer, not theirs.
+    const unreachable = () => {
+      const hub = new URLSearchParams(location.search).get('peer') ?? hubSetting();
+      if (!hub) return "couldn't reach the matchmaking service — check your internet connection";
+      const local = /^(localhost|127\.|\[::1\])/.test(hub.replace(/^\w+:\/\//, ''));
+      return `couldn't reach the matchmaking service at ${hub}${local ? ' — that address means "this computer", so it only works on the host\'s own machine: ask them to host without a localhost hub' : ' — check the address and that the hub is running'}`;
+    };
     const relayHint = loadRelay() ? 'even through the relay' : 'set a relay in Options (both of you), or play on the same Wi-Fi';
     const noDirect = `found the game but couldn't connect to it — your networks block direct connections: ${relayHint}`;
     const timeout = window.setTimeout(() => {
       if (opened) return;
-      fail(brokered ? noDirect : "couldn't reach the matchmaking service — check your internet connection");
+      fail(brokered ? noDirect : unreachable());
     }, 20000);
     peer.on('error', (e) => {
       const type = (e as { type?: string }).type;
       if (type === 'peer-unavailable') fail(`no game open with code ${this.code} — check the code, and that the host still has the match open (Esc → Host game)`);
       else if (type === 'network' || type === 'server-error' || type === 'socket-error' || type === 'socket-closed') {
-        if (!brokered) fail("couldn't reach the matchmaking service — check your internet connection");
+        if (!brokered) fail(unreachable());
       } else if (type === 'webrtc' || type === 'negotiation-failed') fail(noDirect);
       else fail(`connection failed (${type ?? e.message})`);
     });
