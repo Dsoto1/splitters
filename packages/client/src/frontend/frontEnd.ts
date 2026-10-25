@@ -194,6 +194,17 @@ export class FrontEnd {
     window.addEventListener('keydown', this.keyHandler);
     this.go('home');
     (window as unknown as { __front: FrontEnd }).__front = this;
+    // Render every character's portrait in the background while the menu is up, so Character Select opens ready.
+    setTimeout(() => void this.warmPortraits(), 1500);
+  }
+
+  /** Portraits for all the looks, one at a time, only while the menu is showing (never during a match). */
+  private async warmPortraits(): Promise<void> {
+    const ids = [...CORE_LOOKS.map((l) => l.id), ...NPC_LOOKS.map((l) => l.id), ...listCustomLooks().map((l) => l.id)];
+    for (const id of ids) {
+      while (this.root.hidden) await new Promise((r) => setTimeout(r, 2000));
+      await this.portraits.get(id).catch(() => undefined);
+    }
   }
 
   setStatus(text: string): void {
@@ -556,10 +567,20 @@ export class FrontEnd {
     }
     tabs.append(el('span', { class: 'bumper', textContent: 'E' }));
 
-    const grid = el('div', { class: 'char-grid' });
+    const grid = el('div', { class: 'char-grid loading' });
+    // Every portrait on the tab appears at once, when the last one is ready (rendered and decoded), not face by face.
+    const pending: Promise<void>[] = [];
     for (const c of shown) {
       const img = el('img', { alt: c.name });
-      void this.portraits.get(c.id).then((src) => (img.src = src), () => undefined);
+      pending.push(
+        this.portraits.get(c.id).then(
+          async (src) => {
+            img.src = src;
+            await img.decode().catch(() => undefined);
+          },
+          () => undefined,
+        ),
+      );
       const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
       tile.dataset.look = c.id;
       tile.addEventListener('mouseenter', () => this.preview(c.id));
@@ -567,6 +588,7 @@ export class FrontEnd {
       tile.addEventListener('click', () => this.select(c.id));
       grid.append(tile);
     }
+    void Promise.all(pending).then(() => grid.classList.remove('loading'));
     const design = el('button', { class: 'char-tile new', title: 'Design a new character' }, el('b', { textContent: '+' }), el('span', { textContent: 'Design new' }));
     design.addEventListener('click', () => this.hooks.openDesigner(this.look));
     grid.append(design);

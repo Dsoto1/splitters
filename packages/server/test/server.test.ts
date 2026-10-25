@@ -102,7 +102,7 @@ describe('dedicated server', () => {
   });
 
   it('runs a two-client match: welcome, snapshots, acked inputs, and a networked kill', async () => {
-    server = await startServer({ port: 0, map: room, botFill: 0, seed: 1, rules: { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 600 } });
+    server = await startServer({ port: 0, map: room, botFill: 0, seed: 1, startGate: false, rules: { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 600 } });
     const a = new TestClient(server.port, 'Alice');
     const b = new TestClient(server.port, 'Bob');
     const [wa, wb] = await Promise.all([a.waitFor('welcome'), b.waitFor('welcome')]);

@@ -14,7 +14,9 @@ export type Tuple3 = [number, number, number];
 export type ClientMessage =
   | { t: 'hello'; protocol: number; name: string; look?: string }
   | { t: 'input'; inputs: PlayerInput[] }
-  | { t: 'ping'; id: number; ct: number };
+  | { t: 'ping'; id: number; ct: number }
+  /** The client has loaded the map, everyone's characters and the weapons: it can start. */
+  | { t: 'ready' };
 
 export interface PlayerSnapshot {
   /** Slot index, 0..MAX_PLAYER_SLOTS-1. */
@@ -210,7 +212,11 @@ export interface ServerStats {
   lateTicks: number;
 }
 
-export type MatchPhase = 'playing' | 'intermission';
+/**
+ * `waiting`: the match is up but its players are still loading (see Match `startGate`);
+ * `countdown`: everyone stands frozen at their spawn for a few seconds; then `playing`.
+ */
+export type MatchPhase = 'waiting' | 'countdown' | 'playing' | 'intermission';
 
 export type FlagAction = 'take' | 'drop' | 'return' | 'capture';
 export const FLAG_HOME = 0;

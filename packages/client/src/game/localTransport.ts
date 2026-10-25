@@ -49,6 +49,7 @@ export class LocalTransport implements Transport {
   private stopped = false;
   private timer?: number;
   private queueInputs?: (inputs: PlayerInput[]) => void;
+  private markReady?: () => void;
   private teardown?: () => void;
   /** Time from start() to the welcome message, for the TEST transition budget. */
   startupMs = 0;
@@ -81,7 +82,7 @@ export class LocalTransport implements Transport {
     await initNavigation();
     if (this.stopped) return;
     const rules = this.opts.rules ?? rulesForMap(this.map);
-    const match = new Match(this.map, rules, Math.floor(Math.random() * 1e6));
+    const match = new Match(this.map, rules, Math.floor(Math.random() * 1e6), { startGate: true });
     const me = match.addHuman(this.opts.name, this.opts.look)!;
     // Automation hook for browser tests (give weapons, place players).
     (window as unknown as { __match: unknown; __give: (id: string) => void }).__match = match;
@@ -124,6 +125,7 @@ export class LocalTransport implements Transport {
           link.send(JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() } satisfies ServerMessage));
           rosterToAll();
         } else if (msg.t === 'input' && r.slot !== null) match.queueInputs(r.slot, msg.inputs);
+        else if (msg.t === 'ready' && r.slot !== null) match.ready(r.slot);
         else if (msg.t === 'ping') link.send(JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
       });
       link.onClose(() => {
@@ -135,6 +137,7 @@ export class LocalTransport implements Transport {
       });
     };
     this.queueInputs = (inputs) => match.queueInputs(me.slot, inputs);
+    this.markReady = () => match.ready(me.slot);
     this.teardown = () => match.destroy();
 
     onMessage({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() });
@@ -209,6 +212,10 @@ export class LocalTransport implements Transport {
 
   sendInputs(inputs: PlayerInput[]): void {
     if (inputs.length) this.queueInputs?.(inputs);
+  }
+
+  sendReady(): void {
+    this.markReady?.();
   }
 
   close(): void {

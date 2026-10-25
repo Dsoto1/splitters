@@ -27,6 +27,8 @@ export function parseClientMessage(text: string): ClientMessage | null {
   switch (o.t) {
     case 'hello':
       return typeof o.protocol === 'number' && typeof o.name === 'string' ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}) } : null;
+    case 'ready':
+      return { t: 'ready' };
     case 'ping':
       return typeof o.id === 'number' && typeof o.ct === 'number' ? { t: 'ping', id: o.id, ct: o.ct } : null;
     case 'input': {

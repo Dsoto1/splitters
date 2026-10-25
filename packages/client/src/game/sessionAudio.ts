@@ -47,7 +47,12 @@ export class SessionAudio {
   }
 
   joined(): void {
-    this.audio.play('announce.fight');
+    // The announcer waits for the countdown's "Go!" (countdownBeep).
+  }
+
+  /** One tick of the start countdown, or the "Go!" when it ends. */
+  countdownBeep(go: boolean): void {
+    this.audio.play(go ? 'announce.fight' : 'message');
   }
 
   /** A shot the local player just fired (predicted). */

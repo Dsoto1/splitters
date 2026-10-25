@@ -106,13 +106,16 @@ export class CharacterLibrary {
   }
 
   /** Start fetching everything a spec needs (so first appearances don't hitch). */
-  preload(spec: CharacterSpec): void {
-    void this.load('rig.glb');
-    if (spec.npc?.female) void this.load('mannequin_f.glb');
-    if (spec.look) {
+  /** Start loading what a character needs; resolves when it has all arrived (failures included). */
+  preload(spec: CharacterSpec): Promise<unknown> {
+    const files = ['rig.glb'];
+    if (spec.npc?.female) files.push('mannequin_f.glb');
+    if (spec.look && !npcLookRole(spec.look)) {
       const l = getLook(spec.look);
-      for (const part of l.whole ? l.parts : [...l.parts, l.head, ...l.hair]) void this.load(`${part}.glb`);
+      files.push(...(l.whole ? l.parts : [...l.parts, l.head, ...l.hair]).map((p) => `${p}.glb`));
+      files.push(`${firstPersonArms(l)}.glb`);
     }
+    return Promise.allSettled(files.map((f) => this.load(f)));
   }
 
   async create(spec: CharacterSpec, name: string): Promise<CharacterInstance> {
@@ -196,7 +199,8 @@ export class CharacterLibrary {
         for (const m of attached) partOf.set(m, i + 1);
         meshes.push(...attached);
       });
-      this.dress(meshes, look);
+      // A whole-body character's first-person arms are the universal ones, dyed to match it.
+      this.dress(meshes, spec.armsOnly && look.whole ? { ...look, skin: look.whole.skin, cloth: look.whole.cloth, trim: look.whole.trim } : look);
       if (!spec.armsOnly && !look.whole && look.gear?.length) {
         const of = (i: number) => meshes.filter((m) => (partOf.get(m) ?? 0) === i);
         const headIndex = look.parts.length;

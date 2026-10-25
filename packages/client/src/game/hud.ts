@@ -29,6 +29,9 @@ export class Hud {
   private readonly root = $('hud');
   private readonly health = $('health');
   private readonly timer = $('timer');
+  private readonly countdown = $('countdown');
+  private readonly loading = $('loading-screen');
+  private goUntil = 0;
   private readonly modeLabel = $('mode-label');
   private readonly sbLeft = $('sb-left');
   private readonly sbRight = $('sb-right');
@@ -468,9 +471,36 @@ export class Hud {
   setStatus(phase: MatchPhase, timeLeft: number, alive: boolean, winner: string | null, outcome: 'victory' | 'defeat' | null = null): void {
     const m = Math.floor(timeLeft / 60);
     const s = String(timeLeft % 60).padStart(2, '0');
-    this.timer.textContent = phase === 'intermission' ? 'Intermission' : timeLeft ? `${m}:${s}` : '';
-    if (phase === 'intermission') this.banner.textContent = outcome === 'victory' ? 'Mission complete' : outcome === 'defeat' ? 'Mission failed' : winner ? `${winner} wins the round` : 'Round over';
+    this.timer.textContent = phase === 'intermission' ? 'Intermission' : phase === 'waiting' || phase === 'countdown' ? '' : timeLeft ? `${m}:${s}` : '';
+    // The start countdown: a big 3, 2, 1 (then "Go!" from flashGo).
+    if (phase === 'countdown') {
+      this.countdown.hidden = false;
+      this.countdown.classList.remove('go');
+      this.countdown.textContent = String(Math.max(1, timeLeft));
+    } else if (performance.now() > this.goUntil) this.countdown.hidden = true;
+    if (phase === 'waiting') this.banner.textContent = 'Waiting for players…';
+    else if (phase === 'countdown') this.banner.textContent = '';
+    else if (phase === 'intermission') this.banner.textContent = outcome === 'victory' ? 'Mission complete' : outcome === 'defeat' ? 'Mission failed' : winner ? `${winner} wins the round` : 'Round over';
     else this.banner.textContent = alive ? '' : this.waitLabel;
+  }
+
+  /** "Go!" as the countdown ends. */
+  flashGo(): void {
+    this.countdown.hidden = false;
+    this.countdown.textContent = 'Go!';
+    this.countdown.classList.add('go');
+    this.goUntil = performance.now() + 900;
+    setTimeout(() => {
+      if (performance.now() >= this.goUntil) this.countdown.hidden = true;
+    }, 950);
+  }
+
+  /** The loading screen over the match while its files arrive (null hides it). */
+  setLoading(text: string | null, progress = 0): void {
+    this.loading.hidden = text === null;
+    if (text === null) return;
+    this.loading.querySelector('b')!.textContent = text;
+    (this.loading.querySelector('.bar i') as HTMLElement).style.width = `${Math.round(Math.min(1, progress) * 100)}%`;
   }
 
   /** Shown while you are dead ("Respawning…", or "Next round" in Elimination). */

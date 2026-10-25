@@ -37,9 +37,12 @@ export interface CharacterLook {
   /**
    * A whole-body character (one model with its own textures, `parts[0]`; see
    * tools/content/prepare-meshy-characters.mjs): no separate head, hair, gear or
-   * dyes, and not a Designer base. `arms` is its first-person arms file.
+   * dyes, and not a Designer base. In first person it wears the universal arms
+   * (`arms`, a base-body arms part on the shared rig, so every gun's grip fits)
+   * dyed to match: `cloth`/`trim` for the sleeves and `skin` for the hands
+   * (bare skin, or a glove colour).
    */
-  whole?: { arms: string };
+  whole?: { arms: string; skin: string; cloth: string; trim: string };
 }
 
 /** Where a piece of gear goes; one per slot. */
@@ -160,9 +163,9 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.desperado', name: 'Desperado', body: 'male', head: 'head_male', parts: ['peasant_torso_m', 'peasant_arms_m', 'peasant_legs_m', 'ranger_feet_m'], hair: ['hair_simpleparted', 'hair_beard'], colorways: [], skin: SKIN_TONES[2], hairColor: '#2a2422', cloth: '#8a7a52', trim: '#4a3020', gear: ['brim', 'mask', 'bandolier'] },
   { id: 'core.raider', name: 'Raider', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buzzedfemale'], colorways: [], skin: SKIN_TONES[4], hairColor: '#8a3a2a', cloth: '#6a3a7a', trim: '#1e2126', gear: ['goggles', 'bandolier'] },
   // Whole-body originals (prepare-meshy-characters.mjs).
-  { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_knight_fparms' } },
-  { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_nova_fparms' } },
-  { id: 'core.dapper', name: 'The Dapper', body: 'male', head: '', parts: ['meshy_dapper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_dapper_fparms' } },
+  { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#34373c', cloth: '#45494f', trim: '#7a1e1e' } },
+  { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_f', skin: '#e4e4df', cloth: '#e9e9e4', trim: '#d9661c' } },
+  { id: 'core.dapper', name: 'The Dapper', body: 'male', head: '', parts: ['meshy_dapper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#d9ad8a', cloth: '#1c1d22', trim: '#e6e6e6' } },
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'] },
 ];
 

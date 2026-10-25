@@ -54,6 +54,9 @@ export const MAX_REWIND_TICKS = 18;
 const HISTORY_TICKS = MAX_REWIND_TICKS + 2;
 /** Projectiles ignore their owner briefly so they don't explode in the shooter's face. */
 const OWNER_GRACE_TICKS = 8;
+/** Start gate: the longest a match waits for its players to load, and the countdown after. */
+export const START_WAIT_SECONDS = 30;
+export const COUNTDOWN_SECONDS = 3;
 /** Bots see hostile sentries as targets with these IDs (+ mount index); never a real actor ID. */
 const SENTRY_VIEW_BASE = 1_000_000;
 
@@ -328,6 +331,12 @@ export class Match {
     readonly map: MapDocument,
     readonly rules: MatchRules = DEFAULT_DEATHMATCH_RULES,
     readonly seed = 1,
+    /**
+     * `startGate`: hold the start until every human has loaded (`ready`), at
+     * most START_WAIT_SECONDS, then count down; every later round counts down
+     * too. Off (play at once) for headless matches and tests.
+     */
+    private readonly opts: { startGate?: boolean } = {},
   ) {
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
@@ -355,6 +364,10 @@ export class Match {
     this.ladders = mapLadders(map.entities);
     this.liquids = mapLiquids(map.entities);
     this.phaseEndTick = this.roundEndTick();
+    if (opts.startGate) {
+      this.phase = 'waiting';
+      this.phaseEndTick = START_WAIT_SECONDS * TICK_RATE;
+    }
     const match = this;
     this.scenario = new Scenario(map, this.physics, {
       get tick() {
@@ -687,6 +700,7 @@ export class Match {
     const c = this.slots[slot];
     if (!c) return;
     if (this.phase === 'playing') this.mode?.onLeave(c);
+    this.readySlots.delete(slot);
     this.leaveMount(c, false);
     this.physics.removeCollider(c.collider);
     this.slots[slot] = null;
@@ -712,6 +726,19 @@ export class Match {
     this.tick++;
     if (this.phase === 'intermission') {
       if (this.tick >= this.phaseEndTick) this.startRound();
+    } else if (this.phase === 'waiting' || this.phase === 'countdown') {
+      // Loading, then the countdown: everyone stands at their spawn and can only look around.
+      for (const c of this.actors()) {
+        for (const input of c.queue) {
+          input.forward = 0;
+          input.right = 0;
+          input.buttons = 0;
+        }
+        this.applyInputs(c);
+      }
+      const humans = this.combatants().filter((c) => c.kind === 'human');
+      if (this.phase === 'waiting' && ((humans.length > 0 && humans.every((c) => this.readySlots.has(c.slot))) || this.tick >= this.phaseEndTick)) this.startCountdown();
+      else if (this.phase === 'countdown' && this.tick >= this.phaseEndTick) this.beginPlay();
     } else {
       this.runBots();
       for (const c of this.actors()) this.applyInputs(c);
@@ -2355,6 +2382,28 @@ export class Match {
     this.pendingEvents.push(outcome ? { e: 'round_end', winner: null, outcome } : { e: 'round_end', winner: top && !tied ? top.slot : null });
   }
 
+  /** Humans whose client has loaded everything (start gate). */
+  private readonly readySlots = new Set<number>();
+
+  /** A client finished loading. Late joiners just play; the first ones start the countdown. */
+  ready(slot: number): void {
+    this.readySlots.add(slot);
+  }
+
+  private startCountdown(): void {
+    this.phase = 'countdown';
+    this.phaseEndTick = this.tick + COUNTDOWN_SECONDS * TICK_RATE;
+  }
+
+  /** The countdown is over: the round (and its clock, objectives and waves) starts now. */
+  private beginPlay(): void {
+    this.phase = 'playing';
+    this.phaseEndTick = this.roundEndTick();
+    this.mode?.reset();
+    this.zombies?.reset();
+    this.pendingEvents.push({ e: 'round_start' });
+  }
+
   private startRound(): void {
     this.phase = 'playing';
     this.phaseEndTick = this.roundEndTick();
@@ -2374,6 +2423,11 @@ export class Match {
     this.mode?.reset();
     this.zombies?.reset();
     for (const c of this.combatants()) this.spawn(c);
+    if (this.opts.startGate) {
+      // Every round opens with the countdown (round_start comes when it ends).
+      this.startCountdown();
+      return;
+    }
     this.pendingEvents.push({ e: 'round_start' });
   }
 

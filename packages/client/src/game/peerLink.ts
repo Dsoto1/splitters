@@ -301,6 +301,10 @@ export class PeerTransport implements Transport {
     if (inputs.length) this.send({ t: 'input', inputs });
   }
 
+  sendReady(): void {
+    this.send({ t: 'ready' });
+  }
+
   close(): void {
     this.closedByUs = true;
     clearInterval(this.pingTimer);

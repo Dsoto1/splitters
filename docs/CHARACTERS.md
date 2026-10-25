@@ -134,6 +134,7 @@ How the hands close on the weapon:
 
 Your own view shows your look's arms holding the viewmodel:
 - **Which arms:** the arms part of your look. Under a sportswear top it's `athlete_fparms_m/f`, bare arms cut from the base body for this view only.
+- **Whole-body characters** (Iron Knight, Capt. Nova, The Dapper) wear the universal arms in first person: a base-body arms part on the shared rig (so every gun's grip fits), with the sleeves dyed and the hands tinted to match the character (`whole.cloth`/`trim`/`skin` in `looks.ts`; a glove colour goes in `skin`).
 - **Placement:** they hang from the camera a little in front of the eyes. The shoulders are never in view, and long guns stay within reach.
 - **Grip:** the gun keeps its tuned viewmodel placement, with bob, recoil and the reload dip. `gripExternal` IKs the palms onto its grip and support points with the same solver as third person.
 

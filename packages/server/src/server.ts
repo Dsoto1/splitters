@@ -37,6 +37,8 @@ export interface ServerOptions {
   /** Play this mode with its default rules (ignored when `rules` is given); default: the map's first mode. */
   mode?: GameMode;
   seed?: number;
+  /** Hold the start until the first players have loaded, then count down (default on; tests turn it off). */
+  startGate?: boolean;
   /** Called once per second with instrumentation. */
   onStats?: (line: string) => void;
 }
@@ -65,7 +67,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
 
   const map = typeof opts.map === 'string' ? readMapFile(opts.map) : opts.map;
   if (opts.mode && !opts.rules && !mapCanRun(map, opts.mode)) throw new Error(`${map.metadata.name} can't host ${MODE_LABELS[opts.mode]} (it has no flag bases or hills for it)`);
-  const match = new Match(map, opts.rules ?? (opts.mode ? rulesForMode(map, opts.mode) : rulesForMap(map)), opts.seed ?? Date.now() % 100000);
+  const match = new Match(map, opts.rules ?? (opts.mode ? rulesForMode(map, opts.mode) : rulesForMap(map)), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
   for (const issue of validateNavigation(map, match.nav)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
   const difficulty = BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'];
   const botFill = Math.min(opts.botFill, MAX_PLAYER_SLOTS);
@@ -135,6 +137,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         broadcast({ t: 'roster', players: match.roster() });
       } else if (msg.t === 'input' && client.slot !== null) {
         match.queueInputs(client.slot, msg.inputs);
+      } else if (msg.t === 'ready' && client.slot !== null) {
+        match.ready(client.slot);
       } else if (msg.t === 'ping') {
         send(client, { t: 'pong', id: msg.id, ct: msg.ct });
       }

@@ -12,5 +12,7 @@ export interface Transport {
   bytesIn: number;
   start(onMessage: (m: ServerMessage) => void, onClose: (reason: string) => void): void;
   sendInputs(inputs: PlayerInput[]): void;
+  /** Everything for the match has loaded (the start countdown waits for it). */
+  sendReady(): void;
   close(): void;
 }

@@ -39,6 +39,8 @@ import {
   mapLiquids,
   JET,
   getItem,
+  getMountDef,
+  getWeapon,
   loadMap,
   pickUsable,
   type MapDocument,
@@ -523,6 +525,7 @@ export class GameSession {
         this.updatePause();
         (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, transport: this.opts.transport };
         this.opts.onReady?.();
+        void this.prepareMatch();
         break;
       }
       case 'reject':
@@ -536,6 +539,9 @@ export class GameSession {
         for (const p of msg.players) this.view.characters.preload({ look: p.look });
         break;
       case 'snapshot': {
+        if (this.phase === 'countdown' && msg.phase === 'playing') this.hud.flashGo();
+        if (msg.phase === 'countdown' && msg.timeLeft !== this.timeLeft && msg.timeLeft > 0) this.sfx.countdownBeep(false);
+        if (this.phase === 'countdown' && msg.phase === 'playing') this.sfx.countdownBeep(true);
         this.phase = msg.phase;
         this.timeLeft = msg.timeLeft;
         this.scores = msg.score;
@@ -702,6 +708,47 @@ export class GameSession {
     }
   }
 
+  /**
+   * Load what the match needs before saying we're ready: everyone's characters
+   * (players and bots, from the roster), the weapon models we start with and
+   * can pick up, mounted guns and vehicles, and the scene's textures and
+   * shaders. The server holds the countdown until every player is ready (or
+   * gives up waiting), so nobody starts while others still load.
+   */
+  private async prepareMatch(): Promise<void> {
+    const map = this.map;
+    const rules = this.rules;
+    if (!map || !rules) return;
+    // The roster comes straight after the welcome.
+    for (let i = 0; i < 40 && this.looks.size === 0; i++) await new Promise((r) => setTimeout(r, 50));
+    const jobs: Promise<unknown>[] = [];
+    for (const look of new Set(this.looks.values())) jobs.push(this.view.characters.preload({ look }));
+    jobs.push(this.view.characters.preload({ npc: { color: '#888888', scale: 1, female: true } }));
+    const models = new Set<string>();
+    for (const id of rules.startingWeapons) models.add(getWeapon(id).view.model);
+    for (const e of map.entities) {
+      if (e.kind === 'pickup') {
+        const fx = getItem(e.item)?.effect;
+        if (fx?.kind === 'weapon') models.add(getWeapon(fx.weapon).view.model);
+      }
+      if (e.kind === 'mount') {
+        const def = getMountDef(e.model);
+        if (def) models.add(def.model);
+      }
+    }
+    for (const m of models) jobs.push(this.view.models.load(m).catch(() => undefined));
+    let done = 0;
+    const total = jobs.length + 1;
+    const tick = () => this.hud.setLoading(`Loading ${map.metadata.name}`, ++done / total);
+    this.hud.setLoading(`Loading ${map.metadata.name}`, 0);
+    const all = Promise.all([...jobs.map((j) => j.then(tick, tick)), this.view.scene.whenReadyAsync().then(tick, tick)]);
+    // Never stall the start on one slow file.
+    await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
+    if (this.closed) return;
+    this.hud.setLoading(null);
+    this.opts.transport.sendReady();
+  }
+
   /** Everyone on one side against NPCs (co-op missions and Zombies). */
   private get allied(): boolean {
     return this.rules?.mode === 'core.coop' || this.rules?.mode === 'core.zombies';
@@ -866,6 +913,12 @@ export class GameSession {
       while (this.acc >= TICK_DT) {
         this.acc -= TICK_DT;
         const sample = this.input.sample();
+        if (this.phase === 'waiting' || this.phase === 'countdown') {
+          // Loading and the countdown: stand still (looking round is fine); the server holds everyone too.
+          sample.forward = 0;
+          sample.right = 0;
+          sample.buttons = 0;
+        }
         moving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
         const { input: cmd, shot } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
