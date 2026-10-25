@@ -40,7 +40,7 @@ const HOUSES: [number, number, string][] = [[2, 1, '#e8b4a0'], [2, 4, '#a8c8e0']
 const built = new Set<string>();
 for (const [x, y] of HOUSES) {
   m.tile('house', x, y);
-  for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) built.add(`${x + dx},${y + dy}`);
+  for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]] as const) built.add(`${x + dx},${y + dy}`);
 }
 m.tile('shop', 0, 2).tile('gas_station', 7, 1);
 for (const c of ['0,2', '1,2', '7,1', '8,1', '7,2', '8,2']) built.add(c);
