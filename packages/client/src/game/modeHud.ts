@@ -122,7 +122,7 @@ export class ModeHud {
   /** Hostages as poses to draw like players (slots from HOSTAGE_SLOT_BASE), the rescued ones gone. */
   hostagePoses(): RemotePose[] {
     return (this.md?.hg ?? []).flatMap((h, i) =>
-      h[4] === HOSTAGE_RESCUED ? [] : [{ slot: HOSTAGE_SLOT_BASE + i, x: h[0], y: h[1], z: h[2], yaw: h[3], pitch: 0, alive: true, grounded: true, weapon: 0, powerups: 0, status: 0 }],
+      h[4] === HOSTAGE_RESCUED ? [] : [{ slot: HOSTAGE_SLOT_BASE + i, x: h[0], y: h[1], z: h[2], yaw: h[3], pitch: 0, alive: true, grounded: true, weapon: -1, powerups: 0, status: 0 }],
     );
   }
 

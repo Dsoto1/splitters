@@ -27,7 +27,7 @@ export interface MotionState {
 
 export type OneShot = 'shoot' | 'melee' | 'melee_heavy' | 'reload' | 'hit' | 'throw' | 'interact';
 
-const LOOPS: readonly Clip[] = ['aim_idle', 'walk', 'run', 'sprint', 'jump_air', 'dance', 'crouch_idle', 'crouch_walk', 'prone_idle', 'prone_crawl'];
+const LOOPS: readonly Clip[] = ['idle', 'aim_idle', 'walk', 'run', 'sprint', 'jump_air', 'dance', 'crouch_idle', 'crouch_walk', 'prone_idle', 'prone_crawl'];
 /** Natural ground speed of each locomotion clip (m/s), used to match foot speed. */
 const CLIP_SPEED: Partial<Record<Clip, number>> = { walk: 1.6, run: 4.2, sprint: 6.5, crouch_walk: 1.5, prone_crawl: 0.9 };
 /** Lying prone: the body tips forward onto its front around the hips (radians, metres). */
@@ -159,13 +159,30 @@ export class CharacterAnimator {
 
   private external: { node: TransformNode; grip: WeaponHold } | null = null;
 
+  /** Anything in the hands? Unarmed (hostages), the arms swing with the walk instead of holding the aim pose. */
+  private get armed(): boolean {
+    return !!this.weapon || !!this.external;
+  }
+
+  private legsOnly = true;
+
+  private maskLegs(on: boolean): void {
+    if (on === this.legsOnly) return;
+    this.legsOnly = on;
+    for (const c of ['walk', 'run', 'sprint', 'jump_air'] as const) {
+      const g = this.ch.clips.get(c);
+      if (g) g.mask = on ? this.legs : null;
+    }
+  }
+
   update(dt: number, s: MotionState): void {
     if (!s.alive) {
       if (!this.dead) this.die();
       return;
     }
     if (this.dead) this.revive();
-    this.pitch = s.pitch;
+    this.maskLegs(this.armed);
+    this.pitch = this.armed ? s.pitch : 0;
 
     // Backpedal by playing the run in reverse; strafe by turning the hips toward the motion.
     const back = s.speed > 0.5 && Math.abs(s.moveAngle) > Math.PI * 0.6;
@@ -181,7 +198,7 @@ export class CharacterAnimator {
     else if (s.airborne) want = 'jump_air';
     else if (proneClips) want = s.speed < 0.3 ? 'prone_idle' : 'prone_crawl';
     else if (low) want = s.speed < 0.4 ? 'crouch_idle' : 'crouch_walk';
-    else if (s.speed < 0.6) want = 'aim_idle';
+    else if (s.speed < 0.6) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
     else if (s.speed < 3) want = 'walk';
     else if (s.sprinting || s.speed >= 7.4) want = 'sprint';
     else want = 'run';
@@ -212,7 +229,7 @@ export class CharacterAnimator {
       if (natural) g.speedRatio = Math.max(0.5, Math.min(2, s.speed / natural)) * (back ? -1 : 1);
     }
 
-    if (this.aimUpper) this.aimUpper.weight = this.lying ? 0 : 1 - (this.weights.get('dance') ?? 0);
+    if (this.aimUpper) this.aimUpper.weight = this.lying || !this.armed ? 0 : 1 - (this.weights.get('dance') ?? 0);
 
     if (this.overlay && performance.now() > this.overlay.until) {
       this.overlay.clip.stop();

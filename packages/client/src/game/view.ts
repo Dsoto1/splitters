@@ -767,7 +767,8 @@ export class GameView {
     a.weaponNode = undefined;
     a.muzzle = undefined;
     a.anim?.hold(null);
-    const def = weaponByCode(slot);
+    // Unarmed (hostages): nothing in hand.
+    const def = slot > 0 ? weaponByCode(slot) : undefined;
     if (!def) return;
     void this.models.instantiate(def.view.model, `held_${slot}`).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
