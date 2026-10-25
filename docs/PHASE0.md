@@ -14,7 +14,7 @@ Status of the MASTER_SPEC_V2 §14 Phase 0 list. Measured numbers are from the cl
 
 ## Architecture decisions made in Phase 0
 
-- **Monorepo** (`pnpm` workspaces): `shared` (pure TS sim + map format + bots), `server`, `client`. `@chronosplit/shared/match` is a separate entry so the browser bundle does not pull in Recast unless it runs a local match.
+- **Monorepo** (`pnpm` workspaces): `shared` (pure TS sim + map format + bots), `server`, `client`. `@tiletrigger/shared/match` is a separate entry so the browser bundle does not pull in Recast unless it runs a local match.
 - **One simulation, three hosts.** `Match` has no Node/DOM/network code. The dedicated server, the tests, the load harness and — in Phase 1 — the in-browser MapMaker TEST mode all call `match.step()`.
 - **Physics:** Rapier (`@dimforge/rapier3d-compat`) kinematic character controller against static map boxes. Players never block each other's movement, so client prediction does not depend on remote positions.
 - **Deterministic prediction:** the server quantises positions to 1 mm after every step and the client replays unacknowledged inputs from the snapshot state with the same code. `packages/client/test/prediction.test.ts` drives a 15 s scripted run with 100 ms latency each way and asserts **zero** corrections.

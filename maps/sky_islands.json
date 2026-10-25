@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "sky_islands",
     "name": "Sky Islands",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "Five grassy islands floating over the peaks, joined by crumbling stepping stones and one plank bridge that holds. Swim in the centre pond, ride the pad to the sky platform for double damage, grab a jetpack on the far islands, and think twice before stepping on the trapdoors over the lava for the railgun.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

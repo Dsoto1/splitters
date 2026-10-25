@@ -1,3 +1,4 @@
+import './renamedStorage.ts';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import '@fontsource/chakra-petch/500.css';
 import '@fontsource/chakra-petch/600.css';
@@ -6,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { initPhysics, isGameMode, loadMap, mapCanRun, playableModes, rulesForMap, rulesForMode, type GameMode, type MatchRules } from '@chronosplit/shared';
+import { initPhysics, isGameMode, loadMap, mapCanRun, playableModes, rulesForMap, rulesForMode, type GameMode, type MatchRules } from '@tiletrigger/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';

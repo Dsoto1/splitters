@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "void_yard",
     "name": "Void Yard",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "Metal decks adrift in space, joined only by jump pads. Hold the yard, ride the pads out to the float for rockets, up to the perch for the railgun, or across to the wings; miss a landing and the void takes you.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

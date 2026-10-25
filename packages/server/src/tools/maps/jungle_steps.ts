@@ -24,7 +24,7 @@
  *    0   .  E   E   E   W   .   .   .     E  Embers camp (south), W watchtower
  *        0   1   2   3   4   5   6   7
  */
-import type { Rotation, Side } from '@chronosplit/shared';
+import type { Rotation, Side } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('jungle_steps', 'Jungle Steps');

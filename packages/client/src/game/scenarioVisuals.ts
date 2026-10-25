@@ -28,7 +28,7 @@ import {
   type LightEntity,
   type Liquid,
   type MapEntity,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 import { createFlagBase, createFlagModel, createHillModel, createBombsiteModel } from './flagVisuals.ts';
 
 /** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */

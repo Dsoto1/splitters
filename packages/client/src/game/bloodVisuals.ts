@@ -5,7 +5,7 @@ import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { DEFAULT_BLOOD, type BloodAmount, type EffectsWorld, type Vec3 } from '@chronosplit/shared';
+import { DEFAULT_BLOOD, type BloodAmount, type EffectsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** The player's own switch (pause menu); the map's setting decides the rest. */
 export const BLOOD_PREF_KEY = 'cs.blood';

@@ -1,5 +1,5 @@
 {
-  "name": "@chronosplit/shared",
+  "name": "@tiletrigger/shared",
   "private": true,
   "type": "module",
   "exports": {

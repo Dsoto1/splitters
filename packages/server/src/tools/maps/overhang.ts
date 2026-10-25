@@ -20,7 +20,7 @@
  *       0   1   2   3   4   5
  *   c corridor loop on the ground floor, balcony over it
  */
-import type { TileSurfaces } from '@chronosplit/shared';
+import type { TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('overhang', 'Overhang');

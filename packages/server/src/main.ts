@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { GAME_MODES, isGameMode, type GameMode } from '@chronosplit/shared';
+import { GAME_MODES, isGameMode, type GameMode } from '@tiletrigger/shared';
 import { startServer } from './server.ts';
 
 const env = process.env;
@@ -19,7 +19,7 @@ const server = await startServer({
   mode: mode as GameMode | undefined,
   onStats: env.QUIET_STATS ? undefined : (line) => console.log(`[stats] ${line}`),
 });
-console.log(`ChronoSplit server listening on ws://localhost:${server.port}`);
+console.log(`Tile Trigger server listening on ws://localhost:${server.port}`);
 
 const shutdown = () => {
   void server.close().then(() => process.exit(0));

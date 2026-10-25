@@ -1,4 +1,4 @@
-import { yawXZ, type Vec3, type WorldBox } from '@chronosplit/shared';
+import { yawXZ, type Vec3, type WorldBox } from '@tiletrigger/shared';
 
 export interface BoxHit {
   box: WorldBox;

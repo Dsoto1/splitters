@@ -5,7 +5,7 @@ import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
-import { CREATURE_SPECS, type CreatureKind, type CreatureSpec } from '@chronosplit/shared';
+import { CREATURE_SPECS, type CreatureKind, type CreatureSpec } from '@tiletrigger/shared';
 import { gone, type CharacterSpec } from './characters.ts';
 import { GLB, versioned } from '../assetUrl.ts';
 

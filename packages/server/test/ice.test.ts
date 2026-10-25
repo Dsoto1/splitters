@@ -5,8 +5,8 @@ import { coturnCredentials, iceFromEnv, normaliseIce } from '../src/ice.ts';
 describe('relay credentials from the hub', () => {
   it('coturn: time-limited username, HMAC password', () => {
     const s = coturnCredentials('sekrit', ['turn:t.example:3478'], 3600, 1_000_000_000);
-    expect(s.username).toBe('1003600:chronosplit');
-    expect(s.credential).toBe(createHmac('sha1', 'sekrit').update('1003600:chronosplit').digest('base64'));
+    expect(s.username).toBe('1003600:tiletrigger');
+    expect(s.credential).toBe(createHmac('sha1', 'sekrit').update('1003600:tiletrigger').digest('base64'));
   });
 
   it('reads both shapes of provider answers', () => {

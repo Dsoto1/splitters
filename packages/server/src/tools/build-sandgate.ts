@@ -3,7 +3,7 @@
  * same edit commands the MapMaker issues (place tile, add spawn, set team,
  * add pickup, set mode and theme), so the result is an ordinary MapMaker map
  * that opens, edits and undoes like any other. Rerun after changing the
- * layout: `pnpm --filter @chronosplit/server build-sandgate`.
+ * layout: `pnpm --filter @tiletrigger/server build-sandgate`.
  *
  * Layout (grid x east, y north; one cell = 8 m):
  *
@@ -33,7 +33,7 @@ import {
   type Faction,
   type MapEntity,
   type Rotation,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 
 const OUT = fileURLToPath(new URL('../../../../maps/sandgate.json', import.meta.url));
 
@@ -163,7 +163,7 @@ run('Edit map', {
   before: history.doc.metadata,
   after: {
     id: 'sandgate',
-    author: 'ChronoSplit',
+    author: 'Tile Trigger',
     description:
       'A sun-baked desert town for Team Deathmatch. Embers spawn in the south, Tide in the north. A long street runs up the west side, mid doors split the centre, covered tunnels wind up the east, and two crate-filled squares wait at the north end: bomb sites A and B in Bomb mode.',
     recommendedPlayers: { min: 4, max: 16 },

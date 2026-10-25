@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, PLAYER, getItem, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@chronosplit/shared';
+import { CORE_WEAPONS, PLAYER, getItem, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@tiletrigger/shared';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import type { LocalPlayer } from './prediction.ts';
 import type { RemotePose } from './interpolation.ts';

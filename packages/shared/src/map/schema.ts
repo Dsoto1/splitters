@@ -6,7 +6,7 @@ import { ScenarioLogic } from './logic.ts';
 import { MOUNT_MODELS } from '../sim/mounts.ts';
 
 /**
- * ChronoSplit map document, format version 6 (v2 added per-surface tile styles, v3 pickup
+ * Tile Trigger map document, format version 6 (v2 added per-surface tile styles, v3 pickup
  * entities, v4 scenario entities and logic, v5 factions and NPC encounters, v6 per-side
  * wall styles, trim and props, v7 terrain, v8 map boundary and team setup, v11 flag bases
  * and hills for Capture the Flag and King of the Hill).
@@ -17,7 +17,9 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
  * legacyMetadata) are not populated in Phase 0; they will be added through
  * migrations as each system lands.
  */
-export const MAP_FORMAT = 'chronosplit.map';
+export const MAP_FORMAT = 'tiletrigger.map';
+/** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
+export const LEGACY_MAP_FORMAT = 'chronosplit.map';
 export const MAP_FORMAT_VERSION = 15;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */

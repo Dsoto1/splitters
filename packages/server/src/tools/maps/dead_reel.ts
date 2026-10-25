@@ -18,7 +18,7 @@
  *   y0  c   c   L   L   L   c   c
  *       0   1   2   3   4   5   6
  */
-import type { ScenarioLogic, Side, TileSurfaces } from '@chronosplit/shared';
+import type { ScenarioLogic, Side, TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('dead_reel', 'Dead Reel');

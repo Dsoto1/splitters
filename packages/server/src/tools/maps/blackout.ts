@@ -24,7 +24,7 @@
  *   y0  .   .   |   H   H   .      start
  *       0   1   2   3   4   5
  */
-import type { ScenarioLogic } from '@chronosplit/shared';
+import type { ScenarioLogic } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('blackout', 'Blackout');

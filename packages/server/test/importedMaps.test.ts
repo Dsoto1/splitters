@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { coreCatalog, loadMap, validateMap } from '@chronosplit/shared';
+import { coreCatalog, loadMap, validateMap } from '@tiletrigger/shared';
 
 /** Maps converted from TimeSplitters MapMaker saves (packages/server/src/tools/import-timesplitters.ts). */
 const dir = new URL('../../../maps/imported/', import.meta.url);

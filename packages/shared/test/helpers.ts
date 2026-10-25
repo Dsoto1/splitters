@@ -13,7 +13,7 @@ export function loadArena(): MapDocument {
 /** Minimal valid map with the given tiles and spawns. */
 export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns: [number, number, number][] = [[0, 0, 0]]): MapDocument {
   return {
-    format: 'chronosplit.map',
+    format: 'tiletrigger.map',
     formatVersion: 15,
     metadata: {
       id: 'test_map',

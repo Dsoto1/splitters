@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { PhysicsWorld, blockBoxes, buildMapGeometry, propBoxes, initPhysics, loadMap, mapTerrainMesh, navLinks } from '@chronosplit/shared';
-import { NavWorld, initNavigation, validateNavigation } from '@chronosplit/shared/match';
+import { PhysicsWorld, blockBoxes, buildMapGeometry, propBoxes, initPhysics, loadMap, mapTerrainMesh, navLinks } from '@tiletrigger/shared';
+import { NavWorld, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 
 /** Usage: pnpm validate-map <map.json> — prints creator-facing issues; exits 1 on errors. */
 const arg = process.argv[2];

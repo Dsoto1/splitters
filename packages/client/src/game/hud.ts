@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@chronosplit/shared';
+import { CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';

@@ -1,6 +1,6 @@
 # Fly.io: `fly launch --copy-config --no-deploy` once (pick a name), then `fly deploy`.
 # Relay (optional, recommended): fly secrets set CLOUDFLARE_TURN_KEY_ID=… CLOUDFLARE_TURN_API_TOKEN=…
-app = "chronosplit"
+app = "tiletrigger"
 primary_region = "iad"
 
 [build]

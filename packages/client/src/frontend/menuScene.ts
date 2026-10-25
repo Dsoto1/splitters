@@ -9,7 +9,7 @@ import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { PLAYER, getWeapon, isCreature, npcLookRole } from '@chronosplit/shared';
+import { PLAYER, getWeapon, isCreature, npcLookRole } from '@tiletrigger/shared';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CharacterLibrary } from '../content/characters.ts';

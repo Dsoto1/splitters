@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "phase0_arena",
     "name": "Phase 0 Arena",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "Duel arena: a graybox loop around a pillar hall with an upper floor. Tight and fast, for 2–4 players.",
     "createdAt": "2026-10-22T00:00:00.000Z",
     "updatedAt": "2026-10-22T00:00:00.000Z",

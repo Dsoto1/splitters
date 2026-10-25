@@ -1,4 +1,4 @@
-# PROJECT CHRONOSPLIT — MAPMAKER & SCENARIO SPEC v1
+# PROJECT TILE TRIGGER — MAPMAKER & SCENARIO SPEC v1
 
 **Authority:** Supporting spec; `MASTER_SPEC_V2.md` wins on conflict.
 

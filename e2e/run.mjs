@@ -1040,7 +1040,7 @@ async function onlineFlow(browser) {
 async function lobbyFlow(browser) {
   // A community hub: broker + game browser. A host lists its match; a player finds it and joins from the list.
   const HUB_PORT = +(process.env.E2E_HUB_PORT ?? 9078);
-  start('pnpm', ['--filter', '@chronosplit/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478' });
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478' });
   await sleep(5000);
   const hub = `hub=127.0.0.1:${HUB_PORT}`;
   const errors = [];
@@ -1093,7 +1093,7 @@ async function lobbyFlow(browser) {
 async function hostgameFlow(browser) {
   // The broker is a community hub's, as in a real game (a bare PeerJS broker never let the friend in on CI).
   const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
-  start('pnpm', ['--filter', '@chronosplit/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const peer = `&hub=127.0.0.1:${PEER_PORT}`;
   const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
@@ -1148,8 +1148,8 @@ async function hostgameFlow(browser) {
 }
 
 try {
-  start('pnpm', ['--filter', '@chronosplit/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
-  start('pnpm', ['--filter', '@chronosplit/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1' });
+  start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
+  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1' });
   await waitForHttp(CLIENT);
   await sleep(1500);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -1168,7 +1168,7 @@ try {
     // post effects, and no check looks at them (the WebGPU flow uses its own browser).
     await ctx.addInitScript(() => {
       try {
-        if (!localStorage.getItem('chronosplit.graphics')) localStorage.setItem('chronosplit.graphics', 'low');
+        if (!localStorage.getItem('tiletrigger.graphics')) localStorage.setItem('tiletrigger.graphics', 'low');
       } catch {
         // No storage: the default applies.
       }

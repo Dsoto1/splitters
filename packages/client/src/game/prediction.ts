@@ -29,7 +29,7 @@ import {
   type Vec3,
   type WeaponDefinition,
   type ZoneSnapshot,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 
 const MAX_PENDING = 120;
 const ORDER = new Map(WEAPONS_BY_SLOT.map((w) => [w.id, weaponCode(w)]));

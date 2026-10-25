@@ -3,7 +3,7 @@
   "assets": [
     {
       "file": "models/weapons/pistol.glb",
-      "sha256": "e71be44db5b5649a",
+      "sha256": "a650caa1147bba02",
       "triangles": 1040,
       "bytes": 78068,
       "source": "quaternius-ultimate-gun-pack/OBJ/Pistol_1.obj",
@@ -18,7 +18,7 @@
     },
     {
       "file": "models/weapons/revolver.glb",
-      "sha256": "b1812841be4ca105",
+      "sha256": "02b675100f409f19",
       "triangles": 1046,
       "bytes": 77344,
       "source": "quaternius-ultimate-gun-pack/OBJ/Revolver_1.obj",
@@ -33,7 +33,7 @@
     },
     {
       "file": "models/weapons/smg.glb",
-      "sha256": "4ea934733cc80cf3",
+      "sha256": "95fe7860c598d035",
       "triangles": 1164,
       "bytes": 86372,
       "source": "quaternius-ultimate-gun-pack/OBJ/SubmachineGun_1.obj",
@@ -48,7 +48,7 @@
     },
     {
       "file": "models/weapons/rifle.glb",
-      "sha256": "41a9f5dccbc2cfdf",
+      "sha256": "35a9f8d98ef4ce75",
       "triangles": 1256,
       "bytes": 93032,
       "source": "quaternius-ultimate-gun-pack/OBJ/AssaultRifle_1.obj",
@@ -63,7 +63,7 @@
     },
     {
       "file": "models/weapons/shotgun.glb",
-      "sha256": "720a59ec2ffc7a5e",
+      "sha256": "826e1cfe4f7543c5",
       "triangles": 1270,
       "bytes": 94052,
       "source": "quaternius-ultimate-gun-pack/OBJ/Shotgun_1.obj",
@@ -78,7 +78,7 @@
     },
     {
       "file": "models/weapons/sniper.glb",
-      "sha256": "583527e74df80992",
+      "sha256": "84e7f3ae7b72a9bf",
       "triangles": 1382,
       "bytes": 102680,
       "source": "quaternius-ultimate-gun-pack/OBJ/SniperRifle_1.obj",
@@ -93,7 +93,7 @@
     },
     {
       "file": "models/weapons/knife.glb",
-      "sha256": "cfb3283a85562b98",
+      "sha256": "64bc8fc8017b038c",
       "triangles": 240,
       "bytes": 19888,
       "source": "quaternius-ultimate-gun-pack/OBJ/Accessories/Bayonet.obj",
@@ -108,7 +108,7 @@
     },
     {
       "file": "models/weapons/launcher.glb",
-      "sha256": "c81945d4d149f81e",
+      "sha256": "daf2d5c87f214d94",
       "triangles": 296,
       "bytes": 32172,
       "source": "kenney-blaster-kit/blaster-h.glb",
@@ -124,7 +124,7 @@
     },
     {
       "file": "models/projectiles/grenade.glb",
-      "sha256": "93cce8f404470b38",
+      "sha256": "d3886d3d74b2c9d6",
       "triangles": 154,
       "bytes": 19964,
       "source": "kenney-blaster-kit/grenade-b.glb",
@@ -140,7 +140,7 @@
     },
     {
       "file": "models/weapons/rockets.glb",
-      "sha256": "1db6f5ce2c27eb55",
+      "sha256": "deaeb769649dd152",
       "triangles": 368,
       "bytes": 37972,
       "source": "kenney-blaster-kit/blaster-b.glb",
@@ -156,7 +156,7 @@
     },
     {
       "file": "models/weapons/plasma.glb",
-      "sha256": "ffcb7deda1103b89",
+      "sha256": "4d5992ab3a2a4a86",
       "triangles": 882,
       "bytes": 89976,
       "source": "kenney-blaster-kit/blaster-p.glb",
@@ -171,7 +171,7 @@
     },
     {
       "file": "models/projectiles/frag.glb",
-      "sha256": "fea2048ffddd5144",
+      "sha256": "5997370686239f0a",
       "triangles": 200,
       "bytes": 22824,
       "source": "kenney-blaster-kit/grenade-a.glb",
@@ -187,7 +187,7 @@
     },
     {
       "file": "models/weapons/pulse_pistol.glb",
-      "sha256": "1dae83e4f678ab69",
+      "sha256": "b6fa8280fa9a283f",
       "triangles": 470,
       "bytes": 54564,
       "source": "kenney-blaster-kit/blaster-a.glb",
@@ -202,7 +202,7 @@
     },
     {
       "file": "models/weapons/hand_cannon.glb",
-      "sha256": "da5d40023048f71c",
+      "sha256": "47a76307e0b3ae98",
       "triangles": 1252,
       "bytes": 92760,
       "source": "quaternius-ultimate-gun-pack/OBJ/Revolver_2.obj",
@@ -217,7 +217,7 @@
     },
     {
       "file": "models/weapons/gilded_pistol.glb",
-      "sha256": "8710c7f43e2dea42",
+      "sha256": "4891be9987a0999d",
       "triangles": 1320,
       "bytes": 97068,
       "source": "quaternius-ultimate-gun-pack/OBJ/Pistol_4.obj",
@@ -233,7 +233,7 @@
     },
     {
       "file": "models/weapons/flare_gun.glb",
-      "sha256": "69b2c27b57bb6344",
+      "sha256": "6304bd7e1ed154ee",
       "triangles": 392,
       "bytes": 45624,
       "source": "kenney-blaster-kit/blaster-k.glb",
@@ -248,7 +248,7 @@
     },
     {
       "file": "models/weapons/machine_pistol.glb",
-      "sha256": "fb8778915bd65596",
+      "sha256": "f8d8a58fa14f7e1d",
       "triangles": 1566,
       "bytes": 115348,
       "source": "quaternius-ultimate-gun-pack/OBJ/SubmachineGun_3.obj",
@@ -263,7 +263,7 @@
     },
     {
       "file": "models/weapons/burst_rifle.glb",
-      "sha256": "41f7f631979902b7",
+      "sha256": "9a1ab558a332dd9c",
       "triangles": 2782,
       "bytes": 202304,
       "source": "quaternius-ultimate-gun-pack/OBJ/Bullpup_1.obj",
@@ -278,7 +278,7 @@
     },
     {
       "file": "models/weapons/laser_rifle.glb",
-      "sha256": "3fab87bc52697fe8",
+      "sha256": "fe8a309333367f33",
       "triangles": 768,
       "bytes": 81540,
       "source": "kenney-blaster-kit/blaster-f.glb",
@@ -293,7 +293,7 @@
     },
     {
       "file": "models/weapons/marksman.glb",
-      "sha256": "c40ce9f0b9354fd9",
+      "sha256": "be0ada7356be7109",
       "triangles": 1722,
       "bytes": 127160,
       "source": "quaternius-ultimate-gun-pack/OBJ/SniperRifle_3.obj",
@@ -308,7 +308,7 @@
     },
     {
       "file": "models/weapons/sawed_off.glb",
-      "sha256": "ab30ef148dea9776",
+      "sha256": "c9e83ad553c3955e",
       "triangles": 956,
       "bytes": 72012,
       "source": "quaternius-ultimate-gun-pack/OBJ/Shotgun_SawedOff.obj",
@@ -323,7 +323,7 @@
     },
     {
       "file": "models/weapons/auto_shotgun.glb",
-      "sha256": "3571a0bb7ad9e2e6",
+      "sha256": "78d8f425dd9fe00b",
       "triangles": 978,
       "bytes": 73020,
       "source": "quaternius-ultimate-gun-pack/OBJ/Shotgun_3.obj",
@@ -338,7 +338,7 @@
     },
     {
       "file": "models/weapons/flak.glb",
-      "sha256": "589980fe418fc607",
+      "sha256": "4430d6056c772a92",
       "triangles": 450,
       "bytes": 51828,
       "source": "kenney-blaster-kit/blaster-l.glb",
@@ -353,7 +353,7 @@
     },
     {
       "file": "models/weapons/railgun.glb",
-      "sha256": "eab7e78527dd3aab",
+      "sha256": "a42eaf54175cdf67",
       "triangles": 802,
       "bytes": 84520,
       "source": "kenney-blaster-kit/blaster-e.glb",
@@ -368,7 +368,7 @@
     },
     {
       "file": "models/weapons/disc_launcher.glb",
-      "sha256": "5dbfa6ee54e9c1c9",
+      "sha256": "a7d68dca9a3fbba4",
       "triangles": 618,
       "bytes": 66188,
       "source": "kenney-blaster-kit/blaster-g.glb",
@@ -383,7 +383,7 @@
     },
     {
       "file": "models/weapons/bubble_blaster.glb",
-      "sha256": "a031dc3e7d077629",
+      "sha256": "1fd8a888a215ce3e",
       "triangles": 388,
       "bytes": 40140,
       "source": "kenney-blaster-kit/blaster-c.glb",
@@ -399,7 +399,7 @@
     },
     {
       "file": "models/weapons/goo_gun.glb",
-      "sha256": "ddcac223798e59d6",
+      "sha256": "e3a28cec295a0b27",
       "triangles": 416,
       "bytes": 42832,
       "source": "kenney-blaster-kit/blaster-i.glb",
@@ -415,7 +415,7 @@
     },
     {
       "file": "models/weapons/oil_slicker.glb",
-      "sha256": "b755974723aaa68a",
+      "sha256": "9514da0b6d56982c",
       "triangles": 440,
       "bytes": 44816,
       "source": "kenney-blaster-kit/blaster-m.glb",
@@ -431,7 +431,7 @@
     },
     {
       "file": "models/weapons/lmg.glb",
-      "sha256": "ed52858a26c05014",
+      "sha256": "823a2fe1734a1a40",
       "triangles": 1372,
       "bytes": 100772,
       "source": "quaternius-ultimate-gun-pack/OBJ/AssaultRifle2_4.obj",
@@ -446,7 +446,7 @@
     },
     {
       "file": "models/weapons/nailgun.glb",
-      "sha256": "48c4022e61d0f546",
+      "sha256": "fc443722464b0391",
       "triangles": 602,
       "bytes": 65804,
       "source": "kenney-blaster-kit/blaster-q.glb",
@@ -461,7 +461,7 @@
     },
     {
       "file": "models/weapons/swarm.glb",
-      "sha256": "948936aa1f774a76",
+      "sha256": "5e8350eed49d5dcc",
       "triangles": 664,
       "bytes": 69340,
       "source": "kenney-blaster-kit/blaster-o.glb",
@@ -476,7 +476,7 @@
     },
     {
       "file": "models/weapons/singularity.glb",
-      "sha256": "608450ac1ae1ece6",
+      "sha256": "1fe2e254643d5709",
       "triangles": 524,
       "bytes": 58428,
       "source": "kenney-blaster-kit/blaster-r.glb",
@@ -491,7 +491,7 @@
     },
     {
       "file": "models/weapons/arc_caster.glb",
-      "sha256": "b95a2affbedc7832",
+      "sha256": "996759eb9891fce6",
       "triangles": 486,
       "bytes": 54572,
       "source": "kenney-blaster-kit/blaster-d.glb",
@@ -506,7 +506,7 @@
     },
     {
       "file": "models/weapons/flamethrower.glb",
-      "sha256": "3f99c53e85ea8afc",
+      "sha256": "169106ad7f93fa8f",
       "triangles": 410,
       "bytes": 48328,
       "source": "kenney-blaster-kit/blaster-n.glb",
@@ -521,7 +521,7 @@
     },
     {
       "file": "models/weapons/freeze_ray.glb",
-      "sha256": "292c0853be15db55",
+      "sha256": "3694ecd37fa4449c",
       "triangles": 548,
       "bytes": 54480,
       "source": "kenney-blaster-kit/blaster-j.glb",
@@ -537,7 +537,7 @@
     },
     {
       "file": "models/vehicles/kart.glb",
-      "sha256": "9cb1cc3a87040154",
+      "sha256": "2c738ca0f927cc6f",
       "triangles": 2726,
       "bytes": 245452,
       "source": "kenney-car-kit/kart-oopi.glb",
@@ -552,7 +552,7 @@
     },
     {
       "file": "models/vehicles/buggy.glb",
-      "sha256": "dba4465670e9d8cf",
+      "sha256": "95872c67c5b9e0fa",
       "triangles": 2474,
       "bytes": 209408,
       "source": "kenney-car-kit/suv.glb",
@@ -568,7 +568,7 @@
     },
     {
       "file": "models/vehicles/speeder.glb",
-      "sha256": "e449cb47748af4f0",
+      "sha256": "007d78da15f22b23",
       "triangles": 280,
       "bytes": 19740,
       "source": "kenney-space-kit/craft_speederA.glb",
@@ -583,7 +583,7 @@
     },
     {
       "file": "models/vehicles/hauler.glb",
-      "sha256": "758480fb7cf006ae",
+      "sha256": "e5482cba69f95e9c",
       "triangles": 264,
       "bytes": 18164,
       "source": "kenney-space-kit/craft_cargoA.glb",
@@ -598,7 +598,7 @@
     },
     {
       "file": "models/turrets/mg.glb",
-      "sha256": "55897124cdc77495",
+      "sha256": "484a6017867cb1e2",
       "triangles": 876,
       "bytes": 49400,
       "source": "kenney-space-kit/turret_double.glb",
@@ -613,7 +613,7 @@
     },
     {
       "file": "models/turrets/rocket.glb",
-      "sha256": "6cb7b82ebd236e60",
+      "sha256": "03bae11146ea3777",
       "triangles": 576,
       "bytes": 37160,
       "source": "kenney-space-kit/turret_single.glb",
@@ -629,7 +629,7 @@
     },
     {
       "file": "models/turrets/sentry.glb",
-      "sha256": "d28a47f56a82d6ad",
+      "sha256": "4c107e0bd161c37c",
       "triangles": 576,
       "bytes": 37156,
       "source": "kenney-space-kit/turret_single.glb",

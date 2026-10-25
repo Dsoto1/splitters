@@ -9,6 +9,6 @@ https://docs.ambientcg.com/license/
 You can copy, modify, distribute and use the assets, even for commercial
 purposes, all without asking permission. Credit is appreciated but not required.
 
-ChronoSplit downloads the 1K-JPG sets listed in content/textures.json
+Tile Trigger downloads the 1K-JPG sets listed in content/textures.json
 (tools/content/prepare-textures.mjs) and ships 512 px colour, normal and
 emission maps.

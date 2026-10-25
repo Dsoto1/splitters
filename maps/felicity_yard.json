@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "felicity_yard",
     "name": "Felicity Yard",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A walled yard between brick buildings. The north block is two storeys of offices with windows over the yard; a railed walkway crosses to the south block upstairs, carrying the heavy armour. The garage roof holds the sniper rifle, the vent housing in the middle of the yard drops into the pump room and the rockets, and service tunnels loop from the garage under the south block to the loading dock. An homage in spirit to a classic compact deathmatch yard.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

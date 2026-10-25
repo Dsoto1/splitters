@@ -4,7 +4,7 @@
  * It is made through the same edit commands the MapMaker issues (terrain,
  * tiles, walls, props, spawns, pickups), so it opens and edits like any
  * other map. Rerun after changing the layout:
- * `pnpm --filter @chronosplit/server build-canyon`.
+ * `pnpm --filter @tiletrigger/server build-canyon`.
  *
  * Top-down (x east, z north; metres):
  *
@@ -45,7 +45,7 @@ import {
   type Side,
   type TerrainData,
   type TerrainMaterial,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 
 const OUT = fileURLToPath(new URL('../../../../maps/canyon.json', import.meta.url));
 
@@ -291,7 +291,7 @@ run('Edit map', {
   before: history.doc.metadata,
   after: {
     id: 'canyon',
-    author: 'ChronoSplit',
+    author: 'Tile Trigger',
     description:
       'A long grassy canyon between sheer rock walls. Embers hold the south bunkers, Tide the north; each base has a railed roof with a sniper rifle. Boulder fields and two big hills cover the middle, a 5 m ledge runs up the west wall, and rockets wait in the ruins on the east side. Each base keeps its flag in its west bunker; King of the Hill moves between mid, the ruins and the watchtower.',
     recommendedPlayers: { min: 4, max: 16 },

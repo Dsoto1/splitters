@@ -5,7 +5,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type TilePlacement, type WorldBox } from '@chronosplit/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type TilePlacement, type WorldBox } from '@tiletrigger/shared';
 import { materialPixels } from './materials/patterns.ts';
 import { versioned } from './assetUrl.ts';
 

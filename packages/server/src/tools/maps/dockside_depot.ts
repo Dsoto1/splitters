@@ -39,7 +39,7 @@
  *   W hall (two storeys under the bridge), L loading door, > doors (side, front), d personnel door
  *   E Embers' road, p parking lot (T trucks), a alley, F fire escape, b back strip, e east lane
  */
-import type { Side, TileSurfaces } from '@chronosplit/shared';
+import type { Side, TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('dockside_depot', 'Dockside Depot');

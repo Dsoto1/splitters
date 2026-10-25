@@ -2,7 +2,7 @@
  * Builds maps/citadel.json, a two-storey castle Deathmatch map that shows off
  * the building kit, props, breakables and the full arsenal, through the same
  * edit commands the MapMaker issues. Rerun after changing the layout:
- * `pnpm --filter @chronosplit/server build-citadel`.
+ * `pnpm --filter @tiletrigger/server build-citadel`.
  *
  * Ground floor (grid x east, y north; one cell = 8 m), upper floor in brackets.
  * The keep (cells 1–4) stands in an outer bailey of courtyards (cells 0 and 5)
@@ -16,7 +16,7 @@
  */
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { EditHistory, addSpawnCommand, loadMap, newMapDocument, placeTileCommand, serializeMap, setEdgeCommand, setThemeCommand, validateMap, type EdgeStyle, type MapEntity, type Rotation, type Side } from '@chronosplit/shared';
+import { EditHistory, addSpawnCommand, loadMap, newMapDocument, placeTileCommand, serializeMap, setEdgeCommand, setThemeCommand, validateMap, type EdgeStyle, type MapEntity, type Rotation, type Side } from '@tiletrigger/shared';
 
 const OUT = fileURLToPath(new URL('../../../../maps/citadel.json', import.meta.url));
 
@@ -222,7 +222,7 @@ run('Edit map', {
   before: history.doc.metadata,
   after: {
     id: 'citadel',
-    author: 'ChronoSplit',
+    author: 'Tile Trigger',
     description:
       'A castle keep around a two-storey atrium, inside an outer bailey of courtyards behind a curtain wall; the corner rooms and stairwells are its gates. Halls with arched openings ring the ground floor; stairwells in two corners climb to barracks, a map room and roof terraces with cannons. Rockets wait in the atrium, the sniper rifle on the north roof. Shoot out the window panes, break the boards, and mind the powder kegs.',
     recommendedPlayers: { min: 4, max: 12 },

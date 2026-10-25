@@ -183,7 +183,7 @@ for (const [id, pack, src, ratio, clips] of CREATURES) {
   for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) for (const a of ['TANGENT', 'TEXCOORD_1', 'COLOR_0']) p.setAttribute(a, null);
   await doc.transform(weld(), dedup(), prune());
   if (ratio < 1) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.004, lockBorder: true }), prune());
-  doc.getRoot().getAsset().generator = 'chronosplit prepare-creatures';
+  doc.getRoot().getAsset().generator = 'tiletrigger prepare-creatures';
   const glb = await io.writeBinary(doc);
   writeFileSync(join(OUT, `${id}.glb`), glb);
   const tris = triangles(doc);

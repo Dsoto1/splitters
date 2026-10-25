@@ -6,7 +6,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { getItem, getWeapon , type AmmoType } from '@chronosplit/shared';
+import { getItem, getWeapon , type AmmoType } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 
 /** Height of a pickup's centre above the floor. */

@@ -53,8 +53,8 @@ import {
   type Side,
   type TerrainData,
   type ValidationIssue,
-} from '@chronosplit/shared';
-import { NavWorld, initNavigation, validateNavigation } from '@chronosplit/shared/match';
+} from '@tiletrigger/shared';
+import { NavWorld, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 
 type V3 = [number, number, number];
 /** Any entity without its ID (one per kind, so object literals are checked against the right kind). */
@@ -365,7 +365,7 @@ export class MapBuilder {
     this.run('Edit map', {
       kind: 'setMetadata',
       before: this.doc.metadata,
-      after: { id: this.id, author: m.author ?? 'ChronoSplit', description: m.description, recommendedPlayers: { min: m.players[0], max: m.players[1] }, supportedModes: m.modes },
+      after: { id: this.id, author: m.author ?? 'Tile Trigger', description: m.description, recommendedPlayers: { min: m.players[0], max: m.players[1] }, supportedModes: m.modes },
     });
     return this;
   }

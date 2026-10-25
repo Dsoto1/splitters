@@ -1,4 +1,4 @@
-import { getMountDef, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@chronosplit/shared';
+import { getMountDef, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {

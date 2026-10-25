@@ -22,7 +22,7 @@
  * straight down the middle through the passes. Snow everywhere, stone on the
  * steep faces and a band of bare rock round the mountains.
  */
-import { TERRAIN_MATERIALS, newTerrain, paintSlopes, terrainHeightAt, type TerrainData, type TerrainMaterial } from '@chronosplit/shared';
+import { TERRAIN_MATERIALS, newTerrain, paintSlopes, terrainHeightAt, type TerrainData, type TerrainMaterial } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('frost_basin', 'Frost Basin');

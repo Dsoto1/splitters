@@ -1,4 +1,4 @@
-import { LOBBY_HEARTBEAT_SECONDS, PROTOCOL_VERSION, type LobbyAdvert, type LobbyListing } from '@chronosplit/shared';
+import { LOBBY_HEARTBEAT_SECONDS, PROTOCOL_VERSION, type LobbyAdvert, type LobbyListing } from '@tiletrigger/shared';
 
 /**
  * The community hub (packages/server/src/hub.ts): the PeerJS broker for Host
@@ -7,7 +7,7 @@ import { LOBBY_HEARTBEAT_SECONDS, PROTOCOL_VERSION, type LobbyAdvert, type Lobby
  * with (VITE_HUB). None: Host game uses the public PeerJS broker and there's
  * no game browser.
  */
-const HUB_KEY = 'chronosplit.hub';
+const HUB_KEY = 'tiletrigger.hub';
 
 export function hubSetting(): string {
   const fromUrl = new URLSearchParams(location.search).get('hub');

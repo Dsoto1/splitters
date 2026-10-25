@@ -21,8 +21,8 @@ import {
   type MatchRules,
   type GameMode,
   type ServerMessage,
-} from '@chronosplit/shared';
-import { BotFiller, Match, initNavigation, validateNavigation } from '@chronosplit/shared/match';
+} from '@tiletrigger/shared';
+import { BotFiller, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 import { StatsWindow } from './stats.ts';
 
 export interface ServerOptions {

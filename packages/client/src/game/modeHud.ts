@@ -1,4 +1,4 @@
-import { HOSTAGE_FOLLOWING, HOSTAGE_RESCUED, HOSTAGE_WAITING, BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type GameEvent, type MapDocument, type ModeSnapshot, type Vec3 } from '@chronosplit/shared';
+import { HOSTAGE_FOLLOWING, HOSTAGE_RESCUED, HOSTAGE_WAITING, BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type GameEvent, type MapDocument, type ModeSnapshot, type Vec3 } from '@tiletrigger/shared';
 import { ModeVisuals } from './flagVisuals.ts';
 import type { Hud } from './hud.ts';
 import type { RemotePose } from './interpolation.ts';

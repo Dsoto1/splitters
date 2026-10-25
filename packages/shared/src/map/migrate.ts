@@ -1,4 +1,4 @@
-import { MAP_FORMAT, MAP_FORMAT_VERSION } from './schema.ts';
+import { LEGACY_MAP_FORMAT, MAP_FORMAT, MAP_FORMAT_VERSION } from './schema.ts';
 
 /** Upgrades a raw document from `from` to `from + 1`. Must not mutate its input. */
 export type Migration = (doc: Record<string, unknown>) => Record<string, unknown>;
@@ -52,7 +52,8 @@ export function migrateMapDocument(
 ): { doc: Record<string, unknown>; fromVersion: number } {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) throw new MapMigrationError('map document must be a JSON object');
   const obj = raw as Record<string, unknown>;
-  if (obj.format !== MAP_FORMAT) throw new MapMigrationError(`not a ChronoSplit map (format=${String(obj.format)})`);
+  // Maps saved before the game was renamed from ChronoSplit carry the old format name.
+  if (obj.format !== MAP_FORMAT && obj.format !== LEGACY_MAP_FORMAT) throw new MapMigrationError(`not a Tile Trigger map (format=${String(obj.format)})`);
   const fromVersion = obj.formatVersion;
   if (typeof fromVersion !== 'number' || !Number.isInteger(fromVersion) || fromVersion < 1) {
     throw new MapMigrationError(`invalid formatVersion ${String(fromVersion)}`);
@@ -60,7 +61,7 @@ export function migrateMapDocument(
   if (fromVersion > targetVersion) {
     throw new MapMigrationError(`map format v${fromVersion} is newer than this game supports (v${targetVersion})`);
   }
-  let doc = structuredClone(obj);
+  let doc: Record<string, unknown> = { ...structuredClone(obj), format: MAP_FORMAT };
   for (let v = fromVersion; v < targetVersion; v++) {
     const step = migrations.get(v);
     if (!step) throw new MapMigrationError(`no migration from map format v${v}`);

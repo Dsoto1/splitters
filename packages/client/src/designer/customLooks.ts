@@ -1,4 +1,4 @@
-import { decodeLook } from '@chronosplit/shared';
+import { decodeLook } from '@tiletrigger/shared';
 
 /** A look made in the Character Designer, saved in this browser. */
 export interface SavedLook {

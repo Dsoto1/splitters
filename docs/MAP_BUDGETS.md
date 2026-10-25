@@ -1,6 +1,6 @@
 # Map and asset budgets
 
-How big maps can get, and what an asset may cost, so ChronoSplit stays smooth
+How big maps can get, and what an asset may cost, so Tile Trigger stays smooth
 in a browser on an ordinary laptop (integrated graphics, 8 GB RAM) with 8–24
 players and bots.
 

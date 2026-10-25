@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { CORE_ITEMS, WEAPONS_BY_SLOT } from '@chronosplit/shared';
+import { CORE_ITEMS, WEAPONS_BY_SLOT } from '@tiletrigger/shared';
 import { SOUNDS } from '../src/audio/audio.ts';
 import { SYNTH_RATE, SYNTH_RECIPES, synthesize, type SynthRecipe } from '../src/audio/synth.ts';
 

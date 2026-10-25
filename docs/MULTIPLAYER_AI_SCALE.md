@@ -1,4 +1,4 @@
-# PROJECT CHRONOSPLIT — MULTIPLAYER & AI SCALE v1
+# PROJECT TILE TRIGGER — MULTIPLAYER & AI SCALE v1
 
 **Authority:** Supporting spec; `MASTER_SPEC_V2.md` wins on conflict.
 

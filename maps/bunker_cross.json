@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "bunker_cross",
     "name": "Bunker Cross",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "Two concrete bunkers face each other across an open yard split by a dry canal. Snipe from the galleries, run the tunnels under the flanks, grab the railgun from the north storeroom, and if the yard gets crowded, hit the button deep in the south bunker: an alarm, the blast doors seal, and six seconds later an airstrike levels everything outside.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

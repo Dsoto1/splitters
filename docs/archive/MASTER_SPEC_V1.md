@@ -1,6 +1,6 @@
 > **ARCHIVED — superseded by [`../MASTER_SPEC_V2.md`](../MASTER_SPEC_V2.md).** Where this file conflicts with the v2 pack, v2 wins. In particular, Godot / PC-first / listen servers / 12–16 players (§header, §12, §18, §19) and the `.cmap` package layout (§10.1) are replaced by the browser + TypeScript + Babylon.js + dedicated-server direction. Sections that v2 does not cover (e.g. movement verbs §5.1, weapon data fields §5.2, pickups §5.4, validation severity classes §9, map versioning fields §10.3, front-end UX §13, challenges §14, accessibility §17, save/profile §20) remain useful reference until the matching v2 supporting docs exist.
 
-# PROJECT CHRONOSPLIT — MASTER PRE-PRODUCTION SPEC
+# PROJECT TILE TRIGGER — MASTER PRE-PRODUCTION SPEC
 
 > Working title only. An original, PC-first arena FPS and community creation platform inspired by the speed, accessibility, variety, bots, customization, and grid-based MapMaker philosophy of classic console arena shooters—especially the TimeSplitters trilogy.
 
@@ -15,7 +15,7 @@
 ## 1. PRODUCT VISION
 
 ### 1.1 Elevator pitch
-ChronoSplit is a fast, stylized arena FPS built around instant fun, configurable bots, absurd character variety, highly customizable matches, and a powerful but approachable in-game MapMaker. Players can create, test, share, remix, and play maps without installing external development tools.
+Tile Trigger is a fast, stylized arena FPS built around instant fun, configurable bots, absurd character variety, highly customizable matches, and a powerful but approachable in-game MapMaker. Players can create, test, share, remix, and play maps without installing external development tools.
 
 ### 1.2 Design pillars
 1. **Instant Fun** — launch a match with humans and/or bots in seconds.
@@ -66,7 +66,7 @@ Imported references should resolve to **our own equivalent assets**, not bundled
 ### 2.3 Importer architecture rule
 Legacy compatibility must live behind an adapter:
 
-`Legacy Source Data -> Parser -> Neutral Map IR -> Validation -> ChronoSplit Map Format`
+`Legacy Source Data -> Parser -> Neutral Map IR -> Validation -> Tile Trigger Map Format`
 
 Never couple the runtime map format directly to a proprietary source format.
 

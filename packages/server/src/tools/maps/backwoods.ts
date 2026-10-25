@@ -44,7 +44,7 @@
  * cellar stairs). Upstairs windows and the balcony cover the yard; the barn
  * hayloft window answers them.
  */
-import { TERRAIN_MATERIALS, paintSlopes, terrainHeightAt, type Side, type TerrainData, type TerrainMaterial, type TileSurfaces } from '@chronosplit/shared';
+import { TERRAIN_MATERIALS, paintSlopes, terrainHeightAt, type Side, type TerrainData, type TerrainMaterial, type TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('backwoods', 'Backwoods Lodge');

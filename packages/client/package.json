@@ -1,5 +1,5 @@
 {
-  "name": "@chronosplit/client",
+  "name": "@tiletrigger/client",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
   "dependencies": {
     "@babylonjs/core": "^9.30.0",
     "@babylonjs/loaders": "9.32.0",
-    "@chronosplit/shared": "workspace:*",
+    "@tiletrigger/shared": "workspace:*",
     "@fontsource/barlow": "5.3.0",
     "@fontsource/chakra-petch": "5.3.0",
     "pako": "2.1.0",

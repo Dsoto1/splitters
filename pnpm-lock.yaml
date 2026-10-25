@@ -50,15 +50,15 @@ importers:
       '@babylonjs/loaders':
         specifier: 9.32.0
         version: 9.32.0(@babylonjs/core@9.32.0)(babylonjs-gltf2interface@9.32.0)
-      '@chronosplit/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@fontsource/barlow':
         specifier: 5.3.0
         version: 5.3.0
       '@fontsource/chakra-petch':
         specifier: 5.3.0
         version: 5.3.0
+      '@tiletrigger/shared':
+        specifier: workspace:*
+        version: link:../shared
       pako:
         specifier: 2.1.0
         version: 2.1.0
@@ -75,7 +75,7 @@ importers:
 
   packages/server:
     dependencies:
-      '@chronosplit/shared':
+      '@tiletrigger/shared':
         specifier: workspace:*
         version: link:../shared
       peer:

@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "rail_stockyard",
     "name": "Rail Stockyard",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A railway goods yard at dusk. Weave between boxcars and cargo stacks in the open yard, drop into the sunken loading pit, slip through the culvert beneath the tracks, or run the dock catwalk between the two brick sheds and their windows over the yard. The railgun waits on the crane perch above the pit, and the only way out to it is a bare girder from the west shed roof, in plain sight of everyone.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

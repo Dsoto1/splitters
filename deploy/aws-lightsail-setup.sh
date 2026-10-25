@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ChronoSplit on one AWS Lightsail instance (Ubuntu 24.04): the site, the hub
+# Tile Trigger on one AWS Lightsail instance (Ubuntu 24.04): the site, the hub
 # (broker + game browser), its own relay (coturn) and HTTPS (Caddy).
 # Matches run in players' browsers, so a $5 instance is plenty.
 #
@@ -8,20 +8,20 @@
 # then in the browser SSH window:
 #   curl -fsSL https://raw.githubusercontent.com/Dsoto1/splitters/main/deploy/aws-lightsail-setup.sh | sudo bash -s -- play.example.com
 # (Another branch: put its name in the URL instead of main, and run `sudo BRANCH=<name> bash -s -- …`.)
-# Re-running it is safe (it updates). Later updates: sudo chronosplit-update
+# Re-running it is safe (it updates). Later updates: sudo tiletrigger-update
 set -euo pipefail
 
 DOMAIN="${1:-}"
 BRANCH="${BRANCH:-main}"
 REPO="${REPO:-https://github.com/Dsoto1/splitters.git}"
-APP=/opt/chronosplit
-ENV_FILE=/etc/chronosplit.env
+APP=/opt/tiletrigger
+ENV_FILE=/etc/tiletrigger.env
 
 [ "$(id -u)" = 0 ] || { echo "run with sudo"; exit 1; }
 export DEBIAN_FRONTEND=noninteractive
 # Corepack fetches pnpm on first use: don't stop to ask.
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-echo "== ChronoSplit setup ${DOMAIN:+for $DOMAIN} (branch $BRANCH)"
+echo "== Tile Trigger setup ${DOMAIN:+for $DOMAIN} (branch $BRANCH)"
 
 # Building the game needs more memory than the smallest instances have: add swap once.
 if ! swapon --show | grep -q /swapfile; then
@@ -47,10 +47,10 @@ if ! command -v caddy >/dev/null; then
 fi
 
 # The game.
-id chronosplit >/dev/null 2>&1 || useradd --system --home "$APP" --shell /usr/sbin/nologin chronosplit
-mkdir -p "$APP" && chown chronosplit:chronosplit "$APP"
+id tiletrigger >/dev/null 2>&1 || useradd --system --home "$APP" --shell /usr/sbin/nologin tiletrigger
+mkdir -p "$APP" && chown tiletrigger:tiletrigger "$APP"
 # Everything in the app folder is done as its own user (git refuses folders owned by someone else).
-as_app() { sudo -u chronosplit -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && $1"; }
+as_app() { sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && $1"; }
 if [ -d "$APP/.git" ]; then
   as_app "git fetch -q origin '$BRANCH' && git checkout -q -B '$BRANCH' 'origin/$BRANCH'"
 else
@@ -69,7 +69,7 @@ if [ ! -f "$ENV_FILE" ]; then
 TURN_SECRET=$SECRET
 TURN_URLS=turn:$TURN_HOST:3478 turn:$TURN_HOST:3478?transport=tcp
 ENV
-  chmod 640 "$ENV_FILE" && chgrp chronosplit "$ENV_FILE"
+  chmod 640 "$ENV_FILE" && chgrp tiletrigger "$ENV_FILE"
 fi
 SECRET="$(grep '^TURN_SECRET=' "$ENV_FILE" | cut -d= -f2)"
 cat > /etc/turnserver.conf <<TURN
@@ -79,7 +79,7 @@ min-port=49160
 max-port=49200
 use-auth-secret
 static-auth-secret=$SECRET
-realm=${DOMAIN:-chronosplit}
+realm=${DOMAIN:-tiletrigger}
 fingerprint
 no-cli
 no-multicast-peers
@@ -99,25 +99,25 @@ sed -i 's/^#\?TURNSERVER_ENABLED=.*/TURNSERVER_ENABLED=1/' /etc/default/coturn 2
 systemctl enable -q coturn && systemctl restart coturn
 
 # The hub (site + broker + game browser), restarted if it ever stops.
-cat > /etc/systemd/system/chronosplit-hub.service <<UNIT
+cat > /etc/systemd/system/tiletrigger-hub.service <<UNIT
 [Unit]
-Description=ChronoSplit hub (site, broker, game browser)
+Description=Tile Trigger hub (site, broker, game browser)
 After=network-online.target
 Wants=network-online.target
 
 [Service]
-User=chronosplit
+User=tiletrigger
 WorkingDirectory=$APP
 Environment=PORT=8080 HOST=127.0.0.1 TRUST_PROXY=1 COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 EnvironmentFile=$ENV_FILE
-ExecStart=/usr/bin/corepack pnpm --filter @chronosplit/server hub
+ExecStart=/usr/bin/corepack pnpm --filter @tiletrigger/server hub
 Restart=always
 RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
 UNIT
-systemctl daemon-reload && systemctl enable -q chronosplit-hub && systemctl restart chronosplit-hub
+systemctl daemon-reload && systemctl enable -q tiletrigger-hub && systemctl restart tiletrigger-hub
 
 # HTTPS in front (or plain HTTP on the IP until a domain is given).
 if [ -n "$DOMAIN" ]; then
@@ -128,26 +128,26 @@ fi
 systemctl enable -q caddy && systemctl reload-or-restart caddy
 
 # One-line updates later.
-cat > /usr/local/bin/chronosplit-update <<UPD
+cat > /usr/local/bin/tiletrigger-update <<UPD
 #!/usr/bin/env bash
 set -euo pipefail
-sudo -u chronosplit -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && git fetch -q origin $BRANCH && git reset -q --hard origin/$BRANCH && corepack pnpm install --frozen-lockfile && VITE_HUB=self corepack pnpm build"
-systemctl restart chronosplit-hub
-echo "ChronoSplit updated to \$(sudo -u chronosplit git -C $APP log -1 --format='%h %s')"
+sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && git fetch -q origin $BRANCH && git reset -q --hard origin/$BRANCH && corepack pnpm install --frozen-lockfile && VITE_HUB=self corepack pnpm build"
+systemctl restart tiletrigger-hub
+echo "Tile Trigger updated to \$(sudo -u tiletrigger git -C $APP log -1 --format='%h %s')"
 UPD
-chmod +x /usr/local/bin/chronosplit-update
+chmod +x /usr/local/bin/tiletrigger-update
 
 up=no
 for _ in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/lobby/health >/dev/null 2>&1 && { up=yes; break; }; sleep 1; done
-if [ "$up" = yes ]; then echo "== Hub is running."; else echo "== Hub didn't answer yet: sudo journalctl -u chronosplit-hub -n 50"; fi
+if [ "$up" = yes ]; then echo "== Hub is running."; else echo "== Hub didn't answer yet: sudo journalctl -u tiletrigger-hub -n 50"; fi
 cat <<DONE
 
-ChronoSplit is set up. Open: ${DOMAIN:+https://$DOMAIN}${DOMAIN:-http://$PUBLIC_IP}
+Tile Trigger is set up. Open: ${DOMAIN:+https://$DOMAIN}${DOMAIN:-http://$PUBLIC_IP}
 
 In the Lightsail console → your instance → Networking → IPv4 firewall, make sure these are open:
   TCP 80, TCP 443          (the site; HTTPS certificate)
   TCP 3478, UDP 3478       (relay)
   UDP 49160-49200          (relay traffic)
 
-Updates: sudo chronosplit-update    Logs: sudo journalctl -u chronosplit-hub -f
+Updates: sudo tiletrigger-update    Logs: sudo journalctl -u tiletrigger-hub -f
 DONE

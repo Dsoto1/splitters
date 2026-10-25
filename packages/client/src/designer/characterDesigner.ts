@@ -34,7 +34,7 @@ import {
   type BodyType,
   type CharacterLook,
   type PartSlot,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';

@@ -7,7 +7,7 @@ import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { CORE_LOOKS, CREATURE_ROLES, NPC_ROLE_SPECS, PLAYER, getWeapon } from '@chronosplit/shared';
+import { CORE_LOOKS, CREATURE_ROLES, NPC_ROLE_SPECS, PLAYER, getWeapon } from '@tiletrigger/shared';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CharacterLibrary, type CharacterSpec } from '../content/characters.ts';

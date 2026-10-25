@@ -27,7 +27,7 @@
  * Sniper rifle on DeKoven's roof, railgun upstairs in Smythe, rockets in the
  * chapel, damage boost by the pool.
  */
-import { newTerrain } from '@chronosplit/shared';
+import { newTerrain } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('st_johns', "St. John's");

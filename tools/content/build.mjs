@@ -265,7 +265,7 @@ for (const entry of manifest.models) {
     bakeGlb(doc, await normaliser(entry, await glbPoints(doc)));
     if (entry.recolor) recolorTextures(doc, entry.recolor);
   }
-  doc.getRoot().getAsset().generator = 'chronosplit content build';
+  doc.getRoot().getAsset().generator = 'tiletrigger content build';
   const glb = await io.writeBinary(doc);
   const hash = createHash('sha256').update(glb).digest('hex').slice(0, 16);
   const tris = triangleCount(doc);

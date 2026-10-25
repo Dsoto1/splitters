@@ -1,4 +1,4 @@
-# splitters — Project ChronoSplit (working title)
+# splitters — Project Tile Trigger (working title)
 
 An original browser-first arcade FPS and community creation platform with a built-in MapMaker (grid construction through scripted co-op scenarios), full Player Bots, scenario NPCs, and a deliberately chaotic cross-era character roster. Inspired by the design lessons of classic console arena shooters; uses no proprietary assets, names, or content.
 

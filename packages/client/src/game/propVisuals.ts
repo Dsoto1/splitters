@@ -4,7 +4,7 @@ import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { getProp, groundNormal, propTilts, terrainHeightAt, type PropEntity, type TerrainData } from '@chronosplit/shared';
+import { getProp, groundNormal, propTilts, terrainHeightAt, type PropEntity, type TerrainData } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 
 /**

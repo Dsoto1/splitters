@@ -1,4 +1,4 @@
-# Hosting ChronoSplit
+# Hosting Tile Trigger
 
 ## Quickest: one AWS Lightsail instance (~$5/month)
 
@@ -16,7 +16,7 @@ up for. Script: `deploy/aws-lightsail-setup.sh`.
    curl -fsSL https://raw.githubusercontent.com/Dsoto1/splitters/main/deploy/aws-lightsail-setup.sh | sudo bash -s -- play.yourdomain.com
    ```
    For another branch, put its name in the URL and add `BRANCH=<name>` after `sudo`.
-5. Open `https://play.yourdomain.com`. Updates later: `sudo chronosplit-update`.
+5. Open `https://play.yourdomain.com`. Updates later: `sudo tiletrigger-update`.
 
 The other options below are the same pieces, run elsewhere.
 
@@ -58,7 +58,7 @@ host from cheating. The game browser tags these games "Player-hosted".
 
 ## 2. Official servers (later)
 
-`pnpm --filter @chronosplit/server start` runs one dedicated match
+`pnpm --filter @tiletrigger/server start` runs one dedicated match
 (`MAP`, `MODE`, `BOT_FILL`, `PORT`). Several fit on one small VPS (a match
 takes ~0.5–1.5 ms of a 16.7 ms tick). Listing them in the game browser is
 the next step on the roadmap (#12).

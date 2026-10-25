@@ -1,4 +1,4 @@
-import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@chronosplit/shared';
+import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { Transport } from './transport.ts';
 
 /** WebSocket connection to the dedicated server, with RTT measurement. */

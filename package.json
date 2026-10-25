@@ -1,22 +1,22 @@
 {
-  "name": "chronosplit",
+  "name": "tiletrigger",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.28.0",
   "scripts": {
-    "dev": "pnpm --filter @chronosplit/client dev",
-    "dev:server": "pnpm --filter @chronosplit/server dev",
-    "dev:client": "pnpm --filter @chronosplit/client dev",
-    "build": "pnpm --filter @chronosplit/client build",
+    "dev": "pnpm --filter @tiletrigger/client dev",
+    "dev:server": "pnpm --filter @tiletrigger/server dev",
+    "dev:client": "pnpm --filter @tiletrigger/client dev",
+    "build": "pnpm --filter @tiletrigger/client build",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
-    "bench": "pnpm --filter @chronosplit/server bench",
-    "validate-map": "pnpm --filter @chronosplit/server validate-map",
+    "bench": "pnpm --filter @tiletrigger/server bench",
+    "validate-map": "pnpm --filter @tiletrigger/server validate-map",
     "e2e": "node e2e/run.mjs",
     "content:build": "node tools/content/build.mjs",
     "content:check": "node tools/content/build.mjs --check",
-    "dev:hub": "pnpm --filter @chronosplit/server hub",
-    "dev:peer": "pnpm --filter @chronosplit/server hub"
+    "dev:hub": "pnpm --filter @tiletrigger/server hub",
+    "dev:peer": "pnpm --filter @tiletrigger/server hub"
   },
   "devDependencies": {
     "@gltf-transform/core": "4.5.1",

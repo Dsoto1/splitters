@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LOBBY_EXPIRY_SECONDS } from '@chronosplit/shared';
+import { LOBBY_EXPIRY_SECONDS } from '@tiletrigger/shared';
 import { LobbyStore } from '../src/lobby.ts';
 
 const advert = (over: Record<string, unknown> = {}) => ({ code: 'ABC234', name: 'Friday night', host: 'Dave', map: 'Sandgate', mode: 'core.tdm', players: 2, max: 8, version: 2, relay: false, ...over });

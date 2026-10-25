@@ -1,4 +1,4 @@
-import { getWeapon } from '@chronosplit/shared';
+import { getWeapon } from '@tiletrigger/shared';
 import type { ModelThumbnails } from './modelThumbs.ts';
 
 /**

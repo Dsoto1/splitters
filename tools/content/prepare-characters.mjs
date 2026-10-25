@@ -318,7 +318,7 @@ async function finish(doc, out, { ratio = 1, error = 0.002, lod = true } = {}) {
   if (lod) addLowDetail(doc);
   // Accessors left behind by discarded animation tracks (prune keeps some of them).
   for (const acc of doc.getRoot().listAccessors()) if (acc.listParents().every((p) => p.propertyType === 'Root')) acc.dispose();
-  doc.getRoot().getAsset().generator = 'chronosplit prepare-characters';
+  doc.getRoot().getAsset().generator = 'tiletrigger prepare-characters';
   const glb = await io.writeBinary(doc);
   writeFileSync(join(OUT, out), glb);
   const lodTris = triangles(doc) - fullTris;

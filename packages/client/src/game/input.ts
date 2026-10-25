@@ -1,7 +1,7 @@
-import { EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@chronosplit/shared';
+import { EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
-const MOUSE_PREF_KEY = 'chronosplit.mouse';
+const MOUSE_PREF_KEY = 'tiletrigger.mouse';
 /** Safari reports locked-pointer movement at roughly half the scale of other browsers. */
 const BROWSER_SCALE = /^((?!chrome|chromium|android|crios|fxios).)*safari/i.test(navigator.userAgent) ? 2 : 1;
 

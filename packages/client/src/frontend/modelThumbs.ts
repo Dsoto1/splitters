@@ -9,7 +9,7 @@ import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Vector3 as V3 } from '@babylonjs/core/Maths/math.vector';
-import { buildMapGeometry, newMapDocument, type TileDefinition } from '@chronosplit/shared';
+import { buildMapGeometry, newMapDocument, type TileDefinition } from '@tiletrigger/shared';
 import { ModelLibrary } from '../content/models.ts';
 import { MapStyler } from '../mapMeshes.ts';
 

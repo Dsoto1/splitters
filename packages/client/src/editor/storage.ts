@@ -1,4 +1,4 @@
-import { loadMap, serializeMap, type MapDocument, type ValidationIssue } from '@chronosplit/shared';
+import { loadMap, serializeMap, type MapDocument, type ValidationIssue } from '@tiletrigger/shared';
 
 /**
  * Local map storage. Browser storage can be missing or cleared (private

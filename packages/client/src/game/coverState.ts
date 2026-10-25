@@ -3,7 +3,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { THROWABLE_DEFS, type CoverSnapshot, type PhysicsWorld, type Vec3 } from '@chronosplit/shared';
+import { THROWABLE_DEFS, type CoverSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 interface ClientCover {
   node: TransformNode;

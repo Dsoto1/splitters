@@ -16,7 +16,7 @@ import {
   type MatchRules,
   type PlayerInput,
   type ServerMessage,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 import type { Transport } from './transport.ts';
 
 /** A friend's connection to a match this browser hosts (a WebRTC data channel, or anything that moves text). */
@@ -77,7 +77,7 @@ export class LocalTransport implements Transport {
 
   private async run(onMessage: (m: ServerMessage) => void, t0: number): Promise<void> {
     // The match module pulls in Recast; load it only when a local match starts.
-    const [{ Match, BotFiller, initNavigation }] = await Promise.all([import('@chronosplit/shared/match'), initPhysics()]);
+    const [{ Match, BotFiller, initNavigation }] = await Promise.all([import('@tiletrigger/shared/match'), initPhysics()]);
     await initNavigation();
     if (this.stopped) return;
     const rules = this.opts.rules ?? rulesForMap(this.map);

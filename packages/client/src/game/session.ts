@@ -51,7 +51,7 @@ import {
   PLAYER,
   getProp,
   mapTerrainMesh,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';

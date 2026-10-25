@@ -45,7 +45,7 @@ import {
   DEFAULT_BLOOD,
   EffectsWorld,
   mapTerrainMesh,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { Ragdoll } from './ragdoll.ts';
 import { Atmosphere } from './atmosphere.ts';

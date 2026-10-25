@@ -1,4 +1,4 @@
-import { buildMapGeometry, type MapDocument } from '@chronosplit/shared';
+import { buildMapGeometry, type MapDocument } from '@tiletrigger/shared';
 import { drawTerrainPlan, fillBox } from '../frontend/mapPlan.ts';
 
 /** Pixels per metre on the minimap's backing image. */

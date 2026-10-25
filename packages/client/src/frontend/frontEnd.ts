@@ -23,7 +23,7 @@ import {
   type LobbyListing,
   type MapDocument,
   type MatchRules,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/peerLink.ts';
 import { installTooltips } from './tooltip.ts';
@@ -287,7 +287,7 @@ export class FrontEnd {
     return el(
       'div',
       { class: 'screen home' },
-      el('h1', { class: 'logo' }, el('span', { class: 'chrono', textContent: 'Tile ' }), el('span', { class: 'split', textContent: 'Trigger' })),
+      el('h1', { class: 'logo' }, el('span', { class: 'tile', textContent: 'Tile ' }), el('span', { class: 'trigger', textContent: 'Trigger' })),
       el('p', { class: 'logo-sub', textContent: 'Make. Play. Die.' }),
       el('p', { class: 'logo-version', textContent: `v${__APP_VERSION__}` }),
       nav,
@@ -437,7 +437,7 @@ export class FrontEnd {
         return b;
       }),
     );
-    const about = [current.map.metadata.description, current.map.metadata.author && current.map.metadata.author !== 'ChronoSplit' ? `Map by ${current.map.metadata.author}` : ''].filter(Boolean).join('\n\n');
+    const about = [current.map.metadata.description, current.map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(current.map.metadata.author) ? `Map by ${current.map.metadata.author}` : ''].filter(Boolean).join('\n\n');
     const plan = el('canvas', { class: 'setup-plan' });
     requestAnimationFrame(() => drawMapPlan(plan, current.map));
     const panel = el(

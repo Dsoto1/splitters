@@ -14,7 +14,7 @@ import { CharacterLibrary } from '../content/characters.ts';
 import { CharacterAnimator } from '../game/characterAnimator.ts';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
-import { isCreature, npcLookRole } from '@chronosplit/shared';
+import { isCreature, npcLookRole } from '@tiletrigger/shared';
 
 const SIZE = 256;
 

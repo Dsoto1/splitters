@@ -23,7 +23,7 @@
  *   y-1 p   p   p   p   p   p     Embers
  *      -1   0   1   2   3   4
  */
-import type { TileSurfaces } from '@chronosplit/shared';
+import type { TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('kanto_plaza', 'Kanto Plaza');

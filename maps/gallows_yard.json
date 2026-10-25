@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "gallows_yard",
     "name": "Gallows Yard",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A walled castle courtyard crowded with tomb blocks of every height, made in the spirit of the classic tombstone-courtyard arena. Embers and Tide each hold a gatehouse at one end; its roof runs into a raised walkway along the far wall, over a covered arcade and across a narrow bridge. Open stairs climb out of the graves, and jump pads throw you up onto the gallows in the middle, where the railgun waits above the rocket launcher.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

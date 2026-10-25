@@ -10,7 +10,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
-import { BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type MapDocument, type ModeSnapshot, type Vec3 } from '@chronosplit/shared';
+import { BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type MapDocument, type ModeSnapshot, type Vec3 } from '@tiletrigger/shared';
 import type { RemotePose } from './interpolation.ts';
 
 const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();

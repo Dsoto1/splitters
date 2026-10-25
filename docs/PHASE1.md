@@ -132,7 +132,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
   - Mid doors in the centre.
   - Covered tunnels up the east, with a branch to mid.
   - Two crate-filled squares at the north end.
-  - It's built by `packages/server/src/tools/build-sandgate.ts` through the MapMaker's own edit commands (`pnpm --filter @chronosplit/server build-sandgate`), so it opens and edits like any other map. Tests check it validates, that every area is reachable, and that a 12-bot match plays with kills on both sides.
+  - It's built by `packages/server/src/tools/build-sandgate.ts` through the MapMaker's own edit commands (`pnpm --filter @tiletrigger/server build-sandgate`), so it opens and edits like any other map. Tests check it validates, that every area is reachable, and that a 12-bot match plays with kills on both sides.
 
 ## M4 — what exists
 

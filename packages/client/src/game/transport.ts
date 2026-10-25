@@ -1,4 +1,4 @@
-import type { PlayerInput, ServerMessage } from '@chronosplit/shared';
+import type { PlayerInput, ServerMessage } from '@tiletrigger/shared';
 
 /**
  * Where a game session's match lives: a dedicated server over the network, or

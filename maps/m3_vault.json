@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "m3_vault",
     "name": "The Vault",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "Break into the vault: find the control, blow the wall, grab the prize. Loops through a south hall, a west passage and the north rooms keep the fight moving.",
     "createdAt": "2026-10-22T00:00:00.000Z",
     "updatedAt": "2026-10-22T00:00:00.000Z",

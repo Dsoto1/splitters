@@ -1,4 +1,4 @@
-# PROJECT CHRONOSPLIT — TECH ARCHITECTURE v1
+# PROJECT TILE TRIGGER — TECH ARCHITECTURE v1
 
 **Authority:** Supporting spec; `MASTER_SPEC_V2.md` wins on conflict.
 

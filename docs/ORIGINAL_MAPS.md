@@ -1,7 +1,7 @@
 # Importing maps from the original games: plan
 
 Goal: take a map a player built in the original TimeSplitters MapMaker (or
-another game's level editor) and rebuild it in ChronoSplit with our own
+another game's level editor) and rebuild it in Tile Trigger with our own
 look-alike pieces, so it plays the same.
 
 ## How hard is it?
@@ -11,7 +11,7 @@ look-alike pieces, so it plays the same.
 | 1. Get the save off the console | Small | PS2 saves export with memory card tools (e.g. `mymc` reads `.ps2`/`.psu`/`.max`), GameCube saves as `.gci`, Xbox saves copy as folders. Emulator memory card files work too. |
 | 2. Decode the map format | **Unknown, the big one** | As far as I know the MapMaker save format isn't publicly documented. Decoding it means comparing several known saves byte by byte: one empty map, one with a single tile, the same tile moved or turned, one per item, and so on. With good samples that's days to a couple of weeks. If the data is compressed or encrypted, longer. |
 | 3. Master list (original piece → ours) | Medium | One row per original tile, item, weapon and logic block (see below). The tile grid is close to ours (rooms, corridors, stairs, levels on a grid), which is what makes this practical. |
-| 4. Converter | Small, once 2 and 3 are done | Reads the decoded map and writes a ChronoSplit map through the same commands MapMaker uses (`tools/mapkit.ts`), then validates it and its navmesh like any map. |
+| 4. Converter | Small, once 2 and 3 are done | Reads the decoded map and writes a Tile Trigger map through the same commands MapMaker uses (`tools/mapkit.ts`), then validates it and its navmesh like any map. |
 | 5. Gaps | Ongoing | Pieces we don't have yet get a stand-in (a block of the right size) and a note, so the map still loads and plays. |
 
 ## The master list
@@ -121,7 +121,7 @@ should refine it: put the confirmed name in `original.name`, raise
 | Stairs | 1 × 1 and 1 × 2 pieces whose ends meet two levels (Future Perfect: links to the level above; TS2: an exit at one level and only the level above or below at the other end) become our Stairs or Long Ramp, turned to climb the right way. 200 in the current set. Other vertical pieces (lifts, ladders, tall shafts) are unknown, so some upper floors are cut off. |
 | Tiles with no links (Future Perfect) | Skipped when stacked right over another tile (most likely the upper storey of a tall space, or scenery): about 2,000 of 8,900 tiles, almost all of types 17, 16 and 6. Elsewhere they become closed rooms. |
 | Items | Kinds unknown. Pickups go where the original had items (in the main connected area), handed out from a balanced default set (weapons, health, armour, ammo); spawns are spread out by farthest-point sampling. All placeholders. |
-| Theme | A ChronoSplit theme picked from keywords in the name, then the description ("Fire Temple" → Volcano Lair, "Ice Temple" → Arctic, "Romulus" → Marble Temple…). TS2 maps without a keyword use the guessed tileset field; others a stable pick from the name. |
+| Theme | A Tile Trigger theme picked from keywords in the name, then the description ("Fire Temple" → Volcano Lair, "Ice Temple" → Arctic, "Romulus" → Marble Temple…). TS2 maps without a keyword use the guessed tileset field; others a stable pick from the name. |
 | Lights, logic, AI, objectives, game settings | Not converted. |
 
 ### Current result (36 TS2 + 80 Future Perfect saves)

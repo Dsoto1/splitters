@@ -1,6 +1,6 @@
 {
-  "about": "TimeSplitters 2 / Future Perfect MapMaker tile types -> ChronoSplit tiles, used by packages/server/src/tools/import-timesplitters.ts. One entry per observed type id per game. Edit ours/exits/fit/confidence/notes as controlled test saves confirm pieces; `saves` and `placements` are refreshed by --write-table. Original names are unknown until confirmed (null).",
-  "scale": "One original grid cell = one 8 m ChronoSplit cell; one original level (z) = one 4 m level; original +x/+y = our +x (east)/+y (north), compass unverified. Rotation: original quarter turns are counter-clockwise, ours clockwise.",
+  "about": "TimeSplitters 2 / Future Perfect MapMaker tile types -> Tile Trigger tiles, used by packages/server/src/tools/import-timesplitters.ts. One entry per observed type id per game. Edit ours/exits/fit/confidence/notes as controlled test saves confirm pieces; `saves` and `placements` are refreshed by --write-table. Original names are unknown until confirmed (null).",
+  "scale": "One original grid cell = one 8 m Tile Trigger cell; one original level (z) = one 4 m level; original +x/+y = our +x (east)/+y (north), compass unverified. Rotation: original quarter turns are counter-clockwise, ours clockwise.",
   "entries": [
     {
       "game": "TS2",

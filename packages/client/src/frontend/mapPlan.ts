@@ -1,4 +1,4 @@
-import { MAX_TEAMS, TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@chronosplit/shared';
+import { MAX_TEAMS, TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@tiletrigger/shared';
 
 /** Fill a box's top-down outline (turned boxes as a quad). */
 export function fillBox(g: CanvasRenderingContext2D, b: WorldBox, px: (x: number) => number, py: (z: number) => number): void {

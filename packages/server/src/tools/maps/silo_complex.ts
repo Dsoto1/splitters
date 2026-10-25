@@ -22,7 +22,7 @@
  *   W  stairwells up to the control rooms u over the loop, which open onto the landings
  *   r/l/s  rooms (l with a ledge, s the laser lab); c corridors; T/├/┤ junctions
  */
-import type { Side } from '@chronosplit/shared';
+import type { Side } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('silo_complex', 'Silo Complex');

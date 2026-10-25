@@ -33,7 +33,7 @@
  *   y-5       .   W   .  [C]  .   W   .        C control room: the airstrike button
  *            -3  -2  -1   0   1   2   3
  */
-import type { LogicAction, LogicRule, Rotation, Side } from '@chronosplit/shared';
+import type { LogicAction, LogicRule, Rotation, Side } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('bunker_cross', 'Bunker Cross');

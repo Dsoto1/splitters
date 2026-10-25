@@ -20,7 +20,7 @@
  *
  * Embers hold the west gatehouse, Tide the east one.
  */
-import type { EdgeStyle, Rotation, Side } from '@chronosplit/shared';
+import type { EdgeStyle, Rotation, Side } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('gallows_yard', 'Gallows Yard');

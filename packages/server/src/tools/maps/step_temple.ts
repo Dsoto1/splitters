@@ -21,7 +21,7 @@
  *   g      galleries over the cloisters, a half wall onto the court
  *   P      railed platform over the dais, joined to all four galleries by bridges (║ ═)
  */
-import type { Rotation, Side } from '@chronosplit/shared';
+import type { Rotation, Side } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('step_temple', 'Step Temple');

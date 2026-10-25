@@ -4,7 +4,7 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { TERRAIN_MATERIALS, boxBounds, cellFoliage, getProp, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@chronosplit/shared';
+import { TERRAIN_MATERIALS, boxBounds, cellFoliage, getProp, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 
 /** Plants by the job they do: carpet grass, taller tufts, flowers, low shrubs, bushes, and pebbles on bare ground. */

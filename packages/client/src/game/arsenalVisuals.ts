@@ -9,7 +9,7 @@ import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type Vec3, type ZoneSnapshot } from '@chronosplit/shared';
+import { STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type Vec3, type ZoneSnapshot } from '@tiletrigger/shared';
 
 /**
  * Looks for the extended arsenal, all built from simple shapes and glowing

@@ -11,7 +11,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { CORE_THEMES, SKIES, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@chronosplit/shared';
+import { CORE_THEMES, SKIES, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { createPropNode } from './game/propVisuals.ts';
 import type { MapStyler } from './mapMeshes.ts';

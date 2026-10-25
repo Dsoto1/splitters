@@ -1,4 +1,4 @@
-import { ScenarioBodies, type MapDocument, type PhysicsWorld, type ScenarioSnapshot } from '@chronosplit/shared';
+import { ScenarioBodies, type MapDocument, type PhysicsWorld, type ScenarioSnapshot } from '@tiletrigger/shared';
 
 /**
  * The client's copy of replicated scenario state. It feeds the visuals and

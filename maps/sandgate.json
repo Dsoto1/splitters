@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 13,
   "metadata": {
     "id": "sandgate",
     "name": "Sandgate",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A sun-baked desert town for Team Deathmatch. Embers spawn in the south, Tide in the north. A long street runs up the west side, mid doors split the centre, covered tunnels wind up the east, and two crate-filled squares wait at the north end: bomb sites A and B in Bomb mode.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

@@ -23,7 +23,7 @@ import {
   type MapEntity,
   type ScenarioLogic,
   type TargetKind,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 
 export interface LogicPanelHost {
   doc(): MapDocument;

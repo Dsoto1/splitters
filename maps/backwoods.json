@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "backwoods",
     "name": "Backwoods Lodge",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A big wooden lodge on the high ground above a creek. Defenders hold the house: a stone lower floor with the garage and cellars, the main floor with its back deck and front porch, and upstairs bedrooms whose windows and balcony watch the whole yard. Attackers come out of the pine woods across the creek and pick a way in: straight up the yard past the barn and the hay bales, round the road to the garage doors, or through the long drain from the creek that comes up in the cellar. Sniper rifle in the barn hayloft, rockets in the drain, big armour in the shed.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

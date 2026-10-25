@@ -8,7 +8,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { EffectsWorld, Vec3 } from '@chronosplit/shared';
+import type { EffectsWorld, Vec3 } from '@tiletrigger/shared';
 
 /** How fast drawn rounds fly (m/s): slow enough to see leave the muzzle and land, fast enough to feel like bullets. */
 export const BULLET_SPEED = 260;

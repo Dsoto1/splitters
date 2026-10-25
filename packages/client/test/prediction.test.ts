@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { BUTTON_JUMP, PhysicsWorld, initPhysics, loadMap, type PlayerInput, type PlayerSnapshot, type PrivateState } from '@chronosplit/shared';
-import { Match, initNavigation } from '@chronosplit/shared/match';
+import { BUTTON_JUMP, PhysicsWorld, initPhysics, loadMap, type PlayerInput, type PlayerSnapshot, type PrivateState } from '@tiletrigger/shared';
+import { Match, initNavigation } from '@tiletrigger/shared/match';
 import { LocalPlayer } from '../src/game/prediction.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));

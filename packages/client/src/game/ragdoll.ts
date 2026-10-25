@@ -1,6 +1,6 @@
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { EffectsWorld, Vec3 } from '@chronosplit/shared';
+import type { EffectsWorld, Vec3 } from '@tiletrigger/shared';
 import { SkeletonSpace } from './characterAnimator.ts';
 
 type Body = ReturnType<EffectsWorld['addBody']>;

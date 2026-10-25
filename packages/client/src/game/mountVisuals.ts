@@ -1,6 +1,6 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { getMountDef } from '@chronosplit/shared';
+import { getMountDef } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 
 /**

@@ -2,7 +2,7 @@ Sounds from Freesound (https://freesound.org), each released by its author
 under Creative Commons 0 (public domain):
 https://creativecommons.org/publicdomain/zero/1.0/
 
-Modifications for ChronoSplit: converted to mono 44.1 kHz, leading silence
+Modifications for Tile Trigger: converted to mono 44.1 kHz, leading silence
 trimmed, shortened with a 0.1 s fade-out, peak-normalised to -1 dBFS, encoded
 as Ogg Vorbis (from Freesound's high-quality previews).
 

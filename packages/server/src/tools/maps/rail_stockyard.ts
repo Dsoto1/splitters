@@ -30,7 +30,7 @@
  *   A   two-storey atriums; L lamp room, O loading office; u/o upper rooms, w stairwell to the west roof
  *   R   crane perch over the pit (railgun), reached only along the girder from the west roof
  */
-import type { Side, TileSurfaces } from '@chronosplit/shared';
+import type { Side, TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('rail_stockyard', 'Rail Stockyard');

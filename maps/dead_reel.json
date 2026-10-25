@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "dead_reel",
     "name": "Dead Reel",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A co-op creature-survival night in an abandoned theatre. Hold the lobby as the things come over the courtyard walls, clear the foyer, take the auditorium, throw the power on the stage and survive a minute of everything the theatre has — then escape through the projection booth behind the curtain.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, MAX_PLAYER_SLOTS, TICK_RATE, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent } from '@chronosplit/shared';
-import { Match, initNavigation } from '@chronosplit/shared/match';
+import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, MAX_PLAYER_SLOTS, TICK_RATE, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent } from '@tiletrigger/shared';
+import { Match, initNavigation } from '@tiletrigger/shared/match';
 
 /**
  * Headless load harness: runs a full match with N Player Bots as fast as

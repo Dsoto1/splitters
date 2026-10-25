@@ -27,7 +27,7 @@ const siteDir = process.env.SITE_DIR ?? fileURLToPath(new URL('../../client/dist
 const site = existsSync(`${siteDir}/index.html`) ? siteHandler(siteDir) : null;
 const app = PeerServer({ port, host, path: '/broker', proxied }, () => {
   console.log(
-    `ChronoSplit hub on :${port} — site ${site ? siteDir : 'not built (pnpm build to serve it)'}, broker at /broker, game browser at /lobby, relay ${ice.provider ?? 'none (see src/ice.ts)'}`,
+    `Tile Trigger hub on :${port} — site ${site ? siteDir : 'not built (pnpm build to serve it)'}, broker at /broker, game browser at /lobby, relay ${ice.provider ?? 'none (see src/ice.ts)'}`,
   );
 });
 app.use((req, res, next) => void lobby(req, res, () => (site ? void site(req, res, next) : next())));

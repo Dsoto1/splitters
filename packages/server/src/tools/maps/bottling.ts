@@ -19,7 +19,7 @@
  *   H        tank hall, 3 × 3, two storeys; walkways B/P above it (P = junction)
  *   w        windowed upper corridor lab ↔ walkways; U control room over R
  */
-import type { Side, TileSurfaces } from '@chronosplit/shared';
+import type { Side, TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('bottling', 'Bottling Plant');

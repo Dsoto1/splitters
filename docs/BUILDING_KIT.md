@@ -72,7 +72,7 @@ small and exact.
   pickups and props placed over terrain stand on it. New terrain sits 15 cm
   under level 0, so tiles placed on flat ground do not flicker against it.
 - **Rockfall Canyon** (`maps/canyon.json`, built by
-  `pnpm --filter @chronosplit/server build-canyon`) is the worked example: a
+  `pnpm --filter @tiletrigger/server build-canyon`) is the worked example: a
   240 m canyon between rock walls, two hills, a ledge along the west wall, a
   winding dirt trail, boulder fields from scaled rock props, and a bunker
   base at each end with stairs to a railed roof. Open it from the MapMaker

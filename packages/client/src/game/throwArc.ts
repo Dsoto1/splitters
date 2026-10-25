@@ -6,7 +6,7 @@ import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import type { PredictedPath } from '@chronosplit/shared';
+import type { PredictedPath } from '@tiletrigger/shared';
 
 /** At most this many dots along the arc. */
 const MAX_DOTS = 90;

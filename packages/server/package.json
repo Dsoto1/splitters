@@ -1,5 +1,5 @@
 {
-  "name": "@chronosplit/server",
+  "name": "@tiletrigger/server",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
     "hub": "tsx src/hub.ts"
   },
   "dependencies": {
-    "@chronosplit/shared": "workspace:*",
+    "@tiletrigger/shared": "workspace:*",
     "peer": "1.0.2",
     "ws": "^8.22.0"
   },

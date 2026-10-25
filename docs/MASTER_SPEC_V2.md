@@ -1,9 +1,9 @@
-# PROJECT CHRONOSPLIT — MASTER PRE-PRODUCTION SPEC v2
+# PROJECT TILE TRIGGER — MASTER PRE-PRODUCTION SPEC v2
 
 > **AUTHORITATIVE SOURCE OF TRUTH.** If any supporting document conflicts with this file, this file wins until the supporting document is revised.
 
 **Status:** Pre-production / implementation handoff  
-**Working title:** Project ChronoSplit (temporary)  
+**Working title:** Project Tile Trigger (temporary)  
 **Primary platform:** Modern desktop web browser  
 **Client stack direction:** TypeScript + Babylon.js; WebGPU where available, WebGL2 fallback  
 **Server direction:** Dedicated authoritative headless game servers; server runtime must not depend on browser rendering  
@@ -14,7 +14,7 @@
 
 ## 1. PRODUCT DEFINITION
 
-ChronoSplit is an original arcade FPS and community creation platform inspired by the accessibility, speed, bots, genre collision, customization, and grid-based creation philosophy of classic console arena shooters. It is **not a remake** and must not depend on copyrighted source assets.
+Tile Trigger is an original arcade FPS and community creation platform inspired by the accessibility, speed, bots, genre collision, customization, and grid-based creation philosophy of classic console arena shooters. It is **not a remake** and must not depend on copyrighted source assets.
 
 The same runtime systems power developer-made and user-made content. MapMaker is not a reduced mod tool; it is the creation surface for the game itself.
 
@@ -140,7 +140,7 @@ The runtime map format must retain neutral structural concepts needed for future
 
 Future pipeline:
 
-`User-supplied legacy data -> parser -> neutral import IR -> substitution/mapping -> validation -> ChronoSplit map`
+`User-supplied legacy data -> parser -> neutral import IR -> substitution/mapping -> validation -> Tile Trigger map`
 
 Do not bundle extracted proprietary assets. Use original equivalent geometry/materials. Import R&D occurs after the creator/runtime foundations are stable.
 

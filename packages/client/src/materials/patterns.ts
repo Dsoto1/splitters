@@ -1,4 +1,4 @@
-import type { MaterialDefinition, PatternId } from '@chronosplit/shared';
+import type { MaterialDefinition, PatternId } from '@tiletrigger/shared';
 import { versioned } from '../assetUrl.ts';
 
 /**

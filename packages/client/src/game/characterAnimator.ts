@@ -4,7 +4,7 @@ import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { AnimationGroupMask, AnimationGroupMaskMode } from '@babylonjs/core/Animations/animationGroupMask';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { ModelPoint, WeaponHold } from '@chronosplit/shared';
+import type { ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
 
 /** What the animator needs to know each frame (from interpolated snapshots). */

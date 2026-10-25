@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 14,
   "metadata": {
     "id": "citadel",
     "name": "Citadel",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A castle keep around a two-storey atrium, inside an outer bailey of courtyards behind a curtain wall; the corner rooms and stairwells are its gates. Halls with arched openings ring the ground floor; stairwells in two corners climb to barracks, a map room and roof terraces with cannons. Rockets wait in the atrium, the sniper rifle on the north roof. Shoot out the window panes, break the boards, and mind the powder kegs.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "atomic_court",
     "name": "Atomic Court",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A tiny cul-de-sac in the desert: two two-storey houses face each other across a street blocked by a school bus and a truck, each with a garage, a lawn and a fenced backyard. Fast and close, for 2–12 players; the flags are in the backyards and King of the Hill moves between the bus and the two upstairs landings.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

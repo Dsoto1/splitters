@@ -1,4 +1,4 @@
-import type { ServerStats } from '@chronosplit/shared';
+import type { ServerStats } from '@tiletrigger/shared';
 
 /** One-second rolling window of server instrumentation (MULTIPLAYER_AI_SCALE "Test telemetry"). */
 export class StatsWindow {

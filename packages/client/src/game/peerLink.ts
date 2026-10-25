@@ -1,5 +1,5 @@
 import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
-import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@chronosplit/shared';
+import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { RemoteLink } from './localTransport.ts';
 import type { Transport } from './transport.ts';
 import { CHUNK, Unzipper, Zipper } from './peerZip.ts';
@@ -11,7 +11,7 @@ import { fetchIce, hubAddress, hubSetting } from './hub.ts';
  * PeerJS's free broker only introduces the two browsers; set your own with
  * `?peer=host:port` (a `peer` server, e.g. `npx peer --port 9000`).
  */
-const PREFIX = 'chronosplit-';
+const PREFIX = 'tiletrigger-';
 /** Codes skip look-alike letters (no I, L, O, 0, 1). */
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 export const makeJoinCode = (): string => Array.from({ length: 6 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join('');
@@ -29,7 +29,7 @@ export interface RelayPrefs {
   pass: string;
 }
 
-const RELAY_KEY = 'chronosplit.relay';
+const RELAY_KEY = 'tiletrigger.relay';
 
 export function loadRelay(): RelayPrefs | null {
   const q = new URLSearchParams(location.search);

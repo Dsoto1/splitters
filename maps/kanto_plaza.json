@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "kanto_plaza",
     "name": "Kanto Plaza",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A glass office tower at sunset. Tide hold Kanto Plaza; Embers come in off the plaza through the revolving doors or round by the loading dock, and fight up through open-plan floors and two switchback stairwells to the executive floor, where the hostages are, and on to the roof and its helipad.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",

@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import WebSocket from 'ws';
-import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, PLAYER, PROTOCOL_VERSION, lookAngles, type MapDocument, type ServerMessage } from '@chronosplit/shared';
+import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, PLAYER, PROTOCOL_VERSION, lookAngles, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
 import { startServer, type RunningServer } from '../src/server.ts';
-import { parseClientMessage } from '@chronosplit/shared';
+import { parseClientMessage } from '@tiletrigger/shared';
 
 const room: MapDocument = {
-  format: 'chronosplit.map',
+  format: 'tiletrigger.map',
   formatVersion: 15,
   metadata: {
     id: 'test_room',

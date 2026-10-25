@@ -10,7 +10,7 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { gearInfo, type CharacterLook } from '@chronosplit/shared';
+import { gearInfo, type CharacterLook } from '@tiletrigger/shared';
 
 /**
  * Gear (hats, glasses, vests, packs) built from simple shapes and hung on the

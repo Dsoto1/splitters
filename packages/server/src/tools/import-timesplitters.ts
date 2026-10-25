@@ -3,7 +3,7 @@
  *
  * Reads the JSON that `tools/import/timesplitters/tsdecode.py` writes for each
  * GameCube save (or runs the decoder itself on .gci files), rebuilds every
- * valid map with ChronoSplit tiles through MapBuilder, validates it (schema,
+ * valid map with Tile Trigger tiles through MapBuilder, validates it (schema,
  * rules and the bot navmesh) and writes maps/imported/<game>_<slug>.json.
  *
  *   npx tsx src/tools/import-timesplitters.ts --decoded <dir with *.gci.json>
@@ -27,7 +27,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFil
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SIDES, SIDE_DIRS, coreCatalog, edgeKey, localSide, placeTileCommand, rotateSide, rotateXZ, type EdgeStyle, type Rotation, type Side, type TilePlacement, type ValidationIssue } from '@chronosplit/shared';
+import { SIDES, SIDE_DIRS, coreCatalog, edgeKey, localSide, placeTileCommand, rotateSide, rotateXZ, type EdgeStyle, type Rotation, type Side, type TilePlacement, type ValidationIssue } from '@tiletrigger/shared';
 import { MapBuilder } from './mapkit.ts';
 
 // ---------------------------------------------------------------- decoder JSON
@@ -193,8 +193,8 @@ function refreshTable(old: Table | null, seen: Map<string, { footprint: [number,
   }
   return {
     about:
-      'TimeSplitters 2 / Future Perfect MapMaker tile types -> ChronoSplit tiles, used by packages/server/src/tools/import-timesplitters.ts. One entry per observed type id per game. Edit ours/exits/fit/confidence/notes as controlled test saves confirm pieces; `saves` and `placements` are refreshed by --write-table. Original names are unknown until confirmed (null).',
-    scale: 'One original grid cell = one 8 m ChronoSplit cell; one original level (z) = one 4 m level; original +x/+y = our +x (east)/+y (north), compass unverified. Rotation: original quarter turns are counter-clockwise, ours clockwise.',
+      'TimeSplitters 2 / Future Perfect MapMaker tile types -> Tile Trigger tiles, used by packages/server/src/tools/import-timesplitters.ts. One entry per observed type id per game. Edit ours/exits/fit/confidence/notes as controlled test saves confirm pieces; `saves` and `placements` are refreshed by --write-table. Original names are unknown until confirmed (null).',
+    scale: 'One original grid cell = one 8 m Tile Trigger cell; one original level (z) = one 4 m level; original +x/+y = our +x (east)/+y (north), compass unverified. Rotation: original quarter turns are counter-clockwise, ours clockwise.',
     entries,
   };
 }

@@ -22,7 +22,7 @@ import '@babylonjs/core/PostProcesses/RenderPipeline/postProcessRenderPipelineMa
  */
 export type GraphicsQuality = 'low' | 'medium' | 'high';
 export const GRAPHICS_QUALITIES: readonly GraphicsQuality[] = ['low', 'medium', 'high'];
-const KEY = 'chronosplit.graphics';
+const KEY = 'tiletrigger.graphics';
 
 export function loadGraphicsQuality(): GraphicsQuality {
   try {

@@ -1,4 +1,4 @@
-import type { Vec3 } from '@chronosplit/shared';
+import type { Vec3 } from '@tiletrigger/shared';
 import soundManifest from '../../../../content/sounds.json';
 import { SYNTH_RATE, synthesize, type SynthRecipe } from './synth.ts';
 import { versioned } from '../assetUrl.ts';

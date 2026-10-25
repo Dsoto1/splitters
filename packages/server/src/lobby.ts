@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { LOBBY_EXPIRY_SECONDS, parseAdvert, type LobbyAdvert, type LobbyListing } from '@chronosplit/shared';
+import { LOBBY_EXPIRY_SECONDS, parseAdvert, type LobbyAdvert, type LobbyListing } from '@tiletrigger/shared';
 import type { IceConfig } from './ice.ts';
 
 interface Entry {

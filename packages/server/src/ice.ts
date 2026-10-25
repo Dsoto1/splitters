@@ -26,7 +26,7 @@ export interface IceConfig {
 const STUN: IceServer = { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] };
 
 /** coturn's TURN REST scheme: username "<expiry>:<id>", password base64(HMAC-SHA1(secret, username)). */
-export function coturnCredentials(secret: string, urls: string[], ttl: number, now = Date.now(), id = 'chronosplit'): IceServer {
+export function coturnCredentials(secret: string, urls: string[], ttl: number, now = Date.now(), id = 'tiletrigger'): IceServer {
   const username = `${Math.floor(now / 1000) + ttl}:${id}`;
   const credential = createHmac('sha1', secret).update(username).digest('base64');
   return { urls, username, credential };

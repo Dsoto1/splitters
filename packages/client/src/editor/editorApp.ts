@@ -129,7 +129,7 @@ import {
   NPC_PALETTE,
   placeNpcCommand,
   type LightFixture,
-} from '@chronosplit/shared';
+} from '@tiletrigger/shared';
 import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
 import outpostTemplate from '../../../../maps/m4_outpost.json';
@@ -2517,7 +2517,7 @@ export class EditorApp {
       return;
     }
     this.navTimer = window.setTimeout(async () => {
-      const { NavWorld, initNavigation, validateNavigation } = await import('@chronosplit/shared/match');
+      const { NavWorld, initNavigation, validateNavigation } = await import('@tiletrigger/shared/match');
       await initNavigation();
       if (token !== this.navToken) return;
       try {

@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "m4_outpost",
     "name": "Outpost Siege",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "Fight through the courtyard (or round its flanks), open the gate, hold the uplink while the Syndicate storms in from north and south, then reach evac.",
     "createdAt": "2026-10-22T00:00:00.000Z",
     "updatedAt": "2026-10-22T00:00:00.000Z",

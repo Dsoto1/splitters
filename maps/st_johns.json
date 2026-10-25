@@ -1,10 +1,10 @@
 {
-  "format": "chronosplit.map",
+  "format": "tiletrigger.map",
   "formatVersion": 15,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
-    "author": "ChronoSplit",
+    "author": "Tile Trigger",
     "description": "A look-alike of the St. John's Northwestern Military Academy campus in Delafield, Wisconsin: grey lannonstone halls built like castles, with towers, turrets and battlements, set round the Stangeland Field of Flags and its flagpole. Climb DeKoven Hall to its roof for the sniper rifle and the mounted gun, take the railgun from upstairs in Smythe Hall, rockets from the Noble Victory chapel, and the damage boost from the Gerber pool in the gymnasium. The west team holds the parade field and Hazelwood Hall, the east team the gym and the old church across Church Street.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
