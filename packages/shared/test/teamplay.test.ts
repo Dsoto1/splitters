@@ -125,3 +125,23 @@ describe('team setup', () => {
     expect(teams[1]!.color).toMatch(/^#[0-9a-f]{6}$/);
   });
 });
+
+describe('team score', () => {
+  it('suicides cost the player a point but not the team, and a team never drops below zero', () => {
+    const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [1, 1], respawnDelayTicks: 1 });
+    const me = match.addHuman('me')!;
+    const foe = match.addHuman('foe')!;
+    for (let i = 0; i < 5; i++) match.step();
+    const suicide = (c: Combatant) => (match as unknown as { kill: (v: Combatant, k: null, w: string) => void }).kill(c, null, 'core.launcher');
+    kill(match, foe, me);
+    suicide(me);
+    suicide(foe);
+    suicide(foe);
+    expect(me.kills).toBe(0);
+    expect(foe.kills).toBe(-2);
+    const scores = match.teamScores();
+    expect(scores.get(me.faction!)).toBe(1);
+    expect(scores.get(foe.faction!)).toBe(0);
+    expect(match.scores().find((s) => s.s === foe.slot)?.x).toBe(2);
+  });
+});

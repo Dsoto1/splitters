@@ -146,6 +146,8 @@ export interface Combatant {
   respawnTick: number;
   kills: number;
   deaths: number;
+  /** Suicides: each costs the player a point (in `kills`) but not their team. */
+  selfKills: number;
   /** Owned weapons by weapon code. */
   weapons: Map<number, WeaponState>;
   /** Code of the held weapon. */
@@ -476,7 +478,9 @@ export class Match {
   teamScores(): Map<string, number> {
     if (this.mode) return this.mode.teamScores();
     const out = new Map<string, number>((this.teams ?? []).map((t) => [t.id, 0]));
-    for (const c of this.combatants()) if (c.faction && out.has(c.faction)) out.set(c.faction, out.get(c.faction)! + c.kills);
+    for (const c of this.combatants()) if (c.faction && out.has(c.faction)) out.set(c.faction, out.get(c.faction)! + c.kills + c.selfKills);
+    // Team kills still cost the team, but a team's score never drops below zero.
+    for (const [id, v] of out) out.set(id, Math.max(0, v));
     return out;
   }
 
@@ -549,6 +553,7 @@ export class Match {
       alive: false,
       respawnTick: 0,
       kills: 0,
+      selfKills: 0,
       deaths: 0,
       weapons: new Map(),
       current: 0,
@@ -2074,7 +2079,11 @@ export class Match {
     }
     victim.deaths++;
     victim.respawnTick = this.tick + this.rules.respawnDelayTicks;
-    if (!killer) victim.kills--; // suicides (falls, own grenades, traps) cost a point
+    // Suicides (falls, own grenades, traps) cost the player a point, not their team.
+    if (!killer) {
+      victim.kills--;
+      victim.selfKills++;
+    }
     this.scenario.playerKilled(victim.slot, killer?.slot ?? null);
     this.mode?.onKill(victim, killer);
     if (!killer || killer.npc || this.rules.scoreLimit <= 0) return;
@@ -2270,6 +2279,7 @@ export class Match {
     this.jamUntil.clear();
     for (const c of this.combatants()) {
       c.kills = 0;
+      c.selfKills = 0;
       c.deaths = 0;
       c.alive = false;
     }
@@ -2444,7 +2454,7 @@ export class Match {
   }
 
   scores(): ScoreEntry[] {
-    return this.combatants().map((c) => ({ s: c.slot, k: c.kills, d: c.deaths }));
+    return this.combatants().map((c) => ({ s: c.slot, k: c.kills, d: c.deaths, ...(c.selfKills ? { x: c.selfKills } : {}) }));
   }
 
   /** Snapshot message body shared by every recipient; hosts add the per-recipient `ack` and `me`. */

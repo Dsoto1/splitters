@@ -180,6 +180,8 @@ export interface ScoreEntry {
   s: number;
   k: number;
   d: number;
+  /** Suicides (already taken off `k`); they don't count against the team. */
+  x?: number;
 }
 
 export interface RosterEntry {

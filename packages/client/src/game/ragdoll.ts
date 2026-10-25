@@ -53,6 +53,11 @@ export class Ragdoll {
   private readonly toSpace: Matrix;
   private readonly fromSpace: Matrix;
   private readonly pelvis: TransformNode;
+  private readonly rootJoint: TransformNode;
+  /** The root's and pelvis's positions at death, and the root's local linear transform (skeleton space → its parent's). */
+  private readonly root0: Vector3;
+  private readonly pelvis0: Vector3;
+  private readonly rootLinear: Matrix;
   /** Pelvis joint relative to the torso capsule's centre (world, at death, in the capsule's frame). */
   private readonly pelvisLocal: Vec3;
 
@@ -68,6 +73,11 @@ export class Ragdoll {
     this.fromSpace = rootJoint.getWorldMatrix().clone().setTranslation(Vector3.Zero());
     this.toSpace = this.fromSpace.clone().invert();
     this.pelvis = joints.get('pelvis')!;
+    this.rootJoint = rootJoint;
+    this.root0 = rootJoint.position.clone();
+    this.pelvis0 = this.pelvis.position.clone();
+    const parentWorld = (rootJoint.parent as TransformNode | null)?.computeWorldMatrix(true) ?? Matrix.Identity();
+    this.rootLinear = rootJoint.getWorldMatrix().multiply(Matrix.Invert(parentWorld)).setTranslation(Vector3.Zero());
     const world0 = (n: string) => {
       const j = joints.get(n)!;
       j.computeWorldMatrix(true);
@@ -134,8 +144,13 @@ export class Ragdoll {
       if (part.bone === this.pelvis) {
         const t = part.body.translation();
         const at = new Vector3(this.pelvisLocal.x, this.pelvisLocal.y, this.pelvisLocal.z).applyRotationQuaternion(now).add(new Vector3(t.x, t.y, t.z));
-        // The pelvis hangs off the skeleton root, whose local space is the skeleton space.
-        this.pelvis.position.copyFrom(this.space.point(at));
+        // The pelvis hangs off the skeleton root, whose local space is the skeleton space. Move the root
+        // itself, pelvis and all: some skins weigh a few vertices to the root, which would otherwise stay
+        // where the body fell from and stretch after it.
+        const move = this.space.point(at).subtract(this.pelvis0);
+        this.rootJoint.position.copyFrom(this.root0.add(Vector3.TransformNormal(move, this.rootLinear)));
+        this.pelvis.position.copyFrom(this.pelvis0);
+        this.rootJoint.computeWorldMatrix(true);
         this.pelvis.computeWorldMatrix(true);
       }
     }

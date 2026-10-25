@@ -197,8 +197,10 @@ export class Hud {
     const out = new Map<string, number>((this.teams ?? []).map((t) => [t.id, 0]));
     for (const s of scores) {
       const t = this.roster.get(s.s)?.team;
-      if (t && out.has(t)) out.set(t, out.get(t)! + s.k);
+      if (t && out.has(t)) out.set(t, out.get(t)! + s.k + (s.x ?? 0));
     }
+    // As on the server: suicides don't cost the team, and a team never shows below zero.
+    for (const [id, v] of out) out.set(id, Math.max(0, v));
     return out;
   }
 
