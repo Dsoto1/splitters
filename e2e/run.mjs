@@ -50,7 +50,7 @@ async function clickTool(page, selector) {
 async function editorFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
@@ -182,7 +182,7 @@ async function editorFlow(browser) {
 async function editoruxFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
@@ -347,7 +347,7 @@ async function editoruxFlow(browser) {
 async function offlineFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   const inv = await page.evaluate(() => [...window.__cs.local.inventory.keys()]);
@@ -370,7 +370,7 @@ async function offlineFlow(browser) {
 async function vaultFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=vault`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(1500);
@@ -383,7 +383,7 @@ async function vaultFlow(browser) {
 async function outpostFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=outpost`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(2500);
@@ -400,7 +400,7 @@ async function outpostFlow(browser) {
 async function sandgateFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=sandgate`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(2000);
@@ -416,7 +416,7 @@ async function sandgateFlow(browser) {
 async function citadelFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=citadel`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(4000);
@@ -431,7 +431,7 @@ async function citadelFlow(browser) {
 async function canyonFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   // The game: terrain meshes per ground material, and players stand on the ground.
   await page.goto(`${CLIENT}/?offline=canyon`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
@@ -467,7 +467,7 @@ async function canyonFlow(browser) {
 async function sceneryFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   // The game: a photo sky, ground and scenery past the border, and grass growing on the canyon floor.
   await page.goto(`${CLIENT}/?offline=canyon`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
@@ -550,7 +550,7 @@ async function sceneryFlow(browser) {
 async function setpiecesFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=sky_islands`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(30000) });
   await page.waitForTimeout(1000);
@@ -589,7 +589,7 @@ async function setpiecesFlow(browser) {
 async function physicsfxFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(30000) });
   await page.waitForTimeout(2500);
@@ -672,7 +672,7 @@ async function physicsfxFlow(browser) {
 async function teamsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   // Arcade: Team Deathmatch on Sandgate as 2v2v2v2v2v2v12 (24 players, 7 teams).
   await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10 })));
   await page.goto(CLIENT);
@@ -695,7 +695,7 @@ async function teamsFlow(browser) {
 async function ctfFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=bunker_cross&gamemode=core.ctf`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match && window.__cs.mode?.state, null, { timeout: T(40000) });
   await page.waitForTimeout(1500);
@@ -773,7 +773,7 @@ async function ctfFlow(browser) {
 async function arsenalFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__give, null, { timeout: T(30000) });
   // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
@@ -798,7 +798,7 @@ async function arsenalFlow(browser) {
 async function vehiclesFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(30000) });
   const mounts = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => /^mount_[0-9]+$/.test(n.name)).length);
@@ -852,7 +852,7 @@ async function mapsFlow(browser) {
   for (const id of [...ids, ...chosen]) {
     const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
     const errors = [];
-    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
     await page.goto(`${CLIENT}/?offline=${id}`);
     const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(40000) }).then(() => true, () => false);
     await page.waitForTimeout(1500);
@@ -873,7 +873,7 @@ async function mapsFlow(browser) {
 async function designerFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1200, height: 760 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(CLIENT);
   await page.click('#nav-characters');
   await page.click('.char-tile.new');
@@ -915,7 +915,7 @@ async function webgpuFlow() {
     await context.addInitScript({ path: new URL('./webgpuShim.js', import.meta.url).pathname });
     const page = await context.newPage();
     const errors = [];
-    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
     page.on('console', (m) => /WebGPU (uncaptured error|context lost)/.test(m.text()) && errors.push(m.text()));
     await page.goto(`${CLIENT}/favicon.ico`).catch(() => {});
     if (!(await page.evaluate(async () => !!(await navigator.gpu?.requestAdapter())))) {
@@ -965,7 +965,7 @@ async function webgpuFlow() {
 async function charactersFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?mode=characters`);
   await page.waitForFunction(() => window.__charsReady === true, null, { timeout: T(30000) });
   const [n, want] = await page.evaluate(() => [window.__charAnimators.length, window.__charSpecs]);
@@ -984,7 +984,7 @@ async function onlineFlow(browser) {
   const open = async (name) => {
     const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
     const errors = [];
-    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
     await page.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://localhost:${SERVER_PORT}`);
     await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
     return { page, errors };
