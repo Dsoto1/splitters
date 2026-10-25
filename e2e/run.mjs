@@ -837,20 +837,31 @@ async function vehiclesFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(30000) });
   const mounts = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => /^mount_[0-9]+$/.test(n.name)).length);
   check(mounts >= 9, `canyon's vehicles and turrets are drawn (${mounts})`);
-  // Walk up to the buggy outside our base, press E once, and drive.
+  // Walk up to a free buggy, press E once, and drive. Bots like the vehicles by the bases too:
+  // keep them out of them for this test, and pick a buggy nobody is in.
   await page.evaluate(() => {
+    for (const c of window.__match.slots) if (c?.bot) c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
+    // Enemy bots drive over now and then: don't let a stray shot end the test drive.
+    setInterval(() => {
+      const p = window.__match.slots[window.__cs.slot];
+      if (p) p.health = 100;
+    }, 50);
     const me = window.__match.slots[window.__cs.slot];
-    const z = me.faction === 'tide' ? 60 : -60;
-    me.move = { pos: { x: -14, y: 0.3, z: z - (z > 0 ? -3 : 3) }, velY: 0, grounded: false };
+    const free = window.__match.mounts.filter((m) => m.def.id === 'buggy' && m.alive && m.seats.every((s) => s === null));
+    const home = me.faction === 'tide' ? 60 : -60;
+    const m = free.sort((a, b) => Math.abs(a.pos.z - home) - Math.abs(b.pos.z - home))[0];
+    me.move = { pos: { x: m.pos.x, y: m.pos.y + 0.3, z: m.pos.z + (m.pos.z > 0 ? 3 : -3) }, velY: 0, grounded: false };
     window.__autoInput = { buttons: 0 };
   });
   await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
   const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
   check(/Drive the Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
   // Press E (again, if a slow frame swallowed the press) until we're aboard.
+  // A late press can still land after the wait: never press again once aboard (that gets you out).
   for (let i = 0; i < 4; i++) {
+    if (await page.evaluate(() => !!window.__match.slots[window.__cs.slot].mount)) break;
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
-    const aboard = await page.waitForFunction(() => !!window.__match.slots[window.__cs.slot].mount, null, { timeout: T(5000) }).then(() => true, () => false);
+    const aboard = await page.waitForFunction(() => !!window.__match.slots[window.__cs.slot].mount, null, { timeout: T(8000) }).then(() => true, () => false);
     if (aboard) break;
   }
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
@@ -859,8 +870,11 @@ async function vehiclesFlow(browser) {
   await page
     .waitForFunction((s) => { const p = window.__match.slots[window.__cs.slot].move.pos; return Math.hypot(p.x - s.x, p.z - s.z) > 8; }, start, { timeout: T(10000) })
     .catch(() => {});
-  const after = await page.evaluate(() => ({ seat: window.__match.slots[window.__cs.slot].mount?.seat, pos: window.__match.slots[window.__cs.slot].move.pos, hud: document.getElementById('weapon-name')?.textContent }));
-  check(after.seat === 0, `you are in the driver's seat (${after.seat})`);
+  const after = await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    return { seat: me.mount?.seat, pos: me.move.pos, hud: document.getElementById('weapon-name')?.textContent, alive: me.alive };
+  });
+  check(after.seat === 0, `you are in the driver's seat (${after.seat}${after.alive ? '' : ', dead'})`);
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
   // Press E (again, if a slow frame swallowed the press) until we're out.
   for (let i = 0; i < 4; i++) {
