@@ -31,7 +31,8 @@ export class NavWorld {
 
   /** `extra` adds triangle geometry (terrain) to the boxes; `links` are one-way jumps (jump pads) bots can take. */
   static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null, links: readonly { start: Vec3; end: Vec3 }[] = [], snapped = false): NavWorld {
-    const box = boxesToTriangles(boxes);
+    // The ground round a built map is for players to stand on, not somewhere bots go.
+    const box = boxesToTriangles(boxes.filter((b) => b.sourceId !== 'ground'));
     let positions = box.positions;
     let indices = box.indices;
     if (extra) {

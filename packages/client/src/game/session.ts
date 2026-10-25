@@ -543,7 +543,7 @@ export class GameSession {
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8], size: n[11] ?? 1 });
         this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr);
         this.zones = msg.zn ?? [];
-        this.mounts?.apply(msg.mt);
+        this.mounts?.apply(msg.mt, msg.tick);
         this.covers?.apply(msg.cv);
         this.seat = msg.me?.mo ?? null;
         this.uav = msg.me?.uv ?? 0;

@@ -7,7 +7,7 @@ export function tileIcon(def: TileDefinition): string {
   const base = newMapDocument('icon');
   const doc = { ...base, classicStructure: { ...base.classicStructure, tiles: [{ id: 'icon_tile', tile: def.id, x: 0, y: 0, z: 0, rotation: 0 as const }] } };
   const boxes = buildMapGeometry(doc)
-    .filter((b) => b.min[1] < 3.9) // ground level only; upper-level walls would hide the steps
+    .filter((b) => b.kind !== 'barrier' && b.min[1] < 3.9) // ground level only; upper-level walls would hide the steps
     .sort((a, b) => (a.kind === 'floor' ? -1 : 0) - (b.kind === 'floor' ? -1 : 0) || a.max[1] - b.max[1]);
   // Fit the whole footprint (multi-cell pieces too) into the icon.
   const xs = def.cells.map((c) => c[0]);

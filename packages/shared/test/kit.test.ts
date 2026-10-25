@@ -9,6 +9,8 @@ type Tile = MapDocument['classicStructure']['tiles'][number];
 const t = (id: string, tile: string, x: number, y: number, z: number, rotation: Rotation = 0, edges?: Tile['edges']): Tile => ({ id, tile, x, y, z, rotation, ...(edges ? { edges } : {}) });
 const inside = (boxes: readonly WorldBox[], p: [number, number, number]) => boxes.some((b) => b.min.every((v, i) => p[i]! >= v - 1e-6) && b.max.every((v, i) => p[i]! <= v + 1e-6));
 const walls = (boxes: readonly WorldBox[]) => boxes.filter((b) => b.kind === 'wall');
+/** A layout's own boxes, without the ground under and round it (that's tested in ground.test.ts). */
+const tileGeometry = (map: MapDocument) => buildMapGeometry(map).filter((b) => b.sourceId !== 'ground');
 /** Point-in-box that honours turned boxes. */
 const insideTurned = (boxes: readonly WorldBox[], p: [number, number, number]) =>
   boxes.some((b) => {
@@ -25,7 +27,7 @@ describe('building kit', () => {
       for (const rotation of [0, 1, 2, 3] as Rotation[]) {
         const map = makeMap([t('a', def.id, 0, 0, 0, rotation)]);
         expect(validateMap(map).filter((i) => i.severity === 'error'), def.id).toEqual([]);
-        const boxes = buildMapGeometry(map);
+        const boxes = tileGeometry(map);
         expect(boxes.some((b) => b.kind === 'floor'), def.id).toBe(true);
         // Everything stays within the occupied cells' extent.
         const xs = def.cells.flatMap(([dx, dy]) => [dx, dy]);
@@ -47,19 +49,19 @@ describe('building kit', () => {
   });
 
   it('builds no walls inside a multi-cell piece', () => {
-    const boxes = walls(buildMapGeometry(makeMap([t('big', 'core.room_large', 0, 0, 0)])));
+    const boxes = walls(tileGeometry(makeMap([t('big', 'core.room_large', 0, 0, 0)])));
     // The internal boundaries are x = 4 and z = 4; nothing stands across them at head height.
     expect(inside(boxes, [4, 1.7, 0])).toBe(false);
     expect(inside(boxes, [0, 1.7, 4])).toBe(false);
     // The outside still has walls, and a perimeter port with a neighbour makes a doorway.
     expect(inside(boxes, [-3.9, 1.7, 2])).toBe(true);
-    const joined = walls(buildMapGeometry(makeMap([t('big', 'core.room_large', 0, 0, 0), t('r', 'core.room', 2, 1, 0)])));
+    const joined = walls(tileGeometry(makeMap([t('big', 'core.room_large', 0, 0, 0), t('r', 'core.room', 2, 1, 0)])));
     expect(inside(joined, [11.9, 1.7, 8])).toBe(false);
     expect(inside(joined, [11.9, 1.7, 6])).toBe(true);
   });
 
   it('builds each edge style on the chosen side, following the rotation', () => {
-    const at = (edges: Tile['edges'], rotation: Rotation = 0) => walls(buildMapGeometry(makeMap([t('r', 'core.room', 0, 0, 0, rotation, edges)])));
+    const at = (edges: Tile['edges'], rotation: Rotation = 0) => walls(tileGeometry(makeMap([t('r', 'core.room', 0, 0, 0, rotation, edges)])));
     const plain = at(undefined);
     expect(inside(plain, [0, 1.7, 3.9])).toBe(true);
     // Window: see through at eye height, solid below the sill.
@@ -71,7 +73,7 @@ describe('building kit', () => {
     expect(inside(turned, [3.9, 1.7, 0])).toBe(false);
     expect(inside(turned, [0, 1.7, 3.9])).toBe(true);
     // No wall, half wall, archway, railing.
-    expect(walls(buildMapGeometry(makeMap([t('r', 'core.room', 0, 0, 0, 0, { '0,0,0:N': 'open' })]))).filter((b) => b.min[2] > 3).length).toBe(0);
+    expect(walls(tileGeometry(makeMap([t('r', 'core.room', 0, 0, 0, 0, { '0,0,0:N': 'open' })]))).filter((b) => b.min[2] > 3).length).toBe(0);
     const half = at({ '0,0,0:S': 'half' });
     expect(inside(half, [0, 0.5, -3.9])).toBe(true);
     expect(inside(half, [0, 1.5, -3.9])).toBe(false);
@@ -84,16 +86,16 @@ describe('building kit', () => {
   });
 
   it("uses the neighbour's choice for a shared side so both halves match", () => {
-    const boxes = walls(buildMapGeometry(makeMap([t('a', 'core.room', 0, 0, 0, 0, { '0,0,0:N': 'window' }), t('b', 'core.corridor', 0, 1, 0, 1)])));
+    const boxes = walls(tileGeometry(makeMap([t('a', 'core.room', 0, 0, 0, 0, { '0,0,0:N': 'window' }), t('b', 'core.corridor', 0, 1, 0, 1)])));
     // a's north and b's south half of the wall both have the window cut.
     expect(inside(boxes, [0, 1.7, 3.9])).toBe(false);
     expect(inside(boxes, [0, 1.7, 4.1])).toBe(false);
   });
 
   it('leaves platforms and bridges open at the edges, framing only the room side', () => {
-    const plat = buildMapGeometry(makeMap([t('p', 'core.platform', 0, 0, 0)]));
+    const plat = tileGeometry(makeMap([t('p', 'core.platform', 0, 0, 0)]));
     expect(walls(plat)).toEqual([]);
-    const bridge = buildMapGeometry(makeMap([t('a', 'core.room', 0, -1, 0), t('b', 'core.bridge', 0, 0, 0), t('c', 'core.room', 0, 1, 0)]));
+    const bridge = tileGeometry(makeMap([t('a', 'core.room', 0, -1, 0), t('b', 'core.bridge', 0, 0, 0), t('c', 'core.room', 0, 1, 0)]));
     const bridgeWalls = walls(bridge).filter((b) => b.sourceId === 'b');
     expect(bridgeWalls).toEqual([]);
     expect(inside(walls(bridge), [-3, 1.7, -4.1])).toBe(true);
@@ -101,21 +103,21 @@ describe('building kit', () => {
     // The deck is there; beside it is the drop.
     expect(inside(bridge, [0, -0.1, 0])).toBe(true);
     expect(inside(bridge, [3, -0.1, 0])).toBe(false);
-    const rails = buildMapGeometry(makeMap([t('p', 'core.platform_rail', 0, 0, 0)]));
+    const rails = tileGeometry(makeMap([t('p', 'core.platform_rail', 0, 0, 0)]));
     expect(walls(rails).length).toBe(4);
   });
 
   it('keeps trim visual only', () => {
     const map = makeMap([t('r', 'core.room', 0, 0, 0, 0, { '0,0,0:N': 'window', '0,0,0:E': 'railing' })]);
-    expect(buildMapGeometry(map).some((b) => b.kind === 'trim')).toBe(false);
+    expect(tileGeometry(map).some((b) => b.kind === 'trim')).toBe(false);
     const decor = buildMapDecor(map);
     expect(decor.length).toBeGreaterThan(8);
     expect(decor.every((b) => b.kind === 'trim')).toBe(true);
   });
 
   it('kills a fall some way below the lowest floor', () => {
-    expect(mapKillY(buildMapGeometry(makeMap([t('p', 'core.pit', 0, 0, 0)])))).toBeCloseTo(-14);
-    expect(mapKillY(buildMapGeometry(makeMap([t('s', 'core.room_sunken', 0, 0, 0)])))).toBeCloseTo(-15.5);
+    expect(mapKillY(tileGeometry(makeMap([t('p', 'core.pit', 0, 0, 0)])))).toBeCloseTo(-14);
+    expect(mapKillY(tileGeometry(makeMap([t('s', 'core.room_sunken', 0, 0, 0)])))).toBeCloseTo(-15.5);
   });
 
   it('accepts every edge style on every side', () => {
@@ -157,7 +159,7 @@ describe('building kit navigation', () => {
         });
         const [fx, fz] = turn(c.from[0], c.from[2], r);
         const [tx, tz] = turn(c.to[0], c.to[2], r);
-        const nav = NavWorld.build(buildMapGeometry(makeMap(tiles, [[fx, c.from[1], fz]])));
+        const nav = NavWorld.build(tileGeometry(makeMap(tiles, [[fx, c.from[1], fz]])));
         const path = nav.findPath({ x: fx, y: c.from[1], z: fz }, { x: tx, y: c.to[1], z: tz });
         expect(path, `${c.name} r${r}`).not.toBeNull();
         const end = path![path!.length - 1]!;
@@ -207,7 +209,7 @@ describe('props', () => {
     const map = makeMap([t('r', 'core.room', 0, 0, 0)]);
     map.entities.push(prop('p1', 'prop.rock_large', 2, 0), prop('p2', 'prop.rug', -2, 0), prop('p3', 'prop.rock_medium', 0, 2, { solid: false }), prop('p4', 'prop.tree', -2, -2, { scale: 2 }));
     expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
-    const boxes = buildMapGeometry(map).filter((b) => b.kind === 'prop');
+    const boxes = tileGeometry(map).filter((b) => b.kind === 'prop');
     // A boulder collides as two rounded tiers (a low one you can hop onto, a narrower top).
     expect(boxes.map((b) => b.sourceId)).toEqual(['p1', 'p1', 'p4']);
     expect(boxes[0]!.max[1]).toBeLessThanOrEqual(0.7 + 1e-6);
@@ -219,7 +221,7 @@ describe('props', () => {
     // Turned 45°, the collision covers the turned crate's footprint.
     const turned = makeMap([t('r', 'core.room', 0, 0, 0)]);
     turned.entities.push(prop('p1', 'prop.rock_large', 0, 0, { yaw: Math.PI / 4 }));
-    const b = buildMapGeometry(turned).find((x) => x.kind === 'prop')!;
+    const b = tileGeometry(turned).find((x) => x.kind === 'prop')!;
     expect(b.max[0] - b.min[0]).toBeGreaterThan(boxes[0]!.max[0] - boxes[0]!.min[0]);
   });
 
@@ -237,7 +239,7 @@ describe('props', () => {
       const [wx, wy] = turn(-1, 0);
       const map = makeMap([t('c', 'core.round_corner_m', 0, 0, 0, rotation), t('s', 'core.room', sx, sy, 0), t('w', 'core.room', wx, wy, 0)], [[sx * 8, 0, sy * 8]]);
       expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
-      const boxes = buildMapGeometry(map);
+      const boxes = tileGeometry(map);
       // On the curve (radius 15.75 from the piece's outer corner, at 45°) there is wall.
       const d = 15.75 / Math.SQRT2;
       const [cx, cz] = turn(-4 + d, -4 + d);
@@ -253,12 +255,12 @@ describe('props', () => {
 
   it('curved trim is drawn but never collides', () => {
     const map = makeMap([t('c', 'core.round_corner_s', 0, 0, 0)]);
-    expect(buildMapGeometry(map).some((b) => b.kind === 'trim')).toBe(false);
+    expect(tileGeometry(map).some((b) => b.kind === 'trim')).toBe(false);
     expect(buildMapDecor(map).filter((b) => b.yaw !== undefined).length).toBeGreaterThan(10);
   });
 
   it('high and towering walls reach 2 and 4 storeys; the fence is see-through bars', () => {
-    const at = (style: 'high' | 'tower' | 'fence') => walls(buildMapGeometry(makeMap([t('r', 'core.room', 0, 0, 0, 0, { '0,0,0:N': style })])));
+    const at = (style: 'high' | 'tower' | 'fence') => walls(tileGeometry(makeMap([t('r', 'core.room', 0, 0, 0, 0, { '0,0,0:N': style })])));
     expect(Math.max(...at('high').map((b) => b.max[1]))).toBeCloseTo(8);
     expect(Math.max(...at('tower').map((b) => b.max[1]))).toBeCloseTo(16);
     const fence = at('fence');
@@ -273,7 +275,7 @@ describe('props', () => {
     for (const style of ['invisible', 'wall', 'fence'] as const) {
       const map = { ...base, bounds: { ...fit, style, height: 6 } };
       expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
-      const boxes = buildMapGeometry(map);
+      const boxes = tileGeometry(map);
       // Just outside the line there is always something solid, all the way up.
       expect(inside(boxes, [-6.5, 1, 0]), style).toBe(true);
       expect(inside(boxes, [-6.5, 40, 0]), style).toBe(true);

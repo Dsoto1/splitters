@@ -3,6 +3,7 @@ import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, type EdgeStyle, type Lo
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { getProp } from '../content/props.ts';
 import { terrainBoundary, terrainTriangles } from './terrain.ts';
+import { resolveBackdrop } from './backdrop.ts';
 
 /**
  * `trim` boxes are visual only (baseboards, cornices, frames): never in physics
@@ -452,7 +453,53 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     for (const f of def.extraFloors ?? []) boxes.push(rotateLocalBox(f, placement.rotation, cx, baseY, cz, placement.id, 'floor'));
     for (const solid of def.solids ?? []) if (solid.kind !== 'trim') boxes.push(rotateLocalBox(solid, placement.rotation, cx, baseY, cz, placement.id, solid.kind ?? 'solid'));
   }
+  if (!decor) boxes.push(...groundBoxes(map, boxes));
   return boxes;
+}
+
+/** How far the walkable ground runs past the map's footprint. */
+const GROUND_MARGIN = 12;
+
+/**
+ * Ground you can stand on under and round a built map (no terrain) whose
+ * backdrop draws land there: a slab at the same height the ground is drawn
+ * (just under the lowest floor), reaching GROUND_MARGIN past the footprint,
+ * fenced in by invisible walls so nobody walks off its edge into the void.
+ * Collision only (barrier boxes), so it changes nothing on screen. Maps over
+ * water, in space or with terrain get none.
+ */
+export function groundBoxes(map: MapDocument, boxes: readonly WorldBox[]): WorldBox[] {
+  if (map.terrain) return [];
+  const ground = resolveBackdrop(map).ground;
+  if (ground === 'none' || ground === 'water') return [];
+  let [x0, z0, x1, z1, floor] = [Infinity, Infinity, -Infinity, -Infinity, Infinity];
+  for (const b of boxes) {
+    if (b.kind === 'barrier') continue;
+    const bb = boxBounds(b);
+    x0 = Math.min(x0, bb.min[0]);
+    z0 = Math.min(z0, bb.min[2]);
+    x1 = Math.max(x1, bb.max[0]);
+    z1 = Math.max(z1, bb.max[2]);
+    // The same lowest-floor rule the backdrop draws its ground with.
+    floor = Math.min(floor, bb.max[1] < 0.5 ? bb.max[1] : bb.min[1]);
+  }
+  if (!Number.isFinite(floor)) return [];
+  if (map.bounds) {
+    x0 = Math.min(x0, map.bounds.min[0]);
+    z0 = Math.min(z0, map.bounds.min[1]);
+    x1 = Math.max(x1, map.bounds.max[0]);
+    z1 = Math.max(z1, map.bounds.max[1]);
+  }
+  [x0, z0, x1, z1] = [x0 - GROUND_MARGIN, z0 - GROUND_MARGIN, x1 + GROUND_MARGIN, z1 + GROUND_MARGIN];
+  const top = Math.round(floor * 100) / 100 - 0.05;
+  const wall = (min: [number, number, number], max: [number, number, number]): WorldBox => ({ min, max, kind: 'barrier', sourceId: 'ground' });
+  return [
+    wall([x0, top - 2, z0], [x1, top, z1]),
+    wall([x0 - 1, top - 2, z0 - 1], [x0, top + 60, z1 + 1]),
+    wall([x1, top - 2, z0 - 1], [x1 + 1, top + 60, z1 + 1]),
+    wall([x0, top - 2, z0 - 1], [x1, top + 60, z0]),
+    wall([x0, top - 2, z1], [x1, top + 60, z1 + 1]),
+  ];
 }
 
 /**

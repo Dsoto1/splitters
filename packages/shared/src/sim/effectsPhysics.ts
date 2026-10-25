@@ -31,7 +31,8 @@ export class EffectsWorld {
     const statics = groups(GROUP_STATIC, GROUP_DEBRIS | GROUP_RAGDOLL | GROUP_STATIC);
     if (terrain) this.world.createCollider(RAPIER.ColliderDesc.trimesh(terrain.positions, terrain.indices).setCollisionGroups(statics));
     for (const b of boxes) {
-      if (b.kind === 'barrier') continue;
+      // Invisible walls don't stop bodies and debris; the ground under and round a built map does.
+      if (b.kind === 'barrier' && b.sourceId !== 'ground') continue;
       const hx = (b.max[0] - b.min[0]) / 2;
       const hy = (b.max[1] - b.min[1]) / 2;
       const hz = (b.max[2] - b.min[2]) / 2;

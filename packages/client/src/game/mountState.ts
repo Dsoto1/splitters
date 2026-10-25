@@ -1,4 +1,4 @@
-import { getMountDef, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import { TICK_RATE, getMountDef, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -15,6 +15,11 @@ export interface ClientMount {
   seats: number[];
   /** Smoothed pose for drawing. */
   shown: { pos: Vec3; yaw: number; aimYaw: number; aimPitch: number };
+  /** Motion between the last two snapshots (m/s, rad/s), the snapshot's tick, and when it arrived (ms). */
+  vel: Vec3;
+  spin: number;
+  tick: number;
+  at: number;
   body: ReturnType<PhysicsWorld['createBox']>;
 }
 
@@ -38,22 +43,40 @@ export class MountState {
       if (!def) return;
       const pos = { x: e.position[0], y: e.position[1], z: e.position[2] };
       const body = physics.createBox({ x: pos.x, y: pos.y + def.half[1], z: pos.z }, { x: def.half[0], y: def.half[1], z: def.half[2] }, e.yaw);
-      this.mounts.set(index, { index, def, model: e.model, pos, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0, health: 100, alive: true, seats: def.seats.map(() => -1), shown: { pos: { ...pos }, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0 }, body });
+      this.mounts.set(index, { index, def, model: e.model, pos, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0, health: 100, alive: true, seats: def.seats.map(() => -1), shown: { pos: { ...pos }, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body });
     });
   }
 
-  apply(list: readonly MountSnapshot[] | undefined): void {
+  apply(list: readonly MountSnapshot[] | undefined, tick = -1): void {
     if (!list) return;
+    const now = performance.now();
     for (const s of list) {
       const m = this.mounts.get(s[0]!);
       if (!m) continue;
-      m.pos = { x: s[1]!, y: s[2]!, z: s[3]! };
+      const pos = { x: s[1]!, y: s[2]!, z: s[3]! };
+      // Velocity from the server's own clock (ticks), so network jitter doesn't shake it.
+      const dt = m.tick >= 0 && tick > m.tick ? (tick - m.tick) / TICK_RATE : 0;
+      if (dt > 0 && dt < 0.5) {
+        const k = 0.5;
+        m.vel = { x: m.vel.x + ((pos.x - m.pos.x) / dt - m.vel.x) * k, y: m.vel.y + ((pos.y - m.pos.y) / dt - m.vel.y) * k, z: m.vel.z + ((pos.z - m.pos.z) / dt - m.vel.z) * k };
+        m.spin += (Math.atan2(Math.sin(s[4]! - m.yaw), Math.cos(s[4]! - m.yaw)) / dt - m.spin) * k;
+      } else if (dt >= 0.5) {
+        m.vel = { x: 0, y: 0, z: 0 };
+        m.spin = 0;
+      }
+      if (tick >= 0) m.tick = tick;
+      m.at = now;
+      m.pos = pos;
       m.yaw = s[4]!;
       m.aimYaw = s[5]!;
       m.aimPitch = s[6]!;
       m.health = s[7]!;
       const alive = s[8] === 1;
-      if (!m.alive && alive) m.shown = { pos: { ...m.pos }, yaw: m.yaw, aimYaw: m.aimYaw, aimPitch: m.aimPitch };
+      if (!m.alive && alive) {
+        m.shown = { pos: { ...m.pos }, yaw: m.yaw, aimYaw: m.aimYaw, aimPitch: m.aimPitch };
+        m.vel = { x: 0, y: 0, z: 0 };
+        m.spin = 0;
+      }
       m.alive = alive;
       m.seats = s.slice(9);
       this.physics.setBoxEnabled(m.body, alive);
@@ -62,15 +85,23 @@ export class MountState {
     this.physics.commit();
   }
 
-  /** Ease the drawn poses toward the latest state (vehicles at 30 snapshots a second still look smooth). */
+  /**
+   * Ease the drawn poses toward where each mount is now: its latest state
+   * carried on by its motion since that snapshot (at most a few frames'
+   * worth), so a fast vehicle glides between snapshots instead of surging
+   * at each one.
+   */
   smooth(dt: number): void {
     const k = Math.min(1, dt * 18);
+    const now = performance.now();
     for (const m of this.mounts.values()) {
       const p = m.shown.pos;
+      const ahead = m.alive ? Math.min(0.1, (now - m.at) / 1000) : 0;
+      const want = { x: m.pos.x + m.vel.x * ahead, y: m.pos.y + m.vel.y * ahead, z: m.pos.z + m.vel.z * ahead };
       // Respawns and long jumps snap.
-      if (Math.hypot(m.pos.x - p.x, m.pos.z - p.z) > 8) m.shown.pos = { ...m.pos };
-      else m.shown.pos = { x: p.x + (m.pos.x - p.x) * k, y: p.y + (m.pos.y - p.y) * k, z: p.z + (m.pos.z - p.z) * k };
-      m.shown.yaw = angleLerp(m.shown.yaw, m.yaw, k);
+      if (Math.hypot(want.x - p.x, want.z - p.z) > 8) m.shown.pos = want;
+      else m.shown.pos = { x: p.x + (want.x - p.x) * k, y: p.y + (want.y - p.y) * k, z: p.z + (want.z - p.z) * k };
+      m.shown.yaw = angleLerp(m.shown.yaw, m.yaw + m.spin * ahead, k);
       m.shown.aimYaw = angleLerp(m.shown.aimYaw, m.aimYaw, k);
       m.shown.aimPitch += (m.aimPitch - m.shown.aimPitch) * k;
     }
