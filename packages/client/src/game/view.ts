@@ -105,7 +105,13 @@ interface Avatar {
   /** Muzzle flash shown until this time. */
   flashUntil?: number;
   flash?: Mesh;
+  /** Climbing out of a hatch or burrow: rises from below the floor from this time. */
+  emergeAt?: number;
 }
+
+/** How long an NPC takes to climb out of a hatch or burrow (ms), and from how deep. */
+const EMERGE_MS = 650;
+const EMERGE_DEPTH = 1.7;
 
 /** A body left where it fell: stays all match, or sinks away after a while (player setting). */
 interface Corpse {
@@ -244,6 +250,7 @@ export class GameView {
       if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`, true, true, doc.terrain));
     });
     this.scenario.build(doc.entities);
+    this.entrances = doc.entities.filter((e): e is Extract<MapEntity, { kind: 'encounter' }> => e.kind === 'encounter' && e.entrance !== 'none');
     // Warm the model cache so first switches and pickups don't hitch.
     for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);
     void this.models.load('projectiles/grenade.glb');
@@ -257,6 +264,8 @@ export class GameView {
   private lastFrame = performance.now();
   private debrisBodies: { mesh: Mesh; body: ReturnType<EffectsWorld['addBody']>; born: number; shared?: boolean }[] = [];
   readonly impacts: ImpactVisuals;
+  /** Squads that come in through a vent, hatch, burrow or breach (their NPCs get an entrance). */
+  private entrances: Extract<MapEntity, { kind: 'encounter' }>[] = [];
   readonly throwArc: ThrowArc;
   private corpses: Corpse[] = [];
   /** Players whose body is lying as a corpse and who haven't respawned yet. */
@@ -675,6 +684,7 @@ export class GameView {
       if (!a) {
         a = this.createAvatar(p.slot, want, key);
         this.avatars.set(p.slot, a);
+        if (want.npc && p.alive) this.arrive(a, p, now);
       }
       // Motion from successive interpolated positions.
       const dt = a.last ? (now - a.last.t) / 1000 : 0;
@@ -708,6 +718,11 @@ export class GameView {
       // While ragdolled the body stays where it fell; physics moves the bones.
       if (!a.ragdoll) {
         a.root.position.set(p.x, p.y, p.z);
+        if (a.emergeAt !== undefined) {
+          const t = (now - a.emergeAt) / EMERGE_MS;
+          if (t >= 1) a.emergeAt = undefined;
+          else a.root.position.y -= EMERGE_DEPTH * (1 - t) * (1 - t);
+        }
         a.root.rotation.y = p.yaw;
       }
       a.placeholder.setEnabled(p.alive && !a.anim);
@@ -788,6 +803,39 @@ export class GameView {
       node.position.set(0.3, 0.25, 0.35);
       a.weaponNode = node;
     });
+  }
+
+  /**
+   * A new NPC by a squad's entrance makes its entrance: it climbs out of a
+   * hatch or burrow, and dust or debris bursts from the vent, hole or breach.
+   */
+  private arrive(a: Avatar, p: RemotePose, now: number): void {
+    for (const e of this.entrances) {
+      const out = e.entrance === 'breach' ? 0.8 : 0;
+      const mx = e.position[0] + Math.sin(e.yaw) * out;
+      const mz = e.position[2] + Math.cos(e.yaw) * out;
+      const dy = p.y - e.position[1];
+      if (Math.hypot(p.x - mx, p.z - mz) > 1.4 || dy < -0.5 || dy > e.ventHeight) continue;
+      const floor = { x: mx, y: e.position[1] + 0.2, z: mz };
+      switch (e.entrance) {
+        case 'vent':
+          this.impacts.puff({ x: e.position[0], y: e.position[1] + e.ventHeight - 0.3, z: e.position[2] }, '#6b6760', 1.1, 0.9, -0.6);
+          break;
+        case 'hatch':
+          a.emergeAt = now;
+          this.impacts.puff(floor, '#5d5955', 0.9, 0.7, 0.8);
+          break;
+        case 'burrow':
+          a.emergeAt = now;
+          this.impacts.puff(floor, '#6e5440', 1.4, 1.1, 0.9);
+          this.impacts.puff(floor, '#4a3828', 0.8, 0.6, 1.4);
+          break;
+        case 'breach':
+          this.impacts.puff({ x: e.position[0], y: e.position[1] + 1, z: e.position[2] }, '#a29d93', 1.3, 1, 0.5);
+          break;
+      }
+      return;
+    }
   }
 
   private createAvatar(slot: number, spec: AvatarSpec, specKey: string): Avatar {

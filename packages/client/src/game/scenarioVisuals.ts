@@ -479,12 +479,15 @@ export class ScenarioVisuals {
   /** Editor-only marker: the spawn area in the faction's colour, a flag, and one figure per first-wave member. */
   private encounter(name: string, e: Extract<MapEntity, { kind: 'encounter' }>): Visual {
     const root = new TransformNode(name, this.scene);
+    if (e.entrance !== 'none') this.entrance(name, root, e);
     if (!this.opts.editor) return { root };
     const color = this.factionColor(e.faction);
+    // Squads with an entrance come out of it, not across an area.
     const disc = CreateCylinder(`${name}_area`, { diameter: e.radius * 2, height: 0.04, tessellation: 32 }, this.scene);
     disc.parent = root;
     disc.position.y = 0.03;
     disc.material = this.mat('encArea', color, { emissive: 0.4, alpha: 0.18 });
+    disc.setEnabled(e.entrance === 'none');
     this.box(`${name}_pole`, root, [0.08, 2.6, 0.08], [0, 1.3, 0], this.mat('pole', '#3a3f48'));
     this.box(`${name}_flag`, root, [0.7, 0.45, 0.03], [0.35, 2.3, 0], this.mat('encFlag', color, { emissive: 0.5 }));
     const count = Math.min(8, rosterSize(e.roster));
@@ -496,6 +499,91 @@ export class ScenarioVisuals {
       fig.material = this.mat('encFig', color);
     }
     return { root };
+  }
+
+  /**
+   * The way a squad comes in, built where the players can see it (local +z is
+   * the squad's facing): a kicked-open ceiling vent, an open floor hatch, a
+   * dug-out burrow, or a hole smashed through the wall behind the point with
+   * its rubble spilling out.
+   */
+  private entrance(name: string, root: TransformNode, e: Extract<MapEntity, { kind: 'encounter' }>): void {
+    const dark = this.mat('entranceDark', '#07080a');
+    const steel = this.mat('entranceSteel', '#5d646d', { spec: 0.3 });
+    // Fixed scatter, so every player sees the same rubble.
+    let seed = 0;
+    for (const c of e.id) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
+    const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+    const lump = (i: number, mat: StandardMaterial, x: number, y: number, z: number, size: number) => {
+      const m = this.box(`${name}_lump${i}`, root, [size * (0.8 + rnd() * 0.6), size * (0.5 + rnd() * 0.5), size * (0.8 + rnd() * 0.6)], [x, y, z], mat);
+      m.rotation.set(rnd() * 0.6, rnd() * Math.PI, rnd() * 0.6);
+    };
+    switch (e.entrance) {
+      case 'vent': {
+        const h = e.ventHeight;
+        this.box(`${name}_shaft`, root, [1.1, 0.04, 1.1], [0, h - 0.02, 0], dark);
+        for (const s of [-1, 1]) {
+          this.box(`${name}_frameX${s}`, root, [1.3, 0.08, 0.1], [0, h - 0.04, s * 0.6], steel);
+          this.box(`${name}_frameZ${s}`, root, [0.1, 0.08, 1.3], [s * 0.6, h - 0.04, 0], steel);
+        }
+        // The grate, kicked open, hanging from its hinge.
+        const hinge = new TransformNode(`${name}_hinge`, this.scene);
+        hinge.parent = root;
+        hinge.position.set(0, h - 0.08, -0.55);
+        hinge.rotation.x = 1.25;
+        for (let i = 0; i < 6; i++) this.box(`${name}_slat${i}`, hinge, [1.05, 0.03, 0.06], [0, 0, 0.1 + i * 0.18], steel);
+        for (const x of [-0.5, 0.5]) this.box(`${name}_grateSide${x}`, hinge, [0.05, 0.04, 1.05], [x, 0, 0.52], steel);
+        break;
+      }
+      case 'hatch': {
+        this.box(`${name}_pit`, root, [1.0, 0.04, 1.0], [0, 0.02, 0], dark);
+        for (const s of [-1, 1]) {
+          this.box(`${name}_rimX${s}`, root, [1.2, 0.08, 0.1], [0, 0.04, s * 0.55], steel);
+          this.box(`${name}_rimZ${s}`, root, [0.1, 0.08, 1.2], [s * 0.55, 0.04, 0], steel);
+        }
+        const hinge = new TransformNode(`${name}_hinge`, this.scene);
+        hinge.parent = root;
+        hinge.position.set(0, 0.08, -0.55);
+        hinge.rotation.x = -1.85;
+        this.box(`${name}_lid`, hinge, [1.05, 0.06, 1.05], [0, 0, 0.52], steel);
+        this.box(`${name}_wheel`, hinge, [0.4, 0.05, 0.4], [0, 0.05, 0.52], this.mat('entranceHandle', '#a33a2a'));
+        break;
+      }
+      case 'burrow': {
+        const dirt = this.mat('entranceDirt', '#4e3a2a', { spec: 0 });
+        const hole = CreateCylinder(`${name}_hole`, { diameter: 1.5, height: 0.03, tessellation: 18 }, this.scene);
+        hole.parent = root;
+        hole.position.y = 0.015;
+        hole.material = this.mat('entranceHole', '#120c08');
+        // A ring of thrown-up earth, low and rounded.
+        for (let i = 0; i < 24; i++) {
+          const a = (i / 24) * Math.PI * 2 + rnd() * 0.3;
+          const d = 0.75 + rnd() * 0.3;
+          const clod = CreateSphere(`${name}_clod${i}`, { diameter: 1, segments: 5 }, this.scene);
+          clod.parent = root;
+          clod.position.set(Math.cos(a) * d, 0.02, Math.sin(a) * d);
+          clod.scaling.set(0.3 + rnd() * 0.25, 0.1 + rnd() * 0.12, 0.3 + rnd() * 0.25);
+          clod.rotation.y = rnd() * Math.PI;
+          clod.material = dirt;
+        }
+        break;
+      }
+      case 'breach': {
+        // The point stands against the wall; the hole's face is just in front of it and reaches back into the wall. Rubble spills out towards +z.
+        const concrete = this.mat('entranceConcrete', '#9a958c');
+        this.box(`${name}_gap`, root, [1.3, 2.1, 0.7], [0, 1.05, -0.27], dark);
+        for (let i = 0; i < 9; i++) {
+          // Broken edges round the gap.
+          const side = i % 3;
+          const t = rnd();
+          const [x, y] = side === 0 ? [-0.7, 0.3 + t * 1.8] : side === 1 ? [0.7, 0.3 + t * 1.8] : [-0.6 + t * 1.2, 2.15];
+          const chunk = this.box(`${name}_edge${i}`, root, [0.25 + rnd() * 0.2, 0.25 + rnd() * 0.25, 0.3], [x, y, 0.02], concrete);
+          chunk.rotation.z = rnd() * Math.PI;
+        }
+        for (let i = 0; i < 12; i++) lump(100 + i, concrete, (rnd() - 0.5) * 1.6, 0.06, 0.1 + rnd() * 0.8, 0.14 + rnd() * 0.2);
+        break;
+      }
+    }
   }
 
   private door(name: string, e: Extract<MapEntity, { kind: 'door' }>): Visual {

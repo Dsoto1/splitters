@@ -204,6 +204,14 @@ export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper', 'imp', 'puglin
 export const CREATURE_ROLES = ['imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const satisfies readonly (typeof NPC_ROLES)[number][];
 const squadCount = z.number().int().min(0).max(16);
 export const SQUAD_ORDERS = ['hold', 'attack', 'defend', 'patrol', 'follow', 'roam'] as const;
+/**
+ * How a squad arrives: spread round the point (none), or one by one out of a
+ * fixture drawn there: dropping from a ceiling vent, climbing out of a floor
+ * hatch, digging out of a burrow, or stepping through a breach in the wall
+ * behind the point.
+ */
+export const ENCOUNTER_ENTRANCES = ['none', 'vent', 'hatch', 'burrow', 'breach'] as const;
+export type EncounterEntrance = (typeof ENCOUNTER_ENTRANCES)[number];
 
 /**
  * An NPC encounter: a squad of a faction's soldiers that spawns around this
@@ -244,6 +252,9 @@ export const EncounterEntity = EntityBase.extend({
   health: z.number().min(0.25).max(10).optional(),
   damage: z.number().min(0).max(5).optional(),
   size: z.number().min(0.5).max(2.5).optional(),
+  entrance: z.enum(ENCOUNTER_ENTRANCES).default('none'),
+  /** A vent's height above the point (just under a standard ceiling by default). */
+  ventHeight: z.number().min(2).max(12).default(3.5),
 });
 
 /** A placed prop (furniture, crates, trees, machines…) from the prop catalog. Position is the centre of its footprint on the floor. */

@@ -111,6 +111,28 @@ describe('encounters', () => {
     expect(events.filter((e) => e.e === 'round_end')).toEqual([{ e: 'round_end', winner: null, outcome: 'victory' }]);
   });
 
+  it('a vent squad drops in one at a time from the ceiling', () => {
+    const { match, run } = start(hall([{ entrance: 'vent', ventHeight: 3.5 }]));
+    run(1);
+    expect(living(match).length).toBe(1);
+    const first = living(match)[0]!;
+    expect(first.move.pos.y).toBeGreaterThan(1.2);
+    run(40);
+    expect(first.move.pos.y).toBeLessThan(0.2);
+    expect(living(match).length).toBe(1);
+    run(200);
+    expect(living(match).length).toBe(2);
+  });
+
+  it('a breach squad steps out in front of the wall behind the point', () => {
+    const { match, run } = start(hall([{ entrance: 'breach', roster: { trooper: 1, gunner: 0, heavy: 0 } }]));
+    run(1);
+    const npc = living(match)[0]!;
+    // Facing -x, so the mouth is 0.8 m towards -x of the point at x = 16.
+    expect(Math.abs(npc.move.pos.x - 15.2)).toBeLessThan(0.4);
+    expect(Math.abs(npc.move.pos.z)).toBeLessThan(0.4);
+  });
+
   it('scales reinforcements with player count', () => {
     const map = hall([{ roster: { trooper: 1, gunner: 0, heavy: 0 }, activeCap: 8, reinforcements: 0, perPlayer: 2, respawnSeconds: 0.5 }]);
     const loaded = loadMap(map);

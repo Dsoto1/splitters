@@ -1,9 +1,9 @@
 import type { BotBrain } from '../bots/brain.ts';
 import type { EventType } from '../map/logic.ts';
 import { NPC_ROLES, type EncounterEntity, type MapDocument, type NpcRole, type SquadOrder } from '../map/schema.ts';
-import { horizontalDistance, type Vec3 } from '../math.ts';
+import { clamp, horizontalDistance, type Vec3 } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
-import { TICK_RATE } from './constants.ts';
+import { PLAYER, TICK_RATE } from './constants.ts';
 import { rosterCount } from './npc.ts';
 
 /** What the encounter system needs from the match. */
@@ -43,6 +43,8 @@ interface EncounterRt {
 const ALERT_INTERVAL_TICKS = 15;
 /** NPCs don't spawn closer than this to a hostile if there's any other choice. */
 const SAFE_SPAWN_DISTANCE = 6;
+/** Squads with an entrance come out of it one at a time, this far apart. */
+const ENTRANCE_GAP_TICKS = Math.round(TICK_RATE * 0.9);
 
 /**
  * Encounter spawners and their squads. Each encounter is one squad: the squad
@@ -128,7 +130,7 @@ export class Encounters {
           this.byNpc.set(id, r);
         }
         const firstWave = r.spawned < r.queue.length;
-        r.nextSpawn = tick + (firstWave ? 1 : Math.round(r.e.respawnSeconds * TICK_RATE));
+        r.nextSpawn = tick + (firstWave ? (r.e.entrance === 'none' ? 1 : ENTRANCE_GAP_TICKS) : Math.round(r.e.respawnSeconds * TICK_RATE));
       }
       if ((tick + r.e.id.length) % ALERT_INTERVAL_TICKS === 0) this.shareSightings(living);
     }
@@ -136,6 +138,7 @@ export class Encounters {
 
   private spawnMember(r: EncounterRt, role: NpcRole): number | null {
     const origin = { x: r.e.position[0], y: r.e.position[1], z: r.e.position[2] };
+    if (r.e.entrance !== 'none') return this.throughEntrance(r, role, origin);
     const hostiles = this.host.hostiles(r.e.faction);
     let best: { pos: Vec3; score: number } | null = null;
     for (let i = 0; i < 12; i++) {
@@ -153,6 +156,28 @@ export class Encounters {
     }
     const pos = best?.pos ?? origin;
     return this.host.spawnNpc(r.e, role, pos, r.e.yaw);
+  }
+
+  /**
+   * One member out of the squad's entrance: at its mouth (a breach's is just
+   * in front of the wall), or from a vent above, dropping to the floor. Waits
+   * while the last one is still standing in the way.
+   */
+  private throughEntrance(r: EncounterRt, role: NpcRole, origin: Vec3): number | null {
+    const e = r.e;
+    const out = e.entrance === 'breach' ? 0.8 : 0;
+    const jitter = () => (this.host.random() - 0.5) * 0.5;
+    const mouth = { x: origin.x + Math.sin(e.yaw) * out + jitter(), y: origin.y, z: origin.z + Math.cos(e.yaw) * out + jitter() };
+    const blocked = r.members.some((m) => {
+      const n = this.host.npc(m);
+      return n?.alive && horizontalDistance(n.pos, mouth) < 1.1 && Math.abs(n.pos.y - origin.y) < 2.5;
+    });
+    if (blocked) return null;
+    const ground = this.host.nav.closestPoint({ x: mouth.x, y: mouth.y + 0.5, z: mouth.z }, { x: 1, y: 2, z: 1 });
+    const pos = ground ? { x: ground.x, y: ground.y, z: ground.z } : mouth;
+    // Out of the vent with the head just below it.
+    if (e.entrance === 'vent') pos.y += clamp(e.ventHeight - PLAYER.height * (e.size ?? 1) - 0.1, 0, 10);
+    return this.host.spawnNpc(e, role, pos, e.yaw);
   }
 
   /** Squadmates who can see an enemy tell the others where it is. */

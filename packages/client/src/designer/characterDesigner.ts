@@ -1,4 +1,5 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
+import { applyToneMapping } from '../game/atmosphere.ts';
 import { Scene } from '@babylonjs/core/scene';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
@@ -74,6 +75,7 @@ export class CharacterDesigner {
   ) {
     this.scene = new Scene(engine);
     this.scene.clearColor = new Color4(0.043, 0.059, 0.102, 1);
+    applyToneMapping(this.scene);
     const camera = new ArcRotateCamera('designerCam', Math.PI / 2 - 0.3, 1.32, 3.4, new Vector3(0, 0.95, 0), this.scene);
     camera.lowerRadiusLimit = 1.4;
     camera.upperRadiusLimit = 6;

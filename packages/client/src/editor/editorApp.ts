@@ -30,6 +30,8 @@ import {
   NPC_ROLE_SPECS,
   rosterSize,
   SQUAD_ORDERS,
+  ENCOUNTER_ENTRANCES,
+  type EncounterEntrance,
   mapFactions,
   mapTeams,
   playableModes,
@@ -172,6 +174,10 @@ type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string 
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
+  'encounter:vent': '<rect x="6" y="6" width="44" height="6" fill="#3a3f48"/><rect x="16" y="12" width="24" height="4" fill="#07080a"/><path d="M16 16l-4 14M22 16l-4 14M28 16l-4 14" stroke="#8a929c" stroke-width="2"/><circle cx="34" cy="34" r="5" fill="#d04a3a"/><rect x="30" y="39" width="8" height="12" rx="2" fill="#d04a3a"/>',
+  'encounter:hatch': '<rect x="10" y="38" width="36" height="6" fill="#5d646d"/><rect x="16" y="38" width="24" height="4" fill="#07080a"/><path d="M16 38L10 14" stroke="#5d646d" stroke-width="5"/><circle cx="28" cy="26" r="5" fill="#d04a3a"/><rect x="24" y="31" width="8" height="9" rx="2" fill="#d04a3a"/>',
+  'encounter:burrow': '<ellipse cx="28" cy="42" rx="20" ry="6" fill="#5a4330"/><ellipse cx="28" cy="42" rx="12" ry="3.5" fill="#120c08"/><circle cx="12" cy="38" r="4" fill="#6e5440"/><circle cx="45" cy="37" r="5" fill="#6e5440"/><path d="M22 36q6-16 12 0" fill="#7a3fb0"/><circle cx="25" cy="30" r="1.6" fill="#fff"/><circle cx="31" cy="30" r="1.6" fill="#fff"/>',
+  'encounter:breach': '<rect x="6" y="6" width="44" height="40" fill="#9a958c"/><path d="M18 46V22l5-6 6 3 6-4 4 8v23z" fill="#07080a"/><rect x="10" y="44" width="7" height="5" fill="#b0aaa0"/><rect x="38" y="45" width="9" height="4" fill="#b0aaa0"/><rect x="24" y="47" width="6" height="4" fill="#b0aaa0"/>',
   'light:ceiling': '<rect x="10" y="8" width="36" height="6" fill="#c9ccd2"/><rect x="14" y="14" width="28" height="4" fill="#fff1c4"/><path d="M16 22l-6 18M28 22v22M40 22l6 18" stroke="#ffe08a" stroke-width="2" stroke-opacity=".7"/>',
   'light:wall': '<rect x="8" y="8" width="5" height="40" fill="#6f7884"/><path d="M13 22h10l6 8H13z" fill="#fff1c4"/><path d="M30 26l14-8M31 32l15 2M30 38l13 9" stroke="#ffe08a" stroke-width="2" stroke-opacity=".7"/>',
   'light:bulb': '<path d="M28 6v12" stroke="#3a3f48" stroke-width="2"/><circle cx="28" cy="26" r="8" fill="#fff1c4"/><path d="M14 34l-4 6M28 38v8M42 34l4 6" stroke="#ffe08a" stroke-width="2" stroke-opacity=".7"/>',
@@ -2376,7 +2382,11 @@ export class EditorApp {
         number('Reinforcements', e.reinforcements, 1, (v) => ({ reinforcements: clamp(Math.round(v), 0, 500) }));
         number('+ per extra player', e.perPlayer, 1, (v) => ({ perPlayer: clamp(Math.round(v), 0, 16) }));
         number('Reinforce every (s)', e.respawnSeconds, 1, (v) => ({ respawnSeconds: clamp(v, 0.5, 120) }));
-        number('Spawn radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 1, 16) }));
+        const entranceLabels: Record<EncounterEntrance, string> = { none: 'spread round the point', vent: 'drop from a ceiling vent', hatch: 'climb out of a floor hatch', burrow: 'dig out of a burrow', breach: 'step through a breach in the wall behind' };
+        choose('Arrives by', ENCOUNTER_ENTRANCES.map((k) => [k, entranceLabels[k]] as const), e.entrance, (v) => ({ entrance: v as EncounterEntrance }));
+        if (e.entrance === 'none') number('Spawn radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 1, 16) }));
+        if (e.entrance === 'vent') number('Vent height (m)', e.ventHeight, 0.25, (v) => ({ ventHeight: clamp(v, 2, 12) }));
+        if (e.entrance !== 'none') number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
         const orderLabels: Record<(typeof SQUAD_ORDERS)[number], string> = { hold: 'hold here', attack: 'hunt the enemy', defend: 'defend the target', patrol: 'patrol to the target and back', follow: 'follow the players (allies)', roam: 'roam the whole map (wildlife, monsters)' };
         choose('Order', SQUAD_ORDERS.map((o) => [o, orderLabels[o]] as const), e.order, (v) => ({ order: v as typeof e.order }));
         if (e.order === 'defend' || e.order === 'patrol') {
@@ -2394,6 +2404,7 @@ export class EditorApp {
         number('Damage (%)', pct(e.damage), 25, (v) => ({ damage: ratio(v, 0, 5) }));
         number('Size (%)', pct(e.size), 10, (v) => ({ size: ratio(v, 0.5, 2.5) }));
         el.append(small(`${rosterSize(e.roster)} in the first wave, then ${e.reinforcements} reinforcements (+${e.perPlayer} per extra player). Factions are edited in the Logic panel (L).`));
+        if (e.entrance !== 'none') el.append(small(e.entrance === 'vent' ? 'They come one at a time, dropping from the vent: put the point under a ceiling and set the vent height to it (3.5 m under a standard floor).' : e.entrance === 'breach' ? 'They come one at a time through the hole: put the point right against a wall, facing into the room.' : 'They come one at a time, climbing out of it.'));
         break;
       }
       case 'flag': {

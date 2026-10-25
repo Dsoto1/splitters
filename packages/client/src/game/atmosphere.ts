@@ -45,7 +45,7 @@ export function saveGraphicsQuality(q: GraphicsQuality): void {
 /**
  * The game's colour: ACES tone mapping with a touch more exposure and
  * contrast, and a vignette (left off where it would hide work, as in the
- * MapMaker). Matches, the menu and the MapMaker all use it, so a map and a
+ * MapMaker). Matches, the menu, the MapMaker and the Character Designer use it, so a map and a
  * character look the same wherever you see them.
  */
 export function applyToneMapping(scene: Scene, o: { vignette?: boolean } = {}): void {

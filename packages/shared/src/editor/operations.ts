@@ -3,7 +3,7 @@ import { buildOccupancy, cellKey, edgeKey, localSide, rotateXZ } from '../map/ge
 import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture } from '../map/schema.ts';
+import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
@@ -284,6 +284,10 @@ export const SCENARIO_PALETTE = [
   { key: 'generator', label: 'Generator', search: 'generator machine objective destroy explosive destructible' },
   { key: 'zone', label: 'Trigger Zone', search: 'zone trigger volume area region enter' },
   { key: 'encounter', label: 'NPC Squad', search: 'npc squad encounter enemy soldiers spawner faction ai' },
+  { key: 'encounter:vent', label: 'Ceiling Vent Spawner', search: 'npc spawner vent ceiling duct drop squad enemy soldiers' },
+  { key: 'encounter:hatch', label: 'Floor Hatch Spawner', search: 'npc spawner hatch floor manhole sewer climb squad enemy soldiers' },
+  { key: 'encounter:burrow', label: 'Burrow Spawner', search: 'npc spawner burrow hole ground dig creatures monsters nest' },
+  { key: 'encounter:breach', label: 'Wall Breach Spawner', search: 'npc spawner breach broken wall hole crack squad enemy soldiers creatures' },
   { key: 'trap:spikes', label: 'Spike Floor', search: 'trap spikes floor hazard' },
   { key: 'trap:flames', label: 'Flame Jet', search: 'trap flame fire jet hazard burn' },
   { key: 'trap:crusher', label: 'Crusher', search: 'trap crusher ceiling piston hazard' },
@@ -352,15 +356,22 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'zone':
       return { id: newId('zone'), kind: 'zone', position, size: [4, 3, 4], who: 'any', count: 1, startEnabled: true };
     case 'encounter':
+    case 'encounter:vent':
+    case 'encounter:hatch':
+    case 'encounter:burrow':
+    case 'encounter:breach': {
+      const entrance = (key.slice(10) || 'none') as EncounterEntrance;
+      // Burrows and breaches suit creatures; vents and hatches soldiers. Entrances keep a trickle coming.
+      const creatures = entrance === 'burrow';
       return {
         id: newId('squad'),
         kind: 'encounter',
         position,
         yaw,
         faction: 'syndicate',
-        roster: { trooper: 2, gunner: 1, heavy: 0, imp: 0, puglin: 0, cyclops: 0, oculus: 0, scolitex: 0 },
+        roster: creatures ? { trooper: 0, gunner: 0, heavy: 0, imp: 2, puglin: 1, cyclops: 0, oculus: 0, scolitex: 0 } : { trooper: 2, gunner: 1, heavy: 0, imp: 0, puglin: 0, cyclops: 0, oculus: 0, scolitex: 0 },
         activeCap: 4,
-        reinforcements: 0,
+        reinforcements: entrance === 'none' ? 0 : 3,
         perPlayer: 1,
         respawnSeconds: 4,
         radius: 3,
@@ -368,7 +379,10 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
         orderTarget: null,
         startActive: true,
         difficulty: 'normal',
+        entrance,
+        ventHeight: 3.5,
       };
+    }
     case 'block:solid':
     case 'block:crumble':
     case 'block:trapdoor':
