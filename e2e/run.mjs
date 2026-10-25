@@ -854,8 +854,12 @@ async function vehiclesFlow(browser) {
   const after = await page.evaluate(() => ({ seat: window.__match.slots[window.__cs.slot].mount?.seat, pos: window.__match.slots[window.__cs.slot].move.pos, hud: document.getElementById('weapon-name')?.textContent }));
   check(after.seat === 0, `you are in the driver's seat (${after.seat})`);
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
-  await page.waitForFunction(() => !window.__match.slots[window.__cs.slot].mount, null, { timeout: T(5000) }).catch(() => {});
+  // Press E (again, if a slow frame swallowed the press) until we're out.
+  for (let i = 0; i < 4; i++) {
+    await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
+    const out = await page.waitForFunction(() => !window.__match.slots[window.__cs.slot].mount, null, { timeout: T(5000) }).then(() => true, () => false);
+    if (out) break;
+  }
   check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -1165,6 +1169,12 @@ try {
         // No storage: the default applies.
       }
     });
+    // A flow closing its pages right after a failed check must not cut that check's screenshot short.
+    const close = ctx.close.bind(ctx);
+    ctx.close = async (...c) => {
+      await Promise.all(shots);
+      return close(...c);
+    };
     ctx.setDefaultTimeout(T(30000));
     ctx.setDefaultNavigationTimeout(T(30000));
     return ctx;
