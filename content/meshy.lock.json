@@ -26,9 +26,71 @@
         "rig": "01a173c0-4d21-712b-97ba-7f08daf670c7"
       },
       "file": "characters/meshy_knight_fparms.glb",
-      "sha256": "aa38e139e30355de",
-      "triangles": 5112,
-      "bytes": 638904
+      "sha256": "e76cec1598ecec00",
+      "triangles": 1119,
+      "bytes": 350444
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_nova",
+      "source": "meshy-owned",
+      "meshy": {
+        "preview": "01a17408-6ee3-7596-80cc-44711c118d2f",
+        "refine": "01a17409-5c80-7338-a476-32f6a5f454ec",
+        "remesh": "01a1740b-3c5d-7717-8fc8-6a15ce6dce9a",
+        "rig": "01a1740c-f882-7213-bc97-68ffda286170"
+      },
+      "file": "characters/meshy_nova.glb",
+      "sha256": "4643016fe74d1e35",
+      "triangles": 8533,
+      "lodTriangles": 2463,
+      "bytes": 854832
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_nova_fparms",
+      "source": "meshy-owned",
+      "meshy": {
+        "preview": "01a17408-6ee3-7596-80cc-44711c118d2f",
+        "refine": "01a17409-5c80-7338-a476-32f6a5f454ec",
+        "remesh": "01a1740b-3c5d-7717-8fc8-6a15ce6dce9a",
+        "rig": "01a1740c-f882-7213-bc97-68ffda286170"
+      },
+      "file": "characters/meshy_nova_fparms.glb",
+      "sha256": "c10814f3e942c39f",
+      "triangles": 1220,
+      "bytes": 379220
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_dapper",
+      "source": "meshy-owned",
+      "meshy": {
+        "preview": "01a17408-78ca-7473-b379-648d7e9aa349",
+        "refine": "01a17409-66cf-7542-bf7f-d39040dd0f4f",
+        "remesh": "01a1740b-3ff1-71f3-8005-cd3e767884b8",
+        "rig": "01a1740d-0845-7780-8c84-b7f26c5ea616"
+      },
+      "file": "characters/meshy_dapper.glb",
+      "sha256": "d39f9d89cd750044",
+      "triangles": 7738,
+      "lodTriangles": 2295,
+      "bytes": 625592
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_dapper_fparms",
+      "source": "meshy-owned",
+      "meshy": {
+        "preview": "01a17408-78ca-7473-b379-648d7e9aa349",
+        "refine": "01a17409-66cf-7542-bf7f-d39040dd0f4f",
+        "remesh": "01a1740b-3ff1-71f3-8005-cd3e767884b8",
+        "rig": "01a1740d-0845-7780-8c84-b7f26c5ea616"
+      },
+      "file": "characters/meshy_dapper_fparms.glb",
+      "sha256": "8e956b93762b42a4",
+      "triangles": 1931,
+      "bytes": 301580
     }
   ]
 }

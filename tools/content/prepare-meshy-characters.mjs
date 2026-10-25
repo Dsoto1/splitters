@@ -45,6 +45,18 @@ const CHARACTERS = [
     metallic: 0.35,
     roughness: 0.45,
   },
+  {
+    id: 'meshy_nova',
+    meshy: { preview: '01a17408-6ee3-7596-80cc-44711c118d2f', refine: '01a17409-5c80-7338-a476-32f6a5f454ec', remesh: '01a1740b-3c5d-7717-8fc8-6a15ce6dce9a', rig: '01a1740c-f882-7213-bc97-68ffda286170' },
+    metallic: 0.05,
+    roughness: 0.6,
+  },
+  {
+    id: 'meshy_dapper',
+    meshy: { preview: '01a17408-78ca-7473-b379-648d7e9aa349', refine: '01a17409-66cf-7542-bf7f-d39040dd0f4f', remesh: '01a1740b-3ff1-71f3-8005-cd3e767884b8', rig: '01a1740d-0845-7780-8c84-b7f26c5ea616' },
+    metallic: 0.05,
+    roughness: 0.7,
+  },
 ];
 
 /** Meshy's joints onto the rig's (its head's end markers fold into the head). */
@@ -289,6 +301,41 @@ function mitten(pos, nrm, J, W, names, posed, index) {
   void nrm;
 }
 
+/** How much of the first-person arms shows and how bulky: the elbow end goes, sleeves pull in towards the bone, hands shrink. */
+const FP_KEEP_FROM = 0.4;
+const FP_SLEEVE = 0.6;
+const FP_HAND = 0.78;
+
+/**
+ * Arms for the first-person view, which sit right in front of the camera:
+ * bulky sleeves, gauntlets and gloves covered the sights. Only the wrist half
+ * of each forearm stays, pulled in towards the bone, and the hands shrink
+ * about their joint (so the grip stays where the weapon is).
+ */
+function slimArms(src, major) {
+  const pos = new Float32Array(src.pos);
+  const drop = new Uint8Array(pos.length / 3);
+  for (const [s, S] of [['l', 'Left'], ['r', 'Right']]) {
+    const E = src.posed.get(`${S}ForeArm`);
+    const H = src.posed.get(`${S}Hand`);
+    const axis = sub(H, E);
+    const len = Math.hypot(...axis);
+    const d = scale(axis, 1 / len);
+    for (let v = 0; v < drop.length; v++) {
+      const p = [pos[v * 3], pos[v * 3 + 1], pos[v * 3 + 2]];
+      if (major[v] === `lowerarm_${s}`) {
+        const t = Math.min(1, Math.max(0, dot(sub(p, E), d) / len));
+        if (t < FP_KEEP_FROM) drop[v] = 1;
+        const a = add(E, scale(d, t * len));
+        pos.set(add(a, scale(sub(p, a), FP_SLEEVE)), v * 3);
+      } else if (/^(hand|index|middle|pinky|ring|thumb)_/.test(major[v]) && major[v].endsWith(`_${s}`)) {
+        pos.set(add(H, scale(sub(p, H), FP_HAND)), v * 3);
+      }
+    }
+  }
+  return { pos, drop };
+}
+
 /** Recolour strongly blue pixels to `hex` (badges and insignia painted on by the generator), or leave the image as it is. */
 async function scrub(image, hex) {
   if (!hex) return Buffer.from(image);
@@ -334,7 +381,7 @@ function addLowDetail(doc) {
  * `keep` filters triangles by the rig joint most of their vertices follow
  * (the first-person arms keep only arm triangles).
  */
-async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod = true } = {}) {
+async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod = true, firstPerson = false } = {}) {
   const doc = await io.read(join(OUT, 'rig.glb'));
   const root = doc.getRoot();
   const skin = root.listSkins()[0];
@@ -401,13 +448,14 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     });
     major[v] = rigNames[top[0]?.[0] ?? 0];
   }
+  const fp = firstPerson ? slimArms(src, major) : null;
   const kept = [];
   for (let i = 0; i < src.indices.length; i += 3) {
     const a = src.indices[i];
     const b = src.indices[i + 1];
     const d = src.indices[i + 2];
     const m = major[a] === major[b] || major[a] === major[d] ? major[a] : major[b];
-    if (keep(m)) kept.push(a, b, d);
+    if (keep(m) && !(fp && (fp.drop[a] || fp.drop[b] || fp.drop[d]))) kept.push(a, b, d);
   }
 
   const buffer = root.listBuffers()[0] ?? doc.createBuffer();
@@ -419,7 +467,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   const prim = doc
     .createPrimitive()
     .setMaterial(material)
-    .setAttribute('POSITION', acc('VEC3', src.pos))
+    .setAttribute('POSITION', acc('VEC3', fp ? fp.pos : src.pos))
     .setAttribute('NORMAL', acc('VEC3', src.nrm))
     .setAttribute('TEXCOORD_0', acc('VEC2', src.uv))
     .setAttribute('JOINTS_0', acc('VEC4', J))
@@ -455,7 +503,7 @@ for (const c of CHARACTERS) {
   const src = await readMeshy(file, ual, c);
   const meshy = { meshy: c.meshy };
   lock.files.push({ role: 'meshy', id: c.id, source: 'meshy-owned', ...meshy, ...(await build(c, src, `${c.id}.glb`)) });
-  lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: 'meshy-owned', ...meshy, ...(await build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio: 0.8, lod: false })) });
+  lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: 'meshy-owned', ...meshy, ...(await build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio: 0.8, lod: false, firstPerson: true })) });
 }
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
 console.log(`wrote ${lock.files.length} files and content/meshy.lock.json`);

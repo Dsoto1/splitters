@@ -161,6 +161,8 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.raider', name: 'Raider', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buzzedfemale'], colorways: [], skin: SKIN_TONES[4], hairColor: '#8a3a2a', cloth: '#6a3a7a', trim: '#1e2126', gear: ['goggles', 'bandolier'] },
   // Whole-body originals (prepare-meshy-characters.mjs).
   { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_knight_fparms' } },
+  { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_nova_fparms' } },
+  { id: 'core.dapper', name: 'The Dapper', body: 'male', head: '', parts: ['meshy_dapper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_dapper_fparms' } },
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'] },
 ];
 
@@ -187,6 +189,8 @@ export const LOOK_BIOS: Readonly<Record<string, string>> = {
   'core.operative': 'Dark suit of armour, darker glasses. Never seen arriving.',
   'core.medic': 'Patches up her team, then patches holes in yours.',
   'core.knight': 'Rode out to a tournament in 1342 and took a very wrong turn. Still undefeated.',
+  'core.nova': 'First person on the Moon in 1969, by her own account. Mission control lost the paperwork.',
+  'core.dapper': 'Chicago, 1927. Runs the numbers, the speakeasy and, lately, the leaderboard.',
   'core.engineer': 'Hard hat, fuel tank, short temper. Builds things; breaks more.',
   'core.desperado': 'Wanted in three maps. The poster doesn\'t do him justice.',
   'core.raider': 'Goggles down, bandolier full, already halfway across the map.',

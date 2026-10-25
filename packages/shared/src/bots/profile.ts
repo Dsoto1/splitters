@@ -150,6 +150,10 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     character('core.commando', 'Commando', { aggression: 70, tacticalAwareness: 85, teamLoyalty: 75, accuracy: 65, tags: ['TACTICAL'], weaponPreferences: ['core.rifle', 'core.burst_rifle', 'core.shotgun'] }),
     // Charges in with a big gun and won't be talked out of it.
     character('core.knight', 'Iron Knight', { aggression: 85, selfPreservation: 25, riskTolerance: 80, meleePreference: 60, rangePreference: 15, pursuitPersistence: 85, tags: ['BERSERKER'], weaponPreferences: ['core.auto_shotgun', 'core.shotgun', 'core.lmg'] }),
+    // Space-age tech, cool head: energy weapons from mid range.
+    character('core.nova', 'Capt. Nova', { aggression: 55, accuracy: 72, tacticalAwareness: 70, rangePreference: 55, tags: ['TACTICAL'], weaponPreferences: ['core.plasma', 'core.laser_rifle', 'core.railgun'] }),
+    // Hangs back, picks his moment, never misses the pay-off.
+    character('core.dapper', 'The Dapper', { aggression: 45, accuracy: 78, selfPreservation: 70, itemGreed: 80, rangePreference: 45, tags: ['TACTICAL'], weaponPreferences: ['core.smg', 'core.gilded_pistol', 'core.machine_pistol'] }),
     character('core.frost', 'Frost', { rangePreference: 90, accuracy: 82, aggression: 30, selfPreservation: 70, tags: ['SNIPER'], weaponPreferences: ['core.sniper', 'core.railgun', 'core.marksman'] }),
     character('core.operative', 'Operative', { accuracy: 75, reactionSpeed: 75, tacticalAwareness: 80, aggression: 45, tags: ['TACTICAL'], weaponPreferences: ['core.smg', 'core.hand_cannon', 'core.marksman'] }),
     character('core.medic', 'Medic', { teamLoyalty: 95, selfPreservation: 70, objectivePriority: 70, aggression: 35, tags: ['SURVIVOR'], weaponPreferences: ['core.smg', 'core.rifle', 'core.pulse_pistol'] }),

@@ -2215,9 +2215,81 @@
     },
     {
       "file": "characters/meshy_knight_fparms.glb",
-      "sha256": "aa38e139e30355de",
-      "triangles": 5112,
-      "bytes": 638904,
+      "sha256": "e76cec1598ecec00",
+      "triangles": 1119,
+      "bytes": 350444,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized"
+      ]
+    },
+    {
+      "file": "characters/meshy_nova.glb",
+      "sha256": "4643016fe74d1e35",
+      "triangles": 8533,
+      "bytes": 854832,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added"
+      ]
+    },
+    {
+      "file": "characters/meshy_nova_fparms.glb",
+      "sha256": "c10814f3e942c39f",
+      "triangles": 1220,
+      "bytes": 379220,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized"
+      ]
+    },
+    {
+      "file": "characters/meshy_dapper.glb",
+      "sha256": "d39f9d89cd750044",
+      "triangles": 7738,
+      "bytes": 625592,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added"
+      ]
+    },
+    {
+      "file": "characters/meshy_dapper_fparms.glb",
+      "sha256": "8e956b93762b42a4",
+      "triangles": 1931,
+      "bytes": 301580,
       "source": "meshy-owned",
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Tile Trigger (generated with Meshy)",

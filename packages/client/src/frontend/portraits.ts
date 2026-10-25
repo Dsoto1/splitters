@@ -73,8 +73,9 @@ export class PortraitRenderer {
     if (role && isCreature(role)) return this.renderCreature(role);
     if (role) return this.renderSoldier(look);
     const ch = await this.lib.create({ look }, 'portrait');
-    // Characters face -Z; the portrait camera sits on +Z, so turn them round to face it.
-    ch.root.rotation.y = Math.PI;
+    // Parted characters face -Z here and the portrait camera sits on +Z, so turn them round to face it;
+    // whole-body (Meshy) models already face the camera.
+    if (!getLook(look).whole) ch.root.rotation.y = Math.PI;
     const anim = new CharacterAnimator(this.scene, ch);
     try {
       // Settle into the idle stance (arms down) rather than the bind T-pose.
