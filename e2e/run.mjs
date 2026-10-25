@@ -810,8 +810,12 @@ async function vehiclesFlow(browser) {
   await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: 8000 }).catch(() => {});
   const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
   check(/Drive the Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
-  await page.waitForFunction(() => !!window.__match.slots[window.__cs.slot].mount, null, { timeout: 5000 }).catch(() => {});
+  // Press E (again, if a slow frame swallowed the press) until we're aboard.
+  for (let i = 0; i < 4; i++) {
+    await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
+    const aboard = await page.waitForFunction(() => !!window.__match.slots[window.__cs.slot].mount, null, { timeout: 5000 }).then(() => true, () => false);
+    if (aboard) break;
+  }
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   // Headless frame rates vary: wait for the drive rather than a fixed time.
@@ -1051,9 +1055,13 @@ async function hostgameFlow(browser) {
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.goto(`${CLIENT}/?offline=arena${peer}`);
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
-  await host.evaluate(() => document.getElementById('host-game').click());
-  // CI renders in software, slowly: generous waits (readiness is checked by what follows each load).
-  await host.waitForFunction(() => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? ''), null, { timeout: 45000 });
+  // CI renders in software, slowly: generous waits (readiness is checked by what follows each load),
+  // and the Host button pressed again if the first press got no answer.
+  const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
+  for (let i = 0; i < 3; i++) {
+    await host.evaluate(() => document.getElementById('host-game').click());
+    if (await host.waitForFunction(hasCode, null, { timeout: 30000 }).then(() => true, () => false)) break;
+  }
   const code = await host.evaluate(() => document.querySelector('#host-info .host-code b').textContent);
   check(/^[A-Z0-9]{6}$/.test(code), `hosting opens a join code (${code})`);
   const friend = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
