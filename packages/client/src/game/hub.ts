@@ -55,7 +55,7 @@ export async function fetchIce(): Promise<{ iceServers: RTCIceServer[]; relay: b
   const url = lobbyUrl();
   if (!url) return null;
   try {
-    const res = await fetch(url.replace(/games$/, 'ice'), { cache: 'no-store', signal: AbortSignal.timeout(4000) });
+    const res = await fetch(url.replace(/games$/, 'ice'), { cache: 'no-store', signal: AbortSignal.timeout(8000) });
     return res.ok ? ((await res.json()) as { iceServers: RTCIceServer[]; relay: boolean }) : null;
   } catch {
     return null;

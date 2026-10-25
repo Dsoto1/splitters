@@ -406,6 +406,8 @@ export class GameSession {
       this.peerHost = host;
       const code = await host.start();
       if (this.closed) return host.close();
+      // A slow first answer from the hub left us without its relay: ask once more before telling anyone.
+      if (!peerLink.hubRelay) await peerLink.prepareIce();
       this.relayOn = !!loadRelay() || peerLink.hubRelay;
       const q = new URLSearchParams(location.search);
       const peer = q.get('peer');
