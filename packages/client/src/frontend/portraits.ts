@@ -18,6 +18,12 @@ import { getLook, isCreature, npcLookRole } from '@tiletrigger/shared';
 
 const SIZE = 256;
 
+/** Looks whose face the default three-quarter view hides: where the camera sits from the face, and a nudge of the aim point onto it. */
+const PORTRAIT_VIEWS: Record<string, { from: Vector3; aim: Vector3 }> = {
+  // Capt. Nova's suit has a collar piece in front of her chin: look past it from her right.
+  'core.nova': { from: new Vector3(-0.55, 0.12, 0.65), aim: new Vector3(-0.08, 0.04, 0.05) },
+};
+
 /**
  * Character portraits rendered from our own 3D characters (never painted
  * art): each look is built in a private scene, framed head and shoulders,
@@ -90,7 +96,9 @@ export class PortraitRenderer {
       at.y += 0.06;
       // Whole-body models (all 1.83 m tall) can have their head joint low in a big helmet: frame the face.
       if (getLook(look).whole) at.y = Math.max(at.y, 1.55);
-      this.camera.position.copyFrom(at.add(new Vector3(0.22, 0.04, 0.85)));
+      const view = PORTRAIT_VIEWS[look];
+      if (view) at.addInPlace(view.aim);
+      this.camera.position.copyFrom(at.add(view?.from ?? new Vector3(0.22, 0.04, 0.85)));
       this.camera.setTarget(at.add(new Vector3(0, -0.06, 0)));
 
       return await this.snap(ch.meshes);
