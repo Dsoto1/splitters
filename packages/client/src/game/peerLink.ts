@@ -251,10 +251,12 @@ export class PeerTransport implements Transport {
     };
     const relayHint = loadRelay() || hubRelay ? 'even through the relay' : 'the host can set a relay in Options and send you a new invite link, or play on the same Wi-Fi';
     const noDirect = `found the game but couldn't connect to it — your networks block direct connections: ${relayHint}`;
-    const timeout = window.setTimeout(() => {
+    // 20 s to reach the broker; once it has found the game, a fresh 30 s to connect (slow machines are still loading).
+    const giveUp = () => {
       if (opened) return;
       fail(brokered ? noDirect : unreachable());
-    }, 20000);
+    };
+    let timeout = window.setTimeout(giveUp, 20000);
     peer.on('error', (e) => {
       const type = (e as { type?: string }).type;
       if (type === 'peer-unavailable') fail(`no game open with code ${this.code} — check the code, and that the host still has the match open (Esc → Host game)`);
@@ -265,6 +267,8 @@ export class PeerTransport implements Transport {
     });
     peer.on('open', () => {
       brokered = true;
+      clearTimeout(timeout);
+      timeout = window.setTimeout(giveUp, 30000);
       const conn = peer.connect(PREFIX + this.code, { reliable: true, serialization: 'raw', metadata: { z: 1 } });
       this.conn = conn;
       conn.on('iceStateChanged', (state) => {

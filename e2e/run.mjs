@@ -997,6 +997,9 @@ async function onlineFlow(browser) {
   const alive = await a.page.evaluate(() => window.__cs.local.state.pos.y > -1);
   check(alive, 'client receives snapshots and reconciles its position');
   check(a.errors.length + b.errors.length === 0, `no page errors (${[...a.errors, ...b.errors].join('; ')})`);
+  // Two live matches left running would slow every flow after this one.
+  await a.page.context().close();
+  await b.page.context().close();
 }
 
 /** Community hub: a host lists its match in the game browser and a stranger joins from the list. */
@@ -1010,7 +1013,7 @@ async function lobbyFlow(browser) {
   const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
-  await host.goto(`${CLIENT}/?offline=arena&${hub}`);
+  await host.goto(`${CLIENT}/?offline=arena&${hub}`, { waitUntil: 'domcontentloaded' });
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   const offered = await host.evaluate(() => !document.getElementById('host-public').hidden);
   check(offered, 'hosting offers "List in the game browser" when a hub is set');
@@ -1032,7 +1035,7 @@ async function lobbyFlow(browser) {
   const player = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   player.on('pageerror', (e) => errors.push(`player: ${e.message}`));
   await player.addInitScript(() => localStorage.setItem('cs.name', 'Stranger'));
-  await player.goto(`${CLIENT}/?${hub}`);
+  await player.goto(`${CLIENT}/?${hub}`, { waitUntil: 'domcontentloaded' });
   await player.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await player.evaluate(() => document.getElementById('nav-online')?.click());
   const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: T(15000) }).then((h) => h.jsonValue(), () => null);
@@ -1078,7 +1081,8 @@ async function hostgameFlow(browser) {
   await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
   await friend.goto(`${CLIENT}/?join=${code}${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   const joined = await friend.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(60000) }).then(() => true, () => false);
-  check(joined, 'a friend joins the hosted match by its link');
+  const screen = joined ? '' : await friend.evaluate(() => (document.body.innerText.match(/Disconnected[^\n]*/) ?? [''])[0]).catch(() => '');
+  check(joined, `a friend joins the hosted match by its link${screen ? ` (${screen})` : ''}`);
   if (joined) {
     await friend.waitForTimeout(2500);
     const seen = await host.evaluate(() => window.__match.combatants().filter((c) => c.kind === 'human').map((c) => c.name));
@@ -1117,8 +1121,11 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // Playwright's own default waits (30 s) stretch on CI too.
   const newContext = browser.newContext.bind(browser);
+  const open = new Set();
   browser.newContext = async (...a) => {
     const ctx = await newContext(...a);
+    open.add(ctx);
+    ctx.on('close', () => open.delete(ctx));
     ctx.setDefaultTimeout(T(30000));
     ctx.setDefaultNavigationTimeout(T(30000));
     return ctx;
@@ -1126,10 +1133,17 @@ try {
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
   const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
-  for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
+  for (const [name, flow] of Object.entries(flows)) {
+    if (only && !only.includes(name)) continue;
+    await flow(browser);
+    // Pages a flow left open (a running match keeps rendering) would slow every flow after it.
+    for (const ctx of [...open]) await ctx.close().catch(() => {});
+  }
   await browser.close();
 } catch (e) {
   console.log(`FAIL ${e.message}`);
+  // Where in which flow (the run.mjs frames).
+  console.log((e.stack ?? '').split('\n').filter((l) => l.includes('run.mjs')).join('\n'));
   failures++;
 } finally {
   for (const p of procs) {
