@@ -1,0 +1,3162 @@
+{
+  "format": "chronosplit.map",
+  "formatVersion": 14,
+  "metadata": {
+    "id": "dead_reel",
+    "name": "Dead Reel",
+    "author": "ChronoSplit",
+    "description": "A co-op creature-survival night in an abandoned theatre. Hold the lobby as the things come over the courtyard walls, clear the foyer, take the auditorium, throw the power on the stage and survive a minute of everything the theatre has — then escape through the projection booth behind the curtain.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 1,
+      "max": 4
+    },
+    "supportedModes": [
+      "core.coop"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.manor",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "high",
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "high",
+          "0,0,0:E": "wide"
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "high",
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "wide"
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "high",
+          "0,0,0:W": "wide"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "high",
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "wide"
+        }
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "high",
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.room",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.room",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.room",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.room",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.room",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.room",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.room",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "wall",
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.room",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.room",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.room",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.room",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:S": "wall",
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.hall",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "solids": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,2,0:N": "open",
+          "1,2,0:N": "open",
+          "2,2,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.room",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "arch",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.room",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "arch",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.room",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "arch",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.room",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "arch",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.room",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "arch",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.room",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "arch",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.room",
+        "x": 1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door"
+        }
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.room",
+        "x": 5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "door"
+        }
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.room",
+        "x": 2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.room",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.room",
+        "x": 4,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.room",
+        "x": 3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#c0444c"
+          },
+          "walls": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 0,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 0,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 0,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_057",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_059",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_060",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_061",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_062",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      },
+      {
+        "id": "tile_064",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster",
+            "tint": "#e2cfae"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#d8c8a8"
+          }
+        }
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "door_lobby",
+      "position": [
+        24,
+        0,
+        12
+      ],
+      "name": "Lobby doors",
+      "kind": "door",
+      "yaw": 0,
+      "startOpen": false,
+      "locked": true,
+      "auto": true
+    },
+    {
+      "id": "door_hall",
+      "position": [
+        24,
+        0,
+        20
+      ],
+      "name": "Auditorium doors",
+      "kind": "door",
+      "yaw": 0,
+      "startOpen": false,
+      "locked": true,
+      "auto": true
+    },
+    {
+      "id": "door_booth",
+      "position": [
+        24,
+        0,
+        52
+      ],
+      "name": "Booth door",
+      "kind": "door",
+      "yaw": 0,
+      "startOpen": false,
+      "locked": true,
+      "auto": true
+    },
+    {
+      "id": "btn_power",
+      "position": [
+        32,
+        0,
+        51.3
+      ],
+      "name": "Power",
+      "kind": "button",
+      "yaw": 3.141592653589793,
+      "label": "Throw the power",
+      "once": true,
+      "cooldownSeconds": 1,
+      "startEnabled": false
+    },
+    {
+      "id": "zone_booth",
+      "position": [
+        24,
+        0,
+        56
+      ],
+      "name": "Projection booth",
+      "kind": "zone",
+      "size": [
+        6,
+        3,
+        5
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true
+    },
+    {
+      "id": "block_065",
+      "position": [
+        17.75,
+        0,
+        51.6
+      ],
+      "kind": "block",
+      "size": [
+        7.5,
+        4,
+        0.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_canvas",
+      "tint": "#7a1420",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_066",
+      "position": [
+        30.25,
+        0,
+        51.6
+      ],
+      "kind": "block",
+      "size": [
+        7.5,
+        4,
+        0.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_canvas",
+      "tint": "#7a1420",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_067",
+      "position": [
+        13.5,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_068",
+      "position": [
+        14.7,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_069",
+      "position": [
+        13.5,
+        0,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_070",
+      "position": [
+        14.7,
+        0,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_071",
+      "position": [
+        13.5,
+        0,
+        38
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        14.7,
+        0,
+        38
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        34.5,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        35.7,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        34.5,
+        0,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "position": [
+        35.7,
+        0,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        34.5,
+        0,
+        38
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "position": [
+        35.7,
+        0,
+        38
+      ],
+      "kind": "prop",
+      "model": "prop.bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "position": [
+        24,
+        0,
+        4
+      ],
+      "kind": "prop",
+      "model": "prop.table_cloth",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "position": [
+        13,
+        0,
+        -3.3
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "position": [
+        35,
+        0,
+        -3.3
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "position": [
+        24,
+        0,
+        7
+      ],
+      "kind": "prop",
+      "model": "prop.rug",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "position": [
+        14,
+        0,
+        10.6
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "position": [
+        34,
+        0,
+        10.6
+      ],
+      "kind": "prop",
+      "model": "prop.armchair",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "position": [
+        12.6,
+        0,
+        10.7
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "position": [
+        35.4,
+        0,
+        10.7
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_087",
+      "position": [
+        9,
+        0,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "position": [
+        39,
+        0,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "position": [
+        20,
+        0,
+        19.4
+      ],
+      "kind": "prop",
+      "model": "prop.side_table",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "position": [
+        28,
+        0,
+        19.4
+      ],
+      "kind": "prop",
+      "model": "prop.side_table",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "position": [
+        6,
+        0,
+        50
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "position": [
+        42,
+        0,
+        50
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "position": [
+        10,
+        0,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "position": [
+        42.6,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "position": [
+        12.5,
+        0,
+        50.5
+      ],
+      "kind": "prop",
+      "model": "prop.speaker",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_096",
+      "position": [
+        35.5,
+        0,
+        50.5
+      ],
+      "kind": "prop",
+      "model": "prop.speaker",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_097",
+      "position": [
+        24,
+        0,
+        59
+      ],
+      "kind": "prop",
+      "model": "prop.tv",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_098",
+      "position": [
+        -2,
+        0,
+        -2
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_099",
+      "position": [
+        50,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_100",
+      "position": [
+        -1.5,
+        0,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.skip",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "position": [
+        51,
+        0,
+        -2
+      ],
+      "kind": "prop",
+      "model": "prop.tree_thin",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "destructible_102",
+      "position": [
+        24,
+        0,
+        -4.2
+      ],
+      "kind": "destructible",
+      "model": "boards",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "spawn_103",
+      "position": [
+        22,
+        0,
+        4
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_104",
+      "position": [
+        26,
+        0,
+        4
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_105",
+      "position": [
+        22,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_106",
+      "position": [
+        26,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "pickup_107",
+      "position": [
+        16,
+        0,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_108",
+      "position": [
+        32,
+        0,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_109",
+      "position": [
+        24,
+        0,
+        10
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_110",
+      "position": [
+        16,
+        0,
+        9
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_111",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_112",
+      "position": [
+        40,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_113",
+      "position": [
+        24,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_114",
+      "position": [
+        32,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_115",
+      "position": [
+        24,
+        0,
+        26
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
+      "respawnSeconds": 90
+    },
+    {
+      "id": "pickup_116",
+      "position": [
+        8,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_117",
+      "position": [
+        40,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_118",
+      "position": [
+        24,
+        0,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_119",
+      "position": [
+        40,
+        0,
+        26
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": 90
+    },
+    {
+      "id": "pickup_120",
+      "position": [
+        8,
+        0,
+        28
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_121",
+      "position": [
+        40,
+        0,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_122",
+      "position": [
+        8,
+        0,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "enc_court_w",
+      "position": [
+        0,
+        0,
+        4
+      ],
+      "name": "West courtyard",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "xeno",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "imp": 3,
+        "puglin": 0,
+        "cyclops": 0,
+        "oculus": 0,
+        "scolitex": 0
+      },
+      "activeCap": 4,
+      "reinforcements": 4,
+      "perPlayer": 1,
+      "respawnSeconds": 3,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_court_e",
+      "position": [
+        48,
+        0,
+        4
+      ],
+      "name": "East courtyard",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "xeno",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "imp": 2,
+        "puglin": 1,
+        "cyclops": 0,
+        "oculus": 0,
+        "scolitex": 0
+      },
+      "activeCap": 4,
+      "reinforcements": 3,
+      "perPlayer": 1,
+      "respawnSeconds": 3,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_foyer",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "name": "Foyer",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "xeno",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "imp": 3,
+        "puglin": 2,
+        "cyclops": 0,
+        "oculus": 0,
+        "scolitex": 0
+      },
+      "activeCap": 6,
+      "reinforcements": 6,
+      "perPlayer": 1,
+      "respawnSeconds": 3,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_hall",
+      "position": [
+        24,
+        0,
+        40
+      ],
+      "name": "Auditorium",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "xeno",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "imp": 2,
+        "puglin": 0,
+        "cyclops": 1,
+        "oculus": 1,
+        "scolitex": 0
+      },
+      "activeCap": 6,
+      "reinforcements": 2,
+      "perPlayer": 1,
+      "respawnSeconds": 3,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_wing_w",
+      "position": [
+        8,
+        0,
+        34
+      ],
+      "name": "West wing",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "xeno",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "imp": 2,
+        "puglin": 2,
+        "cyclops": 1,
+        "oculus": 0,
+        "scolitex": 0
+      },
+      "activeCap": 6,
+      "reinforcements": 10,
+      "perPlayer": 2,
+      "respawnSeconds": 3,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_wing_e",
+      "position": [
+        40,
+        0,
+        34
+      ],
+      "name": "East wing",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "xeno",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "imp": 2,
+        "puglin": 0,
+        "cyclops": 0,
+        "oculus": 2,
+        "scolitex": 0
+      },
+      "activeCap": 6,
+      "reinforcements": 10,
+      "perPlayer": 2,
+      "respawnSeconds": 3,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_brute",
+      "position": [
+        24,
+        0,
+        30
+      ],
+      "name": "The brute",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "xeno",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "imp": 0,
+        "puglin": 0,
+        "cyclops": 0,
+        "oculus": 0,
+        "scolitex": 1
+      },
+      "activeCap": 1,
+      "reinforcements": 0,
+      "perPlayer": 0,
+      "respawnSeconds": 3,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    }
+  ],
+  "factions": [
+    {
+      "id": "xeno",
+      "name": "The Things",
+      "color": "#8fd14f",
+      "relations": {}
+    }
+  ],
+  "logic": {
+    "variables": [
+      {
+        "id": "var_lives",
+        "name": "lives",
+        "initial": 12
+      }
+    ],
+    "timers": [
+      {
+        "id": "timer_power",
+        "name": "Hold out",
+        "seconds": 60,
+        "loop": false,
+        "visible": true
+      }
+    ],
+    "objectives": [
+      {
+        "id": "obj_lobby",
+        "text": "Hold the lobby",
+        "startActive": true,
+        "marker": null
+      },
+      {
+        "id": "obj_foyer",
+        "text": "Clear the foyer",
+        "startActive": false,
+        "marker": "enc_foyer"
+      },
+      {
+        "id": "obj_hall",
+        "text": "Take the auditorium",
+        "startActive": false,
+        "marker": "enc_hall"
+      },
+      {
+        "id": "obj_power",
+        "text": "Throw the power on the stage",
+        "startActive": false,
+        "marker": "btn_power"
+      },
+      {
+        "id": "obj_survive",
+        "text": "Survive until the projector warms up",
+        "startActive": false,
+        "marker": null
+      },
+      {
+        "id": "obj_escape",
+        "text": "Escape through the projection booth",
+        "startActive": false,
+        "marker": "zone_booth"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule_intro",
+        "name": "Curtain up",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 5,
+            "text": "They are coming over the courtyard walls. Hold the lobby!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          }
+        ]
+      },
+      {
+        "id": "rule_lobby_w",
+        "name": "Lobby held (west last)",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_court_w"
+        },
+        "if": [
+          {
+            "type": "encounter_alive",
+            "target": "enc_court_e",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_lobby",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_lobby",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_lobby",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_foyer",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_foyer",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "The lobby doors give way. Something is moving in the foyer.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_lobby_e",
+        "name": "Lobby held (east last)",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_court_e"
+        },
+        "if": [
+          {
+            "type": "encounter_alive",
+            "target": "enc_court_w",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_lobby",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_lobby",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_lobby",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_foyer",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_foyer",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "The lobby doors give way. Something is moving in the foyer.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_foyer",
+        "name": "Foyer cleared",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_foyer"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_foyer",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_hall",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_hall",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_hall",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_hall",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "The auditorium. Get to the stage.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_hall",
+        "name": "Auditorium taken",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_hall"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_hall",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "enable",
+            "target": "btn_power",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_power",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "The power switch is on the stage, stage right.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_power",
+        "name": "Power on: the last stand",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_power"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_power",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_survive",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Power is on! The projector needs a minute. Survive!",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_power",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_wing_w",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 6,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_wing_e",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 20,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Something big is coming...",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_brute",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_projector",
+        "name": "Projector ready",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_power"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "encounter_stop",
+            "target": "enc_wing_w",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_wing_e",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_survive",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_booth",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_booth",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_escape",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "The booth is open. Behind the curtain, go!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_escape",
+        "name": "Escape",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_booth"
+        },
+        "if": [
+          {
+            "type": "objective",
+            "target": "obj_escape",
+            "op": "==",
+            "value": 0,
+            "state": "active"
+          }
+        ],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_escape",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "You made it out. The End.",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players win"
+          }
+        ]
+      },
+      {
+        "id": "rule_life_lost",
+        "name": "Count lives",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "player_killed",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_lives",
+            "value": -1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_low_lives",
+        "name": "Low on lives",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_lives"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_lives",
+            "op": "==",
+            "value": 3,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Only 3 lives left!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_defeat",
+        "name": "Out of lives",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_lives"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_lives",
+            "op": "<=",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "The things have the theatre. Game over.",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players lose"
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -8,
+      -8
+    ],
+    "max": [
+      56,
+      64
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "backdrop": {
+    "sky": "dusk",
+    "scenery": "city",
+    "ground": "gravel",
+    "haze": 0.55
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
+  "dependencies": []
+}

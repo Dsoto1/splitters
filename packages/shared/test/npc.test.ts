@@ -325,3 +325,57 @@ describe('co-op mission: Blackout', () => {
     expect(events.filter((e) => e.e === 'round_end')).toEqual([{ e: 'round_end', winner: null, outcome: 'victory' }]);
   });
 });
+
+describe('co-op mission: Dead Reel', () => {
+  const load = async () => {
+    const { readFileSync } = await import('node:fs');
+    const r = loadMap(readFileSync(new URL('../../../maps/dead_reel.json', import.meta.url), 'utf8'));
+    if (!r.ok) throw new Error('dead reel invalid');
+    return r.map;
+  };
+  const killSquad = (match: Match, encounter: string) => {
+    const damage = (match as unknown as { damage(v: Combatant, a: number, k: null, w: string): void }).damage.bind(match);
+    for (const c of [...match.npcs.values()]) if (c.alive && c.npc?.encounter === encounter) damage(c, 1000, null, 'core.fall');
+  };
+
+  it('plays through: lobby, foyer, auditorium, power, last stand, escape', async () => {
+    const { match, me, events, run } = start(await load(), true, 21);
+    const invulnerable = (n: number, input: Partial<PlayerInput> = {}) => {
+      for (let i = 0; i < n; i++) {
+        me.health = 100;
+        run(1, input);
+      }
+    };
+    invulnerable(30);
+    const by = (enc: string) => [...match.npcs.values()].filter((c) => c.alive && c.npc?.encounter === enc).length;
+    expect(by('enc_court_w') + by('enc_court_e')).toBeGreaterThan(0);
+    // Reinforcements keep coming until each courtyard squad is spent.
+    for (let i = 0; i < 12 && match.scenario.objectiveState('obj_lobby') !== 'complete'; i++) {
+      killSquad(match, 'enc_court_w');
+      killSquad(match, 'enc_court_e');
+      invulnerable(60 * 4);
+    }
+    expect(match.scenario.objectiveState('obj_foyer')).toBe('active');
+    for (let i = 0; i < 12 && match.scenario.objectiveState('obj_foyer') !== 'complete'; i++) {
+      killSquad(match, 'enc_foyer');
+      invulnerable(60 * 4);
+    }
+    expect(match.scenario.objectiveState('obj_hall')).toBe('active');
+    for (let i = 0; i < 6 && match.scenario.objectiveState('obj_hall') !== 'complete'; i++) {
+      killSquad(match, 'enc_hall');
+      invulnerable(60 * 4);
+    }
+    expect(match.scenario.objectiveState('obj_power')).toBe('active');
+
+    me.move = { pos: { x: 32, y: 0, z: 49.6 }, velY: 0, grounded: true };
+    invulnerable(1, { yaw: 0, pitch: -0.25, buttons: 16 });
+    expect(match.scenario.objectiveState('obj_survive')).toBe('active');
+    invulnerable(60 * 30);
+    expect(by('enc_wing_w') + by('enc_wing_e') + by('enc_brute')).toBeGreaterThan(0);
+    invulnerable(60 * 32);
+    expect(match.scenario.objectiveState('obj_escape')).toBe('active');
+    me.move = { pos: { x: 24, y: 0, z: 56 }, velY: 0, grounded: true };
+    invulnerable(200);
+    expect(events.filter((e) => e.e === 'round_end')).toEqual([{ e: 'round_end', winner: null, outcome: 'victory' }]);
+  });
+});
