@@ -10,6 +10,9 @@ const CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? '4173';
 const CLIENT = `http://localhost:${CLIENT_PORT}`;
 const SERVER_PORT = +(process.env.E2E_SERVER_PORT ?? 7787);
 const procs = [];
+/** CI renders in software on a shared runner, several times slower than a desk: every wait stretches there. */
+const SLOW = process.env.CI ? 3 : 1;
+const T = (ms) => ms * SLOW;
 let failures = 0;
 
 function start(cmd, args, env = {}) {
@@ -49,7 +52,7 @@ async function editorFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?mode=editor`);
-  await page.waitForFunction(() => window.__editor, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
   await page.evaluate(() => window.__editor.view.focus({ x: 8, y: 0, z: 0 }));
@@ -141,7 +144,7 @@ async function editorFlow(browser) {
   // Panels refresh on the editor's next frame (slow under software rendering): wait for it to catch up.
   await page.evaluate(() => document.activeElement?.blur());
   await page
-    .waitForFunction(() => !/does nothing|never unlocks/.test(document.getElementById('ed-issues')?.textContent ?? ''), null, { timeout: 10000 })
+    .waitForFunction(() => !/does nothing|never unlocks/.test(document.getElementById('ed-issues')?.textContent ?? ''), null, { timeout: T(10000) })
     .catch(() => {});
   const issuesText = await page.textContent('#ed-issues');
   check(!/does nothing|never unlocks/.test(issuesText ?? ''), `validation is satisfied once the rule exists (${issuesText})`);
@@ -152,19 +155,19 @@ async function editorFlow(browser) {
   check((await doc()).logic.rules.length === 1, 'redo restores the rule');
 
   await page.keyboard.press('F5');
-  await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: 20000 });
+  await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(20000) });
   const ms = await page.evaluate(() => window.__testStartMs);
   check(ms < 3000, `TEST starts within the 3 s budget (${ms.toFixed(0)} ms)`);
   await page.waitForTimeout(1500);
   await page.keyboard.press('Escape');
   // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
-  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: 15000 });
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   check(await page.evaluate(() => window.__editor.history.canUndo), 'returns to the editor with history intact');
 
   await page.keyboard.press('Control+KeyS');
   const id = (await doc()).metadata.id;
   await page.reload();
-  await page.waitForFunction(() => window.__editor, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   d = await doc();
   check(d.metadata.id === id && d.classicStructure.tiles.length === 3 && d.classicStructure.tiles[0].surfaces?.floor?.material === 'core.checker', 'autosave restores the painted map after reload');
   await page.click('#ed-open');
@@ -182,7 +185,7 @@ async function editoruxFlow(browser) {
   page.on('pageerror', (e) => errors.push(e.message));
   const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
   await page.goto(`${CLIENT}/?mode=editor`);
-  await page.waitForFunction(() => window.__editor, null, { timeout: 60000 });
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
   await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
@@ -199,7 +202,7 @@ async function editoruxFlow(browser) {
   check(await page.isVisible('#ed-toolbar #ed-tb-erase') && (await page.textContent('#ed-tb-erase')).includes('X'), 'tool bar shows Erase with its key');
   check((await page.getAttribute('#ed-tb-select', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Select'), 'Select is the lit tool and the hint says what it does');
 
-  await page.waitForFunction(() => document.querySelector('#ed-tiles .thumb img'), null, { timeout: 30000 }).catch(() => {});
+  await page.waitForFunction(() => document.querySelector('#ed-tiles .thumb img'), null, { timeout: T(30000) }).catch(() => {});
   check(await page.evaluate(() => !!document.querySelector('#ed-tiles .thumb img')?.src.startsWith('data:image/png')), 'tile cards get 3D thumbnails of the real pieces');
   check(parseFloat(await page.evaluate(() => getComputedStyle(document.getElementById('ed-palette')).width)) >= 300, 'the palette is wide (300 px or more)');
   // Build: a corridor east, a barrel on it, a pickup and a squad from the NPCs tab.
@@ -322,7 +325,7 @@ async function editoruxFlow(browser) {
   const rp = await at(rock.position[0], rock.position[1] + 0.3, rock.position[2]);
   await page.mouse.move(rp.x, rp.y);
   // Rock models load in the background (slow software rendering): wait until the pointer has a target.
-  await page.waitForFunction(() => /Erase:/.test(document.getElementById('ed-target')?.textContent ?? ''), null, { timeout: 10000 }).catch(() => {});
+  await page.waitForFunction(() => /Erase:/.test(document.getElementById('ed-target')?.textContent ?? ''), null, { timeout: T(10000) }).catch(() => {});
   const target = await page.evaluate(() => window.__editor.pick());
   const aimed = rocks.find((e) => e.id === target?.id);
   await page.mouse.click(rp.x, rp.y);
@@ -346,7 +349,7 @@ async function offlineFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   const inv = await page.evaluate(() => [...window.__cs.local.inventory.keys()]);
   check(inv.join(',') === '1,2', `offline match spawns with knife + pistol (${inv})`);
   await page.waitForTimeout(1500);
@@ -354,10 +357,10 @@ async function offlineFlow(browser) {
   check(/^\d+ \/ \d+$/.test(ammo), `HUD shows ammo (${ammo})`);
   // A click is the user gesture that starts audio; bots fighting then make sounds.
   await page.click('#resume');
-  await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: 15000 });
+  await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: T(15000) });
   const loaded = await page.evaluate(() => ({ ...window.__audio.stats, total: window.__audio.total }));
   check(loaded.failed === 0 && loaded.loaded === loaded.total, `all ${loaded.total} sounds load and decode (${loaded.failed} failed)`);
-  await page.waitForFunction(() => window.__audio.stats.played > 0, null, { timeout: 20000 }).catch(() => {});
+  await page.waitForFunction(() => window.__audio.stats.played > 0, null, { timeout: T(20000) }).catch(() => {});
   const played = await page.evaluate(() => window.__audio.stats.played);
   check(played > 0, `match events play sounds (${played} played)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -369,7 +372,7 @@ async function vaultFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=vault`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(1500);
   const objectives = await page.textContent('#objectives');
   check((objectives ?? '').includes('Find the vault control'), `scenario demo shows its first objective (${objectives})`);
@@ -382,12 +385,12 @@ async function outpostFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=outpost`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(2500);
   const objectives = await page.textContent('#objectives');
   check((objectives ?? '').includes('Clear the courtyard'), `co-op mission shows its first objective (${objectives})`);
   // Player, two bot teammates and at least one NPC squad, all as animated characters.
-  await page.waitForFunction(() => window.__cs.view.characterCount() >= 7, null, { timeout: 20000 }).catch(() => {});
+  await page.waitForFunction(() => window.__cs.view.characterCount() >= 7, null, { timeout: T(20000) }).catch(() => {});
   const chars = await page.evaluate(() => window.__cs.view.characterCount());
   check(chars >= 7, `players, bots and NPC squads are rendered as characters (${chars})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -399,11 +402,11 @@ async function sandgateFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=sandgate`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(2000);
   const score = (await page.textContent('#scorebar')) ?? '';
   check(score.includes('Embers') && score.includes('Tide'), `team deathmatch shows both team scores (${score})`);
-  await page.waitForFunction(() => window.__cs.view.characterCount() >= 8, null, { timeout: 20000 }).catch(() => {});
+  await page.waitForFunction(() => window.__cs.view.characterCount() >= 8, null, { timeout: T(20000) }).catch(() => {});
   const chars = await page.evaluate(() => window.__cs.view.characterCount());
   check(chars >= 8, `5 v 5 bots are rendered as characters (${chars})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -415,7 +418,7 @@ async function citadelFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=citadel`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(4000);
   const props = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.includes('_model')).length);
   check(props >= 35, `Citadel's props are placed (${props})`);
@@ -431,7 +434,7 @@ async function canyonFlow(browser) {
   page.on('pageerror', (e) => errors.push(e.message));
   // The game: terrain meshes per ground material, and players stand on the ground.
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(3000);
   const grounds = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).map((m) => m.name.split('_terrain_')[1]));
   check(grounds.length >= 5 && grounds.includes('grass') && grounds.includes('stone'), `canyon terrain is drawn in its ground materials (${grounds.join(', ')})`);
@@ -439,7 +442,7 @@ async function canyonFlow(browser) {
   check(y > 0.5 && y < 3, `the player stands on the ground at a base (eye ${y.toFixed(2)} m)`);
   // MapMaker: create terrain, sculpt a hill, undo it.
   await page.goto(`${CLIENT}/?mode=editor`);
-  await page.waitForFunction(() => window.__editor, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
   await page.click('#ed-pal-tabs [data-pane="terrain"]');
@@ -450,7 +453,7 @@ async function canyonFlow(browser) {
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
   // Hold until the hill has grown (headless frame rates vary), at most 6 s.
-  await page.waitForFunction(() => Math.max(...window.__editor.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).map((m) => m.getBoundingInfo().boundingBox.maximumWorld.y)) > 0.5, null, { timeout: 6000 }).catch(() => {});
+  await page.waitForFunction(() => Math.max(...window.__editor.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).map((m) => m.getBoundingInfo().boundingBox.maximumWorld.y)) > 0.5, null, { timeout: T(6000) }).catch(() => {});
   await page.mouse.up();
   const peak = await page.evaluate(() => Math.max(...window.__editor.doc.terrain.heights));
   check(peak > 50, `raise brush builds a hill (${peak} cm)`);
@@ -467,8 +470,8 @@ async function sceneryFlow(browser) {
   page.on('pageerror', (e) => errors.push(e.message));
   // The game: a photo sky, ground and scenery past the border, and grass growing on the canyon floor.
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
-  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name.startsWith('foliage') && m.thinInstanceCount > 0), null, { timeout: 15000 }).catch(() => {});
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name.startsWith('foliage') && m.thinInstanceCount > 0), null, { timeout: T(15000) }).catch(() => {});
   const canyon = await page.evaluate(() => {
     const ms = window.__cs.view.scene.meshes;
     return { names: [...new Set(ms.filter((m) => m.name.startsWith('backdrop_')).map((m) => m.name))], plants: ms.filter((m) => m.name.startsWith('foliage')).reduce((n, m) => n + (m.thinInstanceCount || 0), 0), fog: window.__cs.view.scene.fogMode };
@@ -476,12 +479,12 @@ async function sceneryFlow(browser) {
   check(canyon.names.includes('backdrop_sky') && canyon.names.includes('backdrop_ground') && canyon.names.includes('backdrop_ridge'), `canyon has a sky, ground beyond and distant scenery (${canyon.names.join(', ')})`);
   check(canyon.plants > 1000 && canyon.fog > 0, `grass grows on the canyon floor (${canyon.plants} plants) under haze`);
   await page.goto(`${CLIENT}/?offline=skyward`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   const space = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('backdrop_')).map((m) => m.name));
   check(space.includes('backdrop_sky') && !space.includes('backdrop_ground'), `Skyward floats in a starfield with no ground (${space.join(', ')})`);
   // MapMaker: pick a backdrop, paint plants, scatter a forest.
   await page.goto(`${CLIENT}/?mode=editor`);
-  await page.waitForFunction(() => window.__editor, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
   await page.selectOption('#ed-bd-sky', 'sunset');
@@ -519,7 +522,7 @@ async function sceneryFlow(browser) {
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
   // Hold until the hill stands at least 1.5 m tall (headless frame rates vary), at most 8 s.
-  await page.waitForFunction(() => Math.max(...window.__editor.doc.terrain.heights) > 150 || window.__editor.stroke?.now && Math.max(...window.__editor.stroke.now.heights) > 150, null, { timeout: 8000 }).catch(() => {});
+  await page.waitForFunction(() => Math.max(...window.__editor.doc.terrain.heights) > 150 || window.__editor.stroke?.now && Math.max(...window.__editor.stroke.now.heights) > 150, null, { timeout: T(8000) }).catch(() => {});
   await page.mouse.up();
   await clickTool(page, '[data-tool="scatter:rocks"]');
   // Bring the hillside to the middle of the view, clear of the tool bar over its top edge.
@@ -549,7 +552,7 @@ async function setpiecesFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=sky_islands`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(30000) });
   await page.waitForTimeout(1000);
   const drawn = await page.evaluate(() => {
     const ms = window.__cs.view.scene.meshes;
@@ -566,16 +569,16 @@ async function setpiecesFlow(browser) {
     me.move = { pos: { x: e.position[0], y: e.position[1] + e.size[1] + 0.3, z: e.position[2] }, velY: 0, grounded: false };
     return e.id;
   });
-  await page.waitForFunction((id) => window.__match.scenario.destructibleAlive(id) === false, stone, { timeout: 6000 }).catch(() => {});
+  await page.waitForFunction((id) => window.__match.scenario.destructibleAlive(id) === false, stone, { timeout: T(6000) }).catch(() => {});
   check(await page.evaluate((id) => window.__match.scenario.destructibleAlive(id) === false, stone), 'a crumbling stone gives way under you');
   // Swim: drop into the pond; the view goes under water.
   await page.evaluate(() => { const me = window.__match.slots[window.__cs.slot]; me.move = { pos: { x: 0, y: 0.6, z: 0 }, velY: 0, grounded: false }; });
-  await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.swim === true, null, { timeout: 5000 }).catch(() => {});
+  await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.swim === true, null, { timeout: T(5000) }).catch(() => {});
   const under = await page.evaluate(() => ({ swim: window.__match.slots[window.__cs.slot].move.swim === true, fog: window.__cs.view.scene.fogDensity }));
   check(under.swim && under.fog > 0.05, `you swim in the pond and the view hazes under water (fog ${under.fog.toFixed(3)})`);
   // Jetpack: fly up while holding jump.
   await page.evaluate(() => { const me = window.__match.slots[window.__cs.slot]; me.move = { pos: { x: 8, y: 3, z: 8 }, velY: 0, grounded: true }; me.jetFuel = 720; window.__autoInput = { buttons: 1 }; });
-  await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.pos.y > 7, null, { timeout: 8000 }).catch(() => {});
+  await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.pos.y > 7, null, { timeout: T(8000) }).catch(() => {});
   const fly = await page.evaluate(() => ({ y: window.__match.slots[window.__cs.slot].move.pos.y, hud: document.getElementById('powerups')?.textContent ?? '' }));
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   check(fly.y > 7 && /JETPACK/.test(fly.hud), `the jetpack flies you up (${fly.y.toFixed(1)} m) with a fuel gauge on the HUD`);
@@ -588,7 +591,7 @@ async function physicsfxFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(30000) });
   await page.waitForTimeout(2500);
   // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats.
   const props = await page.evaluate(() => {
@@ -676,7 +679,7 @@ async function teamsFlow(browser) {
   await page.click('#nav-play');
   await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
   await page.click('#arcade-start');
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   await page.waitForTimeout(2500);
   await page.keyboard.down('Tab');
   await page.waitForTimeout(300);
@@ -694,7 +697,7 @@ async function ctfFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=bunker_cross&gamemode=core.ctf`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match && window.__cs.mode?.state, null, { timeout: 40000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match && window.__cs.mode?.state, null, { timeout: T(40000) });
   await page.waitForTimeout(1500);
   const label = await page.textContent('#mode-label');
   check(label === 'Capture the Flag', `the match runs Capture the Flag (${label})`);
@@ -717,7 +720,7 @@ async function ctfFlow(browser) {
       document.getElementById('pause').style.visibility = 'hidden';
     });
     await page.waitForTimeout(1500);
-    await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-flag.png`, timeout: 60000 }).catch(() => {});
+    await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-flag.png`, timeout: T(60000) }).catch(() => {});
   }
   // Stand on the enemy flag: it is ours to carry.
   await page.evaluate(() => {
@@ -733,7 +736,7 @@ async function ctfFlow(browser) {
     }
     me.move = { pos: { ...theirs.pos, y: theirs.pos.y + 0.2 }, velY: 0, grounded: false };
   });
-  await page.waitForFunction(() => document.querySelector('#mode-status .ms.me'), null, { timeout: 8000 }).catch(() => {});
+  await page.waitForFunction(() => document.querySelector('#mode-status .ms.me'), null, { timeout: T(8000) }).catch(() => {});
   const carrying = await page.evaluate(() => ({
     hud: document.querySelector('#mode-status .ms.me')?.textContent ?? '',
     msg: document.getElementById('message').textContent,
@@ -746,7 +749,7 @@ async function ctfFlow(browser) {
   check(/You have the flag/.test(carrying.msg ?? ''), `the announcer calls it (${carrying.msg})`);
   check(Math.abs(carrying.speed - 0.85) < 0.01, `the carrier is slowed (${carrying.speed})`);
   check(carrying.home.includes('base'), `a marker points the way home (${carrying.home})`);
-  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-carrying.png`, timeout: 60000 }).catch(() => {});
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-carrying.png`, timeout: T(60000) }).catch(() => {});
   // Run it home (our own flag must be there: send it home if a bot took it).
   await page.evaluate(() => {
     const m = window.__match;
@@ -759,10 +762,10 @@ async function ctfFlow(browser) {
     }
     me.move = { pos: { ...ours.base, y: ours.base.y + 0.2 }, velY: 0, grounded: false };
   });
-  await page.waitForFunction(() => window.__cs.mode.state.ts.some((n) => n > 0) && document.querySelector('#sb-left b')?.textContent === '1', null, { timeout: 8000 }).catch(() => {});
+  await page.waitForFunction(() => window.__cs.mode.state.ts.some((n) => n > 0) && document.querySelector('#sb-left b')?.textContent === '1', null, { timeout: T(8000) }).catch(() => {});
   const after = await page.evaluate(() => ({ ts: window.__cs.mode.state.ts, left: document.querySelector('#sb-left b')?.textContent, msg: document.getElementById('message').textContent }));
   check(after.ts.some((n) => n === 1) && after.left === '1', `bringing it home scores a capture (${JSON.stringify(after)})`);
-  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-captured.png`, timeout: 60000 }).catch(() => {});
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-captured.png`, timeout: T(60000) }).catch(() => {});
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -772,7 +775,7 @@ async function arsenalFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__give, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__give, null, { timeout: T(30000) });
   // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
   for (const id of ['core.flamethrower', 'core.oil_slicker', 'core.laser_rifle', 'core.railgun', 'core.bubble_blaster', 'core.swarm', 'core.disc_launcher', 'core.arc_caster', 'core.goo_gun', 'core.burst_rifle']) {
     await page.evaluate((w) => {
@@ -797,7 +800,7 @@ async function vehiclesFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(30000) });
   const mounts = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => /^mount_[0-9]+$/.test(n.name)).length);
   check(mounts >= 9, `canyon's vehicles and turrets are drawn (${mounts})`);
   // Walk up to the buggy outside our base, press E once, and drive.
@@ -807,26 +810,26 @@ async function vehiclesFlow(browser) {
     me.move = { pos: { x: -14, y: 0.3, z: z - (z > 0 ? -3 : 3) }, velY: 0, grounded: false };
     window.__autoInput = { buttons: 0 };
   });
-  await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: 8000 }).catch(() => {});
+  await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
   const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
   check(/Drive the Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
   // Press E (again, if a slow frame swallowed the press) until we're aboard.
   for (let i = 0; i < 4; i++) {
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
-    const aboard = await page.waitForFunction(() => !!window.__match.slots[window.__cs.slot].mount, null, { timeout: 5000 }).then(() => true, () => false);
+    const aboard = await page.waitForFunction(() => !!window.__match.slots[window.__cs.slot].mount, null, { timeout: T(5000) }).then(() => true, () => false);
     if (aboard) break;
   }
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   // Headless frame rates vary: wait for the drive rather than a fixed time.
   await page
-    .waitForFunction((s) => { const p = window.__match.slots[window.__cs.slot].move.pos; return Math.hypot(p.x - s.x, p.z - s.z) > 8; }, start, { timeout: 10000 })
+    .waitForFunction((s) => { const p = window.__match.slots[window.__cs.slot].move.pos; return Math.hypot(p.x - s.x, p.z - s.z) > 8; }, start, { timeout: T(10000) })
     .catch(() => {});
   const after = await page.evaluate(() => ({ seat: window.__match.slots[window.__cs.slot].mount?.seat, pos: window.__match.slots[window.__cs.slot].move.pos, hud: document.getElementById('weapon-name')?.textContent }));
   check(after.seat === 0, `you are in the driver's seat (${after.seat})`);
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
   await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
-  await page.waitForFunction(() => !window.__match.slots[window.__cs.slot].mount, null, { timeout: 5000 }).catch(() => {});
+  await page.waitForFunction(() => !window.__match.slots[window.__cs.slot].mount, null, { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -851,7 +854,7 @@ async function mapsFlow(browser) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(`${CLIENT}/?offline=${id}`);
-    const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 40000 }).then(() => true, () => false);
+    const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(40000) }).then(() => true, () => false);
     await page.waitForTimeout(1500);
     // Imported maps can have floors below level 0: "solid ground" there means not below the lowest floor.
     let floor = -5;
@@ -874,7 +877,7 @@ async function designerFlow(browser) {
   await page.goto(CLIENT);
   await page.click('#nav-characters');
   await page.click('.char-tile.new');
-  await page.waitForFunction(() => !!window.__designer, null, { timeout: 30000 });
+  await page.waitForFunction(() => !!window.__designer, null, { timeout: T(30000) });
   await page.click('#designer button:text-is("Female")');
   await page.click('#designer .tab:text-is("Outfit")');
   await page.selectOption('#designer .dz-row:has(label:text-is("Top")) select', 'peasant_torso_f');
@@ -888,8 +891,8 @@ async function designerFlow(browser) {
   const selected = await page.evaluate(() => window.__front.look);
   check(selected === id, `the saved look is selected on the menu (${selected})`);
   await page.goto(`${CLIENT}/?offline`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
-  await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: 20000 }).catch(() => {});
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: T(20000) }).catch(() => {});
   check(await page.evaluate(() => window.__cs.view.hasFirstPersonArms()), 'first-person arms of the custom look hold the weapon');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -920,7 +923,7 @@ async function webgpuFlow() {
       return;
     }
     await page.goto(`${CLIENT}/?renderer=webgpu`);
-    await page.waitForFunction(() => window.__front, null, { timeout: 60000 });
+    await page.waitForFunction(() => window.__front, null, { timeout: T(60000) });
     check(await page.evaluate(() => window.__front.portraits.scene.getEngine().isWebGPU), 'the menu runs on WebGPU');
     const src = await page.evaluate(() => window.__front.portraits.get(window.__front.look));
     const px = await page.evaluate(async (url) => {
@@ -964,7 +967,7 @@ async function charactersFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?mode=characters`);
-  await page.waitForFunction(() => window.__charsReady === true, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__charsReady === true, null, { timeout: T(30000) });
   const [n, want] = await page.evaluate(() => [window.__charAnimators.length, window.__charSpecs]);
   check(n === want && n >= 20, `character viewer builds every look and NPC (${n} of ${want})`);
   const lod = await page.evaluate(() => window.__charAnimators.flatMap((a) => a.ch.meshes).filter((m) => m.getLODLevels?.().length).length);
@@ -983,7 +986,7 @@ async function onlineFlow(browser) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://localhost:${SERVER_PORT}`);
-    await page.waitForFunction(() => window.__cs?.local, null, { timeout: 30000 });
+    await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
     return { page, errors };
   };
   const a = await open('Alice');
@@ -1008,7 +1011,7 @@ async function lobbyFlow(browser) {
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
   await host.goto(`${CLIENT}/?offline=arena&${hub}`);
-  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(30000) });
   const offered = await host.evaluate(() => !document.getElementById('host-public').hidden);
   check(offered, 'hosting offers "List in the game browser" when a hub is set');
   await host.evaluate(() => {
@@ -1018,7 +1021,7 @@ async function lobbyFlow(browser) {
     box.dispatchEvent(new Event('change'));
     document.getElementById('host-game').click();
   });
-  const listed = await host.waitForFunction(() => /^Listed:/.test(document.getElementById('host-public-status').textContent), null, { timeout: 20000 }).then(() => true, () => false);
+  const listed = await host.waitForFunction(() => /^Listed:/.test(document.getElementById('host-public-status').textContent), null, { timeout: T(20000) }).then(() => true, () => false);
   check(listed, `the host's match is listed (${await host.evaluate(() => document.getElementById('host-public-status').textContent)})`);
   const relayNote = await host.evaluate(() => document.getElementById('host-info').textContent);
   check(relayNote.includes('hub provides a relay'), 'the hub hands out relay credentials, and the host is told');
@@ -1026,20 +1029,20 @@ async function lobbyFlow(browser) {
   player.on('pageerror', (e) => errors.push(`player: ${e.message}`));
   await player.addInitScript(() => localStorage.setItem('cs.name', 'Stranger'));
   await player.goto(`${CLIENT}/?${hub}`);
-  await player.waitForFunction(() => window.__front, null, { timeout: 30000 });
+  await player.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await player.evaluate(() => document.getElementById('nav-online')?.click());
-  const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: 15000 }).then((h) => h.jsonValue(), () => null);
+  const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: T(15000) }).then((h) => h.jsonValue(), () => null);
   check(!!row && row.includes('1/') && row.includes('Hosty') && row.includes('Relay'), `the game browser lists it, with the relay badge (${row})`);
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Friday Night')).querySelector('button').click());
-  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 40000 }).then(() => true, () => false);
+  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(40000) }).then(() => true, () => false);
   check(joined, 'joining from the game browser puts the player in the match');
   if (joined) {
     // The next check-in reports two players.
-    const two = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.find((g) => g.name === 'E2E Friday Night')?.players === 2), null, { timeout: 30000, polling: 2000 }).then(() => true, () => false);
+    const two = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.find((g) => g.name === 'E2E Friday Night')?.players === 2), null, { timeout: T(30000), polling: 2000 }).then(() => true, () => false);
     check(two, 'the listing updates to 2 players');
   }
   await host.context().close();
-  const gone = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night')), null, { timeout: 15000, polling: 1000 }).then(() => true, () => false);
+  const gone = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
   check(gone, 'the listing goes away when the host closes the game');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await player.context().close();
@@ -1053,22 +1056,22 @@ async function hostgameFlow(browser) {
   const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   const errors = [];
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
-  await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 90000 });
+  await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(90000) });
   // CI renders in software, slowly: generous waits (readiness is checked by what follows each load),
   // and the Host button pressed again if the first press got no answer.
   const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
   for (let i = 0; i < 3; i++) {
     await host.evaluate(() => document.getElementById('host-game').click());
-    if (await host.waitForFunction(hasCode, null, { timeout: 30000 }).then(() => true, () => false)) break;
+    if (await host.waitForFunction(hasCode, null, { timeout: T(30000) }).then(() => true, () => false)) break;
   }
   const code = await host.evaluate(() => document.querySelector('#host-info .host-code b').textContent);
   check(/^[A-Z0-9]{6}$/.test(code), `hosting opens a join code (${code})`);
   const friend = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
   await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
-  await friend.goto(`${CLIENT}/?join=${code}${peer}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  const joined = await friend.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 60000 }).then(() => true, () => false);
+  await friend.goto(`${CLIENT}/?join=${code}${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+  const joined = await friend.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(60000) }).then(() => true, () => false);
   check(joined, 'a friend joins the hosted match by its link');
   if (joined) {
     await friend.waitForTimeout(2500);
@@ -1105,6 +1108,14 @@ try {
   await waitForHttp(CLIENT);
   await sleep(1500);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  // Playwright's own default waits (30 s) stretch on CI too.
+  const newContext = browser.newContext.bind(browser);
+  browser.newContext = async (...a) => {
+    const ctx = await newContext(...a);
+    ctx.setDefaultTimeout(T(30000));
+    ctx.setDefaultNavigationTimeout(T(30000));
+    return ctx;
+  };
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
   const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
