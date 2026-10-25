@@ -32,7 +32,7 @@ import {
 import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
-import { BUTTON_ALT, BUTTON_JUMP, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
@@ -100,8 +100,8 @@ interface MountRt {
   probe: RAPIER.Collider | null;
   faction: string | null;
   /** The driver's controls this tick. */
-  /** Driver's controls: throttle, steering and the handbrake (jump). */
-  drive: { forward: number; right: number; brake?: boolean };
+  /** Driver's controls: throttle, steering and the handbrake (jump); in a flyer, jump climbs and crouch dives (`lift`). */
+  drive: { forward: number; right: number; brake?: boolean; lift?: number };
   /** Sideways slide (m/s along the vehicle's right), kept between ticks so it drifts. */
   slide: number;
   airborne: boolean;
@@ -1000,7 +1000,11 @@ export class Match {
       if (seat) {
         // In a turret or vehicle: no walking. Drivers steer; gunners' aim stays within the gun's arc.
         const m = this.mounts[c.mount!.index]!;
-        if (seat.role === 'driver') m.drive = { forward: input.forward, right: input.right, brake: !!(input.buttons & BUTTON_JUMP) };
+        if (seat.role === 'driver') {
+          const up = !!(input.buttons & BUTTON_JUMP);
+          const down = !!(input.buttons & BUTTON_CROUCH);
+          m.drive = m.def.vehicle?.fly ? { forward: input.forward, right: input.right, lift: (up ? 1 : 0) - (down ? 1 : 0) } : { forward: input.forward, right: input.right, brake: up };
+        }
         if (seat.arc !== undefined) {
           const d = Math.atan2(Math.sin(c.yaw - m.yaw), Math.cos(c.yaw - m.yaw));
           c.yaw = m.yaw + Math.max(-seat.arc, Math.min(seat.arc, d));
@@ -1876,7 +1880,7 @@ export class Match {
     const v = m.def.vehicle!;
     const { forward, right, brake } = m.drive;
     const mass = v.mass ?? 1;
-    const grounded = !m.airborne || !!v.hover;
+    const grounded = !m.airborne || !!v.hover || !!v.fly;
     const target = forward > 0 ? v.maxSpeed * forward : forward < 0 ? -v.reverseSpeed * -forward : 0;
     const braking = target === 0 || Math.sign(target) !== Math.sign(m.speed);
     let rate = (target === 0 ? v.accel * (v.hover ? 0.35 : 0.8) : braking ? v.accel * 1.8 : v.accel) * TICK_DT;
@@ -1893,7 +1897,13 @@ export class Match {
     const grip = grounded ? (v.grip ?? (v.hover ? 0.06 : 0.25)) * (brake ? 0.25 : 1) : 0;
     m.slide *= 1 - grip;
     if (Math.abs(m.slide) < 0.02) m.slide = 0;
-    m.velY -= PLAYER.gravity * TICK_DT;
+    if (v.fly) {
+      // Flyers hold their height: climb or dive at the pilot's say, and sink back down with nobody at the controls.
+      const piloted = m.def.seats.some((s, i) => s.role === 'driver' && m.seats[i] !== null);
+      const want = piloted ? (m.drive.lift ?? 0) * v.fly.climb : -v.fly.climb * 0.5;
+      m.velY += Math.max(-v.fly.climb * 3 * TICK_DT, Math.min(v.fly.climb * 3 * TICK_DT, want - m.velY));
+      if (m.pos.y >= m.home.pos.y + v.fly.ceiling && m.velY > 0) m.velY = 0;
+    } else m.velY -= PLAYER.gravity * TICK_DT;
     const dir = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
     const side = { x: Math.cos(m.yaw), z: -Math.sin(m.yaw) };
     const vx = dir.x * m.speed + side.x * m.slide + m.push.x;
@@ -1903,9 +1913,9 @@ export class Match {
     const climbed = (moved.feet.y - startY) / TICK_DT;
     if (moved.grounded) {
       // Hard landing: the heavier and faster it comes down, the more it hurts.
-      if (m.airborne && m.velY < -11 && !v.hover) this.damageMount(m, (-m.velY - 11) * 6 * mass, null);
-      // On the ground the vertical speed follows the slope, so leaving a ramp keeps the climb.
-      m.velY = Math.max(0, Math.min(climbed, 14));
+      if (m.airborne && m.velY < -11 && !v.hover && !v.fly) this.damageMount(m, (-m.velY - 11) * 6 * mass, null);
+      // On the ground the vertical speed follows the slope, so leaving a ramp keeps the climb (a flyer lifts off at will).
+      m.velY = v.fly ? Math.max(0, m.velY) : Math.max(0, Math.min(climbed, 14));
       m.airborne = false;
     } else m.airborne = true;
     if (moved.blocked > 0.6 && Math.abs(m.speed) > 4) {

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_FIRE, BUTTON_JUMP, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, PLAYER, initPhysics, validateMap, type GameEvent, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
+import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, TICK_RATE, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, PLAYER, initPhysics, validateMap, type GameEvent, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -87,6 +87,27 @@ describe('turrets, sentries and vehicles', () => {
     expect(a.mount).toBeUndefined();
     d.run(30, () => d.input(a, {}));
     expect(a.move.pos.y).toBeGreaterThan(-0.5);
+  });
+
+  it('a skyfighter climbs on jump, holds its height, dives on crouch, and settles when left empty', () => {
+    const match = new Match(yard([{ position: [16, 0, 12], model: 'skyfighter', yaw: 0, faction: null, respawnSeconds: null }]), rules);
+    const d = new Driver(match);
+    const a = match.addHuman('a')!;
+    d.run(2);
+    place(a, 16, 9);
+    use(d, a);
+    expect(a.mount).toBeDefined();
+    const m = () => match.mountSnapshots()[0]! as number[];
+    d.run(60, () => d.input(a, { buttons: BUTTON_JUMP }));
+    const up = m()[2]!;
+    expect(up).toBeGreaterThan(4);
+    d.run(30, () => d.input(a, {}));
+    expect(Math.abs(m()[2]! - up)).toBeLessThan(1.5);
+    d.run(60, () => d.input(a, { buttons: BUTTON_CROUCH }));
+    expect(m()[2]!).toBeLessThan(up - 1.5);
+    use(d, a);
+    d.run(TICK_RATE * 6, () => d.input(a, {}));
+    expect(m()[2]!).toBeLessThan(0.5);
   });
 
   it('hard turns at speed drift (hovercraft most, the handbrake breaks grip)', () => {

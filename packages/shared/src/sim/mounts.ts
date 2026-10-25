@@ -8,7 +8,7 @@
  * metres from the mount's origin (its footprint centre on the ground).
  */
 
-export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'kart', 'speeder', 'buggy', 'hauler'] as const;
+export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship'] as const;
 export type MountModel = (typeof MOUNT_MODELS)[number];
 
 export type SeatRole = 'driver' | 'gunner' | 'passenger';
@@ -51,6 +51,8 @@ export interface MountDef {
     grip?: number;
     /** Weight in tonnes: heavier ones shrug off pushes, lose less speed in crashes and land harder. Default 1. */
     mass?: number;
+    /** Flyers: no gravity; the pilot climbs (jump) and dives (crouch) at `climb` m/s, up to `ceiling` m above where it is parked. */
+    fly?: { climb: number; ceiling: number };
   };
   sentry?: { weapon: string; range: number; turnRate: number };
   /** One line for MapMaker. */
@@ -120,10 +122,10 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     kind: 'vehicle',
     model: 'vehicles/speeder.glb',
     health: 300,
-    half: [1.1, 0.5, 1.7],
+    half: [1.2, 0.65, 2.1],
     seats: [
-      { role: 'driver', label: 'Pilot', offset: [0, 0.55, 0.2], weapon: 'core.speeder_guns', arc: 0.35 },
-      { role: 'passenger', label: 'Passenger', offset: [0, 0.65, -0.9] },
+      { role: 'driver', label: 'Pilot', offset: [0, 0.95, 0.5], weapon: 'core.speeder_guns', arc: 0.35 },
+      { role: 'passenger', label: 'Passenger', offset: [0, 1.0, -0.8] },
     ],
     enterRadius: 3,
     respawnSeconds: 40,
@@ -156,20 +158,55 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     kind: 'vehicle',
     model: 'vehicles/hauler.glb',
     health: 700,
-    half: [1.7, 0.7, 2.9],
+    half: [1.6, 1.0, 3.4],
     seats: [
-      { role: 'driver', label: 'Pilot', offset: [0, 0.85, 1.5] },
-      { role: 'gunner', label: 'Gunner', offset: [0, 1.35, -0.4], weapon: 'core.mount_rockets', arc: ALL_ROUND },
-      { role: 'passenger', label: 'Left front', offset: [-1.0, 0.85, 0.5] },
-      { role: 'passenger', label: 'Right front', offset: [1.0, 0.85, 0.5] },
-      { role: 'passenger', label: 'Left back', offset: [-1.0, 0.85, -1.5] },
-      { role: 'passenger', label: 'Right back', offset: [1.0, 0.85, -1.5] },
+      { role: 'driver', label: 'Pilot', offset: [0, 1.7, 2.2] },
+      { role: 'gunner', label: 'Gunner', offset: [0, 2.4, -0.4], weapon: 'core.mount_rockets', arc: ALL_ROUND },
+      { role: 'passenger', label: 'Left front', offset: [-0.9, 1.7, 0.8] },
+      { role: 'passenger', label: 'Right front', offset: [0.9, 1.7, 0.8] },
+      { role: 'passenger', label: 'Left back', offset: [-0.9, 1.7, -1.6] },
+      { role: 'passenger', label: 'Right back', offset: [0.9, 1.7, -1.6] },
     ],
     enterRadius: 4,
     respawnSeconds: 60,
     blast: { radius: 5, damage: 100 },
     vehicle: { maxSpeed: 13, reverseSpeed: 5, accel: 6, turnRate: 1.1, hover: true, grip: 0.05, mass: 3 },
     blurb: 'A slow hovering transport for six: a pilot, a rocket gunner and four passengers',
+  },
+  skyfighter: {
+    id: 'skyfighter',
+    displayName: 'Skyfighter',
+    kind: 'vehicle',
+    model: 'vehicles/skyfighter.glb',
+    health: 280,
+    half: [1.6, 0.8, 2.2],
+    seats: [{ role: 'driver', label: 'Pilot', offset: [0, 1.4, 0.3], weapon: 'core.speeder_guns', arc: 0.3 }],
+    enterRadius: 3.2,
+    respawnSeconds: 50,
+    blast: { radius: 5, damage: 90 },
+    vehicle: { maxSpeed: 28, reverseSpeed: 6, accel: 12, turnRate: 1.9, hover: true, grip: 0.08, mass: 0.7, fly: { climb: 7, ceiling: 30 } },
+    blurb: 'A one-seat fighter that flies: jump to climb, crouch to dive; twin blasters ahead',
+  },
+  dropship: {
+    id: 'dropship',
+    displayName: 'Dropship',
+    kind: 'vehicle',
+    model: 'vehicles/dropship.glb',
+    health: 750,
+    half: [2.0, 0.85, 4.8],
+    seats: [
+      { role: 'driver', label: 'Pilot', offset: [0, 2.0, 3.2] },
+      { role: 'gunner', label: 'Gunner', offset: [0, 2.1, 0.6], weapon: 'core.mount_mg', arc: ALL_ROUND },
+      { role: 'passenger', label: 'Left front', offset: [-1.2, 2.0, 1.4] },
+      { role: 'passenger', label: 'Right front', offset: [1.2, 2.0, 1.4] },
+      { role: 'passenger', label: 'Left back', offset: [-1.2, 2.0, -1.6] },
+      { role: 'passenger', label: 'Right back', offset: [1.2, 2.0, -1.6] },
+    ],
+    enterRadius: 4.5,
+    respawnSeconds: 70,
+    blast: { radius: 6, damage: 110 },
+    vehicle: { maxSpeed: 15, reverseSpeed: 5, accel: 5, turnRate: 0.9, hover: true, grip: 0.05, mass: 3.5, fly: { climb: 4, ceiling: 25 } },
+    blurb: 'A flying troop carrier for six: a pilot, a door gunner and four riding on the deck',
   },
 };
 

@@ -88,6 +88,14 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/quaternius-modular-scifi-guns/License.txt",
       "retrieved": "2026-10-25"
+    },
+    "quaternius-ultimate-spaceships": {
+      "title": "Ultimate Spaceships",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-spaceships-pack",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-ultimate-spaceships/License.txt",
+      "retrieved": "2026-10-25"
     }
   },
   "models": [
@@ -378,20 +386,6 @@
       }
     },
     {
-      "out": "vehicles/speeder.glb",
-      "pack": "kenney-space-kit",
-      "file": "craft_speederA.glb",
-      "forward": "-z",
-      "length": 3.6
-    },
-    {
-      "out": "vehicles/hauler.glb",
-      "pack": "kenney-space-kit",
-      "file": "craft_cargoA.glb",
-      "forward": "-z",
-      "length": 6.0
-    },
-    {
       "out": "turrets/mg.glb",
       "pack": "kenney-space-kit",
       "file": "turret_double.glb",
@@ -419,6 +413,34 @@
         "desaturate": 0.7,
         "tint": "#c84a3a"
       }
+    },
+    {
+      "out": "vehicles/speeder.glb",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Striker.glb",
+      "forward": "+z",
+      "length": 4.2
+    },
+    {
+      "out": "vehicles/hauler.glb",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Dispatcher.glb",
+      "forward": "+z",
+      "length": 7.0
+    },
+    {
+      "out": "vehicles/skyfighter.glb",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Spitfire.glb",
+      "forward": "+z",
+      "length": 4.6
+    },
+    {
+      "out": "vehicles/dropship.glb",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Imperial.glb",
+      "forward": "+z",
+      "length": 9.6
     }
   ],
   "budgets": {

@@ -15,15 +15,24 @@ Car Kit (CC0).
 | Speeder | 2 (pilot, passenger) | Hovering; the pilot fires twin blasters ahead, the passenger shoots their own weapon |
 | Buggy | 4 (driver, gunner, 2 passengers) | The gunner works a roof machine gun all round; passengers shoot their own weapons |
 | Hauler | 6 (pilot, gunner, 4 passengers) | A slow hovering transport with a rocket gunner |
+| Skyfighter | 1 pilot | Flies: the pilot climbs (Space) and dives (Ctrl/crouch), up to 30 m above where it was parked, firing twin blasters ahead |
+| Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier with an all-round door gun; riders stand on the deck |
 
 - **Driving.** W/S throttle and reverse, A/D steer (harder the faster you
   go). Vehicles slide along walls, lose half their speed in a crash and
   follow the ground (terrain included). At speed they run down enemies,
   credited to the driver. Drivers see the vehicle from behind; the camera
   swings round as it turns, and the mouse looks about.
+- **Flying.** Skyfighters and dropships drive like hovercraft and also
+  climb on jump and dive on crouch; let go and they hold their height. Left
+  without a pilot they sink gently to the ground. Bots fly them at ground
+  level.
+- **Models.** The speeder (Striker), hauler (Dispatcher), skyfighter
+  (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
+  Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no
   reloading) within its arc. Passengers use their own weapons. Drivers can't
-  shoot unless the seat has a gun (the speeder's pilot).
+  shoot unless the seat has a gun (the speeder's and skyfighter's pilots).
 - **Damage.** Bullets, projectiles and blasts hurt mounts. A destroyed mount
   explodes, throws out everyone aboard into the blast and comes back where it
   was placed after its respawn delay (set per mount in the inspector).

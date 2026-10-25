@@ -1,11 +1,11 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 17,
   "metadata": {
     "id": "frost_basin",
     "name": "Frost Basin",
     "author": "Tile Trigger",
-    "description": "A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder and a hauler, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west. An homage in spirit to the great outdoor team maps of the early 2000s.",
+    "description": "A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler and a skyfighter that flies, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west. An homage in spirit to the great outdoor team maps of the early 2000s.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -148,7 +148,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_049",
+        "id": "tile_050",
         "tile": "core.hall",
         "x": -1,
         "y": 12,
@@ -168,18 +168,10 @@
         }
       },
       {
-        "id": "tile_050",
-        "tile": "core.platform_rail",
-        "x": -1,
-        "y": 12,
-        "z": 4,
-        "rotation": 0
-      },
-      {
         "id": "tile_051",
         "tile": "core.platform_rail",
         "x": -1,
-        "y": 13,
+        "y": 12,
         "z": 4,
         "rotation": 0
       },
@@ -187,15 +179,15 @@
         "id": "tile_052",
         "tile": "core.platform_rail",
         "x": -1,
-        "y": 14,
+        "y": 13,
         "z": 4,
         "rotation": 0
       },
       {
         "id": "tile_053",
         "tile": "core.platform_rail",
-        "x": 0,
-        "y": 12,
+        "x": -1,
+        "y": 14,
         "z": 4,
         "rotation": 0
       },
@@ -203,7 +195,7 @@
         "id": "tile_054",
         "tile": "core.platform_rail",
         "x": 0,
-        "y": 13,
+        "y": 12,
         "z": 4,
         "rotation": 0
       },
@@ -211,15 +203,15 @@
         "id": "tile_055",
         "tile": "core.platform_rail",
         "x": 0,
-        "y": 14,
+        "y": 13,
         "z": 4,
         "rotation": 0
       },
       {
         "id": "tile_056",
         "tile": "core.platform_rail",
-        "x": 1,
-        "y": 12,
+        "x": 0,
+        "y": 14,
         "z": 4,
         "rotation": 0
       },
@@ -227,7 +219,7 @@
         "id": "tile_057",
         "tile": "core.platform_rail",
         "x": 1,
-        "y": 13,
+        "y": 12,
         "z": 4,
         "rotation": 0
       },
@@ -235,12 +227,20 @@
         "id": "tile_058",
         "tile": "core.platform_rail",
         "x": 1,
-        "y": 14,
+        "y": 13,
         "z": 4,
         "rotation": 0
       },
       {
         "id": "tile_059",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 14,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_060",
         "tile": "core.stairs_open",
         "x": 2,
         "y": 12,
@@ -248,7 +248,7 @@
         "rotation": 2
       },
       {
-        "id": "tile_060",
+        "id": "tile_061",
         "tile": "core.stairs_open",
         "x": -2,
         "y": 12,
@@ -256,7 +256,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_061",
+        "id": "tile_062",
         "tile": "core.platform",
         "x": 3,
         "y": 12,
@@ -264,7 +264,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_062",
+        "id": "tile_063",
         "tile": "core.platform",
         "x": -3,
         "y": 12,
@@ -272,7 +272,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_097",
+        "id": "tile_099",
         "tile": "core.room",
         "x": -1,
         "y": 0,
@@ -285,7 +285,7 @@
         }
       },
       {
-        "id": "tile_098",
+        "id": "tile_100",
         "tile": "core.room_cover",
         "x": 0,
         "y": 0,
@@ -297,7 +297,7 @@
         }
       },
       {
-        "id": "tile_099",
+        "id": "tile_101",
         "tile": "core.stairwell",
         "x": 1,
         "y": 0,
@@ -308,7 +308,7 @@
         }
       },
       {
-        "id": "tile_100",
+        "id": "tile_102",
         "tile": "core.room",
         "x": 0,
         "y": 0,
@@ -320,7 +320,7 @@
         }
       },
       {
-        "id": "tile_101",
+        "id": "tile_103",
         "tile": "core.stairwell",
         "x": -1,
         "y": 0,
@@ -332,7 +332,7 @@
         }
       },
       {
-        "id": "tile_102",
+        "id": "tile_104",
         "tile": "core.platform_rail",
         "x": 0,
         "y": 0,
@@ -340,7 +340,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_103",
+        "id": "tile_105",
         "tile": "core.platform_rail",
         "x": 1,
         "y": 0,
@@ -416,7 +416,20 @@
       "respawnSeconds": null
     },
     {
-      "id": "pad_020",
+      "id": "mount_020",
+      "position": [
+        25,
+        11.85,
+        -114
+      ],
+      "kind": "mount",
+      "model": "skyfighter",
+      "yaw": 0,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "pad_021",
       "position": [
         -7,
         0.1,
@@ -428,7 +441,7 @@
       "push": 14
     },
     {
-      "id": "pad_021",
+      "id": "pad_022",
       "position": [
         7,
         0.48,
@@ -440,7 +453,7 @@
       "push": 14
     },
     {
-      "id": "spawn_022",
+      "id": "spawn_023",
       "position": [
         -9,
         12,
@@ -451,7 +464,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_023",
+      "id": "spawn_024",
       "position": [
         9,
         12,
@@ -462,7 +475,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_024",
+      "id": "spawn_025",
       "position": [
         -4,
         12,
@@ -473,7 +486,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_025",
+      "id": "spawn_026",
       "position": [
         4,
         12,
@@ -484,7 +497,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_026",
+      "id": "spawn_027",
       "position": [
         -27,
         11.85,
@@ -495,7 +508,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_027",
+      "id": "spawn_028",
       "position": [
         27,
         11.85,
@@ -506,7 +519,7 @@
       "faction": "embers"
     },
     {
-      "id": "prop_028",
+      "id": "prop_029",
       "position": [
         -15,
         11.82,
@@ -520,7 +533,7 @@
       "tint": null
     },
     {
-      "id": "prop_029",
+      "id": "prop_030",
       "position": [
         -15.5,
         11.82,
@@ -534,7 +547,7 @@
       "tint": null
     },
     {
-      "id": "prop_030",
+      "id": "prop_031",
       "position": [
         15,
         11.82,
@@ -548,7 +561,7 @@
       "tint": null
     },
     {
-      "id": "prop_031",
+      "id": "prop_032",
       "position": [
         17,
         11.82,
@@ -562,23 +575,9 @@
       "tint": null
     },
     {
-      "id": "prop_032",
-      "position": [
-        -17,
-        11.82,
-        -86
-      ],
-      "kind": "prop",
-      "model": "prop.barrier",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_033",
       "position": [
-        17,
+        -17,
         11.82,
         -86
       ],
@@ -592,6 +591,20 @@
     {
       "id": "prop_034",
       "position": [
+        17,
+        11.82,
+        -86
+      ],
+      "kind": "prop",
+      "model": "prop.barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_035",
+      "position": [
         0,
         11.82,
         -88
@@ -604,7 +617,7 @@
       "tint": null
     },
     {
-      "id": "destructible_035",
+      "id": "destructible_036",
       "position": [
         -20,
         11.85,
@@ -617,7 +630,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_036",
+      "id": "destructible_037",
       "position": [
         20,
         11.85,
@@ -630,7 +643,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "prop_037",
+      "id": "prop_038",
       "position": [
         -30,
         11.82,
@@ -644,7 +657,7 @@
       "tint": null
     },
     {
-      "id": "prop_038",
+      "id": "prop_039",
       "position": [
         30,
         11.82,
@@ -658,7 +671,7 @@
       "tint": null
     },
     {
-      "id": "pickup_039",
+      "id": "pickup_040",
       "position": [
         0,
         12,
@@ -669,7 +682,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_040",
+      "id": "pickup_041",
       "position": [
         -9,
         12,
@@ -680,7 +693,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_041",
+      "id": "pickup_042",
       "position": [
         9,
         12,
@@ -691,7 +704,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_042",
+      "id": "pickup_043",
       "position": [
         -10,
         12,
@@ -702,7 +715,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_043",
+      "id": "pickup_044",
       "position": [
         10,
         12,
@@ -713,7 +726,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_044",
+      "id": "pickup_045",
       "position": [
         0,
         12,
@@ -724,7 +737,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_045",
+      "id": "pickup_046",
       "position": [
         -26,
         11.85,
@@ -735,7 +748,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_046",
+      "id": "pickup_047",
       "position": [
         0,
         16,
@@ -746,7 +759,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_047",
+      "id": "pickup_048",
       "position": [
         -8,
         16,
@@ -757,7 +770,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "flag_048",
+      "id": "flag_049",
       "position": [
         0,
         12,
@@ -768,7 +781,7 @@
       "team": "embers"
     },
     {
-      "id": "mount_063",
+      "id": "mount_064",
       "position": [
         0,
         16,
@@ -781,7 +794,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_064",
+      "id": "mount_065",
       "position": [
         9,
         16,
@@ -794,7 +807,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_065",
+      "id": "mount_066",
       "position": [
         -26,
         11.85,
@@ -807,7 +820,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_066",
+      "id": "mount_067",
       "position": [
         26,
         11.85,
@@ -820,7 +833,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_067",
+      "id": "mount_068",
       "position": [
         25,
         11.85,
@@ -833,7 +846,20 @@
       "respawnSeconds": null
     },
     {
-      "id": "pad_068",
+      "id": "mount_069",
+      "position": [
+        -25,
+        11.85,
+        114
+      ],
+      "kind": "mount",
+      "model": "skyfighter",
+      "yaw": 3.141592653589793,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "pad_070",
       "position": [
         -7,
         0.48,
@@ -845,7 +871,7 @@
       "push": 14
     },
     {
-      "id": "pad_069",
+      "id": "pad_071",
       "position": [
         7,
         0.1,
@@ -857,7 +883,7 @@
       "push": 14
     },
     {
-      "id": "spawn_070",
+      "id": "spawn_072",
       "position": [
         -9,
         12,
@@ -868,7 +894,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_071",
+      "id": "spawn_073",
       "position": [
         9,
         12,
@@ -879,7 +905,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_072",
+      "id": "spawn_074",
       "position": [
         -4,
         12,
@@ -890,7 +916,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_073",
+      "id": "spawn_075",
       "position": [
         4,
         12,
@@ -901,7 +927,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_074",
+      "id": "spawn_076",
       "position": [
         -27,
         11.85,
@@ -912,7 +938,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_075",
+      "id": "spawn_077",
       "position": [
         27,
         11.85,
@@ -923,7 +949,7 @@
       "faction": "tide"
     },
     {
-      "id": "prop_076",
+      "id": "prop_078",
       "position": [
         -15,
         11.82,
@@ -937,7 +963,7 @@
       "tint": null
     },
     {
-      "id": "prop_077",
+      "id": "prop_079",
       "position": [
         -15.5,
         11.82,
@@ -951,7 +977,7 @@
       "tint": null
     },
     {
-      "id": "prop_078",
+      "id": "prop_080",
       "position": [
         15,
         11.82,
@@ -965,7 +991,7 @@
       "tint": null
     },
     {
-      "id": "prop_079",
+      "id": "prop_081",
       "position": [
         17,
         11.82,
@@ -979,7 +1005,7 @@
       "tint": null
     },
     {
-      "id": "prop_080",
+      "id": "prop_082",
       "position": [
         -17,
         11.82,
@@ -993,7 +1019,7 @@
       "tint": null
     },
     {
-      "id": "prop_081",
+      "id": "prop_083",
       "position": [
         17,
         11.82,
@@ -1007,7 +1033,7 @@
       "tint": null
     },
     {
-      "id": "prop_082",
+      "id": "prop_084",
       "position": [
         0,
         11.82,
@@ -1021,7 +1047,7 @@
       "tint": null
     },
     {
-      "id": "destructible_083",
+      "id": "destructible_085",
       "position": [
         -20,
         11.85,
@@ -1034,7 +1060,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_084",
+      "id": "destructible_086",
       "position": [
         20,
         11.85,
@@ -1047,7 +1073,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "prop_085",
+      "id": "prop_087",
       "position": [
         -30,
         11.82,
@@ -1061,7 +1087,7 @@
       "tint": null
     },
     {
-      "id": "prop_086",
+      "id": "prop_088",
       "position": [
         30,
         11.82,
@@ -1075,7 +1101,7 @@
       "tint": null
     },
     {
-      "id": "pickup_087",
+      "id": "pickup_089",
       "position": [
         0,
         12,
@@ -1086,7 +1112,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_088",
+      "id": "pickup_090",
       "position": [
         -9,
         12,
@@ -1097,7 +1123,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_089",
+      "id": "pickup_091",
       "position": [
         9,
         12,
@@ -1108,7 +1134,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_090",
+      "id": "pickup_092",
       "position": [
         -10,
         12,
@@ -1119,7 +1145,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_091",
+      "id": "pickup_093",
       "position": [
         10,
         12,
@@ -1130,7 +1156,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_092",
+      "id": "pickup_094",
       "position": [
         0,
         12,
@@ -1141,7 +1167,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_093",
+      "id": "pickup_095",
       "position": [
         -26,
         11.85,
@@ -1152,7 +1178,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_094",
+      "id": "pickup_096",
       "position": [
         0,
         16,
@@ -1163,7 +1189,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_095",
+      "id": "pickup_097",
       "position": [
         -8,
         16,
@@ -1174,7 +1200,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "flag_096",
+      "id": "flag_098",
       "position": [
         0,
         12,
@@ -1185,7 +1211,7 @@
       "team": "tide"
     },
     {
-      "id": "pickup_104",
+      "id": "pickup_106",
       "position": [
         6,
         8,
@@ -1196,7 +1222,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_105",
+      "id": "pickup_107",
       "position": [
         -8,
         0,
@@ -1207,7 +1233,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_106",
+      "id": "pickup_108",
       "position": [
         0,
         4,
@@ -1218,7 +1244,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_107",
+      "id": "pickup_109",
       "position": [
         -3,
         8,
@@ -1229,7 +1255,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "spawn_108",
+      "id": "spawn_110",
       "position": [
         -8,
         0,
@@ -1240,7 +1266,7 @@
       "faction": null
     },
     {
-      "id": "spawn_109",
+      "id": "spawn_111",
       "position": [
         0,
         4,
@@ -1251,7 +1277,7 @@
       "faction": null
     },
     {
-      "id": "prop_110",
+      "id": "prop_112",
       "position": [
         -18,
         -0.09,
@@ -1265,7 +1291,7 @@
       "tint": null
     },
     {
-      "id": "prop_111",
+      "id": "prop_113",
       "position": [
         18,
         -0.09,
@@ -1279,7 +1305,7 @@
       "tint": null
     },
     {
-      "id": "prop_112",
+      "id": "prop_114",
       "position": [
         6,
         -0.16,
@@ -1293,7 +1319,7 @@
       "tint": null
     },
     {
-      "id": "prop_113",
+      "id": "prop_115",
       "position": [
         -6,
         -0.16,
@@ -1307,7 +1333,7 @@
       "tint": null
     },
     {
-      "id": "prop_114",
+      "id": "prop_116",
       "position": [
         14,
         -0.17,
@@ -1321,7 +1347,7 @@
       "tint": null
     },
     {
-      "id": "prop_115",
+      "id": "prop_117",
       "position": [
         -14,
         -0.17,
@@ -1335,7 +1361,7 @@
       "tint": null
     },
     {
-      "id": "hill_116",
+      "id": "hill_118",
       "position": [
         4,
         8,
@@ -1345,7 +1371,7 @@
       "radius": 5
     },
     {
-      "id": "hill_117",
+      "id": "hill_119",
       "position": [
         0,
         -0.15,
@@ -1355,7 +1381,7 @@
       "radius": 6
     },
     {
-      "id": "hill_118",
+      "id": "hill_120",
       "position": [
         0,
         -0.15,
@@ -1365,7 +1391,7 @@
       "radius": 6
     },
     {
-      "id": "pad_119",
+      "id": "pad_121",
       "position": [
         31.27,
         7.57,
@@ -1377,7 +1403,7 @@
       "push": 6
     },
     {
-      "id": "pad_120",
+      "id": "pad_122",
       "position": [
         36.73,
         1.51,
@@ -1389,7 +1415,7 @@
       "push": 6
     },
     {
-      "id": "pad_121",
+      "id": "pad_123",
       "position": [
         -36.73,
         0.85,
@@ -1401,7 +1427,7 @@
       "push": 6
     },
     {
-      "id": "pad_122",
+      "id": "pad_124",
       "position": [
         -31.27,
         0.91,
@@ -1413,7 +1439,7 @@
       "push": 6
     },
     {
-      "id": "pad_123",
+      "id": "pad_125",
       "position": [
         -31.27,
         7.57,
@@ -1425,7 +1451,7 @@
       "push": 6
     },
     {
-      "id": "pad_124",
+      "id": "pad_126",
       "position": [
         -36.73,
         1.51,
@@ -1437,7 +1463,7 @@
       "push": 6
     },
     {
-      "id": "pad_125",
+      "id": "pad_127",
       "position": [
         36.73,
         0.85,
@@ -1449,7 +1475,7 @@
       "push": 6
     },
     {
-      "id": "pad_126",
+      "id": "pad_128",
       "position": [
         31.27,
         0.91,
@@ -1461,7 +1487,7 @@
       "push": 6
     },
     {
-      "id": "pickup_127",
+      "id": "pickup_129",
       "position": [
         -40,
         6.74,
@@ -1472,7 +1498,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_128",
+      "id": "pickup_130",
       "position": [
         28,
         8.22,
@@ -1483,7 +1509,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_129",
+      "id": "pickup_131",
       "position": [
         40,
         6.74,
@@ -1494,7 +1520,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_130",
+      "id": "pickup_132",
       "position": [
         -28,
         8.22,
@@ -1505,7 +1531,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_131",
+      "id": "pickup_133",
       "position": [
         74,
         0.17,
@@ -1516,7 +1542,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_132",
+      "id": "pickup_134",
       "position": [
         -74,
         0.17,
@@ -1527,7 +1553,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_133",
+      "id": "pickup_135",
       "position": [
         50,
         0.49,
@@ -1538,7 +1564,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_134",
+      "id": "pickup_136",
       "position": [
         -50,
         0.49,
@@ -1549,7 +1575,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_135",
+      "id": "pickup_137",
       "position": [
         -10,
         -0.15,
@@ -1560,7 +1586,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_136",
+      "id": "pickup_138",
       "position": [
         10,
         -0.15,
@@ -1571,7 +1597,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_137",
+      "id": "pickup_139",
       "position": [
         60,
         2.94,
@@ -1582,7 +1608,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_138",
+      "id": "pickup_140",
       "position": [
         -60,
         2.94,
@@ -1593,7 +1619,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_139",
+      "id": "pickup_141",
       "position": [
         -14,
         0.8,
@@ -1604,7 +1630,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_140",
+      "id": "pickup_142",
       "position": [
         14,
         0.8,
@@ -1615,7 +1641,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_141",
+      "id": "pickup_143",
       "position": [
         70,
         0.73,
@@ -1626,7 +1652,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_142",
+      "id": "pickup_144",
       "position": [
         -70,
         0.73,
@@ -1637,7 +1663,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_143",
+      "id": "pickup_145",
       "position": [
         56,
         0.34,
@@ -1648,7 +1674,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_144",
+      "id": "pickup_146",
       "position": [
         -56,
         0.34,
@@ -1659,7 +1685,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_145",
+      "id": "pickup_147",
       "position": [
         20,
         1.91,
@@ -1670,7 +1696,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_146",
+      "id": "pickup_148",
       "position": [
         -20,
         1.91,
@@ -1681,7 +1707,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_147",
+      "id": "pickup_149",
       "position": [
         88,
         0.84,
@@ -1692,7 +1718,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_148",
+      "id": "pickup_150",
       "position": [
         -88,
         0.84,
@@ -1703,7 +1729,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_149",
+      "id": "pickup_151",
       "position": [
         -30,
         1.05,
@@ -1714,7 +1740,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_150",
+      "id": "pickup_152",
       "position": [
         30,
         1.05,
@@ -1725,7 +1751,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_151",
+      "id": "pickup_153",
       "position": [
         0,
         0,
@@ -1736,7 +1762,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_152",
+      "id": "pickup_154",
       "position": [
         0,
         0,
@@ -1747,7 +1773,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_153",
+      "id": "pickup_155",
       "position": [
         -50,
         0.66,
@@ -1758,7 +1784,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_154",
+      "id": "pickup_156",
       "position": [
         50,
         0.66,
@@ -1769,7 +1795,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "spawn_155",
+      "id": "spawn_157",
       "position": [
         -66,
         0.91,
@@ -1780,7 +1806,7 @@
       "faction": null
     },
     {
-      "id": "spawn_156",
+      "id": "spawn_158",
       "position": [
         66,
         0.91,
@@ -1791,7 +1817,7 @@
       "faction": null
     },
     {
-      "id": "prop_157",
+      "id": "prop_159",
       "position": [
         -47.12,
         1.68,
@@ -1805,7 +1831,7 @@
       "tint": null
     },
     {
-      "id": "prop_158",
+      "id": "prop_160",
       "position": [
         47.12,
         1.75,
@@ -1819,7 +1845,7 @@
       "tint": null
     },
     {
-      "id": "prop_159",
+      "id": "prop_161",
       "position": [
         72.67,
         0.67,
@@ -1833,7 +1859,7 @@
       "tint": null
     },
     {
-      "id": "prop_160",
+      "id": "prop_162",
       "position": [
         -72.67,
         0.67,
@@ -1847,7 +1873,7 @@
       "tint": null
     },
     {
-      "id": "prop_161",
+      "id": "prop_163",
       "position": [
         31.72,
         0.52,
@@ -1861,7 +1887,7 @@
       "tint": null
     },
     {
-      "id": "prop_162",
+      "id": "prop_164",
       "position": [
         -31.72,
         0.52,
@@ -1875,7 +1901,7 @@
       "tint": null
     },
     {
-      "id": "prop_163",
+      "id": "prop_165",
       "position": [
         -96.45,
         0.31,
@@ -1889,7 +1915,7 @@
       "tint": null
     },
     {
-      "id": "prop_164",
+      "id": "prop_166",
       "position": [
         96.45,
         0.32,
@@ -1903,7 +1929,7 @@
       "tint": null
     },
     {
-      "id": "prop_165",
+      "id": "prop_167",
       "position": [
         29.99,
         0.96,
@@ -1917,7 +1943,7 @@
       "tint": null
     },
     {
-      "id": "prop_166",
+      "id": "prop_168",
       "position": [
         -29.99,
         0.88,
@@ -1931,7 +1957,7 @@
       "tint": null
     },
     {
-      "id": "prop_167",
+      "id": "prop_169",
       "position": [
         -7.57,
         0.26,
@@ -1945,7 +1971,7 @@
       "tint": null
     },
     {
-      "id": "prop_168",
+      "id": "prop_170",
       "position": [
         7.57,
         0.27,
@@ -1959,7 +1985,7 @@
       "tint": null
     },
     {
-      "id": "prop_169",
+      "id": "prop_171",
       "position": [
         -62.91,
         0.69,
@@ -1973,7 +1999,7 @@
       "tint": null
     },
     {
-      "id": "prop_170",
+      "id": "prop_172",
       "position": [
         62.91,
         0.7,
@@ -1987,7 +2013,7 @@
       "tint": null
     },
     {
-      "id": "prop_171",
+      "id": "prop_173",
       "position": [
         15.28,
         0.57,
@@ -2001,7 +2027,7 @@
       "tint": null
     },
     {
-      "id": "prop_172",
+      "id": "prop_174",
       "position": [
         -15.28,
         0.57,
@@ -2015,7 +2041,7 @@
       "tint": null
     },
     {
-      "id": "prop_173",
+      "id": "prop_175",
       "position": [
         -53.58,
         1.96,
@@ -2029,7 +2055,7 @@
       "tint": null
     },
     {
-      "id": "prop_174",
+      "id": "prop_176",
       "position": [
         53.58,
         2.07,
@@ -2043,7 +2069,7 @@
       "tint": null
     },
     {
-      "id": "prop_175",
+      "id": "prop_177",
       "position": [
         43.96,
         0.45,
@@ -2057,7 +2083,7 @@
       "tint": null
     },
     {
-      "id": "prop_176",
+      "id": "prop_178",
       "position": [
         -43.96,
         0.46,
@@ -2071,7 +2097,7 @@
       "tint": null
     },
     {
-      "id": "prop_177",
+      "id": "prop_179",
       "position": [
         21.08,
         0.93,
@@ -2085,7 +2111,7 @@
       "tint": null
     },
     {
-      "id": "prop_178",
+      "id": "prop_180",
       "position": [
         -21.08,
         0.99,
@@ -2099,7 +2125,7 @@
       "tint": null
     },
     {
-      "id": "prop_179",
+      "id": "prop_181",
       "position": [
         23.1,
         0.15,
@@ -2113,7 +2139,7 @@
       "tint": null
     },
     {
-      "id": "prop_180",
+      "id": "prop_182",
       "position": [
         -23.1,
         0.13,
@@ -2127,7 +2153,7 @@
       "tint": null
     },
     {
-      "id": "prop_181",
+      "id": "prop_183",
       "position": [
         -95.2,
         1.84,
@@ -2141,7 +2167,7 @@
       "tint": null
     },
     {
-      "id": "prop_182",
+      "id": "prop_184",
       "position": [
         95.2,
         1.37,
@@ -2155,7 +2181,7 @@
       "tint": null
     },
     {
-      "id": "prop_183",
+      "id": "prop_185",
       "position": [
         -58.67,
         0.53,
@@ -2169,7 +2195,7 @@
       "tint": null
     },
     {
-      "id": "prop_184",
+      "id": "prop_186",
       "position": [
         58.67,
         0.53,
@@ -2183,7 +2209,7 @@
       "tint": null
     },
     {
-      "id": "prop_185",
+      "id": "prop_187",
       "position": [
         -66.15,
         -0.09,
@@ -2197,7 +2223,7 @@
       "tint": null
     },
     {
-      "id": "prop_186",
+      "id": "prop_188",
       "position": [
         66.15,
         -0.1,
@@ -2211,7 +2237,7 @@
       "tint": null
     },
     {
-      "id": "prop_187",
+      "id": "prop_189",
       "position": [
         -16.52,
         0.17,
@@ -2225,7 +2251,7 @@
       "tint": null
     },
     {
-      "id": "prop_188",
+      "id": "prop_190",
       "position": [
         16.52,
         0.27,
@@ -2239,7 +2265,7 @@
       "tint": null
     },
     {
-      "id": "prop_189",
+      "id": "prop_191",
       "position": [
         -61.43,
         0.01,
@@ -2253,7 +2279,7 @@
       "tint": null
     },
     {
-      "id": "prop_190",
+      "id": "prop_192",
       "position": [
         61.43,
         -0.02,
@@ -2267,7 +2293,7 @@
       "tint": null
     },
     {
-      "id": "prop_191",
+      "id": "prop_193",
       "position": [
         77.51,
         0.19,
@@ -2281,7 +2307,7 @@
       "tint": null
     },
     {
-      "id": "prop_192",
+      "id": "prop_194",
       "position": [
         -77.51,
         0.18,
@@ -2295,7 +2321,7 @@
       "tint": null
     },
     {
-      "id": "prop_193",
+      "id": "prop_195",
       "position": [
         -48.64,
         0.28,
@@ -2309,7 +2335,7 @@
       "tint": null
     },
     {
-      "id": "prop_194",
+      "id": "prop_196",
       "position": [
         48.64,
         0.29,
@@ -2323,7 +2349,7 @@
       "tint": null
     },
     {
-      "id": "prop_195",
+      "id": "prop_197",
       "position": [
         60.2,
         0.2,
@@ -2337,7 +2363,7 @@
       "tint": null
     },
     {
-      "id": "prop_196",
+      "id": "prop_198",
       "position": [
         -60.2,
         0.22,
@@ -2351,7 +2377,7 @@
       "tint": null
     },
     {
-      "id": "prop_197",
+      "id": "prop_199",
       "position": [
         -42.29,
         0.91,
@@ -2365,7 +2391,7 @@
       "tint": null
     },
     {
-      "id": "prop_198",
+      "id": "prop_200",
       "position": [
         42.29,
         0.84,
@@ -2379,7 +2405,7 @@
       "tint": null
     },
     {
-      "id": "prop_199",
+      "id": "prop_201",
       "position": [
         -35.29,
         1.9,
@@ -2393,7 +2419,7 @@
       "tint": null
     },
     {
-      "id": "prop_200",
+      "id": "prop_202",
       "position": [
         35.29,
         1.86,
@@ -2407,7 +2433,7 @@
       "tint": null
     },
     {
-      "id": "prop_201",
+      "id": "prop_203",
       "position": [
         -7.26,
         -0.13,
@@ -2421,7 +2447,7 @@
       "tint": null
     },
     {
-      "id": "prop_202",
+      "id": "prop_204",
       "position": [
         -91.64,
         5.25,
@@ -2435,7 +2461,7 @@
       "tint": null
     },
     {
-      "id": "prop_203",
+      "id": "prop_205",
       "position": [
         20.84,
         0.67,
@@ -2449,7 +2475,7 @@
       "tint": null
     },
     {
-      "id": "prop_204",
+      "id": "prop_206",
       "position": [
         -86.41,
         1.62,
@@ -2463,7 +2489,7 @@
       "tint": null
     },
     {
-      "id": "prop_205",
+      "id": "prop_207",
       "position": [
         16.88,
         -0.18,
@@ -2477,7 +2503,7 @@
       "tint": null
     },
     {
-      "id": "prop_206",
+      "id": "prop_208",
       "position": [
         6.41,
         -0.08,
@@ -2491,7 +2517,7 @@
       "tint": null
     },
     {
-      "id": "prop_207",
+      "id": "prop_209",
       "position": [
         -64.84,
         0.21,
@@ -2505,7 +2531,7 @@
       "tint": null
     },
     {
-      "id": "prop_208",
+      "id": "prop_210",
       "position": [
         77,
         2.33,
@@ -2519,7 +2545,7 @@
       "tint": null
     },
     {
-      "id": "prop_209",
+      "id": "prop_211",
       "position": [
         82.77,
         3.62,
@@ -2533,7 +2559,7 @@
       "tint": null
     },
     {
-      "id": "prop_210",
+      "id": "prop_212",
       "position": [
         -75.7,
         0.99,
@@ -2547,7 +2573,7 @@
       "tint": null
     },
     {
-      "id": "prop_211",
+      "id": "prop_213",
       "position": [
         94.69,
         2.82,
@@ -2561,7 +2587,7 @@
       "tint": null
     },
     {
-      "id": "prop_212",
+      "id": "prop_214",
       "position": [
         -79.78,
         7.74,
@@ -2575,7 +2601,7 @@
       "tint": null
     },
     {
-      "id": "prop_213",
+      "id": "prop_215",
       "position": [
         -7.25,
         -0.18,
@@ -2589,7 +2615,7 @@
       "tint": null
     },
     {
-      "id": "prop_214",
+      "id": "prop_216",
       "position": [
         45.11,
         4.67,
@@ -2603,7 +2629,7 @@
       "tint": null
     },
     {
-      "id": "prop_215",
+      "id": "prop_217",
       "position": [
         -33.92,
         2.58,
@@ -2617,7 +2643,7 @@
       "tint": null
     },
     {
-      "id": "prop_216",
+      "id": "prop_218",
       "position": [
         84.37,
         12.59,
@@ -2631,7 +2657,7 @@
       "tint": null
     },
     {
-      "id": "prop_217",
+      "id": "prop_219",
       "position": [
         99.65,
         34.3,
@@ -2645,7 +2671,7 @@
       "tint": null
     },
     {
-      "id": "prop_218",
+      "id": "prop_220",
       "position": [
         92.75,
         18.78,
@@ -2659,7 +2685,7 @@
       "tint": null
     },
     {
-      "id": "prop_219",
+      "id": "prop_221",
       "position": [
         83.68,
         19.85,
@@ -2673,7 +2699,7 @@
       "tint": null
     },
     {
-      "id": "prop_220",
+      "id": "prop_222",
       "position": [
         -100.78,
         33.56,
@@ -2687,7 +2713,7 @@
       "tint": null
     },
     {
-      "id": "prop_221",
+      "id": "prop_223",
       "position": [
         -87.51,
         13.03,
@@ -2701,7 +2727,7 @@
       "tint": null
     },
     {
-      "id": "prop_222",
+      "id": "prop_224",
       "position": [
         -81.31,
         5.35,
@@ -2715,7 +2741,7 @@
       "tint": null
     },
     {
-      "id": "prop_223",
+      "id": "prop_225",
       "position": [
         -91.01,
         12.73,
@@ -2729,7 +2755,7 @@
       "tint": null
     },
     {
-      "id": "prop_224",
+      "id": "prop_226",
       "position": [
         -90.78,
         22.32,
@@ -2743,7 +2769,7 @@
       "tint": null
     },
     {
-      "id": "prop_225",
+      "id": "prop_227",
       "position": [
         -101.33,
         31.43,
@@ -2757,7 +2783,7 @@
       "tint": null
     },
     {
-      "id": "prop_226",
+      "id": "prop_228",
       "position": [
         -47.35,
         4.72,
@@ -2771,7 +2797,7 @@
       "tint": null
     },
     {
-      "id": "prop_227",
+      "id": "prop_229",
       "position": [
         -41.15,
         2.52,
@@ -2785,7 +2811,7 @@
       "tint": null
     },
     {
-      "id": "prop_228",
+      "id": "prop_230",
       "position": [
         39.84,
         3.58,
@@ -2799,7 +2825,7 @@
       "tint": null
     },
     {
-      "id": "prop_229",
+      "id": "prop_231",
       "position": [
         -101.05,
         6.68,
@@ -2813,7 +2839,7 @@
       "tint": null
     },
     {
-      "id": "prop_230",
+      "id": "prop_232",
       "position": [
         -107.32,
         14.68,
@@ -2827,7 +2853,7 @@
       "tint": null
     },
     {
-      "id": "prop_231",
+      "id": "prop_233",
       "position": [
         -91.64,
         0.31,
@@ -2841,7 +2867,7 @@
       "tint": null
     },
     {
-      "id": "prop_232",
+      "id": "prop_234",
       "position": [
         -109.11,
         19.71,
@@ -2855,7 +2881,7 @@
       "tint": null
     },
     {
-      "id": "prop_233",
+      "id": "prop_235",
       "position": [
         -93.11,
         0.61,
@@ -2869,7 +2895,7 @@
       "tint": null
     },
     {
-      "id": "prop_234",
+      "id": "prop_236",
       "position": [
         110.11,
         23.73,
@@ -2883,7 +2909,7 @@
       "tint": null
     },
     {
-      "id": "prop_235",
+      "id": "prop_237",
       "position": [
         96.91,
         2.77,
@@ -2897,7 +2923,7 @@
       "tint": null
     },
     {
-      "id": "prop_236",
+      "id": "prop_238",
       "position": [
         70.89,
         6.78,
@@ -2911,7 +2937,7 @@
       "tint": null
     },
     {
-      "id": "prop_237",
+      "id": "prop_239",
       "position": [
         -70,
         28.84,
@@ -2925,7 +2951,7 @@
       "tint": null
     },
     {
-      "id": "prop_238",
+      "id": "prop_240",
       "position": [
         -68.89,
         10.7,
@@ -2939,7 +2965,7 @@
       "tint": null
     },
     {
-      "id": "prop_239",
+      "id": "prop_241",
       "position": [
         -11.71,
         0.47,
@@ -2953,7 +2979,7 @@
       "tint": null
     },
     {
-      "id": "prop_240",
+      "id": "prop_242",
       "position": [
         -28.45,
         0.24,
@@ -2967,7 +2993,7 @@
       "tint": null
     },
     {
-      "id": "prop_241",
+      "id": "prop_243",
       "position": [
         33.67,
         2.51,
@@ -2981,7 +3007,7 @@
       "tint": null
     },
     {
-      "id": "prop_242",
+      "id": "prop_244",
       "position": [
         -15.18,
         -0.18,
@@ -2995,7 +3021,7 @@
       "tint": null
     },
     {
-      "id": "prop_243",
+      "id": "prop_245",
       "position": [
         -19.49,
         -0.04,
@@ -3009,7 +3035,7 @@
       "tint": null
     },
     {
-      "id": "prop_244",
+      "id": "prop_246",
       "position": [
         16.1,
         1.49,
@@ -3023,7 +3049,7 @@
       "tint": null
     },
     {
-      "id": "prop_245",
+      "id": "prop_247",
       "position": [
         -78.62,
         0.6,
@@ -3037,7 +3063,7 @@
       "tint": null
     },
     {
-      "id": "prop_246",
+      "id": "prop_248",
       "position": [
         -66.32,
         0.74,
@@ -3051,7 +3077,7 @@
       "tint": null
     },
     {
-      "id": "prop_247",
+      "id": "prop_249",
       "position": [
         -11.23,
         -0.18,
@@ -3065,7 +3091,7 @@
       "tint": null
     },
     {
-      "id": "prop_248",
+      "id": "prop_250",
       "position": [
         -59.71,
         2.08,
@@ -3079,7 +3105,7 @@
       "tint": null
     },
     {
-      "id": "prop_249",
+      "id": "prop_251",
       "position": [
         -12.71,
         0.72,
@@ -3093,7 +3119,7 @@
       "tint": null
     },
     {
-      "id": "prop_250",
+      "id": "prop_252",
       "position": [
         83.76,
         0.57,
@@ -3107,7 +3133,7 @@
       "tint": null
     },
     {
-      "id": "prop_251",
+      "id": "prop_253",
       "position": [
         -39.14,
         3.37,
@@ -3121,7 +3147,7 @@
       "tint": null
     },
     {
-      "id": "prop_252",
+      "id": "prop_254",
       "position": [
         27.01,
         1.19,
@@ -3135,7 +3161,7 @@
       "tint": null
     },
     {
-      "id": "prop_253",
+      "id": "prop_255",
       "position": [
         -76.59,
         0.14,
@@ -3149,7 +3175,7 @@
       "tint": null
     },
     {
-      "id": "prop_254",
+      "id": "prop_256",
       "position": [
         -8.51,
         0.45,
@@ -3163,7 +3189,7 @@
       "tint": null
     },
     {
-      "id": "prop_255",
+      "id": "prop_257",
       "position": [
         -78.66,
         0.47,
@@ -3177,7 +3203,7 @@
       "tint": null
     },
     {
-      "id": "prop_256",
+      "id": "prop_258",
       "position": [
         31.61,
         0.6,
@@ -3191,7 +3217,7 @@
       "tint": null
     },
     {
-      "id": "prop_257",
+      "id": "prop_259",
       "position": [
         38.25,
         0.74,
@@ -3205,7 +3231,7 @@
       "tint": null
     },
     {
-      "id": "prop_258",
+      "id": "prop_260",
       "position": [
         -7.41,
         -0.04,
@@ -3219,7 +3245,7 @@
       "tint": null
     },
     {
-      "id": "prop_259",
+      "id": "prop_261",
       "position": [
         -6.7,
         0.3,
@@ -3233,7 +3259,7 @@
       "tint": null
     },
     {
-      "id": "prop_260",
+      "id": "prop_262",
       "position": [
         45.51,
         1.03,
@@ -3247,7 +3273,7 @@
       "tint": null
     },
     {
-      "id": "prop_261",
+      "id": "prop_263",
       "position": [
         92.23,
         1.96,
@@ -3261,7 +3287,7 @@
       "tint": null
     },
     {
-      "id": "prop_262",
+      "id": "prop_264",
       "position": [
         28.9,
         0.09,
@@ -3275,7 +3301,7 @@
       "tint": null
     },
     {
-      "id": "prop_263",
+      "id": "prop_265",
       "position": [
         -95.93,
         0.9,
@@ -3289,7 +3315,7 @@
       "tint": null
     },
     {
-      "id": "prop_264",
+      "id": "prop_266",
       "position": [
         62.92,
         0.1,
@@ -3303,7 +3329,7 @@
       "tint": null
     },
     {
-      "id": "prop_265",
+      "id": "prop_267",
       "position": [
         -43.57,
         0.79,
@@ -3317,7 +3343,7 @@
       "tint": null
     },
     {
-      "id": "prop_266",
+      "id": "prop_268",
       "position": [
         -59.5,
         0.24,
@@ -3331,7 +3357,7 @@
       "tint": null
     },
     {
-      "id": "prop_267",
+      "id": "prop_269",
       "position": [
         -64.63,
         0.73,
@@ -3345,7 +3371,7 @@
       "tint": null
     },
     {
-      "id": "prop_268",
+      "id": "prop_270",
       "position": [
         -27.72,
         0.98,
@@ -3359,7 +3385,7 @@
       "tint": null
     },
     {
-      "id": "prop_269",
+      "id": "prop_271",
       "position": [
         -95.17,
         0.93,
@@ -3373,7 +3399,7 @@
       "tint": null
     },
     {
-      "id": "prop_270",
+      "id": "prop_272",
       "position": [
         10.16,
         0.98,
@@ -3387,7 +3413,7 @@
       "tint": null
     },
     {
-      "id": "prop_271",
+      "id": "prop_273",
       "position": [
         -9.18,
         0.99,
@@ -3401,7 +3427,7 @@
       "tint": null
     },
     {
-      "id": "prop_272",
+      "id": "prop_274",
       "position": [
         -89.21,
         0.95,
@@ -3415,7 +3441,7 @@
       "tint": null
     },
     {
-      "id": "prop_273",
+      "id": "prop_275",
       "position": [
         -82.41,
         0.4,
@@ -3429,7 +3455,7 @@
       "tint": null
     },
     {
-      "id": "prop_274",
+      "id": "prop_276",
       "position": [
         -75.06,
         0.81,
@@ -3443,7 +3469,7 @@
       "tint": null
     },
     {
-      "id": "prop_275",
+      "id": "prop_277",
       "position": [
         51.03,
         0.86,
@@ -3457,7 +3483,7 @@
       "tint": null
     },
     {
-      "id": "prop_276",
+      "id": "prop_278",
       "position": [
         60.78,
         0.29,
@@ -3471,7 +3497,7 @@
       "tint": null
     },
     {
-      "id": "prop_277",
+      "id": "prop_279",
       "position": [
         97.18,
         2.48,
@@ -3485,7 +3511,7 @@
       "tint": null
     },
     {
-      "id": "prop_278",
+      "id": "prop_280",
       "position": [
         90.14,
         0.65,
@@ -3499,7 +3525,7 @@
       "tint": null
     },
     {
-      "id": "prop_279",
+      "id": "prop_281",
       "position": [
         68.65,
         0.47,
@@ -3513,7 +3539,7 @@
       "tint": null
     },
     {
-      "id": "prop_280",
+      "id": "prop_282",
       "position": [
         -67.93,
         1.02,
@@ -3527,7 +3553,7 @@
       "tint": null
     },
     {
-      "id": "prop_281",
+      "id": "prop_283",
       "position": [
         -17.58,
         0.9,
@@ -3541,7 +3567,7 @@
       "tint": null
     },
     {
-      "id": "prop_282",
+      "id": "prop_284",
       "position": [
         68.35,
         0.39,
@@ -3555,7 +3581,7 @@
       "tint": null
     },
     {
-      "id": "prop_283",
+      "id": "prop_285",
       "position": [
         -70.97,
         1.89,
@@ -3569,7 +3595,7 @@
       "tint": null
     },
     {
-      "id": "prop_284",
+      "id": "prop_286",
       "position": [
         -20.85,
         0.97,
@@ -3583,7 +3609,7 @@
       "tint": null
     },
     {
-      "id": "prop_285",
+      "id": "prop_287",
       "position": [
         -78.01,
         0.03,
@@ -3597,7 +3623,7 @@
       "tint": null
     },
     {
-      "id": "prop_286",
+      "id": "prop_288",
       "position": [
         22.94,
         0.92,
@@ -3611,7 +3637,7 @@
       "tint": null
     },
     {
-      "id": "prop_287",
+      "id": "prop_289",
       "position": [
         8.68,
         0.36,
@@ -3625,7 +3651,7 @@
       "tint": null
     },
     {
-      "id": "prop_288",
+      "id": "prop_290",
       "position": [
         -70.93,
         0.48,
@@ -3639,7 +3665,7 @@
       "tint": null
     },
     {
-      "id": "prop_289",
+      "id": "prop_291",
       "position": [
         -77.51,
         1.92,
@@ -3653,7 +3679,7 @@
       "tint": null
     },
     {
-      "id": "prop_290",
+      "id": "prop_292",
       "position": [
         -35.97,
         0.27,
@@ -3667,7 +3693,7 @@
       "tint": null
     },
     {
-      "id": "prop_291",
+      "id": "prop_293",
       "position": [
         -39.2,
         0.93,
@@ -3681,7 +3707,7 @@
       "tint": null
     },
     {
-      "id": "prop_292",
+      "id": "prop_294",
       "position": [
         64.73,
         0.45,
@@ -3695,7 +3721,7 @@
       "tint": null
     },
     {
-      "id": "prop_293",
+      "id": "prop_295",
       "position": [
         74.01,
         0.83,
@@ -3709,7 +3735,7 @@
       "tint": null
     },
     {
-      "id": "prop_294",
+      "id": "prop_296",
       "position": [
         34.26,
         1.2,
@@ -3723,7 +3749,7 @@
       "tint": null
     },
     {
-      "id": "prop_295",
+      "id": "prop_297",
       "position": [
         85.24,
         1.09,
@@ -3737,7 +3763,7 @@
       "tint": null
     },
     {
-      "id": "prop_296",
+      "id": "prop_298",
       "position": [
         71.98,
         0.02,
@@ -3751,7 +3777,7 @@
       "tint": null
     },
     {
-      "id": "prop_297",
+      "id": "prop_299",
       "position": [
         47.25,
         0.51,
@@ -3765,7 +3791,7 @@
       "tint": null
     },
     {
-      "id": "prop_298",
+      "id": "prop_300",
       "position": [
         93.81,
         1.6,
@@ -3779,7 +3805,7 @@
       "tint": null
     },
     {
-      "id": "prop_299",
+      "id": "prop_301",
       "position": [
         -17.33,
         0.79,
@@ -3793,7 +3819,7 @@
       "tint": null
     },
     {
-      "id": "prop_300",
+      "id": "prop_302",
       "position": [
         -33.38,
         0.48,
@@ -3807,7 +3833,7 @@
       "tint": null
     },
     {
-      "id": "prop_301",
+      "id": "prop_303",
       "position": [
         18.38,
         1,
@@ -3821,7 +3847,7 @@
       "tint": null
     },
     {
-      "id": "prop_302",
+      "id": "prop_304",
       "position": [
         33.98,
         0.17,
@@ -3835,7 +3861,7 @@
       "tint": null
     },
     {
-      "id": "prop_303",
+      "id": "prop_305",
       "position": [
         33.05,
         0.95,
@@ -3849,7 +3875,7 @@
       "tint": null
     },
     {
-      "id": "prop_304",
+      "id": "prop_306",
       "position": [
         89.51,
         0.97,
@@ -3863,7 +3889,7 @@
       "tint": null
     },
     {
-      "id": "prop_305",
+      "id": "prop_307",
       "position": [
         4.96,
         -0.18,
@@ -3877,7 +3903,7 @@
       "tint": null
     },
     {
-      "id": "prop_306",
+      "id": "prop_308",
       "position": [
         80.24,
         0.04,
@@ -3891,7 +3917,7 @@
       "tint": null
     },
     {
-      "id": "prop_307",
+      "id": "prop_309",
       "position": [
         69.58,
         0.27,
@@ -3905,7 +3931,7 @@
       "tint": null
     },
     {
-      "id": "prop_308",
+      "id": "prop_310",
       "position": [
         -39.21,
         3.43,
@@ -3919,7 +3945,7 @@
       "tint": null
     },
     {
-      "id": "prop_309",
+      "id": "prop_311",
       "position": [
         -73.42,
         2.24,
@@ -3933,7 +3959,7 @@
       "tint": null
     },
     {
-      "id": "prop_310",
+      "id": "prop_312",
       "position": [
         80.71,
         2.16,
@@ -3947,7 +3973,7 @@
       "tint": null
     },
     {
-      "id": "prop_311",
+      "id": "prop_313",
       "position": [
         48.09,
         1.79,
@@ -3961,7 +3987,7 @@
       "tint": null
     },
     {
-      "id": "prop_312",
+      "id": "prop_314",
       "position": [
         53.27,
         0.22,
@@ -3975,7 +4001,7 @@
       "tint": null
     },
     {
-      "id": "prop_313",
+      "id": "prop_315",
       "position": [
         77.61,
         0.25,
@@ -3989,7 +4015,7 @@
       "tint": null
     },
     {
-      "id": "prop_314",
+      "id": "prop_316",
       "position": [
         67.13,
         0.63,
@@ -4003,7 +4029,7 @@
       "tint": null
     },
     {
-      "id": "prop_315",
+      "id": "prop_317",
       "position": [
         -72.6,
         0.32,
@@ -4017,7 +4043,7 @@
       "tint": null
     },
     {
-      "id": "prop_316",
+      "id": "prop_318",
       "position": [
         -69.02,
         0.28,
@@ -4031,7 +4057,7 @@
       "tint": null
     },
     {
-      "id": "prop_317",
+      "id": "prop_319",
       "position": [
         -4.62,
         0.45,
@@ -4045,7 +4071,7 @@
       "tint": null
     },
     {
-      "id": "prop_318",
+      "id": "prop_320",
       "position": [
         -10.88,
         0,
@@ -4059,7 +4085,7 @@
       "tint": null
     },
     {
-      "id": "prop_319",
+      "id": "prop_321",
       "position": [
         -5.1,
         0,
@@ -4073,7 +4099,7 @@
       "tint": null
     },
     {
-      "id": "prop_320",
+      "id": "prop_322",
       "position": [
         -5.12,
         0,
@@ -4087,7 +4113,7 @@
       "tint": null
     },
     {
-      "id": "prop_321",
+      "id": "prop_323",
       "position": [
         -10.64,
         0,
@@ -4101,7 +4127,7 @@
       "tint": null
     },
     {
-      "id": "prop_322",
+      "id": "prop_324",
       "position": [
         -2.42,
         0,
@@ -4115,7 +4141,7 @@
       "tint": null
     },
     {
-      "id": "prop_323",
+      "id": "prop_325",
       "position": [
         2.35,
         0,
@@ -4129,7 +4155,7 @@
       "tint": null
     },
     {
-      "id": "prop_324",
+      "id": "prop_326",
       "position": [
         2.51,
         0,
@@ -4143,7 +4169,7 @@
       "tint": null
     },
     {
-      "id": "prop_325",
+      "id": "prop_327",
       "position": [
         -3.07,
         0,
@@ -4157,7 +4183,7 @@
       "tint": null
     },
     {
-      "id": "prop_326",
+      "id": "prop_328",
       "position": [
         -2.88,
         4,
@@ -4171,7 +4197,7 @@
       "tint": null
     },
     {
-      "id": "prop_327",
+      "id": "prop_329",
       "position": [
         2.9,
         4,
@@ -4185,7 +4211,7 @@
       "tint": null
     },
     {
-      "id": "prop_328",
+      "id": "prop_330",
       "position": [
         2.88,
         4,
@@ -4199,7 +4225,7 @@
       "tint": null
     },
     {
-      "id": "prop_329",
+      "id": "prop_331",
       "position": [
         -2.64,
         4,
@@ -4213,7 +4239,7 @@
       "tint": null
     },
     {
-      "id": "spawn_330",
+      "id": "spawn_332",
       "position": [
         23.87,
         11.92,
@@ -4224,7 +4250,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_331",
+      "id": "spawn_333",
       "position": [
         -9.33,
         12.05,
@@ -4235,7 +4261,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_332",
+      "id": "spawn_334",
       "position": [
         -7.8,
         12.05,
@@ -4246,7 +4272,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_333",
+      "id": "spawn_335",
       "position": [
         -23.57,
         11.92,
@@ -4257,7 +4283,7 @@
       "faction": "tide"
     },
     {
-      "id": "light_334",
+      "id": "light_336",
       "position": [
         -8,
         3.45,
@@ -4271,7 +4297,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_335",
+      "id": "light_337",
       "position": [
         0,
         3.45,
@@ -4285,7 +4311,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_336",
+      "id": "light_338",
       "position": [
         0,
         7.45,

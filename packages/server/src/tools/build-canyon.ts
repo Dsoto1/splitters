@@ -17,7 +17,7 @@
  * Rock walls 20 m and more close the canyon on all sides; steep faces are
  * painted stone, trails dirt, the floor grass with gravel round the bases.
  * Each base has a buggy (four seats) and a speeder parked out front and a
- * machine-gun turret on its roof; a six-seat hauler waits on the west ledge.
+ * machine-gun turret on its roof; a six-seat hauler waits on the west ledge and a flying dropship on the east.
  */
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -247,6 +247,7 @@ for (const side of [-1, 1]) {
   entities.push({ id: id('mount'), kind: 'mount', model: 'turret_mg', position: [0, 4, side * 77], yaw: facing, faction: null, respawnSeconds: null });
 }
 entities.push({ id: id('mount'), kind: 'mount', model: 'hauler', position: [-30, +ground(-30, 0).toFixed(2), 0], yaw: 0, faction: null, respawnSeconds: null });
+entities.push({ id: id('mount'), kind: 'mount', model: 'dropship', position: [30, +ground(30, 0).toFixed(2), 0], yaw: Math.PI, faction: null, respawnSeconds: null });
 for (const [x, z] of [[-26, -6], [26, 6]] as const) entities.push({ id: id('mount'), kind: 'mount', model: 'sentry', position: [x, +ground(x, z).toFixed(2), z], yaw: 0, faction: null, respawnSeconds: 60 });
 run('Add props', { kind: 'addEntities', entities });
 

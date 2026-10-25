@@ -578,36 +578,6 @@
       ]
     },
     {
-      "file": "models/vehicles/speeder.glb",
-      "sha256": "007d78da15f22b23",
-      "triangles": 280,
-      "bytes": 19740,
-      "source": "kenney-space-kit/craft_speederA.glb",
-      "title": "Space Kit",
-      "creator": "Kenney",
-      "url": "https://kenney.nl/assets/space-kit",
-      "license": "CC0-1.0",
-      "modifications": [
-        "converted to glTF",
-        "reoriented and scaled"
-      ]
-    },
-    {
-      "file": "models/vehicles/hauler.glb",
-      "sha256": "e5482cba69f95e9c",
-      "triangles": 264,
-      "bytes": 18164,
-      "source": "kenney-space-kit/craft_cargoA.glb",
-      "title": "Space Kit",
-      "creator": "Kenney",
-      "url": "https://kenney.nl/assets/space-kit",
-      "license": "CC0-1.0",
-      "modifications": [
-        "converted to glTF",
-        "reoriented and scaled"
-      ]
-    },
-    {
       "file": "models/turrets/mg.glb",
       "sha256": "484a6017867cb1e2",
       "triangles": 876,
@@ -652,6 +622,66 @@
         "converted to glTF",
         "reoriented and scaled",
         "recoloured"
+      ]
+    },
+    {
+      "file": "models/vehicles/speeder.glb",
+      "sha256": "37762bbe8846c6fb",
+      "triangles": 4530,
+      "bytes": 237976,
+      "source": "quaternius-ultimate-spaceships/Striker.glb",
+      "title": "Ultimate Spaceships",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-spaceships-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/vehicles/hauler.glb",
+      "sha256": "6265b7450e5e1697",
+      "triangles": 748,
+      "bytes": 93392,
+      "source": "quaternius-ultimate-spaceships/Dispatcher.glb",
+      "title": "Ultimate Spaceships",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-spaceships-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/vehicles/skyfighter.glb",
+      "sha256": "8c96bceafae38706",
+      "triangles": 3512,
+      "bytes": 207452,
+      "source": "quaternius-ultimate-spaceships/Spitfire.glb",
+      "title": "Ultimate Spaceships",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-spaceships-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/vehicles/dropship.glb",
+      "sha256": "b27484fab0695b7e",
+      "triangles": 2642,
+      "bytes": 187812,
+      "source": "quaternius-ultimate-spaceships/Imperial.glb",
+      "title": "Ultimate Spaceships",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-spaceships-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
       ]
     },
     {
