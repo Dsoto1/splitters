@@ -63,7 +63,7 @@ import { LocalTransport } from './localTransport.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
-import { LobbyAdvertiser, hubSetting } from './hub.ts';
+import { LobbyAdvertiser, builtHub, hubSetting } from './hub.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { markerSetting } from './crosshair.ts';
@@ -410,7 +410,7 @@ export class GameSession {
       const q = new URLSearchParams(location.search);
       const peer = q.get('peer');
       // Friends must use the same broker: carry the hub unless it's the site's built-in one.
-      const hub = hubSetting() && hubSetting() !== import.meta.env.VITE_HUB ? hubSetting() : null;
+      const hub = hubSetting() && hubSetting() !== builtHub() ? hubSetting() : null;
       const link = `${location.origin}${location.pathname}?join=${code}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}${hub ? `&hub=${encodeURIComponent(hub)}` : ''}${relayParams()}`;
       // "localhost" only works on this machine: friends need the address the game is served from.
       const onlyHere = /^(localhost|127\.|\[::1\])/.test(location.hostname);

@@ -18,7 +18,13 @@ export function hubSetting(): string {
   } catch {
     // Private windows: fall through to the built-in one.
   }
-  return (import.meta.env.VITE_HUB as string | undefined) ?? '';
+  return builtHub();
+}
+
+/** The hub the site was built with (VITE_HUB); "self" means the site is served by its hub (one address for everything). */
+export function builtHub(): string {
+  const built = (import.meta.env.VITE_HUB as string | undefined) ?? '';
+  return built === 'self' ? `${location.protocol === 'https:' ? 'https' : 'http'}://${location.host}` : built;
 }
 
 export function saveHub(address: string): void {

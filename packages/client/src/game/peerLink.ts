@@ -91,7 +91,7 @@ function peerOptions(): PeerOptions {
   // No broker named: the community hub's, when there is one; otherwise PeerJS's public one.
   if (!custom) {
     const hub = hubAddress();
-    return hub ? { ...base, host: hub.host, port: hub.port, path: hub.path, secure: hub.secure } : base;
+    return hub ? { ...base, host: hub.host, port: hub.port, path: `${hub.path}broker`, secure: hub.secure } : base;
   }
   const m = /^(?:(wss?|https?):\/\/)?([^:/]+)(?::(\d+))?(\/.*)?$/.exec(custom);
   if (!m) return base;
