@@ -188,7 +188,7 @@ export class FrontEnd {
     root.replaceChildren(
       this.body,
       this.status,
-      el('footer', { class: 'menu-footer' }, el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the ChronoSplit playtest. New: Sandgate, Team Deathmatch and the Character Designer.'), this.footerHints),
+      el('footer', { class: 'menu-footer' }, el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Sandgate, Team Deathmatch and the Character Designer.'), this.footerHints),
     );
     window.addEventListener('keydown', this.keyHandler);
     this.go('home');
@@ -287,8 +287,8 @@ export class FrontEnd {
     return el(
       'div',
       { class: 'screen home' },
-      el('h1', { class: 'logo' }, el('span', { class: 'chrono', textContent: 'Chrono' }), el('span', { class: 'split', textContent: 'Split' })),
-      el('p', { class: 'logo-sub', textContent: 'Arcade shooter · MapMaker' }),
+      el('h1', { class: 'logo' }, el('span', { class: 'chrono', textContent: 'Tile ' }), el('span', { class: 'split', textContent: 'Trigger' })),
+      el('p', { class: 'logo-sub', textContent: 'Make. Play. Die.' }),
       el('p', { class: 'logo-version', textContent: `v${__APP_VERSION__}` }),
       nav,
       this.badge(),

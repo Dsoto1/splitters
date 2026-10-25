@@ -70,9 +70,9 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #menu { position: fixed; inset: 0; color: var(--text); background: radial-gradient(120% 90% at 70% 40%, rgba(11, 15, 26, 0) 0 40%, rgba(11, 15, 26, 0.65) 75%, rgba(11, 15, 26, 0.92)), linear-gradient(90deg, rgba(11, 15, 26, 0.92) 0 18%, rgba(11, 15, 26, 0.35) 45%, rgba(11, 15, 26, 0) 70%); }
 #menu .screen { position: absolute; inset: 0; padding: 34px 44px 70px; }
 .logo { margin: 0; font: italic 700 clamp(44px, 6.2vw, 86px)/0.95 var(--font-display); letter-spacing: -0.01em; transform: skewX(-8deg); text-transform: uppercase; filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.55)) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.6)); user-select: none; }
-.logo .chrono { background: linear-gradient(180deg, #ffffff 0 45%, #b8c6dd 55%, #e6f0ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.logo .chrono { white-space: pre;  background: linear-gradient(180deg, #ffffff 0 45%, #b8c6dd 55%, #e6f0ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .logo .split { background: linear-gradient(180deg, #ffd27a 0 35%, #ff8a2a 60%, #ff4d2e); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.logo-sub { margin: 6px 0 0 6px; font: 600 12px var(--font-display); letter-spacing: 0.4em; color: var(--muted); text-transform: uppercase; }
+.logo-sub { margin: 8px 0 0 6px; font: 700 15px var(--font-display); letter-spacing: 0.4em; color: #ffb35a; text-transform: uppercase; }
 .nav { display: flex; flex-direction: column; gap: 8px; margin-top: 36px; width: min(320px, 80vw); }
 .nav button { display: flex; align-items: center; gap: 12px; text-align: left; font-size: 20px; letter-spacing: 0.08em; padding: 11px 16px; background: rgba(11, 15, 26, 0.72); border: 1px solid var(--line); clip-path: polygon(0 0, 100% 0, 96% 100%, 0 100%); }
 .nav button::before { content: ''; width: 7px; height: 7px; background: var(--muted); transform: rotate(45deg); flex: none; }
