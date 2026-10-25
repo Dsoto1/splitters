@@ -2,7 +2,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 import { BotBrain, type CombatantView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
-import { NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
+import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
 import { getMountDef, mountToWorld, type MountDef, type SeatDef, type SeatRole } from './mounts.ts';
 import { NavWorld } from '../nav/index.ts';
@@ -40,6 +40,7 @@ import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, type MatchRules } f
 import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
+import { ZombieSurvival } from './zombies.ts';
 import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
@@ -286,6 +287,8 @@ export class Match {
   readonly scenario: Scenario;
   /** NPC squads spawned by encounter entities. */
   readonly encounters: Encounters;
+  /** The wave director in Zombies (null in every other mode). */
+  readonly zombies: ZombieSurvival | null;
   /** Living and recently dead NPCs by actor ID. */
   readonly npcs = new Map<number, Combatant>();
   private nextNpcId = NPC_ID_BASE;
@@ -426,6 +429,43 @@ export class Match {
           },
         })
       : null;
+    this.zombies = rules.mode === 'core.zombies' ? this.zombieDirector() : null;
+  }
+
+  /** Zombies: the horde spawner the director raises zombies through, and its link to the match. */
+  private zombieDirector(): ZombieSurvival {
+    const horde = EncounterSchema.parse({ id: 'zombie_horde', kind: 'encounter', position: [0, 0, 0], yaw: 0, faction: mapFactions(this.map)[0]?.id ?? 'syndicate' });
+    let spots: Vec3[] | null = null;
+    const match = this;
+    return new ZombieSurvival({
+      get tick() {
+        return match.tick;
+      },
+      players: () => this.combatants().map((c) => ({ slot: c.slot, alive: c.alive, pos: c.move.pos, eye: { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, bot: c.kind === 'bot' })),
+      spawnSpots: () =>
+        (spots ??= [
+          // The map's NPC spawners (their vents, hatches and burrows), its spawn points, then open floor all over.
+          ...this.map.entities.filter((e) => e.kind === 'encounter' || e.kind === 'spawn').map((e) => ({ x: e.position[0], y: e.position[1], z: e.position[2] })),
+          ...this.nav.places(),
+        ]),
+      sees: (a, b) => this.physics.lineOfSight(a, b),
+      spawnZombie: (pos, health, speed) => {
+        const id = this.spawnNpc(horde, 'zombie', pos, this.rng() * Math.PI * 2);
+        const c = id === null ? undefined : this.npcs.get(id);
+        if (!c) return null;
+        c.health = c.maxHealth = Math.round(c.maxHealth * health);
+        c.speedMul *= speed;
+        return id;
+      },
+      zombieAlive: (id) => !!this.npcs.get(id)?.alive,
+      revive: (slot) => {
+        const c = this.slots[slot];
+        if (c && !c.alive) this.spawn(c);
+      },
+      emit: (ev) => this.pendingEvents.push(ev),
+      defeat: () => this.endRound(null, 'defeat'),
+      random: () => this.rng(),
+    });
   }
 
   private factionList?: readonly Faction[];
@@ -473,7 +513,7 @@ export class Match {
       }
       return best;
     }
-    return this.rules.mode === 'core.coop' ? PLAYERS_FACTION : null;
+    return this.rules.mode === 'core.coop' || this.rules.mode === 'core.zombies' ? PLAYERS_FACTION : null;
   }
 
   /** Kills per team in Team Deathmatch (suicides count against the team); objective modes keep their own score. */
@@ -682,6 +722,7 @@ export class Match {
       if (this.phase === 'playing') this.scenario.step();
       if (this.phase === 'playing') this.encounters.step();
       if (this.phase === 'playing') this.mode?.step();
+      if (this.phase === 'playing') this.zombies?.step();
       for (const c of this.combatants()) {
         if (!c.alive && this.tick >= c.respawnTick) this.spawn(c);
       }
@@ -715,6 +756,7 @@ export class Match {
       if (away.length) teamRoam.set(t.id, away);
     }
     const coop = this.rules.mode === 'core.coop';
+    const zombies = this.rules.mode === 'core.zombies';
     const mounts = this.mounts.length ? this.mountViews(actors) : undefined;
     const noises = this.noises.length ? this.noises : undefined;
     // Living members of each side (a bot finds itself in its own list and skips it).
@@ -732,11 +774,17 @@ export class Match {
       const aware = this.mode && !c.npc ? this.mode.botAwareness(c) : Infinity;
       const npc = c.npc;
       // Dormant NPCs (no enemy within earshot of the squad's area) skip thinking entirely.
-      if (npc && c.alive && !c.bot.lastSeen && !this.encounters.roaming(c.slot) && !hostiles.some((o) => horizontalDistance(o.move.pos, c.move.pos) < 70)) {
+      // Zombies always know where the living are.
+      const shambler = npc?.role === 'zombie';
+      if (npc && !shambler && c.alive && !c.bot.lastSeen && !this.encounters.roaming(c.slot) && !hostiles.some((o) => horizontalDistance(o.move.pos, c.move.pos) < 70)) {
         c.queue.push({ seq: c.lastSeq + 1, forward: 0, right: 0, yaw: c.yaw, pitch: c.pitch, buttons: 0 });
         continue;
       }
-      const orderGoal = npc ? this.encounters.goalFor(c.slot) : (this.teammateOrder(c) ?? (coop ? this.coopGoal(c, hostiles) : (this.mode?.botGoal(c, hostiles) ?? null)));
+      const orderGoal = npc
+        ? shambler
+          ? this.nearestGoal(c, hostiles, 1.5)
+          : this.encounters.goalFor(c.slot)
+        : (this.teammateOrder(c) ?? (zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : (this.mode?.botGoal(c, hostiles) ?? null)));
       const allies = c.faction === null ? undefined : factionViews.get(c.faction);
       const input = c.bot.think({
         tick: this.tick,
@@ -842,6 +890,26 @@ export class Match {
    * Co-op Player Bots head for the nearest enemy they know of (the mission's
    * NPCs), or stay near a human when there is nothing to fight.
    */
+  /** The nearest of `among` (a zombie's prey), as a goal. */
+  private nearestGoal(c: Combatant, among: readonly Combatant[], radius: number): { pos: Vec3; radius: number } | null {
+    let best: Vec3 | null = null;
+    let bestD = Infinity;
+    for (const h of among) {
+      const d = horizontalDistance(h.move.pos, c.move.pos) + Math.abs(h.move.pos.y - c.move.pos.y) * 2;
+      if (d < bestD) {
+        bestD = d;
+        best = h.move.pos;
+      }
+    }
+    return best ? { pos: best, radius } : null;
+  }
+
+  /** Zombies: Player Bots stay with the humans and let the horde come to them; alone, they go hunting. */
+  private holdOutGoal(c: Combatant, hostiles: Combatant[]): { pos: Vec3; radius: number } | null {
+    const human = this.nearestGoal(c, this.combatants().filter((o) => o.kind === 'human' && o.alive), 5);
+    return human ?? this.nearestGoal(c, hostiles, 3);
+  }
+
   private coopGoal(c: Combatant, hostiles: Combatant[]): { pos: Vec3; radius: number } | null {
     let best: Vec3 | null = null;
     let bestD = Infinity;
@@ -2097,7 +2165,8 @@ export class Match {
       return;
     }
     victim.deaths++;
-    victim.respawnTick = this.tick + this.rules.respawnDelayTicks;
+    // Zombies: the fallen sit out the rest of the wave.
+    victim.respawnTick = this.zombies ? Infinity : this.tick + this.rules.respawnDelayTicks;
     // Suicides (falls, own grenades, traps) cost the player a point, not their team.
     if (!killer) {
       victim.kills--;
@@ -2303,6 +2372,7 @@ export class Match {
       c.alive = false;
     }
     this.mode?.reset();
+    this.zombies?.reset();
     for (const c of this.combatants()) this.spawn(c);
     this.pendingEvents.push({ e: 'round_start' });
   }
@@ -2379,7 +2449,7 @@ export class Match {
     for (const b of this.combatants()) {
       if (b.kind !== 'bot' || !b.alive || b === c || this.hostile(c, b)) continue;
       // Free-for-all has no side to order.
-      if (!this.teams && this.rules.mode !== 'core.coop') continue;
+      if (!this.teams && this.rules.mode !== 'core.coop' && this.rules.mode !== 'core.zombies') continue;
       if (horizontalDistance(b.move.pos, c.move.pos) > 30) continue;
       b.order = { kind, leader: c.slot, pos: { ...c.move.pos }, until: this.tick + TICK_RATE * 40 };
     }
@@ -2492,7 +2562,7 @@ export class Match {
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
-      ...(this.mode ? { md: this.mode.snapshot() } : {}),
+      ...(this.mode ? { md: this.mode.snapshot() } : this.zombies ? { md: { ts: [this.zombies.wave], zb: this.zombies.snapshot() } } : {}),
     };
   }
 

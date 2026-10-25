@@ -64,6 +64,32 @@ and the higher team score wins.
 - While only one team has players (warm-up), the dead respawn as normal.
 - After 30 s in a round, bots stop roaming and hunt the nearest enemy.
 
+## Zombies
+
+Survival on any map: you and your bot squad hold out against endless waves
+of zombies (`sim/zombies.ts`).
+
+- **Waves.** An 8 s wait, then wave 1. Each wave raises more zombies
+  (4 + 3 × wave, × 1.5 per extra human; Player Bots count as a third of a
+  human), with 15% more health and a little more speed each time. Only so
+  many are up at once (6 + 2 × wave, more with more players); the rest wait
+  their turn. A wave is beaten when every zombie in it is down, then there is
+  a 12 s break.
+- **The fallen** stay down until the next wave starts, then come back. When
+  nobody is left standing the game is over ("Overrun on wave N") and a new
+  one starts after the intermission. The HUD shows the wave, how many are
+  left, the countdown between waves and your best wave this session.
+- **Where they come from.** Out of sight, 16–70 m from the nearest player:
+  the map's NPC spawners first (so a vent, hatch, burrow or breach spawner
+  makes them climb out of it), then spawn points, then open floor anywhere.
+- **Zombies** are an NPC kind on the soldiers' rig with Quaternius' zombie
+  clips (UAL2): they shamble at the nearest living player and claw (no
+  weapon). They always know where you are. They are also an encounter
+  roster option in MapMaker and a skin in Character Select.
+- **Your squad.** Player Bots stay with the humans and let the horde come;
+  "Follow me!" / "Hold here!" orders work as in co-op. Quick start
+  (`?offline=<map>&gamemode=core.zombies`) brings three bots.
+
 ## Map requirements and MapMaker steps
 
 Flag bases and hills are map entities (map format v11): `flag` has `team` and

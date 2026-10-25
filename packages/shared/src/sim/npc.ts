@@ -45,6 +45,8 @@ export const NPC_ROLE_SPECS: Record<NpcRole, NpcRoleSpec> = {
   cyclops: { label: 'Cyclops', health: 90, weapon: 'core.goo_gun', speed: 0.75, scale: 1, creature: true },
   oculus: { label: 'Oculus', health: 60, weapon: 'core.plasma', speed: 0.9, scale: 1, creature: true },
   scolitex: { label: 'Scolitex', health: 320, weapon: 'core.knife', speed: 0.8, scale: 1, creature: true, melee: true, damage: 1.5 },
+  // Shambles on the soldiers' rig with its own clips; claws, never shoots. Head shots drop it fast.
+  zombie: { label: 'Zombie', health: 90, weapon: 'core.knife', speed: 0.68, scale: 1, melee: true, damage: 0.55 },
 };
 
 /** How many NPCs an encounter roster fields in its first wave. */
@@ -92,6 +94,7 @@ export const NPC_ROLE_PROFILES: Record<NpcRole, BotProfile> = {
   cyclops: { ...NPC_PROFILE, id: 'core.npc_cyclops', displayName: 'Cyclops', aggression: 55, rangePreference: 45, tacticalAwareness: 30, tags: ['NPC'] },
   oculus: { ...NPC_PROFILE, id: 'core.npc_oculus', displayName: 'Oculus', aggression: 60, rangePreference: 50, tacticalAwareness: 30, tags: ['NPC'] },
   scolitex: { ...NPC_PROFILE, id: 'core.npc_scolitex', displayName: 'Scolitex', aggression: 90, selfPreservation: 5, rangePreference: 5, tacticalAwareness: 10, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
+  zombie: { ...NPC_PROFILE, id: 'core.npc_zombie', displayName: 'Zombie', aggression: 100, selfPreservation: 0, pursuitPersistence: 100, rangePreference: 0, tacticalAwareness: 0, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
 };
 
 /** The enemy faction every map has unless it defines its own. */
@@ -162,12 +165,12 @@ export const npcLookRole = (look: string | undefined): NpcRole | null => {
 };
 export const NPC_LOOKS: readonly { id: string; name: string; role: NpcRole }[] = (Object.keys(NPC_ROLE_SPECS) as NpcRole[]).map((role) => ({ id: `${NPC_LOOK_PREFIX}${role}`, name: NPC_ROLE_SPECS[role].label, role }));
 /** Soldier NPC skins: a uniform colour per role so they read apart. */
-export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56703c', gunner: '#9a7440', heavy: '#474d58', sniper: '#3f5a36' };
+export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56703c', gunner: '#9a7440', heavy: '#474d58', sniper: '#3f5a36', zombie: '#5f6f55' };
 /** A look ID kept as is when valid (presets, custom looks, NPC skins), else the default. */
 export const validLookId = (id: string | undefined): string => (npcLookRole(id) ? id! : getLook(id).id);
 
 /** First-person arm colour for each NPC skin (creature hide, soldier uniform). */
-const NPC_ARM_COLORS: Record<NpcRole, string> = { trooper: '#4f7a2c', gunner: '#a8782c', heavy: '#3c4450', sniper: '#3a6a28', imp: '#e0302a', puglin: '#7ab830', cyclops: '#3a7cf0', oculus: '#f07020', scolitex: '#20c8b0' };
+const NPC_ARM_COLORS: Record<NpcRole, string> = { trooper: '#4f7a2c', gunner: '#a8782c', heavy: '#3c4450', sniper: '#3a6a28', imp: '#e0302a', puglin: '#7ab830', cyclops: '#3a7cf0', oculus: '#f07020', scolitex: '#20c8b0', zombie: '#7d9a6a' };
 
 /**
  * The look whose arms you see in first person: your own, or for an NPC skin

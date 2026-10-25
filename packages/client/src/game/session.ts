@@ -362,7 +362,7 @@ export class GameSession {
    */
   private aimAssist(eye: Vec3, dt: number, now: number): void {
     const mine = this.hud.team(this.slot)?.id;
-    const coop = this.rules?.mode === 'core.coop';
+    const coop = this.allied;
     const cone = 0.12;
     let best: { dy: number; dp: number; score: number } | null = null;
     for (const p of this.interp.sample(now)) {
@@ -496,6 +496,7 @@ export class GameSession {
         const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
         this.hud.setTeams(teams);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
+        this.hud.waitLabel = msg.rules.mode === 'core.zombies' ? 'Down: back at the next wave' : 'Respawning…';
         this.hud.setMapName(loaded.map.metadata.name);
         this.sfx.myTeam = () => this.hud.team(this.slot)?.id ?? null;
         this.hud.minimap.setMap(loaded.map);
@@ -553,6 +554,7 @@ export class GameSession {
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         this.taken = new Set(msg.pk);
         this.modeHud?.snapshot(msg.md);
+        this.zombieHud(msg.md?.zb);
         // Door and crate colliders first, so reconciliation replays against the same world as the server.
         this.scenario?.apply(msg.sc);
         const me = msg.players.find((p) => p.s === this.slot);
@@ -700,11 +702,25 @@ export class GameSession {
     }
   }
 
-  private npcLook(id: number): { color: string; scale: number; size: number; label: string; creature?: CreatureKind } | undefined {
+  /** Everyone on one side against NPCs (co-op missions and Zombies). */
+  private get allied(): boolean {
+    return this.rules?.mode === 'core.coop' || this.rules?.mode === 'core.zombies';
+  }
+
+  /** Zombies: the wave and how many are left (or the countdown to the next wave) under the mode name. */
+  private zombieHud(zb: [number, number, number, number] | undefined): void {
+    if (!zb) return;
+    const [wave, left, wait, best] = zb;
+    const record = best > wave ? ` · best ${best}` : '';
+    this.hud.setModeLabel(wave === 0 ? `Zombies · first wave in ${wait}s` : wait > 0 ? `Zombies · wave ${wave + 1} in ${wait}s${record}` : `Zombies · wave ${wave} · ${left} left${record}`);
+  }
+
+  private npcLook(id: number): { color: string; scale: number; size: number; label: string; creature?: CreatureKind; zombie?: boolean } | undefined {
     const info = this.npcInfo.get(id);
     if (!info || !this.map) return undefined;
     const faction = mapFactions(this.map)[info.faction];
     const role = NPC_ROLES[info.role] ?? 'trooper';
+    if (role === 'zombie') return { color: '#76866a', scale: info.size, size: info.size, label: 'Zombie', zombie: true };
     return { color: faction?.color ?? '#d04a3a', scale: NPC_ROLE_SPECS[role].scale * info.size, size: info.size, label: `${faction?.name ?? 'Enemy'} ${NPC_ROLE_SPECS[role].label}`, ...(isCreature(role) ? { creature: role } : {}) };
   }
 
@@ -1019,7 +1035,7 @@ export class GameSession {
         const npc = this.npcLook(id);
         // About half of each squad uses the female mannequin.
         if (npc?.creature) return npc.size === 1 ? { creature: npc.creature } : { creature: npc.creature, size: npc.size };
-        if (npc) return { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1 } };
+        if (npc) return { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1, ...(npc.zombie ? { zombie: true } : {}) } };
         const role = npcLookRole(this.looks.get(id));
         if (role && NPC_ROLE_SPECS[role].creature && isCreature(role)) return { creature: role, armed: true };
         const size = this.sizeOf(id);
@@ -1038,11 +1054,11 @@ export class GameSession {
     );
     this.sfx.remoteSteps(poses);
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot);
-    this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0, this.rules?.mode === 'core.coop');
+    this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0, this.allied);
     if (local) {
       // Teammates on the minimap (co-op: every player is one).
       const mine = this.hud.team(this.slot);
-      const coop = this.rules?.mode === 'core.coop';
+      const coop = this.allied;
       const blips = poses
         .filter((p) => p.slot !== this.slot && p.slot < NPC_ID_BASE && p.alive && (coop || (mine && this.hud.team(p.slot)?.id === mine.id)))
         .map((p) => ({ x: p.x, z: p.z, color: coop ? '#2ecc71' : mine!.color }));

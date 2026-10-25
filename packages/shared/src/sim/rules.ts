@@ -2,10 +2,10 @@ import type { MapDocument } from '../map/schema.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.zombies';
 
 /** Every mode, in menu order. */
-export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.coop'];
+export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.coop', 'core.zombies'];
 
 export const MODE_LABELS: Record<GameMode, string> = {
   'core.deathmatch': 'Deathmatch',
@@ -16,6 +16,7 @@ export const MODE_LABELS: Record<GameMode, string> = {
   'core.bomb': 'Bomb',
   'core.hostage': 'Hostage Rescue',
   'core.coop': 'Co-op',
+  'core.zombies': 'Zombies',
 };
 
 /** Modes played in teams (factions from mapTeams). */
@@ -96,6 +97,21 @@ export const DEFAULT_COOP_RULES: MatchRules = {
   respawnDelayTicks: Math.round(TICK_RATE * 3),
   startingWeapons: ['core.knife', 'core.pistol', 'core.rifle'],
   startingGrenades: 1,
+  intermissionTicks: TICK_RATE * 8,
+};
+
+/**
+ * Zombies: everyone on the players' side against endless waves of zombies
+ * (sim/zombies.ts). The fallen wait for the next wave; the game ends when
+ * nobody is left standing. No score or time limit.
+ */
+export const DEFAULT_ZOMBIES_RULES: MatchRules = {
+  mode: 'core.zombies',
+  scoreLimit: 0,
+  timeLimitSeconds: 0,
+  respawnDelayTicks: Math.round(TICK_RATE * 3),
+  startingWeapons: ['core.knife', 'core.pistol', 'core.rifle'],
+  startingGrenades: 2,
   intermissionTicks: TICK_RATE * 8,
 };
 
@@ -186,6 +202,7 @@ export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.elim': DEFAULT_ELIM_RULES,
   'core.bomb': DEFAULT_BOMB_RULES,
   'core.hostage': DEFAULT_HOSTAGE_RULES,
+  'core.zombies': DEFAULT_ZOMBIES_RULES,
 };
 
 /** Capture the Flag needs a flag base for each of its two teams. */
@@ -224,6 +241,8 @@ export function playableModes(map: MapDocument): GameMode[] {
   if (out.includes('core.tdm') && !out.includes('core.elim')) out.push('core.elim');
   if (hasBombsites(map) && !out.includes('core.bomb')) out.push('core.bomb');
   if (hasHostages(map) && !out.includes('core.hostage')) out.push('core.hostage');
+  // Zombies plays anywhere: the horde rises from the map's spawners, spawn points or open floor.
+  if (!out.includes('core.zombies')) out.push('core.zombies');
   return out;
 }
 

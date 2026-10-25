@@ -49,7 +49,10 @@ export type Clip =
   | 'crouch_idle'
   | 'crouch_walk'
   | 'prone_idle'
-  | 'prone_crawl';
+  | 'prone_crawl'
+  | 'zombie_idle'
+  | 'zombie_walk'
+  | 'zombie_attack';
 
 export interface CharacterInstance {
   /** Place and turn this node; the model stands on its origin facing +Z. */
@@ -66,7 +69,7 @@ export interface CharacterSpec {
   /** A player look (CORE_LOOKS ID). */
   look?: string;
   /** An NPC: a mannequin in a faction colour. */
-  npc?: { color: string; scale: number; female?: boolean };
+  npc?: { color: string; scale: number; female?: boolean; /** A zombie: grey-green skin, rags, and the shambling clips in place of the soldier's. */ zombie?: boolean };
   /** Only the look's arms (the first-person view of your own character). */
   armsOnly?: boolean;
 }
@@ -148,8 +151,27 @@ export class CharacterLibrary {
       }
       for (const m of meshes) {
         const mat = m.material as PBRMaterial | null;
-        if (mat && mat.name.startsWith('M_Main')) mat.albedoColor = Color3.FromHexString(spec.npc.color);
-        else if (mat) mat.albedoColor = new Color3(0.12, 0.13, 0.15);
+        if (mat && mat.name.startsWith('M_Main')) mat.albedoColor = Color3.FromHexString(spec.npc.zombie ? '#56664a' : spec.npc.color);
+        else if (mat) mat.albedoColor = spec.npc.zombie ? new Color3(0.2, 0.17, 0.14) : new Color3(0.12, 0.13, 0.15);
+      }
+      if (spec.npc.zombie) {
+        // Stand, walk and strike like a zombie: the animator asks for the usual clips and gets these.
+        const z = (name: Clip) => clips.get(name);
+        for (const [as, from] of [
+          ['idle', 'zombie_idle'],
+          ['aim_idle', 'zombie_idle'],
+          ['walk', 'zombie_walk'],
+          ['run', 'zombie_walk'],
+          ['sprint', 'zombie_walk'],
+          ['melee', 'zombie_attack'],
+          ['melee_heavy', 'zombie_attack'],
+        ] as const) {
+          const g = z(from);
+          if (!g) continue;
+          const own = clips.get(as);
+          if (own && own !== g && own !== z('zombie_idle') && own !== z('zombie_walk') && own !== z('zombie_attack')) own.dispose();
+          clips.set(as, g);
+        }
       }
       owned.push(...inst.skeletons);
       holder.scaling.setAll(spec.npc.scale);
@@ -219,7 +241,7 @@ export class CharacterLibrary {
       meshes,
       body,
       dispose: () => {
-        for (const g of clips.values()) g.dispose();
+        for (const g of new Set(clips.values())) g.dispose();
         for (const o of owned) o.dispose();
         holder.dispose(false, false);
       },

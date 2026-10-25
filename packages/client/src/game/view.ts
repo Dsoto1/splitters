@@ -88,6 +88,8 @@ interface Avatar {
   mat: StandardMaterial;
   weaponSlot: number;
   weaponNode?: TransformNode;
+  /** Never holds a weapon (zombies claw). */
+  unarmed?: boolean;
   /** Soldiers and players get a character, creature NPCs their own animator. */
   anim?: CharacterAnimator | CreatureAnimator;
   specKey: string;
@@ -787,8 +789,8 @@ export class GameView {
     a.weaponNode = undefined;
     a.muzzle = undefined;
     a.anim?.hold(null);
-    // Unarmed (hostages): nothing in hand.
-    const def = slot > 0 ? weaponByCode(slot) : undefined;
+    // Unarmed (hostages, zombies): nothing in hand.
+    const def = slot > 0 && !a.unarmed ? weaponByCode(slot) : undefined;
     if (!def) return;
     void this.models.instantiate(def.view.model, `held_${slot}`).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
@@ -847,7 +849,7 @@ export class GameView {
     const mat = solid(this.scene, `avatar_${slot}_mat`, spec.npc?.color ?? slotColor(slot));
     placeholder.material = mat;
     placeholder.isPickable = false;
-    const a: Avatar = { root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 } };
+    const a: Avatar = { root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 }, ...(spec.npc?.zombie ? { unarmed: true } : {}) };
     if (spec.creature) {
       void this.creatures.create(spec.creature, `creature_${slot}`).then((ch) => {
         if (root.isDisposed()) return ch.dispose();

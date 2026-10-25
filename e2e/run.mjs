@@ -20,7 +20,7 @@ const SLOW = process.env.CI ? 3 : 1;
 const SHARDS = [
   ['maps', 'online', 'webgpu'],
   ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby'],
-  ['vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery'],
+  ['vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'zombies'],
   ['setpieces', 'physicsfx', 'teams', 'ctf', 'arsenal', 'vehicles'],
 ];
 const T = (ms) => ms * SLOW;
@@ -829,6 +829,35 @@ async function arsenalFlow(browser) {
   await page.context().close();
 }
 
+async function zombiesFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=sandgate&gamemode=core.zombies`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(30000) });
+  const squad = await page.evaluate(() => window.__match.combatants().map((c) => c.faction));
+  check(squad.length === 4 && squad.every((f) => f === 'players'), `you and three bots hold out together (${squad.join(', ')})`);
+  // Headless frame rates are slow: run the clock forward past the first break (keeping you alive).
+  await page.evaluate(() => {
+    for (let i = 0; i < 60 * 14; i++) {
+      window.__match.step();
+      const me = window.__match.slots[window.__cs.slot];
+      if (me) me.health = 100;
+    }
+  });
+  const state = await page.evaluate(() => ({ wave: window.__match.zombies.wave, up: window.__match.actors().filter((a) => a.npc?.role === 'zombie' && a.alive).length }));
+  check(state.wave === 1 && state.up > 0, `the first wave rises (wave ${state.wave}, ${state.up} up)`);
+  await page.waitForFunction(() => /Zombies · wave 1/.test(document.body.textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
+  const label = await page.evaluate(() => [...document.querySelectorAll('*')].find((e) => e.children.length === 0 && /Zombies ·/.test(e.textContent ?? ''))?.textContent);
+  check(/wave 1 · \d+ left/.test(label ?? ''), `the HUD counts the wave down (${label})`);
+  // Zombies are drawn as shambling characters with nothing in their hands.
+  await page.waitForFunction(() => window.__cs.view.characterCount() > 3, null, { timeout: T(15000) }).catch(() => {});
+  const drawn = await page.evaluate(() => window.__cs.view.characterCount());
+  check(drawn > 3, `zombies are drawn as characters (${drawn})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function vehiclesFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
@@ -1205,7 +1234,7 @@ try {
   const shard = process.env.E2E_SHARD ? SHARDS[Number(process.env.E2E_SHARD.split('/')[0]) - 1] : null;
   if (process.env.E2E_SHARD && !shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
   const only = process.env.E2E_ONLY?.split(',') ?? shard;
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, zombies: zombiesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
   // Every flow belongs to exactly one shard, so CI's parallel jobs between them run everything.
   const sharded = SHARDS.flat();
   const lost = Object.keys(flows).filter((f) => sharded.filter((x) => x === f).length !== 1);

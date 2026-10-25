@@ -2121,11 +2121,12 @@ export class EditorApp {
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
       const mode = document.createElement('select');
       const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.coop', 'Co-op mission']] as const) mode.append(new Option(label, id, false, id === current));
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies']] as const) mode.append(new Option(label, id, false, id === current));
       mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value] } }));
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
         'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
+        'core.zombies': 'Zombies: everyone holds out against endless waves. Zombies rise from your NPC spawners (vents, hatches, burrows) first, then out-of-sight spawn points and open floor. Every map can be played this way.',
         'core.tdm': `Team Deathmatch: ${teams.map((t) => t.name).join(' against ')}. Give spawns a team in their inspector; teams without spawns of their own use the shared ones.`,
         'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
         'core.ctf': `Capture the Flag: ${teams.slice(0, 2).map((t) => t.name).join(' against ')}. Place a Flag Base (Entities tab) for each team; bring the enemy flag to yours while yours is home. Other modes ignore flag bases.`,

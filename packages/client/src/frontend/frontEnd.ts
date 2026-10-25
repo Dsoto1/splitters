@@ -110,6 +110,7 @@ const MODE_TIPS: Partial<Record<GameMode, string>> = {
   'core.bomb': 'Attackers plant the bomb at site A or B (stand still, E); defenders stop them or defuse it. No respawns in a round.',
   'core.hostage': 'Rescuers lead hostages (E beside one) to the exit zone; guards hold them. No respawns in a round.',
   'core.coop': 'Work through the mission with bot squadmates against the map\'s enemies.',
+  'core.zombies': 'Hold out with your bot squad against endless waves of zombies. Each wave is bigger; the fallen come back when it is beaten.',
 };
 
 /** A small (i) that explains something when hovered or focused (see the tooltip in FrontEnd). */
@@ -388,7 +389,7 @@ export class FrontEnd {
         }),
       );
     const s = this.setup;
-    const coop = s.mode === 'core.coop';
+    const coop = s.mode === 'core.coop' || s.mode === 'core.zombies';
     const twoTeams = s.mode === 'core.ctf' || s.mode === 'core.bomb' || s.mode === 'core.hostage';
     const start = el('button', { class: 'primary go', id: 'arcade-start' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
     start.addEventListener('click', () => this.start());
@@ -470,7 +471,7 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : {}) };
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.

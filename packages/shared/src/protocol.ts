@@ -230,6 +230,8 @@ export interface ModeSnapshot {
   hl?: [number, number, number];
   /** Elimination: [round, seconds until the next round starts (0 while in play), ...players alive per team]. */
   el?: number[];
+  /** Zombies: [wave, zombies left this wave, seconds until the next wave (0 during one), best wave]. */
+  zb?: [number, number, number, number];
   /**
    * Bomb: [state (BOMB_*), x, y, z, carrier slot (-1 none), seconds left on the fuse (planted),
    * plant/defuse progress 0-100 (-1 none), who is planting/defusing (-1 none), site entity index (-1 none)].

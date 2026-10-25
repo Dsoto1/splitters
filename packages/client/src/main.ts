@@ -216,8 +216,9 @@ class App {
     const arena = loadMap(json);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');
     // Co-op: two bot teammates; team deathmatch: 5 v 5; deathmatch maps: a lobby of opponents.
-    const botFill = ({ outpost: 3, vault: 6, sandgate: 10, arena: 4, citadel: 10, canyon: 10 } as Record<string, number>)[which] ?? Math.max(4, Math.min(12, arena.map.metadata.recommendedPlayers.max));
     const asked = mode && isGameMode(mode) && mapCanRun(arena.map, mode) ? mode : null;
+    // Zombies: you and three bots (the horde is the crowd).
+    const botFill = asked === 'core.zombies' ? 4 : (({ outpost: 3, vault: 6, sandgate: 10, arena: 4, citadel: 10, canyon: 10 } as Record<string, number>)[which] ?? Math.max(4, Math.min(12, arena.map.metadata.recommendedPlayers.max)));
     this.playLocal(arena.map, asked ? rulesForMode(arena.map, asked) : rulesForMap(arena.map), botFill, 'normal');
   }
 

@@ -20,7 +20,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 16;
+export const MAP_FORMAT_VERSION = 17;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -208,7 +208,7 @@ export const PLAYERS_FACTION = 'players';
  * NPC kinds an encounter can field: the soldiers, then the creatures (see
  * sim/npc.ts and sim/creatures.ts). Order matters: snapshots send the index.
  */
-export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper', 'imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const;
+export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper', 'imp', 'puglin', 'cyclops', 'oculus', 'scolitex', 'zombie'] as const;
 /** The creature kinds among NPC_ROLES (their own bodies and clips, not the soldier rig). */
 export const CREATURE_ROLES = ['imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const satisfies readonly (typeof NPC_ROLES)[number][];
 const squadCount = z.number().int().min(0).max(16);
@@ -243,6 +243,7 @@ export const EncounterEntity = EntityBase.extend({
       cyclops: squadCount.optional(),
       oculus: squadCount.optional(),
       scolitex: squadCount.optional(),
+      zombie: squadCount.optional(),
     })
     .default({ trooper: 2, gunner: 1, heavy: 0 }),
   activeCap: z.number().int().min(1).max(32).default(4),

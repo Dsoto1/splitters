@@ -38,6 +38,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [14, (doc) => ({ ...doc })],
   // v15 -> v16: optional room `options` on tiles (layout, floor, ceiling, corners) and three wall styles (broken, bars, shutter).
   [15, (doc) => ({ ...doc })],
+  // v16 -> v17: zombies in encounter rosters (optional).
+  [16, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}
