@@ -4,6 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@10.28.0",
   "scripts": {
+    "dev": "pnpm --filter @chronosplit/client dev",
     "dev:server": "pnpm --filter @chronosplit/server dev",
     "dev:client": "pnpm --filter @chronosplit/client dev",
     "build": "pnpm --filter @chronosplit/client build",
