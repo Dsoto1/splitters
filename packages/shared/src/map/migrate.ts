@@ -32,6 +32,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [11, (doc) => ({ ...doc })],
   // v12 -> v13: `bombsite` entity kind (Bomb mode). Existing entities are unchanged.
   [12, (doc) => ({ ...doc })],
+  // v13 -> v14: `hostage` and `rescue` entity kinds (Hostage mode). Existing entities are unchanged.
+  [13, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

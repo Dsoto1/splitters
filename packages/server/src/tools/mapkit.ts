@@ -137,6 +137,16 @@ export class MapBuilder {
     return this.add({ kind: 'flag', position: at, yaw, team });
   }
 
+  /** Hostage Rescue: a hostage's starting spot. */
+  hostage(at: V3, yaw = 0): this {
+    return this.add({ kind: 'hostage', position: at, yaw });
+  }
+
+  /** Hostage Rescue: where hostages are brought out. */
+  rescue(at: V3, radius = 4): this {
+    return this.add({ kind: 'rescue', position: at, radius });
+  }
+
   /** King of the Hill: a hill spot (the hill moves between them in the order they are added). */
   hill(at: V3, radius = 5): this {
     return this.add({ kind: 'hill', position: at, radius });

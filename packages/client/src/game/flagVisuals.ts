@@ -79,21 +79,21 @@ export function createHillModel(scene: Scene, radius: number, name: string, colo
 }
 
 /** A bomb site: an orange area with its letter floating over it. */
-export function createBombsiteModel(scene: Scene, radius: number, label: string, name: string): TransformNode {
-  const root = createHillModel(scene, radius, name, '#ff7a2a');
+export function createBombsiteModel(scene: Scene, radius: number, label: string, name: string, color = '#ff7a2a'): TransformNode {
+  const root = createHillModel(scene, radius, name, color);
   const tex = new DynamicTexture(`${name}_tex`, { width: 128, height: 128 }, scene, false);
   tex.hasAlpha = true;
   const ctx = tex.getContext() as CanvasRenderingContext2D;
   ctx.clearRect(0, 0, 128, 128);
-  ctx.fillStyle = '#ff7a2a';
-  ctx.font = 'bold 104px sans-serif';
+  ctx.fillStyle = color;
+  ctx.font = `bold ${label.length > 1 ? 64 : 104}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(label.slice(0, 2), 64, 70);
   tex.update();
   const m = new StandardMaterial(`${name}_labelmat`, scene);
   m.diffuseTexture = tex;
-  m.emissiveColor = Color3.FromHexString('#ff7a2a');
+  m.emissiveColor = Color3.FromHexString(color);
   m.useAlphaFromDiffuseTexture = true;
   m.disableLighting = true;
   m.backFaceCulling = false;

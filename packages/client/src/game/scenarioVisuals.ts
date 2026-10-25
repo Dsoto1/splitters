@@ -42,7 +42,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue'];
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
 interface Visual {
@@ -177,6 +177,8 @@ export class ScenarioVisuals {
       case 'flag':
       case 'hill':
       case 'bombsite':
+      case 'hostage':
+      case 'rescue':
         return this.objective(name, e);
     }
   }
@@ -189,9 +191,12 @@ export class ScenarioVisuals {
    * team's colour, or a hill's area. In a match the mode draws these itself
    * (and only in its own mode).
    */
-  private objective(name: string, e: Extract<MapEntity, { kind: 'flag' | 'hill' | 'bombsite' }>): Visual {
-    // Bomb sites always show (they're part of the level in every mode, like painted site markings).
+  private objective(name: string, e: Extract<MapEntity, { kind: 'flag' | 'hill' | 'bombsite' | 'hostage' | 'rescue' }>): Visual {
+    // Bomb sites and rescue zones always show (part of the level in every mode, like painted markings).
     if (e.kind === 'bombsite') return { root: createBombsiteModel(this.scene, e.radius, e.label, name) };
+    if (e.kind === 'rescue') return { root: createBombsiteModel(this.scene, e.radius, 'EXIT', name, '#3ddc84') };
+    // Hostages themselves are drawn by the mode in a match; MapMaker shows where they start.
+    if (e.kind === 'hostage') return this.opts.editor ? { root: createBombsiteModel(this.scene, 0.6, 'H', name, '#e8d8a0') } : { root: new TransformNode(name, this.scene) };
     if (!this.opts.editor) return { root: new TransformNode(name, this.scene) };
     if (e.kind === 'hill') return { root: createHillModel(this.scene, e.radius, name) };
     const color = this.teamColor(e.team);

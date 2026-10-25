@@ -415,6 +415,7 @@ export class Match {
             const hit = this.physics.raycastHit(p, { x: 0, y: -1, z: 0 }, 8);
             return hit ? p.y - hit.dist : null;
           },
+          path: (a, b) => this.nav.findPath(a, b),
           explode: (at, radius, damage, by) => {
             this.pendingEvents.push({ e: 'explode', s: by?.slot ?? -1, p: tuple(at), r: radius });
             this.splash(at, radius, damage, damage * 0.15, by, 'core.bomb', 1, 8);

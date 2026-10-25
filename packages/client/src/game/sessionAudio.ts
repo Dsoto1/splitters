@@ -209,6 +209,10 @@ export class SessionAudio {
         if (ev.a === 'move') this.audio.play('objective.new');
         else if (ev.team !== null) this.audio.play(ev.team === this.myTeam() ? 'cue.chime' : 'cue.buzzer', { gain: 0.6 });
         break;
+      case 'hostage':
+        if (ev.a === 'rescue') this.audio.play('objective.complete');
+        else if (ev.a === 'follow' && ev.s === me) this.audio.play('cue.chime');
+        break;
       case 'bomb':
         if (ev.a === 'plant') this.audio.play('cue.alarm');
         else if (ev.a === 'defuse') this.audio.play('objective.complete');

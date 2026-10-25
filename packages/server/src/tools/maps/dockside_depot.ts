@@ -270,10 +270,14 @@ for (const [x, z, yaw] of [[-2.8, 2, P], [28, -3, 0], [58, 15, -P], [-2.8, 30, P
 m.breakable('gas', [40, 0, 2]);
 m.breakable('generator', [-2, 0, 66], P);
 
+// Hostage Rescue (cs_assault style): four hostages held in the hall and the offices; Embers bring them out to the lot.
+m.hostage([30, 0, 44], Math.PI).hostage([34, 0, 44], Math.PI).hostage([29.5, 4, 55.5], 0).hostage([35, 4, 55.5], 0);
+m.rescue([14, 0, 6], 5);
+
 m.bounds('invisible');
 m.meta({
   description:
-    'A two-storey warehouse on a floodlit industrial lot at dusk. Tide hold the warehouse: an open hall of crates and shelving behind the loading door, catwalks and offices upstairs, a bridge across the middle. Embers come in off the road through the parking lot of trucks and containers, by the side door from the alley, the front door off the east lane, up the fire escape to the roof and down its hatches, or through the cramped air duct into the offices.',
+    'A two-storey warehouse on a floodlit industrial lot at dusk. Tide hold the warehouse: an open hall of crates and shelving behind the loading door, catwalks and offices upstairs, a bridge across the middle. Embers come in off the road through the parking lot of trucks and containers, by the side door from the alley, the front door off the east lane, up the fire escape to the roof and down its hatches, or through the cramped air duct into the offices. In Hostage Rescue, Embers bring the four hostages out to the lot.',
   modes: ['core.tdm', 'core.deathmatch'],
   players: [8, 16],
 });

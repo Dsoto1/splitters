@@ -1,11 +1,11 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 10,
+  "formatVersion": 14,
   "metadata": {
     "id": "dockside_depot",
     "name": "Dockside Depot",
     "author": "ChronoSplit",
-    "description": "A two-storey warehouse on a floodlit industrial lot at dusk. Tide hold the warehouse: an open hall of crates and shelving behind the loading door, catwalks and offices upstairs, a bridge across the middle. Embers come in off the road through the parking lot of trucks and containers, by the side door from the alley, the front door off the east lane, up the fire escape to the roof and down its hatches, or through the cramped air duct into the offices.",
+    "description": "A two-storey warehouse on a floodlit industrial lot at dusk. Tide hold the warehouse: an open hall of crates and shelving behind the loading door, catwalks and offices upstairs, a bridge across the middle. Embers come in off the road through the parking lot of trucks and containers, by the side door from the alley, the front door off the east lane, up the fire escape to the roof and down its hatches, or through the cramped air duct into the offices. In Hostage Rescue, Embers bring the four hostages out to the lot.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -4599,6 +4599,56 @@
       "yaw": 1.5707963267948966,
       "health": null,
       "explosiveOnly": false
+    },
+    {
+      "id": "hostage_284",
+      "position": [
+        30,
+        0,
+        44
+      ],
+      "kind": "hostage",
+      "yaw": 3.141592653589793
+    },
+    {
+      "id": "hostage_285",
+      "position": [
+        34,
+        0,
+        44
+      ],
+      "kind": "hostage",
+      "yaw": 3.141592653589793
+    },
+    {
+      "id": "hostage_286",
+      "position": [
+        29.5,
+        4,
+        55.5
+      ],
+      "kind": "hostage",
+      "yaw": 0
+    },
+    {
+      "id": "hostage_287",
+      "position": [
+        35,
+        4,
+        55.5
+      ],
+      "kind": "hostage",
+      "yaw": 0
+    },
+    {
+      "id": "rescue_288",
+      "position": [
+        14,
+        0,
+        6
+      ],
+      "kind": "rescue",
+      "radius": 5
     }
   ],
   "factions": [],
@@ -4627,6 +4677,7 @@
     "ground": "gravel",
     "haze": 0.45
   },
+  "physics": null,
   "blood": null,
   "teamSetup": {
     "sizes": [

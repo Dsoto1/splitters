@@ -62,7 +62,7 @@ import { MountState } from './mountState.ts';
 import { LocalTransport } from './localTransport.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
-import { ModeHud } from './modeHud.ts';
+import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { markerSetting } from './crosshair.ts';
@@ -410,7 +410,7 @@ export class GameSession {
         const geometry = buildMapGeometry(loaded.map);
         this.map = loaded.map;
         this.view.buildMap(loaded.map, geometry);
-        if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
+        if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
@@ -669,7 +669,7 @@ export class GameSession {
 
   private spectateTarget(now: number): RemotePose | null {
     const mode = this.rules?.mode;
-    if (mode !== 'core.elim' && mode !== 'core.bomb') return null;
+    if (mode !== 'core.elim' && mode !== 'core.bomb' && mode !== 'core.hostage') return null;
     if (this.phase !== 'playing') return null;
     const mine = this.hud.team(this.slot)?.id;
     const mates = this.interp.sample(now).filter((p) => p.alive && p.slot !== this.slot && p.slot < NPC_ID_BASE && this.hud.team(p.slot)?.id === mine);
@@ -914,10 +914,13 @@ export class GameSession {
     // Third person: your own character drawn where prediction has you (not the delayed server copy).
     const self = this.thirdPerson && !this.tpClose && local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
     if (self && local) Object.assign(self, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held });
+    // Hostage Rescue: the hostages walk about like everyone else.
+    const hostages = this.modeHud?.hostagePoses() ?? [];
     this.view.updateAvatars(
-      poses,
+      hostages.length ? [...poses, ...hostages] : poses,
       self ? -1 : this.slot,
       (id) => {
+        if (id >= HOSTAGE_SLOT_BASE) return { npc: { color: '#cfc4a8', scale: 1, female: id % 2 === 1 } };
         const npc = this.npcLook(id);
         // About half of each squad uses the female mannequin.
         if (npc?.creature) return npc.size === 1 ? { creature: npc.creature } : { creature: npc.creature, size: npc.size };

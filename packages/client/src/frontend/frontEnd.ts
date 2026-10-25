@@ -93,6 +93,7 @@ const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: nu
   'core.koth': { label: 'Hill seconds', step: 10, min: 30, max: 600 },
   'core.elim': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
   'core.bomb': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
+  'core.hostage': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
 };
 const FAMILY_LABEL = { ranger: 'Ranger', peasant: 'Peasant', athlete: 'Sportswear' } as const;
 
@@ -364,7 +365,7 @@ export class FrontEnd {
       { class: 'setup panel' },
       el('h3', { class: 'panel-title', textContent: current.map.metadata.name }),
       el('div', { class: 'row' }, 'Mode', tabs(current.modes.map((m) => [m, MODE_LABEL[m]] as [string, string]), s.mode, (v) => (this.setup.mode = v as GameMode, this.setup.scoreLimit = BASE_RULES[v as GameMode].scoreLimit))),
-      ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, s.mode === 'core.ctf' || s.mode === 'core.bomb') : [el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
+      ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, s.mode === 'core.ctf' || s.mode === 'core.bomb' || s.mode === 'core.hostage') : [el('div', { class: 'row' }, coop ? 'Squadmates' : 'Bots', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
       el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
       el('div', { class: 'row', title: 'On: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. Off: everyone plays at standard size.' }, 'Character sizes', tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on'))),
       el('div', { class: 'row', title: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).' }, 'Bot style', tabs([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => (this.setup.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical')))),
@@ -399,7 +400,7 @@ export class FrontEnd {
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.
-      const teams = this.teamSizes(m.map, this.setup.mode === 'core.ctf' || this.setup.mode === 'core.bomb');
+      const teams = this.teamSizes(m.map, this.setup.mode === 'core.ctf' || this.setup.mode === 'core.bomb' || this.setup.mode === 'core.hostage');
       const names = (this.setup.teamNames ?? []).slice(0, teams.length);
       const colors = (this.setup.teamColors ?? []).slice(0, teams.length);
       this.hooks.playLocal(m.map, { ...rules, teamSizes: teams, ...(names.some(Boolean) ? { teamNames: names } : {}), ...(colors.some(Boolean) ? { teamColors: colors } : {}) }, Math.min(MAX_PLAYER_SLOTS, teams.reduce((a, b) => a + b, 0)), this.setup.skill);

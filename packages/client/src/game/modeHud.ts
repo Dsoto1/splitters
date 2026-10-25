@@ -1,4 +1,4 @@
-import { BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type GameEvent, type MapDocument, type ModeSnapshot, type Vec3 } from '@chronosplit/shared';
+import { HOSTAGE_FOLLOWING, HOSTAGE_RESCUED, HOSTAGE_WAITING, BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type GameEvent, type MapDocument, type ModeSnapshot, type Vec3 } from '@chronosplit/shared';
 import { ModeVisuals } from './flagVisuals.ts';
 import type { Hud } from './hud.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -12,6 +12,9 @@ const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt
  * line under the scorebar, markers pointing to the objectives and the
  * announcer's lines. The session feeds it snapshots, events and frames.
  */
+/** Hostages are drawn as avatars with slots from here up. */
+export const HOSTAGE_SLOT_BASE = 900_000;
+
 export class ModeHud {
   private md: ModeSnapshot | undefined;
   private readonly visuals: ModeVisuals;
@@ -25,7 +28,7 @@ export class ModeHud {
     private readonly slot: () => number,
   ) {
     this.visuals = new ModeVisuals(view.scene, map, teams, mode);
-    hud.waitLabel = mode === 'core.elim' || mode === 'core.bomb' ? 'Out until the next round' : 'Respawning…';
+    hud.waitLabel = mode === 'core.elim' || mode === 'core.bomb' || mode === 'core.hostage' ? 'Out until the next round' : 'Respawning…';
   }
 
   /** Flags drawn (for tests). */
@@ -84,6 +87,10 @@ export class ModeHud {
     } else if (ev.e === 'hill') {
       if (ev.a === 'move') this.hud.showMessage('The hill has moved!', 2.5);
       else if (ev.team !== null) this.hud.showMessage(ev.team === mine ? 'Your team holds the hill' : `${this.teamName(ev.team)} hold the hill!`, 2);
+    } else if (ev.e === 'hostage') {
+      const rescuer = mine === this.teams[0]?.id;
+      const text = ev.a === 'rescue' ? (rescuer ? 'Hostage rescued!' : 'A hostage has been rescued!') : ev.a === 'follow' ? (ev.s === me ? 'The hostage follows you: take it to a rescue zone' : rescuer ? '' : 'A hostage is being taken!') : ev.s === null && rescuer ? 'A hostage was left behind' : '';
+      if (text) this.hud.showMessage(text, 2.5);
     } else if (ev.e === 'bomb') {
       const attacker = mine === this.teams[0]?.id;
       const site = ev.i !== undefined ? this.siteLabel(ev.i) : '';
@@ -110,6 +117,13 @@ export class ModeHud {
       if (ev.a === 'start') this.hud.showMessage(`Round ${ev.round}: fight!`, 2);
       else this.hud.showMessage(ev.team === null ? `Round ${ev.round} drawn` : ev.team === mine ? `Your team wins round ${ev.round}!` : `${this.teamName(ev.team)} win round ${ev.round}`, 3);
     }
+  }
+
+  /** Hostages as poses to draw like players (slots from HOSTAGE_SLOT_BASE), the rescued ones gone. */
+  hostagePoses(): RemotePose[] {
+    return (this.md?.hg ?? []).flatMap((h, i) =>
+      h[4] === HOSTAGE_RESCUED ? [] : [{ slot: HOSTAGE_SLOT_BASE + i, x: h[0], y: h[1], z: h[2], yaw: h[3], pitch: 0, alive: true, grounded: true, weapon: 0, powerups: 0, status: 0 }],
+    );
   }
 
   private siteLabel(i: number): string {
@@ -172,6 +186,21 @@ export class ModeHud {
       const [round, next, ...alive] = md.el;
       const counts = this.teams.map((t, i) => `<span style="color:${t.color}">${alive[i] ?? 0}</span>`).join(' v ');
       parts.push(`<span class="ms" data-round="${round}" style="color:#f2f2f2"><em>Round ${round} · ${next ? `next round in ${next}s` : `${counts} standing`}</em></span>`);
+    }
+    if (md.hg) {
+      const rescuer = mine === this.teams[0]?.id;
+      const me = this.slot();
+      const total = md.hg.length;
+      const rescued = md.hg.filter((h) => h[4] === HOSTAGE_RESCUED).length;
+      const mineLed = md.hg.filter((h) => h[4] === HOSTAGE_FOLLOWING && h[5] === me).length;
+      parts.push(`<span class="ms" style="color:#3ddc84"><b>✚</b><em>Hostages: ${rescued} of ${total} rescued (${Math.max(1, Math.ceil(total / 2))} to win)${mineLed ? ` · ${mineLed} following you` : ''}</em></span>`);
+      md.hg.forEach((h, i) => {
+        if (h[4] === HOSTAGE_RESCUED) return;
+        const at = { x: h[0], y: h[1], z: h[2] };
+        if (h[4] === HOSTAGE_WAITING) mark(`hostage_${i}`, at, '#e8d8a0', 'H', rescuer ? 'Rescue (E)' : 'Guard');
+        else if (!rescuer) mark(`hostage_${i}`, at, '#ff4a3a', 'H', 'Stop them');
+      });
+      if (rescuer && mineLed) for (const [i, e] of this.map.entities.entries()) if (e.kind === 'rescue') mark(`rescue_${i}`, { x: e.position[0], y: e.position[1], z: e.position[2] }, '#3ddc84', '✚', 'Rescue zone');
     }
     if (md.bm) {
       const [state, x, y, z, carrier, secs, progress, actor, site] = md.bm;

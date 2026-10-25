@@ -123,6 +123,8 @@ export type GameEvent =
   /** Elimination: `team` won round `round` (null: a draw), or round `round` started. */
   | { e: 'elim'; a: 'win' | 'start'; round: number; team: string | null }
   /** Bomb mode: picked up, dropped, planted (at site entity `i`), defused or exploded; `s` who did it (null: nobody). */
+  /** Hostage Rescue: hostage `i` (index in ModeSnapshot.hg) started following `s`, was left behind, or was rescued. */
+  | { e: 'hostage'; a: 'follow' | 'stop' | 'rescue'; i: number; s: number | null }
   | { e: 'bomb'; a: 'pickup' | 'drop' | 'plant' | 'defuse' | 'explode'; s: number | null; i?: number; p?: Tuple3 }
   // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
   /** Creator message from a logic rule. */
@@ -231,7 +233,13 @@ export interface ModeSnapshot {
    * plant/defuse progress 0-100 (-1 none), who is planting/defusing (-1 none), site entity index (-1 none)].
    */
   bm?: [number, number, number, number, number, number, number, number, number];
+  /** Hostage Rescue: per hostage [x, y, z, yaw, state (HOSTAGE_*), following slot (-1 none)]. */
+  hg?: [number, number, number, number, number, number][];
 }
+
+export const HOSTAGE_WAITING = 0;
+export const HOSTAGE_FOLLOWING = 1;
+export const HOSTAGE_RESCUED = 2;
 
 /** Bomb states in ModeSnapshot.bm. */
 export const BOMB_CARRIED = 0;

@@ -18,7 +18,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 13;
+export const MAP_FORMAT_VERSION = 14;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -351,7 +351,19 @@ export const BombsiteEntity = EntityBase.extend({
   radius: z.number().min(2).max(12).default(4),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity]);
+/** Hostage mode: where a hostage waits at the start of each round. */
+export const HostageEntity = EntityBase.extend({
+  kind: z.literal('hostage'),
+  yaw: Yaw,
+});
+
+/** Hostage mode: where rescuers bring hostages out. */
+export const RescueEntity = EntityBase.extend({
+  kind: z.literal('rescue'),
+  radius: z.number().min(2).max(12).default(4),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -476,6 +488,8 @@ export type WaterEntity = z.infer<typeof WaterEntity>;
 export type FlagEntity = z.infer<typeof FlagEntity>;
 export type HillEntity = z.infer<typeof HillEntity>;
 export type BombsiteEntity = z.infer<typeof BombsiteEntity>;
+export type HostageEntity = z.infer<typeof HostageEntity>;
+export type RescueEntity = z.infer<typeof RescueEntity>;
 export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
 export type Liquid = (typeof LIQUIDS)[number];
 export type Faction = z.infer<typeof Faction>;

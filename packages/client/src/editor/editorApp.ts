@@ -178,6 +178,8 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   door: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#3fd26b"/>',
   door_locked: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#e0412f"/><rect x="23" y="34" width="10" height="9" rx="1" fill="#e0412f"/><path d="M25 34v-3a3 3 0 0 1 6 0v3" stroke="#e0412f" stroke-width="2" fill="none"/>',
   flag: '<ellipse cx="28" cy="48" rx="16" ry="5" fill="#2a2f3a" stroke="#e2703a" stroke-width="2"/><rect x="18" y="8" width="3" height="40" fill="#c9ccd2"/><path d="M21 10h22l-5 8 5 8H21z" fill="#e2703a"/>',
+  hostage: '<circle cx="28" cy="16" r="7" fill="#e8d8a0"/><path d="M18 46V30q0-6 10-6t10 6v16" fill="#e8d8a0"/><path d="M14 34h28" stroke="#3ddc84" stroke-width="3"/>',
+  rescue: '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#3ddc84" fill-opacity=".25" stroke="#3ddc84" stroke-width="2"/><path d="M20 30l8-12 8 12M28 18v18" stroke="#3ddc84" stroke-width="3" fill="none"/>',
   bombsite: '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#ff7a2a" fill-opacity=".25" stroke="#ff7a2a" stroke-width="2"/><text x="28" y="32" font-size="26" font-weight="bold" text-anchor="middle" fill="#ff7a2a">A</text>',
   hill: '<ellipse cx="28" cy="38" rx="22" ry="9" fill="#f2f2f2" fill-opacity=".2" stroke="#f2f2f2" stroke-width="2"/><path d="M14 38V26M42 38V26M28 47V35M28 29V17" stroke="#f2f2f2" stroke-width="2"/><path d="M22 14l6-8 6 8z" fill="#f2c14e"/>',
   ladder: '<rect x="17" y="6" width="4" height="44" fill="#9a6b3d"/><rect x="35" y="6" width="4" height="44" fill="#9a6b3d"/><path d="M19 12h18M19 20h18M19 28h18M19 36h18M19 44h18" stroke="#c79a5e" stroke-width="3"/>',
@@ -204,7 +206,7 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
 };
 
 /** Scenario palette entries shown under Entities → Gameplay (game-mode objects) rather than Scenario. */
-const GAMEPLAY_OBJECTS: ReadonlySet<string> = new Set(['flag', 'hill', 'bombsite']);
+const GAMEPLAY_OBJECTS: ReadonlySet<string> = new Set(['flag', 'hill', 'bombsite', 'hostage', 'rescue']);
 
 /** Tools that put something new into the map (the toolbar's Place button lights up for them). */
 const PLACING: ReadonlySet<Tool['kind']> = new Set(['tile', 'spawn', 'pickup', 'scenario', 'prop', 'mount', 'scatter', 'npc']);
@@ -262,7 +264,10 @@ function pickRadius(e: MapEntity): number {
       return Math.max(1.2, Math.min(3, e.radius));
     case 'hill':
     case 'bombsite':
+    case 'rescue':
       return Math.max(1.2, Math.min(4, e.radius));
+    case 'hostage':
+      return 0.8;
     case 'flag':
       return 1.1;
     case 'prop': {
@@ -2102,6 +2107,7 @@ export class EditorApp {
         'core.tdm': `Team Deathmatch: ${teams.map((t) => t.name).join(' against ')}. Give spawns a team in their inspector; teams without spawns of their own use the shared ones.`,
         'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
         'core.ctf': `Capture the Flag: ${teams.slice(0, 2).map((t) => t.name).join(' against ')}. Place a Flag Base (Entities tab) for each team; bring the enemy flag to yours while yours is home. Other modes ignore flag bases.`,
+        'core.hostage': 'Hostage Rescue: place Hostages and at least one Rescue Zone; the first team rescues.',
         'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
         'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
         'core.elim': 'Elimination: round-based Team Deathmatch. No respawns until the next round; the last team standing wins it.',
@@ -2391,6 +2397,14 @@ export class EditorApp {
         el.append(small('Capture the Flag: this team\'s flag stands here. Players bring the enemy flag to it to score, while their own flag is home. One base per team; put it somewhere the team can defend, off its spawn points.'));
         break;
       }
+      case 'hostage':
+        number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
+        el.append(small('Hostage Rescue: a hostage waits here each round. Rescuers (the first team) press E beside it and lead it to a Rescue Zone; rescuing half of them wins the round.'));
+        break;
+      case 'rescue':
+        number('Radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 2, 12) }));
+        el.append(small('Hostage Rescue: hostages led in here are rescued. Usually near the rescuers\' spawn, away from the hostages.'));
+        break;
       case 'bombsite':
         choose('Site', ['A', 'B', 'C', 'D', 'E'].map((l) => [l, l] as const), e.label, (v) => ({ label: v }));
         number('Radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 2, 12) }));
