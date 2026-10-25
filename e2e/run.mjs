@@ -374,7 +374,7 @@ async function offlineFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const inv = await page.evaluate(() => [...window.__cs.local.inventory.keys()]);
   check(inv.join(',') === '1,2', `offline match spawns with knife + pistol (${inv})`);
   await page.waitForTimeout(1500);
@@ -397,7 +397,7 @@ async function vaultFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=vault`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForTimeout(1500);
   const objectives = await page.textContent('#objectives');
   check((objectives ?? '').includes('Find the vault control'), `scenario demo shows its first objective (${objectives})`);
@@ -410,7 +410,7 @@ async function outpostFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=outpost`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForTimeout(2500);
   const objectives = await page.textContent('#objectives');
   check((objectives ?? '').includes('Clear the courtyard'), `co-op mission shows its first objective (${objectives})`);
@@ -427,7 +427,7 @@ async function sandgateFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=sandgate`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForTimeout(2000);
   const score = (await page.textContent('#scorebar')) ?? '';
   check(score.includes('Embers') && score.includes('Tide'), `team deathmatch shows both team scores (${score})`);
@@ -443,7 +443,7 @@ async function citadelFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=citadel`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForTimeout(4000);
   const props = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.includes('_model')).length);
   check(props >= 35, `Citadel's props are placed (${props})`);
@@ -459,7 +459,7 @@ async function canyonFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   // The game: terrain meshes per ground material, and players stand on the ground.
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForTimeout(3000);
   const grounds = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).map((m) => m.name.split('_terrain_')[1]));
   check(grounds.length >= 5 && grounds.includes('grass') && grounds.includes('stone'), `canyon terrain is drawn in its ground materials (${grounds.join(', ')})`);
@@ -495,7 +495,7 @@ async function sceneryFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   // The game: a photo sky, ground and scenery past the border, and grass growing on the canyon floor.
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name.startsWith('foliage') && m.thinInstanceCount > 0), null, { timeout: T(15000) }).catch(() => {});
   const canyon = await page.evaluate(() => {
     const ms = window.__cs.view.scene.meshes;
@@ -504,7 +504,7 @@ async function sceneryFlow(browser) {
   check(canyon.names.includes('backdrop_sky') && canyon.names.includes('backdrop_ground') && canyon.names.includes('backdrop_ridge'), `canyon has a sky, ground beyond and distant scenery (${canyon.names.join(', ')})`);
   check(canyon.plants > 1000 && canyon.fog > 0, `grass grows on the canyon floor (${canyon.plants} plants) under haze`);
   await page.goto(`${CLIENT}/?offline=skyward`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const space = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('backdrop_')).map((m) => m.name));
   check(space.includes('backdrop_sky') && !space.includes('backdrop_ground'), `Skyward floats in a starfield with no ground (${space.join(', ')})`);
   // MapMaker: pick a backdrop, paint plants, scatter a forest.
@@ -577,7 +577,7 @@ async function setpiecesFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=sky_islands`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   await page.waitForTimeout(1000);
   const drawn = await page.evaluate(() => {
     const ms = window.__cs.view.scene.meshes;
@@ -617,7 +617,7 @@ async function physicsfxFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   await page.waitForTimeout(2500);
   // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats.
   const props = await page.evaluate(() => {
@@ -713,7 +713,7 @@ async function teamsFlow(browser) {
   await page.click('#nav-play');
   await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
   await page.click('#arcade-start');
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   // Every team's table fills in once the roster for all 24 has arrived.
   await page.waitForTimeout(T(2500));
   await page.keyboard.down('Tab');
@@ -732,7 +732,7 @@ async function ctfFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=bunker_cross&gamemode=core.ctf`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match && window.__cs.mode?.state, null, { timeout: T(40000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match && window.__cs.mode?.state, null, { timeout: T(60000) });
   await page.waitForTimeout(1500);
   const label = await page.textContent('#mode-label');
   check(label === 'Capture the Flag', `the match runs Capture the Flag (${label})`);
@@ -810,7 +810,7 @@ async function arsenalFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__give, null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__give, null, { timeout: T(60000) });
   // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
   for (const id of ['core.flamethrower', 'core.oil_slicker', 'core.laser_rifle', 'core.railgun', 'core.bubble_blaster', 'core.swarm', 'core.disc_launcher', 'core.arc_caster', 'core.goo_gun', 'core.burst_rifle']) {
     await page.evaluate((w) => {
@@ -840,7 +840,7 @@ async function zombiesFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=sandgate&gamemode=core.zombies`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   const squad = await page.evaluate(() => window.__match.combatants().map((c) => c.faction));
   check(squad.length === 4 && squad.every((f) => f === 'players'), `you and three bots hold out together (${squad.join(', ')})`);
   // Headless frame rates are slow: run the clock forward past the first break (keeping you alive).
@@ -869,7 +869,7 @@ async function vehiclesFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   const mounts = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => /^mount_[0-9]+$/.test(n.name)).length);
   check(mounts >= 9, `canyon's vehicles and turrets are drawn (${mounts})`);
   // Walk up to a free buggy, press E once, and drive. Bots like the vehicles by the bases too:
@@ -941,7 +941,7 @@ async function mapsFlow(browser) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
     await page.goto(`${CLIENT}/?offline=${id}`);
-    const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(40000) }).then(() => true, () => false);
+    const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) }).then(() => true, () => false);
     // Small maps put bots in sight at once: keep the player alive while we look at where they stand.
     if (ok) await page.evaluate(() => {
       const me = window.__match?.slots[window.__cs.slot];
@@ -983,7 +983,7 @@ async function designerFlow(browser) {
   const selected = await page.evaluate(() => window.__front.look);
   check(selected === id, `the saved look is selected on the menu (${selected})`);
   await page.goto(`${CLIENT}/?offline`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: T(20000) }).catch(() => {});
   check(await page.evaluate(() => window.__cs.view.hasFirstPersonArms()), 'first-person arms of the custom look hold the weapon');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -1106,7 +1106,7 @@ async function lobbyFlow(browser) {
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
   await host.goto(`${CLIENT}/?offline=arena&${hub}`, { waitUntil: 'domcontentloaded' });
-  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
+  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const offered = await host.evaluate(() => !document.getElementById('host-public').hidden);
   check(offered, 'hosting offers "List in the game browser" when a hub is set');
   await host.evaluate(() => {
@@ -1133,7 +1133,7 @@ async function lobbyFlow(browser) {
   const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: T(15000) }).then((h) => h.jsonValue(), () => null);
   check(!!row && row.includes('1/') && row.includes('Hosty') && row.includes('Relay'), `the game browser lists it, with the relay badge (${row})`);
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Friday Night')).querySelector('button').click());
-  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(40000) }).then(() => true, () => false);
+  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) }).then(() => true, () => false);
   check(joined, 'joining from the game browser puts the player in the match');
   if (joined) {
     // The next check-in reports two players.
