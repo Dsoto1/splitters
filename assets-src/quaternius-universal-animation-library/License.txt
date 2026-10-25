@@ -1,0 +1,18 @@
+-------------------------------------------------------
+License:
+CC0 1.0 Universal (CC0 1.0) 
+Public Domain Dedication
+https://creativecommons.org/publicdomain/zero/1.0/
+
+------------------------------------------------------
+Models by @Quaternius
+Consider supporting me on Patreon!
+
+https://www.patreon.com/quaternius
+
+
+-------------------------------------------------------
+Tile Trigger note: the rig also uses clips (prone/crawl) from the Source
+edition of the Universal Animation Library, bought by the project owner.
+That edition is released under the same CC0 licence (see its License.txt).
+Raw files are not kept in this repository; see tools/content/prepare-characters.mjs.

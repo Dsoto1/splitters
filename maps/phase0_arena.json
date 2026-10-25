@@ -1,0 +1,376 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 15,
+  "metadata": {
+    "id": "phase0_arena",
+    "name": "Phase 0 Arena",
+    "author": "Tile Trigger",
+    "description": "Duel arena: a graybox loop around a pillar hall with an upper floor. Tight and fast, for 2–4 players.",
+    "createdAt": "2026-10-22T00:00:00.000Z",
+    "updatedAt": "2026-10-22T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 2,
+      "max": 4
+    },
+    "supportedModes": [
+      "core.deathmatch"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.prototype",
+    "tiles": [
+      {
+        "id": "t_room_sw",
+        "tile": "core.room",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_corr_s",
+        "tile": "core.corridor",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "t_room_se",
+        "tile": "core.room_pillar",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_junc_w",
+        "tile": "core.junction_t",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "t_hub",
+        "tile": "core.room_pillar",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_junc_e",
+        "tile": "core.junction_t",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "t_room_nw",
+        "tile": "core.room",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_stairs",
+        "tile": "core.stairs",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_room_ne",
+        "tile": "core.room",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_upper_n",
+        "tile": "core.room",
+        "x": 2,
+        "y": 2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "t_upper_s",
+        "tile": "core.room_pillar",
+        "x": 2,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "sp_room_sw",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 0.785,
+      "faction": null
+    },
+    {
+      "id": "sp_corr_s",
+      "position": [
+        8,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 1.571,
+      "faction": null
+    },
+    {
+      "id": "sp_room_se",
+      "position": [
+        16,
+        0,
+        -2.5
+      ],
+      "kind": "spawn",
+      "yaw": -0.651,
+      "faction": null
+    },
+    {
+      "id": "sp_hub",
+      "position": [
+        10.5,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": -1.571,
+      "faction": null
+    },
+    {
+      "id": "sp_room_nw",
+      "position": [
+        0,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 2.356,
+      "faction": null
+    },
+    {
+      "id": "sp_room_ne",
+      "position": [
+        16,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": -2.356,
+      "faction": null
+    },
+    {
+      "id": "sp_upper_n",
+      "position": [
+        16,
+        4,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": -1.571,
+      "faction": null
+    },
+    {
+      "id": "sp_upper_s",
+      "position": [
+        16,
+        4,
+        5.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "pk_health_sw",
+      "position": [
+        2.5,
+        0,
+        -2.5
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_health_ne",
+      "position": [
+        13.5,
+        0,
+        13.5
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_health_up",
+      "position": [
+        18.5,
+        4,
+        18.5
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_armor_hub",
+      "position": [
+        5.5,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_armor_se",
+      "position": [
+        13.5,
+        0,
+        -2.5
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_ammo_w",
+      "position": [
+        0,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_ammo_e",
+      "position": [
+        16,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_rifle",
+      "position": [
+        18.5,
+        0,
+        2.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_shotgun",
+      "position": [
+        -2.5,
+        0,
+        18.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_sniper",
+      "position": [
+        18.5,
+        4,
+        10.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_launcher",
+      "position": [
+        13.5,
+        0,
+        18.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_speed",
+      "position": [
+        5.5,
+        0,
+        -2
+      ],
+      "kind": "pickup",
+      "item": "core.powerup_speed",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_damage",
+      "position": [
+        13.5,
+        4,
+        13.5
+      ],
+      "kind": "pickup",
+      "item": "core.powerup_damage",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_light_001",
+      "position": [
+        16,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": null,
+  "backdrop": null,
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
+  "dependencies": []
+}

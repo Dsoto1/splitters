@@ -1,0 +1,1833 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 15,
+  "metadata": {
+    "id": "sky_islands",
+    "name": "Sky Islands",
+    "author": "Tile Trigger",
+    "description": "Five grassy islands floating over the peaks, joined by crumbling stepping stones and one plank bridge that holds. Swim in the centre pond, ride the pad to the sky platform for double damage, grab a jetpack on the far islands, and think twice before stepping on the trapdoors over the lava for the railgun.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 2,
+      "max": 10
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.garden",
+    "tiles": []
+  },
+  "entities": [
+    {
+      "id": "block_001",
+      "position": [
+        -7.5,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        7,
+        2.6,
+        22
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_002",
+      "position": [
+        -7.5,
+        2.6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        7,
+        0.4,
+        22
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_003",
+      "position": [
+        7.5,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        7,
+        2.6,
+        22
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_004",
+      "position": [
+        7.5,
+        2.6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        7,
+        0.4,
+        22
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_005",
+      "position": [
+        0,
+        0,
+        -7.5
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        2.6,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_006",
+      "position": [
+        0,
+        2.6,
+        -7.5
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        0.4,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_007",
+      "position": [
+        0,
+        0,
+        7.5
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        2.6,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_008",
+      "position": [
+        0,
+        2.6,
+        7.5
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        0.4,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_009",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        0.5,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "water_010",
+      "position": [
+        0,
+        0.5,
+        0
+      ],
+      "kind": "water",
+      "size": [
+        8,
+        2.3,
+        8
+      ],
+      "liquid": "water"
+    },
+    {
+      "id": "block_011",
+      "position": [
+        0,
+        1,
+        40
+      ],
+      "kind": "block",
+      "size": [
+        18,
+        2.6,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_012",
+      "position": [
+        0,
+        3.6,
+        40
+      ],
+      "kind": "block",
+      "size": [
+        18,
+        0.4,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_013",
+      "position": [
+        0,
+        -1,
+        -40
+      ],
+      "kind": "block",
+      "size": [
+        18,
+        2.6,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_014",
+      "position": [
+        0,
+        1.6,
+        -40
+      ],
+      "kind": "block",
+      "size": [
+        18,
+        0.4,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_015",
+      "position": [
+        40,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        18,
+        2.6,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_016",
+      "position": [
+        40,
+        2.6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        18,
+        0.4,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_017",
+      "position": [
+        -46,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        2.6,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_018",
+      "position": [
+        -46,
+        2.6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.4,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_019",
+      "position": [
+        -34,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        2.6,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_020",
+      "position": [
+        -34,
+        2.6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.4,
+        18
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_021",
+      "position": [
+        -40,
+        0,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        2.6,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_022",
+      "position": [
+        -40,
+        2.6,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.4,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_023",
+      "position": [
+        -40,
+        0,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        2.6,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_024",
+      "position": [
+        -40,
+        2.6,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.4,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_grass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_025",
+      "position": [
+        -40,
+        -0.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.5,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_charred_wood",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "water_026",
+      "position": [
+        -40,
+        0,
+        0
+      ],
+      "kind": "water",
+      "size": [
+        6,
+        1,
+        6
+      ],
+      "liquid": "lava"
+    },
+    {
+      "id": "block_027",
+      "position": [
+        -42.2,
+        0,
+        -2.2
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1.1,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_028",
+      "position": [
+        -42.2,
+        0,
+        2.2
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        2.1,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_029",
+      "position": [
+        -41.5,
+        2.7,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        0.3,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "trapdoor",
+      "trigger": "step",
+      "delaySeconds": 0.15,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_030",
+      "position": [
+        -38.5,
+        2.7,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        0.3,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "trapdoor",
+      "trigger": "step",
+      "delaySeconds": 0.15,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_031",
+      "position": [
+        -41.5,
+        2.7,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        0.3,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "trapdoor",
+      "trigger": "step",
+      "delaySeconds": 0.15,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_032",
+      "position": [
+        -38.5,
+        2.7,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        0.3,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "trapdoor",
+      "trigger": "step",
+      "delaySeconds": 0.15,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_033",
+      "position": [
+        0,
+        2.5833333333333335,
+        12.666666666666666
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_034",
+      "position": [
+        0,
+        2.75,
+        16
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_035",
+      "position": [
+        0,
+        2.9166666666666665,
+        19.333333333333336
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_036",
+      "position": [
+        0,
+        3.0833333333333335,
+        22.666666666666668
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_037",
+      "position": [
+        0,
+        3.25,
+        26
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_038",
+      "position": [
+        0,
+        3.4166666666666665,
+        29.333333333333332
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_039",
+      "position": [
+        0,
+        2.4166666666666665,
+        -12.666666666666666
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_040",
+      "position": [
+        0,
+        2.25,
+        -16
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_041",
+      "position": [
+        0,
+        2.0833333333333335,
+        -19.333333333333336
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_042",
+      "position": [
+        0,
+        1.9166666666666665,
+        -22.666666666666668
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_043",
+      "position": [
+        0,
+        1.75,
+        -26
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_044",
+      "position": [
+        0,
+        1.5833333333333335,
+        -29.333333333333332
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_045",
+      "position": [
+        -12.666666666666666,
+        2.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_046",
+      "position": [
+        -16,
+        2.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_047",
+      "position": [
+        -19.333333333333336,
+        2.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_048",
+      "position": [
+        -22.666666666666668,
+        2.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_049",
+      "position": [
+        -26,
+        2.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_050",
+      "position": [
+        -29.333333333333332,
+        2.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.9,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_051",
+      "position": [
+        21,
+        2.6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        20,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_052",
+      "position": [
+        0,
+        12,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.5,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_marble_black",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_053",
+      "position": [
+        0,
+        3,
+        8
+      ],
+      "kind": "pad",
+      "yaw": 3.1416,
+      "power": 21,
+      "push": 6.96
+    },
+    {
+      "id": "pad_054",
+      "position": [
+        0,
+        4,
+        33
+      ],
+      "kind": "pad",
+      "yaw": 2.9148,
+      "power": 12,
+      "push": 29.46
+    },
+    {
+      "id": "pad_055",
+      "position": [
+        0,
+        2,
+        -33
+      ],
+      "kind": "pad",
+      "yaw": -0.2268,
+      "power": 13,
+      "push": 30.24
+    },
+    {
+      "id": "block_056",
+      "position": [
+        -6,
+        3,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        1.2,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 20,
+      "health": 90
+    },
+    {
+      "id": "block_057",
+      "position": [
+        6,
+        3,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        1.2,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 20,
+      "health": 90
+    },
+    {
+      "id": "block_058",
+      "position": [
+        44,
+        3,
+        -4
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        1.2,
+        1
+      ],
+      "yaw": 0.4,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 20,
+      "health": 90
+    },
+    {
+      "id": "block_059",
+      "position": [
+        36,
+        3,
+        5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        1.2,
+        1
+      ],
+      "yaw": -0.3,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 20,
+      "health": 90
+    },
+    {
+      "id": "block_060",
+      "position": [
+        -4,
+        4,
+        44
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        1.2,
+        1
+      ],
+      "yaw": 0.2,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 20,
+      "health": 90
+    },
+    {
+      "id": "block_061",
+      "position": [
+        4,
+        2,
+        -44
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        1.2,
+        1
+      ],
+      "yaw": -0.2,
+      "material": "core.pbr_planks",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 20,
+      "health": 90
+    },
+    {
+      "id": "prop_062",
+      "position": [
+        -6,
+        4,
+        46
+      ],
+      "kind": "prop",
+      "model": "prop.pine_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_063",
+      "position": [
+        5,
+        4,
+        36
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": "#b8c878"
+    },
+    {
+      "id": "prop_064",
+      "position": [
+        44,
+        3,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.tree_round",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_065",
+      "position": [
+        -47,
+        3,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.bush_leafy",
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "spawn_066",
+      "position": [
+        -5,
+        4,
+        42
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_067",
+      "position": [
+        5,
+        4,
+        44
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_068",
+      "position": [
+        -5,
+        2,
+        -42
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_069",
+      "position": [
+        5,
+        2,
+        -44
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_070",
+      "position": [
+        42,
+        3,
+        -5
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_071",
+      "position": [
+        44,
+        3,
+        4
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_072",
+      "position": [
+        -44,
+        3,
+        -6
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_073",
+      "position": [
+        -44,
+        3,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_074",
+      "position": [
+        -8,
+        3,
+        -8
+      ],
+      "kind": "spawn",
+      "yaw": 0.8,
+      "faction": null
+    },
+    {
+      "id": "spawn_075",
+      "position": [
+        8,
+        3,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": -2.3,
+      "faction": null
+    },
+    {
+      "id": "pickup_076",
+      "position": [
+        0,
+        4,
+        46
+      ],
+      "kind": "pickup",
+      "item": "core.jetpack",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_077",
+      "position": [
+        0,
+        2,
+        -46
+      ],
+      "kind": "pickup",
+      "item": "core.jetpack",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_078",
+      "position": [
+        -40,
+        3,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_079",
+      "position": [
+        44,
+        3,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_080",
+      "position": [
+        6,
+        2,
+        -40
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_081",
+      "position": [
+        0,
+        12.5,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.powerup_damage",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_082",
+      "position": [
+        -6,
+        4,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_083",
+      "position": [
+        8,
+        3,
+        -2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_084",
+      "position": [
+        -8,
+        3,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_085",
+      "position": [
+        40,
+        3,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_flamethrower",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_086",
+      "position": [
+        0,
+        3,
+        9
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_087",
+      "position": [
+        0,
+        3,
+        -9
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_088",
+      "position": [
+        42,
+        3,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_089",
+      "position": [
+        -4,
+        2,
+        -40
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "spawn_090",
+      "position": [
+        -47.2,
+        3.05,
+        7.38
+      ],
+      "kind": "spawn",
+      "yaw": 1.72,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_091",
+      "position": [
+        -39.18,
+        3.05,
+        -5.44
+      ],
+      "kind": "spawn",
+      "yaw": 1.42,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_092",
+      "position": [
+        -39.18,
+        3.05,
+        5.9
+      ],
+      "kind": "spawn",
+      "yaw": 1.72,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_093",
+      "position": [
+        -32.62,
+        3.05,
+        -7.34
+      ],
+      "kind": "spawn",
+      "yaw": 1.34,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_094",
+      "position": [
+        -32.62,
+        3.05,
+        -2.72
+      ],
+      "kind": "spawn",
+      "yaw": 1.48,
+      "faction": "embers"
+    },
+    {
+      "id": "flag_095",
+      "position": [
+        -47.2,
+        3.05,
+        -7.2
+      ],
+      "kind": "flag",
+      "yaw": 1.41,
+      "team": "embers"
+    },
+    {
+      "id": "spawn_096",
+      "position": [
+        46.86,
+        3.05,
+        8.1
+      ],
+      "kind": "spawn",
+      "yaw": -1.73,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_097",
+      "position": [
+        46.73,
+        3.05,
+        -3.27
+      ],
+      "kind": "spawn",
+      "yaw": -1.5,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_098",
+      "position": [
+        38.47,
+        3.05,
+        7.07
+      ],
+      "kind": "spawn",
+      "yaw": -1.74,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_099",
+      "position": [
+        38.34,
+        3.05,
+        3.58
+      ],
+      "kind": "spawn",
+      "yaw": -1.65,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_100",
+      "position": [
+        37.47,
+        3.05,
+        -4.2
+      ],
+      "kind": "spawn",
+      "yaw": -1.45,
+      "faction": "tide"
+    },
+    {
+      "id": "flag_101",
+      "position": [
+        46.87,
+        3.05,
+        3.07
+      ],
+      "kind": "flag",
+      "yaw": -1.63,
+      "team": "tide"
+    },
+    {
+      "id": "hill_102",
+      "position": [
+        -4.4,
+        3.05,
+        5.6
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_103",
+      "position": [
+        4.6,
+        3.05,
+        -5.47
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_104",
+      "position": [
+        8.96,
+        3.05,
+        9.6
+      ],
+      "kind": "hill",
+      "radius": 5
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": null,
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "peaks",
+    "ground": "none",
+    "haze": 0.45
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      5,
+      5
+    ]
+  },
+  "dependencies": []
+}

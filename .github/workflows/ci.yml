@@ -1,0 +1,74 @@
+name: CI
+
+# Branch pushes are covered by their pull request; main is checked on every push.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer commit makes the run for the older one pointless.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # Pinned: Playwright 1.56 has no browser builds for newer Ubuntu images.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm content:check
+      - run: pnpm test
+      - run: pnpm validate-map maps/phase0_arena.json
+      - run: pnpm validate-map maps/m3_vault.json
+      - run: pnpm validate-map maps/m4_outpost.json
+      - run: pnpm bench 32 15 -- --npcs=32
+      - run: pnpm bench 32 30
+      - run: pnpm build
+      # The built site, for the browser tests below (they don't build it again).
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client-dist
+          path: packages/client/dist
+          retention-days: 1
+
+  e2e:
+    needs: check
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    name: e2e (${{ matrix.shard }}/4)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-dist
+          path: packages/client/dist
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm e2e
+        env:
+          E2E_SHARD: ${{ matrix.shard }}/4
+          E2E_STACKS: '1' # page errors come with their stacks, to trace CI-only failures
+      # What the pages showed when a check failed.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots-${{ matrix.shard }}
+          path: e2e-artifacts
+          retention-days: 7
+          if-no-files-found: ignore

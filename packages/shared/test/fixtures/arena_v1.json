@@ -1,0 +1,44 @@
+{
+  "format": "chronosplit.map",
+  "formatVersion": 1,
+  "metadata": {
+    "id": "phase0_arena",
+    "name": "Phase 0 Arena",
+    "author": "ChronoSplit",
+    "description": "Graybox proof map: a ground-floor loop around a pillar room, with stairs up to a two-room upper level.",
+    "createdAt": "2026-10-22T00:00:00.000Z",
+    "updatedAt": "2026-10-22T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": { "min": 2, "max": 8 },
+    "supportedModes": ["core.deathmatch"]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.prototype",
+    "tiles": [
+      { "id": "t_room_sw", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0 },
+      { "id": "t_corr_s", "tile": "core.corridor", "x": 1, "y": 0, "z": 0, "rotation": 1 },
+      { "id": "t_room_se", "tile": "core.room_pillar", "x": 2, "y": 0, "z": 0, "rotation": 0 },
+      { "id": "t_junc_w", "tile": "core.junction_t", "x": 0, "y": 1, "z": 0, "rotation": 1 },
+      { "id": "t_hub", "tile": "core.room_pillar", "x": 1, "y": 1, "z": 0, "rotation": 0 },
+      { "id": "t_junc_e", "tile": "core.junction_t", "x": 2, "y": 1, "z": 0, "rotation": 3 },
+      { "id": "t_room_nw", "tile": "core.room", "x": 0, "y": 2, "z": 0, "rotation": 0 },
+      { "id": "t_stairs", "tile": "core.stairs", "x": 1, "y": 2, "z": 0, "rotation": 0 },
+      { "id": "t_room_ne", "tile": "core.room", "x": 2, "y": 2, "z": 0, "rotation": 0 },
+      { "id": "t_upper_n", "tile": "core.room", "x": 2, "y": 2, "z": 1, "rotation": 0 },
+      { "id": "t_upper_s", "tile": "core.room_pillar", "x": 2, "y": 1, "z": 1, "rotation": 0 }
+    ]
+  },
+  "entities": [
+    { "id": "sp_room_sw", "kind": "spawn", "position": [0, 0, 0], "yaw": 0.785, "faction": null },
+    { "id": "sp_corr_s", "kind": "spawn", "position": [8, 0, -2], "yaw": 1.571, "faction": null },
+    { "id": "sp_room_se", "kind": "spawn", "position": [16, 0, -2.5], "yaw": -0.651, "faction": null },
+    { "id": "sp_hub", "kind": "spawn", "position": [10.5, 0, 8], "yaw": -1.571, "faction": null },
+    { "id": "sp_room_nw", "kind": "spawn", "position": [0, 0, 16], "yaw": 2.356, "faction": null },
+    { "id": "sp_room_ne", "kind": "spawn", "position": [16, 0, 16], "yaw": -2.356, "faction": null },
+    { "id": "sp_upper_n", "kind": "spawn", "position": [16, 4, 16], "yaw": -1.571, "faction": null },
+    { "id": "sp_upper_s", "kind": "spawn", "position": [16, 4, 5.5], "yaw": 0, "faction": null }
+  ],
+  "dependencies": []
+}

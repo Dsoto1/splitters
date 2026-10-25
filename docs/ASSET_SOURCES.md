@@ -1,0 +1,114 @@
+# Asset Sources
+
+**Status:** research shortlist (October 2026). Licences were checked through the creators' store pages and secondary guides. **Before importing any pack, read the licence file inside the actual download and record it in provenance** (CONTENT_PIPELINE.md). Licence terms can change between versions.
+
+Policy recap: shipped content is hand-made by people, either by us or by human artists under a free licence. No generated content (OPEN_QUESTIONS.md, "Decisions"). Prefer packs from **named creators** over open aggregators, where machine-generated uploads are harder to rule out.
+
+## Imported so far
+
+The authoritative per-file list is generated at `content/provenance.json` (`pnpm content:build`). Source files and each pack's licence live in `assets-src/<pack>/`. Packs too large to keep, or not ours to redistribute, keep only their licence in `assets-src/<pack>/License.txt`; their processed outputs and lock files are committed, and the import is re-run from a local downloads directory (CONTENT_PIPELINE.md §3, "Pack imports from a downloads directory"): the Quaternius character and animation packs, the Modular SciFi MegaKit and the Bestiary kit.
+
+| Pack | Licence (verified in the download) | Used for |
+|---|---|---|
+| Quaternius — Ultimate Gun Pack (itch.io "50+ LowPoly Guns") | CC0 1.0 | Pistol, revolver, SMG, assault rifle, shotgun, sniper rifle, bayonet (knife) |
+| Kenney — Blaster Kit 2.1 | CC0 1.0 | Grenade launcher (recoloured blaster-h), grenade projectile |
+| Kenney — Sci-Fi Sounds, Impact Sounds, RPG Audio, Interface Sounds, Voiceover Pack: Fighter | CC0 1.0 | Explosions, impacts, footsteps, reloads, pickups, UI cues, announcer (see AUDIO.md) |
+| Quaternius — Universal Base Characters, Modular Character Outfits – Fantasy, Universal Animation Library 1 + 2 (free Standard editions) | CC0 1.0 | Player, bot and NPC characters: every base body, outfit part, hairstyle, colourway and mannequin in the free editions, plus 20 animation clips (see CHARACTERS.md) |
+| Kenney — Survival Kit, Furniture Kit, Graveyard Kit 5.0, Pirate Kit, Space Station Kit, Factory Kit 3.0, Mini Dungeon, City Kit (Commercial) 2.1, Nature Kit 2.1, Castle Kit, Fantasy Town Kit 2.0, Train Kit, Mini Market, Platformer Kit | CC0 1.0 | 267 placeable props: furniture, machines, trees and plants (the Nature Kit also grows as terrain plants, see SCENERY.md), castle walls and siege engines, market stalls, fountains and windmills, trains and rail, shop fittings (see `content/props.json` and MAP_BUDGETS.md) (crates, barrels, furniture, machines, consoles, gravestones, trees, rocks, tents, cannons…), see `content/props.json` |
+| Quaternius — Modular SciFi MegaKit [Standard] (free edition) | CC0 1.0 | 110 sci-fi set pieces as props in four categories (Sci-Fi Base, Walls, Platforms, Decals: props, all columns, straight, full-height and corner walls, doors and doorway frames, floor plates, stairs, ramps, railings, a few decals), and the three alien creatures (cyclops, oculus, scolitex NPCs). Raw download kept out of the repo (≈65 MB); rebuilt with `prepare-props.mjs --downloads` and `prepare-creatures.mjs` |
+| Quaternius — Bestiary – Dungeon Monsters Kit [Standard] (free edition) | **Quaternius Asset License (QAL) v1.0** ([terms](https://quaternius.com/license.html)) | Imp and puglin creature NPCs (`packages/client/public/creatures`). Free for commercial games, no credit required, but the assets may not be resold or redistributed *as assets*: only processed, game-ready models ship inside the game, and the raw pack files (zip, FBX, GLB, textures) are never committed. Our copy of the terms summary: `assets-src/quaternius-bestiary-dungeon-monsters/License.txt` |
+| Poly Haven — 10 pure-sky photographs (Greg Zaal, Jarod Guest, Sergej Majboroda) | CC0 1.0 | Sky backdrops, see `content/skies.json` and SCENERY.md |
+| ambientCG (Lennart Demes) — 41 photographed/scanned material sets | CC0 1.0 | Wall, floor and trim materials and the themes built from them, see `content/textures.json` |
+| Chakra Petch (Cadson Demak) and Barlow (Jeremy Tribby), via the `@fontsource` npm packages | SIL Open Font License 1.1 | UI type: Chakra Petch for headings, buttons and HUD numbers; Barlow for body text (see UI.md) |
+
+## Licence tiers
+
+| Tier | Licences | Obligations | Use for |
+|---|---|---|---|
+| **1: Free, no credit** | CC0 (public domain) | None. Crediting is still a courtesy, and we will. | Anything, including bases we modify heavily |
+| **2: Free with credit** | CC-BY 3.0 / 4.0 | Name the creator, title, source and licence in the in-game credits | Fine. The credits screen is generated from provenance, so it's cheap |
+| **3: Custom royalty-free** | Sonniss GDC bundle, Mixamo, Quaternius Asset License (QAL) v1.0 | Read the specific terms; usually no raw-file redistribution | Selectively, with the terms saved alongside. `content:check` accepts QAL (`LicenseRef-Quaternius-QAL-1.0`) only for creature models, whose raw files stay outside the repo |
+| **Avoid** | CC-BY-NC (non-commercial), CC-BY-SA / GPL on art (share-alike would apply to our derivatives), "personal use only", unknown licence | n/a | Never in shipped builds |
+
+## Shortlist by category
+
+### Characters and animation
+
+| Source | Licence | What it gives us | Fit notes |
+|---|---|---|---|
+| [Quaternius Universal Base Characters](https://quaternius.itch.io/universal-base-characters) | CC0 | Rigged humanoid base bodies built for retargeting | **Recommended base** for the Character Designer |
+| [Quaternius Modular Character Outfits – Fantasy](https://quaternius.itch.io/modular-character-outfits-fantasy) | CC0 | 12 outfits as 62 swappable parts on those bases | Proves part swapping. We add our own eras and costumes on the same rig |
+| [Quaternius Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html) and [Library 2](https://quaternius.itch.io/universal-animation-library-2) | CC0 | 120+ and 130+ animations on one humanoid rig; Library 2 says it also works with Mixamo-style rigs | Candidate **rig standard**. The free "Standard" editions are subsets; the paid "Source" editions include the .blend files. Check FPS weapon-holding coverage |
+| [KayKit Character Animations](https://kaylousberg.itch.io/kaykit-character-animations), [Adventurers](https://kaylousberg.itch.io/kaykit-adventurers), [Skeletons](https://kaylousberg.itch.io/kaykit-skeletons) | CC0 | Chunky stylised characters plus ~130 animations (melee, ranged, movement) on KayKit's own rigs | Different rig from Quaternius, so it would need retargeting. Good for NPCs/creatures, or as a second body family |
+| [Mixamo](https://community.adobe.com/questions-696/mixamo-faq-licensing-royalties-ownership-eula-and-tos-589400) | Adobe terms (tier 3) | Large animation library and auto-rigger | Royalty-free in games per Adobe staff; **raw files may not be redistributed**. A web game ships files to the browser, so get a clear reading before relying on it. Prefer CC0 animations |
+
+### Weapons
+
+| Source | Licence | Notes |
+|---|---|---|
+| [Quaternius 50+ LowPoly Guns](https://quaternius.itch.io/50-lowpoly-guns) (also [on OpenGameArt](https://opengameart.org/content/low-poly-guns-pack)) | CC0 | Pistols, SMGs, shotguns, snipers, rifles. World models; first-person viewmodels need adjusting (scale, hands, muzzle sockets). Covers most of M2's six roles |
+| Kenney weapon/blaster packs ([example listing](https://opengameart.org/content/space-kit)) | CC0 (verify per pack on kenney.nl) | Knives, grenades, pistols, rocket launchers; a playful style |
+
+### Environments and props
+
+| Source | Licence | Notes |
+|---|---|---|
+| [Quaternius Modular Sci-Fi MEGAKIT](https://quaternius.itch.io/modular-sci-fi-megakit) | CC0 | 270+ grid-based pieces (190 in the free edition). A lab/space-station theme candidate |
+| [KayKit Dungeon Remastered](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0 | 200+ walls, floors, stairs, doors and props on one gradient atlas, so recolouring is easy. A tomb/gothic theme candidate |
+| [Quaternius LowPoly Modular Dungeon Pack](https://opengameart.org/content/lowpoly-modular-dungeon-pack) | CC0 | 45+ dungeon pieces |
+| Kenney 3D kits (furniture, space, city and more; e.g. [Furniture Kit](https://opengameart.org/content/furniture-kit)) | CC0 (verify on kenney.nl) | Huge prop variety in one consistent style |
+| [Poly Pizza](https://poly.pizza/docs/uploading) | Mostly CC-BY, some CC0, **per model** | Big low-poly aggregator. Check each model's licence and creator; avoid unattributed uploads |
+
+Fit note: our Classic Grid uses 8 m cells and 4 m floors. Third-party modular kits use their own grid sizes, so start with them as **props and dressing**. Becoming full tile themes needs a scale/port check in the kit viewer.
+
+### Textures, materials, skies
+
+| Source | Licence | Notes |
+|---|---|---|
+| [Poly Haven](https://app.cinevva.com/guides/free-textures-hdris-materials) | CC0 | Photo-scanned PBR textures and HDRI skies. A future upgrade path for our procedural material library |
+| [ambientCG](https://app.cinevva.com/guides/free-textures-hdris-materials) | CC0 | ~2,000 PBR materials |
+| FreePBR | Paid for commercial use | Avoid |
+
+### Sound effects
+
+| Source | Licence | Notes |
+|---|---|---|
+| Kenney audio packs | CC0 | UI clicks, impacts, retro SFX |
+| [Freesound](https://app.cinevva.com/guides/free-sound-effects-music) | Per sound: CC0 / CC-BY / CC-BY-NC | Filter to **CC0 (or CC-BY with credit)**; never NC |
+| [Sonniss GDC Game Audio Bundle](https://gamefromscratch.com/soniss-release-16gb-of-sound-fx-for-free/) | Custom royalty-free (tier 3) | Hundreds of GB of professional SFX across yearly bundles; commercial use, no attribution. Its own licence, not CC, so keep the licence PDF with the files |
+| OpenGameArt | Per file | Filter to CC0/CC-BY |
+| Artlist SFX catalog | Artlist subscription licence | Human-recorded and good quality, but **not usable for shipped builds on a standard plan**. Artlist's [Enterprise plan page](https://help.artlist.io/hc/en-us/articles/33980035053213-Enterprise-plan-explained) says stock assets in games need an Enterprise plan. The standard licence lists games only for "background" use and bars standalone distribution, and a web game ships every sound as its own file. Use only with written confirmation from Artlist or an Enterprise agreement. Keep files out of the repo until then |
+
+### Music
+
+| Source | Licence | Notes |
+|---|---|---|
+| [Kevin MacLeod / Incompetech](https://app.cinevva.com/guides/free-sound-effects-music) | CC-BY 4.0 | 2,000+ tracks. Credit title, artist, site and licence ([example of in-game credits](https://gamedevgroupcppfall.itch.io/forests-caves-and-hives)). Paid no-credit licences exist |
+| OpenGameArt music | Per file | Filter to CC0/CC-BY |
+
+### UI, icons, fonts
+
+| Source | Licence | Notes |
+|---|---|---|
+| [game-icons.net](https://game-icons.net/about.html) | CC-BY 3.0 | 4,000+ game icons. Credit **each icon's author**, not just the site |
+| Kenney UI packs | CC0 | Buttons, panels, cursors |
+| Google Fonts | SIL Open Font License (verify per font) | Free to embed in games |
+
+## Recommended starting set
+
+1. **Characters:** Quaternius Universal Base Characters + Outfits + Universal Animation Library, with their humanoid rig as our rig standard for M5.
+2. **Weapons (M2):** Quaternius 50+ LowPoly Guns as the base, reworked into viewmodels.
+3. **Props/themes:** KayKit Dungeon Remastered (tomb/manor) and the Quaternius Sci-Fi MEGAKIT (lab), first as props.
+4. **Audio:** Kenney + Freesound CC0 + the Sonniss bundle for SFX; Incompetech for placeholder-to-shipping music.
+5. **Icons:** game-icons.net with per-author credits.
+
+Everything in this set is CC0 except Incompetech and game-icons.net, which only need credit lines, and Sonniss, which has its own royalty-free licence.
+
+## Import checklist (per pack)
+
+- [ ] Downloaded from the creator's official page; licence file saved under `assets-src/<pack>/LICENSE*`.
+- [ ] Provenance recorded for each asset: creator, pack, version, URL, licence, date.
+- [ ] Credit line added to the generated credits (always for CC-BY; courtesy for CC0).
+- [ ] Passes budgets and rig/scale checks (`content:check`).
+- [ ] Modified to fit our look (materials, tints, kitbashing), so the game doesn't look like every other game using the same pack.
+- [ ] Originality review for anything character-shaped (CHARACTERS_BOTS_V2 §2.2).

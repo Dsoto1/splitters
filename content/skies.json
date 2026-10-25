@@ -1,0 +1,141 @@
+{
+  "$comment": "Sky backdrops: CC0 photographs from Poly Haven (pure-sky edits, no ground). Built by tools/content/prepare-skies.mjs into packages/client/public/skies. `light` sets the scene lights under each sky (hemisphere and sun intensity, sun colour, sun elevation in degrees). `grade` (optional) multiplies the photo's red, green and blue.",
+  "license": "CC0-1.0",
+  "skies": [
+    {
+      "id": "clear",
+      "name": "Clear day",
+      "source": "kloofendal_43d_clear_puresky",
+      "title": "Kloofendal 43d Clear (Pure Sky)",
+      "authors": "Greg Zaal",
+      "light": {
+        "hemi": 0.85,
+        "sun": 0.75,
+        "sunColor": "#fff4e0",
+        "elevation": 43
+      }
+    },
+    {
+      "id": "cloudy",
+      "name": "Partly cloudy",
+      "source": "kloofendal_48d_partly_cloudy_puresky",
+      "title": "Kloofendal 48d Partly Cloudy (Pure Sky)",
+      "authors": "Greg Zaal, Jarod Guest",
+      "light": {
+        "hemi": 0.85,
+        "sun": 0.65,
+        "sunColor": "#fff2dc",
+        "elevation": 48
+      }
+    },
+    {
+      "id": "overcast",
+      "name": "Overcast",
+      "source": "kloofendal_overcast_puresky",
+      "title": "Kloofendal Overcast (Pure Sky)",
+      "authors": "Greg Zaal",
+      "light": {
+        "hemi": 0.95,
+        "sun": 0.25,
+        "sunColor": "#e8ecf0",
+        "elevation": 60
+      }
+    },
+    {
+      "id": "misty",
+      "name": "Misty morning",
+      "source": "kloofendal_misty_morning_puresky",
+      "title": "Kloofendal Misty Morning (Pure Sky)",
+      "authors": "Greg Zaal",
+      "light": {
+        "hemi": 0.9,
+        "sun": 0.4,
+        "sunColor": "#f4e8d8",
+        "elevation": 20
+      }
+    },
+    {
+      "id": "sunrise",
+      "name": "Sunrise",
+      "source": "qwantani_sunrise_puresky",
+      "title": "Qwantani Sunrise (Pure Sky)",
+      "authors": "Greg Zaal, Jarod Guest",
+      "light": {
+        "hemi": 0.7,
+        "sun": 0.7,
+        "sunColor": "#ffc890",
+        "elevation": 10
+      }
+    },
+    {
+      "id": "sunset",
+      "name": "Sunset",
+      "source": "qwantani_sunset_puresky",
+      "title": "Qwantani Sunset (Pure Sky)",
+      "authors": "Greg Zaal, Jarod Guest",
+      "light": {
+        "hemi": 0.65,
+        "sun": 0.75,
+        "sunColor": "#ffb070",
+        "elevation": 8
+      }
+    },
+    {
+      "id": "dusk",
+      "name": "Dusk",
+      "source": "qwantani_dusk_2_puresky",
+      "title": "Qwantani Dusk 2 (Pure Sky)",
+      "authors": "Greg Zaal, Jarod Guest",
+      "light": {
+        "hemi": 0.65,
+        "sun": 0.35,
+        "sunColor": "#d8a8d0",
+        "elevation": 6
+      }
+    },
+    {
+      "id": "night",
+      "name": "Night",
+      "source": "qwantani_night_puresky",
+      "title": "Qwantani Night (Pure Sky)",
+      "authors": "Greg Zaal, Jarod Guest",
+      "light": {
+        "hemi": 0.6,
+        "sun": 0.3,
+        "sunColor": "#9fb8ff",
+        "elevation": 40
+      },
+      "grade": [
+        0.3,
+        0.36,
+        0.55
+      ]
+    },
+    {
+      "id": "storm",
+      "name": "Stormy",
+      "source": "wasteland_clouds_puresky",
+      "title": "Wasteland Clouds (Pure Sky)",
+      "authors": "Jarod Guest, Sergej Majboroda",
+      "light": {
+        "hemi": 0.8,
+        "sun": 0.35,
+        "sunColor": "#f0e0c8",
+        "elevation": 30
+      }
+    },
+    {
+      "id": "snowy",
+      "name": "Snowy",
+      "source": "snow_field_puresky",
+      "title": "Snow Field (Pure Sky)",
+      "authors": "Jarod Guest, Sergej Majboroda",
+      "light": {
+        "hemi": 0.95,
+        "sun": 0.45,
+        "sunColor": "#f0f4ff",
+        "elevation": 30
+      }
+    }
+  ]
+}

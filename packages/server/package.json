@@ -1,0 +1,25 @@
+{
+  "name": "@tiletrigger/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "bench": "tsx src/tools/bench.ts",
+    "validate-map": "tsx src/tools/validate-map.ts",
+    "typecheck": "tsc -p .",
+    "build-sandgate": "tsx src/tools/build-sandgate.ts",
+    "build-citadel": "tsx src/tools/build-citadel.ts",
+    "build-canyon": "tsx src/tools/build-canyon.ts",
+    "hub": "tsx src/hub.ts"
+  },
+  "dependencies": {
+    "@tiletrigger/shared": "workspace:*",
+    "peer": "1.0.2",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.20.6"
+  }
+}

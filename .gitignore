@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+.vite/
+.cache/
+*.gci
+*.GCI
+.claude/worktrees/
+e2e-artifacts/

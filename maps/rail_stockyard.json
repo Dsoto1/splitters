@@ -1,0 +1,4186 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 15,
+  "metadata": {
+    "id": "rail_stockyard",
+    "name": "Rail Stockyard",
+    "author": "Tile Trigger",
+    "description": "A railway goods yard at dusk. Weave between boxcars and cargo stacks in the open yard, drop into the sunken loading pit, slip through the culvert beneath the tracks, or run the dock catwalk between the two brick sheds and their windows over the yard. The railgun waits on the crane perch above the pit, and the only way out to it is a bare girder from the west shed roof, in plain sight of everyone.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 6,
+      "max": 12
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm",
+      "core.ctf",
+      "core.koth"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.factory",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "railing"
+        }
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "railing"
+        }
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "railing"
+        }
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.yard",
+        "x": 9,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.yard",
+        "x": 9,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.yard",
+        "x": 9,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.yard",
+        "x": 9,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "railing"
+        }
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "railing"
+        }
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "railing"
+        }
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "railing"
+        }
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.stairs_open",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 3,
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.stairs_open",
+        "x": 7,
+        "y": 6,
+        "z": 0,
+        "rotation": 3,
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#b0a898"
+          }
+        }
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#b0a898"
+          }
+        }
+      },
+      {
+        "id": "tile_057",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#b0a898"
+          }
+        }
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#b0a898"
+          }
+        }
+      },
+      {
+        "id": "tile_059",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#b0a898"
+          }
+        }
+      },
+      {
+        "id": "tile_060",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#b0a898"
+          }
+        }
+      },
+      {
+        "id": "tile_061",
+        "tile": "core.stairs_open",
+        "x": 3,
+        "y": 3,
+        "z": -1,
+        "rotation": 2,
+        "edges": {
+          "0,0,1:S": "railing",
+          "0,0,1:N": "railing",
+          "0,0,0:S": "wall",
+          "0,0,0:N": "wall",
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "tile_062",
+        "tile": "core.stairs_open",
+        "x": 7,
+        "y": 4,
+        "z": -1,
+        "rotation": 0,
+        "edges": {
+          "0,0,1:N": "railing",
+          "0,0,1:S": "railing",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "wall",
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.corridor",
+        "x": 5,
+        "y": 2,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_064",
+        "tile": "core.junction_t",
+        "x": 5,
+        "y": 1,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_065",
+        "tile": "core.corridor_clear",
+        "x": 4,
+        "y": 1,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_066",
+        "tile": "core.corridor",
+        "x": 3,
+        "y": 1,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_067",
+        "tile": "core.corridor_clear",
+        "x": 6,
+        "y": 1,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_068",
+        "tile": "core.corridor",
+        "x": 7,
+        "y": 1,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_069",
+        "tile": "core.stairs",
+        "x": 2,
+        "y": 1,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_070",
+        "tile": "core.stairs",
+        "x": 8,
+        "y": 1,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_071",
+        "tile": "core.atrium",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "1,0,0:E": "wide",
+          "1,1,0:E": "window",
+          "1,0,1:E": "windows",
+          "1,1,1:E": "window"
+        }
+      },
+      {
+        "id": "tile_072",
+        "tile": "core.room_large",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "1,0,0:E": "door",
+          "1,1,0:E": "window"
+        }
+      },
+      {
+        "id": "tile_073",
+        "tile": "core.room",
+        "x": 0,
+        "y": 5,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_074",
+        "tile": "core.room",
+        "x": 1,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "window"
+        }
+      },
+      {
+        "id": "tile_075",
+        "tile": "core.room",
+        "x": 1,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "window",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_076",
+        "tile": "core.stairwell",
+        "x": 0,
+        "y": 6,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_077",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": 3,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "half",
+          "0,0,0:S": "half"
+        }
+      },
+      {
+        "id": "tile_078",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 3,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "half"
+        }
+      },
+      {
+        "id": "tile_079",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": 4,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "half"
+        }
+      },
+      {
+        "id": "tile_080",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 4,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_081",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": 5,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "half"
+        }
+      },
+      {
+        "id": "tile_082",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 5,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_083",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 6,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "half"
+        }
+      },
+      {
+        "id": "tile_084",
+        "tile": "core.atrium",
+        "x": 9,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "wide",
+          "0,1,0:W": "door",
+          "0,0,1:W": "windows",
+          "0,1,1:W": "window"
+        }
+      },
+      {
+        "id": "tile_085",
+        "tile": "core.room_large",
+        "x": 9,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "door",
+          "0,1,0:W": "window"
+        }
+      },
+      {
+        "id": "tile_086",
+        "tile": "core.room_large",
+        "x": 9,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "window",
+          "0,1,0:W": "windows",
+          "0,1,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_087",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_088",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_089",
+        "tile": "core.platform_rail",
+        "x": 3,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_090",
+        "tile": "core.platform_rail",
+        "x": 4,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_091",
+        "tile": "core.platform_rail",
+        "x": 5,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_092",
+        "tile": "core.platform_rail",
+        "x": 6,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_093",
+        "tile": "core.platform_rail",
+        "x": 7,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_094",
+        "tile": "core.platform_rail",
+        "x": 8,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_095",
+        "tile": "core.platform_rail",
+        "x": 9,
+        "y": 7,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:E": "wall"
+        }
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "block_096",
+      "position": [
+        24.75,
+        7.65,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        25.5,
+        0.35,
+        2.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rusted_plate",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_097",
+      "position": [
+        40,
+        7.6,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.4,
+        5
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_098",
+      "position": [
+        40,
+        -4,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        1.2,
+        11.6,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_099",
+      "position": [
+        48,
+        -4,
+        26
+      ],
+      "kind": "pad",
+      "yaw": 3.141592653589793,
+      "power": 17,
+      "push": 6
+    },
+    {
+      "id": "prop_100",
+      "position": [
+        14,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "position": [
+        15.667,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_102",
+      "position": [
+        17.334,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "position": [
+        19.001,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "position": [
+        20.668000000000003,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "position": [
+        22.335000000000004,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_106",
+      "position": [
+        24.002000000000006,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_107",
+      "position": [
+        25.669000000000008,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_108",
+      "position": [
+        27.33600000000001,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_109",
+      "position": [
+        29.00300000000001,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_110",
+      "position": [
+        30.670000000000012,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_111",
+      "position": [
+        32.33700000000001,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_112",
+      "position": [
+        34.00400000000001,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_113",
+      "position": [
+        35.671000000000014,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_114",
+      "position": [
+        37.338000000000015,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_115",
+      "position": [
+        39.00500000000002,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_116",
+      "position": [
+        40.67200000000002,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_117",
+      "position": [
+        42.33900000000002,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_118",
+      "position": [
+        44.00600000000002,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_119",
+      "position": [
+        45.67300000000002,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_120",
+      "position": [
+        47.340000000000025,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_121",
+      "position": [
+        49.007000000000026,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_122",
+      "position": [
+        50.67400000000003,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_123",
+      "position": [
+        52.34100000000003,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_124",
+      "position": [
+        54.00800000000003,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_125",
+      "position": [
+        55.67500000000003,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_126",
+      "position": [
+        57.342000000000034,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_127",
+      "position": [
+        59.009000000000036,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_128",
+      "position": [
+        60.67600000000004,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_129",
+      "position": [
+        62.34300000000004,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_130",
+      "position": [
+        64.01000000000003,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_131",
+      "position": [
+        65.67700000000004,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_132",
+      "position": [
+        5,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_133",
+      "position": [
+        6.667,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_134",
+      "position": [
+        8.334,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_135",
+      "position": [
+        10.001,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_136",
+      "position": [
+        11.668,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_137",
+      "position": [
+        13.334999999999999,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_138",
+      "position": [
+        15.001999999999999,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        16.669,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        18.336000000000002,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        20.003000000000004,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
+        21.670000000000005,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        23.337000000000007,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        25.00400000000001,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_145",
+      "position": [
+        26.67100000000001,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        28.33800000000001,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        30.005000000000013,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        31.672000000000015,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_149",
+      "position": [
+        33.33900000000001,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        35.006000000000014,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_151",
+      "position": [
+        36.673000000000016,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        38.34000000000002,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_153",
+      "position": [
+        40.00700000000002,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        41.67400000000002,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        43.34100000000002,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        45.008000000000024,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        46.675000000000026,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_158",
+      "position": [
+        48.34200000000003,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_159",
+      "position": [
+        50.00900000000003,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        51.67600000000003,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        53.34300000000003,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        55.01000000000003,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        56.677000000000035,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_164",
+      "position": [
+        58.34400000000004,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_165",
+      "position": [
+        60.01100000000004,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_166",
+      "position": [
+        61.67800000000004,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_167",
+      "position": [
+        63.34500000000004,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_168",
+      "position": [
+        65.01200000000004,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_169",
+      "position": [
+        66.67900000000004,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_170",
+      "position": [
+        68.34600000000005,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_171",
+      "position": [
+        70.01300000000005,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_172",
+      "position": [
+        71.68000000000005,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_173",
+      "position": [
+        73.34700000000005,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_174",
+      "position": [
+        40,
+        0,
+        45.5
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_175",
+      "position": [
+        40,
+        0,
+        47.167
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_176",
+      "position": [
+        40,
+        0,
+        48.834
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_177",
+      "position": [
+        40,
+        0,
+        50.501000000000005
+      ],
+      "kind": "prop",
+      "model": "prop.rail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_178",
+      "position": [
+        40,
+        0,
+        48.1
+      ],
+      "kind": "prop",
+      "model": "prop.container_car_red",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_179",
+      "position": [
+        21,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.locomotive",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_180",
+      "position": [
+        29.6,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.container_car_red",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_181",
+      "position": [
+        50.5,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.tank_car",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_182",
+      "position": [
+        58.4,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.container_car_blue",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_183",
+      "position": [
+        14,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.diesel",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_184",
+      "position": [
+        22,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.coal_car",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_185",
+      "position": [
+        28.5,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.flatbed_car",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_186",
+      "position": [
+        51,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.lumber_car",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_187",
+      "position": [
+        59,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.tank_car",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_188",
+      "position": [
+        67.5,
+        0,
+        -1.5
+      ],
+      "kind": "prop",
+      "model": "prop.container_car_blue",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_189",
+      "position": [
+        20,
+        0,
+        18
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_190",
+      "position": [
+        21.5,
+        0,
+        14.5
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 0.1,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_191",
+      "position": [
+        61,
+        0,
+        18.5
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box",
+      "yaw": -0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_192",
+      "position": [
+        58.5,
+        0,
+        14.5
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": -0.1,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_193",
+      "position": [
+        36,
+        0,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box_long",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_194",
+      "position": [
+        46,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_195",
+      "position": [
+        25,
+        0,
+        31.5
+      ],
+      "kind": "prop",
+      "model": "prop.container_tall",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_196",
+      "position": [
+        23.4,
+        0,
+        33.2
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_197",
+      "position": [
+        55,
+        0,
+        24.5
+      ],
+      "kind": "prop",
+      "model": "prop.container_tall",
+      "yaw": -0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_198",
+      "position": [
+        56.6,
+        0,
+        22.8
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_199",
+      "position": [
+        16,
+        0,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.skip",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_200",
+      "position": [
+        64,
+        0,
+        46
+      ],
+      "kind": "prop",
+      "model": "prop.skip",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_201",
+      "position": [
+        33,
+        0,
+        46
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 1.5707963267948966,
+      "scale": 1.4,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_202",
+      "position": [
+        47,
+        0,
+        46
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 1.5707963267948966,
+      "scale": 1.4,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "destructible_203",
+      "position": [
+        26.5,
+        0,
+        22
+      ],
+      "kind": "destructible",
+      "model": "gas",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_204",
+      "position": [
+        53.5,
+        0,
+        34
+      ],
+      "kind": "destructible",
+      "model": "gas",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_205",
+      "position": [
+        12.8,
+        0,
+        4.5
+      ],
+      "kind": "destructible",
+      "model": "barrel",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_206",
+      "position": [
+        67.2,
+        0,
+        4.5
+      ],
+      "kind": "destructible",
+      "model": "barrel",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "prop_207",
+      "position": [
+        30,
+        0,
+        37.2
+      ],
+      "kind": "prop",
+      "model": "prop.warning_sign",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_208",
+      "position": [
+        50,
+        0,
+        18.8
+      ],
+      "kind": "prop",
+      "model": "prop.warning_sign",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_209",
+      "position": [
+        44,
+        0,
+        37.5
+      ],
+      "kind": "prop",
+      "model": "prop.cone",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_210",
+      "position": [
+        36,
+        0,
+        18.5
+      ],
+      "kind": "prop",
+      "model": "prop.cone",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_211",
+      "position": [
+        9,
+        0,
+        13
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_212",
+      "position": [
+        71,
+        0,
+        13
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_213",
+      "position": [
+        17,
+        0,
+        47
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_214",
+      "position": [
+        63,
+        0,
+        42
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_215",
+      "position": [
+        14,
+        0,
+        57.5
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_216",
+      "position": [
+        22,
+        0,
+        58
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_217",
+      "position": [
+        27,
+        0,
+        58.5
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_218",
+      "position": [
+        27.9,
+        0,
+        58.2
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_219",
+      "position": [
+        52,
+        0,
+        57.5
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_220",
+      "position": [
+        60,
+        0,
+        57.8
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_221",
+      "position": [
+        65,
+        0,
+        58.5
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_222",
+      "position": [
+        40,
+        0,
+        58
+      ],
+      "kind": "prop",
+      "model": "prop.conveyor",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_223",
+      "position": [
+        44.5,
+        0,
+        58.6
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_224",
+      "position": [
+        35.5,
+        0,
+        58.6
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_225",
+      "position": [
+        34.5,
+        -4,
+        23.5
+      ],
+      "kind": "prop",
+      "model": "prop.machine",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_226",
+      "position": [
+        31,
+        -4,
+        33.5
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_227",
+      "position": [
+        46.5,
+        -4,
+        33.5
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_228",
+      "position": [
+        50.5,
+        -4,
+        21.5
+      ],
+      "kind": "prop",
+      "model": "prop.pipe_valve",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_229",
+      "position": [
+        44.5,
+        -4,
+        21
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box_long",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_230",
+      "position": [
+        27,
+        -4,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.big_pipe",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_231",
+      "position": [
+        49,
+        -4,
+        5.6
+      ],
+      "kind": "prop",
+      "model": "prop.pipe_valve",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_232",
+      "position": [
+        -2.5,
+        0,
+        50.5
+      ],
+      "kind": "prop",
+      "model": "prop.workbench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_233",
+      "position": [
+        -1,
+        0,
+        50.5
+      ],
+      "kind": "prop",
+      "model": "prop.anvil",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_234",
+      "position": [
+        10,
+        0,
+        50.5
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_235",
+      "position": [
+        -2,
+        4,
+        41
+      ],
+      "kind": "prop",
+      "model": "prop.lever",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_236",
+      "position": [
+        10,
+        4,
+        50.5
+      ],
+      "kind": "prop",
+      "model": "prop.screen_panel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_237",
+      "position": [
+        -2,
+        0,
+        33.5
+      ],
+      "kind": "prop",
+      "model": "prop.piston",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_238",
+      "position": [
+        82,
+        0,
+        50
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_239",
+      "position": [
+        82,
+        0,
+        48.6
+      ],
+      "kind": "prop",
+      "model": "prop.office_chair",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_240",
+      "position": [
+        86.5,
+        4,
+        44
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_241",
+      "position": [
+        82,
+        4,
+        51
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_242",
+      "position": [
+        82.5,
+        0,
+        26.5
+      ],
+      "kind": "prop",
+      "model": "prop.machine_window",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_243",
+      "position": [
+        2,
+        0,
+        31
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_244",
+      "position": [
+        6,
+        4,
+        34.8
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_245",
+      "position": [
+        4,
+        0,
+        44
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_246",
+      "position": [
+        8,
+        4,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_247",
+      "position": [
+        6,
+        0,
+        10
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_248",
+      "position": [
+        78,
+        0,
+        31
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_249",
+      "position": [
+        74,
+        4,
+        34.8
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_250",
+      "position": [
+        76,
+        0,
+        44
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_251",
+      "position": [
+        76,
+        4,
+        46
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_252",
+      "position": [
+        74,
+        0,
+        10
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_253",
+      "position": [
+        28,
+        0,
+        55
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_254",
+      "position": [
+        52,
+        0,
+        55
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_255",
+      "position": [
+        36,
+        4,
+        57
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_256",
+      "position": [
+        30,
+        0,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_257",
+      "position": [
+        50,
+        0,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_258",
+      "position": [
+        40,
+        0,
+        6.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "pickup_259",
+      "position": [
+        40,
+        8,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_260",
+      "position": [
+        8,
+        8,
+        44
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_261",
+      "position": [
+        41.5,
+        -4,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_262",
+      "position": [
+        24,
+        -4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_263",
+      "position": [
+        56,
+        -4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_264",
+      "position": [
+        40,
+        3.8,
+        47
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_265",
+      "position": [
+        40,
+        -4,
+        31
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_266",
+      "position": [
+        8,
+        4,
+        49
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_267",
+      "position": [
+        72,
+        4,
+        49
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_268",
+      "position": [
+        12,
+        0,
+        57
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_269",
+      "position": [
+        68,
+        0,
+        57
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_270",
+      "position": [
+        32,
+        -4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_271",
+      "position": [
+        48,
+        -4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_272",
+      "position": [
+        40,
+        0,
+        56
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_273",
+      "position": [
+        40,
+        0,
+        2.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_plasma",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_274",
+      "position": [
+        33,
+        -4,
+        28
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_275",
+      "position": [
+        40,
+        4,
+        57
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_auto_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_276",
+      "position": [
+        8,
+        0,
+        46
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_277",
+      "position": [
+        72,
+        0,
+        46
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_278",
+      "position": [
+        -2.5,
+        4,
+        34.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_279",
+      "position": [
+        82.5,
+        4,
+        34.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_280",
+      "position": [
+        12,
+        4,
+        57
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_281",
+      "position": [
+        68,
+        4,
+        57
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_282",
+      "position": [
+        16,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_283",
+      "position": [
+        64,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_284",
+      "position": [
+        40,
+        -4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.mines",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_285",
+      "position": [
+        16,
+        0,
+        28
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_286",
+      "position": [
+        64,
+        0,
+        28
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_287",
+      "position": [
+        24,
+        0,
+        2.5
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_288",
+      "position": [
+        56,
+        0,
+        2.5
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_cells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "flag_289",
+      "position": [
+        3,
+        0,
+        26
+      ],
+      "kind": "flag",
+      "yaw": 1.5707963267948966,
+      "team": "embers"
+    },
+    {
+      "id": "flag_290",
+      "position": [
+        77,
+        0,
+        26
+      ],
+      "kind": "flag",
+      "yaw": -1.5707963267948966,
+      "team": "tide"
+    },
+    {
+      "id": "hill_291",
+      "position": [
+        40,
+        -4,
+        28
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_292",
+      "position": [
+        24,
+        0,
+        16
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_293",
+      "position": [
+        40,
+        0,
+        40
+      ],
+      "kind": "hill",
+      "radius": 4
+    },
+    {
+      "id": "prop_294",
+      "position": [
+        5.49,
+        4,
+        37.37
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_295",
+      "position": [
+        10.35,
+        4,
+        37.1
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_296",
+      "position": [
+        10.52,
+        4,
+        42.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_297",
+      "position": [
+        4.93,
+        4,
+        43.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_298",
+      "position": [
+        2.33,
+        4.05,
+        34.53
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_299",
+      "position": [
+        73.53,
+        4.05,
+        38.27
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "light_300",
+      "position": [
+        40,
+        -0.55,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_301",
+      "position": [
+        24,
+        -0.55,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_302",
+      "position": [
+        56,
+        -0.55,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_303",
+      "position": [
+        0,
+        7.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_304",
+      "position": [
+        8,
+        7.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_305",
+      "position": [
+        8,
+        7.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -8,
+      -8
+    ],
+    "max": [
+      90.5,
+      64
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "backdrop": {
+    "sky": "dusk",
+    "scenery": "city",
+    "ground": "gravel",
+    "haze": 0.55
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      6,
+      6
+    ]
+  },
+  "dependencies": []
+}

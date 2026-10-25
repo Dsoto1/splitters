@@ -1,0 +1,5005 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 15,
+  "metadata": {
+    "id": "snowline_offices",
+    "name": "Snowline Offices",
+    "author": "Tile Trigger",
+    "description": "An office block on a snowy night. Tide hold the hostages at the back (the conference room, the server room and an office off the middle); Embers come in from the front lot through the lobby, by the side doors off the snowy alleys, or round through the parking garage and its wide door. Corridors front and back, glass walls, and a maze of offices between.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 4,
+      "max": 12
+    },
+    "supportedModes": [
+      "core.tdm",
+      "core.deathmatch"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.lab",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "high",
+          "0,0,0:S": "fence"
+        }
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 8,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high",
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "fence"
+        }
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.room",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:W": "windows",
+          "0,0,0:E": "wall",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.room",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "door",
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.room",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "windows",
+          "0,0,0:E": "door",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.room",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "windows",
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.room",
+        "x": 1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "windows",
+          "0,0,0:W": "windows",
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 8,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "fence"
+        }
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.room",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:E": "door",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.room",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.room",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "windows"
+        }
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.room",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.room",
+        "x": 2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 8,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "fence"
+        }
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.room",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "wide",
+          "0,0,0:E": "open",
+          "0,0,0:N": "arch"
+        }
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.room",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.room",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.room",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "windows"
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.room",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 8,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "fence"
+        }
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.room",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:E": "door",
+          "0,0,0:N": "arch"
+        }
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.room",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.room",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "windows"
+        }
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.room",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wide"
+        }
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.room",
+        "x": 4,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wide",
+          "0,0,0:E": "door"
+        }
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 8,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "fence"
+        }
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.room",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "door",
+          "0,0,0:E": "wall",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.room",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.room",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.room",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.room",
+        "x": 5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "windows",
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 8,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "fence"
+        }
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_057",
+        "tile": "core.room",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:E": "door",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.room",
+        "x": 6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_059",
+        "tile": "core.room",
+        "x": 6,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door",
+          "0,0,0:N": "windows"
+        }
+      },
+      {
+        "id": "tile_060",
+        "tile": "core.room",
+        "x": 6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_061",
+        "tile": "core.room",
+        "x": 6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:E": "door"
+        }
+      },
+      {
+        "id": "tile_062",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 8,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_064",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "fence"
+        }
+      },
+      {
+        "id": "tile_065",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_066",
+        "tile": "core.room",
+        "x": 7,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:E": "windows",
+          "0,0,0:N": "door"
+        }
+      },
+      {
+        "id": "tile_067",
+        "tile": "core.room",
+        "x": 7,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "windows",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_068",
+        "tile": "core.room",
+        "x": 7,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "windows",
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_069",
+        "tile": "core.room",
+        "x": 7,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door",
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_070",
+        "tile": "core.room",
+        "x": 7,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a6478"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#e4e0d6"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "windows",
+          "0,0,0:E": "windows"
+        }
+      },
+      {
+        "id": "tile_071",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_072",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 8,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_asphalt",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_073",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high",
+          "0,0,0:S": "fence"
+        }
+      },
+      {
+        "id": "tile_074",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_075",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_076",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_077",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_078",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_079",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_080",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_081",
+        "tile": "core.yard",
+        "x": 8,
+        "y": 8,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_snow",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "high",
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_082",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_083",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_084",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_085",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_086",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_087",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_088",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_089",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_090",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_091",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_092",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_093",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_094",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_095",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_096",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_097",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_098",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_099",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_100",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_101",
+        "tile": "core.platform",
+        "x": 4,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_102",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_103",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_104",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_105",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_106",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_107",
+        "tile": "core.platform",
+        "x": 6,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_108",
+        "tile": "core.platform",
+        "x": 6,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_109",
+        "tile": "core.platform",
+        "x": 6,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_110",
+        "tile": "core.platform",
+        "x": 6,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_111",
+        "tile": "core.platform",
+        "x": 6,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_112",
+        "tile": "core.platform",
+        "x": 7,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_113",
+        "tile": "core.platform",
+        "x": 7,
+        "y": 3,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_114",
+        "tile": "core.platform",
+        "x": 7,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_115",
+        "tile": "core.platform",
+        "x": 7,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      },
+      {
+        "id": "tile_116",
+        "tile": "core.platform",
+        "x": 7,
+        "y": 6,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_gravel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": "#ecebe6"
+          }
+        }
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "block_117",
+      "position": [
+        12,
+        0.25,
+        4
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.85,
+        4.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#3a6fb0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_118",
+      "position": [
+        12,
+        1.1,
+        4
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_119",
+      "position": [
+        12,
+        0,
+        4
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.25,
+        3.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_120",
+      "position": [
+        52,
+        0.25,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.85,
+        4.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#c8c8c8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_121",
+      "position": [
+        52,
+        1.1,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_122",
+      "position": [
+        52,
+        0,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.25,
+        3.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_123",
+      "position": [
+        10,
+        0.25,
+        60
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.85,
+        4.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#7a2a24",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_124",
+      "position": [
+        10,
+        1.1,
+        60
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_125",
+      "position": [
+        10,
+        0,
+        60
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.25,
+        3.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_126",
+      "position": [
+        18,
+        0.25,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.85,
+        4.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#2a2a2e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_127",
+      "position": [
+        18,
+        1.1,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_128",
+      "position": [
+        18,
+        0,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.25,
+        3.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_129",
+      "position": [
+        46,
+        0.25,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.85,
+        4.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#3e6b3a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_130",
+      "position": [
+        46,
+        1.1,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_131",
+      "position": [
+        46,
+        0,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.25,
+        3.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_132",
+      "position": [
+        54,
+        0.25,
+        60
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.85,
+        4.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#c9a227",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_133",
+      "position": [
+        54,
+        1.1,
+        60
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_134",
+      "position": [
+        54,
+        0,
+        60
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.25,
+        3.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_135",
+      "position": [
+        28,
+        0,
+        -2
+      ],
+      "kind": "prop",
+      "model": "prop.barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_136",
+      "position": [
+        44,
+        0,
+        -2
+      ],
+      "kind": "prop",
+      "model": "prop.barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_137",
+      "position": [
+        -2,
+        0,
+        4
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_138",
+      "position": [
+        66,
+        0,
+        4
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        -2,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        66,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        3,
+        0,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.trashcan",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
+        65,
+        0,
+        52
+      ],
+      "kind": "prop",
+      "model": "prop.skip",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        -1,
+        0,
+        28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        65,
+        0,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_145",
+      "position": [
+        30,
+        0,
+        62
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        38,
+        0,
+        62
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        20,
+        0,
+        -2
+      ],
+      "kind": "prop",
+      "model": "prop.tree_cone",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        36,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.tree_cone",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_149",
+      "position": [
+        60,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.bush_cone",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        22,
+        0,
+        48
+      ],
+      "kind": "prop",
+      "model": "prop.table",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_151",
+      "position": [
+        26,
+        0,
+        48
+      ],
+      "kind": "prop",
+      "model": "prop.table",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        22,
+        0,
+        46.6
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_153",
+      "position": [
+        26,
+        0,
+        49.4
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        45.5,
+        0,
+        51
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        50.5,
+        0,
+        51
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        51.5,
+        0,
+        46
+      ],
+      "kind": "prop",
+      "model": "prop.screen_panel",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        36.8,
+        0,
+        51.2
+      ],
+      "kind": "prop",
+      "model": "prop.fridge",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_158",
+      "position": [
+        38,
+        0,
+        51.4
+      ],
+      "kind": "prop",
+      "model": "prop.kitchen_cabinet",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_159",
+      "position": [
+        42,
+        0,
+        47
+      ],
+      "kind": "prop",
+      "model": "prop.table_round",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        43.4,
+        0,
+        51.2
+      ],
+      "kind": "prop",
+      "model": "prop.freezers_upright",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        28,
+        0,
+        18.5
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        24.5,
+        0,
+        13
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        35.5,
+        0,
+        13
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_164",
+      "position": [
+        36,
+        0,
+        19.5
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "destructible_165",
+      "position": [
+        28,
+        0,
+        12.1
+      ],
+      "kind": "destructible",
+      "model": "glass",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "prop_166",
+      "position": [
+        5.31,
+        0,
+        12.96
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_167",
+      "position": [
+        11.17,
+        0,
+        13
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_168",
+      "position": [
+        10.69,
+        0,
+        19.04
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_169",
+      "position": [
+        4.75,
+        0,
+        19.27
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_170",
+      "position": [
+        5.56,
+        0,
+        44.87
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase_wide",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_171",
+      "position": [
+        11.04,
+        0,
+        45.31
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_172",
+      "position": [
+        11.3,
+        0,
+        51.28
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_173",
+      "position": [
+        4.96,
+        0,
+        50.69
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_174",
+      "position": [
+        13.49,
+        0,
+        13.37
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_175",
+      "position": [
+        18.9,
+        0,
+        13.1
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_176",
+      "position": [
+        18.69,
+        0,
+        19.04
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_177",
+      "position": [
+        12.83,
+        0,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_178",
+      "position": [
+        13.31,
+        0,
+        28.96
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_179",
+      "position": [
+        19.17,
+        0,
+        29
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_180",
+      "position": [
+        18.69,
+        0,
+        35.04
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_181",
+      "position": [
+        12.75,
+        0,
+        35.27
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_182",
+      "position": [
+        13.56,
+        0,
+        44.87
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase_wide",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_183",
+      "position": [
+        19.04,
+        0,
+        45.31
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_184",
+      "position": [
+        19.3,
+        0,
+        51.28
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_185",
+      "position": [
+        12.96,
+        0,
+        50.69
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_186",
+      "position": [
+        21.49,
+        0,
+        29.37
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_187",
+      "position": [
+        26.9,
+        0,
+        29.1
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_188",
+      "position": [
+        26.69,
+        0,
+        35.04
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_189",
+      "position": [
+        20.83,
+        0,
+        35
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_190",
+      "position": [
+        29.31,
+        0,
+        28.96
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_191",
+      "position": [
+        35.17,
+        0,
+        29
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_192",
+      "position": [
+        34.69,
+        0,
+        35.04
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_193",
+      "position": [
+        28.75,
+        0,
+        35.27
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_194",
+      "position": [
+        37.56,
+        0,
+        12.87
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase_wide",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_195",
+      "position": [
+        43.04,
+        0,
+        13.31
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_196",
+      "position": [
+        43.3,
+        0,
+        19.28
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_197",
+      "position": [
+        36.96,
+        0,
+        18.69
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_198",
+      "position": [
+        37.49,
+        0,
+        29.37
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_199",
+      "position": [
+        42.9,
+        0,
+        29.1
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_200",
+      "position": [
+        42.69,
+        0,
+        35.04
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_201",
+      "position": [
+        36.83,
+        0,
+        35
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_202",
+      "position": [
+        45.31,
+        0,
+        12.96
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_203",
+      "position": [
+        51.17,
+        0,
+        13
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_204",
+      "position": [
+        50.69,
+        0,
+        19.04
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_205",
+      "position": [
+        44.75,
+        0,
+        19.27
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_206",
+      "position": [
+        45.56,
+        0,
+        28.87
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase_wide",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_207",
+      "position": [
+        51.04,
+        0,
+        29.31
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_208",
+      "position": [
+        51.3,
+        0,
+        35.28
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_209",
+      "position": [
+        44.96,
+        0,
+        34.69
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_210",
+      "position": [
+        53.49,
+        0,
+        13.37
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_211",
+      "position": [
+        58.9,
+        0,
+        13.1
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_212",
+      "position": [
+        58.69,
+        0,
+        19.04
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_213",
+      "position": [
+        52.83,
+        0,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_214",
+      "position": [
+        53.31,
+        0,
+        44.96
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_215",
+      "position": [
+        59.17,
+        0,
+        45
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_216",
+      "position": [
+        58.69,
+        0,
+        51.04
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_217",
+      "position": [
+        52.75,
+        0,
+        51.27
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_218",
+      "position": [
+        20,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_219",
+      "position": [
+        26,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_220",
+      "position": [
+        32,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_221",
+      "position": [
+        38,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_222",
+      "position": [
+        44,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_223",
+      "position": [
+        32,
+        0,
+        3
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_224",
+      "position": [
+        30.5,
+        0,
+        47
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_225",
+      "position": [
+        33.5,
+        0,
+        47
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_226",
+      "position": [
+        32,
+        0,
+        50.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_227",
+      "position": [
+        40,
+        0,
+        45
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_228",
+      "position": [
+        8,
+        0,
+        41
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_229",
+      "position": [
+        56,
+        0,
+        41
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_230",
+      "position": [
+        -2,
+        0,
+        20
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_231",
+      "position": [
+        66,
+        0,
+        30
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_232",
+      "position": [
+        8,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_233",
+      "position": [
+        56,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_234",
+      "position": [
+        32,
+        0,
+        64
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_235",
+      "position": [
+        16,
+        0,
+        32
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "hostage_236",
+      "position": [
+        20,
+        0,
+        50.5
+      ],
+      "kind": "hostage",
+      "yaw": 3.141592653589793
+    },
+    {
+      "id": "hostage_237",
+      "position": [
+        24,
+        0,
+        50.2
+      ],
+      "kind": "hostage",
+      "yaw": 3.141592653589793
+    },
+    {
+      "id": "hostage_238",
+      "position": [
+        48,
+        0,
+        47
+      ],
+      "kind": "hostage",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "id": "hostage_239",
+      "position": [
+        24,
+        0,
+        32
+      ],
+      "kind": "hostage",
+      "yaw": 0
+    },
+    {
+      "id": "rescue_240",
+      "position": [
+        32,
+        0,
+        0
+      ],
+      "kind": "rescue",
+      "radius": 6
+    },
+    {
+      "id": "pickup_241",
+      "position": [
+        4,
+        0,
+        4
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_242",
+      "position": [
+        60,
+        0,
+        4
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_243",
+      "position": [
+        -1,
+        0,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_244",
+      "position": [
+        65,
+        0,
+        36
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_245",
+      "position": [
+        32,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_auto_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_246",
+      "position": [
+        48,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_247",
+      "position": [
+        16,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_248",
+      "position": [
+        40,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_249",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_250",
+      "position": [
+        56,
+        0,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_251",
+      "position": [
+        24,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_252",
+      "position": [
+        40,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_253",
+      "position": [
+        8,
+        0,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_254",
+      "position": [
+        32,
+        0,
+        60
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_255",
+      "position": [
+        56,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "light_256",
+      "position": [
+        8,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_257",
+      "position": [
+        8,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_258",
+      "position": [
+        8,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_259",
+      "position": [
+        8,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_260",
+      "position": [
+        8,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_261",
+      "position": [
+        16,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_262",
+      "position": [
+        16,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_263",
+      "position": [
+        16,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_264",
+      "position": [
+        16,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_265",
+      "position": [
+        16,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_266",
+      "position": [
+        24,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_267",
+      "position": [
+        24,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_268",
+      "position": [
+        24,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_269",
+      "position": [
+        24,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_270",
+      "position": [
+        24,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_271",
+      "position": [
+        32,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_272",
+      "position": [
+        32,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_273",
+      "position": [
+        32,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_274",
+      "position": [
+        32,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_275",
+      "position": [
+        32,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_276",
+      "position": [
+        40,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_277",
+      "position": [
+        40,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_278",
+      "position": [
+        40,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_279",
+      "position": [
+        40,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_280",
+      "position": [
+        40,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_281",
+      "position": [
+        48,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_282",
+      "position": [
+        48,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_283",
+      "position": [
+        48,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_284",
+      "position": [
+        48,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_285",
+      "position": [
+        48,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_286",
+      "position": [
+        56,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_287",
+      "position": [
+        56,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_288",
+      "position": [
+        56,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_289",
+      "position": [
+        56,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_290",
+      "position": [
+        56,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef3ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -8,
+      -8
+    ],
+    "max": [
+      72,
+      72
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "backdrop": {
+    "sky": "snowy",
+    "scenery": "city",
+    "ground": "snow",
+    "haze": 0.6
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      6,
+      6
+    ]
+  },
+  "dependencies": []
+}

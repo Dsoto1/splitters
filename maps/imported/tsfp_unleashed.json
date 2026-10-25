@@ -1,0 +1,2190 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 10,
+  "metadata": {
+    "id": "tsfp_unleashed",
+    "name": "UNLEASHED",
+    "author": "",
+    "description": "YOU'VE BEEN CAPTURED BY JACQUE DE LA MORTE AND PUT IN A CELL TO AWAIT HIS EVIL DESIGNS. ESCAPE AND DESTROY HIS NEW EXPERIMENTS... BY UNLEASHING AN UNHOLY VIRUS HE HAS CREATED AND LETTING IT SPREAD AMONG HIS ABOMINATIONS. Imported from a TimeSplitters: Future Perfect MapMaker save.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 2,
+      "max": 12
+    },
+    "supportedModes": [
+      "core.deathmatch"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.lab",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.corridor_clear",
+        "x": -1,
+        "y": 1,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.junction_t",
+        "x": -1,
+        "y": 3,
+        "z": 2,
+        "rotation": 3
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.junction_t",
+        "x": -1,
+        "y": 2,
+        "z": 2,
+        "rotation": 3
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.junction_t",
+        "x": -1,
+        "y": 0,
+        "z": 2,
+        "rotation": 3
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.room",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.room",
+        "x": -1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:S": "open",
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.room",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.room",
+        "x": -1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.room",
+        "x": -2,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.room",
+        "x": -3,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.room",
+        "x": -2,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.room",
+        "x": -3,
+        "y": 4,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.corridor_clear",
+        "x": -2,
+        "y": 3,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.room",
+        "x": 0,
+        "y": -1,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "wide"
+        }
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.room",
+        "x": 1,
+        "y": -1,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.room",
+        "x": 2,
+        "y": -1,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.room",
+        "x": -3,
+        "y": -1,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.room",
+        "x": -2,
+        "y": -1,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.room",
+        "x": -1,
+        "y": -1,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.room",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.room",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open",
+          "0,0,0:W": "wide"
+        }
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.room",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.room",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.room",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.room",
+        "x": -2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.room",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.room",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.room",
+        "x": -2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.room",
+        "x": 3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.room",
+        "x": 4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.room",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.room",
+        "x": 4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.room",
+        "x": -2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.room",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.room",
+        "x": -1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.room",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.room",
+        "x": -2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.room",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.room",
+        "x": 2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.room",
+        "x": -3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.ramp",
+        "x": -2,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.corner",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.corridor_clear",
+        "x": -3,
+        "y": -2,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.corridor_clear",
+        "x": -3,
+        "y": -3,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.room",
+        "x": -3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.corner",
+        "x": -3,
+        "y": -6,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.room",
+        "x": -1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.corridor_clear",
+        "x": -1,
+        "y": -6,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.room",
+        "x": 1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.dead_end",
+        "x": 1,
+        "y": -6,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.room",
+        "x": -2,
+        "y": -6,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.room",
+        "x": -4,
+        "y": -6,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall"
+        }
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.room",
+        "x": 0,
+        "y": -6,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.room",
+        "x": -4,
+        "y": -5,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.dead_end",
+        "x": -3,
+        "y": -4,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.corridor_clear",
+        "x": -1,
+        "y": -2,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_057",
+        "tile": "core.corridor_clear",
+        "x": -1,
+        "y": -3,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.dead_end",
+        "x": -1,
+        "y": -4,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_059",
+        "tile": "core.corridor_clear",
+        "x": 1,
+        "y": -2,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_060",
+        "tile": "core.corridor_clear",
+        "x": 1,
+        "y": -3,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_061",
+        "tile": "core.dead_end",
+        "x": 1,
+        "y": -4,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_062",
+        "tile": "core.room",
+        "x": 2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.dead_end",
+        "x": 4,
+        "y": 2,
+        "z": 2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_064",
+        "tile": "core.dead_end",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_065",
+        "tile": "core.room",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_066",
+        "tile": "core.room",
+        "x": -5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_067",
+        "tile": "core.junction_t",
+        "x": -6,
+        "y": 0,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_068",
+        "tile": "core.room",
+        "x": -5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_069",
+        "tile": "core.corridor_clear",
+        "x": -6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_070",
+        "tile": "core.corridor_clear",
+        "x": -2,
+        "y": 0,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_071",
+        "tile": "core.corridor_clear",
+        "x": -3,
+        "y": 0,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_072",
+        "tile": "core.dead_end",
+        "x": -4,
+        "y": 0,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_073",
+        "tile": "core.corridor_clear",
+        "x": -2,
+        "y": 2,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_074",
+        "tile": "core.corridor_clear",
+        "x": -3,
+        "y": 2,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_075",
+        "tile": "core.dead_end",
+        "x": -4,
+        "y": 2,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_076",
+        "tile": "core.room",
+        "x": -6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_077",
+        "tile": "core.room",
+        "x": -5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_078",
+        "tile": "core.room",
+        "x": -4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_079",
+        "tile": "core.room",
+        "x": -5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_080",
+        "tile": "core.room",
+        "x": -4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_081",
+        "tile": "core.room",
+        "x": -3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_082",
+        "tile": "core.corner",
+        "x": 2,
+        "y": -3,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_083",
+        "tile": "core.corridor_clear",
+        "x": 3,
+        "y": -3,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_084",
+        "tile": "core.corridor_clear",
+        "x": 2,
+        "y": -2,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_085",
+        "tile": "core.room",
+        "x": 2,
+        "y": -4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "tile_086",
+        "tile": "core.room",
+        "x": 3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_087",
+        "tile": "core.room",
+        "x": 3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_088",
+        "tile": "core.room",
+        "x": 3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_089",
+        "tile": "core.room",
+        "x": 7,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_090",
+        "tile": "core.dead_end",
+        "x": 8,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_091",
+        "tile": "core.dead_end",
+        "x": 6,
+        "y": -3,
+        "z": 2,
+        "rotation": 3
+      },
+      {
+        "id": "tile_092",
+        "tile": "core.corridor_clear",
+        "x": 4,
+        "y": -3,
+        "z": 2,
+        "rotation": 1,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_093",
+        "tile": "core.corridor_clear",
+        "x": 5,
+        "y": -3,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_094",
+        "tile": "core.corner",
+        "x": -6,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_095",
+        "tile": "core.dead_end",
+        "x": -1,
+        "y": 5,
+        "z": 2,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_096",
+        "tile": "core.corridor_clear",
+        "x": -1,
+        "y": 4,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_097",
+        "tile": "core.room",
+        "x": -2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_098",
+        "tile": "core.room",
+        "x": -2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_099",
+        "tile": "core.room",
+        "x": -2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_100",
+        "tile": "core.dead_end",
+        "x": -3,
+        "y": 3,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_101",
+        "tile": "core.corner",
+        "x": -4,
+        "y": -1,
+        "z": 1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_102",
+        "tile": "core.room",
+        "x": -5,
+        "y": -3,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_103",
+        "tile": "core.room",
+        "x": -4,
+        "y": -3,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_104",
+        "tile": "core.room",
+        "x": -5,
+        "y": -2,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_105",
+        "tile": "core.room",
+        "x": -4,
+        "y": -2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_106",
+        "tile": "core.corridor_clear",
+        "x": 4,
+        "y": 1,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_107",
+        "tile": "core.corridor_clear",
+        "x": 4,
+        "y": 0,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_108",
+        "tile": "core.corridor_clear",
+        "x": 4,
+        "y": -1,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_109",
+        "tile": "core.corner",
+        "x": 3,
+        "y": -1,
+        "z": 2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_110",
+        "tile": "core.corridor_clear",
+        "x": 2,
+        "y": 0,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_111",
+        "tile": "core.room",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_112",
+        "tile": "core.dead_end",
+        "x": 2,
+        "y": 3,
+        "z": 2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_113",
+        "tile": "core.room",
+        "x": 3,
+        "y": 4,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_114",
+        "tile": "core.room",
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_115",
+        "tile": "core.corridor_clear",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_116",
+        "tile": "core.corridor_clear",
+        "x": 2,
+        "y": 2,
+        "z": 2,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_117",
+        "tile": "core.corridor_clear",
+        "x": 2,
+        "y": 1,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_118",
+        "tile": "core.room",
+        "x": 3,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_119",
+        "tile": "core.corridor_clear",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_120",
+        "tile": "core.dead_end",
+        "x": 1,
+        "y": -1,
+        "z": -1,
+        "rotation": 2,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_121",
+        "tile": "core.dead_end",
+        "x": 1,
+        "y": -2,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_122",
+        "tile": "core.dead_end",
+        "x": 1,
+        "y": 3,
+        "z": -1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_123",
+        "tile": "core.dead_end",
+        "x": 1,
+        "y": 4,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_124",
+        "tile": "core.corner",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_125",
+        "tile": "core.room",
+        "x": 0,
+        "y": 0,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_126",
+        "tile": "core.corridor_clear",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_127",
+        "tile": "core.junction_t",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_128",
+        "tile": "core.junction_t",
+        "x": 0,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_129",
+        "tile": "core.dead_end",
+        "x": 0,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_130",
+        "tile": "core.junction_t",
+        "x": -2,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_131",
+        "tile": "core.dead_end",
+        "x": -2,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_132",
+        "tile": "core.junction_t",
+        "x": 1,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_133",
+        "tile": "core.room",
+        "x": -2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_134",
+        "tile": "core.room",
+        "x": -1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_135",
+        "tile": "core.room",
+        "x": 0,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_136",
+        "tile": "core.room",
+        "x": -6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_137",
+        "tile": "core.room",
+        "x": -5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_138",
+        "tile": "core.room",
+        "x": -4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_139",
+        "tile": "core.room",
+        "x": -5,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open",
+          "0,0,0:S": "wall"
+        }
+      },
+      {
+        "id": "tile_140",
+        "tile": "core.room",
+        "x": -4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_141",
+        "tile": "core.room",
+        "x": -5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_142",
+        "tile": "core.room",
+        "x": -4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_143",
+        "tile": "core.corridor_clear",
+        "x": -4,
+        "y": -1,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_144",
+        "tile": "core.dead_end",
+        "x": -6,
+        "y": -1,
+        "z": 2,
+        "rotation": 1,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_145",
+        "tile": "core.corridor_clear",
+        "x": -5,
+        "y": -1,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_146",
+        "tile": "core.corridor_clear",
+        "x": -5,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_147",
+        "tile": "core.dead_end",
+        "x": -5,
+        "y": -6,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_148",
+        "tile": "core.corridor_clear",
+        "x": -5,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_149",
+        "tile": "core.room",
+        "x": -5,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_150",
+        "tile": "core.room",
+        "x": -4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_151",
+        "tile": "core.room",
+        "x": -3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_152",
+        "tile": "core.room",
+        "x": -3,
+        "y": -7,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_153",
+        "tile": "core.room",
+        "x": -4,
+        "y": -7,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_154",
+        "tile": "core.room",
+        "x": -5,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_155",
+        "tile": "core.corridor_clear",
+        "x": 4,
+        "y": -5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_156",
+        "tile": "core.dead_end",
+        "x": 6,
+        "y": -5,
+        "z": 0,
+        "rotation": 3,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_157",
+        "tile": "core.corridor_clear",
+        "x": 5,
+        "y": -5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_158",
+        "tile": "core.room",
+        "x": 7,
+        "y": -5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_159",
+        "tile": "core.room",
+        "x": 8,
+        "y": -5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_160",
+        "tile": "core.room",
+        "x": 7,
+        "y": -4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_161",
+        "tile": "core.room",
+        "x": 8,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_162",
+        "tile": "core.dead_end",
+        "x": 2,
+        "y": -5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_163",
+        "tile": "core.dead_end",
+        "x": 1,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_164",
+        "tile": "core.room",
+        "x": 6,
+        "y": -2,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_165",
+        "tile": "core.room",
+        "x": 6,
+        "y": -1,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_166",
+        "tile": "core.room",
+        "x": 5,
+        "y": -2,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_167",
+        "tile": "core.room",
+        "x": 5,
+        "y": -1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_168",
+        "tile": "core.corner",
+        "x": 3,
+        "y": -2,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_169",
+        "tile": "core.corner",
+        "x": 4,
+        "y": -2,
+        "z": 2,
+        "rotation": 3
+      },
+      {
+        "id": "tile_170",
+        "tile": "core.room",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_171",
+        "tile": "core.room",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_172",
+        "tile": "core.room",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_173",
+        "tile": "core.room",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_174",
+        "tile": "core.room",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_175",
+        "tile": "core.ramp",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_176",
+        "tile": "core.corner",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_177",
+        "tile": "core.dead_end",
+        "x": 5,
+        "y": 2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_178",
+        "tile": "core.corridor_clear",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_179",
+        "tile": "core.room",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_180",
+        "tile": "core.room",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_181",
+        "tile": "core.room",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_182",
+        "tile": "core.room",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_183",
+        "tile": "core.room",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_184",
+        "tile": "core.room",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_185",
+        "tile": "core.room",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_186",
+        "tile": "core.room",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_187",
+        "tile": "core.room",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_188",
+        "tile": "core.corner",
+        "x": 5,
+        "y": -1,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_189",
+        "tile": "core.room",
+        "x": -7,
+        "y": -1,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_190",
+        "tile": "core.corner",
+        "x": -8,
+        "y": -1,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_191",
+        "tile": "core.ramp",
+        "x": -7,
+        "y": -2,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_192",
+        "tile": "core.corner",
+        "x": -8,
+        "y": -2,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_193",
+        "tile": "core.ramp",
+        "x": -8,
+        "y": 0,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_194",
+        "tile": "core.corner",
+        "x": -9,
+        "y": -1,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_195",
+        "tile": "core.corner",
+        "x": -9,
+        "y": 0,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_196",
+        "tile": "core.room",
+        "x": 0,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "open",
+          "0,0,0:W": "wall"
+        }
+      },
+      {
+        "id": "tile_197",
+        "tile": "core.room",
+        "x": 1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
+      },
+      {
+        "id": "tile_198",
+        "tile": "core.room",
+        "x": 0,
+        "y": 7,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "open"
+        }
+      },
+      {
+        "id": "tile_199",
+        "tile": "core.room",
+        "x": 1,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_200",
+        "tile": "core.room",
+        "x": -1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_201",
+        "tile": "core.corridor_clear",
+        "x": -1,
+        "y": 7,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_202",
+        "tile": "core.junction_t",
+        "x": -2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "spawn_203",
+      "position": [
+        0,
+        0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_204",
+      "position": [
+        -40,
+        0,
+        -48
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_205",
+      "position": [
+        48,
+        0,
+        -40
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_206",
+      "position": [
+        -72,
+        -4,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_207",
+      "position": [
+        0,
+        0,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_208",
+      "position": [
+        40,
+        4,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_209",
+      "position": [
+        -40,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_210",
+      "position": [
+        -32,
+        4,
+        -8
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_211",
+      "position": [
+        32,
+        0,
+        -8
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_212",
+      "position": [
+        32,
+        0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_213",
+      "position": [
+        16,
+        0,
+        -40
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_214",
+      "position": [
+        -16,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "pickup_215",
+      "position": [
+        16,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_216",
+      "position": [
+        8,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_217",
+      "position": [
+        24,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_auto_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_218",
+      "position": [
+        16,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_219",
+      "position": [
+        8,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_220",
+      "position": [
+        16,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_221",
+      "position": [
+        24,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_222",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": null,
+  "backdrop": null,
+  "blood": null,
+  "teamSetup": null,
+  "dependencies": []
+}

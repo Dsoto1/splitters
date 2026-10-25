@@ -1,0 +1,14 @@
+ambientCG — https://ambientcg.com/
+Created by Lennart Demes and contributors.
+
+All assets on ambientCG are provided under the Creative Commons CC0 1.0
+Universal Public Domain Dedication:
+https://creativecommons.org/publicdomain/zero/1.0/
+https://docs.ambientcg.com/license/
+
+You can copy, modify, distribute and use the assets, even for commercial
+purposes, all without asking permission. Credit is appreciated but not required.
+
+Tile Trigger downloads the 1K-JPG sets listed in content/textures.json
+(tools/content/prepare-textures.mjs) and ships 512 px colour, normal and
+emission maps.

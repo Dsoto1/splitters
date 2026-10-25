@@ -1,0 +1,759 @@
+{
+  "format": "chronosplit.map",
+  "formatVersion": 4,
+  "metadata": {
+    "id": "m3_the_vault",
+    "name": "The Vault",
+    "author": "ChronoSplit team",
+    "description": "Scenario demo: get through the trap corridor, find the control-room button, grab explosives from the laser-guarded armory, blow the reinforced wall and reach the vault before lockdown. First one in wins.",
+    "createdAt": "2026-10-22T00:00:00.000Z",
+    "updatedAt": "2026-10-22T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 1,
+      "max": 8
+    },
+    "supportedModes": [
+      "core.deathmatch"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.factory",
+    "tiles": [
+      {
+        "id": "t_start",
+        "tile": "core.room",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_corridor",
+        "tile": "core.corridor",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "t_control",
+        "tile": "core.room",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_armory",
+        "tile": "core.room_cover",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_ante",
+        "tile": "core.room_pillar",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "t_vault",
+        "tile": "core.room",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "sp_start_1",
+      "position": [
+        -2,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "sp_start_2",
+      "position": [
+        -2,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "sp_start_3",
+      "position": [
+        2,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "sp_start_4",
+      "position": [
+        2,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "sp_control_1",
+      "position": [
+        13,
+        0,
+        1
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "sp_control_2",
+      "position": [
+        19,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "sp_armory_1",
+      "position": [
+        14.5,
+        0,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "sp_armory_2",
+      "position": [
+        18.5,
+        0,
+        10.8
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "pk_health_start",
+      "position": [
+        0,
+        0,
+        -3
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_armor_start",
+      "position": [
+        -3,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_ammo_start",
+      "position": [
+        0,
+        0,
+        3
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_shotgun",
+      "position": [
+        8,
+        0,
+        -2.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_rifle",
+      "position": [
+        16,
+        0,
+        1.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_launcher",
+      "position": [
+        18.5,
+        0,
+        8.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_armor_armory",
+      "position": [
+        19.5,
+        0,
+        6.5
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_health_ante",
+      "position": [
+        22,
+        0,
+        3
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pk_damage_vault",
+      "position": [
+        34,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.powerup_damage",
+      "respawnSeconds": null
+    },
+    {
+      "id": "trap_flames",
+      "position": [
+        5,
+        0,
+        3.4
+      ],
+      "name": "Corridor flames",
+      "kind": "trap",
+      "trap": "flames",
+      "yaw": 3.141592653589793,
+      "activation": "cycle",
+      "onSeconds": 1.5,
+      "offSeconds": 2,
+      "offsetSeconds": 0,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "trap_spikes",
+      "position": [
+        10,
+        0,
+        -1.5
+      ],
+      "name": "Corridor spikes",
+      "kind": "trap",
+      "trap": "spikes",
+      "yaw": 0,
+      "activation": "cycle",
+      "onSeconds": 1.5,
+      "offSeconds": 2,
+      "offsetSeconds": 1.75,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "btn_control",
+      "position": [
+        16,
+        0,
+        -3.2
+      ],
+      "name": "Vault control",
+      "kind": "button",
+      "yaw": 0,
+      "label": "Unlock the vault door",
+      "once": true,
+      "cooldownSeconds": 1,
+      "startEnabled": true
+    },
+    {
+      "id": "door_vault",
+      "position": [
+        20,
+        0,
+        0
+      ],
+      "name": "Vault door",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "startOpen": false,
+      "locked": true,
+      "auto": true
+    },
+    {
+      "id": "trap_laser",
+      "position": [
+        16,
+        0,
+        4
+      ],
+      "name": "Armory lasers",
+      "kind": "trap",
+      "trap": "laser",
+      "yaw": 0,
+      "activation": "cycle",
+      "onSeconds": 2,
+      "offSeconds": 2,
+      "offsetSeconds": 0,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "barrel_1",
+      "position": [
+        12.8,
+        0,
+        11
+      ],
+      "kind": "destructible",
+      "model": "barrel",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "barrel_2",
+      "position": [
+        13.8,
+        0,
+        11.4
+      ],
+      "kind": "destructible",
+      "model": "barrel",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "crate_1",
+      "position": [
+        19.2,
+        0,
+        11
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "crate_2",
+      "position": [
+        13.2,
+        0,
+        10.6
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0.4,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "mine_1",
+      "position": [
+        22.5,
+        0,
+        -2.5
+      ],
+      "kind": "trap",
+      "trap": "mine",
+      "yaw": 0,
+      "activation": "proximity",
+      "onSeconds": 0.5,
+      "offSeconds": 20,
+      "offsetSeconds": 0,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "mine_2",
+      "position": [
+        25.5,
+        0,
+        2.5
+      ],
+      "kind": "trap",
+      "trap": "mine",
+      "yaw": 0,
+      "activation": "proximity",
+      "onSeconds": 0.5,
+      "offSeconds": 20,
+      "offsetSeconds": 0,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "trap_crusher",
+      "position": [
+        26,
+        0,
+        -2
+      ],
+      "name": "Crusher",
+      "kind": "trap",
+      "trap": "crusher",
+      "yaw": 0,
+      "activation": "proximity",
+      "onSeconds": 1.2,
+      "offSeconds": 2.5,
+      "offsetSeconds": 0,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "wall_vault",
+      "position": [
+        28,
+        0,
+        0
+      ],
+      "name": "Reinforced wall",
+      "kind": "destructible",
+      "model": "wall",
+      "yaw": 1.5707963267948966,
+      "health": 150,
+      "explosiveOnly": true
+    },
+    {
+      "id": "zone_vault",
+      "position": [
+        33,
+        0,
+        0
+      ],
+      "name": "Vault floor",
+      "kind": "zone",
+      "size": [
+        5,
+        3,
+        5
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true
+    }
+  ],
+  "logic": {
+    "variables": [],
+    "timers": [
+      {
+        "id": "timer_lockdown",
+        "name": "Lockdown",
+        "seconds": 60,
+        "loop": false,
+        "visible": true
+      }
+    ],
+    "objectives": [
+      {
+        "id": "obj_button",
+        "text": "Find the vault control",
+        "startActive": true,
+        "marker": "btn_control"
+      },
+      {
+        "id": "obj_breach",
+        "text": "Grab explosives and breach the reinforced wall",
+        "startActive": false,
+        "marker": "wall_vault"
+      },
+      {
+        "id": "obj_vault",
+        "text": "Get into the vault",
+        "startActive": false,
+        "marker": "zone_vault"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule_intro",
+        "name": "Intro",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 5,
+            "text": "Break into the vault. Mind the traps!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_unlock",
+        "name": "Control unlocks the vault door",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_control"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_button",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_vault",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_vault",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 5,
+            "text": "Vault door open. The wall behind it needs explosives.",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_breach",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          }
+        ]
+      },
+      {
+        "id": "rule_breach",
+        "name": "Wall breached: alarm and lockdown",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "destroyed",
+          "target": "wall_vault"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_breach",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_vault",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Alarm! Get into the vault before lockdown!",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_lockdown",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_win",
+        "name": "Vault reached",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_vault"
+        },
+        "if": [
+          {
+            "type": "objective",
+            "target": "obj_vault",
+            "op": "==",
+            "value": 0,
+            "state": "active"
+          }
+        ],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_vault",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "timer_stop",
+            "target": "timer_lockdown",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "The vault has been cracked!",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "instigator wins"
+          }
+        ]
+      },
+      {
+        "id": "rule_lockdown",
+        "name": "Lockdown",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_lockdown"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_vault",
+            "value": 0,
+            "text": "",
+            "state": "failed"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Lockdown! Nobody gets the vault.",
+            "state": ""
+          },
+          {
+            "type": "door_close",
+            "target": "door_vault",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_lock",
+            "target": "door_vault",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "nobody wins"
+          }
+        ]
+      }
+    ]
+  },
+  "dependencies": []
+}
