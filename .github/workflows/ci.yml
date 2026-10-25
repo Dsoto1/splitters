@@ -6,7 +6,8 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # Pinned: Playwright 1.56 has no browser builds for newer Ubuntu images.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
