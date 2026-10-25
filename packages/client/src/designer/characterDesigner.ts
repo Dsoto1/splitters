@@ -12,6 +12,11 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import {
   CHARACTER_PARTS,
   COLORWAYS,
+  DYE_COLORS,
+  GEAR,
+  GEAR_SLOTS,
+  GEAR_SLOT_LABELS,
+  gearInfo,
   BODY_SIZES,
   CORE_LOOKS,
   HAIR_COLORS,
@@ -36,7 +41,7 @@ import { CharacterAnimator, type MotionState } from '../game/characterAnimator.t
 import { deleteCustomLook, listCustomLooks, saveCustomLook, type SavedLook } from './customLooks.ts';
 import type { PortraitRenderer } from '../frontend/portraits.ts';
 
-type Draft = Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'skin' | 'hairColor' | 'size'> & { name: string };
+type Draft = Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'skin' | 'hairColor' | 'size' | 'cloth' | 'trim' | 'gear'> & { name: string };
 
 const sx = (body: BodyType) => (body === 'male' ? 'm' : 'f');
 
@@ -57,7 +62,7 @@ export class CharacterDesigner {
   private rebuildTimer?: number;
   private weapon: string | null = 'core.rifle';
   private readonly state: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false };
-  private tab: 'body' | 'head' | 'outfit' | 'colours' = 'body';
+  private tab: 'body' | 'head' | 'outfit' | 'gear' | 'colours' = 'body';
   private readonly keys = (e: KeyboardEvent) => this.onKey(e);
 
   constructor(
@@ -103,7 +108,7 @@ export class CharacterDesigner {
 
     const saved = listCustomLooks().find((s) => s.id === startLook);
     const l = getLook(startLook);
-    this.draft = { name: saved?.name ?? (l.name === 'Custom' ? 'My character' : `My ${l.name}`), body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor, size: l.size };
+    this.draft = { name: saved?.name ?? (l.name === 'Custom' ? 'My character' : `My ${l.name}`), body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor, size: l.size, cloth: l.cloth ?? null, trim: l.trim ?? null, gear: [...(l.gear ?? [])] };
 
     this.root.id = 'designer';
     document.body.append(this.root);
@@ -191,7 +196,7 @@ export class CharacterDesigner {
   private load(id: string): void {
     const l = getLook(id);
     const saved = listCustomLooks().find((s) => s.id === id);
-    this.update({ name: saved?.name ?? `My ${l.name}`, body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor, size: l.size });
+    this.update({ name: saved?.name ?? `My ${l.name}`, body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor, size: l.size, cloth: l.cloth ?? null, trim: l.trim ?? null, gear: [...(l.gear ?? [])] });
   }
 
   /** A random wearable look for the current body. */
@@ -209,12 +214,18 @@ export class CharacterDesigner {
     const hair = [pick(styles.filter((h) => h.id !== 'hair_beard')).id, ...(body === 'male' && Math.random() < 0.35 ? ['hair_beard'] : [])];
     const outfits = new Set(parts.map((p) => partInfo(p)?.outfit));
     const colorways = COLORWAYS.filter((c) => outfits.has(c.family) && (c.body === null || c.body === body) && Math.random() < 0.5).map((c) => c.id);
-    this.update({ parts, hair, colorways, skin: pick([null, ...SKIN_TONES.slice(1)]), hairColor: pick(HAIR_COLORS) });
+    const hooded = parts.some((p) => partInfo(p)?.slot === 'hood');
+    const gear = GEAR_SLOTS.flatMap((slot) => {
+      const options = GEAR.filter((g) => g.slot === slot && !(hooded && slot === 'hat'));
+      return options.length && Math.random() < 0.45 ? [pick(options).id] : [];
+    });
+    const dye = () => (Math.random() < 0.6 ? pick(DYE_COLORS) : null);
+    this.update({ parts, hair, colorways, skin: pick([null, ...SKIN_TONES.slice(1)]), hairColor: pick(HAIR_COLORS), cloth: dye(), trim: dye(), gear });
   }
 
   private onKey(e: KeyboardEvent): void {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
-    const tabs = ['body', 'head', 'outfit', 'colours'] as const;
+    const tabs = ['body', 'head', 'outfit', 'gear', 'colours'] as const;
     if (e.key === 'q' || e.key === 'e') {
       this.tab = tabs[(tabs.indexOf(this.tab) + (e.key === 'e' ? 1 : tabs.length - 1)) % tabs.length]!;
       this.render();
@@ -295,7 +306,7 @@ export class CharacterDesigner {
     tabs.className = 'tabs';
     const bumper = (k: string) => Object.assign(document.createElement('span'), { className: 'bumper', textContent: k });
     tabs.append(bumper('Q'));
-    for (const [id, label] of [['body', 'Body'], ['head', 'Head'], ['outfit', 'Outfit'], ['colours', 'Colours']] as const) {
+    for (const [id, label] of [['body', 'Body'], ['head', 'Head'], ['outfit', 'Outfit'], ['gear', 'Gear'], ['colours', 'Colours']] as const) {
       const b = button(label, this.tab === id, () => ((this.tab = id), this.render()));
       b.className = `tab${this.tab === id ? ' on' : ''}`;
       tabs.append(b);
@@ -333,7 +344,26 @@ export class CharacterDesigner {
         label.textContent = PART_SLOT_LABELS[slot];
         rowOf(left, label, select(options, current, (v) => this.setPart(slot, v || null)));
       }
+    } else if (this.tab === 'gear') {
+      const hooded = d.parts.some((p) => partInfo(p)?.slot === 'hood');
+      for (const slot of GEAR_SLOTS) {
+        h(left, GEAR_SLOT_LABELS[slot]);
+        const current = (d.gear ?? []).find((g) => gearInfo(g)?.slot === slot) ?? null;
+        const set = (id: string | null) => this.update({ gear: [...(d.gear ?? []).filter((g) => gearInfo(g)?.slot !== slot), ...(id ? [id] : [])] });
+        add(left, tile('None', current === null, () => set(null)), ...GEAR.filter((g) => g.slot === slot).map((g) => tile(g.label, current === g.id, () => set(g.id))));
+        if (slot === 'hat' && hooded) left.append(Object.assign(document.createElement('p'), { className: 'dz-note', textContent: 'Hats need the hood off (Outfit tab).' }));
+      }
+      left.append(Object.assign(document.createElement('p'), { className: 'dz-note', textContent: 'Gear takes its colours from the outfit dyes (Colours tab).' }));
     } else {
+      h(left, 'Outfit dye');
+      const dyeRow = (label: string, value: string | null | undefined, set: (c: string | null) => void) => {
+        const l = document.createElement('label');
+        l.textContent = label;
+        left.append(l);
+        swatches(left, DYE_COLORS, value ?? null, set, 'Original');
+      };
+      dyeRow('Cloth', d.cloth, (c) => this.update({ cloth: c }));
+      dyeRow('Leather & trim', d.trim, (c) => this.update({ trim: c }));
       const families = [...new Set(d.parts.map((p) => partInfo(p)?.outfit))].filter((f): f is NonNullable<typeof f> => !!f && COLORWAYS.some((c) => c.family === f));
       h(left, 'Colour palette');
       for (const f of families) {

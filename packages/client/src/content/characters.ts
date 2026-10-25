@@ -15,6 +15,8 @@ import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
 import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook } from '@chronosplit/shared';
 import { GLB, versioned } from '../assetUrl.ts';
+import { dyeTexture } from './dye.ts';
+import { buildGear } from './gear.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes. */
 export const LOD_DISTANCE = 18;
@@ -159,6 +161,21 @@ export class CharacterLibrary {
         meshes.push(...attached);
       });
       this.dress(meshes, look);
+      if (!spec.armsOnly && look.gear?.length) {
+        const of = (i: number) => meshes.filter((m) => (partOf.get(m) ?? 0) === i);
+        const headIndex = look.parts.length;
+        const head = of(headIndex).filter((m) => !/_lod/.test(m.name));
+        meshes.push(
+          ...buildGear(this.scene, look, {
+            root: holder,
+            joints,
+            head: head.filter((m) => !/Eye/.test(m.material?.name ?? '')),
+            eyes: head.filter((m) => (m.material?.name ?? '') === 'MI_Eyes'),
+            hair: meshes.filter((m) => (partOf.get(m) ?? 0) > headIndex && !/_lod/.test(m.name)),
+            torso: of(0).filter((m) => !/_lod/.test(m.name)),
+          }),
+        );
+      }
       owned.push(...carrier.skeletons);
       body = look.body;
       clips = this.retarget(rig, joints, `${name}_${look.body}`, look.body);
@@ -219,7 +236,16 @@ export class CharacterLibrary {
       if (!mat || done.has(mat)) continue;
       done.add(mat);
       const tex = textureFor(mat.name, look);
-      if (tex) mat.albedoTexture = this.texture(tex);
+      if (tex) {
+        mat.albedoTexture = this.texture(tex);
+        // Dyed outfits: the plain texture shows until the recoloured one is ready.
+        const family = tex.split('_')[0]!;
+        if ((look.cloth || look.trim) && (family === 'ranger' || family === 'peasant' || family === 'athlete')) {
+          void this.dyed(tex, family, look.cloth ?? null, look.trim ?? null).then((t) => {
+            if (t) mat.albedoTexture = t;
+          });
+        }
+      }
       const tint = materialTint(mat.name);
       const color = tint === 'skin' ? look.skin : tint === 'hair' ? look.hairColor : null;
       if (color) mat.albedoColor = Color3.FromHexString(color);
@@ -256,6 +282,22 @@ export class CharacterLibrary {
       this.hipAnims.set(key, a);
     }
     return a;
+  }
+
+  private readonly dyes = new Map<string, Promise<Texture | null>>();
+
+  /** A family texture recoloured with a look's dyes (shared by every character wearing the same dyes). */
+  private dyed(tex: string, family: string, cloth: string | null, trim: string | null): Promise<Texture | null> {
+    const key = `${tex}|${cloth}|${trim}`;
+    let p = this.dyes.get(key);
+    if (!p) {
+      p = dyeTexture(versioned(`${CHARACTER_BASE}textures/${tex}.jpg`), family, cloth, trim).then(
+        (url) => (url ? new Texture(url, this.scene, false, false) : null),
+        () => null,
+      );
+      this.dyes.set(key, p);
+    }
+    return p;
   }
 
   private texture(id: string): Texture {

@@ -9,11 +9,16 @@ const room = () => makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, r
 
 describe('character sizes', () => {
   it('custom looks carry their size in the ID; standard IDs are unchanged', () => {
-    const base = getLook('core.ranger');
+    const base = { ...getLook('core.ranger'), gear: [] };
     const small = encodeLook({ ...base, size: 'small' });
     expect(small.endsWith('-s')).toBe(true);
     expect(decodeLook(small)?.size).toBe('small');
     expect(encodeLook(base).endsWith('-s')).toBe(false);
+    // Dyes and gear ride after the size and come back intact.
+    const kitted = encodeLook({ ...base, size: 'large', cloth: '#2a3a5c', trim: null, gear: ['goggles', 'vest', 'pack'] });
+    expect(kitted.length).toBeLessThanOrEqual(64);
+    const back = decodeLook(kitted)!;
+    expect([back.size, back.cloth, back.trim, back.gear]).toEqual(['large', '#2a3a5c', null, ['goggles', 'vest', 'pack']]);
     expect(bodySizeOf('core.bulwark')).toBe('large');
     expect(bodySizeOf('core.sprout')).toBe('small');
     expect(bodySizeOf('core.ranger')).toBe('standard');
