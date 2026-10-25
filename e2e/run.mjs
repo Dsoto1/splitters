@@ -2,6 +2,7 @@
 // and two online clients against the dedicated server.
 // Usage: pnpm build && pnpm e2e
 import { spawn } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium } from 'playwright';
 
@@ -12,6 +13,16 @@ const SERVER_PORT = +(process.env.E2E_SERVER_PORT ?? 7787);
 const procs = [];
 /** CI renders in software on a shared runner, several times slower than a desk: every wait stretches there. */
 const SLOW = process.env.CI ? 3 : 1;
+/**
+ * CI runs the flows in parallel groups, balanced by how long they take there
+ * (the map tour alone is the longest). Each flow is in exactly one group.
+ */
+const SHARDS = [
+  ['maps', 'online', 'webgpu'],
+  ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby'],
+  ['vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery'],
+  ['setpieces', 'physicsfx', 'teams', 'ctf', 'arsenal', 'vehicles'],
+];
 const T = (ms) => ms * SLOW;
 let failures = 0;
 
@@ -22,9 +33,23 @@ function start(cmd, args, env = {}) {
   return p;
 }
 
+/** Pages open right now (every context the run made), for screenshots when a check fails. */
+const livePages = new Set();
+/** Screenshots in flight, awaited before a flow's pages are closed. */
+const shots = [];
+const ARTIFACTS = process.env.E2E_ARTIFACTS ?? 'e2e-artifacts';
+let currentFlow = 'setup';
+
 function check(cond, message) {
   console.log(`${cond ? 'PASS' : 'FAIL'} ${message}`);
-  if (!cond) failures++;
+  if (cond) return;
+  failures++;
+  // What every open page showed when the check failed (uploaded by CI).
+  let i = 0;
+  for (const page of livePages) {
+    const path = `${ARTIFACTS}/${currentFlow}-${failures}-${i++}.png`;
+    shots.push(page.screenshot({ path }).catch(() => {}));
+  }
 }
 
 async function waitForHttp(url, ms = 20000) {
@@ -1127,16 +1152,38 @@ try {
     const ctx = await newContext(...a);
     open.add(ctx);
     ctx.on('close', () => open.delete(ctx));
+    ctx.on('page', (page) => {
+      livePages.add(page);
+      page.on('close', () => livePages.delete(page));
+    });
+    // Low graphics unless a flow asks otherwise: software rendering on CI can't afford shadows and
+    // post effects, and no check looks at them (the WebGPU flow uses its own browser).
+    await ctx.addInitScript(() => {
+      try {
+        if (!localStorage.getItem('chronosplit.graphics')) localStorage.setItem('chronosplit.graphics', 'low');
+      } catch {
+        // No storage: the default applies.
+      }
+    });
     ctx.setDefaultTimeout(T(30000));
     ctx.setDefaultNavigationTimeout(T(30000));
     return ctx;
   };
-  // E2E_ONLY=editor,characters runs a subset of the flows.
-  const only = process.env.E2E_ONLY?.split(',');
+  // E2E_ONLY=editor,characters runs a subset of the flows; E2E_SHARD=2/4 one of CI's parallel groups.
+  const shard = process.env.E2E_SHARD ? SHARDS[Number(process.env.E2E_SHARD.split('/')[0]) - 1] : null;
+  if (process.env.E2E_SHARD && !shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
+  const only = process.env.E2E_ONLY?.split(',') ?? shard;
   const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
+  // Every flow belongs to exactly one shard, so CI's parallel jobs between them run everything.
+  const sharded = SHARDS.flat();
+  const lost = Object.keys(flows).filter((f) => sharded.filter((x) => x === f).length !== 1);
+  if (lost.length) throw new Error(`flows not in exactly one shard: ${lost.join(', ')}`);
+  mkdirSync(ARTIFACTS, { recursive: true });
   for (const [name, flow] of Object.entries(flows)) {
     if (only && !only.includes(name)) continue;
+    currentFlow = name;
     await flow(browser);
+    await Promise.all(shots.splice(0));
     // Pages a flow left open (a running match keeps rendering) would slow every flow after it.
     for (const ctx of [...open]) await ctx.close().catch(() => {});
   }

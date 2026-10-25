@@ -6,3 +6,4 @@ dist/
 *.gci
 *.GCI
 .claude/worktrees/
+e2e-artifacts/
