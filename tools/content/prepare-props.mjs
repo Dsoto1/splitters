@@ -303,7 +303,7 @@ for (const p of manifest.props) {
   const collision = p.collide === 'none' ? null : p.collide === 'trunk' ? [Math.min(0.5, size[0]), size[1], Math.min(0.5, size[2])] : external ? [thick(size[0]), size[1], thick(size[2])] : size;
   // The game draws glTF models mirrored in x (Babylon's import into its left-handed space), so the boxes are too.
   const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene))?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
-  defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}) });
+  defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}) });
   lock.files.push({ file, source: p.pack, src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) });
 }
 

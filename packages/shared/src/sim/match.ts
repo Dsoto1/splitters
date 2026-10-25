@@ -32,6 +32,7 @@ import {
 import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
+import { getProp } from '../content/props.ts';
 import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
@@ -305,6 +306,10 @@ export class Match {
   private projectiles: Projectile[] = [];
   private zones: Zone[] = [];
   private readonly pads: JumpPad[];
+  /** Foliage to hide in (bushes, ferns, tall crops): footprint centre, radius, base and top. */
+  private readonly hides: { x: number; z: number; r: number; y0: number; y1: number }[] = [];
+  /** The tick each actor last fired (giving away where they hide). */
+  private readonly lastShot = new Map<number, number>();
   private readonly ladders: Ladder[];
   private readonly liquids: LiquidBox[];
   private readonly mounts: MountRt[] = [];
@@ -354,6 +359,12 @@ export class Match {
       const item = getItem(e.item);
       if (!item) continue;
       this.pickups.push({ id: e.id, item, pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, respawnTicks: Math.round((e.respawnSeconds ?? item.respawnSeconds) * TICK_RATE), availableAt: 0, enabled: true });
+    }
+    for (const e of map.entities) {
+      if (e.kind !== 'prop') continue;
+      const def = getProp(e.model);
+      if (!def?.conceals) continue;
+      this.hides.push({ x: e.position[0], z: e.position[2], r: (Math.min(def.size[0], def.size[2]) * e.scale) / 2, y0: e.position[1] - 0.3, y1: e.position[1] + def.size[1] * e.scale });
     }
     map.entities.forEach((e, index) => {
       if (e.kind !== 'mount') return;
@@ -763,10 +774,24 @@ export class Match {
     return events;
   }
 
+  /**
+   * Hidden in foliage: inside a bush (or fern, or tall crop) whose top is above
+   * your eyes (crouch or lie down in the small ones), and not given away by
+   * firing in the last two seconds. Bots then only spot you up close.
+   */
+  private concealed(c: Combatant): boolean {
+    if (!this.hides.length || c.mount || !c.alive) return false;
+    const fired = this.lastShot.get(c.slot);
+    if (fired !== undefined && this.tick - fired < 2 * TICK_RATE) return false;
+    const p = c.move.pos;
+    const eye = p.y + eyeHeightOf(c.move);
+    return this.hides.some((h) => p.y >= h.y0 && eye <= h.y1 + 0.15 && Math.hypot(p.x - h.x, p.z - h.z) < h.r);
+  }
+
   private runBots(): void {
     const t0 = performance.now();
     const actors = this.actors();
-    const views = new Map(actors.map((c) => [c.slot, toView(c)]));
+    const views = new Map(actors.map((c) => [c.slot, toView(c, this.concealed(c))]));
     const spearItem = getItem('core.weapon_spear');
     const lyingSpears: PickupView[] = spearItem ? this.projectiles.filter((p) => p.stuck && p.spec.retrievable).map((p) => ({ id: `spear_${p.id}`, item: spearItem, pos: p.pos, available: true })) : [];
     const pickups: PickupView[] = [...lyingSpears, ...this.pickups.filter((p) => this.rules.weapons !== 'spears' || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
@@ -901,6 +926,7 @@ export class Match {
       if (ev.e !== 'shot' || ev.s < 0) continue;
       const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
       this.noises.push({ pos: from, tick: this.tick, by: ev.s, range: 45 });
+      this.lastShot.set(ev.s, this.tick);
       const shooter = this.actor(ev.s);
       const end = ev.to[0];
       if (!shooter || !end) continue;
@@ -2640,8 +2666,9 @@ export class Match {
   }
 }
 
-function toView(c: Combatant): CombatantView {
+function toView(c: Combatant, concealed = false): CombatantView {
   const v: CombatantView = { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive };
+  if (concealed) v.concealed = true;
   const stance = stanceOf(c.move);
   if (stance) v.stance = stance;
   if (c.kind === 'human') v.human = true;

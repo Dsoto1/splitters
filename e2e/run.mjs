@@ -714,9 +714,10 @@ async function teamsFlow(browser) {
   await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(30000) });
-  await page.waitForTimeout(2500);
+  // Every team's table fills in once the roster for all 24 has arrived.
+  await page.waitForTimeout(T(2500));
   await page.keyboard.down('Tab');
-  await page.waitForTimeout(300);
+  await page.waitForFunction(() => document.querySelectorAll('#scoreboard table').length >= 7, null, { timeout: T(8000) }).catch(() => {});
   const board = await page.evaluate(() => ({ many: document.getElementById('scoreboard').classList.contains('many'), tables: [...document.querySelectorAll('#scoreboard table')].map((t) => t.querySelectorAll('tr').length - 1) }));
   await page.keyboard.up('Tab');
   check(board.many && board.tables.length === 7, `the scoreboard shows seven teams (${board.tables.length})`);
@@ -817,11 +818,16 @@ async function arsenalFlow(browser) {
       window.__cs.input.pitch = -0.25;
       window.__autoInput = { buttons: 2 };
     }, id);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(T(500));
+    // Fire, oil and goo leave hazards a while; note any that show up (slow machines draw them late).
+    await page.evaluate(() => {
+      window.__zonesSeen ??= new Set();
+      for (const n of window.__cs.view.scene.transformNodes) if (n.name.startsWith('zone_')) window.__zonesSeen.add(n.name.slice(5));
+    });
   }
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-  await page.waitForTimeout(300);
-  const zones = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('zone_')).map((n) => n.name.slice(5)));
+  await page.waitForFunction(() => window.__zonesSeen.size > 0 || window.__cs.view.scene.transformNodes.some((n) => n.name.startsWith('zone_')), null, { timeout: T(4000) }).catch(() => {});
+  const zones = await page.evaluate(() => [...window.__zonesSeen, ...window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('zone_')).map((n) => n.name.slice(5))]);
   check(zones.length > 0, `hazards are drawn on the ground (${[...new Set(zones)].join(', ')})`);
   const bar = await page.evaluate(() => document.getElementById('weapon-bar').textContent);
   check(/•/.test(bar ?? ''), `the weapon bar shows several weapons in a slot (${bar})`);
@@ -936,6 +942,11 @@ async function mapsFlow(browser) {
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
     await page.goto(`${CLIENT}/?offline=${id}`);
     const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(40000) }).then(() => true, () => false);
+    // Small maps put bots in sight at once: keep the player alive while we look at where they stand.
+    if (ok) await page.evaluate(() => {
+      const me = window.__match?.slots[window.__cs.slot];
+      if (me) setInterval(() => (me.health = 100), 50);
+    });
     await page.waitForTimeout(1500);
     // Imported maps can have floors below level 0: "solid ground" there means not below the lowest floor.
     let floor = -5;

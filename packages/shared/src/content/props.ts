@@ -26,6 +26,8 @@ export interface PropDefinition {
   boxes?: readonly (readonly [number, number, number, number, number, number])[];
   /** Can be shot apart: health at scale 1, an explosion when it goes, and the colour of its debris. */
   breakable?: { health: number; blast?: { radius: number; damage: number; edge: number }; debris: string };
+  /** Foliage you can hide in (bushes, ferns, tall crops): bots only spot someone inside it up close or when they fire. */
+  conceals?: boolean;
 }
 
 export { CORE_PROPS, PROP_CATEGORIES };

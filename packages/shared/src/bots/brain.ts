@@ -33,6 +33,8 @@ export interface CombatantView {
   grounded?: boolean;
   /** A machine (a sentry gun), not a person: its own body would block a sight line to its middle. */
   object?: boolean;
+  /** Hidden in a bush (and quiet): only spotted up close. */
+  concealed?: boolean;
 }
 
 export interface PickupView {
@@ -103,6 +105,9 @@ export type BotState = 'roam' | 'advance' | 'engage' | 'cover' | 'chase' | 'inve
 
 const SIGHT_RANGE = 60;
 const HEARING_RANGE = 6;
+/** How close a bot must be to spot someone hiding in a bush, and to keep tracking them once seen (m). */
+const CONCEAL_SPOT = 4;
+const CONCEAL_TRACK = 9;
 const FOV_COS = Math.cos((110 / 2) * (Math.PI / 180));
 const STUCK_WINDOW_TICKS = TICK_RATE;
 const PATH_REFRESH_TICKS = TICK_RATE / 2;
@@ -1195,6 +1200,8 @@ export class BotBrain {
       const dz = (o.pos.z - me.pos.z) / (d || 1);
       const inFov = dx * facing.x + dz * facing.z >= FOV_COS * Math.hypot(dx, dz);
       if (!inFov && d > HEARING_RANGE) continue;
+      // Someone hiding in a bush is only spotted close by (a little further once already being tracked).
+      if (o.concealed && d > (this.visibleSince.has(o.slot) ? CONCEAL_TRACK : CONCEAL_SPOT)) continue;
       const theirEye = { x: o.pos.x, y: o.pos.y + STANCES[o.stance ?? 0].eye, z: o.pos.z };
       if (o.object) {
         // Check the sight line to just in front of it, not to a point inside its own body.

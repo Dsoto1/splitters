@@ -2036,7 +2036,8 @@
       "name": "Bush",
       "category": "Plants & Flowers",
       "height": 1.1,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "bush_large",
@@ -2045,7 +2046,8 @@
       "name": "Large Bush",
       "category": "Plants & Flowers",
       "height": 1.6,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "bush_leafy",
@@ -2054,7 +2056,8 @@
       "name": "Leafy Bush",
       "category": "Plants & Flowers",
       "height": 1.2,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "bush_small",
@@ -2063,7 +2066,8 @@
       "name": "Small Bush",
       "category": "Plants & Flowers",
       "height": 0.7,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "bush_cone",
@@ -2072,7 +2076,8 @@
       "name": "Cone Bush",
       "category": "Plants & Flowers",
       "height": 1.4,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "fern",
@@ -2081,7 +2086,8 @@
       "name": "Fern",
       "category": "Plants & Flowers",
       "height": 0.9,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "plant_low",
@@ -4749,7 +4755,8 @@
       "name": "Leafy Bush",
       "category": "Plants & Flowers",
       "height": 1.2,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "nt_bush_berries",
@@ -4758,7 +4765,8 @@
       "name": "Berry Bush",
       "category": "Plants & Flowers",
       "height": 1.1,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "nt_bush_snow",
@@ -4767,7 +4775,8 @@
       "name": "Snowy Bush",
       "category": "Plants & Flowers",
       "height": 1.1,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "nt_corn",
@@ -4776,7 +4785,8 @@
       "name": "Corn",
       "category": "Plants & Flowers",
       "height": 2.0,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "nt_wheat",
@@ -4785,7 +4795,8 @@
       "name": "Wheat",
       "category": "Plants & Flowers",
       "height": 1.0,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "nt_wildflowers",
@@ -4803,7 +4814,8 @@
       "name": "Wide Fern",
       "category": "Plants & Flowers",
       "height": 0.8,
-      "collide": "none"
+      "collide": "none",
+      "conceals": true
     },
     {
       "id": "nt_boulder_tall",
