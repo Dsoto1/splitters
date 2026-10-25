@@ -44,6 +44,18 @@ function lobbyUrl(rest = ''): string | null {
   return a ? `${a.secure ? 'https' : 'http'}://${a.host}:${a.port}${a.path}lobby/games${rest}` : null;
 }
 
+/** Relay credentials from the hub ({ iceServers, relay }), or null when there's no hub or it doesn't answer quickly. */
+export async function fetchIce(): Promise<{ iceServers: RTCIceServer[]; relay: boolean } | null> {
+  const url = lobbyUrl();
+  if (!url) return null;
+  try {
+    const res = await fetch(url.replace(/games$/, 'ice'), { cache: 'no-store', signal: AbortSignal.timeout(4000) });
+    return res.ok ? ((await res.json()) as { iceServers: RTCIceServer[]; relay: boolean }) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** The games listed for this version of the game. Throws when the hub can't be reached. */
 export async function fetchGames(): Promise<LobbyListing[]> {
   const url = lobbyUrl(`?v=${PROTOCOL_VERSION}`);

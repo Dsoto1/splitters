@@ -3,7 +3,7 @@ import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMess
 import type { RemoteLink } from './localTransport.ts';
 import type { Transport } from './transport.ts';
 import { CHUNK, Unzipper, Zipper } from './peerZip.ts';
-import { hubAddress, hubSetting } from './hub.ts';
+import { fetchIce, hubAddress, hubSetting } from './hub.ts';
 
 /**
  * Host game / Join by code: friends connect straight to the host's browser
@@ -71,9 +71,23 @@ function iceServers(): RTCIceServer[] {
   return list;
 }
 
+/** Relay credentials from the community hub (fetched before connecting), and whether it has a relay at all. */
+let hubIce: RTCIceServer[] = [];
+let hubIceAt = 0;
+export let hubRelay = false;
+
+/** Ask the hub for relay credentials (shared, renewed every 30 minutes). Never fails: without them, direct connections only. */
+export async function prepareIce(): Promise<void> {
+  if (Date.now() - hubIceAt < 30 * 60_000) return;
+  const got = await fetchIce();
+  hubIce = got?.iceServers ?? [];
+  hubRelay = !!got?.relay;
+  hubIceAt = got ? Date.now() : 0;
+}
+
 function peerOptions(): PeerOptions {
   const custom = new URLSearchParams(location.search).get('peer');
-  const base: PeerOptions = { config: { iceServers: iceServers() }, debug: 0 };
+  const base: PeerOptions = { config: { iceServers: [...iceServers(), ...hubIce] }, debug: 0 };
   // No broker named: the community hub's, when there is one; otherwise PeerJS's public one.
   if (!custom) {
     const hub = hubAddress();
@@ -149,7 +163,8 @@ export class PeerHost {
   constructor(private readonly admit: (link: RemoteLink) => void) {}
 
   /** Resolves with the join code once the broker has registered it. */
-  start(): Promise<string> {
+  async start(): Promise<string> {
+    await prepareIce();
     return new Promise((resolve, reject) => {
       const tryCode = (attempt: number) => {
         const code = makeJoinCode();
@@ -211,6 +226,10 @@ export class PeerTransport implements Transport {
   }
 
   start(onMessage: (m: ServerMessage) => void, onClose: (reason: string) => void): void {
+    void prepareIce().then(() => !this.closedByUs && this.open(onMessage, onClose));
+  }
+
+  private open(onMessage: (m: ServerMessage) => void, onClose: (reason: string) => void): void {
     const peer = new Peer(peerOptions());
     this.peer = peer;
     let opened = false;
@@ -230,7 +249,7 @@ export class PeerTransport implements Transport {
       const local = /^(localhost|127\.|\[::1\])/.test(hub.replace(/^\w+:\/\//, ''));
       return `couldn't reach the matchmaking service at ${hub}${local ? ' — that address means "this computer", so it only works on the host\'s own machine: ask them to host without a localhost hub' : ' — check the address and that the hub is running'}`;
     };
-    const relayHint = loadRelay() ? 'even through the relay' : 'set a relay in Options (both of you), or play on the same Wi-Fi';
+    const relayHint = loadRelay() || hubRelay ? 'even through the relay' : 'the host can set a relay in Options and send you a new invite link, or play on the same Wi-Fi';
     const noDirect = `found the game but couldn't connect to it — your networks block direct connections: ${relayHint}`;
     const timeout = window.setTimeout(() => {
       if (opened) return;

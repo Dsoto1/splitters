@@ -996,7 +996,7 @@ async function onlineFlow(browser) {
 async function lobbyFlow(browser) {
   // A community hub: broker + game browser. A host lists its match; a player finds it and joins from the list.
   const HUB_PORT = +(process.env.E2E_HUB_PORT ?? 9078);
-  start('pnpm', ['--filter', '@chronosplit/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
+  start('pnpm', ['--filter', '@chronosplit/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478' });
   await sleep(5000);
   const hub = `hub=127.0.0.1:${HUB_PORT}`;
   const errors = [];
@@ -1014,8 +1014,10 @@ async function lobbyFlow(browser) {
     box.dispatchEvent(new Event('change'));
     document.getElementById('host-game').click();
   });
-  const listed = await host.waitForFunction(() => /^Listed/.test(document.getElementById('host-public-status').textContent), null, { timeout: 20000 }).then(() => true, () => false);
+  const listed = await host.waitForFunction(() => /^Listed:/.test(document.getElementById('host-public-status').textContent), null, { timeout: 20000 }).then(() => true, () => false);
   check(listed, `the host's match is listed (${await host.evaluate(() => document.getElementById('host-public-status').textContent)})`);
+  const relayNote = await host.evaluate(() => document.getElementById('host-info').textContent);
+  check(relayNote.includes('hub provides a relay'), 'the hub hands out relay credentials, and the host is told');
   const player = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   player.on('pageerror', (e) => errors.push(`player: ${e.message}`));
   await player.addInitScript(() => localStorage.setItem('cs.name', 'Stranger'));
@@ -1023,7 +1025,7 @@ async function lobbyFlow(browser) {
   await player.waitForFunction(() => window.__front, null, { timeout: 30000 });
   await player.evaluate(() => document.getElementById('nav-online')?.click());
   const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: 15000 }).then((h) => h.jsonValue(), () => null);
-  check(!!row && row.includes('1/') && row.includes('Hosty'), `the game browser lists it (${row})`);
+  check(!!row && row.includes('1/') && row.includes('Hosty') && row.includes('Relay'), `the game browser lists it, with the relay badge (${row})`);
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Friday Night')).querySelector('button').click());
   const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 40000 }).then(() => true, () => false);
   check(joined, 'joining from the game browser puts the player in the match');

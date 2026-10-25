@@ -400,12 +400,13 @@ export class GameSession {
     btn.disabled = true;
     btn.textContent = 'Opening a join code…';
     try {
-      const { PeerHost, loadRelay, relayParams } = await import('./peerLink.ts');
+      const peerLink = await import('./peerLink.ts');
+      const { PeerHost, loadRelay, relayParams } = peerLink;
       const host = new PeerHost((link) => local.accept(link));
       this.peerHost = host;
       const code = await host.start();
       if (this.closed) return host.close();
-      this.relayOn = !!loadRelay();
+      this.relayOn = !!loadRelay() || peerLink.hubRelay;
       const q = new URLSearchParams(location.search);
       const peer = q.get('peer');
       // Friends must use the same broker: carry the hub unless it's the site's built-in one.
@@ -416,7 +417,7 @@ export class GameSession {
       const hubHere = /^(\w+:\/\/)?(localhost|127\.|\[::1\])/.test(hubSetting());
       btn.hidden = true;
       info.hidden = false;
-      info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
+      info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${peerLink.hubRelay ? ' The hub provides a relay, so friends on strict networks can connect too.' : loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options and send a new link.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
       info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
       this.hud.showMessage(`Hosting: join code ${code}`, 5);
       this.updateListing();
@@ -439,7 +440,7 @@ export class GameSession {
     if (!box.checked || !host?.code || !(local instanceof LocalTransport)) {
       this.advertiser?.stop();
       this.advertiser = undefined;
-      status.textContent = box.checked ? 'Listed once you host (Host game above).' : 'Friends only: share the code or link.';
+      status.textContent = box.checked ? 'Will be listed once you host (Host game above).' : 'Friends only: share the code or link.';
       return;
     }
     if (this.advertiser) return;

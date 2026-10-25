@@ -455,3 +455,6 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .gb-hub input { flex: 1; max-width: 260px; background: var(--surface-1); color: var(--text); border: 1px solid var(--line); padding: 5px 8px; font: 500 13px var(--font-body); text-transform: none; letter-spacing: 0; }
 #host-public { display: flex; flex-direction: column; gap: 6px; margin: 6px 0; }
 #host-public input#host-name { background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); padding: 5px 8px; }
+/* Options: the settings panel scrolls inside the screen (it's taller than most windows). */
+#menu .screen.options { display: flex; flex-direction: column; }
+#menu .screen.options > .form { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }

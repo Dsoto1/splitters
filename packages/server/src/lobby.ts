@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { LOBBY_EXPIRY_SECONDS, parseAdvert, type LobbyAdvert, type LobbyListing } from '@chronosplit/shared';
+import type { IceConfig } from './ice.ts';
 
 interface Entry {
   listing: LobbyAdvert & { id: string };
@@ -86,6 +87,16 @@ export class LobbyStore {
 
 const MAX_BODY = 4096;
 
+const iceAsks = new Map<string, number[]>();
+function iceLimit(ip: string, now = Date.now()): boolean {
+  const recent = (iceAsks.get(ip) ?? []).filter((t) => t > now - 60_000);
+  if (recent.length >= 12) return false;
+  recent.push(now);
+  iceAsks.set(ip, recent);
+  if (iceAsks.size > 10_000) iceAsks.clear();
+  return true;
+}
+
 function readBody(req: IncomingMessage): Promise<unknown> {
   return new Promise((resolve) => {
     let size = 0;
@@ -112,10 +123,11 @@ function readBody(req: IncomingMessage): Promise<unknown> {
  *   POST   /lobby/games               → { id, secret }
  *   PUT    /lobby/games/<id>          (header X-Lobby-Secret) → 204
  *   DELETE /lobby/games/<id>          (header X-Lobby-Secret) → 204
+ *   GET    /lobby/ice                 → { iceServers, relay } (short-lived relay credentials, see ice.ts)
  * Open to any origin: the game's pages can be served from anywhere.
  * `trustProxy`: take the client address from X-Forwarded-For (behind a proxy).
  */
-export function lobbyHandler(store: LobbyStore, trustProxy = false) {
+export function lobbyHandler(store: LobbyStore, trustProxy = false, ice?: IceConfig) {
   return async (req: IncomingMessage & { originalUrl?: string }, res: ServerResponse, next?: () => void): Promise<void> => {
     const url = new URL(req.originalUrl ?? req.url ?? '/', 'http://hub');
     const path = url.pathname.replace(/\/+$/, '');
@@ -137,7 +149,17 @@ export function lobbyHandler(store: LobbyStore, trustProxy = false) {
     const forwarded = trustProxy ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0]?.trim() : '';
     const ip = forwarded || req.socket.remoteAddress || 'unknown';
     const secret = String(req.headers['x-lobby-secret'] ?? '');
-    if (path === '/lobby/health') return send(200, { ok: true, games: store.size });
+    if (path === '/lobby/health') return send(200, { ok: true, games: store.size, relay: ice?.provider ?? null });
+    if (path === '/lobby/ice' && req.method === 'GET') {
+      // Relay credentials cost bandwidth: a few per address per minute is plenty for joining games.
+      if (!iceLimit(ip)) return send(429, { error: 'slow down' });
+      try {
+        const iceServers = (await ice?.get()) ?? [];
+        return send(200, { iceServers, relay: !!ice?.provider });
+      } catch (e) {
+        return send(502, { error: (e as Error).message });
+      }
+    }
     if (path === '/lobby/games') {
       if (req.method === 'GET') {
         const v = url.searchParams.get('v');

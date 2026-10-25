@@ -773,7 +773,12 @@ export class FrontEnd {
         ['Weapons', '1–9 · Wheel · Q'],
         ['Scores', 'Tab'],
         ['Fullscreen', 'F11 · Alt+Enter'],
-        ['Controller', 'Sticks move/look · RT fire · LT aim · A jump · B crouch · X reload · Y weapon · RB use · LB throw · L3 sprint'],
+        ['Controller: move / look', 'Left stick / right stick'],
+        ['Controller: fire / aim', 'RT / LT'],
+        ['Controller: jump / crouch', 'A / B'],
+        ['Controller: reload / next weapon', 'X / Y'],
+        ['Controller: use / throw', 'RB / hold LB'],
+        ['Controller: sprint / ping', 'L3 / D-pad up'],
       ].map(([a, k]) => el('div', {}, el('span', { textContent: a! }), kbd(k!))),
     );
     // Crosshair styles and colours (reference board: crosshair styles).

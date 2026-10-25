@@ -16,6 +16,17 @@ want always-on official matches.
   - Point the site at it: build with `VITE_HUB=hub.example.com` (HTTPS
     assumed when the site is HTTPS and no port is given), or players use
     `?hub=host:port`, or type it under Online → Game browser.
+- **Relay for strict networks.** Some home networks block direct browser
+  connections ("found the game but couldn't connect"). Give the hub a TURN
+  provider and it hands every player short-lived relay credentials
+  (`GET /lobby/ice`), so nobody sets anything up. One of:
+  - Cloudflare TURN: `CLOUDFLARE_TURN_KEY_ID` + `CLOUDFLARE_TURN_API_TOKEN`
+  - Metered: `METERED_DOMAIN` (yourapp.metered.live) + `METERED_API_KEY`
+  - Your own coturn (`use-auth-secret`): `TURN_URLS` + `TURN_SECRET`
+
+  Credentials last `ICE_TTL` seconds (default 6 h); each address can ask
+  12 times a minute. Relayed play is about 3 KB/s per player. Without a
+  provider, players can still enter their own relay in Options → Relay.
 - **Matches** run in the host player's browser (pause menu → Host game).
   Ticking "List in the game browser" lists it; it checks in every 20 s and
   drops off within about a minute of the host leaving.
