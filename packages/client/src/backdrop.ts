@@ -67,9 +67,10 @@ export class BackdropVisuals {
   private applyLighting(sky: SkyDefinition): void {
     const hemi = this.scene.getLightByName('hemi') as HemisphericLight | null;
     const sun = this.scene.getLightByName('sun') as DirectionalLight | null;
-    if (hemi) hemi.intensity = sky.light.hemi;
+    // A stronger sun against a softer sky light, so shadows and the sunny sides of things read (tone mapping evens it out).
+    if (hemi) hemi.intensity = sky.light.hemi * 0.9;
     if (sun) {
-      sun.intensity = sky.light.sun;
+      sun.intensity = sky.light.sun * 1.5;
       sun.diffuse = Color3.FromHexString(sky.light.sunColor);
       const el = (sky.light.elevation * Math.PI) / 180;
       sun.direction = new Vector3(-0.8 * Math.cos(el), -Math.max(0.15, Math.sin(el)), 0.6 * Math.cos(el));

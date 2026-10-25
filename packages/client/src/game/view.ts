@@ -48,6 +48,7 @@ import {
 } from '@chronosplit/shared';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { Ragdoll } from './ragdoll.ts';
+import { Atmosphere } from './atmosphere.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
@@ -175,6 +176,8 @@ export class GameView {
   private flashUntil = 0;
   /** The ambient light, briefly brightened by your own shots (a real point light costs every pixel). */
   private hemi?: HemisphericLight;
+  /** Shadows, tone mapping and post effects (Options → Graphics). */
+  readonly atmosphere: Atmosphere;
   private hemiBase = 0.8;
   private hemiLit = false;
   private readonly brass: StandardMaterial;
@@ -210,6 +213,7 @@ export class GameView {
 
     this.viewRoot = new TransformNode('viewRoot', this.scene);
     this.viewRoot.parent = this.camera;
+    this.atmosphere = new Atmosphere(this.scene, this.camera, sun, this.viewRoot);
     this.flash = createStarFlash(this.scene, 'muzzleFlash', 0.32);
     this.flash.renderingGroupId = 1;
     // It rides on the gun in camera space and already faces you: billboarding it
@@ -1179,6 +1183,7 @@ export class GameView {
   }
 
   dispose(): void {
+    this.atmosphere.dispose();
     this.blood.dispose();
     this.impacts.dispose();
     this.scene.dispose();

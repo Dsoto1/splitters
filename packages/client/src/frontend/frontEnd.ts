@@ -27,6 +27,7 @@ import {
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/peerLink.ts';
 import { installTooltips } from './tooltip.ts';
+import { GRAPHICS_QUALITIES, loadGraphicsQuality, saveGraphicsQuality, type GraphicsQuality } from '../game/atmosphere.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
@@ -733,6 +734,8 @@ export class FrontEnd {
       this.audio.setVolume(Number(volume.value) / 100);
       storage('cs.volume', String(this.audio.getVolume()));
     });
+    const graphics = el('select', {}, ...GRAPHICS_QUALITIES.map((q) => el('option', { value: q, textContent: { low: 'Low — fastest', medium: 'Medium — sun shadows', high: 'High — far shadows, ambient occlusion, bloom' }[q], selected: q === loadGraphicsQuality() })));
+    graphics.addEventListener('change', () => saveGraphicsQuality(graphics.value as GraphicsQuality));
     const fullscreen = el('button', { type: 'button' });
     bindFullscreenButton(fullscreen);
     const mouse = loadMousePrefs();
@@ -825,6 +828,7 @@ export class FrontEnd {
         el('label', {}, 'Clan tag', clan),
         el('label', {}, 'Volume', volume),
         el('label', {}, 'Display', fullscreen),
+        el('label', {}, el('span', { class: 'row-label' }, 'Graphics', infoTip('Applies from your next match. Medium suits most computers; drop to Low if the game stutters, try High on a strong graphics card.')), graphics),
         el('label', {}, 'Mouse sensitivity', el('span', { class: 'row' }, sens, sensVal)),
         el('label', {}, 'Invert look', invert),
         el('label', {}, 'Aim assist', assist),
