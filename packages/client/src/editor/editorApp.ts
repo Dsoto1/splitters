@@ -54,6 +54,7 @@ import {
   validateMap,
   type EditCommand,
   type MapDocument,
+  type TilePlacement,
   type MapEntity,
   type ScenarioPaletteKey,
   type PaintScope,
@@ -67,6 +68,15 @@ import {
   type Vec3,
   EDGE_STYLES,
   EDGE_STYLE_LABELS,
+  CEILINGS,
+  CEILING_LABELS,
+  CORNERS,
+  CORNER_LABELS,
+  FLOOR_INSERTS,
+  FLOOR_INSERT_LABELS,
+  ROOM_LAYOUTS,
+  ROOM_LAYOUT_LABELS,
+  type RoomOptions,
   SIDES,
   TILE_CATEGORIES,
   edgeChoiceAt,
@@ -2200,6 +2210,7 @@ export class EditorApp {
           el.append(row({ N: 'North', E: 'East', S: 'South', W: 'West' }[side], sel));
         }
       } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
+      if (def?.configurable) this.roomOptionsPanel(el, t);
       const h3 = document.createElement('h3');
       h3.textContent = 'Surfaces';
       el.append(h3);
@@ -2495,6 +2506,32 @@ export class EditorApp {
   }
 
   /** One surface slot in the tile inspector: material (or theme default) and tint. */
+  /** Layout, floor, ceiling and corners of a room (absent = the room as designed). */
+  private roomOptionsPanel(el: HTMLElement, t: TilePlacement): void {
+    const head = document.createElement('h3');
+    head.textContent = 'Room';
+    el.append(head);
+    const now: RoomOptions = t.options ?? {};
+    const pick = <K extends keyof RoomOptions>(label: string, key: K, values: readonly NonNullable<RoomOptions[K]>[], labels: Record<string, string>, unset: string) => {
+      const sel = document.createElement('select');
+      sel.append(new Option(unset, '', false, now[key] === undefined));
+      for (const v of values) if (labels[v] !== unset) sel.append(new Option(labels[v]!, v, false, now[key] === v));
+      sel.addEventListener('change', () => {
+        const next: RoomOptions = { ...(t.options ?? {}) };
+        if (sel.value) next[key] = sel.value as RoomOptions[K];
+        else delete next[key];
+        const { options: _old, ...rest } = t;
+        this.run(`Room: ${label.toLowerCase()}`, updateTileCommand(this.doc, t, Object.keys(next).length ? { ...rest, options: next } : rest));
+      });
+      el.append(row(label, sel));
+    };
+    pick('Layout', 'layout', ROOM_LAYOUTS, ROOM_LAYOUT_LABELS, 'As built');
+    pick('Floor', 'floor', FLOOR_INSERTS, FLOOR_INSERT_LABELS, FLOOR_INSERT_LABELS.standard);
+    pick('Ceiling', 'ceiling', CEILINGS, CEILING_LABELS, CEILING_LABELS.open);
+    pick('Corners', 'corners', CORNERS, CORNER_LABELS, CORNER_LABELS.square);
+    el.append(small('A roof is left off where something is built on top; a sunken centre needs nothing below it.'));
+  }
+
   private surfaceRow(t: MapDocument['classicStructure']['tiles'][number], slot: SurfaceSlot): HTMLElement {
     const current = t.surfaces?.[slot];
     const mat = document.createElement('select');

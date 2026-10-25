@@ -1,5 +1,5 @@
 import { PLAYER } from '../sim/constants.ts';
-import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, type EdgeStyle, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
+import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, type Corner, type EdgeStyle, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { getProp } from '../content/props.ts';
 import { terrainBoundary, terrainTriangles } from './terrain.ts';
@@ -209,6 +209,19 @@ export function edgeSegments(style: ResolvedEdge, half: number, height: number):
       out.push([-half, half, 0.05, 0.2, 0.1], [-half, half, 1.45, 1.6, 0.1], [-half, half, 2.85, 3, 0.1]);
       return out;
     }
+    case 'broken':
+      // A ragged hole knocked through, a heap of masonry on one side of it.
+      return [[-half, -2.2, 0, height, t], [1.4, half, 0, height, t], [-2.2, -0.6, top(2.7), height, t], [-0.6, 1.4, top(3.2), height, t], [-2.2, -1.3, 0, 0.45, t]];
+    case 'bars': {
+      // Floor-to-ceiling bars 0.3 m apart: see and shoot through, nobody squeezes through.
+      const out: [number, number, number, number, number][] = [];
+      for (let u = -half + 0.15; u < half - 0.1; u += 0.3) out.push([u - 0.03, u + 0.03, 0, height, 0.1]);
+      out.push([-half, half, 0, 0.12, 0.12], [-half, half, height - 0.15, height, 0.12]);
+      return out;
+    }
+    case 'shutter':
+      // A wide opening with its roller shutter stuck 1.35 m up: crouch under it.
+      return [[-half, -2.5, 0, height, t], [2.5, half, 0, height, t], [-2.5, 2.5, top(3.5), height, t], [-2.5, 2.5, 1.35, top(3.5), 0.12]];
   }
 }
 
@@ -267,6 +280,18 @@ function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, n
       out.push([-half, half, height * (style === 'high' ? 2 : 4) - 0.2, height * (style === 'high' ? 2 : 4), 0.07]);
       return out;
     case 'fence':
+    case 'bars':
+      return out;
+    case 'broken':
+      base(-half, -2.2);
+      base(1.4, half);
+      cornice(-half, half);
+      return out;
+    case 'shutter':
+      base(-half, -2.66);
+      base(2.66, half);
+      cornice(-half, half);
+      if (height > 3.7) frame(2.5, 3.5);
       return out;
     case 'railing':
       // Posts every 2 m and a top rail.
@@ -398,6 +423,8 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
   const { cells } = buildOccupancy(map, catalog);
   const boxes: WorldBox[] = [];
   const half = cellSize / 2;
+  const rooms = roomOptionBoxes(map, catalog, cells, decor);
+  boxes.push(...rooms.boxes);
 
   for (const [key, occ] of cells) {
     const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
@@ -406,7 +433,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     const baseY = gz * levelHeight;
     const id = occ.placement.id;
 
-    if (!decor && occ.def.floors.includes(occ.level)) {
+    if (!decor && occ.def.floors.includes(occ.level) && !(occ.level === 0 && rooms.noSlabs.has(id))) {
       boxes.push({ min: [cx - half, baseY - floorThickness, cz - half], max: [cx + half, baseY, cz + half], kind: 'floor', sourceId: id });
     }
 
@@ -451,10 +478,149 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     const cz = placement.y * cellSize;
     const baseY = placement.z * levelHeight;
     for (const f of def.extraFloors ?? []) boxes.push(rotateLocalBox(f, placement.rotation, cx, baseY, cz, placement.id, 'floor'));
+    if (rooms.ownLayout.has(placement.id)) continue;
     for (const solid of def.solids ?? []) if (solid.kind !== 'trim') boxes.push(rotateLocalBox(solid, placement.rotation, cx, baseY, cz, placement.id, solid.kind ?? 'solid'));
   }
   if (!decor) boxes.push(...groundBoxes(map, boxes));
   return boxes;
+}
+
+/** Wall styles a corner piece can stand against (solid enough at the corner itself). */
+const CORNER_WALLS = new Set<ResolvedEdge>(['wall', 'door', 'wide', 'window', 'windows', 'slit', 'high', 'tower', 'shutter']);
+
+/** The two sides meeting at each corner of a cell, and which way that corner lies from the centre. */
+const CELL_CORNERS: [Side, Side, number, number][] = [
+  ['N', 'E', 1, 1],
+  ['E', 'S', 1, -1],
+  ['S', 'W', -1, -1],
+  ['W', 'N', -1, 1],
+];
+
+/**
+ * What room options (layout, floor insert, ceiling, corners) add to the map,
+ * which placements' floor slabs a sunken centre replaces, and which placements'
+ * own furniture a chosen layout replaces.
+ */
+function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<string, CellOccupant>, decor: boolean): { boxes: WorldBox[]; noSlabs: Set<string>; ownLayout: Set<string> } {
+  const { cellSize, levelHeight } = map.classicStructure;
+  const half = cellSize / 2;
+  const t = TILE_DIMENSIONS.wallThickness;
+  const out: WorldBox[] = [];
+  const noSlabs = new Set<string>();
+  const ownLayout = new Set<string>();
+  for (const placement of map.classicStructure.tiles) {
+    const o = placement.options;
+    const def = catalog.get(placement.tile);
+    if (!o || !def?.configurable) continue;
+    const [w, d] = footprintSize(def);
+    const px = placement.x * cellSize;
+    const pz = placement.y * cellSize;
+    const baseY = placement.z * levelHeight;
+    const local = (b: LocalBox, kind: BoxKind = b.kind ?? 'solid') => out.push(rotateLocalBox(b, placement.rotation, px, baseY, pz, placement.id, kind));
+    const mine = [...cells.entries()].filter(([, occ]) => occ.placement === placement).map(([key]) => key.split(',').map(Number) as [number, number, number]);
+
+    let area: ReturnType<typeof floorInsertBoxes>['area'];
+    if (o.floor && o.floor !== 'standard') {
+      const ground = mine.filter(([, , z]) => z === placement.z);
+      // A pit needs room under it: nothing built below, and no terrain to fill it.
+      const sinkable = o.floor !== 'sunken' || (ground.every(([x, y, z]) => !cells.has(cellKey(x, y, z - 1))) && !(map.terrain && placement.z <= 0));
+      if (sinkable) {
+        const insert = floorInsertBoxes(o.floor, w, d);
+        area = insert.area;
+        if (insert.replacesSlabs) noSlabs.add(placement.id);
+        if (!decor) for (const b of insert.boxes) local(b);
+      }
+    }
+    if (o.layout) {
+      ownLayout.add(placement.id);
+      if (!decor) {
+        for (const b of roomLayoutBoxes(o.layout, w, d, placement.id, levelHeight)) {
+          // Pieces standing in a raised or sunken centre stand on its floor (tall ones still reach the ceiling).
+          const mx = (b.min[0] + b.max[0]) / 2;
+          const mz = (b.min[2] + b.max[2]) / 2;
+          const inArea = area && mx > area.x0 && mx < area.x1 && mz > area.z0 && mz < area.z1;
+          const dy = inArea ? area!.dy : 0;
+          const full = b.max[1] >= levelHeight - 1e-6;
+          local(dy ? { ...b, min: [b.min[0], b.min[1] + dy, b.min[2]], max: [b.max[0], full ? b.max[1] : b.max[1] + dy, b.max[2]] } : b);
+        }
+      }
+    }
+    for (const [x, y, z] of mine) {
+      const cx = x * cellSize;
+      const cz = y * cellSize;
+      const top = z * levelHeight + levelHeight;
+      if (o.ceiling && o.ceiling !== 'open' && !cells.has(cellKey(x, y, z + 1))) {
+        const roof = (x0: number, z0: number, x1: number, z1: number) => out.push({ min: [cx + x0, top - TILE_DIMENSIONS.floorThickness, cz + z0], max: [cx + x1, top, cz + z1], kind: 'floor', sourceId: placement.id });
+        if (decor) {
+          if (o.ceiling === 'beams') {
+            // Three beams under the roof, across the room's short way in its own frame.
+            const alongX = placement.rotation % 2 === 0;
+            for (const u of [-half / 2, 0, half / 2]) {
+              const y0 = top - TILE_DIMENSIONS.floorThickness - 0.45;
+              const y1 = top - TILE_DIMENSIONS.floorThickness;
+              out.push(alongX ? { min: [cx - half, y0, cz + u - 0.18], max: [cx + half, y1, cz + u + 0.18], kind: 'trim', sourceId: placement.id } : { min: [cx + u - 0.18, y0, cz - half], max: [cx + u + 0.18, y1, cz + half], kind: 'trim', sourceId: placement.id });
+            }
+          }
+        } else if (o.ceiling === 'skylight') {
+          const h = 1.5;
+          roof(-half, -half, half, -h);
+          roof(-half, h, half, half);
+          roof(-half, -h, -h, h);
+          roof(h, -h, half, h);
+        } else roof(-half, -half, half, half);
+      }
+      if (o.corners && o.corners !== 'square') {
+        const y0 = z * levelHeight;
+        for (const [a, b, sx, sz] of CELL_CORNERS) {
+          if (!CORNER_WALLS.has(resolveEdge(cells, x, y, z, a)) || !CORNER_WALLS.has(resolveEdge(cells, x, y, z, b))) continue;
+          // The inside corner where the two wall faces meet.
+          const ix = cx + sx * (half - t);
+          const iz = cz + sz * (half - t);
+          out.push(...cornerPiece(o.corners, ix, iz, sx, sz, y0, y0 + levelHeight, placement.id, decor));
+        }
+      }
+    }
+  }
+  return { boxes: out, noSlabs, ownLayout };
+}
+
+/** One corner treatment at an inside corner (ix, iz), the room lying toward (-sx, -sz). */
+function cornerPiece(style: Corner, ix: number, iz: number, sx: number, sz: number, y0: number, y1: number, sourceId: string, decor: boolean): WorldBox[] {
+  const sq = (s: number, a: number, b: number, kind: BoxKind): WorldBox => ({ min: [Math.min(ix, ix - sx * s), a, Math.min(iz, iz - sz * s)], max: [Math.max(ix, ix - sx * s), b, Math.max(iz, iz - sz * s)], kind, sourceId });
+  const diagonal = (dist: number, len: number, thick: number, kind: BoxKind): WorldBox => {
+    // A box across the corner at 45°, its centre `dist` in from the corner along the diagonal.
+    const mx = ix - sx * dist;
+    const mz = iz - sz * dist;
+    return { min: [mx - len / 2, y0, mz - thick / 2], max: [mx + len / 2, y1, mz + thick / 2], yaw: sx * sz > 0 ? -Math.PI / 4 : Math.PI / 4, kind, sourceId };
+  };
+  switch (style) {
+    case 'square':
+      return [];
+    case 'posts':
+      return decor ? [] : [sq(0.7, y0, y1, 'wall')];
+    case 'columns':
+      return decor ? [sq(0.8, y0, y0 + 0.3, 'trim'), sq(0.8, y1 - 0.35, y1, 'trim')] : [sq(0.6, y0, y1, 'wall')];
+    case 'chamfered':
+      return decor ? [] : [diagonal(0.45, 1.8, 0.6, 'wall')];
+    case 'rounded': {
+      if (decor) return [];
+      // Three short faces round the corner, like a fillet of radius ~1.4 m.
+      const out: WorldBox[] = [];
+      const r = 1.4;
+      const ox = ix - sx * r;
+      const oz = iz - sz * r;
+      for (let i = 0; i < 3; i++) {
+        const a = ((i + 0.5) / 3) * (Math.PI / 2);
+        const px = ox + sx * Math.cos(a) * (r + 0.25);
+        const pz = oz + sz * Math.sin(a) * (r + 0.25);
+        const len = 2 * (r + 0.25) * Math.sin(Math.PI / 12) + 0.06;
+        // Face perpendicular to the radius.
+        const ang = Math.atan2(sz * Math.sin(a), sx * Math.cos(a));
+        out.push({ min: [px - len / 2, y0, pz - 0.25], max: [px + len / 2, y1, pz + 0.25], yaw: -(ang + Math.PI / 2), kind: 'wall', sourceId });
+      }
+      return [...out, sq(0.45, y0, y1, 'wall')];
+    }
+  }
 }
 
 /** How far the walkable ground runs past the map's footprint. */

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EDGE_STYLES } from './catalog.ts';
+import { CEILINGS, CORNERS, EDGE_STYLES, FLOOR_INSERTS, ROOM_LAYOUTS } from './catalog.ts';
 import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
 import { ScenarioLogic } from './logic.ts';
@@ -20,7 +20,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 15;
+export const MAP_FORMAT_VERSION = 16;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -83,6 +83,15 @@ export const TilePlacement = z.object({
   surfaces: TileSurfaces.optional(),
   /** Per-side wall choices (window, archway, half wall, no wall…); absent sides are `auto`. */
   edges: z.record(EdgeKey, z.enum(EDGE_STYLES)).optional(),
+  /** Room options on rooms that take them (catalog `configurable`); absent fields leave the tile as designed. */
+  options: z
+    .object({
+      layout: z.enum(ROOM_LAYOUTS).optional(),
+      floor: z.enum(FLOOR_INSERTS).optional(),
+      ceiling: z.enum(CEILINGS).optional(),
+      corners: z.enum(CORNERS).optional(),
+    })
+    .optional(),
 });
 
 export const ClassicStructure = z.object({

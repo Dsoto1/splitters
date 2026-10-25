@@ -49,6 +49,7 @@ import {
   type MapEntity,
   type MountModel,
   type Rotation,
+  type RoomOptions,
   type ScenarioLogic,
   type Side,
   type TerrainData,
@@ -143,10 +144,10 @@ export class MapBuilder {
   }
 
   /** Place a tile (`kind` without the `core.` prefix) at cell x, y on level z. */
-  tile(kind: string, x: number, y: number, z = 0, rotation: Rotation = 0): this {
+  tile(kind: string, x: number, y: number, z = 0, rotation: Rotation = 0, options?: RoomOptions): this {
     const r = placeTileCommand(this.doc, `core.${kind}`, x, y, z, rotation);
     if ('error' in r) throw new Error(`${this.id}: ${kind} at ${x},${y},${z}: ${r.error}`);
-    this.run('Place tile', { kind: 'addTiles', tiles: [{ ...r.placement, id: this.newId('tile') }] });
+    this.run('Place tile', { kind: 'addTiles', tiles: [{ ...r.placement, id: this.newId('tile'), ...(options ? { options } : {}) }] });
     return this;
   }
 

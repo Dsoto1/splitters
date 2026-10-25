@@ -9,11 +9,11 @@ against the MapMaker as of Oct 25. ✅ have it, 🟡 partly, ❌ not yet.
 | 3 | ~40–50 structural pieces | ✅ | 49 tiles: rooms, large rooms, corridors, vertical, open, special, curves, towers, balconies |
 | 3.7 | Negative space | 🟡 | Pit, Drop Shaft, Sunken Room, liquids (water/lava/acid); no chasm, trench or channel pieces |
 | 3.8 | Macro structures with connection points | ❌ | Large rooms only; no warehouse/hangar shells |
-| 5 | Per-side wall configuration | 🟡 | 14 edge styles per side (door, wide, arch, window, twin windows, slit, half, railing, high, towering, fence, open); shared walls stay in sync. Missing: broken, bars, shutter, force field, destructible |
-| 6 | Interior layout presets on one room | 🟡 | Layouts exist as separate tiles (Pillar, Columns, Low Cover, Dais, Raised Ledge, Split-Level, Sunken); not yet an option on Room |
-| 7 | Floor inserts | 🟡 | Free blocks (crumble, trapdoor, breakable) and liquids can be placed in a room; no per-room floor insert |
-| 8 | Ceiling height/type | ❌ | One level height per map; Tall Room is a separate tile |
-| 9 | Corner treatments | ❌ | Round Corner pieces only |
+| 5 | Per-side wall configuration | 🟡 | 17 edge styles per side, now with broken, bars and shutter; shared walls stay in sync. Missing: force field, destructible (Phase G) |
+| 6 | Interior layout presets on one room | ✅ | Room options (v16): 9 layouts sized to the footprint on 10 room tiles; old variant tiles still work |
+| 7 | Floor inserts | 🟡 | Raised and sunken centre as room options; water/grate/glass inserts still to do (liquids and blocks can be placed by hand) |
+| 8 | Ceiling height/type | 🟡 | Roof, skylight and beamed roof as room options; height is still one level (Tall Room for two) |
+| 9 | Corner treatments | ✅ | Posts, columns, chamfered, rounded as room options |
 | 10 | Detail sockets + density + seed | ❌ | Trim only (baseboards, cornices, frames); map scripts use `furnish()` for corner props |
 | 11 | Condition states | ❌ | |
 | 12 | Decals (placed) | ❌ | Bullet/blood decals at runtime only |
@@ -36,7 +36,7 @@ against the MapMaker as of Oct 25. ✅ have it, 🟡 partly, ❌ not yet.
 
 ## Proposed order (spec §37, minus what we have)
 
-1. **Room options**: layout, floor insert, ceiling height and corners as settings on Room (existing layout tiles stay working and map onto them), plus the missing wall types (broken, bars, shutter, destructible).
+1. ✅ **Room options** (Oct 25): layout, floor insert, ceiling and corners on rooms; broken, bars and shutter walls. Destructible walls move to Phase G.
 2. **Detail sockets + theme auto-dressing** with density and seed: the biggest visual jump.
 3. **Condition states** (pristine → overgrown) driving materials, debris and decals.
 4. **Decals**, placed and theme-dressed.

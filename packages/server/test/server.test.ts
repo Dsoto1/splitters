@@ -7,7 +7,7 @@ import { parseClientMessage } from '@tiletrigger/shared';
 
 const room: MapDocument = {
   format: 'tiletrigger.map',
-  formatVersion: 15,
+  formatVersion: 16,
   metadata: {
     id: 'test_room',
     name: 'Test Room',

@@ -33,7 +33,7 @@ export interface TilePort {
  * creators per side in MapMaker, so the same room can have windows, arches,
  * half walls or no wall at all.
  */
-export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'window', 'windows', 'slit', 'half', 'railing', 'high', 'tower', 'fence', 'open'] as const;
+export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'window', 'windows', 'slit', 'half', 'railing', 'high', 'tower', 'fence', 'broken', 'bars', 'shutter', 'open'] as const;
 export type EdgeStyle = (typeof EDGE_STYLES)[number];
 
 export const EDGE_STYLE_LABELS: Record<EdgeStyle, string> = {
@@ -50,7 +50,60 @@ export const EDGE_STYLE_LABELS: Record<EdgeStyle, string> = {
   high: 'High wall (2 storeys)',
   tower: 'Towering wall (4 storeys)',
   fence: 'Tall fence',
+  broken: 'Broken wall',
+  bars: 'Bars',
+  shutter: 'Shutter (crouch under)',
   open: 'No wall',
+};
+
+// ---------------------------------------------------------------- room options
+
+/**
+ * Settings on a placed room (Room, the large rooms, Courtyard, Plaza) that
+ * change what is built in it without changing its footprint: an interior
+ * layout, a floor insert, a ceiling and corner pieces. They are sized to the
+ * whole footprint, so "Four Pillars" in a Great Hall is four big pillars, not
+ * four per cell.
+ */
+export const ROOM_LAYOUTS = ['empty', 'pillar', 'four_pillars', 'column_rows', 'low_cover', 'high_cover', 'dais', 'platform', 'rubble'] as const;
+export type RoomLayout = (typeof ROOM_LAYOUTS)[number];
+export const ROOM_LAYOUT_LABELS: Record<RoomLayout, string> = {
+  empty: 'Empty',
+  pillar: 'Central pillar',
+  four_pillars: 'Four pillars',
+  column_rows: 'Column rows',
+  low_cover: 'Low cover',
+  high_cover: 'High cover',
+  dais: 'Dais',
+  platform: 'Central platform',
+  rubble: 'Rubble',
+};
+
+export const FLOOR_INSERTS = ['standard', 'raised', 'sunken'] as const;
+export type FloorInsert = (typeof FLOOR_INSERTS)[number];
+export const FLOOR_INSERT_LABELS: Record<FloorInsert, string> = {
+  standard: 'Standard',
+  raised: 'Raised centre',
+  sunken: 'Sunken centre (nothing below)',
+};
+
+export const CEILINGS = ['open', 'roof', 'skylight', 'beams'] as const;
+export type Ceiling = (typeof CEILINGS)[number];
+export const CEILING_LABELS: Record<Ceiling, string> = {
+  open: 'Open (no roof)',
+  roof: 'Roof',
+  skylight: 'Roof with skylight',
+  beams: 'Beamed roof',
+};
+
+export const CORNERS = ['square', 'posts', 'columns', 'chamfered', 'rounded'] as const;
+export type Corner = (typeof CORNERS)[number];
+export const CORNER_LABELS: Record<Corner, string> = {
+  square: 'Square',
+  posts: 'Posts',
+  columns: 'Columns',
+  chamfered: 'Chamfered',
+  rounded: 'Rounded',
 };
 
 /** Palette groups in MapMaker (after the reference board's tile browser). */
@@ -96,6 +149,8 @@ export interface TileDefinition {
   extraFloors?: readonly LocalBox[];
   /** One line for the MapMaker tooltip. */
   blurb?: string;
+  /** Takes room options (layout, floor, ceiling, corners) in MapMaker. */
+  configurable?: boolean;
 }
 
 /** Shared tile dimensions (metres). Tiles assume the default 8 m cell / 4 m level. */
@@ -170,6 +225,196 @@ function descending(edge: number, x0: number, x1: number, n: number, top: number
 function rail(x0: number, z0: number, x1: number, z1: number, y = 0): LocalBox {
   const t = 0.06;
   return x0 === x1 ? box(x0 - t, y, Math.min(z0, z1), x0 + t, y + 1, Math.max(z0, z1)) : box(Math.min(x0, x1), y, z0 - t, Math.max(x0, x1), y + 1, z0 + t);
+}
+
+// ---------------------------------------------------------------- room options
+
+/** Room options stored on a placement (all optional: absent = the tile as designed). */
+export interface RoomOptions {
+  layout?: RoomLayout;
+  floor?: FloorInsert;
+  ceiling?: Ceiling;
+  corners?: Corner;
+}
+
+/** Width and depth in cells of a tile's ground floor. */
+export function footprintSize(def: TileDefinition): [number, number] {
+  let w = 1;
+  let d = 1;
+  for (const [dx, dy, dz] of def.cells) {
+    if (dz !== 0) continue;
+    w = Math.max(w, dx + 1);
+    d = Math.max(d, dy + 1);
+  }
+  return [w, d];
+}
+
+/** A small deterministic random sequence from a string (a tile's ID), so seeded layouts look the same everywhere. */
+export function seededRandom(seed: string): () => number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+  return () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  };
+}
+
+/** Steps round all four sides of a raised block: `n` rings, each 0.25 m lower and `run` wider, standing on y0. */
+function stepRings(x0: number, z0: number, x1: number, z1: number, top: number, n: number, run = 0.5, y0 = 0): LocalBox[] {
+  const out: LocalBox[] = [];
+  for (let i = 0; i <= n; i++) out.push(box(x0 - i * run, y0, z0 - i * run, x1 + i * run, top - i * 0.25, z1 + i * run));
+  return out;
+}
+
+/**
+ * Interior layout for a w × d room, in the tile's local frame (cells centred
+ * on multiples of 8 m, the first at the origin). Sized to the whole room.
+ */
+export function roomLayoutBoxes(layout: RoomLayout, w: number, d: number, seed: string, height = 4): LocalBox[] {
+  const x0 = -4;
+  const z0 = -4;
+  const X = w * 8;
+  const Z = d * 8;
+  const at = (fx: number, fz: number): [number, number] => [x0 + X * fx, z0 + Z * fz];
+  const square = (cx: number, cz: number, half: number, top: number) => box(cx - half, 0, cz - half, cx + half, top, cz + half);
+  const m = Math.min(w, d);
+  switch (layout) {
+    case 'empty':
+      return [];
+    case 'pillar': {
+      const [cx, cz] = at(0.5, 0.5);
+      return [square(cx, cz, 0.6 + 0.3 * m, height)];
+    }
+    case 'four_pillars':
+      return [at(0.25, 0.25), at(0.75, 0.25), at(0.25, 0.75), at(0.75, 0.75)].map(([cx, cz]) => square(cx, cz, 0.35 + 0.15 * m, height));
+    case 'column_rows': {
+      // Two rows along the long side, a column every 4 m, 2 m clear of the ends.
+      const along = X >= Z ? 'x' : 'z';
+      const len = Math.max(X, Z);
+      const out: LocalBox[] = [];
+      const n = Math.max(2, Math.floor((len - 4) / 4) + 1);
+      const step = (len - 4) / (n - 1);
+      for (const f of [0.28, 0.72]) {
+        for (let i = 0; i < n; i++) {
+          const u = 2 + i * step;
+          const [cx, cz] = along === 'x' ? [x0 + u, z0 + Z * f] : [x0 + X * f, z0 + u];
+          out.push(square(cx, cz, 0.35, height));
+        }
+      }
+      return out;
+    }
+    case 'low_cover':
+    case 'high_cover': {
+      // Per cell, a few blocks turned a different way in each cell so a big room doesn't repeat.
+      const top = layout === 'low_cover' ? 1.1 : 2.1;
+      const out: LocalBox[] = [];
+      // Blocks keep 2 m clear of the walls: narrower gaps drop out of the bots' navmesh and seal off corners.
+      const pattern: [number, number, number, number][] = [
+        [-1.5, -0.4, -0.3, 0.4],
+        [0.5, 0.9, 1.5, 1.5],
+        [0.3, -1.5, 1.5, -0.9],
+      ];
+      for (let cx = 0; cx < w; cx++) {
+        for (let cy = 0; cy < d; cy++) {
+          const r = (cx * 3 + cy * 5) % 4;
+          for (const [a0, b0, a1, b1] of pattern) {
+            const [p0, q0] = rotateQuarter(a0, b0, r);
+            const [p1, q1] = rotateQuarter(a1, b1, r);
+            out.push(box(cx * 8 + Math.min(p0, p1), 0, cy * 8 + Math.min(q0, q1), cx * 8 + Math.max(p0, p1), top, cy * 8 + Math.max(q0, q1)));
+          }
+        }
+      }
+      return out;
+    }
+    case 'dais': {
+      const [cx, cz] = at(0.5, 0.5);
+      const hx = Math.max(1, X * 0.18);
+      const hz = Math.max(1, Z * 0.18);
+      return stepRings(cx - hx, cz - hz, cx + hx, cz + hz, 0.75, 2);
+    }
+    case 'platform': {
+      // A 1.5 m platform set back from the middle, one flight up its front (local south) side.
+      const [cx, mz] = at(0.5, 0.5);
+      const hx = Math.max(1.2, X * 0.15);
+      // Leaves 2 m behind it so bots can get round (the steps nearly reach the front wall in one room).
+      const hz = Math.max(0.7, Z * 0.1);
+      const cz = mz + 0.5;
+      return [box(cx - hx, 0, cz - hz, cx + hx, 1.5, cz + hz), ...flight('z', 1, cz - hz - 3, cx - 1, cx + 1, 6)];
+    }
+    case 'rubble': {
+      // Fallen masonry heaped in the corners (and round the inner cell corners of a big room),
+      // never in front of a doorway or across the middle where it could cut a room in two.
+      const rnd = seededRandom(seed);
+      const out: LocalBox[] = [];
+      const heap = (px: number, pz: number, ix: number, iz: number, n: number) => {
+        for (let i = 0; i < n; i++) {
+          const cx = px + ix * (0.2 + rnd() * 1.0);
+          const cz = pz + iz * (0.2 + rnd() * 1.0);
+          const sx = 0.4 + rnd() * 0.7;
+          const sz = 0.3 + rnd() * 0.5;
+          out.push({ min: [cx - sx / 2, 0, cz - sz / 2], max: [cx + sx / 2, 0.25 + rnd() * 0.6, cz + sz / 2], yaw: rnd() * Math.PI });
+        }
+      };
+      const inner = 4 - TILE_DIMENSIONS.wallThickness;
+      heap(-inner, -inner, 1, 1, 3);
+      heap(-4 + X - (4 - inner), -inner, -1, 1, 2);
+      heap(-inner, -4 + Z - (4 - inner), 1, -1, 2);
+      heap(-4 + X - (4 - inner), -4 + Z - (4 - inner), -1, -1, 3);
+      for (let gx = 1; gx < w; gx++) for (let gz = 1; gz < d; gz++) heap(-4 + gx * 8, -4 + gz * 8, rnd() < 0.5 ? 1 : -1, rnd() < 0.5 ? 1 : -1, 2);
+      return out;
+    }
+  }
+}
+
+/** Quarter-turn a local point (x, z) by r quarter turns about the cell centre. */
+function rotateQuarter(x: number, z: number, r: number): [number, number] {
+  let a = x;
+  let b = z;
+  for (let i = 0; i < r; i++) [a, b] = [b, -a];
+  return [a, b];
+}
+
+/**
+ * A floor insert for a w × d room: boxes to add (raised centre), or, for a
+ * sunken centre, the floor to build instead of the slabs (a walkway round a
+ * pit 0.5 m deep with a step down).
+ */
+export function floorInsertBoxes(insert: FloorInsert, w: number, d: number): { boxes: LocalBox[]; replacesSlabs: boolean; area?: { x0: number; z0: number; x1: number; z1: number; dy: number } } {
+  const X = w * 8;
+  const Z = d * 8;
+  const ring = Math.min(2.5, Math.min(X, Z) * 0.3);
+  switch (insert) {
+    case 'standard':
+      return { boxes: [], replacesSlabs: false };
+    case 'raised':
+      return { boxes: stepRings(-4 + ring + 0.5, -4 + ring + 0.5, -4 + X - ring - 0.5, -4 + Z - ring - 0.5, 0.5, 1), replacesSlabs: false, area: { x0: -4 + ring + 0.5, z0: -4 + ring + 0.5, x1: -4 + X - ring - 0.5, z1: -4 + Z - ring - 0.5, dy: 0.5 } };
+    case 'sunken': {
+      const a0 = -4 + ring;
+      const b0 = -4 + ring;
+      const a1 = -4 + X - ring;
+      const b1 = -4 + Z - ring;
+      const t = TILE_DIMENSIONS.floorThickness;
+      return {
+        replacesSlabs: true,
+        area: { x0: a0, z0: b0, x1: a1, z1: b1, dy: -0.5 },
+        boxes: [
+          // Walkway round the edge.
+          { ...box(-4, -t, -4, -4 + X, 0, b0), kind: 'floor' },
+          { ...box(-4, -t, b1, -4 + X, 0, -4 + Z), kind: 'floor' },
+          { ...box(-4, -t, b0, a0, 0, b1), kind: 'floor' },
+          { ...box(a1, -t, b0, -4 + X, 0, b1), kind: 'floor' },
+          // Pit floor and one step down all round.
+          { ...box(a0, -0.5 - t, b0, a1, -0.5, b1), kind: 'floor' },
+          box(a0, -0.5, b0, a1, -0.25, b0 + 0.5),
+          box(a0, -0.5, b1 - 0.5, a1, -0.25, b1),
+          box(a0, -0.5, b0 + 0.5, a0 + 0.5, -0.25, b1 - 0.5),
+          box(a1 - 0.5, -0.5, b0 + 0.5, a1, -0.25, b1 - 0.5),
+        ],
+      };
+    }
+  }
 }
 
 // ---------------------------------------------------------------- curves
@@ -389,9 +634,9 @@ function balconies(): TileDefinition[] {
 }
 
 export const CORE_TILES: readonly TileDefinition[] = [
-  { id: 'core.room', category: 'Rooms', displayName: 'Room', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES },
+  { id: 'core.room', category: 'Rooms', displayName: 'Room', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES, configurable: true },
   {
-    id: 'core.room_pillar', category: 'Rooms',
+    id: 'core.room_pillar', configurable: true, category: 'Rooms',
     displayName: 'Room (Pillar)',
     cells: [[0, 0, 0]],
     floors: [0],
@@ -454,7 +699,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
     ],
   },
   {
-    id: 'core.room_columns', category: 'Rooms',
+    id: 'core.room_columns', configurable: true, category: 'Rooms',
     displayName: 'Room (Columns)',
     cells: [[0, 0, 0]],
     floors: [0],
@@ -467,7 +712,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
     ],
   },
   {
-    id: 'core.room_cover', category: 'Rooms',
+    id: 'core.room_cover', configurable: true, category: 'Rooms',
     displayName: 'Room (Low Cover)',
     cells: [[0, 0, 0]],
     floors: [0],
@@ -479,7 +724,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
     ],
   },
   {
-    id: 'core.room_dais', category: 'Rooms',
+    id: 'core.room_dais', configurable: true, category: 'Rooms',
     displayName: 'Room (Dais)',
     cells: [[0, 0, 0]],
     floors: [0],
@@ -491,7 +736,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
       { min: [-1, 0, -2], max: [1, 0.25, -1.5] },
     ],
   },
-  { id: 'core.yard', category: 'Open', displayName: 'Courtyard', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES, open: true },
+  { id: 'core.yard', category: 'Open', displayName: 'Courtyard', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES, open: true, configurable: true },
   {
     id: 'core.yard_crates', category: 'Open',
     displayName: 'Courtyard (Crates)',
@@ -589,7 +834,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
   },
   // ---------------------------------------------------------------- large pieces
   {
-    id: 'core.room_long',
+    id: 'core.room_long', configurable: true,
     category: 'Large',
     displayName: 'Long Room',
     blurb: '1 × 2 cells with cover at both ends',
@@ -599,7 +844,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
     solids: [box(-2, 0, 1, 2, 1.1, 2), box(-2, 0, 6, 2, 1.1, 7), box(-0.6, 0, 3.4, 0.6, 4, 4.6)],
   },
   {
-    id: 'core.room_large',
+    id: 'core.room_large', configurable: true,
     category: 'Large',
     displayName: 'Large Room',
     blurb: '2 × 2 cells, open floor with four columns',
@@ -609,7 +854,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
     solids: [box(0.8, 0, 0.8, 1.6, 4, 1.6), box(6.4, 0, 0.8, 7.2, 4, 1.6), box(0.8, 0, 6.4, 1.6, 4, 7.2), box(6.4, 0, 6.4, 7.2, 4, 7.2)],
   },
   {
-    id: 'core.hall',
+    id: 'core.hall', configurable: true,
     category: 'Large',
     displayName: 'Great Hall',
     blurb: '3 × 3 cells with colonnades and a central dais',
@@ -630,7 +875,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
     solids: [...flight('x', 1, 1.5, -1.5, 0.75, 16), rail(-1.5, 9.5, 9.5, 9.5, 4), rail(-1.5, -1.5, -1.5, 9.5, 4), rail(9.5, 0.75, 9.5, 9.5, 4), rail(-1.5, -1.5, 9.5, -1.5, 4)],
   },
   {
-    id: 'core.plaza',
+    id: 'core.plaza', configurable: true,
     category: 'Large',
     displayName: 'Plaza',
     blurb: '2 × 2 cells of open ground round a raised fountain',

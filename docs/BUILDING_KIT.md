@@ -25,10 +25,37 @@ clear space at both ends.
 ## Walls and openings (edge styles)
 
 Any side of any cell can be built as: Auto, Solid wall, Doorway, Wide doorway,
-Archway, Window, Twin windows, Firing slit, Half wall, Railing or No wall.
+Archway, Window, Twin windows, Firing slit, Half wall, Railing, High wall,
+Towering wall, Tall fence, Broken wall (a ragged hole with rubble), Bars
+(floor-to-ceiling, see and shoot through), Shutter (a wide opening with its
+shutter stuck 1.35 m up: crouch under; bots don't path through it) or No wall.
 Use the **Walls & Openings** tool (O cycles styles; right-click resets) or the
 tile inspector. Choices are stored on the tile in its own frame (they turn with
 it) and apply to both halves of a shared wall.
+
+## Room options (format v16)
+
+Room, the Room variants (Pillar, Columns, Low Cover, Dais), Long Room, Large
+Room, Great Hall, Plaza and Courtyard take **room options** in the tile
+inspector (also `MapBuilder.tile(..., options)` in map scripts). They are
+sized to the whole footprint and turn with the tile:
+
+- **Layout**: As built, Empty, Central pillar, Four pillars, Column rows, Low
+  cover, High cover, Dais, Central platform (1.5 m, one flight up) or Rubble
+  (heaped in the corners, seeded by the tile so everyone sees the same). A
+  layout replaces the furniture the room came with.
+- **Floor**: Standard, Raised centre (0.5 m, a step all round) or Sunken
+  centre (a 0.5 m pit with a step down; only where nothing is built below
+  and, at ground level, no terrain). Layout pieces in the centre stand on it.
+- **Ceiling**: Open (as before), Roof, Roof with skylight or Beamed roof. A
+  roof is a walkable slab at the top of the walls, left off wherever
+  something is built on top.
+- **Corners**: Square, Posts, Columns, Chamfered or Rounded, wherever two
+  solid walls meet (not beside an archway, railing or half wall).
+
+Every layout and floor is tested for bot paths across the room in every
+rotation (`test/roomOptions.test.ts`); cover keeps 2 m off the walls, since
+narrower gaps drop out of the bots' navmesh.
 
 Trim (baseboards, cornices, door and window frames, railing posts) is drawn
 with the map but never collides, and has its own paintable slot.

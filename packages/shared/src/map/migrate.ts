@@ -36,6 +36,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [13, (doc) => ({ ...doc })],
   // v14 -> v15: `light` entity kind (lights and their fixtures). Existing entities are unchanged.
   [14, (doc) => ({ ...doc })],
+  // v15 -> v16: optional room `options` on tiles (layout, floor, ceiling, corners) and three wall styles (broken, bars, shutter).
+  [15, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}
