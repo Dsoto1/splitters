@@ -1,7 +1,7 @@
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3 } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
-import type { ItemDefinition } from '../sim/items.ts';
+import type { ItemDefinition, ItemEffect } from '../sim/items.ts';
 import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { THROWABLE_DEFS, weaponCode, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
@@ -939,7 +939,7 @@ export class BotBrain {
       const d = horizontalDistance(me.pos, target.pos);
       if (d > 9 && d < 22 && this.rng() < 0.15) at = target.pos;
     }
-    if (!at) return;
+    if (!at || !grenadeWorthIt(view.throwables ?? 0, !!target, this.tactical)) return;
     const spec = THROWABLE_DEFS[view.throwable].projectile;
     const sol = solveThrow(view.physics, eye, at, spec);
     if (!sol) {
@@ -1072,21 +1072,11 @@ export class BotBrain {
    */
   private chooseWeapon(view: BotWorldView, target: CombatantView | undefined): number {
     const dist = target ? distance(view.self.pos, target.pos) : this.lastKnown ? Math.min(30, distance(view.self.pos, this.lastKnown.pos)) : 15;
+    const others = view.inventory.filter((w) => w.def.magazine === 0 || w.mag > 0).length;
     let best = view.held;
     let bestScore = -Infinity;
     for (const w of view.inventory) {
-      const hasAmmo = w.def.magazine === 0 || w.mag + w.reserve > 0;
-      if (!hasAmmo) continue;
-      const [lo, hi] = w.def.botRange;
-      let score = w.def.botDesirability + (dist >= lo && dist <= hi ? 0.6 : -Math.min(dist < lo ? lo - dist : dist - hi, 20) * 0.03);
-      if (w.def.projectile && dist < w.def.projectile.splashRadius + 1) score -= 1.5 * (this.profile.selfPreservation / 100);
-      if (this.profile.tags.includes('EXPLOSIVES_FAN') && w.def.projectile) score += 0.4;
-      if (w.def.kind === 'melee') score += (this.profile.meleePreference / 100) * 0.5;
-      if (this.profile.weaponPreferences.includes(w.def.id)) score += 0.25;
-      // Empty magazine with an enemy in sight: switching is faster than reloading.
-      if (target && w.def.magazine > 0 && w.mag === 0 && dist < 15) score -= 0.5;
-      // Avoid dithering between near-equal choices.
-      if (weaponCode(w.def) === view.held) score += 0.15;
+      const score = weaponScore(w, { dist, target, held: weaponCode(w.def) === view.held, loadedElsewhere: others - (w.def.magazine === 0 || w.mag > 0 ? 1 : 0) > 0, profile: this.profile });
       if (score > bestScore) {
         bestScore = score;
         best = weaponCode(w.def);
@@ -1110,14 +1100,7 @@ export class BotBrain {
       if (!p.available && !timed) continue;
       const e = p.item.effect;
       if (only && e.kind !== only) continue;
-      let need = 0;
-      if (e.kind === 'health') need = (100 - me.health) / 60;
-      else if (e.kind === 'armor') need = (100 - me.armor) / 100;
-      else if (e.kind === 'powerup') need = 1;
-      else if (e.kind === 'weapon') {
-        const w = owned.get(e.weapon);
-        need = !w ? 1 : w.def.magazine > 0 && w.mag === 0 && w.reserve === 0 ? 1.2 : w.reserve < w.def.reserveMax / 3 ? 0.4 : 0;
-      } else if (e.kind === 'ammo') need = view.inventory.some((w) => w.def.magazine > 0 && w.reserve < w.def.reserveMax / 3) ? 0.6 : 0;
+      const need = pickupNeed(e, me, view.inventory, owned, view.throwables ?? 0, view.throwable ?? null);
       if (need <= 0) continue;
       const greed = 0.3 + (this.profile.itemGreed / 100) * 1.2;
       const d = horizontalDistance(me.pos, p.pos) + Math.abs(me.pos.y - p.pos.y) * 2;
@@ -1329,6 +1312,81 @@ export class BotBrain {
 }
 
 const key = (p: Vec3): string => `${Math.round(p.x)},${Math.round(p.y)},${Math.round(p.z)}`;
+
+export interface WeaponChoiceContext {
+  /** Distance to the target (or to where it was last seen). */
+  dist: number;
+  target: CombatantView | undefined;
+  /** This is the weapon in hand. */
+  held: boolean;
+  /** Another owned weapon can fire right now (melee, or rounds in its magazine). */
+  loadedElsewhere: boolean;
+  profile: BotProfile;
+}
+
+/**
+ * How much a bot wants to fight with this weapon now: its desirability and
+ * range band, nudged by personality, minus splash danger up close, scarce
+ * ammo (the last rockets are kept for a target worth them) and a magazine
+ * about to run dry in a close fight. -Infinity when it can't fire at all.
+ */
+export function weaponScore(w: InventoryView, c: WeaponChoiceContext): number {
+  const { def } = w;
+  const rounds = w.mag + w.reserve;
+  if (def.magazine > 0 && rounds <= 0) return -Infinity;
+  const { dist, target, profile } = c;
+  const [lo, hi] = def.botRange;
+  let score = def.botDesirability + (dist >= lo && dist <= hi ? 0.6 : -Math.min(dist < lo ? lo - dist : dist - hi, 20) * 0.03);
+  if (def.projectile && dist < def.projectile.splashRadius + 1) score -= 1.5 * (profile.selfPreservation / 100);
+  if (profile.tags.includes('EXPLOSIVES_FAN') && def.projectile) score += 0.4;
+  if (def.kind === 'melee') score += (profile.meleePreference / 100) * 0.5;
+  if (profile.weaponPreferences.includes(def.id)) score += 0.25;
+  if (def.magazine > 0) {
+    // Scarce ammo (under two magazines', or a third of a full load's, worth left): worth less, and wasted on a target that's nearly dead anyway.
+    const scarcity = Math.max(0, 1 - rounds / Math.max(def.magazine * 2, def.reserveMax / 3));
+    score -= scarcity * def.botDesirability * 0.5;
+    if (target && target.health + target.armor <= 35) score -= scarcity * def.botDesirability * 0.6;
+    if (target && dist < 15 && c.loadedElsewhere) {
+      // Empty magazine with an enemy close: switching is faster than reloading.
+      if (w.mag === 0) score -= 0.5;
+      // Nearly empty (two shots or so) on a gun with a real magazine: draw the next gun before it clicks dry.
+      else if (def.magazine >= 6 && w.mag <= Math.max(1, Math.floor(def.magazine * 0.1))) score -= 0.3;
+    }
+  }
+  // Avoid dithering between near-equal choices.
+  if (c.held) score += 0.15;
+  return score;
+}
+
+/**
+ * How badly a bot needs a pickup (0: not at all): health and armor by what's
+ * missing, a weapon it lacks or has run dry, ammo only when it fits a weapon
+ * running low (a box fits all), grenades when it has few.
+ */
+export function pickupNeed(e: ItemEffect, me: CombatantView, inventory: readonly InventoryView[], owned: ReadonlyMap<string, InventoryView>, throwables: number, throwable: ThrowableKind | null): number {
+  if (e.kind === 'health') return (100 - me.health) / 60;
+  if (e.kind === 'armor') return (100 - me.armor) / 100;
+  if (e.kind === 'powerup') return 1;
+  if (e.kind === 'weapon') {
+    const w = owned.get(e.weapon);
+    return !w ? 1 : w.def.magazine > 0 && w.mag === 0 && w.reserve === 0 ? 1.2 : w.reserve < w.def.reserveMax / 3 ? 0.4 : 0;
+  }
+  if (e.kind === 'ammo') {
+    const low = inventory.filter((w) => w.def.magazine > 0 && (!e.ammo || w.def.ammo === e.ammo) && w.reserve < w.def.reserveMax / 3);
+    return low.length ? (low.some((w) => w.mag + w.reserve === 0) ? 0.9 : 0.6) : 0;
+  }
+  if (e.kind === 'throwable') return throwables === 0 ? 0.5 : throwable === e.throwable && throwables < 2 ? 0.3 : 0;
+  return 0;
+}
+
+/**
+ * Whether a grenade is worth throwing: the last one is kept for when the bot is
+ * pinned by an enemy in sight, unless it plays recklessly (low tactical sense).
+ */
+export function grenadeWorthIt(count: number, enemyInSight: boolean, tactical: number): boolean {
+  if (count <= 0) return false;
+  return count > 1 || enemyInSight || tactical < 0.3;
+}
 
 function farthest(points: readonly Vec3[], from: Vec3): Vec3 | undefined {
   let best: Vec3 | undefined;
