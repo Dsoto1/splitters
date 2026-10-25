@@ -1116,7 +1116,7 @@ export class BotBrain {
       else if (e.kind === 'powerup') need = 1;
       else if (e.kind === 'weapon') {
         const w = owned.get(e.weapon);
-        need = !w ? 1 : w.reserve < w.def.reserveMax / 3 ? 0.4 : 0;
+        need = !w ? 1 : w.def.magazine > 0 && w.mag === 0 && w.reserve === 0 ? 1.2 : w.reserve < w.def.reserveMax / 3 ? 0.4 : 0;
       } else if (e.kind === 'ammo') need = view.inventory.some((w) => w.def.magazine > 0 && w.reserve < w.def.reserveMax / 3) ? 0.6 : 0;
       if (need <= 0) continue;
       const greed = 0.3 + (this.profile.itemGreed / 100) * 1.2;

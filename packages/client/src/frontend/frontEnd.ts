@@ -53,6 +53,9 @@ export interface ArcadeSetup {
   minutes: number;
   /** Team modes: players per team (2–8 teams; Capture the Flag uses the first two); bots fill every team. */
   teams?: number[];
+  /** Team names and colours by team order (empty entries: the map's). */
+  teamNames?: string[];
+  teamColors?: string[];
   /** Small and large characters play differently (false: everyone standard). Absent = on. */
   sizes?: boolean;
   /** Quick messages and emotes allowed. Absent = on. */
@@ -66,6 +69,8 @@ export interface ArcadeSetup {
   gravity?: number;
   fallDamage?: boolean;
   friendlyFire?: 'half' | 'on';
+  /** Spears only (absent: normal weapons). */
+  spears?: boolean;
 }
 
 export interface FrontEndHooks {
@@ -363,6 +368,7 @@ export class FrontEnd {
       el('div', { class: 'row' }, 'Bot skill', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
       el('div', { class: 'row', title: 'On: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. Off: everyone plays at standard size.' }, 'Character sizes', tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on'))),
       el('div', { class: 'row', title: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).' }, 'Bot style', tabs([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => (this.setup.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical')))),
+      el('div', { class: 'row', title: 'Spears only: everyone holds one throwing spear. One hit kills; go and fetch it back. No other weapons, ammo or grenades.' }, 'Weapons', tabs([['normal', 'Normal'], ['spears', 'Spears only']], s.spears ? 'spears' : 'normal', (v) => (this.setup.spears = v === 'spears' || undefined))),
       el('div', { class: 'row', title: 'Map: whatever the map was built with (normal unless its maker changed it).' }, 'Gravity', tabs([['map', 'Map'], ['0.4', 'Low'], ['1', 'Normal'], ['1.6', 'Heavy']], s.gravity === undefined ? 'map' : String(s.gravity), (v) => (this.setup.gravity = v === 'map' ? undefined : Number(v)))),
       el('div', { class: 'row', title: 'Drops past about 5 m hurt; about 16 m kills. Map: the map\'s own setting.' }, 'Fall damage', tabs([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => (this.setup.fallDamage = v === 'map' ? undefined : v === 'on'))),
       el('div', { class: 'row', title: 'Team modes and co-op: whether your shots and blasts hurt teammates. Team kills cost a point.' }, 'Friendly fire', tabs([['off', 'Off'], ['half', 'Half'], ['on', 'Full']], s.friendlyFire ?? 'off', (v) => (this.setup.friendlyFire = v === 'off' ? undefined : (v as 'half' | 'on')))),
@@ -389,12 +395,14 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}) };
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.
       const teams = this.teamSizes(m.map, this.setup.mode === 'core.ctf' || this.setup.mode === 'core.bomb');
-      this.hooks.playLocal(m.map, { ...rules, teamSizes: teams }, Math.min(MAX_PLAYER_SLOTS, teams.reduce((a, b) => a + b, 0)), this.setup.skill);
+      const names = (this.setup.teamNames ?? []).slice(0, teams.length);
+      const colors = (this.setup.teamColors ?? []).slice(0, teams.length);
+      this.hooks.playLocal(m.map, { ...rules, teamSizes: teams, ...(names.some(Boolean) ? { teamNames: names } : {}), ...(colors.some(Boolean) ? { teamColors: colors } : {}) }, Math.min(MAX_PLAYER_SLOTS, teams.reduce((a, b) => a + b, 0)), this.setup.skill);
       return;
     }
     // The bot filler counts the player too.
@@ -426,9 +434,24 @@ export class FrontEnd {
     const minus = el('button', { class: 'tab', textContent: '− Team' });
     minus.addEventListener('click', () => sizes.length > 2 && set(sizes.slice(0, -1)));
     const all = this.teamSizes(map);
-    const steppers = teams.map((t, i) =>
-      el('div', { class: 'team-size' }, swatch(t.color), el('span', { textContent: t.name }), stepper(sizes[i]!, 1, 1, 16, (v) => (this.setup.teams = all.map((s, j) => (j === i ? v : s))))),
-    );
+    // Each team: its colour (click to change), its name (type to rename) and its size.
+    const steppers = teams.map((t, i) => {
+      const color = el('input', { type: 'color', value: this.setup.teamColors?.[i] || t.color, title: 'Team colour', class: 'team-color' });
+      color.addEventListener('change', () => {
+        const list = [...(this.setup.teamColors ?? [])];
+        list[i] = color.value;
+        this.setup.teamColors = list;
+        this.saveSetup();
+      });
+      const name = el('input', { value: this.setup.teamNames?.[i] || t.name, maxLength: 24, title: 'Team name', class: 'team-name' });
+      name.addEventListener('change', () => {
+        const list = [...(this.setup.teamNames ?? [])];
+        list[i] = name.value.trim();
+        this.setup.teamNames = list;
+        this.saveSetup();
+      });
+      return el('div', { class: 'team-size' }, color, name, stepper(sizes[i]!, 1, 1, 16, (v) => (this.setup.teams = all.map((s, j) => (j === i ? v : s)))));
+    });
     // Capture the Flag is always two teams: just their sizes.
     if (twoTeams) return [el('div', { class: 'team-grid' }, ...steppers)];
     return [el('div', { class: 'row' }, 'Teams', el('div', { class: 'team-layout' }, preset, plus, minus)), el('div', { class: 'team-grid' }, ...steppers)];

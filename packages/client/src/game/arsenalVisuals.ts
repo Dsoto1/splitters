@@ -41,7 +41,7 @@ function mat(scene: Scene, hex: string, emissive = 0, alpha = 1): StandardMateri
 }
 
 /** Projectile looks this module draws; others are drawn by the view. */
-export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag']);
+export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear']);
 
 export function createArsenalProjectile(scene: Scene, id: number, look: ProjectileVisual): TransformNode {
   const node = new TransformNode(`proj_${id}`, scene);
@@ -71,6 +71,18 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
       const d = add(CreateCylinder(`disc_${id}`, { diameter: 0.5, height: 0.08, tessellation: 18 }, scene));
       d.material = mat(scene, '#7ad6ff', 0.9);
       add(CreateTorus(`discRim_${id}`, { diameter: 0.52, thickness: 0.05, tessellation: 18 }, scene)).material = mat(scene, '#e8f8ff', 1);
+      break;
+    }
+    case 'spear': {
+      // Shaft and head along the flight (the node turns to face where it's going).
+      const shaft = add(CreateCylinder(`spear_${id}`, { diameter: 0.035, height: 1.5, tessellation: 6 }, scene));
+      shaft.rotation.x = Math.PI / 2;
+      shaft.position.z = -0.45;
+      shaft.material = mat(scene, '#8a6238');
+      const head = add(CreateCylinder(`spearHead_${id}`, { diameterTop: 0, diameterBottom: 0.07, height: 0.24, tessellation: 4 }, scene));
+      head.rotation.x = Math.PI / 2;
+      head.position.z = 0.4;
+      head.material = mat(scene, '#a7adb4', 0.1);
       break;
     }
     case 'nail': {

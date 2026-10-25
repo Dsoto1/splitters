@@ -178,3 +178,16 @@ export function armsLookFor(look: string): string {
   if (!role) return look;
   return encodeLook({ body: 'male', parts: ['athlete_torso_m', 'peasant_legs_m', 'peasant_feet_m'], hair: [], colorways: [], skin: NPC_ARM_COLORS[role], hairColor: null });
 }
+
+/**
+ * The teams a match plays with: the map's (two for Capture the Flag and Bomb,
+ * else as many as the rules' team sizes), renamed and recoloured by the rules.
+ */
+export function matchTeams(map: MapDocument, rules: { mode: string; teamSizes?: number[]; teamNames?: string[]; teamColors?: string[] }): readonly Faction[] {
+  const two = rules.mode === 'core.ctf' || rules.mode === 'core.bomb';
+  return mapTeams(map, two ? 2 : (rules.teamSizes?.length ?? 2)).map((t, i) => ({
+    ...t,
+    name: rules.teamNames?.[i]?.trim().slice(0, 24) || t.name,
+    color: /^#[0-9a-f]{6}$/i.test(rules.teamColors?.[i] ?? '') ? rules.teamColors![i]!.toLowerCase() : t.color,
+  }));
+}

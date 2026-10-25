@@ -166,3 +166,38 @@ describe('UAV', () => {
     expect(match.privateState(me.slot)?.uv).toBeUndefined();
   });
 });
+
+describe('spears only', () => {
+  it('everyone holds one spear; it kills in one hit, drops, and can be picked back up', () => {
+    const match = new Match(yard(), { ...rules, weapons: 'spears', startingGrenades: 1 });
+    const me = match.addHuman('me')!;
+    const foe = match.addHuman('foe')!;
+    for (let i = 0; i < 3; i++) match.step();
+    const spear = weaponCode(getWeapon('core.spear'));
+    expect([...me.weapons.keys()]).toEqual([spear]);
+    expect(me.throwable).toBeNull();
+    me.move = { pos: { x: 4, y: 0, z: 8 }, velY: 0, grounded: true };
+    foe.move = { pos: { x: 12, y: 0, z: 8 }, velY: 0, grounded: true };
+    let seq = 0;
+    const input = (c: Combatant, buttons: number) => match.queueInputs(c.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: Math.PI / 2, pitch: 0.06, buttons }]);
+    for (let t = 0; t < 20; t++) {
+      input(me, 0);
+      match.step();
+    }
+    input(me, BUTTON_FIRE);
+    match.step();
+    for (let t = 0; t < 60; t++) {
+      foe.move = { pos: { x: 12, y: 0, z: 8 }, velY: 0, grounded: true };
+      match.step();
+    }
+    expect(foe.alive).toBe(false);
+    expect(me.weapons.get(spear)!.mag).toBe(0);
+    const lying = projectiles(match).find((p) => p.spec.visual === 'spear');
+    expect(lying).toBeTruthy();
+    // Walk over it: the spear is back in hand.
+    me.move = { pos: { x: lying!.pos.x, y: 0, z: lying!.pos.z }, velY: 0, grounded: true };
+    match.step();
+    expect(me.weapons.get(spear)!.mag).toBe(1);
+    expect(projectiles(match).some((p) => p.spec.visual === 'spear')).toBe(false);
+  });
+});

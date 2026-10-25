@@ -115,3 +115,13 @@ describe('rotating team spawns (maps without team bases)', () => {
     expect(west).toBe(8);
   });
 });
+
+describe('team setup', () => {
+  it('a match can rename and recolour its teams', () => {
+    const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2], teamNames: ['Wolves', ''], teamColors: ['#112233', 'nope'] });
+    const teams = (match as unknown as { teams: { name: string; color: string }[] }).teams;
+    expect(teams[0]).toMatchObject({ name: 'Wolves', color: '#112233' });
+    expect(teams[1]!.name).not.toBe('');
+    expect(teams[1]!.color).toMatch(/^#[0-9a-f]{6}$/);
+  });
+});

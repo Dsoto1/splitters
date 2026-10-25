@@ -61,6 +61,11 @@ export interface MatchRules {
   fallDamage?: boolean;
   /** Team modes: whether shots and blasts hurt teammates (full or half damage). Default off. */
   friendlyFire?: 'off' | 'half' | 'on';
+  /** Team names and colours chosen for this match (by team order); absent: the map's. */
+  teamNames?: string[];
+  teamColors?: string[];
+  /** Spears only: everyone holds one throwing spear (one hit kills; fetch it back); no weapon, ammo or grenade pickups. */
+  weapons?: 'normal' | 'spears';
 }
 
 /** The gravity multiple and fall damage a match plays with: its own rules, else the map's, else normal / off. */

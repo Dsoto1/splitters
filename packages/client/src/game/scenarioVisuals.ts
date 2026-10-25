@@ -302,6 +302,8 @@ export class ScenarioVisuals {
   /** A soft ripple pattern, made once and scrolled per liquid. */
   private ripples(): Texture {
     if (this.rippleTex) return this.rippleTex;
+    // Built while the match is being left: the scene (and its engine textures) are already gone.
+    if (this.scene.isDisposed) return new Texture(null, this.scene);
     const n = 128;
     const px = new Uint8Array(n * n * 4);
     for (let y = 0; y < n; y++) {

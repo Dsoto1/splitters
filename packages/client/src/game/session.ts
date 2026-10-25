@@ -23,6 +23,7 @@ import {
   isCreature,
   STREAK_REWARDS,
   matchPhysics,
+  matchTeams,
   type Vec3,
   npcLookRole,
   type CreatureKind,
@@ -399,7 +400,7 @@ export class GameSession {
         }
         this.slot = msg.slot;
         this.rules = msg.rules;
-        const teams = isTeamMode(msg.rules.mode) ? mapTeams(loaded.map, msg.rules.mode === 'core.ctf' ? 2 : (msg.rules.teamSizes?.length ?? 2)) : null;
+        const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
         this.hud.setTeams(teams);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
         this.hud.setMapName(loaded.map.metadata.name);

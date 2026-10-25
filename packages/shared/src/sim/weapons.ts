@@ -21,7 +21,7 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
-  'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag',
+  'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -107,6 +107,8 @@ export interface ProjectileSpec {
   cluster?: { count: number; speed: number; spec: ProjectileSpec };
   /** Once it lands it walks along the ground at `speed` m/s, hopping over low obstacles and turning at walls; bursts on contact with an enemy or when the fuse runs out. */
   walker?: { speed: number };
+  /** Spears: it stays where it lands (or drops under whoever it hit) for anyone out of them to pick back up. */
+  retrievable?: boolean;
   /** Where it bursts, calls in `count` bombs falling from `height` m in a line `spacing` m apart along the thrower's facing. */
   airstrike?: { count: number; spacing: number; height: number; bomb: ProjectileSpec };
   /** Deployable cover: where it lands it becomes a solid wall (half extents, metres) facing the thrower, with its own health. */
@@ -487,6 +489,28 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botDesirability: 0,
     botRange: [0, 0],
     view: sidearm('flare_gun', 0.32, '#d8d2c0', { sound: 'fire.flare' }),
+  },
+  'core.spear': {
+    id: 'core.spear',
+    displayName: 'Spear',
+    kind: 'projectile',
+    slot: 1,
+    fireMode: 'semi',
+    damage: 0,
+    pellets: 1,
+    spread: 0,
+    fireIntervalTicks: 30,
+    range: 60,
+    magazine: 1,
+    reserveMax: 0,
+    pickupAmmo: 0,
+    reloadTicks: 0,
+    raiseTicks: 12,
+    // One hit kills; it sticks where it lands until someone picks it up.
+    projectile: { speed: 30, gravity: 9, fuseSeconds: 90, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'spear', impactDamage: 250, sticky: 'world', retrievable: true },
+    botDesirability: 0.6,
+    botRange: [3, 30],
+    view: { model: 'procedural/spear', viewOffset: [0.24, -0.16, 0.3], tracer: '#c8a46a', sound: 'throw', hold: { style: 'pistol', grip: [0, 0, 0] } },
   },
 };
 

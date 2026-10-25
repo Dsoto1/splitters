@@ -42,7 +42,7 @@ import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
 import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
-import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, relation, validLookId } from './npc.ts';
+import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, zoneMultiplier, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -438,7 +438,7 @@ export class Match {
 
   /** The sides in team modes (2–8; Capture the Flag always has two); null in other modes. */
   get teams(): readonly Faction[] | null {
-    if (this.teamList === undefined) this.teamList = isTeamMode(this.rules.mode) ? mapTeams(this.map, this.rules.mode === 'core.ctf' ? 2 : (this.rules.teamSizes?.length ?? 2)) : null;
+    if (this.teamList === undefined) this.teamList = isTeamMode(this.rules.mode) ? matchTeams(this.map, this.rules) : null;
     return this.teamList;
   }
 
@@ -691,7 +691,9 @@ export class Match {
     const t0 = performance.now();
     const actors = this.actors();
     const views = new Map(actors.map((c) => [c.slot, toView(c)]));
-    const pickups: PickupView[] = this.pickups.map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }));
+    const spearItem = getItem('core.weapon_spear');
+    const lyingSpears: PickupView[] = spearItem ? this.projectiles.filter((p) => p.stuck && p.spec.retrievable).map((p) => ({ id: `spear_${p.id}`, item: spearItem, pos: p.pos, available: true })) : [];
+    const pickups: PickupView[] = [...lyingSpears, ...this.pickups.filter((p) => this.rules.weapons !== 'spears' || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
     const npcPickups: PickupView[] = [];
     const blockers = this.scenario.blockers();
     const hazards = this.scenario.hazards();
@@ -1232,6 +1234,17 @@ export class Match {
         else keep.push(p);
         continue;
       }
+      if (p.stuck && spec.retrievable) {
+        if (this.retrieve(p)) continue;
+        // Lying unclaimed too long: back to whoever threw it.
+        if (--p.ticksLeft <= 0) {
+          const w = owner?.weapons.get(weaponCode(getWeapon(p.weapon)));
+          if (w) w.mag = Math.max(w.mag, 1);
+          continue;
+        }
+        keep.push(p);
+        continue;
+      }
       if (p.stuck) {
         // An armed mine waits for an enemy (or its fuse).
         const armed = this.tick >= (p.armAt ?? 0);
@@ -1269,6 +1282,16 @@ export class Match {
       }
       if (hitDist !== null) {
         const at = add(p.pos, scale(dir, Math.max(0, hitDist - 0.05)));
+        if (victim && spec.retrievable) {
+          // A spear: through them, then it drops at their feet for someone to pick up.
+          if (spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
+          const down = this.physics.raycastHit({ x: at.x, y: at.y + 0.2, z: at.z }, { x: 0, y: -1, z: 0 }, 4);
+          p.pos = { x: at.x, y: down ? at.y + 0.2 - down.dist + 0.1 : victim.move.pos.y + 0.1, z: at.z };
+          p.vel = { x: 0, y: 0, z: 0 };
+          p.stuck = true;
+          keep.push(p);
+          continue;
+        }
         if (victim && spec.sticky === 'any') {
           // Sticks to the player it hits and rides along until it goes off.
           if (spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
@@ -1328,6 +1351,21 @@ export class Match {
       keep.push(p);
     }
     this.projectiles = keep;
+  }
+
+  /** A lying spear goes to the first living player close by whose spear is thrown. */
+  private retrieve(p: Projectile): boolean {
+    const code = weaponCode(getWeapon(p.weapon));
+    for (const c of this.actors()) {
+      if (!c.alive || distance(c.move.pos, p.pos) > 1.6) continue;
+      const w = c.weapons.get(code);
+      if (!w || w.mag > 0) continue;
+      w.mag = 1;
+      if (c.current !== code) this.switchTo(c, code);
+      this.pendingEvents.push({ e: 'pickup', s: c.slot, id: `spear_${p.id}`, item: 'core.weapon_spear' });
+      return true;
+    }
+    return false;
   }
 
   private explode(p: Projectile, at: Vec3): void {
@@ -2048,6 +2086,8 @@ export class Match {
   private collectPickups(c: Combatant): void {
     for (const p of this.pickups) {
       if (!p.enabled || this.tick < p.availableAt) continue;
+      // Spears only: no other weapons, ammo or grenades to pick up.
+      if (this.rules.weapons === 'spears' && (p.item.effect.kind === 'weapon' || p.item.effect.kind === 'ammo' || p.item.effect.kind === 'throwable')) continue;
       if (horizontalDistance(p.pos, c.move.pos) > PICKUP_RADIUS || Math.abs(p.pos.y - c.move.pos.y) > 1.5) continue;
       if (!this.applyItem(c, p.item)) continue;
       p.availableAt = this.tick + p.respawnTicks;
@@ -2176,13 +2216,13 @@ export class Match {
     c.chill = c.bloom = c.windup = c.burstLeft = 0;
     c.semiLatch = false;
     c.weapons = new Map();
-    for (const id of this.rules.startingWeapons) {
+    for (const id of this.rules.weapons === 'spears' ? ['core.spear'] : this.rules.startingWeapons) {
       const def = getWeapon(id);
       c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
       c.current = weaponCode(def);
     }
     // Everyone starts with a frag grenade (TimeSplitters-style loadouts are pickups after that).
-    c.throwable = this.rules.startingGrenades > 0 ? { kind: 'frag', count: this.rules.startingGrenades } : null;
+    c.throwable = this.rules.startingGrenades > 0 && this.rules.weapons !== 'spears' ? { kind: 'frag', count: this.rules.startingGrenades } : null;
     c.fireCooldown = 0;
     c.throwCooldown = 0;
     c.reloadTicks = 0;
