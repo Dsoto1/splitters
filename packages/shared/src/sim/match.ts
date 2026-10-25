@@ -53,6 +53,8 @@ export const MAX_REWIND_TICKS = 18;
 const HISTORY_TICKS = MAX_REWIND_TICKS + 2;
 /** Projectiles ignore their owner briefly so they don't explode in the shooter's face. */
 const OWNER_GRACE_TICKS = 8;
+/** Bots see hostile sentries as targets with these IDs (+ mount index); never a real actor ID. */
+const SENTRY_VIEW_BASE = 1_000_000;
 
 export interface WeaponState {
   def: WeaponDefinition;
@@ -739,7 +741,7 @@ export class Match {
       const input = c.bot.think({
         tick: this.tick,
         self: views.get(c.slot)!,
-        others: (aware < Infinity ? hostiles.filter((o) => horizontalDistance(o.move.pos, c.move.pos) <= aware) : hostiles).map((o) => views.get(o.slot)!),
+        others: [...(aware < Infinity ? hostiles.filter((o) => horizontalDistance(o.move.pos, c.move.pos) <= aware) : hostiles).map((o) => views.get(o.slot)!), ...this.hostileSentries(c)],
         physics: this.physics,
         nav: this.nav,
         spawnPoints: npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
@@ -768,6 +770,23 @@ export class Match {
       c.queue.push(input);
     }
     this.lastAiMs = performance.now() - t0;
+  }
+
+  /**
+   * Sentries that would shoot this bot, close enough to matter, as targets it
+   * can shoot back at (they can be destroyed). Seen as a prone figure so the
+   * bot aims at the gun's body, not over it.
+   */
+  private hostileSentries(c: Combatant): CombatantView[] {
+    const out: CombatantView[] = [];
+    for (const m of this.mounts) {
+      const spec = m.def.sentry;
+      if (!spec || !m.alive) continue;
+      if (m.faction !== null && relation(this.factions, m.faction, c.faction) !== 'enemy') continue;
+      if (horizontalDistance(m.pos, c.move.pos) > spec.range + 10) continue;
+      out.push({ slot: SENTRY_VIEW_BASE + m.index, pos: m.pos, yaw: m.aimYaw, pitch: 0, health: Math.max(0, m.health), armor: 0, alive: true, stance: 2, grounded: true, object: true });
+    }
+    return out;
   }
 
   /** Turrets and vehicles as bots see them (built once per tick). */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CORE_BOT_PROFILES, getWeapon } from '../src/index.ts';
-import { grenadeWorthIt, pickupNeed, weaponScore, type CombatantView, type InventoryView, type WeaponChoiceContext } from '../src/bots/brain.ts';
+import { bestLoadedDesirability, grenadeWorthIt, pickupNeed, weaponScore, type CombatantView, type InventoryView, type MountView, type WeaponChoiceContext } from '../src/bots/brain.ts';
+import { vehicleFor } from '../src/bots/vehicles.ts';
 
 const profile = CORE_BOT_PROFILES.find((p) => p.id === 'core.normal') ?? CORE_BOT_PROFILES[0]!;
 const gun = (id: string, mag?: number, reserve?: number): InventoryView => {
@@ -64,5 +65,25 @@ describe('bot grenades', () => {
     expect(grenadeWorthIt(2, false, 0.8)).toBe(true);
     expect(grenadeWorthIt(1, false, 0.1)).toBe(true);
     expect(grenadeWorthIt(0, true, 0.1)).toBe(false);
+  });
+});
+
+describe('bot loadout and vehicles', () => {
+  it('rates a loadout by its best gun that still has rounds', () => {
+    expect(bestLoadedDesirability([gun('core.knife'), gun('core.pistol')])).toBeCloseTo(getWeapon('core.pistol').botDesirability);
+    expect(bestLoadedDesirability([gun('core.pistol'), gun('core.rifle', 0, 0)])).toBeCloseTo(getWeapon('core.pistol').botDesirability);
+    expect(bestLoadedDesirability([gun('core.pistol'), gun('core.rifle')])).toBeCloseTo(getWeapon('core.rifle').botDesirability);
+  });
+
+  it('takes a vehicle parked beside it for a long trip, not one off the way', () => {
+    const car = (index: number, x: number, z: number): MountView => ({ index, kind: 'vehicle', pos: { x, y: 0, z }, yaw: 0, health: 1, alive: true, enterRadius: 2, seats: [{ role: 'driver', free: true }] });
+    const from = { x: 0, y: 0, z: 0 };
+    const goal = { x: 0, y: 0, z: 150 };
+    // Right beside the bot (a little behind it), as at a spawn.
+    expect(vehicleFor([car(0, 4, -3)], from, goal, 22)?.index).toBe(0);
+    // Close, but the wrong way.
+    expect(vehicleFor([car(1, 0, -20)], from, goal, 22)).toBeNull();
+    // Short trips are walked.
+    expect(vehicleFor([car(2, 4, -3)], from, { x: 0, y: 0, z: 40 }, 22)).toBeNull();
   });
 });

@@ -269,6 +269,22 @@ describe('bot tactics', () => {
     expect(events.some((e) => e.e === 'shot' && e.s === bot.slot && e.w === 'core.mount_mg')).toBe(true);
   });
 
+  it('shoots back at a sentry gun that is shooting at it, and destroys it', () => {
+    const sentry = { id: 'mount_0', kind: 'mount' as const, model: 'sentry' as const, position: [22, 0, 8] as [number, number, number], yaw: 0, faction: null, respawnSeconds: null };
+    const match = new Match(yard([sentry]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, 6);
+    const bot = match.addBot('bot', { ...CORE_BOT_PROFILES[3]!, exploration: 0, itemGreed: 0, tags: [] }, BOT_DIFFICULTIES.hard)!;
+    place(bot, 2, 8, Math.PI / 2);
+    give(bot, 'core.rifle');
+    const mount = (match as unknown as { mounts: { alive: boolean }[] }).mounts[0]!;
+    let downAt = -1;
+    for (let t = 0; t < 60 * 20 && downAt < 0; t++) {
+      bot.health = 100;
+      match.step();
+      if (!mount.alive) downAt = t;
+    }
+    expect(downAt).toBeGreaterThanOrEqual(0);
+  });
+
   it('NPC snipers go prone to shoot at long range', () => {
     const enc = {
       id: 'enc_0',

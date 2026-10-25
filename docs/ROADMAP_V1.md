@@ -81,6 +81,7 @@ sounds (needs new CC0 sounds and a grip pose).
 | 2 | ✅ **[feature]** Per-character stats/tendencies drive strategy and weapon choice — every preset character has its own bot profile (traits, style, favourite weapons); Character Select shows "As a bot: …" |
 | 3 | ✅ **[feature]** Alternative bot "personalities": arena-style (Quake 3 feel: strafe-jump, item timing) and tactical (Counter-Strike feel: objectives, economy-free rush/hold) — arcade "Bot style": Mixed / Arena / Tactical |
 | 4 | 🟡 **[feature]** NPC/dino/orc roamers for themed maps — new "roam" squad order + "Roaming Monsters" MapMaker preset (works with every NPC); dino/orc models still needed (Quaternius packs) |
+| 5 | ✅ **[tune]** Audit pass (Oct 25, `packages/shared/test/botAudit.test.ts`, 8-bot TDM on 12 maps): bots give up on noises and chases they can't reach (stuck stands 47 → 2); with only a sidearm they fetch a gun within 30 m first (armed 14–35% → 37–78% of the time); they see and shoot hostile sentries (Canyon sentry deaths halved); they take a vehicle parked beside them for the push to the far side (Frost Basin 0 → 8 rides, St. John's 1 → 7) |
 
 ## Sprint 4 — Modes, matches and servers
 

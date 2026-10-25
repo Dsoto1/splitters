@@ -3,7 +3,7 @@ import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import type { ItemDefinition, ItemEffect } from '../sim/items.ts';
 import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
-import { THROWABLE_DEFS, weaponCode, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
+import { THROWABLE_DEFS, getWeapon, weaponCode, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
 import { AimModel, type AimContext, type AimSolution } from './aim.ts';
@@ -31,6 +31,8 @@ export interface CombatantView {
   mounted?: boolean;
   /** On the ground (not jumping or falling). */
   grounded?: boolean;
+  /** A machine (a sentry gun), not a person: its own body would block a sight line to its middle. */
+  object?: boolean;
 }
 
 export interface PickupView {
@@ -104,6 +106,13 @@ const HEARING_RANGE = 6;
 const FOV_COS = Math.cos((110 / 2) * (Math.PI / 180));
 const STUCK_WINDOW_TICKS = TICK_RATE;
 const PATH_REFRESH_TICKS = TICK_RATE / 2;
+/** Desirability of a pistol: a bot carrying nothing better goes for a gun first. */
+const SIDEARM = 0.4;
+/** Shortest trip (m) worth taking a vehicle for (vehicles.ts uses the same). */
+const VEHICLE_TRIP = 55;
+/** How far (m, plus height) a bot with only a sidearm detours for a gun. */
+const GUN_DETOUR = 30;
+
 /** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
 const DECIDE_TICKS = 6;
 /** Visibility of crouched and prone targets at range (they are harder to spot). */
@@ -148,6 +157,12 @@ export class BotBrain {
   private lastKnown: { pos: Vec3; tick: number } | null = null;
   /** A noise worth checking out. */
   private heard: { pos: Vec3; tick: number } | null = null;
+  /** A gun close enough to fetch before going on (set while deciding). */
+  private gunNearby: Vec3 | null = null;
+  /** A noise or sighting we couldn't get to: noises near it are ignored for a while. */
+  private unreachable: { pos: Vec3; until: number } | null = null;
+  /** Closest we have come to the current chase/investigate goal, and when. */
+  private headway: { goal: Vec3; best: number; tick: number } | null = null;
   private pathIndex = 0;
   private roamGoal: Vec3 | null = null;
   private via: Vec3 | null = null;
@@ -229,6 +244,8 @@ export class BotBrain {
     this.visibleSince.clear();
     this.lastKnown = null;
     this.heard = null;
+    this.unreachable = null;
+    this.headway = null;
     this.path = [];
     this.goal = null;
     this.roamGoal = null;
@@ -353,6 +370,11 @@ export class BotBrain {
     else if (this.cover && (underFire || tick - this.lastTargetTick < TICK_RATE * (2.5 + (1 - this.profile.aggression / 100) * 3))) {
       // Ducked out of sight behind cover: keep up the hide-and-peek rather than charging off.
       this.state = 'cover';
+    } else if (!underFire && !view.orderGoal && bestLoadedDesirability(view.inventory) <= SIDEARM && (this.gunNearby = this.pickupGoal(view, 'weapon', GUN_DETOUR))) {
+      // Only a sidearm: grab a real gun close by before chasing anyone.
+      this.state = 'advance';
+      this.roamGoal = this.gunNearby;
+      this.via = null;
     } else if (this.state === 'retreat' && this.lastKnown && tick - this.lastKnown.tick < TICK_RATE * 3) {
       // Keep running for a moment after losing sight of the threat.
     } else if (this.lastKnown && !hurt && tick - this.lastKnown.tick < TICK_RATE * (1 + (this.profile.pursuitPersistence / 100) * 7) && horizontalDistance(me.pos, this.lastKnown.pos) > 1.5) {
@@ -522,6 +544,11 @@ export class BotBrain {
         }
         const far = horizontalDistance(me.pos, lk.pos) > 25;
         moveYaw = this.followPathTo(view, lk.pos, false);
+        if ((moveYaw === null && horizontalDistance(me.pos, lk.pos) > 1.5) || this.stalled(view, lk.pos)) {
+          this.lastKnown = null;
+          this.state = 'advance';
+          break;
+        }
         // Rejoin a fight that has moved away at a run; close in carefully.
         if (far && !this.careful()) sprint = true;
         else moveScale = this.careful() ? 0.7 : 1;
@@ -537,10 +564,18 @@ export class BotBrain {
         }
         break;
       }
-      case 'investigate':
-        moveYaw = this.followPathTo(view, this.heard!.pos, false);
+      case 'investigate': {
+        const goal = this.heard!.pos;
+        moveYaw = this.followPathTo(view, goal, false);
         moveScale = this.careful() ? 0.65 : 1;
+        // No way there (another floor, a shut door) or no closer for a while: let it go.
+        if ((moveYaw === null && horizontalDistance(me.pos, goal) > 2) || this.stalled(view, goal)) {
+          this.unreachable = { pos: goal, until: tick + TICK_RATE * 10 };
+          this.heard = null;
+          this.state = 'advance';
+        }
         break;
+      }
       case 'mount': {
         const plan = this.mountPlan;
         const m = plan && view.mounts?.find((x) => x.index === plan.index);
@@ -969,7 +1004,13 @@ export class BotBrain {
       }
       return;
     }
-    const goal = this.roamGoal ?? view.orderGoal?.pos ?? null;
+    // Worth a drive only for a long trip: the current goal if it is far, else the push to the far side.
+    let goal = this.roamGoal ?? view.orderGoal?.pos ?? null;
+    if (!view.orderGoal && (!goal || horizontalDistance(me.pos, goal) < VEHICLE_TRIP)) {
+      // A gun close by comes first.
+      if (bestLoadedDesirability(view.inventory) <= SIDEARM && this.pickupGoal(view, 'weapon', GUN_DETOUR)) return;
+      goal = farthest(view.spawnPoints, me.pos) ?? goal;
+    }
     if (!goal) return;
     const v = vehicleFor(mounts, me.pos, goal, 22);
     if (v && this.rng() < 0.5) {
@@ -979,6 +1020,8 @@ export class BotBrain {
       let len = 0;
       for (let i = 1; i < route.length; i++) len += horizontalDistance(route[i - 1]!, route[i]!);
       if (len > horizontalDistance(v.pos, goal) * 1.5) return;
+      this.roamGoal = { ...goal };
+      this.via = null;
       this.mountPlan = { index: v.index, until: view.tick + TICK_RATE * 8, drive: true };
       this.state = 'mount';
     }
@@ -1090,20 +1133,24 @@ export class BotBrain {
    * depends on need (health/armor missing, weapon not owned, ammo low) and the
    * bot's item greed, discounted by distance.
    */
-  private pickupGoal(view: BotWorldView, only?: 'health'): Vec3 | null {
+  private pickupGoal(view: BotWorldView, only?: 'health' | 'weapon', within = Infinity): Vec3 | null {
     const me = view.self;
     let best: { pos: Vec3; score: number } | null = null;
     const owned = new Map(view.inventory.map((w) => [w.def.id, w]));
+    const bestOwned = bestLoadedDesirability(view.inventory);
     for (const p of view.pickups) {
       // Arena bots time the respawns: head for an item that will be back by the time they get there.
       const timed = this.arena && p.respawnIn !== undefined && p.respawnIn < horizontalDistance(me.pos, p.pos) / 5 + 1;
       if (!p.available && !timed) continue;
       const e = p.item.effect;
       if (only && e.kind !== only) continue;
-      const need = pickupNeed(e, me, view.inventory, owned, view.throwables ?? 0, view.throwable ?? null);
+      let need = pickupNeed(e, me, view.inventory, owned, view.throwables ?? 0, view.throwable ?? null);
       if (need <= 0) continue;
+      // A new gun is worth what it adds: a rifle to a bot holding a pistol, far more than a second SMG.
+      if (e.kind === 'weapon' && !owned.has(e.weapon)) need *= clamp(1 + (getWeapon(e.weapon).botDesirability - bestOwned) * 2.5, 0.4, 2);
       const greed = 0.3 + (this.profile.itemGreed / 100) * 1.2;
       const d = horizontalDistance(me.pos, p.pos) + Math.abs(me.pos.y - p.pos.y) * 2;
+      if (d > within) continue;
       const score = (p.item.botValue * need * greed) / (1 + d / 20);
       if (score > 0.12 && (!best || score > best.score)) best = { pos: p.pos, score };
     }
@@ -1149,6 +1196,11 @@ export class BotBrain {
       const inFov = dx * facing.x + dz * facing.z >= FOV_COS * Math.hypot(dx, dz);
       if (!inFov && d > HEARING_RANGE) continue;
       const theirEye = { x: o.pos.x, y: o.pos.y + STANCES[o.stance ?? 0].eye, z: o.pos.z };
+      if (o.object) {
+        // Check the sight line to just in front of it, not to a point inside its own body.
+        theirEye.x -= dx * 0.8;
+        theirEye.z -= dz * 0.8;
+      }
       if (!view.physics.lineOfSight(myEye, theirEye)) continue;
       seen.add(o.slot);
       if (!this.visibleSince.has(o.slot)) this.visibleSince.set(o.slot, view.tick);
@@ -1173,6 +1225,7 @@ export class BotBrain {
         if (n.by >= 0 && !hostile.has(n.by)) continue;
         const d = horizontalDistance(n.pos, me.pos) + Math.abs(n.pos.y - me.pos.y) * 2;
         if (d > n.range || d < 3) continue;
+        if (this.unreachable && view.tick < this.unreachable.until && horizontalDistance(n.pos, this.unreachable.pos) < 8) continue;
         if (!loud || d < loud.d) loud = { pos: n.pos, tick: n.tick, d };
       }
       if (loud && (!this.heard || loud.tick > this.heard.tick + TICK_RATE)) {
@@ -1262,6 +1315,23 @@ export class BotBrain {
       return Math.atan2(goal.x - me.pos.x, goal.z - me.pos.z);
     }
     return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+  }
+
+  /** Chasing or investigating `goal` without getting any closer for five seconds. */
+  private stalled(view: BotWorldView, goal: Vec3): boolean {
+    const me = view.self.pos;
+    const d = horizontalDistance(me, goal) + Math.abs(me.y - goal.y);
+    const h = this.headway;
+    if (!h || horizontalDistance(h.goal, goal) > 3 || view.tick - h.tick > TICK_RATE * 8) {
+      this.headway = { goal: { ...goal }, best: d, tick: view.tick };
+      return false;
+    }
+    if (d < h.best - 1) {
+      h.best = d;
+      h.tick = view.tick;
+      return false;
+    }
+    return view.tick - h.tick > TICK_RATE * 5;
   }
 
   /** Does the planned path cross a closed door or breakable wall? */
@@ -1383,6 +1453,13 @@ export function pickupNeed(e: ItemEffect, me: CombatantView, inventory: readonly
  * Whether a grenade is worth throwing: the last one is kept for when the bot is
  * pinned by an enemy in sight, unless it plays recklessly (low tactical sense).
  */
+/** The best weapon a bot carries that still has rounds, by desirability (0 with nothing). */
+export function bestLoadedDesirability(inventory: readonly InventoryView[]): number {
+  let best = 0;
+  for (const w of inventory) if (w.def.magazine <= 0 || w.mag + w.reserve > 0) best = Math.max(best, w.def.botDesirability);
+  return best;
+}
+
 export function grenadeWorthIt(count: number, enemyInSight: boolean, tactical: number): boolean {
   if (count <= 0) return false;
   return count > 1 || enemyInSight || tactical < 0.3;

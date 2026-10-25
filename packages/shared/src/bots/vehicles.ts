@@ -85,9 +85,9 @@ export function vehicleFor(mounts: readonly MountView[], from: Vec3, goal: Vec3,
     if (!m.alive || m.kind !== 'vehicle' || m.health < 0.5 || m.humanNear || m.hostile) continue;
     const driver = m.seats.find((s) => s.role === 'driver');
     if (!driver?.free || m.seats.some((s) => !s.free)) continue;
-    // Worth it only if the vehicle is roughly on the way.
-    if (horizontalDistance(m.pos, goal) > trip - 15) continue;
     const d = horizontalDistance(m.pos, from) + Math.abs(m.pos.y - from.y) * 3;
+    // Worth it only if the vehicle is roughly on the way: getting to it adds little to the trip.
+    if (d + horizontalDistance(m.pos, goal) > trip + 15) continue;
     if (d < bestD) {
       best = m;
       bestD = d;
