@@ -1,0 +1,1976 @@
+{
+  "format": "chronosplit.map",
+  "formatVersion": 14,
+  "metadata": {
+    "id": "blackout",
+    "name": "Blackout",
+    "author": "ChronoSplit",
+    "description": "A co-op night raid on a blacked-out city block. Fight up the street through the Syndicate checkpoint (or round it through the shop and the house), clear the substation and set the charges, hold it against the counter-attack from the north and the west until they blow, then take the gas station for evac.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 1,
+      "max": 4
+    },
+    "supportedModes": [
+      "core.coop"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.city",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.shop",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.house",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.bunker",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.warehouse",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.gas_station",
+        "x": 0,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.street",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.street",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.street",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.street",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.street",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.intersection",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.street",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.street",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.street",
+        "x": 2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.street",
+        "x": 2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.street",
+        "x": 2,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.street",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.street",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.street",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "block_042",
+      "position": [
+        14.5,
+        0.25,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.85,
+        4.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#3a3a3a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_043",
+      "position": [
+        14.5,
+        1.1,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_044",
+      "position": [
+        14.5,
+        0,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.25,
+        3.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_045",
+      "position": [
+        17.6,
+        0.25,
+        46
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.85,
+        4.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#7a2a24",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_046",
+      "position": [
+        17.6,
+        1.1,
+        46
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_047",
+      "position": [
+        17.6,
+        0,
+        46
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.25,
+        3.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_048",
+      "position": [
+        28,
+        0.25,
+        22.5
+      ],
+      "kind": "block",
+      "size": [
+        4.4,
+        0.85,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#2a4a7a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_049",
+      "position": [
+        28,
+        1.1,
+        22.5
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.6,
+        1.8
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_050",
+      "position": [
+        28,
+        0,
+        22.5
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        0.25,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_051",
+      "position": [
+        9,
+        0.25,
+        25.5
+      ],
+      "kind": "block",
+      "size": [
+        4.4,
+        0.85,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#33302c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_052",
+      "position": [
+        9,
+        1.1,
+        25.5
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.6,
+        1.8
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c2228",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_053",
+      "position": [
+        9,
+        0,
+        25.5
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        0.25,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#2a2a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_054",
+      "position": [
+        13,
+        0,
+        21
+      ],
+      "kind": "prop",
+      "model": "prop.barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_055",
+      "position": [
+        19,
+        0,
+        21
+      ],
+      "kind": "prop",
+      "model": "prop.barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_056",
+      "position": [
+        16,
+        0,
+        28.5
+      ],
+      "kind": "prop",
+      "model": "prop.barrier_high",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_057",
+      "position": [
+        22,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.barrier",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_058",
+      "position": [
+        11,
+        0,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.warning_sign",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_059",
+      "position": [
+        15,
+        0,
+        19.5
+      ],
+      "kind": "prop",
+      "model": "prop.cone",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_060",
+      "position": [
+        17.5,
+        0,
+        19.5
+      ],
+      "kind": "prop",
+      "model": "prop.cone",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_061",
+      "position": [
+        -2.5,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_062",
+      "position": [
+        42.5,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_063",
+      "position": [
+        42.5,
+        0,
+        60
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_064",
+      "position": [
+        12,
+        0,
+        68.5
+      ],
+      "kind": "prop",
+      "model": "prop.lightpost",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_065",
+      "position": [
+        26,
+        0,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.skip",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_066",
+      "position": [
+        36,
+        0,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_067",
+      "position": [
+        42,
+        0,
+        36
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_068",
+      "position": [
+        27,
+        0,
+        60
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_069",
+      "position": [
+        28,
+        0,
+        61
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "destructible_070",
+      "position": [
+        36,
+        0,
+        45.5
+      ],
+      "kind": "destructible",
+      "model": "generator",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_071",
+      "position": [
+        40,
+        0,
+        62
+      ],
+      "kind": "destructible",
+      "model": "gas",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        -1.5,
+        0,
+        18
+      ],
+      "kind": "prop",
+      "model": "prop.trashcan",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        5,
+        0,
+        18
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        41,
+        0,
+        18
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        38,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.shopping_cart",
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "position": [
+        -2,
+        0,
+        66
+      ],
+      "kind": "prop",
+      "model": "prop.bush_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        42,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.tree_round",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "position": [
+        -2,
+        0,
+        36
+      ],
+      "kind": "prop",
+      "model": "prop.tree_round",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_079",
+      "position": [
+        14,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_080",
+      "position": [
+        18,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_081",
+      "position": [
+        14,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_082",
+      "position": [
+        18,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "pickup_083",
+      "position": [
+        8,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_084",
+      "position": [
+        40,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_085",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_086",
+      "position": [
+        32,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_087",
+      "position": [
+        3.6,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_088",
+      "position": [
+        24,
+        4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_089",
+      "position": [
+        24,
+        0,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_090",
+      "position": [
+        40,
+        0,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_091",
+      "position": [
+        0,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_092",
+      "position": [
+        32,
+        4,
+        50
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_093",
+      "position": [
+        16,
+        0,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_094",
+      "position": [
+        40,
+        0,
+        56
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_095",
+      "position": [
+        32,
+        0,
+        64
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": 60
+    },
+    {
+      "id": "pickup_096",
+      "position": [
+        24,
+        0,
+        64
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "enc_checkpoint",
+      "position": [
+        16,
+        0,
+        30
+      ],
+      "name": "Checkpoint",
+      "kind": "encounter",
+      "yaw": 3.141592653589793,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 3,
+        "gunner": 1,
+        "heavy": 0
+      },
+      "activeCap": 4,
+      "reinforcements": 0,
+      "perPlayer": 1,
+      "respawnSeconds": 5,
+      "radius": 3,
+      "order": "hold",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_bunker",
+      "position": [
+        4,
+        0,
+        32
+      ],
+      "name": "Bunker",
+      "kind": "encounter",
+      "yaw": 3.141592653589793,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 2,
+        "gunner": 0,
+        "heavy": 0
+      },
+      "activeCap": 4,
+      "reinforcements": 0,
+      "perPlayer": 0,
+      "respawnSeconds": 5,
+      "radius": 3,
+      "order": "hold",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_substation",
+      "position": [
+        32,
+        0,
+        42
+      ],
+      "name": "Substation guards",
+      "kind": "encounter",
+      "yaw": 3.141592653589793,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 2,
+        "gunner": 1,
+        "heavy": 1
+      },
+      "activeCap": 4,
+      "reinforcements": 0,
+      "perPlayer": 1,
+      "respawnSeconds": 5,
+      "radius": 3,
+      "order": "hold",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_wave_north",
+      "position": [
+        36,
+        0,
+        64
+      ],
+      "name": "North wave",
+      "kind": "encounter",
+      "yaw": 3.141592653589793,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 2,
+        "gunner": 1,
+        "heavy": 0
+      },
+      "activeCap": 4,
+      "reinforcements": 6,
+      "perPlayer": 2,
+      "respawnSeconds": 5,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_wave_west",
+      "position": [
+        0,
+        0,
+        40
+      ],
+      "name": "West wave",
+      "kind": "encounter",
+      "yaw": 3.141592653589793,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 1,
+        "gunner": 0,
+        "heavy": 1
+      },
+      "activeCap": 4,
+      "reinforcements": 4,
+      "perPlayer": 1,
+      "respawnSeconds": 5,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_evac",
+      "position": [
+        4,
+        0,
+        62
+      ],
+      "name": "Evac guards",
+      "kind": "encounter",
+      "yaw": 3.141592653589793,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 2,
+        "gunner": 1,
+        "heavy": 1
+      },
+      "activeCap": 4,
+      "reinforcements": 0,
+      "perPlayer": 1,
+      "respawnSeconds": 5,
+      "radius": 3,
+      "order": "hold",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "btn_charges",
+      "position": [
+        30,
+        0,
+        45.5
+      ],
+      "name": "Charges",
+      "kind": "button",
+      "yaw": 3.141592653589793,
+      "label": "Set the charges",
+      "once": true,
+      "cooldownSeconds": 1,
+      "startEnabled": false
+    },
+    {
+      "id": "zone_substation",
+      "position": [
+        32,
+        0,
+        44
+      ],
+      "name": "Substation",
+      "kind": "zone",
+      "size": [
+        16,
+        3,
+        7
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true
+    },
+    {
+      "id": "zone_evac",
+      "position": [
+        4,
+        0,
+        52
+      ],
+      "name": "Evac point",
+      "kind": "zone",
+      "size": [
+        8,
+        3,
+        8
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "syndicate",
+      "name": "Syndicate",
+      "color": "#d04a3a",
+      "relations": {}
+    }
+  ],
+  "logic": {
+    "variables": [
+      {
+        "id": "var_lives",
+        "name": "lives",
+        "initial": 15
+      }
+    ],
+    "timers": [
+      {
+        "id": "timer_charges",
+        "name": "Charges",
+        "seconds": 50,
+        "loop": false,
+        "visible": true
+      }
+    ],
+    "objectives": [
+      {
+        "id": "obj_checkpoint",
+        "text": "Break through the checkpoint",
+        "startActive": true,
+        "marker": "enc_checkpoint"
+      },
+      {
+        "id": "obj_substation",
+        "text": "Clear the substation",
+        "startActive": false,
+        "marker": "enc_substation"
+      },
+      {
+        "id": "obj_charges",
+        "text": "Set the charges",
+        "startActive": false,
+        "marker": "btn_charges"
+      },
+      {
+        "id": "obj_hold",
+        "text": "Hold the substation until the charges blow",
+        "startActive": false,
+        "marker": "zone_substation"
+      },
+      {
+        "id": "obj_evac",
+        "text": "Clear the gas station and reach evac",
+        "startActive": false,
+        "marker": "zone_evac"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule_intro",
+        "name": "Briefing",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 5,
+            "text": "Lights out on the whole district. Get through the checkpoint to the substation.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_checkpoint",
+        "name": "Checkpoint broken",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_checkpoint"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_checkpoint",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_substation",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Checkpoint down. The substation is the warehouse up the street.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_substation",
+        "name": "Substation cleared",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_substation"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_substation",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "enable",
+            "target": "btn_charges",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_charges",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Substation clear. Set the charges by the transformers.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_charges",
+        "name": "Charges set: the counter-attack",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_charges"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_charges",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_hold",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Charges set! Hold the substation until they blow.",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_charges",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_wave_north",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 8,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_wave_west",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_hold_empty",
+        "name": "Substation unguarded",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "zone_exit",
+          "target": "zone_substation"
+        },
+        "if": [
+          {
+            "type": "zone_count",
+            "target": "zone_substation",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_hold",
+            "op": "==",
+            "value": 0,
+            "state": "active"
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "Get back to the substation!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_blown",
+        "name": "Charges blow: go to evac",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_charges"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "encounter_stop",
+            "target": "enc_wave_north",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_wave_west",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_hold",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_evac",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_evac",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "The grid is down! Evac at the gas station, and it is guarded.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_evac_walk",
+        "name": "Reach evac when clear",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_evac"
+        },
+        "if": [
+          {
+            "type": "encounter_alive",
+            "target": "enc_evac",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_evac",
+            "op": "==",
+            "value": 0,
+            "state": "active"
+          }
+        ],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_evac",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Evac! Mission complete.",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players win"
+          }
+        ]
+      },
+      {
+        "id": "rule_evac_clear",
+        "name": "Clear while at evac",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_evac"
+        },
+        "if": [
+          {
+            "type": "zone_count",
+            "target": "zone_evac",
+            "op": ">=",
+            "value": 1,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_evac",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Evac! Mission complete.",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players win"
+          }
+        ]
+      },
+      {
+        "id": "rule_evac_hot",
+        "name": "Evac still hot",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_evac"
+        },
+        "if": [
+          {
+            "type": "encounter_alive",
+            "target": "enc_evac",
+            "op": ">",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "Clear the gas station first!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_evac_ready",
+        "name": "Evac clear",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_evac"
+        },
+        "if": [
+          {
+            "type": "zone_count",
+            "target": "zone_evac",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Evac is clear. Get under the canopy!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_life_lost",
+        "name": "Count lives",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "player_killed",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_lives",
+            "value": -1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_low_lives",
+        "name": "Low on lives",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_lives"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_lives",
+            "op": "==",
+            "value": 3,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Only 3 lives left!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_defeat",
+        "name": "Out of lives",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_lives"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_lives",
+            "op": "<=",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Out of lives. Mission failed.",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players lose"
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -8,
+      -8
+    ],
+    "max": [
+      48,
+      73
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "backdrop": {
+    "sky": "night",
+    "scenery": "city",
+    "ground": "gravel",
+    "haze": 0.55
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
+  "dependencies": []
+}

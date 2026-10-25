@@ -275,3 +275,53 @@ describe('co-op mission: Outpost Siege', () => {
     expect(match.scenario.objectiveState('obj_courtyard')).toBe('complete');
   });
 });
+
+describe('co-op mission: Blackout', () => {
+  const load = async () => {
+    const { readFileSync } = await import('node:fs');
+    const r = loadMap(readFileSync(new URL('../../../maps/blackout.json', import.meta.url), 'utf8'));
+    if (!r.ok) throw new Error('blackout invalid');
+    return r.map;
+  };
+  const killSquad = (match: Match, encounter: string) => {
+    const damage = (match as unknown as { damage(v: Combatant, a: number, k: null, w: string): void }).damage.bind(match);
+    for (const c of [...match.npcs.values()]) if (c.alive && c.npc?.encounter === encounter) damage(c, 1000, null, 'core.fall');
+  };
+
+  it('plays through: checkpoint, substation, charges, hold, evac, victory', async () => {
+    const { match, me, events, run } = start(await load(), true, 21);
+    const invulnerable = (n: number, input: Partial<PlayerInput> = {}) => {
+      for (let i = 0; i < n; i++) {
+        me.health = 100;
+        run(1, input);
+      }
+    };
+    invulnerable(30);
+    const by = (enc: string) => [...match.npcs.values()].filter((c) => c.alive && c.npc?.encounter === enc).length;
+    expect(by('enc_checkpoint')).toBe(4);
+    expect(by('enc_substation')).toBe(4);
+
+    killSquad(match, 'enc_checkpoint');
+    invulnerable(2);
+    expect(match.scenario.objectiveState('obj_substation')).toBe('active');
+    killSquad(match, 'enc_substation');
+    invulnerable(2);
+    expect(match.scenario.objectiveState('obj_charges')).toBe('active');
+
+    me.move = { pos: { x: 30, y: 0, z: 43.8 }, velY: 0, grounded: true };
+    invulnerable(1, { yaw: 0, pitch: -0.25, buttons: 16 });
+    expect(match.scenario.objectiveState('obj_hold')).toBe('active');
+    invulnerable(60 * 14);
+    expect(by('enc_wave_north') + by('enc_wave_west')).toBeGreaterThan(0);
+
+    invulnerable(60 * 40);
+    expect(match.scenario.objectiveState('obj_hold')).toBe('complete');
+    expect(match.scenario.objectiveState('obj_evac')).toBe('active');
+    invulnerable(30);
+    killSquad(match, 'enc_evac');
+    invulnerable(5);
+    me.move = { pos: { x: 4, y: 0, z: 52 }, velY: 0, grounded: true };
+    invulnerable(140);
+    expect(events.filter((e) => e.e === 'round_end')).toEqual([{ e: 'round_end', winner: null, outcome: 'victory' }]);
+  });
+});
