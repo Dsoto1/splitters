@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 8,
+  "formatVersion": 14,
   "metadata": {
     "id": "felicity_yard",
     "name": "Felicity Yard",
@@ -828,9 +828,9 @@
     {
       "id": "pickup_085",
       "position": [
-        24,
+        22,
         0,
-        12
+        8
       ],
       "kind": "pickup",
       "item": "core.ammo_rifle",
@@ -1630,6 +1630,190 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "spawn_145",
+      "position": [
+        -24.88,
+        4.05,
+        11.58
+      ],
+      "kind": "spawn",
+      "yaw": 2.07,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_146",
+      "position": [
+        -24.8,
+        0.05,
+        10
+      ],
+      "kind": "spawn",
+      "yaw": 2.02,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_147",
+      "position": [
+        -24.4,
+        0.05,
+        17.87
+      ],
+      "kind": "spawn",
+      "yaw": 2.25,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_148",
+      "position": [
+        -24.2,
+        0.05,
+        -10.8
+      ],
+      "kind": "spawn",
+      "yaw": 1.23,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_149",
+      "position": [
+        -24.2,
+        -3.62,
+        -3.73
+      ],
+      "kind": "spawn",
+      "yaw": 1.51,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_150",
+      "position": [
+        -24.2,
+        -0.02,
+        3.77
+      ],
+      "kind": "spawn",
+      "yaw": 1.81,
+      "faction": "embers"
+    },
+    {
+      "id": "flag_151",
+      "position": [
+        -25,
+        0.05,
+        -6.07
+      ],
+      "kind": "flag",
+      "yaw": 1.42,
+      "team": "embers"
+    },
+    {
+      "id": "spawn_152",
+      "position": [
+        25.4,
+        2.48,
+        17.53
+      ],
+      "kind": "spawn",
+      "yaw": -2.24,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_153",
+      "position": [
+        24.53,
+        -2.5,
+        -9.68
+      ],
+      "kind": "spawn",
+      "yaw": -1.27,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_154",
+      "position": [
+        24.4,
+        -3.95,
+        -16.4
+      ],
+      "kind": "spawn",
+      "yaw": -1.04,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_155",
+      "position": [
+        24.2,
+        -0.03,
+        -4.27
+      ],
+      "kind": "spawn",
+      "yaw": -1.48,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_156",
+      "position": [
+        24,
+        1.32,
+        -17.4
+      ],
+      "kind": "spawn",
+      "yaw": -1,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_157",
+      "position": [
+        22.13,
+        0.05,
+        1.67
+      ],
+      "kind": "spawn",
+      "yaw": -1.74,
+      "faction": "tide"
+    },
+    {
+      "id": "flag_158",
+      "position": [
+        25.99,
+        2.23,
+        -13.93
+      ],
+      "kind": "flag",
+      "yaw": -1.14,
+      "team": "tide"
+    },
+    {
+      "id": "hill_159",
+      "position": [
+        -2.13,
+        -3.95,
+        -1.4
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_160",
+      "position": [
+        -1.8,
+        4.05,
+        -13.87
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_161",
+      "position": [
+        5.4,
+        0.05,
+        8.8
+      ],
+      "kind": "hill",
+      "radius": 5
     }
   ],
   "factions": [],
@@ -1652,6 +1836,14 @@
     "style": "invisible",
     "height": 8
   },
-  "teamSetup": null,
+  "backdrop": null,
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      6,
+      6
+    ]
+  },
   "dependencies": []
 }

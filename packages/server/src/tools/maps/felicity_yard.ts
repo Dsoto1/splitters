@@ -112,7 +112,7 @@ m.pickup('weapon_rifle', [0, 0, 16]).pickup('weapon_plasma', [-8, 4, 18]).pickup
 // South block.
 m.pickup('weapon_smg', [0, 0, -16]).pickup('health_small', [-24, 0, -16]).pickup('weapon_hand_cannon', [8, 4, -16]).pickup('ammo_light', [-8, 0, -18]);
 // Dock, yard, alley and tunnels.
-m.pickup('weapon_launcher', [24, 0, 0]).pickup('ammo_rifle', [24, 0, 12]);
+m.pickup('weapon_launcher', [24, 0, 0]).pickup('ammo_rifle', [22, 0, 8]);
 m.pickup('weapon_burst_rifle', [-8, 0, -8]).pickup('grenades', [8, 0, 8]).pickup('health_small', [8, 0, -8]).pickup('armor_small', [-8, 0, 8]);
 m.pickup('mines', [-16, 0, -8]).pickup('ammo_rifle', [-22.5, 2, -6.5]);
 m.pickup('weapon_shotgun', [8, -4, -16]).pickup('ammo_shells', [-24, -4, -8]).pickup('health_small', [-2, -4, -10]);
@@ -145,6 +145,8 @@ m.prop('pipe_valve', [-17, -4, -18.6]).prop('pipe_glass', [11.6, -4, -18.6]).pro
 // ---------------------------------------------------------------- map settings
 
 m.bounds('invisible', 2);
+// Team bases at each end (spawns and a flag), hills through the middle.
+await m.teamBases(6);
 m.meta({
   description:
     'A walled yard between brick buildings. The north block is two storeys of offices with windows over the yard; a railed walkway crosses to the south block upstairs, carrying the heavy armour. The garage roof holds the sniper rifle, the vent housing in the middle of the yard drops into the pump room and the rockets, and service tunnels loop from the garage under the south block to the loading dock. An homage in spirit to a classic compact deathmatch yard.',

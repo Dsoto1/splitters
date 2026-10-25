@@ -259,13 +259,9 @@ export class MapBuilder {
     this.run('Add entities', { kind: 'addEntities', entities: this.pending.splice(0) });
   }
 
-  /**
-   * Validate (schema, rules and the navmesh: every spawn and pickup reachable)
-   * and write maps/<id>.json (or maps/<dir>/<id>.json). Warnings are printed;
-   * errors stop the build, or with `exitOnError: false` skip the write and are
-   * returned with the other issues.
-   */
-  async save(o: { dir?: string; exitOnError?: boolean; quiet?: boolean } = {}): Promise<ValidationIssue[]> {
+
+  /** The map as it stands, loaded, with its navmesh (destroy it when done). */
+  private async navigate(): Promise<{ loaded: { ok: true; map: MapDocument }; nav: NavWorld }> {
     this.flush();
     // Props on the terrain are bedded into the slope under them (no floating corners).
     const settled = applyCommand(this.doc, settlePropsCommand(this.doc));
@@ -276,6 +272,106 @@ export class MapBuilder {
     const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
     const nav = NavWorld.build([...geometry, ...propBoxes(loaded.map, true), ...blockBoxes(loaded.map, true)], mapTerrainMesh(loaded.map), navLinks(loaded.map.entities, physics));
     physics.free();
+    return { loaded: loaded as { ok: true; map: MapDocument }, nav };
+  }
+
+  /**
+   * Team bases for a map built for free-for-all: two teams of `perTeam`, each
+   * with a cluster of spawns at its own end of the map's long axis (facing the
+   * middle), a flag at the back of the cluster for Capture the Flag, and
+   * `hills` King of the Hill spots spread along the middle. Spots come from
+   * the navmesh, so they are walkable and reachable from the existing spawns.
+   * The shared spawns stay for free-for-all.
+   */
+  async teamBases(perTeam: number, o: { hills?: number; flags?: boolean; spacing?: number; minY?: number } = {}): Promise<this> {
+    this.teams([perTeam, perTeam]);
+    const [a, b] = this.teamIds(2) as [string, string];
+    const { nav } = await this.navigate();
+    const spawns = this.doc.entities.filter((e) => e.kind === 'spawn');
+    const from = spawns[0]?.position;
+    if (!from) throw new Error(`${this.id}: teamBases needs a spawn to start from`);
+    const start = { x: from[0], y: from[1], z: from[2] };
+    const taken = this.doc.entities.filter((e) => e.kind === 'pickup' || e.kind === 'spawn' || e.kind === 'mount' || e.kind === 'pad').map((e) => e.position);
+    const places = nav
+      .places()
+      .filter((p) => p.y >= (o.minY ?? -Infinity) && nav.findPath(start, p) && nav.findPath(p, start) && !taken.some((t) => Math.hypot(t[0] - p.x, t[2] - p.z) < 1.5 && Math.abs(t[1] - p.y) < 2));
+    nav.destroy();
+    if (places.length < perTeam * 3) throw new Error(`${this.id}: only ${places.length} walkable places for team bases`);
+    // The long axis: whichever of x and z the walkable area spans further.
+    const span = (k: 'x' | 'z') => Math.max(...places.map((p) => p[k])) - Math.min(...places.map((p) => p[k]));
+    const k: 'x' | 'z' = span('x') >= span('z') ? 'x' : 'z';
+    const mid = (Math.max(...places.map((p) => p[k])) + Math.min(...places.map((p) => p[k]))) / 2;
+    const cx = places.reduce((s, p) => s + p.x, 0) / places.length;
+    const cz = places.reduce((s, p) => s + p.z, 0) / places.length;
+    const spacing = o.spacing ?? 3;
+    const pick = (sign: 1 | -1) => {
+      const sorted = [...places].sort((p, q) => sign * (q[k] - p[k]));
+      const out: typeof places = [];
+      for (const p of sorted) {
+        if (out.some((q) => Math.hypot(q.x - p.x, q.z - p.z) < spacing && Math.abs(q.y - p.y) < 2)) continue;
+        out.push(p);
+        if (out.length === perTeam + 1) break;
+      }
+      return out;
+    };
+    const r = (n: number) => +n.toFixed(2);
+    for (const [team, sign] of [[a, -1], [b, 1]] as const) {
+      const spots = pick(sign);
+      // The spot deepest in the base holds the flag; the rest are spawns facing the middle.
+      const [deepest, ...rest] = spots;
+      for (const p of rest) this.spawn([r(p.x), r(p.y), r(p.z)], r(Math.atan2(cx - p.x, cz - p.z)), team);
+      if (o.flags !== false && deepest) this.flag(team, [r(deepest.x), r(deepest.y), r(deepest.z)], r(Math.atan2(cx - deepest.x, cz - deepest.z)));
+    }
+    // Hills: spread across the middle third, the most central first.
+    const middle = places.filter((p) => Math.abs(p[k] - mid) < span(k) / 6).sort((p, q) => Math.hypot(p.x - cx, p.z - cz) - Math.hypot(q.x - cx, q.z - cz));
+    const hills: typeof places = [];
+    for (const p of middle) {
+      if (hills.length >= (o.hills ?? 3)) break;
+      if (hills.some((q) => Math.hypot(q.x - p.x, q.z - p.z) < 12)) continue;
+      hills.push(p);
+    }
+    for (const p of hills) this.hill([r(p.x), r(p.y), r(p.z)], 5);
+    return this;
+  }
+
+
+  /**
+   * Top each team up to `perTeam` spawns: walkable spots nearest the team's
+   * own spawns (at least 3 m from any spawn), facing the same way as the
+   * spawn they join.
+   */
+  async fillTeamSpawns(perTeam: number): Promise<this> {
+    const { nav } = await this.navigate();
+    const spawns = () => this.doc.entities.filter((e) => e.kind === 'spawn') as Extract<MapEntity, { kind: 'spawn' }>[];
+    const first = spawns()[0]!.position;
+    const start = { x: first[0], y: first[1], z: first[2] };
+    const places = nav.places().filter((p) => nav.findPath(start, p) && nav.findPath(p, start));
+    nav.destroy();
+    const r = (n: number) => +n.toFixed(2);
+    for (const team of new Set(spawns().map((s) => s.faction).filter((f): f is string => !!f))) {
+      const own = spawns().filter((s) => s.faction === team);
+      for (let n = own.length; n < perTeam; n++) {
+        const all = [...spawns(), ...this.pending.filter((e) => e.kind === 'spawn')].map((s) => s.position);
+        const free = places.filter((p) => !all.some((q) => Math.hypot(q[0] - p.x, q[2] - p.z) < 3 && Math.abs(q[1] - p.y) < 2));
+        const near = (p: (typeof places)[number]) => Math.min(...own.map((s) => Math.hypot(s.position[0] - p.x, s.position[2] - p.z) + Math.abs(s.position[1] - p.y) * 3));
+        const best = free.sort((a, b) => near(a) - near(b))[0];
+        if (!best) break;
+        const mate = own.reduce((m, s) => (Math.hypot(s.position[0] - best.x, s.position[2] - best.z) < Math.hypot(m.position[0] - best.x, m.position[2] - best.z) ? s : m));
+        this.spawn([r(best.x), r(best.y), r(best.z)], mate.yaw, team);
+        this.flush();
+      }
+    }
+    return this;
+  }
+
+  /**
+   * Validate (schema, rules and the navmesh: every spawn and pickup reachable)
+   * and write maps/<id>.json (or maps/<dir>/<id>.json). Warnings are printed;
+   * errors stop the build, or with `exitOnError: false` skip the write and are
+   * returned with the other issues.
+   */
+  async save(o: { dir?: string; exitOnError?: boolean; quiet?: boolean } = {}): Promise<ValidationIssue[]> {
+    const { loaded, nav } = await this.navigate();
     const issues = [...validateMap(loaded.map), ...validateNavigation(loaded.map, nav)];
     nav.destroy();
     if (!o.quiet) for (const i of issues) console.log(`${this.id}: ${i.severity.padEnd(10)} ${i.code} ${i.message}`);

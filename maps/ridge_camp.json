@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 9,
+  "formatVersion": 14,
   "metadata": {
     "id": "ridge_camp",
     "name": "Ridge Camp",
@@ -775,7 +775,7 @@
     {
       "id": "pickup_070",
       "position": [
-        8,
+        10.5,
         0,
         16
       ],
@@ -1349,6 +1349,168 @@
       "scale": 1,
       "solid": false,
       "tint": null
+    },
+    {
+      "id": "spawn_113",
+      "position": [
+        11.53,
+        -3.95,
+        -24.2
+      ],
+      "kind": "spawn",
+      "yaw": -0.44,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_114",
+      "position": [
+        4.13,
+        -3.95,
+        -23.53
+      ],
+      "kind": "spawn",
+      "yaw": -0.14,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_115",
+      "position": [
+        -16.43,
+        -3.02,
+        -18.48
+      ],
+      "kind": "spawn",
+      "yaw": 0.83,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_116",
+      "position": [
+        -2.05,
+        -2.85,
+        -18.3
+      ],
+      "kind": "spawn",
+      "yaw": 0.19,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_117",
+      "position": [
+        2.05,
+        -2.85,
+        -18.3
+      ],
+      "kind": "spawn",
+      "yaw": -0.06,
+      "faction": "embers"
+    },
+    {
+      "id": "flag_118",
+      "position": [
+        -3.67,
+        -3.95,
+        -24.67
+      ],
+      "kind": "flag",
+      "yaw": 0.21,
+      "team": "embers"
+    },
+    {
+      "id": "spawn_119",
+      "position": [
+        10.04,
+        0.05,
+        18.12
+      ],
+      "kind": "spawn",
+      "yaw": -2.73,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_120",
+      "position": [
+        3.33,
+        0.05,
+        17.73
+      ],
+      "kind": "spawn",
+      "yaw": -3.03,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_121",
+      "position": [
+        -10.42,
+        0.05,
+        17.24
+      ],
+      "kind": "spawn",
+      "yaw": 2.61,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_122",
+      "position": [
+        -3.6,
+        4.05,
+        16.2
+      ],
+      "kind": "spawn",
+      "yaw": 2.89,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_123",
+      "position": [
+        3.6,
+        4.05,
+        16.2
+      ],
+      "kind": "spawn",
+      "yaw": -3.01,
+      "faction": "tide"
+    },
+    {
+      "id": "flag_124",
+      "position": [
+        -10.52,
+        4.05,
+        18.24
+      ],
+      "kind": "flag",
+      "yaw": 2.63,
+      "team": "tide"
+    },
+    {
+      "id": "hill_125",
+      "position": [
+        3.6,
+        0.05,
+        -3.4
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_126",
+      "position": [
+        -9.67,
+        0.05,
+        -4.2
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_127",
+      "position": [
+        16.56,
+        2.77,
+        -1.82
+      ],
+      "kind": "hill",
+      "radius": 5
     }
   ],
   "factions": [],
@@ -1377,6 +1539,13 @@
     "ground": "grass",
     "haze": 0.5
   },
-  "teamSetup": null,
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      5,
+      5
+    ]
+  },
   "dependencies": []
 }

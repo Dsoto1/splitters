@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 11,
+  "formatVersion": 14,
   "metadata": {
     "id": "bunker_cross",
     "name": "Bunker Cross",
@@ -5023,6 +5023,50 @@
       ],
       "kind": "hill",
       "radius": 5
+    },
+    {
+      "id": "spawn_243",
+      "position": [
+        -17.6,
+        0.05,
+        31.07
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_244",
+      "position": [
+        16,
+        4.05,
+        37.07
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_245",
+      "position": [
+        -16.33,
+        4.05,
+        -36.53
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_246",
+      "position": [
+        16.47,
+        0.05,
+        -37.07
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
     }
   ],
   "factions": [],
@@ -7985,6 +8029,7 @@
     "ground": "sand",
     "haze": 0.45
   },
+  "physics": null,
   "blood": null,
   "teamSetup": {
     "sizes": [

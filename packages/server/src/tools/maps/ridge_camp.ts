@@ -85,7 +85,7 @@ m.pickup('armor_large', [0, 4, 16]).pickup('armor_small', [-16, 4, 16]).pickup('
 m.pickup('health_large', [16, 0, 16]).pickup('powerup_damage', [-16, 0, -14]);
 m.pickup('health_small', [-8, 0, 0]).pickup('health_small', [8, 0, 0]).pickup('health_small', [-16, -4, -28]).pickup('health_small', [16, -4, -28]);
 // Weapons round the floor.
-m.pickup('weapon_shotgun', [-16, 0, -4]).pickup('weapon_plasma', [16, 0, 4]).pickup('weapon_launcher', [8, 0, 16]);
+m.pickup('weapon_shotgun', [-16, 0, -4]).pickup('weapon_plasma', [16, 0, 4]).pickup('weapon_launcher', [10.5, 0, 16]);
 m.pickup('weapon_rifle', [0, 0, -10]).pickup('weapon_disc_launcher', [-16, 0, 18]).pickup('weapon_burst_rifle', [-8, 4, 18]);
 m.pickup('ammo_shells', [-20, 0, -8]).pickup('ammo_cells', [20, 0, 6]).pickup('ammo_rifle', [-8, 0, -16]).pickup('grenades', [8, 0, -16]);
 
@@ -110,6 +110,8 @@ m.prop('lightpost', [-19, -4, -28]).prop('lightpost', [19, -4, -28]);
 m.prop('lantern', [-19, 4, 4], 0, 1, false).prop('lantern', [19, 4, 4], 0, 1, false);
 
 m.bounds('invisible');
+// Team bases at each end (spawns and a flag), hills through the middle.
+await m.teamBases(5);
 m.meta({
   description:
     'A stone keep round an open courtyard, four storeys of fighting: a sunken pit with the rocket launcher, the courtyard and its cloister, a U of railed ledges reached by stairs and a long ramp, and a high deck over the north colonnade that only the jump pad reaches, holding the railgun. An homage in spirit to the great multi-level stone arenas.',

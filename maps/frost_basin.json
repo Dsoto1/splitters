@@ -4043,6 +4043,50 @@
       "scale": 2.387428499152884,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "spawn_318",
+      "position": [
+        23.87,
+        11.92,
+        -87.92
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_319",
+      "position": [
+        -9.33,
+        12.05,
+        -107.93
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_320",
+      "position": [
+        -7.8,
+        12.05,
+        113.53
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_321",
+      "position": [
+        -23.57,
+        11.92,
+        88.19
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
     }
   ],
   "factions": [],

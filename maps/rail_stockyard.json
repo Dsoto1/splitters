@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 11,
+  "formatVersion": 14,
   "metadata": {
     "id": "rail_stockyard",
     "name": "Rail Stockyard",
@@ -3984,6 +3984,28 @@
       ],
       "kind": "hill",
       "radius": 4
+    },
+    {
+      "id": "spawn_294",
+      "position": [
+        2.33,
+        4.05,
+        34.53
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_295",
+      "position": [
+        73.53,
+        4.05,
+        38.27
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
     }
   ],
   "factions": [],
@@ -4012,6 +4034,7 @@
     "ground": "gravel",
     "haze": 0.55
   },
+  "physics": null,
   "blood": null,
   "teamSetup": {
     "sizes": [

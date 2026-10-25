@@ -153,11 +153,13 @@ m.pickup('weapon_railgun', at(6, 3, 1)).pickup('weapon_gilded_pistol', at(0, 2, 
 m.pickup('weapon_auto_shotgun', at(6, 3, 0, -1, 1)).pickup('weapon_laser_rifle', at(2, 2, 0, 4, 3));
 m.pickup('weapon_burst_rifle', at(3, 1, 0, 0, -1)).pickup('weapon_smg', at(2, 4, 0, 0, -1)).pickup('weapon_shotgun', at(0, 3, 0, 0, -1));
 m.pickup('weapon_marksman', at(8, 3, 1, 0, 2)).pickup('weapon_hand_cannon', at(8, 4, 0, 0, 0)).pickup('grenades', at(8, 3, 0, -1, 0));
-m.pickup('armor_large', at(3, 3, 1, 0, 2.6)).pickup('armor_small', at(7, 2, 0, -3, 3));
+m.pickup('armor_large', [26.7, 4, 20]).pickup('armor_small', at(7, 2, 0, -3, 3));
 m.pickup('health_large', at(5, 6, 0, -1, -1)).pickup('health_small', at(0, 3, 1, 0, 0)).pickup('health_small', at(8, 1, 0, -1, 0)).pickup('health_small', at(1, 1, 0));
 m.pickup('ammo_rifle', at(4, 1, 0)).pickup('ammo_shells', at(7, 1, 0, 3, 0)).pickup('ammo_sniper', at(6, 4, 1, 0, 1)).pickup('ammo_cells', at(3, 2, 0, -2, 2));
 m.pickup('ammo_light', at(1, 2, 0)).pickup('mines', at(7, 4, 0, -1, -2.5)).pickup('ammo', at(4, 4, 0));
 
+// Team bases at each end (spawns and a flag), hills through the middle.
+await m.teamBases(5);
 m.meta({
   description:
     'A sealed bottling works, in the spirit of GoldenEye\'s Facility: tiled washrooms with a ceiling vent you can drop through, long service corridors, a two-storey server lab, and the great tank hall where walkways cross between the tank tops. The railgun waits on the walkway junction; the gilded pistol hides in the stalls below the vent.',
