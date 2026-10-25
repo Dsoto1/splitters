@@ -1053,8 +1053,8 @@ async function hostgameFlow(browser) {
   const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   const errors = [];
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
-  await host.goto(`${CLIENT}/?offline=arena${peer}`);
-  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 90000 });
   // CI renders in software, slowly: generous waits (readiness is checked by what follows each load),
   // and the Host button pressed again if the first press got no answer.
   const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
