@@ -99,7 +99,7 @@ sounds (needs new CC0 sounds and a grip pose).
 | 11 | **[feature]** Easier LAN: show the join address on the host screen, auto-discover games on the LAN |
 | 12 | **[feature]** Custom maps on servers, CS-style: maps travel with the join (already true); cache them by content hash, "Save this map" to your MapMaker library (author's choice), server list shows map name + preview. **Maps only, built from our suite — no custom assets** |
 | 13 | 🟡 **[tech]** Smaller snapshots (binary + delta) — ✅ dedicated server compresses its messages (~4× smaller snapshots). Still to do: binary + delta for player hosting (WebRTC) and bigger matches |
-| 14 | 🟡 **[feature]** Player-hosted matches: ✅ "Host game" (pause menu) gives a 6-letter code + invite link; friends join by link or Online → Join by code and take bots' places (WebRTC data channels, PeerJS broker; `pnpm dev:peer` + `?peer=` for your own). Next: TURN relay (some strict networks can't connect directly; also hides IPs), smaller snapshots (#13), host in a worker |
+| 14 | 🟡 **[feature]** Player-hosted matches: ✅ "Host game" (pause menu) gives a 6-letter code + invite link; friends join by link or Online → Join by code and take bots' places (WebRTC data channels, PeerJS broker; `pnpm dev:peer` + `?peer=` for your own). ✅ TURN relay setting (Options → Relay; invite links carry it), clearer join errors, host re-registers its code after a network blip. Next: a built-in relay so nobody has to set one up, smaller snapshots (#13), host in a worker |
 | 15 | **[tech]** Multi-match launcher: one process per match, a few per core, plus a lobby/server list for public dedicated servers |
 
 ## Sprint 5 — Vehicles

@@ -24,6 +24,7 @@ import {
   type MatchRules,
 } from '@chronosplit/shared';
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
+import { loadRelay, saveRelay } from '../game/peerLink.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { drawMapPlan } from './mapPlan.ts';
@@ -613,12 +614,21 @@ export class FrontEnd {
     const sens = el('input', { type: 'range', min: '0.2', max: '4', step: '0.1', value: String(mouse.sensitivity) });
     const sensVal = el('output', { textContent: `${mouse.sensitivity.toFixed(1)}×` });
     const invert = el('input', { type: 'checkbox', checked: mouse.invertY });
+    const assist = el('input', { type: 'checkbox', checked: mouse.aimAssist });
     const mouseChanged = () => {
-      saveMousePrefs({ sensitivity: Number(sens.value) || 1, invertY: invert.checked });
+      saveMousePrefs({ sensitivity: Number(sens.value) || 1, invertY: invert.checked, aimAssist: assist.checked });
       sensVal.textContent = `${(Number(sens.value) || 1).toFixed(1)}×`;
     };
     sens.addEventListener('input', mouseChanged);
     invert.addEventListener('change', mouseChanged);
+    assist.addEventListener('change', mouseChanged);
+    // A TURN relay for Host game / Join by code when networks block direct connections.
+    const relay = loadRelay();
+    const relayUrl = el('input', { value: relay?.url ?? '', placeholder: 'turn:relay.example.com:3478', autocomplete: 'off' });
+    const relayUser = el('input', { value: relay?.user ?? '', placeholder: 'username', autocomplete: 'off' });
+    const relayPass = el('input', { type: 'password', value: relay?.pass ?? '', placeholder: 'password', autocomplete: 'off' });
+    const relayChanged = () => saveRelay({ url: relayUrl.value, user: relayUser.value.trim(), pass: relayPass.value });
+    for (const f of [relayUrl, relayUser, relayPass]) f.addEventListener('change', relayChanged);
     const controls = el(
       'div',
       { class: 'controls' },
@@ -627,8 +637,9 @@ export class FrontEnd {
         ['Jump (stands you up)', 'Space'],
         ['Sprint (uses stamina)', 'Shift'],
         ['Crouch / prone (toggle)', 'C / Z'],
-        ['Fire', 'Left mouse'],
-        ['Aim down sights / scope (wheel: scope zoom)', 'Right mouse'],
+        ['Fire', 'Left mouse · F'],
+        ['Aim down sights / scope (wheel: scope zoom)', 'Right mouse · X'],
+        ['Look (touchpad / keyboard)', 'Arrow keys'],
         ['Second trigger (alt fire)', 'Middle mouse · V'],
         ['Throw grenade or mine', 'Hold G to aim, let go to throw'],
         ['Hold breath (scoped)', 'Shift'],
@@ -637,6 +648,7 @@ export class FrontEnd {
         ['Weapons', '1–9 · Wheel · Q'],
         ['Scores', 'Tab'],
         ['Fullscreen', 'F11 · Alt+Enter'],
+        ['Controller', 'Sticks move/look · RT fire · LT aim · A jump · B crouch · X reload · Y weapon · RB use · LB throw · L3 sprint'],
       ].map(([a, k]) => el('div', {}, el('span', { textContent: a! }), kbd(k!))),
     );
     // Crosshair styles and colours (reference board: crosshair styles).
@@ -685,12 +697,19 @@ export class FrontEnd {
         el('label', {}, 'Display', fullscreen),
         el('label', {}, 'Mouse sensitivity', el('span', { class: 'row' }, sens, sensVal)),
         el('label', {}, 'Invert look', invert),
+        el('label', {}, 'Aim assist', assist),
+        el('p', { class: 'hint', textContent: 'Playing on a touchpad? Turn on aim assist, look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).' }),
         el('h3', { class: 'panel-title', textContent: 'Crosshair' }),
         crosshairs,
         colours,
         el('label', {}, 'Hit marker', hitStyle),
         el('label', {}, 'Teammate marker', allySel),
         el('label', {}, 'Enemy marker', enemySel),
+        el('h3', { class: 'panel-title', textContent: 'Relay (Host game / Join by code)' }),
+        el('p', { class: 'hint', textContent: "If a friend finds your game but can't connect, your networks block direct connections. A TURN relay passes the game through a server instead: make a free account (e.g. metered.ca → TURN server), paste its address and login here, and invite your friend again — the invite link carries these settings." }),
+        el('label', {}, 'Relay address', relayUrl),
+        el('label', {}, 'Username', relayUser),
+        el('label', {}, 'Password', relayPass),
         el('h3', { class: 'panel-title', textContent: 'Controls' }),
         controls,
       ),

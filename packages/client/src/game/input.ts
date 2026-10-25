@@ -10,14 +10,16 @@ export interface MousePrefs {
   /** Multiplier on look speed (0.2–4). */
   sensitivity: number;
   invertY: boolean;
+  /** Gently pulls the sights onto enemies near the crosshair (touchpads, controllers). */
+  aimAssist: boolean;
 }
 
 export function loadMousePrefs(): MousePrefs {
   try {
     const p = JSON.parse(localStorage.getItem(MOUSE_PREF_KEY) ?? '{}') as Partial<MousePrefs>;
-    return { sensitivity: Math.min(4, Math.max(0.2, Number(p.sensitivity) || 1)), invertY: p.invertY === true };
+    return { sensitivity: Math.min(4, Math.max(0.2, Number(p.sensitivity) || 1)), invertY: p.invertY === true, aimAssist: p.aimAssist === true };
   } catch {
-    return { sensitivity: 1, invertY: false };
+    return { sensitivity: 1, invertY: false, aimAssist: false };
   }
 }
 
@@ -29,6 +31,16 @@ export function saveMousePrefs(p: MousePrefs): void {
   }
 }
 const PITCH_LIMIT = 1.5;
+/** Arrow-key turning, radians per second at sensitivity 1. */
+const KEY_TURN = 2.4;
+/** Right-stick turning at full tilt, radians per second at sensitivity 1. */
+const STICK_TURN = 3.4;
+const STICK_DEADZONE = 0.15;
+
+/** Standard-mapping gamepad buttons. */
+const PAD = { a: 0, b: 1, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, back: 8, l3: 10, r3: 11, up: 12, down: 13, left: 14, right: 15 } as const;
+
+const deadzone = (v: number) => (Math.abs(v) < STICK_DEADZONE ? 0 : Math.sign(v) * ((Math.abs(v) - STICK_DEADZONE) / (1 - STICK_DEADZONE)));
 
 /** Keyboard + pointer-lock mouse. View angles accumulate here; movement is sampled once per tick. */
 export class InputState {
@@ -40,6 +52,7 @@ export class InputState {
   mouse: MousePrefs = loadMousePrefs();
   private keys = new Set<string>();
   private fireDown = false;
+  private keyFire = false;
   private zoomDown = false;
   private jumpQueued = false;
   private reloadQueued = false;
@@ -65,6 +78,10 @@ export class InputState {
   /** Mouse wheel steps since last read (+ = next weapon). */
   private wheelSteps = 0;
   readonly onToggle = new Map<string, () => void>();
+  /** Gamepad state from the last frame: sticks, and which buttons were down (for presses). */
+  private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, prev: [] as boolean[] };
+  /** A controller has been used since the page loaded (its sticks and triggers count). */
+  padActive = false;
   private readonly abort = new AbortController();
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -79,6 +96,8 @@ export class InputState {
         this.keys.add(e.code);
         if (e.code === 'Space') this.jumpQueued = true;
         if (e.code === 'KeyR') this.reloadQueued = true;
+        // F fires and X aims, for touchpads, where clicking while dragging a finger is awkward.
+        if (e.code === 'KeyF') this.keyFire = true;
         if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
         if (e.code === 'KeyK' && !e.repeat) this.respawnQueued = true;
         // C crouches and Z lies prone (toggles); jumping or sprinting gets you up.
@@ -109,6 +128,7 @@ export class InputState {
       'keyup',
       (e) => {
         this.keys.delete(e.code);
+        if (e.code === 'KeyF') this.keyFire = false;
         if (e.code === 'KeyG' && this.throwAiming) {
           this.throwAiming = false;
           this.throwQueued = true;
@@ -120,7 +140,7 @@ export class InputState {
       'blur',
       () => {
         this.keys.clear();
-        this.fireDown = this.zoomDown = this.altDown = this.throwAiming = false;
+        this.fireDown = this.zoomDown = this.altDown = this.throwAiming = this.keyFire = false;
       },
       opts,
     );
@@ -167,11 +187,71 @@ export class InputState {
 
   get zooming(): boolean {
     // Tests can hold the aim with window.__autoInput = { zoom: true }.
-    return (this.locked && this.zoomDown) || !!(window as unknown as { __autoInput?: { zoom?: boolean } }).__autoInput?.zoom;
+    return (this.locked && (this.zoomDown || this.keys.has('KeyX') || this.pad.zoom)) || !!(window as unknown as { __autoInput?: { zoom?: boolean } }).__autoInput?.zoom;
   }
 
   held(code: string): boolean {
     return this.keys.has(code);
+  }
+
+  /**
+   * Once per rendered frame: arrow keys and a controller's right stick turn the
+   * view; the controller's buttons are read here too (Gamepad API is polled).
+   */
+  frame(dt: number): void {
+    if (!this.locked) return;
+    const scale = this.sensitivityScale * this.mouse.sensitivity;
+    const invert = this.mouse.invertY ? -1 : 1;
+    const key = (pos: string, neg: string) => (this.keys.has(pos) ? 1 : 0) - (this.keys.has(neg) ? 1 : 0);
+    this.yaw += key('ArrowRight', 'ArrowLeft') * KEY_TURN * scale * dt;
+    this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch + key('ArrowUp', 'ArrowDown') * KEY_TURN * 0.7 * scale * invert * dt));
+    this.pollPad(dt, scale, invert);
+  }
+
+  private pollPad(dt: number, scale: number, invert: number): void {
+    const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected && g.mapping === 'standard');
+    const p = this.pad;
+    if (!pad) {
+      p.move = { x: 0, y: 0 };
+      p.fire = p.zoom = p.sprint = p.jump = false;
+      return;
+    }
+    const down = pad.buttons.map((b) => b.pressed || b.value > 0.4);
+    const pressed = (i: number) => !!down[i] && !p.prev[i];
+    const [lx = 0, ly = 0, rx = 0, ry = 0] = pad.axes.map(deadzone);
+    if (down.some(Boolean) || lx || ly || rx || ry) this.padActive = true;
+    p.move = { x: lx, y: -ly };
+    // Squared response: fine aim near the centre, fast turns at full tilt.
+    this.yaw += rx * Math.abs(rx) * STICK_TURN * scale * dt;
+    this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - ry * Math.abs(ry) * STICK_TURN * 0.7 * scale * invert * dt));
+    p.fire = !!down[PAD.rt];
+    p.zoom = !!down[PAD.lt];
+    p.jump = !!down[PAD.a];
+    if (pressed(PAD.l3)) p.sprint = !p.sprint;
+    if (!lx && !ly) p.sprint = false;
+    if (pressed(PAD.a)) {
+      this.jumpQueued = true;
+      this.crouchOn = this.proneOn = false;
+    }
+    if (pressed(PAD.x)) this.reloadQueued = true;
+    if (pressed(PAD.rb)) this.useQueued = true;
+    if (pressed(PAD.b)) {
+      this.crouchOn = !this.crouchOn;
+      this.proneOn = false;
+    }
+    if (pressed(PAD.y)) this.wheelSteps += 1;
+    if (pressed(PAD.right)) this.wheelSteps += 1;
+    if (pressed(PAD.left)) this.wheelSteps -= 1;
+    if (pressed(PAD.up)) this.sayQueued = PING;
+    if (pressed(PAD.down)) this.respawnQueued = true;
+    // LB: hold to aim a throw, let go to throw (like G).
+    if (pressed(PAD.lb)) this.throwAiming = true;
+    if (!down[PAD.lb] && p.prev[PAD.lb] && this.throwAiming) {
+      this.throwAiming = false;
+      this.throwQueued = true;
+    }
+    if (pressed(PAD.r3)) this.onToggle.get('KeyH')?.();
+    p.prev = down;
   }
 
   /** Consume a pending number-key weapon request. */
@@ -201,16 +281,17 @@ export class InputState {
     if (!this.locked) return { forward: 0, right: 0, buttons: 0 };
     const axis = (pos: string, neg: string) => (this.keys.has(pos) ? 1 : 0) - (this.keys.has(neg) ? 1 : 0);
     let buttons = 0;
-    if (this.jumpQueued || this.keys.has('Space')) buttons |= BUTTON_JUMP;
-    if (this.fireDown) buttons |= BUTTON_FIRE;
+    if (this.jumpQueued || this.keys.has('Space') || this.pad.jump) buttons |= BUTTON_JUMP;
+    if (this.fireDown || this.keyFire || this.pad.fire) buttons |= BUTTON_FIRE;
     if (this.reloadQueued) buttons |= BUTTON_RELOAD;
     // Right mouse aims down the sights (or scopes); melee weapons swing heavy with it instead.
-    if (this.zoomDown) buttons |= this.altTrigger ? BUTTON_ALT : BUTTON_ZOOM;
+    const aim = this.zoomDown || this.keys.has('KeyX') || this.pad.zoom;
+    if (aim) buttons |= this.altTrigger ? BUTTON_ALT : BUTTON_ZOOM;
     // Middle mouse or V: the second trigger (grenade launcher, alt fire…).
     if (this.altDown || this.keys.has('KeyV')) buttons |= BUTTON_ALT;
     if (this.throwQueued) buttons |= BUTTON_THROW;
     // Shift sprints, except through a scope, where it holds your breath.
-    if (this.keys.has('ShiftLeft') && !this.zoomDown) buttons |= BUTTON_SPRINT;
+    if ((this.keys.has('ShiftLeft') || this.pad.sprint) && !aim) buttons |= BUTTON_SPRINT;
     if (this.crouchOn) buttons |= BUTTON_CROUCH;
     if (this.proneOn) buttons |= BUTTON_PRONE;
     if (this.useQueued) buttons |= BUTTON_USE;
@@ -222,6 +303,7 @@ export class InputState {
     this.throwQueued = false;
     const say = this.sayQueued;
     this.sayQueued = 0;
-    return { forward: axis('KeyW', 'KeyS'), right: axis('KeyD', 'KeyA'), buttons, ...(say ? { say } : {}) };
+    const clamp = (v: number) => Math.max(-1, Math.min(1, v));
+    return { forward: clamp(axis('KeyW', 'KeyS') + this.pad.move.y), right: clamp(axis('KeyD', 'KeyA') + this.pad.move.x), buttons, ...(say ? { say } : {}) };
   }
 }

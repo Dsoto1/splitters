@@ -247,19 +247,22 @@ export class GameSession {
     const sens = $('mouse-sens') as HTMLInputElement;
     const sensVal = $('mouse-sens-val');
     const invert = $('mouse-invert') as HTMLInputElement;
+    const assist = $('aim-assist') as HTMLInputElement;
     const showMouse = () => {
+      assist.checked = this.input.mouse.aimAssist;
       sens.value = String(this.input.mouse.sensitivity);
       sensVal.textContent = `${this.input.mouse.sensitivity.toFixed(1)}×`;
       invert.checked = this.input.mouse.invertY;
     };
     showMouse();
     const mouseChanged = () => {
-      this.input.mouse = { sensitivity: Number(sens.value) || 1, invertY: invert.checked };
+      this.input.mouse = { sensitivity: Number(sens.value) || 1, invertY: invert.checked, aimAssist: assist.checked };
       saveMousePrefs(this.input.mouse);
       showMouse();
     };
     sens.addEventListener('input', mouseChanged, { signal });
     invert.addEventListener('change', mouseChanged, { signal });
+    assist.addEventListener('change', mouseChanged, { signal });
     // The player's own blood switch; the map sets the colour and amount.
     const bloodBox = $('blood-toggle') as HTMLInputElement;
     bloodBox.checked = this.view.blood.enabled;
@@ -340,6 +343,40 @@ export class GameSession {
     this.sway.y = y;
   }
 
+  /**
+   * Aim assist (an option, for touchpads and controllers): when an enemy is
+   * close to the crosshair and in plain sight, the sights drift onto them, a
+   * little faster the closer they already are. Never through walls.
+   */
+  private aimAssist(eye: Vec3, dt: number, now: number): void {
+    const mine = this.hud.team(this.slot)?.id;
+    const coop = this.rules?.mode === 'core.coop';
+    const cone = 0.12;
+    let best: { dy: number; dp: number; score: number } | null = null;
+    for (const p of this.interp.sample(now)) {
+      if (!p.alive || p.slot === this.slot || p.slot >= HOSTAGE_SLOT_BASE) continue;
+      const npc = p.slot >= NPC_ID_BASE;
+      if (!npc && (coop || (mine && this.hud.team(p.slot)?.id === mine))) continue;
+      const chest = { x: p.x - eye.x, y: p.y + ((p.stance ?? 0) === 2 ? 0.3 : (p.stance ?? 0) === 1 ? 0.8 : 1.25) - eye.y, z: p.z - eye.z };
+      const dist = Math.hypot(chest.x, chest.y, chest.z);
+      if (dist < 1 || dist > 80) continue;
+      const yaw = Math.atan2(chest.x, chest.z);
+      const pitch = Math.asin(chest.y / dist);
+      const dy = Math.atan2(Math.sin(yaw - this.input.yaw), Math.cos(yaw - this.input.yaw));
+      const dp = pitch - this.input.pitch;
+      const off = Math.hypot(dy, dp);
+      if (off > cone || (best && off >= best.score)) continue;
+      const dir = { x: chest.x / dist, y: chest.y / dist, z: chest.z / dist };
+      const wall = this.view.raycastLevel(eye, dir, dist);
+      if (wall && wall.dist < dist - 0.5) continue;
+      best = { dy, dp, score: off };
+    }
+    if (!best) return;
+    const pull = Math.min(1, dt * (2 + 4 * (1 - best.score / cone)));
+    this.input.yaw += best.dy * pull;
+    this.input.pitch += best.dp * pull;
+  }
+
   private updatePause(): void {
     $('pause').hidden = this.input.locked || !this.local || this.closed;
   }
@@ -351,18 +388,18 @@ export class GameSession {
     btn.disabled = true;
     btn.textContent = 'Opening a join code…';
     try {
-      const { PeerHost } = await import('./peerLink.ts');
+      const { PeerHost, loadRelay, relayParams } = await import('./peerLink.ts');
       const host = new PeerHost((link) => local.accept(link));
       this.peerHost = host;
       const code = await host.start();
       if (this.closed) return host.close();
       const peer = new URLSearchParams(location.search).get('peer');
-      const link = `${location.origin}${location.pathname}?join=${code}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}`;
+      const link = `${location.origin}${location.pathname}?join=${code}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}${relayParams()}`;
       // "localhost" only works on this machine: friends need the address the game is served from.
       const onlyHere = /^(localhost|127\.|\[::1\])/.test(location.hostname);
       btn.hidden = true;
       info.hidden = false;
-      info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.</p>${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
+      info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options.'}</p>${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
       info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
       this.hud.showMessage(`Hosting: join code ${code}`, 5);
     } catch (e) {
@@ -749,6 +786,8 @@ export class GameSession {
         if (next) this.requestWeapon(next);
       }
 
+      this.input.frame(dt);
+      if (this.input.mouse.aimAssist && local.alive && !this.seat) this.aimAssist(local.eye, dt, now);
       this.acc += dt;
       let moving = false;
       const viewTick = Math.round(this.interp.renderTick(now));

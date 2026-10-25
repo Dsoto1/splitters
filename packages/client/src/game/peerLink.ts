@@ -15,9 +15,63 @@ const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 export const makeJoinCode = (): string => Array.from({ length: 6 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join('');
 export const cleanJoinCode = (code: string): string => code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 
+/**
+ * A TURN relay for players whose networks block direct connections (strict
+ * NATs, campus or mobile networks): traffic goes through the relay instead.
+ * Set in Options (kept in this browser) or carried in an invite link.
+ */
+export interface RelayPrefs {
+  /** e.g. `turn:global.relay.metered.ca:80` (several separated by spaces or commas). */
+  url: string;
+  user: string;
+  pass: string;
+}
+
+const RELAY_KEY = 'chronosplit.relay';
+
+export function loadRelay(): RelayPrefs | null {
+  const q = new URLSearchParams(location.search);
+  if (q.get('relay')) return { url: q.get('relay')!, user: q.get('ru') ?? '', pass: q.get('rp') ?? '' };
+  try {
+    const r = JSON.parse(localStorage.getItem(RELAY_KEY) ?? 'null') as RelayPrefs | null;
+    return r?.url ? r : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveRelay(r: RelayPrefs | null): void {
+  try {
+    if (r?.url.trim()) localStorage.setItem(RELAY_KEY, JSON.stringify({ ...r, url: r.url.trim() }));
+    else localStorage.removeItem(RELAY_KEY);
+  } catch {
+    // Private windows: lasts for this page.
+  }
+}
+
+/** The relay as invite-link parameters, so a friend uses it too. */
+export function relayParams(): string {
+  const r = loadRelay();
+  if (!r) return '';
+  const q = new URLSearchParams({ relay: r.url });
+  if (r.user) q.set('ru', r.user);
+  if (r.pass) q.set('rp', r.pass);
+  return `&${q}`;
+}
+
+function iceServers(): RTCIceServer[] {
+  const list: RTCIceServer[] = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }];
+  const r = loadRelay();
+  if (r) {
+    const urls = r.url.split(/[\s,]+/).filter(Boolean).map((u) => (/^turns?:/.test(u) ? u : `turn:${u}`));
+    if (urls.length) list.push({ urls, username: r.user, credential: r.pass });
+  }
+  return list;
+}
+
 function peerOptions(): PeerOptions {
   const custom = new URLSearchParams(location.search).get('peer');
-  const base: PeerOptions = { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] }, debug: 0 };
+  const base: PeerOptions = { config: { iceServers: iceServers() }, debug: 0 };
   if (!custom) return base;
   const m = /^(?:(wss?|https?):\/\/)?([^:/]+)(?::(\d+))?(\/.*)?$/.exec(custom);
   if (!m) return base;
@@ -70,6 +124,7 @@ function linkFor(conn: DataConnection): RemoteLink {
 /** The host side: registers a join code and hands each friend's connection to the match. */
 export class PeerHost {
   private peer?: Peer;
+  private readonly links = new Map<string, DataConnection>();
   code = '';
 
   constructor(private readonly admit: (link: RemoteLink) => void) {}
@@ -85,7 +140,20 @@ export class PeerHost {
           this.code = code;
           resolve(code);
         });
-        peer.on('connection', (conn) => conn.on('open', () => this.admit(linkFor(conn))));
+        peer.on('connection', (conn) =>
+          conn.on('open', () => {
+            // One player per friend's browser: a second connection from it replaces the first.
+            this.links.get(conn.peer)?.close();
+            this.links.set(conn.peer, conn);
+            conn.on('close', () => this.links.get(conn.peer) === conn && this.links.delete(conn.peer));
+            this.admit(linkFor(conn));
+          }),
+        );
+        // Lost touch with the broker (Wi-Fi blip, a sleeping tab): rejoin it under the same code, or
+        // friends can no longer find the game. Games already joined carry on regardless.
+        peer.on('disconnected', () => {
+          if (this.peer === peer && !peer.destroyed) window.setTimeout(() => !peer.destroyed && peer.disconnected && peer.reconnect(), 1000);
+        });
         peer.on('error', (e) => {
           // Taken already (unlikely): try another code.
           if ((e as { type?: string }).type === 'unavailable-id' && attempt < 4) {
@@ -127,18 +195,36 @@ export class PeerTransport implements Transport {
     const peer = new Peer(peerOptions());
     this.peer = peer;
     let opened = false;
+    let brokered = false;
     const fail = (reason: string) => {
       if (this.closedByUs) return;
       this.closedByUs = true;
       clearInterval(this.pingTimer);
+      clearTimeout(timeout);
       peer.destroy();
       onClose(reason);
     };
-    const timeout = window.setTimeout(() => !opened && fail(`no game found for code ${this.code}`), 15000);
-    peer.on('error', (e) => fail((e as { type?: string }).type === 'peer-unavailable' ? `no game found for code ${this.code}` : `connection failed (${(e as { type?: string }).type ?? e.message})`));
+    const relayHint = loadRelay() ? 'even through the relay' : 'set a relay in Options (both of you), or play on the same Wi-Fi';
+    const noDirect = `found the game but couldn't connect to it — your networks block direct connections: ${relayHint}`;
+    const timeout = window.setTimeout(() => {
+      if (opened) return;
+      fail(brokered ? noDirect : "couldn't reach the matchmaking service — check your internet connection");
+    }, 20000);
+    peer.on('error', (e) => {
+      const type = (e as { type?: string }).type;
+      if (type === 'peer-unavailable') fail(`no game open with code ${this.code} — check the code, and that the host still has the match open (Esc → Host game)`);
+      else if (type === 'network' || type === 'server-error' || type === 'socket-error' || type === 'socket-closed') {
+        if (!brokered) fail("couldn't reach the matchmaking service — check your internet connection");
+      } else if (type === 'webrtc' || type === 'negotiation-failed') fail(noDirect);
+      else fail(`connection failed (${type ?? e.message})`);
+    });
     peer.on('open', () => {
+      brokered = true;
       const conn = peer.connect(PREFIX + this.code, { reliable: true, serialization: 'raw' });
       this.conn = conn;
+      conn.on('iceStateChanged', (state) => {
+        if (state === 'failed' && !opened) fail(noDirect);
+      });
       conn.on('open', () => {
         opened = true;
         clearTimeout(timeout);
@@ -155,7 +241,7 @@ export class PeerTransport implements Transport {
         }
         onMessage(msg);
       });
-      conn.on('close', () => fail('the host left the game'));
+      conn.on('close', () => fail(opened ? 'the host left the game' : noDirect));
     });
   }
 
