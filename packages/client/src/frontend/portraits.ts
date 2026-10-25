@@ -14,7 +14,7 @@ import { CharacterLibrary } from '../content/characters.ts';
 import { CharacterAnimator } from '../game/characterAnimator.ts';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
-import { isCreature, npcLookRole } from '@tiletrigger/shared';
+import { getLook, isCreature, npcLookRole } from '@tiletrigger/shared';
 
 const SIZE = 256;
 
@@ -87,6 +87,8 @@ export class PortraitRenderer {
       const head = ch.joints.get('Head');
       const at = head ? head.getAbsolutePosition().clone() : new Vector3(0, 1.6, 0);
       at.y += 0.06;
+      // Whole-body models (all 1.83 m tall) can have their head joint low in a big helmet: frame the face.
+      if (getLook(look).whole) at.y = Math.max(at.y, 1.55);
       this.camera.position.copyFrom(at.add(new Vector3(0.22, 0.04, 0.85)));
       this.camera.setTarget(at.add(new Vector3(0, -0.06, 0)));
 

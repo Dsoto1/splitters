@@ -148,6 +148,8 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     character('core.sprinter', 'Sprinter', { aggression: 80, itemGreed: 85, reactionSpeed: 75, rangePreference: 30, tacticalAwareness: 30, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.plasma', 'core.disc_launcher'] }),
     character('core.champion', 'Champion', { accuracy: 80, reactionSpeed: 80, aggression: 75, itemGreed: 80, tags: ['ARENA'], weaponPreferences: ['core.railgun', 'core.rockets', 'core.plasma'] }),
     character('core.commando', 'Commando', { aggression: 70, tacticalAwareness: 85, teamLoyalty: 75, accuracy: 65, tags: ['TACTICAL'], weaponPreferences: ['core.rifle', 'core.burst_rifle', 'core.shotgun'] }),
+    // Charges in with a big gun and won't be talked out of it.
+    character('core.knight', 'Iron Knight', { aggression: 85, selfPreservation: 25, riskTolerance: 80, meleePreference: 60, rangePreference: 15, pursuitPersistence: 85, tags: ['BERSERKER'], weaponPreferences: ['core.auto_shotgun', 'core.shotgun', 'core.lmg'] }),
     character('core.frost', 'Frost', { rangePreference: 90, accuracy: 82, aggression: 30, selfPreservation: 70, tags: ['SNIPER'], weaponPreferences: ['core.sniper', 'core.railgun', 'core.marksman'] }),
     character('core.operative', 'Operative', { accuracy: 75, reactionSpeed: 75, tacticalAwareness: 80, aggression: 45, tags: ['TACTICAL'], weaponPreferences: ['core.smg', 'core.hand_cannon', 'core.marksman'] }),
     character('core.medic', 'Medic', { teamLoyalty: 95, selfPreservation: 70, objectivePriority: 70, aggression: 35, tags: ['SURVIVOR'], weaponPreferences: ['core.smg', 'core.rifle', 'core.pulse_pistol'] }),

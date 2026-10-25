@@ -2195,6 +2195,42 @@
       ]
     },
     {
+      "file": "characters/meshy_knight.glb",
+      "sha256": "bc2d8a61c5d317d0",
+      "triangles": 11057,
+      "bytes": 1041416,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added"
+      ]
+    },
+    {
+      "file": "characters/meshy_knight_fparms.glb",
+      "sha256": "aa38e139e30355de",
+      "triangles": 5112,
+      "bytes": 638904,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized"
+      ]
+    },
+    {
       "file": "creatures/imp.glb",
       "sha256": "70ad9e3a0ca7db81",
       "triangles": 8640,

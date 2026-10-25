@@ -355,11 +355,15 @@ const CHAR_MODS = {
   part: ['rebound to the regular body pose', 'simplified', 'materials simplified', 'textures made shared'],
   npc: ['rebound to the rig pose', 'simplified'],
   fparms: ['arms cut from the base body', 'rebound to the regular body pose', 'simplified'],
+  meshy: ['re-posed to the rig\'s T-pose', 'rebound to the rig\'s skeleton', 'simplified', 'base colour only, downscaled to a JPEG', 'vertices quantized'],
+  'meshy-fparms': ['arms cut from the body', 're-posed to the rig\'s T-pose', 'rebound to the rig\'s skeleton', 'vertices quantized'],
   texture: ['downscaled to a JPEG'],
 };
 const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));
+// Whole-body characters made on the owner's Meshy subscription (tools/content/prepare-meshy-characters.mjs).
+const meshyLock = JSON.parse(readFileSync(join(ROOT, 'content/meshy.lock.json'), 'utf8'));
 const charFiles = new Set();
-const charEntries = charLock.files;
+const charEntries = [...charLock.files, ...meshyLock.files];
 for (const f of charEntries) {
   charFiles.add(f.file);
   const packIds = f.source.split(/,\s*/);
@@ -370,7 +374,7 @@ for (const f of charEntries) {
   }
   for (const pack of packs) {
     if (!existsSync(join(ROOT, pack.licenseFile))) problems.push(`${f.file}: licence file missing (${pack.licenseFile})`);
-    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
+    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$|^Owned$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
   }
   const path = join(ROOT, 'packages/client/public', f.file);
   if (!existsSync(path)) problems.push(`${f.file}: missing (run node tools/content/prepare-characters.mjs)`);

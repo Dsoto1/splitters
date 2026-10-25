@@ -10,10 +10,13 @@ const lock = JSON.parse(readFileSync(new URL('../../../content/characters.lock.j
   files: { role: string; id?: string; body?: string; slot?: string }[];
 };
 const file = (id: string) => lock.files.find((f) => f.id === id);
+/** Whole-body characters made with Meshy (tools/content/prepare-meshy-characters.mjs). */
+const meshy = JSON.parse(readFileSync(new URL('../../../content/meshy.lock.json', import.meta.url), 'utf8')) as { files: { role: string; id: string }[] };
+const parted = CORE_LOOKS.filter((l) => !l.whole);
 
 describe('character looks', () => {
   it('only uses parts that ship, made for the look’s body, one per slot', () => {
-    for (const l of CORE_LOOKS) {
+    for (const l of parted) {
       for (const id of [l.head, ...l.parts, ...l.hair]) {
         expect(file(id), `${l.id}: ${id}`).toBeDefined();
         expect(file(id)!.body, `${l.id}: ${id}`).toBe(l.body);
@@ -23,6 +26,18 @@ describe('character looks', () => {
       for (const c of l.colorways) expect(file(c)?.role, `${l.id}: ${c}`).toBe('texture');
     }
     expect(lock.files.some((f) => f.role === 'rig')).toBe(true);
+  });
+
+  it('ships every whole-body character with its first-person arms, and nothing else on it', () => {
+    const whole = CORE_LOOKS.filter((l) => l.whole);
+    expect(whole.length).toBeGreaterThan(0);
+    for (const l of whole) {
+      expect(l.parts, l.id).toHaveLength(1);
+      expect(meshy.files.find((f) => f.id === l.parts[0])?.role, l.id).toBe('meshy');
+      expect(meshy.files.find((f) => f.id === l.whole!.arms)?.role, l.id).toBe('meshy-fparms');
+      expect(l.hair, l.id).toEqual([]);
+      expect(lookProblems(l), l.id).toEqual([]);
+    }
   });
 
   it('uses every shipped part, hairstyle and colourway in at least one preset', () => {
@@ -78,7 +93,8 @@ describe('custom looks', () => {
   });
 
   it('accepts every preset and round-trips it through a custom ID', () => {
-    for (const l of CORE_LOOKS) {
+    // Whole-body characters can't be customised, so they never become custom IDs.
+    for (const l of parted) {
       expect(lookProblems(l), l.id).toEqual([]);
       const id = encodeLook(l);
       expect(id.length).toBeLessThanOrEqual(64);

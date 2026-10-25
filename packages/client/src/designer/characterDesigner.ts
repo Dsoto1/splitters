@@ -20,6 +20,7 @@ import {
   gearInfo,
   BODY_SIZES,
   CORE_LOOKS,
+  DEFAULT_LOOK,
   HAIR_COLORS,
   HAIR_STYLES,
   PART_SLOTS,
@@ -109,7 +110,8 @@ export class CharacterDesigner {
     this.models = new ModelLibrary(this.scene);
 
     const saved = listCustomLooks().find((s) => s.id === startLook);
-    const l = getLook(startLook);
+    // Whole-body characters can't be taken apart: start those from the default look.
+    const l = getLook(getLook(startLook).whole ? DEFAULT_LOOK : startLook);
     this.draft = { name: saved?.name ?? (l.name === 'Custom' ? 'My character' : `My ${l.name}`), body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor, size: l.size, cloth: l.cloth ?? null, trim: l.trim ?? null, gear: [...(l.gear ?? [])] };
 
     this.root.id = 'designer';
@@ -397,7 +399,7 @@ export class CharacterDesigner {
     const grid = document.createElement('div');
     grid.className = 'dz-looks';
     const saved = listCustomLooks();
-    for (const l of [...CORE_LOOKS.map((x) => ({ id: x.id, name: x.name })), ...saved]) {
+    for (const l of [...CORE_LOOKS.filter((x) => !x.whole).map((x) => ({ id: x.id, name: x.name })), ...saved]) {
       const b = document.createElement('button');
       b.className = 'dz-look';
       b.title = l.name;

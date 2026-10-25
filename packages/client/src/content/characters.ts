@@ -108,7 +108,7 @@ export class CharacterLibrary {
     if (spec.npc?.female) void this.load('mannequin_f.glb');
     if (spec.look) {
       const l = getLook(spec.look);
-      for (const part of [...l.parts, l.head, ...l.hair]) void this.load(`${part}.glb`);
+      for (const part of l.whole ? l.parts : [...l.parts, l.head, ...l.hair]) void this.load(`${part}.glb`);
     }
   }
 
@@ -156,7 +156,7 @@ export class CharacterLibrary {
       body = 'mannequin';
     } else {
       const look = getLook(spec.look);
-      const files = spec.armsOnly ? [firstPersonArms(look)] : [...look.parts, look.head, ...look.hair];
+      const files = spec.armsOnly ? [firstPersonArms(look)] : look.whole ? look.parts : [...look.parts, look.head, ...look.hair];
       const [carrierC, ...rest] = await Promise.all(files.map((p) => this.load(`${p}.glb`)));
       if (this.scene.isDisposed) {
         holder.dispose();
@@ -175,7 +175,7 @@ export class CharacterLibrary {
         meshes.push(...attached);
       });
       this.dress(meshes, look);
-      if (!spec.armsOnly && look.gear?.length) {
+      if (!spec.armsOnly && !look.whole && look.gear?.length) {
         const of = (i: number) => meshes.filter((m) => (partOf.get(m) ?? 0) === i);
         const headIndex = look.parts.length;
         const head = of(headIndex).filter((m) => !/_lod/.test(m.name));

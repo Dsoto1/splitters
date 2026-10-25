@@ -542,8 +542,8 @@ export class FrontEnd {
       ...NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
       ...saved.map((s) => ({ id: s.id, name: s.name, mine: true })),
     ];
-    const filters: [string, string][] = [['all', 'All'], ['ranger', 'Ranger'], ['peasant', 'Peasant'], ['athlete', 'Sportswear'], ['npc', 'NPCs'], ['mine', 'Yours']];
-    const groupOf = (id: string) => (npcLookRole(id) ? 'npc' : family(id));
+    const filters: [string, string][] = [['all', 'All'], ['originals', 'Originals'], ['ranger', 'Ranger'], ['peasant', 'Peasant'], ['athlete', 'Sportswear'], ['npc', 'NPCs'], ['mine', 'Yours']];
+    const groupOf = (id: string) => (npcLookRole(id) ? 'npc' : getLook(id).whole ? 'originals' : family(id));
     const shown = all.filter((c) => this.charFilter === 'all' || (this.charFilter === 'mine' ? c.mine : !c.mine && groupOf(c.id) === this.charFilter));
     const selected = this.hovered ?? this.look;
 
@@ -593,6 +593,8 @@ export class FrontEnd {
     );
     const customise = el('button', { textContent: 'Customise' });
     customise.addEventListener('click', () => this.hooks.openDesigner(id));
+    // Whole-body originals are one model: nothing to swap, so no Customise.
+    if (l.whole) customise.hidden = true;
     const role = npcLookRole(id);
     if (role) {
       // An NPC skin: their look only; you keep a player's body, health and loadout.
@@ -604,7 +606,7 @@ export class FrontEnd {
     const style = bot ? botStyleLine(bot) : '';
     info.replaceChildren(
       img,
-      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits }))),
+      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
       loadout,
       customise,
     );
@@ -873,7 +875,7 @@ export class FrontEnd {
       this.setup = { ...this.setup, mode, scoreLimit: BASE_RULES[mode].scoreLimit };
       this.go('play');
     } else if (this.screen === 'characters' && (e.key === 'q' || e.key === 'e')) {
-      const order = ['all', 'ranger', 'peasant', 'athlete', 'mine'];
+      const order = ['all', 'originals', 'ranger', 'peasant', 'athlete', 'npc', 'mine'];
       this.charFilter = order[(order.indexOf(this.charFilter) + (e.key === 'e' ? 1 : order.length - 1)) % order.length]!;
       this.go('characters');
     } else if (this.screen === 'characters' && e.key === 'd') {

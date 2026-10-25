@@ -34,6 +34,12 @@ export interface CharacterLook {
   trim?: string | null;
   /** Gear worn over the outfit (GEAR ids, at most one per gear slot). */
   gear?: string[];
+  /**
+   * A whole-body character (one model with its own textures, `parts[0]`; see
+   * tools/content/prepare-meshy-characters.mjs): no separate head, hair, gear or
+   * dyes, and not a Designer base. `arms` is its first-person arms file.
+   */
+  whole?: { arms: string };
 }
 
 /** Where a piece of gear goes; one per slot. */
@@ -153,6 +159,8 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['helmet', 'tank'] },
   { id: 'core.desperado', name: 'Desperado', body: 'male', head: 'head_male', parts: ['peasant_torso_m', 'peasant_arms_m', 'peasant_legs_m', 'ranger_feet_m'], hair: ['hair_simpleparted', 'hair_beard'], colorways: [], skin: SKIN_TONES[2], hairColor: '#2a2422', cloth: '#8a7a52', trim: '#4a3020', gear: ['brim', 'mask', 'bandolier'] },
   { id: 'core.raider', name: 'Raider', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buzzedfemale'], colorways: [], skin: SKIN_TONES[4], hairColor: '#8a3a2a', cloth: '#6a3a7a', trim: '#1e2126', gear: ['goggles', 'bandolier'] },
+  // Whole-body originals (prepare-meshy-characters.mjs).
+  { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_knight_fparms' } },
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'] },
 ];
 
@@ -178,6 +186,7 @@ export const LOOK_BIOS: Readonly<Record<string, string>> = {
   'core.frost': 'Came down from the mountain pass. Brought the cold with her.',
   'core.operative': 'Dark suit of armour, darker glasses. Never seen arriving.',
   'core.medic': 'Patches up her team, then patches holes in yours.',
+  'core.knight': 'Rode out to a tournament in 1342 and took a very wrong turn. Still undefeated.',
   'core.engineer': 'Hard hat, fuel tank, short temper. Builds things; breaks more.',
   'core.desperado': 'Wanted in three maps. The poster doesn\'t do him justice.',
   'core.raider': 'Goggles down, bandolier full, already halfway across the map.',
@@ -245,12 +254,15 @@ const partById = new Map(CHARACTER_PARTS.map((p) => [p.id, p]));
 export const partInfo = (id: string): PartInfo | undefined => partById.get(id);
 
 /** The part shown as a look's own arms in first person: its arms part, or bare arms under a sportswear top. */
-export function firstPersonArms(l: Pick<CharacterLook, 'body' | 'parts'>): string {
+export function firstPersonArms(l: Pick<CharacterLook, 'body' | 'parts' | 'whole'>): string {
+  if (l.whole) return l.whole.arms;
   return l.parts.find((p) => partById.get(p)?.slot === 'arms') ?? `athlete_fparms_${l.body === 'male' ? 'm' : 'f'}`;
 }
 
 /** Why a look can't be worn (empty when it can). */
-export function lookProblems(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'gear'>): string[] {
+export function lookProblems(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'colorways' | 'gear' | 'whole'>): string[] {
+  // A whole-body character is complete as it is.
+  if (l.whole) return [];
   const out: string[] = [];
   const parts = l.parts.map((id) => partById.get(id));
   if (parts.some((p) => !p || p.body !== l.body)) out.push('a part is for the other body type');
