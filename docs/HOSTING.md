@@ -1,5 +1,25 @@
 # Hosting ChronoSplit
 
+## Quickest: one AWS Lightsail instance (~$5/month)
+
+Everything on one small server: the site, the hub (broker + game browser),
+a relay for strict networks (coturn) and HTTPS (Caddy). Nothing else to sign
+up for. Script: `deploy/aws-lightsail-setup.sh`.
+
+1. Lightsail → Create instance → Linux, **Ubuntu 24.04**, the $5 plan.
+2. Networking → attach a **static IP**; in Route 53, point an **A record**
+   (for example `play.yourdomain.com`) at it.
+3. Instance → Networking → IPv4 firewall: add **TCP 443**, **TCP 3478**,
+   **UDP 3478**, **UDP 49160–49200** (22 and 80 are open already).
+4. Connect (browser SSH) and run, with your domain:
+   ```
+   curl -fsSL https://raw.githubusercontent.com/Dsoto1/splitters/main/deploy/aws-lightsail-setup.sh | sudo bash -s -- play.yourdomain.com
+   ```
+   For another branch, put its name in the URL and add `BRANCH=<name>` after `sudo`.
+5. Open `https://play.yourdomain.com`. Updates later: `sudo chronosplit-update`.
+
+The other options below are the same pieces, run elsewhere.
+
 Two ways to run online play. Start with the first; add the second when you
 want always-on official matches.
 
