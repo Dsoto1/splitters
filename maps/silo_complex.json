@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 17,
   "metadata": {
     "id": "silo_complex",
     "name": "Silo Complex",
@@ -1717,39 +1717,39 @@
       "radius": 5
     },
     {
-      "id": "light_150",
+      "id": "prop_150",
       "position": [
-        8,
-        3.45,
-        8
+        -3.3,
+        0,
+        39
       ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#fff1d6",
-      "intensity": 1,
-      "range": 9,
-      "fixture": "ceiling"
+      "kind": "prop",
+      "model": "prop.hm_fridge",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "light_151",
+      "id": "prop_151",
       "position": [
-        32,
-        3.45,
-        8
+        0.5,
+        0,
+        40.5
       ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#fff1d6",
-      "intensity": 1,
-      "range": 9,
-      "fixture": "ceiling"
+      "kind": "prop",
+      "model": "prop.hm_rug",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
     },
     {
       "id": "light_152",
       "position": [
-        32,
+        8,
         3.45,
-        32
+        8
       ],
       "kind": "light",
       "yaw": 0,
@@ -1761,6 +1761,34 @@
     {
       "id": "light_153",
       "position": [
+        32,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_154",
+      "position": [
+        32,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_155",
+      "position": [
         8,
         3.45,
         32
@@ -1773,7 +1801,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_154",
+      "id": "light_156",
       "position": [
         24,
         3.45,
@@ -1787,7 +1815,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_155",
+      "id": "light_157",
       "position": [
         32,
         3.45,
@@ -1801,7 +1829,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_156",
+      "id": "light_158",
       "position": [
         32,
         3.45,
@@ -1815,7 +1843,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_157",
+      "id": "light_159",
       "position": [
         16,
         3.45,
@@ -1829,7 +1857,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_158",
+      "id": "light_160",
       "position": [
         8,
         3.45,
@@ -1843,7 +1871,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_159",
+      "id": "light_161",
       "position": [
         8,
         3.45,
@@ -1857,7 +1885,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_160",
+      "id": "light_162",
       "position": [
         16,
         3.45,
@@ -1871,7 +1899,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_161",
+      "id": "light_163",
       "position": [
         24,
         3.45,

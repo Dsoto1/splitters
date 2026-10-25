@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 17,
   "metadata": {
     "id": "sky_islands",
     "name": "Sky Islands",
@@ -1804,6 +1804,116 @@
       ],
       "kind": "hill",
       "radius": 5
+    },
+    {
+      "id": "mount_105",
+      "position": [
+        -34.5,
+        3,
+        6.8
+      ],
+      "kind": "mount",
+      "model": "skyfighter",
+      "yaw": 1.5707963267948966,
+      "faction": "embers",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_106",
+      "position": [
+        45.5,
+        3,
+        -7
+      ],
+      "kind": "mount",
+      "model": "skyfighter",
+      "yaw": -1.5707963267948966,
+      "faction": "tide",
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_107",
+      "position": [
+        7.5,
+        4,
+        38.5
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_108",
+      "position": [
+        7.8,
+        4,
+        47.4
+      ],
+      "kind": "prop",
+      "model": "prop.nt_birch",
+      "yaw": 1.9,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_109",
+      "position": [
+        -7,
+        2,
+        -35.5
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_leafy",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_110",
+      "position": [
+        -5.2,
+        2,
+        -33.8
+      ],
+      "kind": "prop",
+      "model": "prop.nt_bush_berries",
+      "yaw": 2.2,
+      "scale": 0.9,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_111",
+      "position": [
+        -7.5,
+        2,
+        -47.5
+      ],
+      "kind": "prop",
+      "model": "prop.nt_pine_small",
+      "yaw": 0.4,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_112",
+      "position": [
+        7.5,
+        2,
+        -35.5
+      ],
+      "kind": "prop",
+      "model": "prop.nt_rock_moss",
+      "yaw": 0.9,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 17,
   "metadata": {
     "id": "bottling",
     "name": "Bottling Plant",
@@ -1900,6 +1900,76 @@
       "intensity": 1,
       "range": 9,
       "fixture": "ceiling"
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        12.8,
+        0,
+        12.8
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        34.8,
+        0,
+        42.5
+      ],
+      "kind": "prop",
+      "model": "prop.sv_trashcan_metal",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        36.8,
+        0,
+        35.2
+      ],
+      "kind": "prop",
+      "model": "prop.sv_propane",
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        59.2,
+        0,
+        12.8
+      ],
+      "kind": "prop",
+      "model": "prop.sv_propane",
+      "yaw": 1.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_164",
+      "position": [
+        42.3,
+        0,
+        12.6
+      ],
+      "kind": "prop",
+      "model": "prop.sv_gas_can",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],

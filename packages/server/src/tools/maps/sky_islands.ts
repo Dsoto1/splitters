@@ -89,6 +89,15 @@ m.pickup('weapon_shotgun', [8, 3, -2]).pickup('weapon_smg', [-8, 3, 2]).pickup('
 m.pickup('health_small', [0, 3, 9]).pickup('health_small', [0, 3, -9]).pickup('ammo_explosive', [42, 3, 6]).pickup('ammo_sniper', [-4, 2, -40]);
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(5);
+// A skyfighter on each team's island, parked on the far side from its spawns, nose toward the middle:
+// the open sky between the islands is room enough to fly.
+const [embers, tide] = m.teamIds(2) as [string, string];
+m.mount('skyfighter', [-34.5, 3, 6.8], P / 2, embers).mount('skyfighter', [45.5, 3, -7], -P / 2, tide);
+// More growth on the grassy islands: berry bushes by the north island's big bush and on the south
+// island's bridge end (somewhere to lie low on the way in), a birch, a small pine and a mossy rock.
+m.prop('nt_bush_berries', [7.5, 4, 38.5], 0.7, 1, false).prop('nt_birch', [7.8, 4, 47.4], 1.9, 0.8);
+m.prop('nt_bush_leafy', [-7, 2, -35.5], 0.3, 1, false).prop('nt_bush_berries', [-5.2, 2, -33.8], 2.2, 0.9, false);
+m.prop('nt_pine_small', [-7.5, 2, -47.5], 0.4, 0.8).prop('nt_rock_moss', [7.5, 2, -35.5], 0.9);
 m.lightRooms();
 m.meta({
   description: 'Five grassy islands floating over the peaks, joined by crumbling stepping stones and one plank bridge that holds. Swim in the centre pond, ride the pad to the sky platform for double damage, grab a jetpack on the far islands, and think twice before stepping on the trapdoors over the lava for the railgun.',

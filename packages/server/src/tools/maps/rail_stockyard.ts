@@ -30,7 +30,7 @@
  *   A   two-storey atriums; L lamp room, O loading office; u/o upper rooms, w stairwell to the west roof
  *   R   crane perch over the pit (railgun), reached only along the girder from the west roof
  */
-import type { Side, TileSurfaces } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, boxBounds, buildMapGeometry, newTerrain, paintSlopes, type Side, type TerrainData, type TerrainMaterial, type TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('rail_stockyard', 'Rail Stockyard');
@@ -215,6 +215,107 @@ m.furnish();
 // Enough team spawns for a full match.
 await m.fillTeamSpawns(6);
 m.lightRooms();
+
+// ---------------------------------------------------------------- ground: terrain round what is built
+
+const smooth = (a: number, b: number, v: number) => {
+  const t = Math.max(0, Math.min(1, (v - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+/**
+ * Terrain under and round the built map (call after the boundary is set). `shape(x, z, d)` is the
+ * natural ground, `d` metres outside the play boundary (0 inside). It is held 0.1 m under every
+ * floor, slab and solid it would reach into, and nowhere climbs faster than `rise` metres per metre
+ * away from those, so nothing built is buried and ground dropping to a sunken floor makes a bank,
+ * not a wall. `paint` picks each cell's ground and plant cover (cells under anything built are bare).
+ */
+function sculpt(shape: (x: number, z: number, d: number) => number, paint: (x: number, z: number, d: number, h: number) => [TerrainMaterial, number], o: { margin?: number; rise?: number } = {}): TerrainData {
+  const b = m.doc.bounds;
+  if (!b) throw new Error('sculpt needs the boundary');
+  const [x0, z0] = b.min;
+  const [x1, z1] = b.max;
+  const size = Math.min(320, Math.max(x1 - x0, z1 - z0) + 2 * (o.margin ?? 60));
+  const t = newTerrain(size, 2, [Math.round((x0 + x1) / 4) * 2, Math.round((z0 + z1) / 4) * 2]);
+  const outside = (x: number, z: number) => Math.hypot(Math.max(x0 - x, 0, x - x1), Math.max(z0 - z, 0, z - z1));
+  const solids = buildMapGeometry(m.doc).filter((q) => q.kind !== 'barrier').map(boxBounds);
+  const { cols, rows } = t;
+  const h: number[] = [];
+  const covered: boolean[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = t.origin[0] + c * 2;
+      const z = t.origin[1] + r * 2;
+      let y = shape(x, z, outside(x, z));
+      let under = false;
+      for (const s of solids) {
+        if (x > s.min[0] - 0.3 && x < s.max[0] + 0.3 && z > s.min[2] - 0.3 && z < s.max[2] + 0.3 && s.min[1] - 0.1 < y + 0.5) {
+          y = Math.min(y, s.min[1] - 0.1);
+          under = true;
+        }
+      }
+      h.push(y);
+      covered.push(under);
+    }
+  }
+  // Banks: limit the climb away from anything held down (a two-pass chamfer sweep).
+  const rise = o.rise ?? 0.7;
+  const steps: [number, number, number][] = [[-1, 0, 2], [0, -1, 2], [-1, -1, 2.83], [1, -1, 2.83]];
+  for (let pass = 0; pass < 2; pass++) {
+    for (let k = 0; k < cols * rows; k++) {
+      const i = pass ? cols * rows - 1 - k : k;
+      const c = i % cols;
+      const r = (i - c) / cols;
+      for (const [dc, dr, dist] of steps) {
+        const nc = c + (pass ? -dc : dc);
+        const nr = r + (pass ? -dr : dr);
+        if (nc < 0 || nr < 0 || nc >= cols || nr >= rows) continue;
+        h[i] = Math.min(h[i]!, h[nr * cols + nc]! + rise * dist);
+      }
+    }
+  }
+  const materials: number[] = [];
+  const foliage: number[] = [];
+  for (let r = 0; r < rows - 1; r++) {
+    for (let c = 0; c < cols - 1; c++) {
+      const corners = [r * cols + c, r * cols + c + 1, (r + 1) * cols + c, (r + 1) * cols + c + 1];
+      const x = t.origin[0] + c * 2 + 1;
+      const z = t.origin[1] + r * 2 + 1;
+      const [g, f] = paint(x, z, outside(x, z), corners.reduce((s, i) => s + h[i]!, 0) / 4);
+      materials.push(TERRAIN_MATERIALS.indexOf(g));
+      foliage.push(corners.some((i) => covered[i]) ? 0 : f);
+    }
+  }
+  return paintSlopes({ ...t, heights: h.map((y) => Math.round(y * 100)), materials, foliage }, 38, 'stone');
+}
+/** Seeded noise for scattering. */
+let seed = 0x7e11a;
+const rand = () => (seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) / 4294967296;
+
+// The yard sits in a railway cutting: gravel ballast round the walls, a muddy drainage ditch, then
+// grassy embankments climbing to rough ground all round.
+const ground = sculpt(
+  (x, z, d) => -0.1 - 1.2 * smooth(3, 7, d) * (1 - smooth(8, 12, d)) + smooth(9, 30, d) * (7 + 2.5 * Math.sin(x / 13) * Math.cos(z / 17) + 1.5 * Math.sin(z / 7 + x / 23)) + smooth(30, 55, d) * 6 * (0.5 + 0.5 * Math.sin(x / 19 - z / 27)),
+  (x, z, d) => {
+    if (d < 3.5) return ['gravel', 0];
+    if (d < 10) return ['mud', 1];
+    const worn = Math.sin(x / 9 + z / 14) * Math.cos(z / 11 - x / 21) > 0.35;
+    return worn ? ['dirt', 2] : ['grass', d < 18 ? 4 : 3];
+  },
+);
+m.terrain(ground);
+// Scrub that has taken hold in the yard's corners and against the shed walls: somewhere to lie up on the
+// flanks and the dock approaches, away from the tracks' line of fire and the hills.
+for (const s of [1, -1] as const) {
+  const x = (dx: number) => 40 + s * (40 - dx);
+  for (const [dx, z] of [[6, 18.5], [14.5, 51], [5.5, 2.5]] as const) {
+    m.prop('bush_large', [x(dx), 0, z], rand() * 6.28, 1, false);
+    m.prop(z > 40 ? 'nt_bush_berries' : 'nt_bush_leafy', [x(dx + 1.6), 0, z - 1.4], rand() * 6.28, 0.85, false);
+  }
+}
+// Odds and ends: propane by the gas drums, a bin on the dock, fuel cans by the lamp-room bench.
+m.prop('sv_propane', [27.7, 0, 23], 0.6).prop('sv_propane', [52.3, 0, 33], 2.4);
+m.prop('sv_trashcan_metal', [30.6, 0, 58.8], Math.PI);
+m.prop('sv_gas_can', [-3.5, 0, 51.4], 0.3, 1, false).prop('sv_gas_can', [-1.2, 0, 51.5], 1.2, 1, false);
 m.meta({
   description:
     'A railway goods yard at dusk. Weave between boxcars and cargo stacks in the open yard, drop into the sunken loading pit, slip through the culvert beneath the tracks, or run the dock catwalk between the two brick sheds and their windows over the yard. The railgun waits on the crane perch above the pit, and the only way out to it is a bare girder from the west shed roof, in plain sight of everyone.',

@@ -6,6 +6,8 @@
 export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   bottling: 'Facility (GoldenEye 007)',
   temple: 'Temple (GoldenEye 007)',
+  complex: 'Complex (GoldenEye 007)',
+  stack: 'Stack (GoldenEye 007)',
   sandgate: 'Dust (Counter-Strike)',
   dockside_depot: 'Assault (Counter-Strike)',
   backwoods: 'Militia (Counter-Strike)',

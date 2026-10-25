@@ -129,6 +129,8 @@ m.pickup('grenades', at(1, 5, 0)).pickup('mines', at(5, 1, 0)).pickup('ammo', at
 m.furnish();
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(6);
+// The north-west bunk room's kitchen corner: a fridge by the cabinets and a rug on the concrete.
+m.prop('hm_fridge', at(0, 5, 0, -3.3, -1), P).prop('hm_rug', at(0, 5, 0, 0.5, 0.5), P, 1, false);
 m.lightRooms();
 m.meta({
   description:

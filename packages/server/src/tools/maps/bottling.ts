@@ -161,6 +161,11 @@ m.pickup('ammo_light', at(1, 2, 0)).pickup('mines', at(7, 4, 0, -1, -2.5)).picku
 // Team bases at each end (spawns and a flag), hills through the middle.
 await m.teamBases(5);
 m.lightRooms();
+// Fittings: a plant in the lab, a bin in the north corridor, propane by the tanks.
+m.prop('hm_houseplant_tall', at(2, 2, 0, -3.2, -3.2), 0, 1, false);
+m.prop('sv_trashcan_metal', at(4, 5, 0, 2.8, 2.5), -P);
+m.prop('sv_propane', at(5, 4, 0, -3.2, 3.2), 0.4).prop('sv_propane', at(7, 2, 0, 3.2, -3.2), 1.1);
+m.prop('sv_gas_can', at(5, 2, 0, 2.3, -3.4), 0.3);
 m.meta({
   description:
     'A sealed bottling works, in the spirit of GoldenEye\'s Facility: tiled washrooms with a ceiling vent you can drop through, long service corridors, a two-storey server lab, and the great tank hall where walkways cross between the tank tops. The railgun waits on the walkway junction; the gilded pistol hides in the stalls below the vent.',

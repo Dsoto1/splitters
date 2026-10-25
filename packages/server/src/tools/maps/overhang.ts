@@ -20,7 +20,7 @@
  *       0   1   2   3   4   5
  *   c corridor loop on the ground floor, balcony over it
  */
-import type { TileSurfaces } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, boxBounds, buildMapGeometry, newTerrain, paintSlopes, type TerrainData, type TerrainMaterial, type TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('overhang', 'Overhang');
@@ -106,6 +106,94 @@ m.pickup('ammo_shells', at(1, 4)).pickup('ammo', at(5, 2)).pickup('ammo', at(2, 
 await m.teamBases(4);
 m.bounds('invisible');
 m.lightRooms();
+
+// ---------------------------------------------------------------- ground: terrain round what is built
+
+const smooth = (a: number, b: number, v: number) => {
+  const t = Math.max(0, Math.min(1, (v - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+/**
+ * Terrain under and round the built map (call after the boundary is set). `shape(x, z, d)` is the
+ * natural ground, `d` metres outside the play boundary (0 inside). It is held 0.1 m under every
+ * floor, slab and solid it would reach into, and nowhere climbs faster than `rise` metres per metre
+ * away from those, so nothing built is buried and ground dropping to a sunken floor makes a bank,
+ * not a wall. `paint` picks each cell's ground and plant cover (cells under anything built are bare).
+ */
+function sculpt(shape: (x: number, z: number, d: number) => number, paint: (x: number, z: number, d: number, h: number) => [TerrainMaterial, number], o: { margin?: number; rise?: number } = {}): TerrainData {
+  const b = m.doc.bounds;
+  if (!b) throw new Error('sculpt needs the boundary');
+  const [x0, z0] = b.min;
+  const [x1, z1] = b.max;
+  const size = Math.min(320, Math.max(x1 - x0, z1 - z0) + 2 * (o.margin ?? 60));
+  const t = newTerrain(size, 2, [Math.round((x0 + x1) / 4) * 2, Math.round((z0 + z1) / 4) * 2]);
+  const outside = (x: number, z: number) => Math.hypot(Math.max(x0 - x, 0, x - x1), Math.max(z0 - z, 0, z - z1));
+  const solids = buildMapGeometry(m.doc).filter((q) => q.kind !== 'barrier').map(boxBounds);
+  const { cols, rows } = t;
+  const h: number[] = [];
+  const covered: boolean[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = t.origin[0] + c * 2;
+      const z = t.origin[1] + r * 2;
+      let y = shape(x, z, outside(x, z));
+      let under = false;
+      for (const s of solids) {
+        if (x > s.min[0] - 0.3 && x < s.max[0] + 0.3 && z > s.min[2] - 0.3 && z < s.max[2] + 0.3 && s.min[1] - 0.1 < y + 0.5) {
+          y = Math.min(y, s.min[1] - 0.1);
+          under = true;
+        }
+      }
+      h.push(y);
+      covered.push(under);
+    }
+  }
+  // Banks: limit the climb away from anything held down (a two-pass chamfer sweep).
+  const rise = o.rise ?? 0.7;
+  const steps: [number, number, number][] = [[-1, 0, 2], [0, -1, 2], [-1, -1, 2.83], [1, -1, 2.83]];
+  for (let pass = 0; pass < 2; pass++) {
+    for (let k = 0; k < cols * rows; k++) {
+      const i = pass ? cols * rows - 1 - k : k;
+      const c = i % cols;
+      const r = (i - c) / cols;
+      for (const [dc, dr, dist] of steps) {
+        const nc = c + (pass ? -dc : dc);
+        const nr = r + (pass ? -dr : dr);
+        if (nc < 0 || nr < 0 || nc >= cols || nr >= rows) continue;
+        h[i] = Math.min(h[i]!, h[nr * cols + nc]! + rise * dist);
+      }
+    }
+  }
+  const materials: number[] = [];
+  const foliage: number[] = [];
+  for (let r = 0; r < rows - 1; r++) {
+    for (let c = 0; c < cols - 1; c++) {
+      const corners = [r * cols + c, r * cols + c + 1, (r + 1) * cols + c, (r + 1) * cols + c + 1];
+      const x = t.origin[0] + c * 2 + 1;
+      const z = t.origin[1] + r * 2 + 1;
+      const [g, f] = paint(x, z, outside(x, z), corners.reduce((s, i) => s + h[i]!, 0) / 4);
+      materials.push(TERRAIN_MATERIALS.indexOf(g));
+      foliage.push(corners.some((i) => covered[i]) ? 0 : f);
+    }
+  }
+  return paintSlopes({ ...t, heights: h.map((y) => Math.round(y * 100)), materials, foliage }, 38, 'stone');
+}
+
+// The hall stands on a rock shelf: under the edge the ground falls sheer into the lava crater, and all
+// round it climbs through scree to the mesas.
+const ground = sculpt(
+  (x, z, d) => -0.1 + smooth(6, 30, d) * (8 + 4 * Math.sin(x / 17 + 0.5) * Math.cos(z / 13) + 2 * Math.sin(z / 7 - x / 11)) + smooth(30, 55, d) * 10 * smooth(0.1, 0.5, Math.cos(x / 21) * Math.sin(z / 18 + 1) + 0.4),
+  (x, z, d, y) => {
+    if (y < -1) return ['stone', 0];
+    if (d < 3) return ['gravel', 0];
+    const scree = Math.sin(x / 8 + z / 11) * Math.cos(z / 13 - x / 7) > 0.2;
+    return y > 12 ? ['stone', 0] : scree ? ['gravel', 0] : ['dirt', 1];
+  },
+  { rise: 20 },
+);
+m.terrain(ground);
+// Propane cylinders stacked by the gas drum in the east corridor.
+m.prop('sv_propane', [39.7, 0, 20.4], 0.4);
 m.meta({
   description:
     'A two-storey techbase hall: an atrium open to the roof with double damage on its dais, a corridor loop round it, a railed balcony above, and the edge — a ledge with no railing outside the balcony, over a lava pit, where the railgun waits. A small arena for 2–8 players.',
