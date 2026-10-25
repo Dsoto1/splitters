@@ -156,15 +156,16 @@ export function validateNavigation(map: MapDocument, nav: NavWorld): ValidationI
         issues.push({ severity: 'warning', code: 'nav.disconnected', message: `spawn ${s.id} cannot be reached from spawn ${first.id}`, targetId: s.id });
       }
     }
-    // Pickups bots and players can't walk (or pad) to are wasted; flag bases and hills must be reachable to be played.
+    // Pickups bots and players can't walk (or pad) to are wasted; objectives (flag bases, hills, bomb sites,
+    // hostages and rescue zones) must be reachable to be played.
+    const what: Partial<Record<MapDocument['entities'][number]['kind'], string>> = { pickup: 'pickup', flag: 'flag base', hill: 'hill', bombsite: 'bomb site', hostage: 'hostage', rescue: 'rescue zone' };
     for (const p of map.entities) {
-      if (p.kind !== 'pickup' && p.kind !== 'flag' && p.kind !== 'hill') continue;
+      if (!what[p.kind]) continue;
       const to = { x: p.position[0], y: p.position[1], z: p.position[2] };
       const path = nav.findPath(from, to);
       const end = path?.[path.length - 1];
       if (!end || Math.hypot(end.x - to.x, end.z - to.z) > 1.5 || Math.abs(end.y - to.y) > 2) {
-        const what = p.kind === 'pickup' ? 'pickup' : p.kind === 'flag' ? 'flag base' : 'hill';
-        issues.push({ severity: 'warning', code: `nav.${p.kind}_unreachable`, message: `${what} ${p.id} cannot be reached on foot from spawn ${first.id}`, targetId: p.id });
+        issues.push({ severity: 'warning', code: `nav.${p.kind}_unreachable`, message: `${what[p.kind]} ${p.id} cannot be reached on foot from spawn ${first.id}`, targetId: p.id });
       }
     }
   }

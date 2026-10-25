@@ -408,9 +408,10 @@ export class MapBuilder {
    * labs; bunks and kit in bunkers and camps; tables and barrels in castles
    * and towns. Pieces stand in the corners, backs to the wall, so doorways
    * and the middle of the room stay clear; corners near spawns, pickups and
-   * other set pieces are left empty.
+   * other set pieces are left empty, and so are the cells `skip` names
+   * (corridors and halls built from room tiles).
    */
-  furnish(style?: FurnishStyle): this {
+  furnish(style?: FurnishStyle, skip: (x: number, y: number, z: number) => boolean = () => false): this {
     this.flush();
     const theme = this.doc.classicStructure.theme.replace(/^core\./, '');
     const sets = FURNISH[style ?? THEME_FURNISH[theme] ?? 'store'];
@@ -421,6 +422,7 @@ export class MapBuilder {
     const rooms = this.doc.classicStructure.tiles.filter((t) => /^core\.room(_pillar|_columns|_cover)?$/.test(t.tile));
     let n = 0;
     for (const t of rooms) {
+      if (skip(t.x, t.y, t.z)) continue;
       const [cx, y, cz] = [t.x * cell, t.z * level, t.y * cell];
       if (props.some((p) => Math.abs(p.position[0] - cx) < cell / 2 && Math.abs(p.position[2] - cz) < cell / 2 && Math.abs(p.position[1] - y) < level / 2)) continue;
       const set = sets[n++ % sets.length]!;
