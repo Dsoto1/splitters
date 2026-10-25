@@ -999,7 +999,7 @@ async function onlineFlow(browser) {
   check(a.errors.length + b.errors.length === 0, `no page errors (${[...a.errors, ...b.errors].join('; ')})`);
 }
 
-/** Host game: one browser hosts its offline match with a code, a second joins by link (through a local PeerJS broker). */
+/** Community hub: a host lists its match in the game browser and a stranger joins from the list. */
 async function lobbyFlow(browser) {
   // A community hub: broker + game browser. A host lists its match; a player finds it and joins from the list.
   const HUB_PORT = +(process.env.E2E_HUB_PORT ?? 9078);
@@ -1048,11 +1048,13 @@ async function lobbyFlow(browser) {
   await player.context().close();
 }
 
+/** Host game: one browser hosts its offline match with a code, a second joins by link through a hub's broker. */
 async function hostgameFlow(browser) {
+  // The broker is a community hub's, as in a real game (a bare PeerJS broker never let the friend in on CI).
   const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
-  start('node', ['-e', `import('peer').then(({ PeerServer }) => PeerServer({ port: ${PEER_PORT}, path: '/', host: '127.0.0.1' }))`]);
-  await sleep(1500);
-  const peer = `&peer=127.0.0.1:${PEER_PORT}`;
+  start('pnpm', ['--filter', '@chronosplit/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
+  await sleep(5000);
+  const peer = `&hub=127.0.0.1:${PEER_PORT}`;
   const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   const errors = [];
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
