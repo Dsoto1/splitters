@@ -275,7 +275,8 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
         const chestY = chestJoint.getAbsolutePosition().y - rootY + 0.06;
         const sec = slice(t.torso, t.root, chestY, 0.03) ?? torsoBox;
         const waist = slice(t.torso, t.root, chestY - 0.2, 0.03) ?? sec;
-        const w = (sec.max.x - sec.min.x) / 2;
+        // Loose sleeves can widen the slice: no chest is wider than this.
+        const w = Math.min((sec.max.x - sec.min.x) / 2, (waist.max.x - waist.min.x) / 2 + 0.02, 0.19);
         const zF = sec.max.z;
         const zB = sec.min.z;
         const zc = (zF + zB) / 2;
@@ -300,8 +301,8 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
         } else if (id === 'bandolier') {
           // A sash round the torso from the left shoulder to the right hip, shells along its front.
           const tilt = 0.62;
-          const rx = (w * 1.06) / Math.cos(tilt);
-          const rz = (depth / 2) * 1.12;
+          const rx = (w * 1.16) / Math.cos(tilt);
+          const rz = (depth / 2) * 1.22;
           const pivot = new TransformNode('bandolier', scene);
           pivot.position.set(xc, chestY - 0.08, zc);
           pivot.rotation.z = tilt;
