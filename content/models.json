@@ -96,6 +96,14 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/quaternius-ultimate-spaceships/License.txt",
       "retrieved": "2026-10-25"
+    },
+    "quaternius-tank-pack": {
+      "title": "Tank Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-tanks",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-tank-pack/License.txt",
+      "retrieved": "2026-10-25"
     }
   },
   "models": [
@@ -441,6 +449,13 @@
       "file": "Imperial.glb",
       "forward": "+z",
       "length": 9.6
+    },
+    {
+      "out": "vehicles/tank.glb",
+      "pack": "quaternius-tank-pack",
+      "file": "Tank3.obj",
+      "forward": "-x",
+      "length": 6.3
     }
   ],
   "budgets": {

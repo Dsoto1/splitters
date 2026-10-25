@@ -3016,6 +3016,1150 @@
       "triangles": 32,
       "bytes": 2152,
       "sha256": "1346393dac4a83d8"
+    },
+    {
+      "file": "props/sv_backpack.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Backpack.glb",
+      "triangles": 1752,
+      "bytes": 97188,
+      "sha256": "bf636fb3ba7d1adf"
+    },
+    {
+      "file": "props/sv_campfire.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Bonfire_Fire.glb",
+      "triangles": 704,
+      "bytes": 42368,
+      "sha256": "0a3147e928a9b722"
+    },
+    {
+      "file": "props/sv_campfire_out.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Bonfire.glb",
+      "triangles": 616,
+      "bytes": 34832,
+      "sha256": "603c6d2cc14a3fbb"
+    },
+    {
+      "file": "props/sv_beartrap.glb",
+      "source": "quaternius-survival-pack",
+      "src": "BearTrap_Open.glb",
+      "triangles": 608,
+      "bytes": 33956,
+      "sha256": "a24cab9a01d9aeb9"
+    },
+    {
+      "file": "props/sv_medkit_case.glb",
+      "source": "quaternius-survival-pack",
+      "src": "FirstAidKit_Hard.glb",
+      "triangles": 268,
+      "bytes": 15972,
+      "sha256": "a890d861bf0db20b"
+    },
+    {
+      "file": "props/sv_gas_can.glb",
+      "source": "quaternius-survival-pack",
+      "src": "GasCan.glb",
+      "triangles": 788,
+      "bytes": 37664,
+      "sha256": "b3a973d653e2b5b7"
+    },
+    {
+      "file": "props/sv_propane.glb",
+      "source": "quaternius-survival-pack",
+      "src": "PropaneTank.glb",
+      "triangles": 516,
+      "bytes": 29012,
+      "sha256": "01becede3a38c3f4"
+    },
+    {
+      "file": "props/sv_radio.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Radio.glb",
+      "triangles": 481,
+      "bytes": 26048,
+      "sha256": "0a0c1d6821e64f00"
+    },
+    {
+      "file": "props/sv_raft.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Raft.glb",
+      "triangles": 1036,
+      "bytes": 54984,
+      "sha256": "9a777212f5a8ada2"
+    },
+    {
+      "file": "props/sv_tent.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Tent.glb",
+      "triangles": 788,
+      "bytes": 40764,
+      "sha256": "0381776dcfa39c9d"
+    },
+    {
+      "file": "props/sv_trashcan_metal.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Trashcan.glb",
+      "triangles": 739,
+      "bytes": 38200,
+      "sha256": "e8e548c9863db91a"
+    },
+    {
+      "file": "props/sv_torch_stand.glb",
+      "source": "quaternius-survival-pack",
+      "src": "WoodenTorch_Fire.glb",
+      "triangles": 454,
+      "bytes": 29728,
+      "sha256": "d950a12587f23732"
+    },
+    {
+      "file": "props/sv_shovel.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Shovel.glb",
+      "triangles": 322,
+      "bytes": 20156,
+      "sha256": "d39db03de225b545"
+    },
+    {
+      "file": "props/sv_axe.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Axe.glb",
+      "triangles": 236,
+      "bytes": 14740,
+      "sha256": "0146d2d1a4cdff7f"
+    },
+    {
+      "file": "props/sv_cook_pot.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Pot.glb",
+      "triangles": 326,
+      "bytes": 18740,
+      "sha256": "8d8047399ad4cd86"
+    },
+    {
+      "file": "props/sv_can.glb",
+      "source": "quaternius-survival-pack",
+      "src": "Can_Red.glb",
+      "triangles": 332,
+      "bytes": 19960,
+      "sha256": "4e1cf7fe913e1def"
+    },
+    {
+      "file": "props/hm_bathtub.glb",
+      "source": "quaternius-house-interior",
+      "src": "Bathroom_Bathtub.glb",
+      "triangles": 248,
+      "bytes": 9984,
+      "sha256": "c917a3cbc814ccb9"
+    },
+    {
+      "file": "props/hm_shower.glb",
+      "source": "quaternius-house-interior",
+      "src": "Bathroom_Shower1.glb",
+      "triangles": 652,
+      "bytes": 36964,
+      "sha256": "867c9e74d9acceed"
+    },
+    {
+      "file": "props/hm_bathroom_sink.glb",
+      "source": "quaternius-house-interior",
+      "src": "Bathroom_Sink.glb",
+      "triangles": 350,
+      "bytes": 11796,
+      "sha256": "d57554b074a418dc"
+    },
+    {
+      "file": "props/hm_toilet.glb",
+      "source": "quaternius-house-interior",
+      "src": "Bathroom_Toilet.glb",
+      "triangles": 402,
+      "bytes": 13808,
+      "sha256": "de7b96f2f80bc85d"
+    },
+    {
+      "file": "props/hm_washer.glb",
+      "source": "quaternius-house-interior",
+      "src": "Bathroom_WashingMachine.glb",
+      "triangles": 304,
+      "bytes": 15248,
+      "sha256": "aa02f9e0d8b3e0c4"
+    },
+    {
+      "file": "props/hm_bunk_bed.glb",
+      "source": "quaternius-house-interior",
+      "src": "Bed_Bunk.glb",
+      "triangles": 960,
+      "bytes": 30032,
+      "sha256": "38c5699335247861"
+    },
+    {
+      "file": "props/hm_bed_king.glb",
+      "source": "quaternius-house-interior",
+      "src": "Bed_King.glb",
+      "triangles": 676,
+      "bytes": 23232,
+      "sha256": "c01d8264b022915c"
+    },
+    {
+      "file": "props/hm_bed_single.glb",
+      "source": "quaternius-house-interior",
+      "src": "Bed_Single.glb",
+      "triangles": 536,
+      "bytes": 20100,
+      "sha256": "8c9bec4f778420ee"
+    },
+    {
+      "file": "props/hm_bookshelf.glb",
+      "source": "quaternius-house-interior",
+      "src": "Bookshelf.glb",
+      "triangles": 120,
+      "bytes": 7628,
+      "sha256": "81db35f2648d6923"
+    },
+    {
+      "file": "props/hm_chair_wood.glb",
+      "source": "quaternius-house-interior",
+      "src": "Chair_1.glb",
+      "triangles": 216,
+      "bytes": 12448,
+      "sha256": "2a59dfb76ff16480"
+    },
+    {
+      "file": "props/hm_chair_office.glb",
+      "source": "quaternius-house-interior",
+      "src": "Chair_3.glb",
+      "triangles": 428,
+      "bytes": 20512,
+      "sha256": "028d727cb2f03e36"
+    },
+    {
+      "file": "props/hm_couch_l.glb",
+      "source": "quaternius-house-interior",
+      "src": "Couch_L.glb",
+      "triangles": 1428,
+      "bytes": 30016,
+      "sha256": "81af67f2410b0ff1"
+    },
+    {
+      "file": "props/hm_couch_large.glb",
+      "source": "quaternius-house-interior",
+      "src": "Couch_Large1.glb",
+      "triangles": 1460,
+      "bytes": 29876,
+      "sha256": "ab1d83de23cacfe5"
+    },
+    {
+      "file": "props/hm_couch.glb",
+      "source": "quaternius-house-interior",
+      "src": "Couch_Medium1.glb",
+      "triangles": 1012,
+      "bytes": 22044,
+      "sha256": "5ac9e5d159c8aedd"
+    },
+    {
+      "file": "props/hm_armchair.glb",
+      "source": "quaternius-house-interior",
+      "src": "Couch_Small1.glb",
+      "triangles": 852,
+      "bytes": 18136,
+      "sha256": "2ad85d9623c9f429"
+    },
+    {
+      "file": "props/hm_dresser.glb",
+      "source": "quaternius-house-interior",
+      "src": "Drawer_1.glb",
+      "triangles": 404,
+      "bytes": 13292,
+      "sha256": "93f22d6e7aacc704"
+    },
+    {
+      "file": "props/hm_chest_drawers.glb",
+      "source": "quaternius-house-interior",
+      "src": "Drawer_3.glb",
+      "triangles": 604,
+      "bytes": 26304,
+      "sha256": "5ab59547523c7b62"
+    },
+    {
+      "file": "props/hm_fireplace.glb",
+      "source": "quaternius-house-interior",
+      "src": "Fireplace.glb",
+      "triangles": 360,
+      "bytes": 17188,
+      "sha256": "da75cd826b373372"
+    },
+    {
+      "file": "props/hm_kitchen_counter.glb",
+      "source": "quaternius-house-interior",
+      "src": "Kitchen_2Drawers.glb",
+      "triangles": 148,
+      "bytes": 8768,
+      "sha256": "ba7e6a3a7682ffe3"
+    },
+    {
+      "file": "props/hm_kitchen_counter_long.glb",
+      "source": "quaternius-house-interior",
+      "src": "Kitchen_3Drawers.glb",
+      "triangles": 212,
+      "bytes": 11364,
+      "sha256": "bba02ef9e2096266"
+    },
+    {
+      "file": "props/hm_kitchen_cabinet.glb",
+      "source": "quaternius-house-interior",
+      "src": "Kitchen_Cabinet1.glb",
+      "triangles": 68,
+      "bytes": 4828,
+      "sha256": "a6d2b2a8975a511a"
+    },
+    {
+      "file": "props/hm_fridge.glb",
+      "source": "quaternius-house-interior",
+      "src": "Kitchen_Fridge.glb",
+      "triangles": 404,
+      "bytes": 16444,
+      "sha256": "132c315c5080b72e"
+    },
+    {
+      "file": "props/hm_oven.glb",
+      "source": "quaternius-house-interior",
+      "src": "Kitchen_Oven.glb",
+      "triangles": 524,
+      "bytes": 27520,
+      "sha256": "351b3e8c03806cd5"
+    },
+    {
+      "file": "props/hm_kitchen_sink.glb",
+      "source": "quaternius-house-interior",
+      "src": "Kitchen_Sink.glb",
+      "triangles": 444,
+      "bytes": 23892,
+      "sha256": "6353c1776e17d5d3"
+    },
+    {
+      "file": "props/hm_nightstand.glb",
+      "source": "quaternius-house-interior",
+      "src": "NightStand_1.glb",
+      "triangles": 172,
+      "bytes": 9572,
+      "sha256": "0018e192655ea5a6"
+    },
+    {
+      "file": "props/hm_shelf_large.glb",
+      "source": "quaternius-house-interior",
+      "src": "Shelf_Large.glb",
+      "triangles": 220,
+      "bytes": 12472,
+      "sha256": "aae5a6c5e826e3e5"
+    },
+    {
+      "file": "props/hm_stool.glb",
+      "source": "quaternius-house-interior",
+      "src": "Stool.glb",
+      "triangles": 500,
+      "bytes": 17176,
+      "sha256": "4c0e22429507e933"
+    },
+    {
+      "file": "props/hm_table_round.glb",
+      "source": "quaternius-house-interior",
+      "src": "Table_RoundLarge.glb",
+      "triangles": 592,
+      "bytes": 22408,
+      "sha256": "0028c678eb13f82c"
+    },
+    {
+      "file": "props/hm_side_table.glb",
+      "source": "quaternius-house-interior",
+      "src": "Table_RoundSmall.glb",
+      "triangles": 592,
+      "bytes": 18148,
+      "sha256": "87080d2719700b2d"
+    },
+    {
+      "file": "props/hm_bin_large.glb",
+      "source": "quaternius-house-interior",
+      "src": "Trashcan_Large.glb",
+      "triangles": 646,
+      "bytes": 20612,
+      "sha256": "1f563316f410f09f"
+    },
+    {
+      "file": "props/hm_door.glb",
+      "source": "quaternius-house-interior",
+      "src": "Door_1.glb",
+      "triangles": 456,
+      "bytes": 20716,
+      "sha256": "0040a88a4979a3c6"
+    },
+    {
+      "file": "props/hm_door_double.glb",
+      "source": "quaternius-house-interior",
+      "src": "Door_Double.glb",
+      "triangles": 1720,
+      "bytes": 60952,
+      "sha256": "914d3174d7b1199c"
+    },
+    {
+      "file": "props/hm_rug.glb",
+      "source": "quaternius-house-interior",
+      "src": "Carpet_1.glb",
+      "triangles": 108,
+      "bytes": 5144,
+      "sha256": "321ff817a8a6a715"
+    },
+    {
+      "file": "props/hm_rug_round.glb",
+      "source": "quaternius-house-interior",
+      "src": "Carpet_Round.glb",
+      "triangles": 128,
+      "bytes": 5624,
+      "sha256": "d2d39175fe552908"
+    },
+    {
+      "file": "props/hm_houseplant.glb",
+      "source": "quaternius-house-interior",
+      "src": "Houseplant_1.glb",
+      "triangles": 245,
+      "bytes": 9440,
+      "sha256": "99da15cee3c1c074"
+    },
+    {
+      "file": "props/hm_houseplant_tall.glb",
+      "source": "quaternius-house-interior",
+      "src": "Houseplant_3.glb",
+      "triangles": 412,
+      "bytes": 21400,
+      "sha256": "2b1085a636903c7a"
+    },
+    {
+      "file": "props/hm_potted_palm.glb",
+      "source": "quaternius-house-interior",
+      "src": "Houseplant_5.glb",
+      "triangles": 492,
+      "bytes": 19536,
+      "sha256": "e8130e6e80ae9279"
+    },
+    {
+      "file": "props/hm_floor_lamp.glb",
+      "source": "quaternius-house-interior",
+      "src": "Light_Floor1.glb",
+      "triangles": 226,
+      "bytes": 8824,
+      "sha256": "b151b6b886851261"
+    },
+    {
+      "file": "props/hm_desk_lamp.glb",
+      "source": "quaternius-house-interior",
+      "src": "Light_Desk.glb",
+      "triangles": 356,
+      "bytes": 11560,
+      "sha256": "ed2b738da38ae879"
+    },
+    {
+      "file": "props/hm_chandelier.glb",
+      "source": "quaternius-house-interior",
+      "src": "Light_Chandelier.glb",
+      "triangles": 972,
+      "bytes": 24448,
+      "sha256": "056f77402e3f7fc4"
+    },
+    {
+      "file": "props/hm_wall_shelf.glb",
+      "source": "quaternius-house-interior",
+      "src": "Shelf_1.glb",
+      "triangles": 96,
+      "bytes": 6272,
+      "sha256": "6e358ae58656fe1f"
+    },
+    {
+      "file": "props/hm_window.glb",
+      "source": "quaternius-house-interior",
+      "src": "Window_Large1.glb",
+      "triangles": 252,
+      "bytes": 12348,
+      "sha256": "24e1248e40db316e"
+    },
+    {
+      "file": "props/nt_birch.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "BirchTree_1.glb",
+      "triangles": 1704,
+      "bytes": 95812,
+      "sha256": "e15f4bf409b4e249"
+    },
+    {
+      "file": "props/nt_birch_autumn.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "BirchTree_Autumn_1.glb",
+      "triangles": 1704,
+      "bytes": 95816,
+      "sha256": "bcb9c39b73948c50"
+    },
+    {
+      "file": "props/nt_birch_snow.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "BirchTree_Snow_1.glb",
+      "triangles": 1804,
+      "bytes": 101880,
+      "sha256": "06f6c22aad2177f1"
+    },
+    {
+      "file": "props/nt_common_tree.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "CommonTree_1.glb",
+      "triangles": 2888,
+      "bytes": 157812,
+      "sha256": "a9fc90f806a3f126"
+    },
+    {
+      "file": "props/nt_common_tree_2.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "CommonTree_2.glb",
+      "triangles": 2952,
+      "bytes": 161272,
+      "sha256": "8cf7468fc0efc4e0"
+    },
+    {
+      "file": "props/nt_common_tree_autumn.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "CommonTree_Autumn_1.glb",
+      "triangles": 2888,
+      "bytes": 157812,
+      "sha256": "899e89ad54a0dece"
+    },
+    {
+      "file": "props/nt_dead_tree.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "CommonTree_Dead_1.glb",
+      "triangles": 2360,
+      "bytes": 128628,
+      "sha256": "0b9f1fa95d199932"
+    },
+    {
+      "file": "props/nt_common_tree_snow.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "CommonTree_Snow_1.glb",
+      "triangles": 2966,
+      "bytes": 162832,
+      "sha256": "d1a2b994a6cb8311"
+    },
+    {
+      "file": "props/nt_pine_tall.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "PineTree_1.glb",
+      "triangles": 1920,
+      "bytes": 104528,
+      "sha256": "4de0194d26f04a2a"
+    },
+    {
+      "file": "props/nt_pine_small.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "PineTree_3.glb",
+      "triangles": 2392,
+      "bytes": 130792,
+      "sha256": "2903fa25b2239013"
+    },
+    {
+      "file": "props/nt_pine_snow_tall.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "PineTree_Snow_1.glb",
+      "triangles": 1920,
+      "bytes": 105196,
+      "sha256": "e362327591fba193"
+    },
+    {
+      "file": "props/nt_pine_autumn.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "PineTree_Autumn_1.glb",
+      "triangles": 1920,
+      "bytes": 105268,
+      "sha256": "712862c4f01dfff4"
+    },
+    {
+      "file": "props/nt_palm_curved.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "PalmTree_1.glb",
+      "triangles": 1772,
+      "bytes": 99552,
+      "sha256": "9016f0f20da4ec62"
+    },
+    {
+      "file": "props/nt_palm_tall.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "PalmTree_3.glb",
+      "triangles": 1496,
+      "bytes": 86476,
+      "sha256": "6d26f0062d7d238a"
+    },
+    {
+      "file": "props/nt_willow.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Willow_1.glb",
+      "triangles": 1946,
+      "bytes": 107448,
+      "sha256": "9c3b52a5cb5a009f"
+    },
+    {
+      "file": "props/nt_willow_autumn.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Willow_Autumn_1.glb",
+      "triangles": 1946,
+      "bytes": 107444,
+      "sha256": "beb414ddede81bfd"
+    },
+    {
+      "file": "props/nt_willow_dead.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Willow_Dead_1.glb",
+      "triangles": 1128,
+      "bytes": 62704,
+      "sha256": "b92d9f621d7d3bca"
+    },
+    {
+      "file": "props/nt_saguaro.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Cactus_1.glb",
+      "triangles": 434,
+      "bytes": 29432,
+      "sha256": "71d58d44ad283eda"
+    },
+    {
+      "file": "props/nt_cactus_round.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Cactus_3.glb",
+      "triangles": 416,
+      "bytes": 23640,
+      "sha256": "dab2a8a553fa0a58"
+    },
+    {
+      "file": "props/nt_cactus_flowers.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "CactusFlowers_2.glb",
+      "triangles": 1488,
+      "bytes": 83364,
+      "sha256": "2c3ffb3df7919009"
+    },
+    {
+      "file": "props/nt_bush_leafy.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Bush_1.glb",
+      "triangles": 364,
+      "bytes": 20804,
+      "sha256": "06c66a22a40ab647"
+    },
+    {
+      "file": "props/nt_bush_berries.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "BushBerries_1.glb",
+      "triangles": 892,
+      "bytes": 50028,
+      "sha256": "92dcf612658797bc"
+    },
+    {
+      "file": "props/nt_bush_snow.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Bush_Snow_1.glb",
+      "triangles": 460,
+      "bytes": 26688,
+      "sha256": "a3426c27149d8ffa"
+    },
+    {
+      "file": "props/nt_corn.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Corn_1.glb",
+      "triangles": 566,
+      "bytes": 32672,
+      "sha256": "aa71782f127105a4"
+    },
+    {
+      "file": "props/nt_wheat.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Wheat.glb",
+      "triangles": 408,
+      "bytes": 22364,
+      "sha256": "96a113ff6899594f"
+    },
+    {
+      "file": "props/nt_wildflowers.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Flowers.glb",
+      "triangles": 408,
+      "bytes": 25320,
+      "sha256": "073e84fc4f1e8d09"
+    },
+    {
+      "file": "props/nt_fern_wide.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Plant_1.glb",
+      "triangles": 296,
+      "bytes": 17940,
+      "sha256": "40c588d9855bfc61"
+    },
+    {
+      "file": "props/nt_boulder_tall.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Rock_1.glb",
+      "triangles": 70,
+      "bytes": 5012,
+      "sha256": "34f3420d41be0be4"
+    },
+    {
+      "file": "props/nt_boulder.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Rock_3.glb",
+      "triangles": 72,
+      "bytes": 5304,
+      "sha256": "18969fedeccac67a"
+    },
+    {
+      "file": "props/nt_rock_flat.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Rock_5.glb",
+      "triangles": 90,
+      "bytes": 6140,
+      "sha256": "f14985d14dfc63a4"
+    },
+    {
+      "file": "props/nt_boulder_moss.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Rock_Moss_1.glb",
+      "triangles": 70,
+      "bytes": 5672,
+      "sha256": "7ce4a569ea3002a4"
+    },
+    {
+      "file": "props/nt_rock_moss.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Rock_Moss_4.glb",
+      "triangles": 128,
+      "bytes": 8920,
+      "sha256": "f144e984f32c6ccb"
+    },
+    {
+      "file": "props/nt_boulder_snow.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Rock_Snow_1.glb",
+      "triangles": 102,
+      "bytes": 7400,
+      "sha256": "2329c622d5b69c94"
+    },
+    {
+      "file": "props/nt_rock_snow.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "Rock_Snow_3.glb",
+      "triangles": 96,
+      "bytes": 6740,
+      "sha256": "3be42e0014a5a6fa"
+    },
+    {
+      "file": "props/nt_stump_large.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "TreeStump.glb",
+      "triangles": 232,
+      "bytes": 15076,
+      "sha256": "710099074646f019"
+    },
+    {
+      "file": "props/nt_stump_moss.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "TreeStump_Moss.glb",
+      "triangles": 232,
+      "bytes": 14408,
+      "sha256": "921cdeafed5a72be"
+    },
+    {
+      "file": "props/nt_log_large.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "WoodLog.glb",
+      "triangles": 464,
+      "bytes": 28076,
+      "sha256": "ec473a6bcf8a164a"
+    },
+    {
+      "file": "props/nt_log_moss.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "WoodLog_Moss.glb",
+      "triangles": 614,
+      "bytes": 37936,
+      "sha256": "49013682042fc505"
+    },
+    {
+      "file": "props/nt_log_snow.glb",
+      "source": "quaternius-ultimate-nature",
+      "src": "WoodLog_Snow.glb",
+      "triangles": 280,
+      "bytes": 16972,
+      "sha256": "6d4cb49ac413a68f"
+    },
+    {
+      "file": "props/rn_arch_gothic.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Arch_Gothic.glb",
+      "triangles": 2904,
+      "bytes": 103220,
+      "sha256": "4535da34a9a55337"
+    },
+    {
+      "file": "props/rn_arch_round.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Arch_Round.glb",
+      "triangles": 2956,
+      "bytes": 102188,
+      "sha256": "e7ce860c275804cc"
+    },
+    {
+      "file": "props/rn_bookcase.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Bookcase_Full.glb",
+      "triangles": 3360,
+      "bytes": 134980,
+      "sha256": "ce7067147d733f4e"
+    },
+    {
+      "file": "props/rn_bridge.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "BridgeSection.glb",
+      "triangles": 1888,
+      "bytes": 69152,
+      "sha256": "5c959c9b2bad7efa"
+    },
+    {
+      "file": "props/rn_cart.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Cart.glb",
+      "triangles": 1432,
+      "bytes": 56236,
+      "sha256": "3d37f1a98124691b"
+    },
+    {
+      "file": "props/rn_column_round.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Column_Round.glb",
+      "triangles": 1010,
+      "bytes": 36984,
+      "sha256": "2e1d53d80901c473"
+    },
+    {
+      "file": "props/rn_column_square.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Column_Square.glb",
+      "triangles": 690,
+      "bytes": 30692,
+      "sha256": "859604c78b38298f"
+    },
+    {
+      "file": "props/rn_column_broken.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Column_Round_Short.glb",
+      "triangles": 634,
+      "bytes": 26500,
+      "sha256": "2d19381aa5333772"
+    },
+    {
+      "file": "props/rn_dead_tree.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "DeadTree_1.glb",
+      "triangles": 444,
+      "bytes": 12956,
+      "sha256": "076938820c5bcc10"
+    },
+    {
+      "file": "props/rn_door_gothic.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Doors_GothicArch.glb",
+      "triangles": 2184,
+      "bytes": 89524,
+      "sha256": "6172c42cd752491f"
+    },
+    {
+      "file": "props/rn_urn.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Pot1.glb",
+      "triangles": 1038,
+      "bytes": 30756,
+      "sha256": "377f7017c3bc4bab"
+    },
+    {
+      "file": "props/rn_urn_broken.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Pot1_Broken.glb",
+      "triangles": 432,
+      "bytes": 14476,
+      "sha256": "b2073b26da2ef66f"
+    },
+    {
+      "file": "props/rn_statue_fox.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Statue_Fox.glb",
+      "triangles": 2152,
+      "bytes": 65236,
+      "sha256": "36826c0be742991d"
+    },
+    {
+      "file": "props/rn_statue_stag.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Statue_Stag.glb",
+      "triangles": 4042,
+      "bytes": 125340,
+      "sha256": "07f8dd65e3c275dd"
+    },
+    {
+      "file": "props/rn_wall.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Wall.glb",
+      "triangles": 1296,
+      "bytes": 68588,
+      "sha256": "c959cd0a44928516"
+    },
+    {
+      "file": "props/rn_wall_broken.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Wall_Broken.glb",
+      "triangles": 976,
+      "bytes": 51924,
+      "sha256": "daceb67527bf5a80"
+    },
+    {
+      "file": "props/rn_wall_arch_ivy.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Wall_ArchRound_Overgrown.glb",
+      "triangles": 2602,
+      "bytes": 136164,
+      "sha256": "dc192641ac89177d"
+    },
+    {
+      "file": "props/rn_wall_hole.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Wall_Hole.glb",
+      "triangles": 912,
+      "bytes": 48568,
+      "sha256": "0f8ff86c1a0ab1f6"
+    },
+    {
+      "file": "props/rn_wall_half.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Wall_Half.glb",
+      "triangles": 632,
+      "bytes": 34172,
+      "sha256": "8f7e7ee70e7f1b64"
+    },
+    {
+      "file": "props/rn_window_bars.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Window_Bars.glb",
+      "triangles": 1222,
+      "bytes": 64680,
+      "sha256": "6b743f6c4eb40489"
+    },
+    {
+      "file": "props/rn_stairs.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Stairs.glb",
+      "triangles": 2272,
+      "bytes": 114204,
+      "sha256": "046af51e78c019fb"
+    },
+    {
+      "file": "props/rn_candles.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Candles_1.glb",
+      "triangles": 844,
+      "bytes": 25228,
+      "sha256": "872be8ae6d304d03"
+    },
+    {
+      "file": "props/rn_buttress.glb",
+      "source": "quaternius-modular-ruins",
+      "src": "Support_Tall.glb",
+      "triangles": 674,
+      "bytes": 27436,
+      "sha256": "2ff856f59f0d5223"
+    },
+    {
+      "file": "props/dg_arch.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Arch.glb",
+      "triangles": 4484,
+      "bytes": 235872,
+      "sha256": "a72b422f221ad971"
+    },
+    {
+      "file": "props/dg_arch_door.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Arch_Door.glb",
+      "triangles": 1220,
+      "bytes": 57416,
+      "sha256": "8aa76bbdf3940d5c"
+    },
+    {
+      "file": "props/dg_arch_bars.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Arch_bars.glb",
+      "triangles": 1603,
+      "bytes": 63480,
+      "sha256": "6152b67daca00cea"
+    },
+    {
+      "file": "props/dg_coin_bag.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Bag_Coins.glb",
+      "triangles": 976,
+      "bytes": 48812,
+      "sha256": "0260cb159ce21326"
+    },
+    {
+      "file": "props/dg_banner.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Banner.glb",
+      "triangles": 564,
+      "bytes": 30208,
+      "sha256": "30e1422b84f82344"
+    },
+    {
+      "file": "props/dg_barrel.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Barrel.glb",
+      "triangles": 1384,
+      "bytes": 72260,
+      "sha256": "1c59776b3f0bdf8a"
+    },
+    {
+      "file": "props/dg_bucket.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Bucket.glb",
+      "triangles": 360,
+      "bytes": 21676,
+      "sha256": "9557983f549abad7"
+    },
+    {
+      "file": "props/dg_chest.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Chest.glb",
+      "triangles": 1676,
+      "bytes": 79600,
+      "sha256": "d08f8386e23a065b"
+    },
+    {
+      "file": "props/dg_coin_pile.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Coin_Pile.glb",
+      "triangles": 3220,
+      "bytes": 141484,
+      "sha256": "2fdd5e962d15f445"
+    },
+    {
+      "file": "props/dg_pillar.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Column.glb",
+      "triangles": 440,
+      "bytes": 22800,
+      "sha256": "c88fdd695c82bda6"
+    },
+    {
+      "file": "props/dg_crate.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Crate.glb",
+      "triangles": 2502,
+      "bytes": 99060,
+      "sha256": "0660e11c79d6ed5a"
+    },
+    {
+      "file": "props/dg_pedestal.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Pedestal.glb",
+      "triangles": 1844,
+      "bytes": 85520,
+      "sha256": "ec5991afe0b493e0"
+    },
+    {
+      "file": "props/dg_skull.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Skull.glb",
+      "triangles": 1392,
+      "bytes": 76368,
+      "sha256": "809cfe18b6a57b4a"
+    },
+    {
+      "file": "props/dg_spikes.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Spikes.glb",
+      "triangles": 504,
+      "bytes": 31832,
+      "sha256": "dbe2fc56615404ab"
+    },
+    {
+      "file": "props/dg_statue_horse.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Statue_Horse.glb",
+      "triangles": 1850,
+      "bytes": 91964,
+      "sha256": "5e6614a6958a5993"
+    },
+    {
+      "file": "props/dg_sword_mount.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Sword_WallMount.glb",
+      "triangles": 2382,
+      "bytes": 110236,
+      "sha256": "5cdc45ecfc3ab8a6"
+    },
+    {
+      "file": "props/dg_table_long.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Table_Big.glb",
+      "triangles": 916,
+      "bytes": 46880,
+      "sha256": "1491d640c73a8fbf"
+    },
+    {
+      "file": "props/dg_table_small.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Table_Small.glb",
+      "triangles": 804,
+      "bytes": 41312,
+      "sha256": "8098e8c328a02a27"
+    },
+    {
+      "file": "props/dg_wall_torch.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Torch.glb",
+      "triangles": 386,
+      "bytes": 21912,
+      "sha256": "e4e4e04c83a61df0"
+    },
+    {
+      "file": "props/dg_vase.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Vase.glb",
+      "triangles": 220,
+      "bytes": 12860,
+      "sha256": "c19d3ad7d119b671"
+    },
+    {
+      "file": "props/dg_woodfire.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Woodfire.glb",
+      "triangles": 224,
+      "bytes": 15672,
+      "sha256": "a80e5313bec01fea"
+    },
+    {
+      "file": "props/dg_iron_fence.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Fence_Straight_Modular.glb",
+      "triangles": 104,
+      "bytes": 7220,
+      "sha256": "70d434c44d829cbf"
+    },
+    {
+      "file": "props/dg_stairs.glb",
+      "source": "quaternius-modular-dungeon",
+      "src": "Stairs_Modular.glb",
+      "triangles": 1420,
+      "bytes": 72356,
+      "sha256": "e1dcf265dec56ec7"
     }
   ]
 }

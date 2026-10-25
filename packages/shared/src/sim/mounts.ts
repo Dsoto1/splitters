@@ -8,7 +8,7 @@
  * metres from the mount's origin (its footprint centre on the ground).
  */
 
-export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship'] as const;
+export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank'] as const;
 export type MountModel = (typeof MOUNT_MODELS)[number];
 
 export type SeatRole = 'driver' | 'gunner' | 'passenger';
@@ -207,6 +207,24 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     blast: { radius: 6, damage: 110 },
     vehicle: { maxSpeed: 15, reverseSpeed: 5, accel: 5, turnRate: 0.9, hover: true, grip: 0.05, mass: 3.5, fly: { climb: 4, ceiling: 25 } },
     blurb: 'A flying troop carrier for six: a pilot, a door gunner and four riding on the deck',
+  },
+  tank: {
+    id: 'tank',
+    displayName: 'Tank',
+    kind: 'vehicle',
+    model: 'vehicles/tank.glb',
+    health: 1200,
+    half: [2.1, 1.0, 3.0],
+    seats: [
+      { role: 'driver', label: 'Driver', offset: [-0.5, 2.0, 1.2] },
+      { role: 'gunner', label: 'Cannon', offset: [0, 2.9, -0.4], weapon: 'core.tank_cannon', arc: 0.6 },
+      { role: 'gunner', label: 'Roof gun', offset: [0.9, 2.9, -1.0], weapon: 'core.mount_mg', arc: ALL_ROUND },
+    ],
+    enterRadius: 4,
+    respawnSeconds: 75,
+    blast: { radius: 6, damage: 120 },
+    vehicle: { maxSpeed: 11, reverseSpeed: 5, accel: 5, turnRate: 1.0, grip: 0.45, mass: 6 },
+    blurb: 'A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun',
   },
 };
 

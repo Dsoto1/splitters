@@ -126,6 +126,51 @@
       "textureSize": 512,
       "normalSize": 256,
       "decalSize": 512
+    },
+    "quaternius-survival-pack": {
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-survival-pack/License.txt",
+      "retrieved": "2026-10-25",
+      "objSource": "Survival Pack - Sept 2020/OBJ"
+    },
+    "quaternius-house-interior": {
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-house-interior/License.txt",
+      "retrieved": "2026-10-25",
+      "objSource": "Ultimate House Interior Pack - June 2020/OBJ"
+    },
+    "quaternius-ultimate-nature": {
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-ultimate-nature/License.txt",
+      "retrieved": "2026-10-25",
+      "objSource": "Ultimate Nature Pack - Jun 2019/OBJ"
+    },
+    "quaternius-modular-ruins": {
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-modular-ruins/License.txt",
+      "retrieved": "2026-10-25",
+      "objSource": "Ultimate Modular Ruins Pack - Aug 2021/OBJ"
+    },
+    "quaternius-modular-dungeon": {
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-modular-dungeon/License.txt",
+      "retrieved": "2026-10-25",
+      "objSource": "Updated Modular Dungeon - May 2019/OBJ"
     }
   },
   "budgets": {
@@ -3986,6 +4031,1317 @@
       "scale": 1,
       "collide": "none",
       "lift": 0.02
+    },
+    {
+      "id": "sv_backpack",
+      "pack": "quaternius-survival-pack",
+      "src": "Backpack.glb",
+      "name": "Backpack",
+      "category": "Survival",
+      "height": 0.55,
+      "collide": "none"
+    },
+    {
+      "id": "sv_campfire",
+      "pack": "quaternius-survival-pack",
+      "src": "Bonfire_Fire.glb",
+      "name": "Campfire",
+      "category": "Survival",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "sv_campfire_out",
+      "pack": "quaternius-survival-pack",
+      "src": "Bonfire.glb",
+      "name": "Campfire (out)",
+      "category": "Survival",
+      "height": 0.4,
+      "collide": "box"
+    },
+    {
+      "id": "sv_beartrap",
+      "pack": "quaternius-survival-pack",
+      "src": "BearTrap_Open.glb",
+      "name": "Bear Trap",
+      "category": "Survival",
+      "height": 0.15,
+      "collide": "none"
+    },
+    {
+      "id": "sv_medkit_case",
+      "pack": "quaternius-survival-pack",
+      "src": "FirstAidKit_Hard.glb",
+      "name": "First Aid Case",
+      "category": "Survival",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "sv_gas_can",
+      "pack": "quaternius-survival-pack",
+      "src": "GasCan.glb",
+      "name": "Gas Can",
+      "category": "Survival",
+      "height": 0.45,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "sv_propane",
+      "pack": "quaternius-survival-pack",
+      "src": "PropaneTank.glb",
+      "name": "Propane Tank",
+      "category": "Survival",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "sv_radio",
+      "pack": "quaternius-survival-pack",
+      "src": "Radio.glb",
+      "name": "Radio",
+      "category": "Survival",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "sv_raft",
+      "pack": "quaternius-survival-pack",
+      "src": "Raft.glb",
+      "name": "Raft",
+      "category": "Survival",
+      "height": 0.5,
+      "collide": "box"
+    },
+    {
+      "id": "sv_tent",
+      "pack": "quaternius-survival-pack",
+      "src": "Tent.glb",
+      "name": "Tent",
+      "category": "Survival",
+      "height": 1.9,
+      "collide": "box"
+    },
+    {
+      "id": "sv_trashcan_metal",
+      "pack": "quaternius-survival-pack",
+      "src": "Trashcan.glb",
+      "name": "Metal Trash Can",
+      "category": "Survival",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "sv_torch_stand",
+      "pack": "quaternius-survival-pack",
+      "src": "WoodenTorch_Fire.glb",
+      "name": "Torch Stand",
+      "category": "Survival",
+      "height": 1.6,
+      "collide": "trunk"
+    },
+    {
+      "id": "sv_shovel",
+      "pack": "quaternius-survival-pack",
+      "src": "Shovel.glb",
+      "name": "Shovel",
+      "category": "Survival",
+      "height": 1.2,
+      "collide": "none"
+    },
+    {
+      "id": "sv_axe",
+      "pack": "quaternius-survival-pack",
+      "src": "Axe.glb",
+      "name": "Axe",
+      "category": "Survival",
+      "height": 0.8,
+      "collide": "none"
+    },
+    {
+      "id": "sv_cook_pot",
+      "pack": "quaternius-survival-pack",
+      "src": "Pot.glb",
+      "name": "Cooking Pot",
+      "category": "Survival",
+      "height": 0.35,
+      "collide": "none"
+    },
+    {
+      "id": "sv_can",
+      "pack": "quaternius-survival-pack",
+      "src": "Can_Red.glb",
+      "name": "Tin Can",
+      "category": "Survival",
+      "height": 0.15,
+      "collide": "none"
+    },
+    {
+      "id": "hm_bathtub",
+      "pack": "quaternius-house-interior",
+      "src": "Bathroom_Bathtub.glb",
+      "name": "Bathtub",
+      "category": "Home",
+      "height": 0.75,
+      "collide": "box"
+    },
+    {
+      "id": "hm_shower",
+      "pack": "quaternius-house-interior",
+      "src": "Bathroom_Shower1.glb",
+      "name": "Shower",
+      "category": "Home",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bathroom_sink",
+      "pack": "quaternius-house-interior",
+      "src": "Bathroom_Sink.glb",
+      "name": "Bathroom Sink",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_toilet",
+      "pack": "quaternius-house-interior",
+      "src": "Bathroom_Toilet.glb",
+      "name": "Toilet",
+      "category": "Home",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "hm_washer",
+      "pack": "quaternius-house-interior",
+      "src": "Bathroom_WashingMachine.glb",
+      "name": "Washing Machine",
+      "category": "Home",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bunk_bed",
+      "pack": "quaternius-house-interior",
+      "src": "Bed_Bunk.glb",
+      "name": "Bunk Bed",
+      "category": "Home",
+      "height": 1.8,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bed_king",
+      "pack": "quaternius-house-interior",
+      "src": "Bed_King.glb",
+      "name": "King Bed",
+      "category": "Home",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bed_single",
+      "pack": "quaternius-house-interior",
+      "src": "Bed_Single.glb",
+      "name": "Single Bed",
+      "category": "Home",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bookshelf",
+      "pack": "quaternius-house-interior",
+      "src": "Bookshelf.glb",
+      "name": "Bookshelf",
+      "category": "Home",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_chair_wood",
+      "pack": "quaternius-house-interior",
+      "src": "Chair_1.glb",
+      "name": "Wooden Chair",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_chair_office",
+      "pack": "quaternius-house-interior",
+      "src": "Chair_3.glb",
+      "name": "Office Chair",
+      "category": "Home",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_couch_l",
+      "pack": "quaternius-house-interior",
+      "src": "Couch_L.glb",
+      "name": "Corner Sofa",
+      "category": "Home",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "hm_couch_large",
+      "pack": "quaternius-house-interior",
+      "src": "Couch_Large1.glb",
+      "name": "Large Sofa",
+      "category": "Home",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "hm_couch",
+      "pack": "quaternius-house-interior",
+      "src": "Couch_Medium1.glb",
+      "name": "Sofa",
+      "category": "Home",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "hm_armchair",
+      "pack": "quaternius-house-interior",
+      "src": "Couch_Small1.glb",
+      "name": "Armchair",
+      "category": "Home",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "hm_dresser",
+      "pack": "quaternius-house-interior",
+      "src": "Drawer_1.glb",
+      "name": "Dresser",
+      "category": "Home",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_chest_drawers",
+      "pack": "quaternius-house-interior",
+      "src": "Drawer_3.glb",
+      "name": "Chest of Drawers",
+      "category": "Home",
+      "height": 1.3,
+      "collide": "box"
+    },
+    {
+      "id": "hm_fireplace",
+      "pack": "quaternius-house-interior",
+      "src": "Fireplace.glb",
+      "name": "Fireplace",
+      "category": "Home",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "hm_kitchen_counter",
+      "pack": "quaternius-house-interior",
+      "src": "Kitchen_2Drawers.glb",
+      "name": "Kitchen Counter",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_kitchen_counter_long",
+      "pack": "quaternius-house-interior",
+      "src": "Kitchen_3Drawers.glb",
+      "name": "Long Kitchen Counter",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_kitchen_cabinet",
+      "pack": "quaternius-house-interior",
+      "src": "Kitchen_Cabinet1.glb",
+      "name": "Kitchen Cabinet",
+      "category": "Home",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_fridge",
+      "pack": "quaternius-house-interior",
+      "src": "Kitchen_Fridge.glb",
+      "name": "Fridge",
+      "category": "Home",
+      "height": 1.9,
+      "collide": "box"
+    },
+    {
+      "id": "hm_oven",
+      "pack": "quaternius-house-interior",
+      "src": "Kitchen_Oven.glb",
+      "name": "Oven",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_kitchen_sink",
+      "pack": "quaternius-house-interior",
+      "src": "Kitchen_Sink.glb",
+      "name": "Kitchen Sink",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_nightstand",
+      "pack": "quaternius-house-interior",
+      "src": "NightStand_1.glb",
+      "name": "Nightstand",
+      "category": "Home",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "hm_shelf_large",
+      "pack": "quaternius-house-interior",
+      "src": "Shelf_Large.glb",
+      "name": "Large Shelf",
+      "category": "Home",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_stool",
+      "pack": "quaternius-house-interior",
+      "src": "Stool.glb",
+      "name": "Stool",
+      "category": "Home",
+      "height": 0.65,
+      "collide": "box"
+    },
+    {
+      "id": "hm_table_round",
+      "pack": "quaternius-house-interior",
+      "src": "Table_RoundLarge.glb",
+      "name": "Round Table",
+      "category": "Home",
+      "height": 0.78,
+      "collide": "box"
+    },
+    {
+      "id": "hm_side_table",
+      "pack": "quaternius-house-interior",
+      "src": "Table_RoundSmall.glb",
+      "name": "Side Table",
+      "category": "Home",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bin_large",
+      "pack": "quaternius-house-interior",
+      "src": "Trashcan_Large.glb",
+      "name": "Large Bin",
+      "category": "Home",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_door",
+      "pack": "quaternius-house-interior",
+      "src": "Door_1.glb",
+      "name": "Door",
+      "category": "Home",
+      "height": 2.1,
+      "collide": "box"
+    },
+    {
+      "id": "hm_door_double",
+      "pack": "quaternius-house-interior",
+      "src": "Door_Double.glb",
+      "name": "Double Door",
+      "category": "Home",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "hm_rug",
+      "pack": "quaternius-house-interior",
+      "src": "Carpet_1.glb",
+      "name": "Rug",
+      "category": "Home",
+      "height": 0.03,
+      "collide": "none"
+    },
+    {
+      "id": "hm_rug_round",
+      "pack": "quaternius-house-interior",
+      "src": "Carpet_Round.glb",
+      "name": "Round Rug",
+      "category": "Home",
+      "height": 0.03,
+      "collide": "none"
+    },
+    {
+      "id": "hm_houseplant",
+      "pack": "quaternius-house-interior",
+      "src": "Houseplant_1.glb",
+      "name": "Houseplant",
+      "category": "Home",
+      "height": 0.9,
+      "collide": "none"
+    },
+    {
+      "id": "hm_houseplant_tall",
+      "pack": "quaternius-house-interior",
+      "src": "Houseplant_3.glb",
+      "name": "Tall Houseplant",
+      "category": "Home",
+      "height": 1.4,
+      "collide": "none"
+    },
+    {
+      "id": "hm_potted_palm",
+      "pack": "quaternius-house-interior",
+      "src": "Houseplant_5.glb",
+      "name": "Potted Palm",
+      "category": "Home",
+      "height": 1.6,
+      "collide": "none"
+    },
+    {
+      "id": "hm_floor_lamp",
+      "pack": "quaternius-house-interior",
+      "src": "Light_Floor1.glb",
+      "name": "Floor Lamp",
+      "category": "Home",
+      "height": 1.6,
+      "collide": "none"
+    },
+    {
+      "id": "hm_desk_lamp",
+      "pack": "quaternius-house-interior",
+      "src": "Light_Desk.glb",
+      "name": "Desk Lamp",
+      "category": "Home",
+      "height": 0.45,
+      "collide": "none"
+    },
+    {
+      "id": "hm_chandelier",
+      "pack": "quaternius-house-interior",
+      "src": "Light_Chandelier.glb",
+      "name": "Chandelier",
+      "category": "Home",
+      "height": 1.0,
+      "collide": "none"
+    },
+    {
+      "id": "hm_wall_shelf",
+      "pack": "quaternius-house-interior",
+      "src": "Shelf_1.glb",
+      "name": "Wall Shelf",
+      "category": "Home",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "hm_window",
+      "pack": "quaternius-house-interior",
+      "src": "Window_Large1.glb",
+      "name": "Window",
+      "category": "Home",
+      "height": 1.6,
+      "collide": "none"
+    },
+    {
+      "id": "nt_birch",
+      "pack": "quaternius-ultimate-nature",
+      "src": "BirchTree_1.glb",
+      "name": "Birch",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_birch_autumn",
+      "pack": "quaternius-ultimate-nature",
+      "src": "BirchTree_Autumn_1.glb",
+      "name": "Autumn Birch",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_birch_snow",
+      "pack": "quaternius-ultimate-nature",
+      "src": "BirchTree_Snow_1.glb",
+      "name": "Snowy Birch",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_common_tree",
+      "pack": "quaternius-ultimate-nature",
+      "src": "CommonTree_1.glb",
+      "name": "Broadleaf Tree",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_common_tree_2",
+      "pack": "quaternius-ultimate-nature",
+      "src": "CommonTree_2.glb",
+      "name": "Broadleaf Tree (round)",
+      "category": "Trees",
+      "height": 6.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_common_tree_autumn",
+      "pack": "quaternius-ultimate-nature",
+      "src": "CommonTree_Autumn_1.glb",
+      "name": "Autumn Broadleaf",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_dead_tree",
+      "pack": "quaternius-ultimate-nature",
+      "src": "CommonTree_Dead_1.glb",
+      "name": "Dead Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_common_tree_snow",
+      "pack": "quaternius-ultimate-nature",
+      "src": "CommonTree_Snow_1.glb",
+      "name": "Snowy Broadleaf",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_pine_tall",
+      "pack": "quaternius-ultimate-nature",
+      "src": "PineTree_1.glb",
+      "name": "Tall Pine",
+      "category": "Trees",
+      "height": 9.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_pine_small",
+      "pack": "quaternius-ultimate-nature",
+      "src": "PineTree_3.glb",
+      "name": "Young Pine",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_pine_snow_tall",
+      "pack": "quaternius-ultimate-nature",
+      "src": "PineTree_Snow_1.glb",
+      "name": "Snowy Tall Pine",
+      "category": "Trees",
+      "height": 9.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_pine_autumn",
+      "pack": "quaternius-ultimate-nature",
+      "src": "PineTree_Autumn_1.glb",
+      "name": "Autumn Pine",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_palm_curved",
+      "pack": "quaternius-ultimate-nature",
+      "src": "PalmTree_1.glb",
+      "name": "Curved Palm",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_palm_tall",
+      "pack": "quaternius-ultimate-nature",
+      "src": "PalmTree_3.glb",
+      "name": "Tall Palm",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_willow",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Willow_1.glb",
+      "name": "Willow",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_willow_autumn",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Willow_Autumn_1.glb",
+      "name": "Autumn Willow",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_willow_dead",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Willow_Dead_1.glb",
+      "name": "Dead Willow",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_saguaro",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Cactus_1.glb",
+      "name": "Saguaro Cactus",
+      "category": "Plants & Flowers",
+      "height": 3.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_cactus_round",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Cactus_3.glb",
+      "name": "Barrel Cactus",
+      "category": "Plants & Flowers",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "nt_cactus_flowers",
+      "pack": "quaternius-ultimate-nature",
+      "src": "CactusFlowers_2.glb",
+      "name": "Flowering Cactus",
+      "category": "Plants & Flowers",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "nt_bush_leafy",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Bush_1.glb",
+      "name": "Leafy Bush",
+      "category": "Plants & Flowers",
+      "height": 1.2,
+      "collide": "none"
+    },
+    {
+      "id": "nt_bush_berries",
+      "pack": "quaternius-ultimate-nature",
+      "src": "BushBerries_1.glb",
+      "name": "Berry Bush",
+      "category": "Plants & Flowers",
+      "height": 1.1,
+      "collide": "none"
+    },
+    {
+      "id": "nt_bush_snow",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Bush_Snow_1.glb",
+      "name": "Snowy Bush",
+      "category": "Plants & Flowers",
+      "height": 1.1,
+      "collide": "none"
+    },
+    {
+      "id": "nt_corn",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Corn_1.glb",
+      "name": "Corn",
+      "category": "Plants & Flowers",
+      "height": 2.0,
+      "collide": "none"
+    },
+    {
+      "id": "nt_wheat",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Wheat.glb",
+      "name": "Wheat",
+      "category": "Plants & Flowers",
+      "height": 1.0,
+      "collide": "none"
+    },
+    {
+      "id": "nt_wildflowers",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Flowers.glb",
+      "name": "Wildflowers",
+      "category": "Plants & Flowers",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "nt_fern_wide",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Plant_1.glb",
+      "name": "Wide Fern",
+      "category": "Plants & Flowers",
+      "height": 0.8,
+      "collide": "none"
+    },
+    {
+      "id": "nt_boulder_tall",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Rock_1.glb",
+      "name": "Tall Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "nt_boulder",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Rock_3.glb",
+      "name": "Boulder",
+      "category": "Rocks & Wood",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "nt_rock_flat",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Rock_5.glb",
+      "name": "Flat Rock",
+      "category": "Rocks & Wood",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "nt_boulder_moss",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Rock_Moss_1.glb",
+      "name": "Mossy Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "nt_rock_moss",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Rock_Moss_4.glb",
+      "name": "Mossy Rock",
+      "category": "Rocks & Wood",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "nt_boulder_snow",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Rock_Snow_1.glb",
+      "name": "Snowy Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "nt_rock_snow",
+      "pack": "quaternius-ultimate-nature",
+      "src": "Rock_Snow_3.glb",
+      "name": "Snowy Rock",
+      "category": "Rocks & Wood",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "nt_stump_large",
+      "pack": "quaternius-ultimate-nature",
+      "src": "TreeStump.glb",
+      "name": "Large Stump",
+      "category": "Rocks & Wood",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "nt_stump_moss",
+      "pack": "quaternius-ultimate-nature",
+      "src": "TreeStump_Moss.glb",
+      "name": "Mossy Stump",
+      "category": "Rocks & Wood",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "nt_log_large",
+      "pack": "quaternius-ultimate-nature",
+      "src": "WoodLog.glb",
+      "name": "Large Log",
+      "category": "Rocks & Wood",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "nt_log_moss",
+      "pack": "quaternius-ultimate-nature",
+      "src": "WoodLog_Moss.glb",
+      "name": "Mossy Log",
+      "category": "Rocks & Wood",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "nt_log_snow",
+      "pack": "quaternius-ultimate-nature",
+      "src": "WoodLog_Snow.glb",
+      "name": "Snowy Log",
+      "category": "Rocks & Wood",
+      "height": 0.75,
+      "collide": "box"
+    },
+    {
+      "id": "rn_arch_gothic",
+      "pack": "quaternius-modular-ruins",
+      "src": "Arch_Gothic.glb",
+      "name": "Gothic Arch",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_arch_round",
+      "pack": "quaternius-modular-ruins",
+      "src": "Arch_Round.glb",
+      "name": "Round Arch",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_bookcase",
+      "pack": "quaternius-modular-ruins",
+      "src": "Bookcase_Full.glb",
+      "name": "Old Bookcase",
+      "category": "Ruins",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "rn_bridge",
+      "pack": "quaternius-modular-ruins",
+      "src": "BridgeSection.glb",
+      "name": "Stone Bridge",
+      "category": "Ruins",
+      "height": 2.4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_cart",
+      "pack": "quaternius-modular-ruins",
+      "src": "Cart.glb",
+      "name": "Hand Cart",
+      "category": "Ruins",
+      "height": 1.3,
+      "collide": "box"
+    },
+    {
+      "id": "rn_column_round",
+      "pack": "quaternius-modular-ruins",
+      "src": "Column_Round.glb",
+      "name": "Round Column",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "box"
+    },
+    {
+      "id": "rn_column_square",
+      "pack": "quaternius-modular-ruins",
+      "src": "Column_Square.glb",
+      "name": "Square Column",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "box"
+    },
+    {
+      "id": "rn_column_broken",
+      "pack": "quaternius-modular-ruins",
+      "src": "Column_Round_Short.glb",
+      "name": "Broken Column",
+      "category": "Ruins",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "rn_dead_tree",
+      "pack": "quaternius-modular-ruins",
+      "src": "DeadTree_1.glb",
+      "name": "Gnarled Tree",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "trunk"
+    },
+    {
+      "id": "rn_door_gothic",
+      "pack": "quaternius-modular-ruins",
+      "src": "Doors_GothicArch.glb",
+      "name": "Gothic Doors",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_urn",
+      "pack": "quaternius-modular-ruins",
+      "src": "Pot1.glb",
+      "name": "Urn",
+      "category": "Ruins",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "rn_urn_broken",
+      "pack": "quaternius-modular-ruins",
+      "src": "Pot1_Broken.glb",
+      "name": "Broken Urn",
+      "category": "Ruins",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "rn_statue_fox",
+      "pack": "quaternius-modular-ruins",
+      "src": "Statue_Fox.glb",
+      "name": "Fox Statue",
+      "category": "Ruins",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "rn_statue_stag",
+      "pack": "quaternius-modular-ruins",
+      "src": "Statue_Stag.glb",
+      "name": "Stag Statue",
+      "category": "Ruins",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "rn_wall",
+      "pack": "quaternius-modular-ruins",
+      "src": "Wall.glb",
+      "name": "Ruined Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "rn_wall_broken",
+      "pack": "quaternius-modular-ruins",
+      "src": "Wall_Broken.glb",
+      "name": "Broken Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_wall_arch_ivy",
+      "pack": "quaternius-modular-ruins",
+      "src": "Wall_ArchRound_Overgrown.glb",
+      "name": "Ivy Arch Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_wall_hole",
+      "pack": "quaternius-modular-ruins",
+      "src": "Wall_Hole.glb",
+      "name": "Holed Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_wall_half",
+      "pack": "quaternius-modular-ruins",
+      "src": "Wall_Half.glb",
+      "name": "Half Wall",
+      "category": "Ruins",
+      "height": 2,
+      "collide": "box"
+    },
+    {
+      "id": "rn_window_bars",
+      "pack": "quaternius-modular-ruins",
+      "src": "Window_Bars.glb",
+      "name": "Barred Window Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_stairs",
+      "pack": "quaternius-modular-ruins",
+      "src": "Stairs.glb",
+      "name": "Stone Stairs",
+      "category": "Ruins",
+      "height": 2,
+      "collide": "stairs"
+    },
+    {
+      "id": "rn_candles",
+      "pack": "quaternius-modular-ruins",
+      "src": "Candles_1.glb",
+      "name": "Candles",
+      "category": "Ruins",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "rn_buttress",
+      "pack": "quaternius-modular-ruins",
+      "src": "Support_Tall.glb",
+      "name": "Buttress",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "box"
+    },
+    {
+      "id": "dg_arch",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Arch.glb",
+      "name": "Dungeon Arch",
+      "category": "Dungeon",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "dg_arch_door",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Arch_Door.glb",
+      "name": "Arched Door",
+      "category": "Dungeon",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "dg_arch_bars",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Arch_bars.glb",
+      "name": "Barred Arch",
+      "category": "Dungeon",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "dg_coin_bag",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Bag_Coins.glb",
+      "name": "Coin Bag",
+      "category": "Dungeon",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "dg_banner",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Banner.glb",
+      "name": "Banner",
+      "category": "Dungeon",
+      "height": 2.5,
+      "collide": "none"
+    },
+    {
+      "id": "dg_barrel",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Barrel.glb",
+      "name": "Dungeon Barrel",
+      "category": "Dungeon",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "dg_bucket",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Bucket.glb",
+      "name": "Bucket",
+      "category": "Dungeon",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "dg_chest",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Chest.glb",
+      "name": "Chest",
+      "category": "Dungeon",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "dg_coin_pile",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Coin_Pile.glb",
+      "name": "Coin Pile",
+      "category": "Dungeon",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "dg_pillar",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Column.glb",
+      "name": "Dungeon Pillar",
+      "category": "Dungeon",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "dg_crate",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Crate.glb",
+      "name": "Dungeon Crate",
+      "category": "Dungeon",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "dg_pedestal",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Pedestal.glb",
+      "name": "Pedestal",
+      "category": "Dungeon",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "dg_skull",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Skull.glb",
+      "name": "Skull",
+      "category": "Dungeon",
+      "height": 0.2,
+      "collide": "none"
+    },
+    {
+      "id": "dg_spikes",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Spikes.glb",
+      "name": "Floor Spikes",
+      "category": "Dungeon",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "dg_statue_horse",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Statue_Horse.glb",
+      "name": "Horse Statue",
+      "category": "Dungeon",
+      "height": 2.4,
+      "collide": "box"
+    },
+    {
+      "id": "dg_sword_mount",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Sword_WallMount.glb",
+      "name": "Wall Swords",
+      "category": "Dungeon",
+      "height": 1.0,
+      "collide": "none"
+    },
+    {
+      "id": "dg_table_long",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Table_Big.glb",
+      "name": "Long Table",
+      "category": "Dungeon",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "dg_table_small",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Table_Small.glb",
+      "name": "Small Table",
+      "category": "Dungeon",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "dg_wall_torch",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Torch.glb",
+      "name": "Wall Torch",
+      "category": "Dungeon",
+      "height": 0.8,
+      "collide": "none"
+    },
+    {
+      "id": "dg_vase",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Vase.glb",
+      "name": "Vase",
+      "category": "Dungeon",
+      "height": 0.9,
+      "collide": "box",
+      "breakable": {
+        "health": 20,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "dg_woodfire",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Woodfire.glb",
+      "name": "Wood Fire",
+      "category": "Dungeon",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "dg_iron_fence",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Fence_Straight_Modular.glb",
+      "name": "Iron Fence",
+      "category": "Dungeon",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "dg_stairs",
+      "pack": "quaternius-modular-dungeon",
+      "src": "Stairs_Modular.glb",
+      "name": "Dungeon Stairs",
+      "category": "Dungeon",
+      "height": 2,
+      "collide": "stairs"
     }
   ]
 }

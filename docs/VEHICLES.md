@@ -17,6 +17,7 @@ Car Kit (CC0).
 | Hauler | 6 (pilot, gunner, 4 passengers) | A slow hovering transport with a rocket gunner |
 | Skyfighter | 1 pilot | Flies: the pilot climbs (Space) and dives (Ctrl/crouch), up to 30 m above where it was parked, firing twin blasters ahead |
 | Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier with an all-round door gun; riders stand on the deck |
+| Tank | 3 (driver, cannon, roof gun) | Slow and heavy (1200 health): the cannon fires explosive shells within 35° of the nose, the roof gun works all round |
 
 - **Driving.** W/S throttle and reverse, A/D steer (harder the faster you
   go). Vehicles slide along walls, lose half their speed in a crash and
@@ -27,7 +28,7 @@ Car Kit (CC0).
   climb on jump and dive on crouch; let go and they hold their height. Left
   without a pilot they sink gently to the ground. Bots fly them at ground
   level.
-- **Models.** The speeder (Striker), hauler (Dispatcher), skyfighter
+- **Models.** The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no

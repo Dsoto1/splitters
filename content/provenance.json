@@ -685,6 +685,21 @@
       ]
     },
     {
+      "file": "models/vehicles/tank.glb",
+      "sha256": "9b4ba1150ced829e",
+      "triangles": 6544,
+      "bytes": 474332,
+      "source": "quaternius-tank-pack/Tank3.obj",
+      "title": "Tank Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-tanks",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
       "file": "sounds/explosion_0.ogg",
       "sha256": "3cb48d86dab63140",
       "bytes": 14317,
@@ -9243,6 +9258,2151 @@
       "modifications": [
         "turned to face +Z, centred and stood on the ground",
         "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/sv_backpack.glb",
+      "sha256": "bf636fb3ba7d1adf",
+      "triangles": 1752,
+      "bytes": 97188,
+      "source": "quaternius-survival-pack/Backpack.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_campfire.glb",
+      "sha256": "0a3147e928a9b722",
+      "triangles": 704,
+      "bytes": 42368,
+      "source": "quaternius-survival-pack/Bonfire_Fire.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_campfire_out.glb",
+      "sha256": "603c6d2cc14a3fbb",
+      "triangles": 616,
+      "bytes": 34832,
+      "source": "quaternius-survival-pack/Bonfire.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_beartrap.glb",
+      "sha256": "a24cab9a01d9aeb9",
+      "triangles": 608,
+      "bytes": 33956,
+      "source": "quaternius-survival-pack/BearTrap_Open.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_medkit_case.glb",
+      "sha256": "a890d861bf0db20b",
+      "triangles": 268,
+      "bytes": 15972,
+      "source": "quaternius-survival-pack/FirstAidKit_Hard.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_gas_can.glb",
+      "sha256": "b3a973d653e2b5b7",
+      "triangles": 788,
+      "bytes": 37664,
+      "source": "quaternius-survival-pack/GasCan.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_propane.glb",
+      "sha256": "01becede3a38c3f4",
+      "triangles": 516,
+      "bytes": 29012,
+      "source": "quaternius-survival-pack/PropaneTank.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_radio.glb",
+      "sha256": "0a0c1d6821e64f00",
+      "triangles": 481,
+      "bytes": 26048,
+      "source": "quaternius-survival-pack/Radio.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_raft.glb",
+      "sha256": "9a777212f5a8ada2",
+      "triangles": 1036,
+      "bytes": 54984,
+      "source": "quaternius-survival-pack/Raft.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_tent.glb",
+      "sha256": "0381776dcfa39c9d",
+      "triangles": 788,
+      "bytes": 40764,
+      "source": "quaternius-survival-pack/Tent.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_trashcan_metal.glb",
+      "sha256": "e8e548c9863db91a",
+      "triangles": 739,
+      "bytes": 38200,
+      "source": "quaternius-survival-pack/Trashcan.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_torch_stand.glb",
+      "sha256": "d950a12587f23732",
+      "triangles": 454,
+      "bytes": 29728,
+      "source": "quaternius-survival-pack/WoodenTorch_Fire.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_shovel.glb",
+      "sha256": "d39db03de225b545",
+      "triangles": 322,
+      "bytes": 20156,
+      "source": "quaternius-survival-pack/Shovel.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_axe.glb",
+      "sha256": "0146d2d1a4cdff7f",
+      "triangles": 236,
+      "bytes": 14740,
+      "source": "quaternius-survival-pack/Axe.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_cook_pot.glb",
+      "sha256": "8d8047399ad4cd86",
+      "triangles": 326,
+      "bytes": 18740,
+      "source": "quaternius-survival-pack/Pot.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sv_can.glb",
+      "sha256": "4e1cf7fe913e1def",
+      "triangles": 332,
+      "bytes": 19960,
+      "source": "quaternius-survival-pack/Can_Red.glb",
+      "title": "Survival Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_bathtub.glb",
+      "sha256": "c917a3cbc814ccb9",
+      "triangles": 248,
+      "bytes": 9984,
+      "source": "quaternius-house-interior/Bathroom_Bathtub.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_shower.glb",
+      "sha256": "867c9e74d9acceed",
+      "triangles": 652,
+      "bytes": 36964,
+      "source": "quaternius-house-interior/Bathroom_Shower1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_bathroom_sink.glb",
+      "sha256": "d57554b074a418dc",
+      "triangles": 350,
+      "bytes": 11796,
+      "source": "quaternius-house-interior/Bathroom_Sink.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_toilet.glb",
+      "sha256": "de7b96f2f80bc85d",
+      "triangles": 402,
+      "bytes": 13808,
+      "source": "quaternius-house-interior/Bathroom_Toilet.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_washer.glb",
+      "sha256": "aa02f9e0d8b3e0c4",
+      "triangles": 304,
+      "bytes": 15248,
+      "source": "quaternius-house-interior/Bathroom_WashingMachine.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_bunk_bed.glb",
+      "sha256": "38c5699335247861",
+      "triangles": 960,
+      "bytes": 30032,
+      "source": "quaternius-house-interior/Bed_Bunk.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_bed_king.glb",
+      "sha256": "c01d8264b022915c",
+      "triangles": 676,
+      "bytes": 23232,
+      "source": "quaternius-house-interior/Bed_King.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_bed_single.glb",
+      "sha256": "8c9bec4f778420ee",
+      "triangles": 536,
+      "bytes": 20100,
+      "source": "quaternius-house-interior/Bed_Single.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_bookshelf.glb",
+      "sha256": "81db35f2648d6923",
+      "triangles": 120,
+      "bytes": 7628,
+      "source": "quaternius-house-interior/Bookshelf.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_chair_wood.glb",
+      "sha256": "2a59dfb76ff16480",
+      "triangles": 216,
+      "bytes": 12448,
+      "source": "quaternius-house-interior/Chair_1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_chair_office.glb",
+      "sha256": "028d727cb2f03e36",
+      "triangles": 428,
+      "bytes": 20512,
+      "source": "quaternius-house-interior/Chair_3.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_couch_l.glb",
+      "sha256": "81af67f2410b0ff1",
+      "triangles": 1428,
+      "bytes": 30016,
+      "source": "quaternius-house-interior/Couch_L.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_couch_large.glb",
+      "sha256": "ab1d83de23cacfe5",
+      "triangles": 1460,
+      "bytes": 29876,
+      "source": "quaternius-house-interior/Couch_Large1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_couch.glb",
+      "sha256": "5ac9e5d159c8aedd",
+      "triangles": 1012,
+      "bytes": 22044,
+      "source": "quaternius-house-interior/Couch_Medium1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_armchair.glb",
+      "sha256": "2ad85d9623c9f429",
+      "triangles": 852,
+      "bytes": 18136,
+      "source": "quaternius-house-interior/Couch_Small1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_dresser.glb",
+      "sha256": "93f22d6e7aacc704",
+      "triangles": 404,
+      "bytes": 13292,
+      "source": "quaternius-house-interior/Drawer_1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_chest_drawers.glb",
+      "sha256": "5ab59547523c7b62",
+      "triangles": 604,
+      "bytes": 26304,
+      "source": "quaternius-house-interior/Drawer_3.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_fireplace.glb",
+      "sha256": "da75cd826b373372",
+      "triangles": 360,
+      "bytes": 17188,
+      "source": "quaternius-house-interior/Fireplace.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_kitchen_counter.glb",
+      "sha256": "ba7e6a3a7682ffe3",
+      "triangles": 148,
+      "bytes": 8768,
+      "source": "quaternius-house-interior/Kitchen_2Drawers.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_kitchen_counter_long.glb",
+      "sha256": "bba02ef9e2096266",
+      "triangles": 212,
+      "bytes": 11364,
+      "source": "quaternius-house-interior/Kitchen_3Drawers.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_kitchen_cabinet.glb",
+      "sha256": "a6d2b2a8975a511a",
+      "triangles": 68,
+      "bytes": 4828,
+      "source": "quaternius-house-interior/Kitchen_Cabinet1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_fridge.glb",
+      "sha256": "132c315c5080b72e",
+      "triangles": 404,
+      "bytes": 16444,
+      "source": "quaternius-house-interior/Kitchen_Fridge.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_oven.glb",
+      "sha256": "351b3e8c03806cd5",
+      "triangles": 524,
+      "bytes": 27520,
+      "source": "quaternius-house-interior/Kitchen_Oven.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_kitchen_sink.glb",
+      "sha256": "6353c1776e17d5d3",
+      "triangles": 444,
+      "bytes": 23892,
+      "source": "quaternius-house-interior/Kitchen_Sink.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_nightstand.glb",
+      "sha256": "0018e192655ea5a6",
+      "triangles": 172,
+      "bytes": 9572,
+      "source": "quaternius-house-interior/NightStand_1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_shelf_large.glb",
+      "sha256": "aae5a6c5e826e3e5",
+      "triangles": 220,
+      "bytes": 12472,
+      "source": "quaternius-house-interior/Shelf_Large.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_stool.glb",
+      "sha256": "4c0e22429507e933",
+      "triangles": 500,
+      "bytes": 17176,
+      "source": "quaternius-house-interior/Stool.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_table_round.glb",
+      "sha256": "0028c678eb13f82c",
+      "triangles": 592,
+      "bytes": 22408,
+      "source": "quaternius-house-interior/Table_RoundLarge.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_side_table.glb",
+      "sha256": "87080d2719700b2d",
+      "triangles": 592,
+      "bytes": 18148,
+      "source": "quaternius-house-interior/Table_RoundSmall.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_bin_large.glb",
+      "sha256": "1f563316f410f09f",
+      "triangles": 646,
+      "bytes": 20612,
+      "source": "quaternius-house-interior/Trashcan_Large.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_door.glb",
+      "sha256": "0040a88a4979a3c6",
+      "triangles": 456,
+      "bytes": 20716,
+      "source": "quaternius-house-interior/Door_1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_door_double.glb",
+      "sha256": "914d3174d7b1199c",
+      "triangles": 1720,
+      "bytes": 60952,
+      "source": "quaternius-house-interior/Door_Double.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_rug.glb",
+      "sha256": "321ff817a8a6a715",
+      "triangles": 108,
+      "bytes": 5144,
+      "source": "quaternius-house-interior/Carpet_1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_rug_round.glb",
+      "sha256": "d2d39175fe552908",
+      "triangles": 128,
+      "bytes": 5624,
+      "source": "quaternius-house-interior/Carpet_Round.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_houseplant.glb",
+      "sha256": "99da15cee3c1c074",
+      "triangles": 245,
+      "bytes": 9440,
+      "source": "quaternius-house-interior/Houseplant_1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_houseplant_tall.glb",
+      "sha256": "2b1085a636903c7a",
+      "triangles": 412,
+      "bytes": 21400,
+      "source": "quaternius-house-interior/Houseplant_3.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_potted_palm.glb",
+      "sha256": "e8130e6e80ae9279",
+      "triangles": 492,
+      "bytes": 19536,
+      "source": "quaternius-house-interior/Houseplant_5.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_floor_lamp.glb",
+      "sha256": "b151b6b886851261",
+      "triangles": 226,
+      "bytes": 8824,
+      "source": "quaternius-house-interior/Light_Floor1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_desk_lamp.glb",
+      "sha256": "ed2b738da38ae879",
+      "triangles": 356,
+      "bytes": 11560,
+      "source": "quaternius-house-interior/Light_Desk.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_chandelier.glb",
+      "sha256": "056f77402e3f7fc4",
+      "triangles": 972,
+      "bytes": 24448,
+      "source": "quaternius-house-interior/Light_Chandelier.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_wall_shelf.glb",
+      "sha256": "6e358ae58656fe1f",
+      "triangles": 96,
+      "bytes": 6272,
+      "source": "quaternius-house-interior/Shelf_1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hm_window.glb",
+      "sha256": "24e1248e40db316e",
+      "triangles": 252,
+      "bytes": 12348,
+      "source": "quaternius-house-interior/Window_Large1.glb",
+      "title": "Ultimate House Interior Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_birch.glb",
+      "sha256": "e15f4bf409b4e249",
+      "triangles": 1704,
+      "bytes": 95812,
+      "source": "quaternius-ultimate-nature/BirchTree_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_birch_autumn.glb",
+      "sha256": "bcb9c39b73948c50",
+      "triangles": 1704,
+      "bytes": 95816,
+      "source": "quaternius-ultimate-nature/BirchTree_Autumn_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_birch_snow.glb",
+      "sha256": "06f6c22aad2177f1",
+      "triangles": 1804,
+      "bytes": 101880,
+      "source": "quaternius-ultimate-nature/BirchTree_Snow_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_common_tree.glb",
+      "sha256": "a9fc90f806a3f126",
+      "triangles": 2888,
+      "bytes": 157812,
+      "source": "quaternius-ultimate-nature/CommonTree_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_common_tree_2.glb",
+      "sha256": "8cf7468fc0efc4e0",
+      "triangles": 2952,
+      "bytes": 161272,
+      "source": "quaternius-ultimate-nature/CommonTree_2.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_common_tree_autumn.glb",
+      "sha256": "899e89ad54a0dece",
+      "triangles": 2888,
+      "bytes": 157812,
+      "source": "quaternius-ultimate-nature/CommonTree_Autumn_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_dead_tree.glb",
+      "sha256": "0b9f1fa95d199932",
+      "triangles": 2360,
+      "bytes": 128628,
+      "source": "quaternius-ultimate-nature/CommonTree_Dead_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_common_tree_snow.glb",
+      "sha256": "d1a2b994a6cb8311",
+      "triangles": 2966,
+      "bytes": 162832,
+      "source": "quaternius-ultimate-nature/CommonTree_Snow_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_pine_tall.glb",
+      "sha256": "4de0194d26f04a2a",
+      "triangles": 1920,
+      "bytes": 104528,
+      "source": "quaternius-ultimate-nature/PineTree_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_pine_small.glb",
+      "sha256": "2903fa25b2239013",
+      "triangles": 2392,
+      "bytes": 130792,
+      "source": "quaternius-ultimate-nature/PineTree_3.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_pine_snow_tall.glb",
+      "sha256": "e362327591fba193",
+      "triangles": 1920,
+      "bytes": 105196,
+      "source": "quaternius-ultimate-nature/PineTree_Snow_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_pine_autumn.glb",
+      "sha256": "712862c4f01dfff4",
+      "triangles": 1920,
+      "bytes": 105268,
+      "source": "quaternius-ultimate-nature/PineTree_Autumn_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_palm_curved.glb",
+      "sha256": "9016f0f20da4ec62",
+      "triangles": 1772,
+      "bytes": 99552,
+      "source": "quaternius-ultimate-nature/PalmTree_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_palm_tall.glb",
+      "sha256": "6d26f0062d7d238a",
+      "triangles": 1496,
+      "bytes": 86476,
+      "source": "quaternius-ultimate-nature/PalmTree_3.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_willow.glb",
+      "sha256": "9c3b52a5cb5a009f",
+      "triangles": 1946,
+      "bytes": 107448,
+      "source": "quaternius-ultimate-nature/Willow_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_willow_autumn.glb",
+      "sha256": "beb414ddede81bfd",
+      "triangles": 1946,
+      "bytes": 107444,
+      "source": "quaternius-ultimate-nature/Willow_Autumn_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_willow_dead.glb",
+      "sha256": "b92d9f621d7d3bca",
+      "triangles": 1128,
+      "bytes": 62704,
+      "source": "quaternius-ultimate-nature/Willow_Dead_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_saguaro.glb",
+      "sha256": "71d58d44ad283eda",
+      "triangles": 434,
+      "bytes": 29432,
+      "source": "quaternius-ultimate-nature/Cactus_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_cactus_round.glb",
+      "sha256": "dab2a8a553fa0a58",
+      "triangles": 416,
+      "bytes": 23640,
+      "source": "quaternius-ultimate-nature/Cactus_3.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_cactus_flowers.glb",
+      "sha256": "2c3ffb3df7919009",
+      "triangles": 1488,
+      "bytes": 83364,
+      "source": "quaternius-ultimate-nature/CactusFlowers_2.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_bush_leafy.glb",
+      "sha256": "06c66a22a40ab647",
+      "triangles": 364,
+      "bytes": 20804,
+      "source": "quaternius-ultimate-nature/Bush_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_bush_berries.glb",
+      "sha256": "92dcf612658797bc",
+      "triangles": 892,
+      "bytes": 50028,
+      "source": "quaternius-ultimate-nature/BushBerries_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_bush_snow.glb",
+      "sha256": "a3426c27149d8ffa",
+      "triangles": 460,
+      "bytes": 26688,
+      "source": "quaternius-ultimate-nature/Bush_Snow_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_corn.glb",
+      "sha256": "aa71782f127105a4",
+      "triangles": 566,
+      "bytes": 32672,
+      "source": "quaternius-ultimate-nature/Corn_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_wheat.glb",
+      "sha256": "96a113ff6899594f",
+      "triangles": 408,
+      "bytes": 22364,
+      "source": "quaternius-ultimate-nature/Wheat.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_wildflowers.glb",
+      "sha256": "073e84fc4f1e8d09",
+      "triangles": 408,
+      "bytes": 25320,
+      "source": "quaternius-ultimate-nature/Flowers.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_fern_wide.glb",
+      "sha256": "40c588d9855bfc61",
+      "triangles": 296,
+      "bytes": 17940,
+      "source": "quaternius-ultimate-nature/Plant_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_boulder_tall.glb",
+      "sha256": "34f3420d41be0be4",
+      "triangles": 70,
+      "bytes": 5012,
+      "source": "quaternius-ultimate-nature/Rock_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_boulder.glb",
+      "sha256": "18969fedeccac67a",
+      "triangles": 72,
+      "bytes": 5304,
+      "source": "quaternius-ultimate-nature/Rock_3.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_rock_flat.glb",
+      "sha256": "f14985d14dfc63a4",
+      "triangles": 90,
+      "bytes": 6140,
+      "source": "quaternius-ultimate-nature/Rock_5.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_boulder_moss.glb",
+      "sha256": "7ce4a569ea3002a4",
+      "triangles": 70,
+      "bytes": 5672,
+      "source": "quaternius-ultimate-nature/Rock_Moss_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_rock_moss.glb",
+      "sha256": "f144e984f32c6ccb",
+      "triangles": 128,
+      "bytes": 8920,
+      "source": "quaternius-ultimate-nature/Rock_Moss_4.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_boulder_snow.glb",
+      "sha256": "2329c622d5b69c94",
+      "triangles": 102,
+      "bytes": 7400,
+      "source": "quaternius-ultimate-nature/Rock_Snow_1.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_rock_snow.glb",
+      "sha256": "3be42e0014a5a6fa",
+      "triangles": 96,
+      "bytes": 6740,
+      "source": "quaternius-ultimate-nature/Rock_Snow_3.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_stump_large.glb",
+      "sha256": "710099074646f019",
+      "triangles": 232,
+      "bytes": 15076,
+      "source": "quaternius-ultimate-nature/TreeStump.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_stump_moss.glb",
+      "sha256": "921cdeafed5a72be",
+      "triangles": 232,
+      "bytes": 14408,
+      "source": "quaternius-ultimate-nature/TreeStump_Moss.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_log_large.glb",
+      "sha256": "ec473a6bcf8a164a",
+      "triangles": 464,
+      "bytes": 28076,
+      "source": "quaternius-ultimate-nature/WoodLog.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_log_moss.glb",
+      "sha256": "49013682042fc505",
+      "triangles": 614,
+      "bytes": 37936,
+      "source": "quaternius-ultimate-nature/WoodLog_Moss.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nt_log_snow.glb",
+      "sha256": "6d4cb49ac413a68f",
+      "triangles": 280,
+      "bytes": 16972,
+      "source": "quaternius-ultimate-nature/WoodLog_Snow.glb",
+      "title": "Ultimate Nature Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/ultimate-nature-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_arch_gothic.glb",
+      "sha256": "4535da34a9a55337",
+      "triangles": 2904,
+      "bytes": 103220,
+      "source": "quaternius-modular-ruins/Arch_Gothic.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_arch_round.glb",
+      "sha256": "e7ce860c275804cc",
+      "triangles": 2956,
+      "bytes": 102188,
+      "source": "quaternius-modular-ruins/Arch_Round.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_bookcase.glb",
+      "sha256": "ce7067147d733f4e",
+      "triangles": 3360,
+      "bytes": 134980,
+      "source": "quaternius-modular-ruins/Bookcase_Full.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_bridge.glb",
+      "sha256": "5c959c9b2bad7efa",
+      "triangles": 1888,
+      "bytes": 69152,
+      "source": "quaternius-modular-ruins/BridgeSection.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_cart.glb",
+      "sha256": "3d37f1a98124691b",
+      "triangles": 1432,
+      "bytes": 56236,
+      "source": "quaternius-modular-ruins/Cart.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_column_round.glb",
+      "sha256": "2e1d53d80901c473",
+      "triangles": 1010,
+      "bytes": 36984,
+      "source": "quaternius-modular-ruins/Column_Round.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_column_square.glb",
+      "sha256": "859604c78b38298f",
+      "triangles": 690,
+      "bytes": 30692,
+      "source": "quaternius-modular-ruins/Column_Square.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_column_broken.glb",
+      "sha256": "2d19381aa5333772",
+      "triangles": 634,
+      "bytes": 26500,
+      "source": "quaternius-modular-ruins/Column_Round_Short.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_dead_tree.glb",
+      "sha256": "076938820c5bcc10",
+      "triangles": 444,
+      "bytes": 12956,
+      "source": "quaternius-modular-ruins/DeadTree_1.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_door_gothic.glb",
+      "sha256": "6172c42cd752491f",
+      "triangles": 2184,
+      "bytes": 89524,
+      "source": "quaternius-modular-ruins/Doors_GothicArch.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_urn.glb",
+      "sha256": "377f7017c3bc4bab",
+      "triangles": 1038,
+      "bytes": 30756,
+      "source": "quaternius-modular-ruins/Pot1.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_urn_broken.glb",
+      "sha256": "b2073b26da2ef66f",
+      "triangles": 432,
+      "bytes": 14476,
+      "source": "quaternius-modular-ruins/Pot1_Broken.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_statue_fox.glb",
+      "sha256": "36826c0be742991d",
+      "triangles": 2152,
+      "bytes": 65236,
+      "source": "quaternius-modular-ruins/Statue_Fox.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_statue_stag.glb",
+      "sha256": "07f8dd65e3c275dd",
+      "triangles": 4042,
+      "bytes": 125340,
+      "source": "quaternius-modular-ruins/Statue_Stag.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_wall.glb",
+      "sha256": "c959cd0a44928516",
+      "triangles": 1296,
+      "bytes": 68588,
+      "source": "quaternius-modular-ruins/Wall.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_wall_broken.glb",
+      "sha256": "daceb67527bf5a80",
+      "triangles": 976,
+      "bytes": 51924,
+      "source": "quaternius-modular-ruins/Wall_Broken.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_wall_arch_ivy.glb",
+      "sha256": "dc192641ac89177d",
+      "triangles": 2602,
+      "bytes": 136164,
+      "source": "quaternius-modular-ruins/Wall_ArchRound_Overgrown.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_wall_hole.glb",
+      "sha256": "0f8ff86c1a0ab1f6",
+      "triangles": 912,
+      "bytes": 48568,
+      "source": "quaternius-modular-ruins/Wall_Hole.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_wall_half.glb",
+      "sha256": "8f7e7ee70e7f1b64",
+      "triangles": 632,
+      "bytes": 34172,
+      "source": "quaternius-modular-ruins/Wall_Half.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_window_bars.glb",
+      "sha256": "6b743f6c4eb40489",
+      "triangles": 1222,
+      "bytes": 64680,
+      "source": "quaternius-modular-ruins/Window_Bars.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_stairs.glb",
+      "sha256": "046af51e78c019fb",
+      "triangles": 2272,
+      "bytes": 114204,
+      "source": "quaternius-modular-ruins/Stairs.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_candles.glb",
+      "sha256": "872be8ae6d304d03",
+      "triangles": 844,
+      "bytes": 25228,
+      "source": "quaternius-modular-ruins/Candles_1.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/rn_buttress.glb",
+      "sha256": "2ff856f59f0d5223",
+      "triangles": 674,
+      "bytes": 27436,
+      "source": "quaternius-modular-ruins/Support_Tall.glb",
+      "title": "Ultimate Modular Ruins Pack",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/modular-ruins-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_arch.glb",
+      "sha256": "a72b422f221ad971",
+      "triangles": 4484,
+      "bytes": 235872,
+      "source": "quaternius-modular-dungeon/Arch.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_arch_door.glb",
+      "sha256": "8aa76bbdf3940d5c",
+      "triangles": 1220,
+      "bytes": 57416,
+      "source": "quaternius-modular-dungeon/Arch_Door.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_arch_bars.glb",
+      "sha256": "6152b67daca00cea",
+      "triangles": 1603,
+      "bytes": 63480,
+      "source": "quaternius-modular-dungeon/Arch_bars.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_coin_bag.glb",
+      "sha256": "0260cb159ce21326",
+      "triangles": 976,
+      "bytes": 48812,
+      "source": "quaternius-modular-dungeon/Bag_Coins.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_banner.glb",
+      "sha256": "30e1422b84f82344",
+      "triangles": 564,
+      "bytes": 30208,
+      "source": "quaternius-modular-dungeon/Banner.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_barrel.glb",
+      "sha256": "1c59776b3f0bdf8a",
+      "triangles": 1384,
+      "bytes": 72260,
+      "source": "quaternius-modular-dungeon/Barrel.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_bucket.glb",
+      "sha256": "9557983f549abad7",
+      "triangles": 360,
+      "bytes": 21676,
+      "source": "quaternius-modular-dungeon/Bucket.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_chest.glb",
+      "sha256": "d08f8386e23a065b",
+      "triangles": 1676,
+      "bytes": 79600,
+      "source": "quaternius-modular-dungeon/Chest.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_coin_pile.glb",
+      "sha256": "2fdd5e962d15f445",
+      "triangles": 3220,
+      "bytes": 141484,
+      "source": "quaternius-modular-dungeon/Coin_Pile.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_pillar.glb",
+      "sha256": "c88fdd695c82bda6",
+      "triangles": 440,
+      "bytes": 22800,
+      "source": "quaternius-modular-dungeon/Column.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_crate.glb",
+      "sha256": "0660e11c79d6ed5a",
+      "triangles": 2502,
+      "bytes": 99060,
+      "source": "quaternius-modular-dungeon/Crate.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_pedestal.glb",
+      "sha256": "ec5991afe0b493e0",
+      "triangles": 1844,
+      "bytes": 85520,
+      "source": "quaternius-modular-dungeon/Pedestal.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_skull.glb",
+      "sha256": "809cfe18b6a57b4a",
+      "triangles": 1392,
+      "bytes": 76368,
+      "source": "quaternius-modular-dungeon/Skull.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_spikes.glb",
+      "sha256": "dbe2fc56615404ab",
+      "triangles": 504,
+      "bytes": 31832,
+      "source": "quaternius-modular-dungeon/Spikes.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_statue_horse.glb",
+      "sha256": "5e6614a6958a5993",
+      "triangles": 1850,
+      "bytes": 91964,
+      "source": "quaternius-modular-dungeon/Statue_Horse.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_sword_mount.glb",
+      "sha256": "5cdc45ecfc3ab8a6",
+      "triangles": 2382,
+      "bytes": 110236,
+      "source": "quaternius-modular-dungeon/Sword_WallMount.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_table_long.glb",
+      "sha256": "1491d640c73a8fbf",
+      "triangles": 916,
+      "bytes": 46880,
+      "source": "quaternius-modular-dungeon/Table_Big.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_table_small.glb",
+      "sha256": "8098e8c328a02a27",
+      "triangles": 804,
+      "bytes": 41312,
+      "source": "quaternius-modular-dungeon/Table_Small.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_wall_torch.glb",
+      "sha256": "e4e4e04c83a61df0",
+      "triangles": 386,
+      "bytes": 21912,
+      "source": "quaternius-modular-dungeon/Torch.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_vase.glb",
+      "sha256": "c19d3ad7d119b671",
+      "triangles": 220,
+      "bytes": 12860,
+      "source": "quaternius-modular-dungeon/Vase.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_woodfire.glb",
+      "sha256": "a80e5313bec01fea",
+      "triangles": 224,
+      "bytes": 15672,
+      "source": "quaternius-modular-dungeon/Woodfire.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_iron_fence.glb",
+      "sha256": "70d434c44d829cbf",
+      "triangles": 104,
+      "bytes": 7220,
+      "source": "quaternius-modular-dungeon/Fence_Straight_Modular.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dg_stairs.glb",
+      "sha256": "e1dcf265dec56ec7",
+      "triangles": 1420,
+      "bytes": 72356,
+      "source": "quaternius-modular-dungeon/Stairs_Modular.glb",
+      "title": "Modular Dungeon",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
       ]
     },
     {

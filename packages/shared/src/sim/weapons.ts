@@ -547,6 +547,14 @@ function mountWeapons(): Record<string, WeaponDefinition> {
       view: { model: 'turrets/rocket.glb', viewOffset: [0, -0.35, 0.7], tracer: '#ffb347', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.rockets' },
     }),
     weapon({
+      id: 'core.tank_cannon', displayName: 'Tank Cannon', kind: 'projectile', slot: 0,
+      fireIntervalTicks: 80, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 0,
+      heat: { perShot: 0.25, coolPerTick: 0.004 },
+      projectile: { speed: 60, gravity: 4, fuseSeconds: 4, splashRadius: 6, splashDamage: 150, splashEdgeDamage: 25, selfDamageScale: 0.6, visual: 'rocket', impactDamage: 60 },
+      botDesirability: 0, botRange: [0, 90],
+      view: { model: 'vehicles/tank.glb', viewOffset: [0, -0.9, 1.6], tracer: '#ffd27a', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.rockets' },
+    }),
+    weapon({
       id: 'core.speeder_guns', displayName: 'Speeder Blasters', kind: 'projectile', slot: 0,
       fireIntervalTicks: 7, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 0, spread: 0.02,
       heat: { perShot: 0.05, coolPerTick: 0.01 },
