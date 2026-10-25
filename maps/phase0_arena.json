@@ -1,17 +1,17 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 5,
+  "formatVersion": 14,
   "metadata": {
     "id": "phase0_arena",
     "name": "Phase 0 Arena",
     "author": "ChronoSplit",
-    "description": "Graybox proof map: a ground-floor loop around a pillar room, with stairs up to a two-room upper level.",
+    "description": "Duel arena: a graybox loop around a pillar hall with an upper floor. Tight and fast, for 2–4 players.",
     "createdAt": "2026-10-22T00:00:00.000Z",
     "updatedAt": "2026-10-22T00:00:00.000Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 2,
-      "max": 8
+      "max": 4
     },
     "supportedModes": [
       "core.deathmatch"
@@ -352,5 +352,11 @@
     "objectives": [],
     "rules": []
   },
+  "terrain": null,
+  "bounds": null,
+  "backdrop": null,
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
   "dependencies": []
 }

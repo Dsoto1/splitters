@@ -1,17 +1,17 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 6,
+  "formatVersion": 14,
   "metadata": {
     "id": "citadel",
     "name": "Citadel",
     "author": "ChronoSplit",
-    "description": "A castle keep around a two-storey atrium. Halls with arched openings ring the ground floor; stairwells in two corners climb to barracks, a map room and roof terraces with cannons. Rockets wait in the atrium, the sniper rifle on the north roof. Shoot out the window panes, break the boards, and mind the powder kegs.",
+    "description": "A castle keep around a two-storey atrium, inside an outer bailey of courtyards behind a curtain wall; the corner rooms and stairwells are its gates. Halls with arched openings ring the ground floor; stairwells in two corners climb to barracks, a map room and roof terraces with cannons. Rockets wait in the atrium, the sniper rifle on the north roof. Shoot out the window panes, break the boards, and mind the powder kegs.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
     "recommendedPlayers": {
-      "min": 2,
-      "max": 10
+      "min": 4,
+      "max": 12
     },
     "supportedModes": [
       "core.deathmatch"
@@ -239,12 +239,236 @@
         "y": 1,
         "z": 1,
         "rotation": 0
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "high",
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.yard_ruins",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "high",
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.yard_crates",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.yard_crates",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.yard_ruins",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.yard_wall",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.yard_crates",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.yard_crates",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.yard_wall",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.yard_ruins",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "high"
+        }
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.yard_crates",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "high"
+        }
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.yard_crates",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "high",
+          "0,0,0:S": "high"
+        }
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "high",
+          "0,0,0:E": "high"
+        }
       }
     ]
   },
   "entities": [
     {
-      "id": "prop_022",
+      "id": "prop_042",
       "position": [
         14,
         0,
@@ -258,7 +482,7 @@
       "tint": null
     },
     {
-      "id": "prop_023",
+      "id": "prop_043",
       "position": [
         15.2,
         0,
@@ -272,7 +496,7 @@
       "tint": null
     },
     {
-      "id": "prop_024",
+      "id": "prop_044",
       "position": [
         26,
         0,
@@ -286,7 +510,7 @@
       "tint": null
     },
     {
-      "id": "prop_025",
+      "id": "prop_045",
       "position": [
         26.5,
         0,
@@ -300,7 +524,7 @@
       "tint": null
     },
     {
-      "id": "prop_026",
+      "id": "prop_046",
       "position": [
         20,
         0,
@@ -314,7 +538,7 @@
       "tint": null
     },
     {
-      "id": "prop_027",
+      "id": "prop_047",
       "position": [
         20,
         1,
@@ -328,7 +552,7 @@
       "tint": null
     },
     {
-      "id": "prop_028",
+      "id": "prop_048",
       "position": [
         12.6,
         4,
@@ -342,7 +566,7 @@
       "tint": null
     },
     {
-      "id": "prop_029",
+      "id": "prop_049",
       "position": [
         27.4,
         4,
@@ -356,7 +580,7 @@
       "tint": null
     },
     {
-      "id": "prop_030",
+      "id": "prop_050",
       "position": [
         8,
         0,
@@ -370,7 +594,7 @@
       "tint": null
     },
     {
-      "id": "prop_031",
+      "id": "prop_051",
       "position": [
         7,
         0,
@@ -384,7 +608,7 @@
       "tint": null
     },
     {
-      "id": "prop_032",
+      "id": "prop_052",
       "position": [
         9,
         0,
@@ -398,7 +622,7 @@
       "tint": null
     },
     {
-      "id": "prop_033",
+      "id": "prop_053",
       "position": [
         4.9,
         0,
@@ -412,7 +636,7 @@
       "tint": null
     },
     {
-      "id": "prop_034",
+      "id": "prop_054",
       "position": [
         4.9,
         0,
@@ -426,7 +650,7 @@
       "tint": null
     },
     {
-      "id": "prop_035",
+      "id": "prop_055",
       "position": [
         10.8,
         0,
@@ -440,7 +664,7 @@
       "tint": null
     },
     {
-      "id": "prop_036",
+      "id": "prop_056",
       "position": [
         8,
         0,
@@ -454,7 +678,7 @@
       "tint": null
     },
     {
-      "id": "prop_037",
+      "id": "prop_057",
       "position": [
         34.6,
         0,
@@ -468,7 +692,7 @@
       "tint": null
     },
     {
-      "id": "prop_038",
+      "id": "prop_058",
       "position": [
         33,
         0,
@@ -482,7 +706,7 @@
       "tint": null
     },
     {
-      "id": "prop_039",
+      "id": "prop_059",
       "position": [
         34.2,
         0,
@@ -496,7 +720,7 @@
       "tint": null
     },
     {
-      "id": "prop_040",
+      "id": "prop_060",
       "position": [
         33,
         0,
@@ -510,7 +734,7 @@
       "tint": null
     },
     {
-      "id": "gas_041",
+      "id": "gas_061",
       "position": [
         34.8,
         0,
@@ -523,7 +747,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "gas_042",
+      "id": "gas_062",
       "position": [
         34.8,
         0,
@@ -536,7 +760,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "generator_043",
+      "id": "generator_063",
       "position": [
         14,
         0,
@@ -549,7 +773,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "boards_044",
+      "id": "boards_064",
       "position": [
         20,
         0,
@@ -562,7 +786,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "prop_045",
+      "id": "prop_065",
       "position": [
         26,
         0,
@@ -576,7 +800,7 @@
       "tint": null
     },
     {
-      "id": "prop_046",
+      "id": "prop_066",
       "position": [
         24,
         0,
@@ -590,7 +814,7 @@
       "tint": null
     },
     {
-      "id": "prop_047",
+      "id": "prop_067",
       "position": [
         15,
         0,
@@ -604,7 +828,7 @@
       "tint": null
     },
     {
-      "id": "prop_048",
+      "id": "prop_068",
       "position": [
         17.5,
         0,
@@ -618,7 +842,7 @@
       "tint": null
     },
     {
-      "id": "prop_049",
+      "id": "prop_069",
       "position": [
         13,
         0,
@@ -632,7 +856,7 @@
       "tint": null
     },
     {
-      "id": "prop_050",
+      "id": "prop_070",
       "position": [
         25.5,
         0,
@@ -646,7 +870,7 @@
       "tint": null
     },
     {
-      "id": "prop_051",
+      "id": "prop_071",
       "position": [
         31.5,
         0,
@@ -660,7 +884,7 @@
       "tint": null
     },
     {
-      "id": "prop_052",
+      "id": "prop_072",
       "position": [
         8,
         0,
@@ -674,7 +898,7 @@
       "tint": null
     },
     {
-      "id": "prop_053",
+      "id": "prop_073",
       "position": [
         5.4,
         4,
@@ -688,7 +912,7 @@
       "tint": null
     },
     {
-      "id": "prop_054",
+      "id": "prop_074",
       "position": [
         10.5,
         4,
@@ -702,7 +926,7 @@
       "tint": null
     },
     {
-      "id": "prop_055",
+      "id": "prop_075",
       "position": [
         10.5,
         4,
@@ -716,7 +940,7 @@
       "tint": null
     },
     {
-      "id": "prop_056",
+      "id": "prop_076",
       "position": [
         32,
         4,
@@ -730,7 +954,7 @@
       "tint": null
     },
     {
-      "id": "prop_057",
+      "id": "prop_077",
       "position": [
         34.6,
         4,
@@ -744,7 +968,7 @@
       "tint": null
     },
     {
-      "id": "glass_058",
+      "id": "glass_078",
       "position": [
         4.25,
         4,
@@ -757,7 +981,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "glass_059",
+      "id": "glass_079",
       "position": [
         35.75,
         4,
@@ -770,7 +994,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "glass_060",
+      "id": "glass_080",
       "position": [
         4.25,
         4,
@@ -783,7 +1007,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "glass_061",
+      "id": "glass_081",
       "position": [
         35.75,
         4,
@@ -796,7 +1020,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "prop_062",
+      "id": "prop_082",
       "position": [
         17,
         4,
@@ -810,7 +1034,7 @@
       "tint": null
     },
     {
-      "id": "prop_063",
+      "id": "prop_083",
       "position": [
         23,
         4,
@@ -824,7 +1048,7 @@
       "tint": null
     },
     {
-      "id": "prop_064",
+      "id": "prop_084",
       "position": [
         17,
         4,
@@ -838,7 +1062,7 @@
       "tint": null
     },
     {
-      "id": "prop_065",
+      "id": "prop_085",
       "position": [
         23,
         4,
@@ -852,7 +1076,7 @@
       "tint": null
     },
     {
-      "id": "prop_066",
+      "id": "prop_086",
       "position": [
         20,
         4,
@@ -866,7 +1090,7 @@
       "tint": null
     },
     {
-      "id": "prop_067",
+      "id": "prop_087",
       "position": [
         20,
         4,
@@ -880,7 +1104,7 @@
       "tint": null
     },
     {
-      "id": "spawn_068",
+      "id": "spawn_088",
       "position": [
         8,
         0,
@@ -891,7 +1115,7 @@
       "faction": null
     },
     {
-      "id": "spawn_069",
+      "id": "spawn_089",
       "position": [
         7,
         0,
@@ -902,7 +1126,7 @@
       "faction": null
     },
     {
-      "id": "spawn_070",
+      "id": "spawn_090",
       "position": [
         32,
         0,
@@ -913,7 +1137,7 @@
       "faction": null
     },
     {
-      "id": "spawn_071",
+      "id": "spawn_091",
       "position": [
         30,
         0,
@@ -924,7 +1148,7 @@
       "faction": null
     },
     {
-      "id": "spawn_072",
+      "id": "spawn_092",
       "position": [
         18,
         0,
@@ -935,7 +1159,7 @@
       "faction": null
     },
     {
-      "id": "spawn_073",
+      "id": "spawn_093",
       "position": [
         19,
         0,
@@ -946,7 +1170,7 @@
       "faction": null
     },
     {
-      "id": "spawn_074",
+      "id": "spawn_094",
       "position": [
         8,
         4,
@@ -957,7 +1181,7 @@
       "faction": null
     },
     {
-      "id": "spawn_075",
+      "id": "spawn_095",
       "position": [
         32,
         4,
@@ -968,7 +1192,7 @@
       "faction": null
     },
     {
-      "id": "spawn_076",
+      "id": "spawn_096",
       "position": [
         16,
         4,
@@ -979,7 +1203,7 @@
       "faction": null
     },
     {
-      "id": "spawn_077",
+      "id": "spawn_097",
       "position": [
         24,
         4,
@@ -990,7 +1214,73 @@
       "faction": null
     },
     {
-      "id": "pickup_078",
+      "id": "spawn_098",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 0.7853981633974483,
+      "faction": null
+    },
+    {
+      "id": "spawn_099",
+      "position": [
+        40,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": -0.7853981633974483,
+      "faction": null
+    },
+    {
+      "id": "spawn_100",
+      "position": [
+        0,
+        0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 2.356194490192345,
+      "faction": null
+    },
+    {
+      "id": "spawn_101",
+      "position": [
+        40,
+        0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": -2.356194490192345,
+      "faction": null
+    },
+    {
+      "id": "spawn_102",
+      "position": [
+        20,
+        0,
+        -1
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_103",
+      "position": [
+        20,
+        0,
+        41
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "pickup_104",
       "position": [
         20,
         0,
@@ -1001,7 +1291,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_079",
+      "id": "pickup_105",
       "position": [
         22,
         4,
@@ -1012,7 +1302,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_080",
+      "id": "pickup_106",
       "position": [
         32,
         4,
@@ -1023,7 +1313,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_081",
+      "id": "pickup_107",
       "position": [
         8,
         0,
@@ -1034,7 +1324,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_082",
+      "id": "pickup_108",
       "position": [
         24,
         0,
@@ -1045,7 +1335,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_083",
+      "id": "pickup_109",
       "position": [
         13,
         0,
@@ -1056,7 +1346,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_084",
+      "id": "pickup_110",
       "position": [
         8,
         4,
@@ -1067,7 +1357,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_085",
+      "id": "pickup_111",
       "position": [
         26.8,
         4,
@@ -1078,7 +1368,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_086",
+      "id": "pickup_112",
       "position": [
         13.2,
         4,
@@ -1089,7 +1379,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_087",
+      "id": "pickup_113",
       "position": [
         32,
         0,
@@ -1100,7 +1390,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_088",
+      "id": "pickup_114",
       "position": [
         8,
         0,
@@ -1111,7 +1401,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_089",
+      "id": "pickup_115",
       "position": [
         32,
         4,
@@ -1122,7 +1412,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_090",
+      "id": "pickup_116",
       "position": [
         30,
         0,
@@ -1133,7 +1423,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_091",
+      "id": "pickup_117",
       "position": [
         8,
         0,
@@ -1144,7 +1434,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_092",
+      "id": "pickup_118",
       "position": [
         18,
         4,
@@ -1155,7 +1445,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_093",
+      "id": "pickup_119",
       "position": [
         30,
         4,
@@ -1166,7 +1456,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_094",
+      "id": "pickup_120",
       "position": [
         16,
         0,
@@ -1177,7 +1467,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_095",
+      "id": "pickup_121",
       "position": [
         24,
         0,
@@ -1188,7 +1478,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_096",
+      "id": "pickup_122",
       "position": [
         10.5,
         0,
@@ -1199,7 +1489,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_097",
+      "id": "pickup_123",
       "position": [
         18,
         4,
@@ -1210,7 +1500,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_098",
+      "id": "pickup_124",
       "position": [
         20,
         0,
@@ -1218,6 +1508,72 @@
       ],
       "kind": "pickup",
       "item": "core.powerup_damage",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_125",
+      "position": [
+        0,
+        0,
+        20
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_126",
+      "position": [
+        40,
+        0,
+        20
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_auto_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_127",
+      "position": [
+        20,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_128",
+      "position": [
+        20,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_129",
+      "position": [
+        1,
+        0,
+        9
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_130",
+      "position": [
+        39,
+        0,
+        31
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
       "respawnSeconds": null
     }
   ],
@@ -1228,5 +1584,11 @@
     "objectives": [],
     "rules": []
   },
+  "terrain": null,
+  "bounds": null,
+  "backdrop": null,
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
   "dependencies": []
 }

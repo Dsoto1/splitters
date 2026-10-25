@@ -4,7 +4,9 @@
  * edit commands the MapMaker issues. Rerun after changing the layout:
  * `pnpm --filter @chronosplit/server build-citadel`.
  *
- * Ground floor (grid x east, y north; one cell = 8 m), upper floor in brackets:
+ * Ground floor (grid x east, y north; one cell = 8 m), upper floor in brackets.
+ * The keep (cells 1–4) stands in an outer bailey of courtyards (cells 0 and 5)
+ * behind a high curtain wall:
  *
  *   y4  . R  N  N  T  .     R  colonnade room      N  north halls [roof terraces]
  *   y3  . W  A  A  E  .     W  west halls [upper rooms, windows]   E  east halls [upper rooms]
@@ -90,6 +92,21 @@ for (const x of [2, 3]) {
 edge(1, 4, 0, 'N', 'windows');
 edge(4, 1, 0, 'S', 'windows');
 
+// The outer bailey: a ring of courtyards round the keep (cells 0 and 5), behind a high curtain wall.
+// The keep's windows and slits stay walls, so its corner rooms and stairwells are the gates.
+const bailey: [string, number, number][] = [];
+for (let i = 0; i <= 5; i++) {
+  bailey.push([i % 2 ? 'yard_crates' : 'yard', i, 0], [i % 2 ? 'yard' : 'yard_ruins', i, 5]);
+  if (i > 0 && i < 5) bailey.push([i === 2 ? 'yard_wall' : 'yard', 0, i], [i === 3 ? 'yard_wall' : 'yard_crates', 5, i]);
+}
+for (const [kind, x, y] of bailey) tile(kind, x, y);
+for (let i = 0; i <= 5; i++) {
+  edge(i, 0, 0, 'S', 'high');
+  edge(i, 5, 0, 'N', 'high');
+  edge(0, i, 0, 'W', 'high');
+  edge(5, i, 0, 'E', 'high');
+}
+
 // ---------------------------------------------------------------- props and breakables
 
 // Atrium floor: cover around the edges, a keg to set off, banners.
@@ -153,6 +170,9 @@ for (const [x, y, z, yaw] of [
   [8, 0, 18, Math.PI / 2], [7, 0, 26.5, Math.PI / 2], [32, 0, 18, -Math.PI / 2], [30, 0, 26.5, -Math.PI / 2],
   [18, 0, 8, 0], [19, 0, 30, Math.PI], [8, 4, 17, Math.PI / 2], [32, 4, 18.5, -Math.PI / 2],
   [16, 4, 31, Math.PI], [24, 4, 9, 0],
+  // The bailey.
+  [0, 0, 0, Math.PI / 4], [40, 0, 0, -Math.PI / 4], [0, 0, 40, (3 * Math.PI) / 4], [40, 0, 40, (-3 * Math.PI) / 4],
+  [20, 0, -1, 0], [20, 0, 41, Math.PI],
 ] as const) {
   const { command } = addSpawnCommand([x, y, z], yaw);
   const spawn = (command as { entities: MapEntity[] }).entities[0]!;
@@ -181,6 +201,13 @@ const pickups: [string, number, number, number][] = [
   ['ammo_light', 10.5, 0, 26.5],
   ['ammo_sniper', 18, 4, 8],
   ['powerup_damage', 20, 0, 26],
+  // The bailey.
+  ['weapon_marksman', 0, 0, 20],
+  ['weapon_auto_shotgun', 40, 0, 20],
+  ['armor_small', 20, 0, 0],
+  ['health_small', 20, 0, 40],
+  ['ammo_rifle', 1, 0, 9],
+  ['ammo_shells', 39, 0, 31],
 ];
 run('Add pickups', {
   kind: 'addEntities',
@@ -197,8 +224,8 @@ run('Edit map', {
     id: 'citadel',
     author: 'ChronoSplit',
     description:
-      'A castle keep around a two-storey atrium. Halls with arched openings ring the ground floor; stairwells in two corners climb to barracks, a map room and roof terraces with cannons. Rockets wait in the atrium, the sniper rifle on the north roof. Shoot out the window panes, break the boards, and mind the powder kegs.',
-    recommendedPlayers: { min: 2, max: 10 },
+      'A castle keep around a two-storey atrium, inside an outer bailey of courtyards behind a curtain wall; the corner rooms and stairwells are its gates. Halls with arched openings ring the ground floor; stairwells in two corners climb to barracks, a map room and roof terraces with cannons. Rockets wait in the atrium, the sniper rifle on the north roof. Shoot out the window panes, break the boards, and mind the powder kegs.',
+    recommendedPlayers: { min: 4, max: 12 },
     supportedModes: ['core.deathmatch'],
   },
 });

@@ -1,17 +1,17 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 5,
+  "formatVersion": 14,
   "metadata": {
-    "id": "m3_the_vault",
+    "id": "m3_vault",
     "name": "The Vault",
-    "author": "ChronoSplit team",
-    "description": "Scenario demo: get through the trap corridor, find the control-room button, grab explosives from the laser-guarded armory, blow the reinforced wall and reach the vault before lockdown. First one in wins.",
+    "author": "ChronoSplit",
+    "description": "Break into the vault: find the control, blow the wall, grab the prize. Loops through a south hall, a west passage and the north rooms keep the fight moving.",
     "createdAt": "2026-10-22T00:00:00.000Z",
     "updatedAt": "2026-10-22T00:00:00.000Z",
     "parentId": null,
     "recommendedPlayers": {
-      "min": 1,
-      "max": 8
+      "min": 2,
+      "max": 10
     },
     "supportedModes": [
       "core.deathmatch"
@@ -67,6 +67,70 @@
         "tile": "core.room",
         "x": 4,
         "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_001",
+        "tile": "core.room_large",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_002",
+        "tile": "core.room_columns",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_003",
+        "tile": "core.room_dais",
+        "x": 2,
+        "y": -2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "g_tile_004",
+        "tile": "core.room",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_005",
+        "tile": "core.room_pillar",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_006",
+        "tile": "core.room_columns",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_007",
+        "tile": "core.corridor",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_008",
+        "tile": "core.room_cover",
+        "x": -1,
+        "y": -2,
         "z": 0,
         "rotation": 0
       }
@@ -478,6 +542,177 @@
       "who": "any",
       "count": 1,
       "startEnabled": true
+    },
+    {
+      "id": "g_spawn_009",
+      "position": [
+        -2,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "g_spawn_010",
+      "position": [
+        10,
+        0,
+        10
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "g_spawn_011",
+      "position": [
+        -10,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "g_spawn_012",
+      "position": [
+        -8,
+        0,
+        -18
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "g_spawn_013",
+      "position": [
+        1,
+        0,
+        -17
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "g_spawn_014",
+      "position": [
+        13.5,
+        0,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "g_pickup_015",
+      "position": [
+        4,
+        0,
+        -12
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_016",
+      "position": [
+        16,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_017",
+      "position": [
+        -8,
+        0,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_018",
+      "position": [
+        -8,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_019",
+      "position": [
+        8,
+        0,
+        11
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_020",
+      "position": [
+        14,
+        0,
+        -14
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_destructible_021",
+      "position": [
+        1.5,
+        0,
+        -9
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "g_destructible_022",
+      "position": [
+        6.5,
+        0,
+        -15
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "g_destructible_023",
+      "position": [
+        7,
+        0,
+        -9.5
+      ],
+      "kind": "destructible",
+      "model": "barrel",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
     }
   ],
   "factions": [],
@@ -756,5 +991,11 @@
       }
     ]
   },
+  "terrain": null,
+  "bounds": null,
+  "backdrop": null,
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
   "dependencies": []
 }

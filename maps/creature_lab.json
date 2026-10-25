@@ -1,11 +1,11 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 11,
+  "formatVersion": 14,
   "metadata": {
     "id": "creature_lab",
     "name": "Creature Lab",
     "author": "ChronoSplit",
-    "description": "Co-op creature test: a research deck built from the sci-fi kit. Hold off a pack of imps and puglins, then the spitting cyclops and oculus aliens, then the scolitex brute.",
+    "description": "Co-op: a research station built from the sci-fi kit. Hold the deck against imps and puglins, push into the specimen bay for the spitting cyclops and oculus aliens, then face the scolitex brute in containment.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -117,188 +117,116 @@
         "y": 2,
         "z": 0,
         "rotation": 0
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.platform",
+        "x": -1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.platform",
+        "x": -1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.platform",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.platform",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
       }
     ]
   },
   "entities": [
     {
-      "id": "prop_013",
-      "position": [
-        -10,
-        0,
-        19.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_astra_tall",
-      "yaw": 3.141592653589793,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_014",
-      "position": [
-        -6,
-        0,
-        19.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_window_tall",
-      "yaw": 3.141592653589793,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_015",
-      "position": [
-        -2,
-        0,
-        19.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_cables_tall",
-      "yaw": 3.141592653589793,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_016",
-      "position": [
-        2,
-        0,
-        19.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_cables_tall",
-      "yaw": 3.141592653589793,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_017",
-      "position": [
-        6,
-        0,
-        19.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_window_tall",
-      "yaw": 3.141592653589793,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_018",
-      "position": [
-        10,
-        0,
-        19.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_astra_tall",
-      "yaw": 3.141592653589793,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_019",
-      "position": [
-        -10,
-        0,
-        -11.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_band_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_020",
-      "position": [
-        -6,
-        0,
-        -11.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_plastic_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_021",
-      "position": [
-        -2,
-        0,
-        -11.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_band_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_022",
-      "position": [
-        2,
-        0,
-        -11.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_band_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_023",
-      "position": [
-        6,
-        0,
-        -11.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_plastic_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_024",
-      "position": [
-        10,
-        0,
-        -11.6
-      ],
-      "kind": "prop",
-      "model": "prop.sf_wall_band_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_025",
       "position": [
-        -11.4,
+        -10,
         0,
-        -10
+        -11.6
       ],
       "kind": "prop",
       "model": "prop.sf_wall_astra_tall",
-      "yaw": 1.5707963267948966,
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -306,13 +234,13 @@
     {
       "id": "prop_026",
       "position": [
-        11.4,
+        -6,
         0,
-        -10
+        -11.6
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_astra_tall",
-      "yaw": -1.5707963267948966,
+      "model": "prop.sf_wall_window_tall",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -320,13 +248,13 @@
     {
       "id": "prop_027",
       "position": [
-        -11.4,
+        -2,
         0,
-        -6
+        -11.6
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_window_tall",
-      "yaw": 1.5707963267948966,
+      "model": "prop.sf_wall_cables_tall",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -334,13 +262,13 @@
     {
       "id": "prop_028",
       "position": [
-        11.4,
+        2,
         0,
-        -6
+        -11.6
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_window_tall",
-      "yaw": -1.5707963267948966,
+      "model": "prop.sf_wall_band_tall",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -348,13 +276,13 @@
     {
       "id": "prop_029",
       "position": [
-        -11.4,
+        6,
         0,
-        -2
+        -11.6
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_astra_tall",
-      "yaw": 1.5707963267948966,
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -362,13 +290,13 @@
     {
       "id": "prop_030",
       "position": [
-        11.4,
+        10,
         0,
-        -2
+        -11.6
       ],
       "kind": "prop",
       "model": "prop.sf_wall_astra_tall",
-      "yaw": -1.5707963267948966,
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -378,10 +306,10 @@
       "position": [
         -11.4,
         0,
-        2
+        -10
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_astra_tall",
+      "model": "prop.sf_wall_window_tall",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -390,13 +318,13 @@
     {
       "id": "prop_032",
       "position": [
-        11.4,
+        -11.4,
         0,
-        2
+        -6
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_astra_tall",
-      "yaw": -1.5707963267948966,
+      "model": "prop.sf_wall_cables_tall",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -406,10 +334,10 @@
       "position": [
         -11.4,
         0,
-        6
+        -2
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_window_tall",
+      "model": "prop.sf_wall_band_tall",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -418,13 +346,13 @@
     {
       "id": "prop_034",
       "position": [
-        11.4,
+        -11.4,
         0,
-        6
+        2
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_window_tall",
-      "yaw": -1.5707963267948966,
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -434,7 +362,7 @@
       "position": [
         -11.4,
         0,
-        10
+        6
       ],
       "kind": "prop",
       "model": "prop.sf_wall_astra_tall",
@@ -446,13 +374,13 @@
     {
       "id": "prop_036",
       "position": [
-        11.4,
+        -11.4,
         0,
         10
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_astra_tall",
-      "yaw": -1.5707963267948966,
+      "model": "prop.sf_wall_window_tall",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -465,7 +393,7 @@
         14
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_astra_tall",
+      "model": "prop.sf_wall_cables_tall",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -474,13 +402,13 @@
     {
       "id": "prop_038",
       "position": [
-        11.4,
+        -11.4,
         0,
-        14
+        18
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_astra_tall",
-      "yaw": -1.5707963267948966,
+      "model": "prop.sf_wall_band_tall",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -488,13 +416,13 @@
     {
       "id": "prop_039",
       "position": [
-        -11.4,
+        11.4,
         0,
-        18
+        -10
       ],
       "kind": "prop",
-      "model": "prop.sf_wall_window_tall",
-      "yaw": 1.5707963267948966,
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -504,7 +432,21 @@
       "position": [
         11.4,
         0,
-        18
+        -6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_astra_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_041",
+      "position": [
+        11.4,
+        0,
+        -2
       ],
       "kind": "prop",
       "model": "prop.sf_wall_window_tall",
@@ -514,9 +456,499 @@
       "tint": null
     },
     {
-      "id": "prop_041",
+      "id": "prop_042",
       "position": [
-        -4,
+        11.4,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_cables_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_043",
+      "position": [
+        11.4,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_band_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_044",
+      "position": [
+        11.4,
+        0,
+        18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_045",
+      "position": [
+        -10,
+        0,
+        19.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_astra_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_046",
+      "position": [
+        -6,
+        0,
+        19.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_window_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_047",
+      "position": [
+        6,
+        0,
+        19.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_cables_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_048",
+      "position": [
+        10,
+        0,
+        19.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_band_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_049",
+      "position": [
+        14,
+        0,
+        -3.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_050",
+      "position": [
+        18,
+        0,
+        -3.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_astra_tall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_051",
+      "position": [
+        22,
+        0,
+        -3.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_window_tall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_052",
+      "position": [
+        26,
+        0,
+        -3.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_cables_tall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_053",
+      "position": [
+        27.4,
+        0,
+        -2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_band_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_054",
+      "position": [
+        27.4,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_055",
+      "position": [
+        27.4,
+        0,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_astra_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_056",
+      "position": [
+        27.4,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_window_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_057",
+      "position": [
+        27.4,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_cables_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_058",
+      "position": [
+        27.4,
+        0,
+        18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_band_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_059",
+      "position": [
+        14,
+        0,
+        19.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_060",
+      "position": [
+        18,
+        0,
+        19.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_astra_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_061",
+      "position": [
+        22,
+        0,
+        19.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_window_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_062",
+      "position": [
+        26,
+        0,
+        19.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_cables_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_063",
+      "position": [
+        -11.4,
+        0,
+        22
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_band_tall",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_064",
+      "position": [
+        -11.4,
+        0,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_065",
+      "position": [
+        -11.4,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_astra_tall",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_066",
+      "position": [
+        -11.4,
+        0,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_window_tall",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_067",
+      "position": [
+        11.4,
+        0,
+        22
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_cables_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_068",
+      "position": [
+        11.4,
+        0,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_band_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_069",
+      "position": [
+        11.4,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_070",
+      "position": [
+        11.4,
+        0,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_astra_tall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_071",
+      "position": [
+        -10,
+        0,
+        35.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_window_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        -6,
+        0,
+        35.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_cables_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        -2,
+        0,
+        35.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_band_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        2,
+        0,
+        35.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_plastic_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        6,
+        0,
+        35.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_astra_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "position": [
+        10,
+        0,
+        35.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_wall_window_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        -6,
         0,
         18.6
       ],
@@ -528,7 +960,7 @@
       "tint": null
     },
     {
-      "id": "prop_042",
+      "id": "prop_078",
       "position": [
         6,
         0,
@@ -542,7 +974,259 @@
       "tint": null
     },
     {
-      "id": "block_043",
+      "id": "prop_079",
+      "position": [
+        16,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "position": [
+        17.2,
+        0,
+        3.2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "position": [
+        24,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_column_pipes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "position": [
+        20,
+        0,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.sf_low_wall_plates",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "position": [
+        16,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.sf_column_round",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "position": [
+        24,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.sf_column_round",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "position": [
+        26,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "position": [
+        25,
+        0,
+        17
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_087",
+      "position": [
+        20,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.sf_floor_squares",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "position": [
+        -6,
+        0,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.sf_column_pipes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "position": [
+        6,
+        0,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.sf_column_pipes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "position": [
+        -6,
+        0,
+        32
+      ],
+      "kind": "prop",
+      "model": "prop.sf_column_pipes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "position": [
+        6,
+        0,
+        32
+      ],
+      "kind": "prop",
+      "model": "prop.sf_column_pipes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "position": [
+        0,
+        0,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.sf_low_wall_triangles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "position": [
+        -9,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "position": [
+        9,
+        0,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "position": [
+        0,
+        0,
+        34.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_hanging_cables",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_096",
+      "position": [
+        0,
+        0.01,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.sf_decal_caution",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "block_097",
       "position": [
         0,
         0,
@@ -564,7 +1248,7 @@
       "health": 120
     },
     {
-      "id": "prop_044",
+      "id": "prop_098",
       "position": [
         0,
         0,
@@ -578,7 +1262,7 @@
       "tint": null
     },
     {
-      "id": "prop_045",
+      "id": "prop_099",
       "position": [
         0,
         2,
@@ -592,7 +1276,7 @@
       "tint": null
     },
     {
-      "id": "prop_046",
+      "id": "prop_100",
       "position": [
         -3,
         2,
@@ -606,7 +1290,7 @@
       "tint": null
     },
     {
-      "id": "prop_047",
+      "id": "prop_101",
       "position": [
         3,
         2,
@@ -620,7 +1304,7 @@
       "tint": null
     },
     {
-      "id": "prop_048",
+      "id": "prop_102",
       "position": [
         -3.6,
         0,
@@ -634,7 +1318,7 @@
       "tint": null
     },
     {
-      "id": "prop_049",
+      "id": "prop_103",
       "position": [
         3.6,
         0,
@@ -648,7 +1332,7 @@
       "tint": null
     },
     {
-      "id": "prop_050",
+      "id": "prop_104",
       "position": [
         -3.6,
         0,
@@ -662,7 +1346,7 @@
       "tint": null
     },
     {
-      "id": "prop_051",
+      "id": "prop_105",
       "position": [
         3.6,
         0,
@@ -676,7 +1360,7 @@
       "tint": null
     },
     {
-      "id": "prop_052",
+      "id": "prop_106",
       "position": [
         1.5,
         2,
@@ -690,7 +1374,7 @@
       "tint": null
     },
     {
-      "id": "prop_053",
+      "id": "prop_107",
       "position": [
         0,
         0.01,
@@ -704,7 +1388,7 @@
       "tint": null
     },
     {
-      "id": "prop_054",
+      "id": "prop_108",
       "position": [
         -7,
         0,
@@ -718,7 +1402,7 @@
       "tint": null
     },
     {
-      "id": "prop_055",
+      "id": "prop_109",
       "position": [
         -8.2,
         0,
@@ -732,7 +1416,7 @@
       "tint": null
     },
     {
-      "id": "prop_056",
+      "id": "prop_110",
       "position": [
         -6,
         0,
@@ -746,7 +1430,7 @@
       "tint": null
     },
     {
-      "id": "prop_057",
+      "id": "prop_111",
       "position": [
         7,
         0,
@@ -760,7 +1444,7 @@
       "tint": null
     },
     {
-      "id": "prop_058",
+      "id": "prop_112",
       "position": [
         8,
         0,
@@ -774,7 +1458,7 @@
       "tint": null
     },
     {
-      "id": "prop_059",
+      "id": "prop_113",
       "position": [
         6,
         0,
@@ -788,7 +1472,7 @@
       "tint": null
     },
     {
-      "id": "prop_060",
+      "id": "prop_114",
       "position": [
         -6,
         0,
@@ -802,7 +1486,7 @@
       "tint": null
     },
     {
-      "id": "prop_061",
+      "id": "prop_115",
       "position": [
         7,
         0,
@@ -816,7 +1500,7 @@
       "tint": null
     },
     {
-      "id": "prop_062",
+      "id": "prop_116",
       "position": [
         -9,
         0,
@@ -830,7 +1514,7 @@
       "tint": null
     },
     {
-      "id": "prop_063",
+      "id": "prop_117",
       "position": [
         9,
         0,
@@ -844,7 +1528,7 @@
       "tint": null
     },
     {
-      "id": "prop_064",
+      "id": "prop_118",
       "position": [
         0,
         0,
@@ -858,7 +1542,7 @@
       "tint": null
     },
     {
-      "id": "prop_065",
+      "id": "prop_119",
       "position": [
         -9,
         0,
@@ -872,7 +1556,7 @@
       "tint": null
     },
     {
-      "id": "prop_066",
+      "id": "prop_120",
       "position": [
         9,
         0,
@@ -886,7 +1570,7 @@
       "tint": null
     },
     {
-      "id": "prop_067",
+      "id": "prop_121",
       "position": [
         0,
         0,
@@ -900,7 +1584,7 @@
       "tint": null
     },
     {
-      "id": "prop_068",
+      "id": "prop_122",
       "position": [
         0,
         0,
@@ -914,7 +1598,7 @@
       "tint": null
     },
     {
-      "id": "prop_069",
+      "id": "prop_123",
       "position": [
         -6,
         0,
@@ -928,7 +1612,7 @@
       "tint": null
     },
     {
-      "id": "prop_070",
+      "id": "prop_124",
       "position": [
         6,
         0,
@@ -942,7 +1626,7 @@
       "tint": null
     },
     {
-      "id": "prop_071",
+      "id": "prop_125",
       "position": [
         -3,
         0.01,
@@ -956,7 +1640,7 @@
       "tint": null
     },
     {
-      "id": "prop_072",
+      "id": "prop_126",
       "position": [
         3,
         0.01,
@@ -970,7 +1654,7 @@
       "tint": null
     },
     {
-      "id": "prop_073",
+      "id": "prop_127",
       "position": [
         0,
         0.01,
@@ -984,7 +1668,7 @@
       "tint": null
     },
     {
-      "id": "prop_074",
+      "id": "prop_128",
       "position": [
         -8,
         0,
@@ -998,7 +1682,7 @@
       "tint": null
     },
     {
-      "id": "prop_075",
+      "id": "prop_129",
       "position": [
         5,
         0,
@@ -1012,7 +1696,7 @@
       "tint": null
     },
     {
-      "id": "spawn_076",
+      "id": "spawn_130",
       "position": [
         -4,
         0,
@@ -1023,7 +1707,7 @@
       "faction": null
     },
     {
-      "id": "spawn_077",
+      "id": "spawn_131",
       "position": [
         -1.5,
         0,
@@ -1034,7 +1718,7 @@
       "faction": null
     },
     {
-      "id": "spawn_078",
+      "id": "spawn_132",
       "position": [
         1.5,
         0,
@@ -1045,7 +1729,7 @@
       "faction": null
     },
     {
-      "id": "spawn_079",
+      "id": "spawn_133",
       "position": [
         4,
         0,
@@ -1056,7 +1740,7 @@
       "faction": null
     },
     {
-      "id": "pickup_080",
+      "id": "pickup_134",
       "position": [
         -8,
         0,
@@ -1067,7 +1751,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_081",
+      "id": "pickup_135",
       "position": [
         8,
         0,
@@ -1078,7 +1762,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_082",
+      "id": "pickup_136",
       "position": [
         0,
         2,
@@ -1089,7 +1773,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_083",
+      "id": "pickup_137",
       "position": [
         -9,
         0,
@@ -1100,7 +1784,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_084",
+      "id": "pickup_138",
       "position": [
         9,
         0,
@@ -1111,7 +1795,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_085",
+      "id": "pickup_139",
       "position": [
         0,
         0,
@@ -1122,7 +1806,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_086",
+      "id": "pickup_140",
       "position": [
         -6,
         0,
@@ -1133,7 +1817,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_087",
+      "id": "pickup_141",
       "position": [
         6,
         0,
@@ -1141,6 +1825,72 @@
       ],
       "kind": "pickup",
       "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_142",
+      "position": [
+        22,
+        0,
+        4
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_143",
+      "position": [
+        26,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_144",
+      "position": [
+        18,
+        0,
+        18
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_145",
+      "position": [
+        -9,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_146",
+      "position": [
+        9,
+        0,
+        28
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_147",
+      "position": [
+        0,
+        0,
+        22
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
       "respawnSeconds": null
     },
     {
@@ -1177,9 +1927,9 @@
     {
       "id": "enc_spitters",
       "position": [
-        6,
+        22,
         0,
-        15
+        12
       ],
       "name": "Spitters",
       "kind": "encounter",
@@ -1208,9 +1958,9 @@
     {
       "id": "enc_brute",
       "position": [
-        -5,
         0,
-        16
+        0,
+        31
       ],
       "name": "Brute",
       "kind": "encounter",
@@ -1257,13 +2007,13 @@
       },
       {
         "id": "obj_spitters",
-        "text": "Destroy the spitting specimens",
+        "text": "Destroy the spitting specimens in the bay",
         "startActive": false,
         "marker": "enc_spitters"
       },
       {
         "id": "obj_brute",
-        "text": "Kill the scolitex",
+        "text": "Kill the scolitex in containment",
         "startActive": false,
         "marker": "enc_brute"
       }
@@ -1325,7 +2075,7 @@
             "type": "message",
             "target": null,
             "value": 4,
-            "text": "Spitters incoming. Keep moving!",
+            "text": "Spitters breaking out of the specimen bay, east. Keep moving!",
             "state": ""
           }
         ]
@@ -1366,7 +2116,7 @@
             "type": "message",
             "target": null,
             "value": 4,
-            "text": "Something big broke out of its tank...",
+            "text": "Something big broke out of its tank in containment, north...",
             "state": ""
           }
         ]
@@ -1410,6 +2160,7 @@
   "terrain": null,
   "bounds": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

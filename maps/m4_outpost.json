@@ -1,11 +1,11 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 5,
+  "formatVersion": 14,
   "metadata": {
-    "id": "m4_outpost_siege",
+    "id": "m4_outpost",
     "name": "Outpost Siege",
-    "author": "ChronoSplit team",
-    "description": "Co-op mission: take the courtyard, open the gate, hold the uplink against two attack waves for 60 seconds, then fight through to extraction. Militia allies follow you. The team shares 15 lives.",
+    "author": "ChronoSplit",
+    "description": "Fight through the courtyard (or round its flanks), open the gate, hold the uplink while the Syndicate storms in from north and south, then reach evac.",
     "createdAt": "2026-10-22T00:00:00.000Z",
     "updatedAt": "2026-10-22T00:00:00.000Z",
     "parentId": null,
@@ -75,6 +75,76 @@
         "tile": "core.room",
         "x": 4,
         "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_001",
+        "tile": "core.room",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_002",
+        "tile": "core.corridor",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "g_tile_003",
+        "tile": "core.room",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "g_tile_006",
+        "tile": "core.room_pillar",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_007",
+        "tile": "core.room",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "g_tile_008",
+        "tile": "core.corridor",
+        "x": 1,
+        "y": -1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "g_tile_009",
+        "tile": "core.room",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "g_tile_012",
+        "tile": "core.room_columns",
+        "x": 3,
+        "y": -2,
         "z": 0,
         "rotation": 0
       }
@@ -468,6 +538,200 @@
       ],
       "kind": "destructible",
       "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "g_destructible_004",
+      "position": [
+        14.5,
+        0,
+        6.5
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "g_destructible_005",
+      "position": [
+        17.5,
+        0,
+        9.5
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "g_destructible_010",
+      "position": [
+        14.5,
+        0,
+        -6.5
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "g_destructible_011",
+      "position": [
+        17.5,
+        0,
+        -9.5
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "g_enc_patrol_north",
+      "position": [
+        8,
+        0,
+        8
+      ],
+      "kind": "encounter",
+      "yaw": 3.141592653589793,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 2,
+        "gunner": 0,
+        "heavy": 0
+      },
+      "activeCap": 2,
+      "reinforcements": 0,
+      "perPlayer": 0,
+      "respawnSeconds": 5,
+      "radius": 3,
+      "order": "hold",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "g_enc_patrol_south",
+      "position": [
+        8,
+        0,
+        -8
+      ],
+      "kind": "encounter",
+      "yaw": 3.141592653589793,
+      "faction": "syndicate",
+      "roster": {
+        "trooper": 2,
+        "gunner": 0,
+        "heavy": 0
+      },
+      "activeCap": 2,
+      "reinforcements": 0,
+      "perPlayer": 0,
+      "respawnSeconds": 5,
+      "radius": 3,
+      "order": "hold",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "g_pickup_013",
+      "position": [
+        0,
+        0,
+        9
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_014",
+      "position": [
+        0,
+        0,
+        -9
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_015",
+      "position": [
+        16,
+        0,
+        9
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_016",
+      "position": [
+        16,
+        0,
+        -9
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_017",
+      "position": [
+        26,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_018",
+      "position": [
+        22,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_destructible_019",
+      "position": [
+        -2,
+        0,
+        10.5
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": 0,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "g_destructible_020",
+      "position": [
+        2,
+        0,
+        -10.5
+      ],
+      "kind": "destructible",
+      "model": "barrel",
       "yaw": 0,
       "health": null,
       "explosiveOnly": false
@@ -1049,5 +1313,11 @@
       }
     ]
   },
+  "terrain": null,
+  "bounds": null,
+  "backdrop": null,
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
   "dependencies": []
 }

@@ -72,11 +72,11 @@ function arcadeMaps(): ArcadeMap[] {
   };
   return [
     ...entry('canyon', 'Outdoor canyon: two bases, boulder fields, hills and a ridge ledge.', ['core.tdm', 'core.deathmatch'], 9),
-    ...entry('citadel', 'Castle keep: a two-storey atrium, roof terraces, every weapon.', ['core.deathmatch', 'core.tdm'], 7),
+    ...entry('citadel', 'Castle keep in an outer bailey: a two-storey atrium, roof terraces, every weapon.', ['core.deathmatch', 'core.tdm'], 9),
     ...entry('sandgate', 'Desert town: long street, mid doors, tunnels.', ['core.tdm', 'core.deathmatch'], 9),
-    ...entry('arena', 'Graybox loop around a pillar hall, with an upper floor.', ['core.deathmatch', 'core.tdm'], 5),
-    ...entry('vault', 'Doors, traps and a vault to crack.', ['core.deathmatch'], 3),
-    ...entry('outpost', 'Take the outpost from the Syndicate with a militia escort.', ['core.coop'], 2),
+    ...entry('arena', 'Duel arena: a tight graybox loop with an upper floor, for 2–4 players.', ['core.deathmatch', 'core.tdm'], 3),
+    ...entry('vault', 'Crack the vault: doors, traps, and loops round the heist route.', ['core.deathmatch'], 5),
+    ...entry('outpost', 'Take the outpost from the Syndicate: flank the courtyard, hold the uplink, reach evac.', ['core.coop'], 2),
     // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata.
     ...arcadeEntries(EXTRA_MAPS),
   ];
@@ -215,7 +215,7 @@ class App {
     const arena = loadMap(json);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');
     // Co-op: two bot teammates; team deathmatch: 5 v 5; deathmatch maps: a lobby of opponents.
-    const botFill = ({ outpost: 3, vault: 4, sandgate: 10, arena: 6, citadel: 8, canyon: 10 } as Record<string, number>)[which] ?? Math.max(4, Math.min(12, arena.map.metadata.recommendedPlayers.max));
+    const botFill = ({ outpost: 3, vault: 6, sandgate: 10, arena: 4, citadel: 10, canyon: 10 } as Record<string, number>)[which] ?? Math.max(4, Math.min(12, arena.map.metadata.recommendedPlayers.max));
     const asked = mode && isGameMode(mode) && mapCanRun(arena.map, mode) ? mode : null;
     this.playLocal(arena.map, asked ? rulesForMode(arena.map, asked) : rulesForMap(arena.map), botFill, 'normal');
   }

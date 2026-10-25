@@ -7,7 +7,7 @@
  *
  * Grid: cell (x, y) is centred on world (x × 8, y × 8); level z is z × 4 m up.
  */
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   EditHistory,
@@ -61,9 +61,27 @@ export class MapBuilder {
   constructor(
     readonly id: string,
     name: string,
+    base?: MapDocument,
+    private readonly prefix = '',
   ) {
-    const doc0 = newMapDocument(name, new Date('2026-10-23T00:00:00.000Z'));
-    this.history = new EditHistory({ ...doc0, classicStructure: { ...doc0.classicStructure, tiles: [] }, entities: [] });
+    const doc0 = base ?? newMapDocument(name, new Date('2026-10-23T00:00:00.000Z'));
+    this.history = new EditHistory(base ? doc0 : { ...doc0, classicStructure: { ...doc0.classicStructure, tiles: [] }, entities: [] });
+  }
+
+  /**
+   * Grow an existing (hand-made) map in place: everything it already has stays,
+   * including its logic and IDs, and what the script adds gets IDs starting
+   * with `g_`. Those are dropped before the script runs again, so rerunning
+   * gives the same file.
+   */
+  static extend(id: string): MapBuilder {
+    const path = fileURLToPath(new URL(`../../../../maps/${id}.json`, import.meta.url));
+    const loaded = loadMap(readFileSync(path, 'utf8'));
+    if (!loaded.ok) throw new Error(`${id}: map does not load`);
+    const doc = loaded.map;
+    const mine = (x: { id: string }) => x.id.startsWith('g_');
+    const base: MapDocument = { ...doc, classicStructure: { ...doc.classicStructure, tiles: doc.classicStructure.tiles.filter((t) => !mine(t)) }, entities: doc.entities.filter((e) => !mine(e)) };
+    return new MapBuilder(id, doc.metadata.name, base, 'g_');
   }
 
   get doc(): MapDocument {
@@ -72,7 +90,7 @@ export class MapBuilder {
 
   /** Stable IDs, so rebuilding a map produces the same file. */
   newId(prefix: string): string {
-    return `${prefix}_${String(++this.counter).padStart(3, '0')}`;
+    return `${this.prefix}${prefix}_${String(++this.counter).padStart(3, '0')}`;
   }
 
   private run(label: string, command: Parameters<EditHistory['execute']>[1]): void {
