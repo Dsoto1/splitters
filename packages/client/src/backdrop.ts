@@ -84,7 +84,11 @@ export class BackdropVisuals {
     const hemi = this.scene.getLightByName('hemi') as HemisphericLight | null;
     const sun = this.scene.getLightByName('sun') as DirectionalLight | null;
     // A stronger sun against a softer sky light, so shadows and the sunny sides of things read (tone mapping evens it out).
-    if (hemi) hemi.intensity = sky.light.hemi * 0.9;
+    if (hemi) {
+      hemi.intensity = sky.light.hemi * 0.9;
+      // Light bouncing up off the ground: without it every ceiling and underside is black (indoors, roofed maps).
+      hemi.groundColor = new Color3(0.62, 0.58, 0.54);
+    }
     if (sun) {
       sun.intensity = sky.light.sun * 1.5;
       sun.diffuse = Color3.FromHexString(sky.light.sunColor);
