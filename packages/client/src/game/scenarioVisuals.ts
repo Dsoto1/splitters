@@ -11,6 +11,10 @@ import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import type { Material } from '@babylonjs/core/Materials/material';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { PointLight } from '@babylonjs/core/Lights/pointLight';
+import { ClusteredLightContainer } from '@babylonjs/core/Lights/Clustered/clusteredLightContainer';
+import '@babylonjs/core/Lights/Clustered/clusteredLightingSceneComponent';
 import {
   BUTTON,
   DESTRUCTIBLE_SPECS,
@@ -21,6 +25,7 @@ import {
   TRAP_SPECS,
   TRAP_SPENT,
   TRAP_WARNING,
+  type LightEntity,
   type Liquid,
   type MapEntity,
 } from '@chronosplit/shared';
@@ -42,7 +47,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light'];
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
 interface Visual {
@@ -109,6 +114,8 @@ export class ScenarioVisuals {
 
   dispose(): void {
     this.clear();
+    this.lights?.dispose();
+    this.lights = undefined;
     for (const m of this.mats.values()) m.dispose();
     this.mats.clear();
   }
@@ -180,7 +187,103 @@ export class ScenarioVisuals {
       case 'hostage':
       case 'rescue':
         return this.objective(name, e);
+      case 'light':
+        return this.light(name, e);
     }
+  }
+
+  // ---------------------------------------------------------------- lights
+
+  /**
+   * Every map light goes into one clustered container, so a building full of
+   * lamps costs about what one light does (each material sees the sun, the sky
+   * and the container). Without clustered lighting (old GPUs) the fixtures
+   * glow but cast no light.
+   */
+  private lights: ClusteredLightContainer | null | undefined;
+
+  private container(): ClusteredLightContainer | null {
+    if (this.lights === undefined) {
+      const c = new ClusteredLightContainer('map_lights', [], this.scene);
+      this.lights = c.isSupported ? c : null;
+      if (!this.lights) c.dispose();
+    }
+    return this.lights;
+  }
+
+  private light(name: string, e: LightEntity): Visual {
+    const root = new TransformNode(name, this.scene);
+    const color = Color3.FromHexString(e.color);
+    const glow = this.mat('lightfix', e.color, { emissive: 1.4 });
+    glow.disableLighting = true;
+    const housing = this.mat('lighthousing', '#3a3f48');
+    // The light hangs just in front of its fixture, so it lights the room and not the wall behind.
+    let offset = new Vector3(0, 0, 0);
+    switch (e.fixture) {
+      case 'ceiling': {
+        const panel = CreateBox(`${name}_panel`, { width: 1.2, height: 0.06, depth: 1.2 }, this.scene);
+        panel.material = glow;
+        const rim = CreateBox(`${name}_rim`, { width: 1.32, height: 0.05, depth: 1.32 }, this.scene);
+        rim.position.y = 0.04;
+        rim.material = housing;
+        panel.parent = rim.parent = root;
+        offset = new Vector3(0, -0.4, 0);
+        break;
+      }
+      case 'wall': {
+        const plate = CreateBox(`${name}_plate`, { width: 0.32, height: 0.42, depth: 0.06 }, this.scene);
+        plate.material = housing;
+        const shade = CreateCylinder(`${name}_shade`, { diameterTop: 0.22, diameterBottom: 0.34, height: 0.26, tessellation: 12 }, this.scene);
+        shade.material = glow;
+        shade.position.set(0, 0.05, 0.18);
+        plate.parent = shade.parent = root;
+        offset = new Vector3(0, 0, 0.5);
+        break;
+      }
+      case 'bulb': {
+        const cord = CreateCylinder(`${name}_cord`, { diameter: 0.03, height: 0.6, tessellation: 6 }, this.scene);
+        cord.material = housing;
+        cord.position.y = 0.3;
+        const bulb = CreateSphere(`${name}_bulb`, { diameter: 0.18, segments: 8 }, this.scene);
+        bulb.material = glow;
+        cord.parent = bulb.parent = root;
+        break;
+      }
+      case 'strip': {
+        const tube = CreateBox(`${name}_tube`, { width: 2.4, height: 0.07, depth: 0.14 }, this.scene);
+        tube.material = glow;
+        tube.parent = root;
+        offset = new Vector3(0, -0.3, 0);
+        break;
+      }
+      case 'none':
+        if (this.opts.editor) {
+          const marker = CreateSphere(`${name}_marker`, { diameter: 0.35, segments: 8 }, this.scene);
+          marker.material = this.mat('lightmarker', e.color, { emissive: 1, alpha: 0.5 });
+          marker.parent = root;
+        }
+        break;
+    }
+    // Without clustered lighting the fixture still glows, but casts no light: dozens of plain point lights
+    // would each go into every material's shader (too big to compile, too slow to run).
+    const container = this.container();
+    if (!container) return { root };
+    const light = new PointLight(`${name}_light`, offset, this.scene);
+    light.parent = root;
+    light.diffuse = color;
+    light.specular = color.scale(0.25);
+    light.intensity = e.intensity;
+    light.range = e.range;
+    if (!ClusteredLightContainer.IsLightSupported(light)) {
+      light.dispose();
+      return { root };
+    }
+    container.addLight(light);
+    root.onDisposeObservable.addOnce(() => {
+      container.removeLight(light);
+      light.dispose();
+    });
+    return { root };
   }
 
   /** Team colours for flag bases (MapMaker). */

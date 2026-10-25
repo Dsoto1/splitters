@@ -205,6 +205,10 @@ m.logic({
   ],
 });
 
+// Theatre lighting: warm panels in the foyer and wings, chandelier bulbs over the auditorium, footlights on the stage.
+m.lightRooms({ color: '#ffd9a0', intensity: 0.9 });
+for (const [x, z] of [[18, 28], [30, 28], [18, 38], [30, 38]] as const) m.light([x, 3.2, z], { fixture: 'bulb', color: '#ffcf8a', intensity: 1.2, range: 11 });
+m.light([24, 0.4, 45], { fixture: 'strip', color: '#ffe2b0', intensity: 1.3, range: 8 });
 m.bounds('invisible');
 m.meta({
   description:

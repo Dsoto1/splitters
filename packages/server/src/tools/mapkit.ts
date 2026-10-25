@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
+  type LightFixture,
   AIR_PUSH_DECAY,
   PLAYER,
   TICK_DT,
@@ -242,6 +243,30 @@ export class MapBuilder {
     }
     if (lo > 40) throw new Error(`${this.id}: the pad at ${from} needs ${lo.toFixed(1)} m/s of push (40 at most): give it more lift`);
     return this.pad(from, +Math.atan2(dx, dz).toFixed(4), power, +lo.toFixed(2));
+  }
+
+  /** A light at `at` (fixture defaults to a ceiling panel; colour a warm white). */
+  light(at: V3, o: { fixture?: LightFixture; color?: string; intensity?: number; range?: number; yaw?: number } = {}): this {
+    return this.add({ kind: 'light', position: at, yaw: o.yaw ?? 0, color: o.color ?? '#fff1d6', intensity: o.intensity ?? 1, range: o.range ?? 9, fixture: o.fixture ?? 'ceiling' });
+  }
+
+  /**
+   * A ceiling light in every roofed room: each single-cell room, corridor or
+   * stairwell with a floor straight above it gets a panel just under that
+   * floor. `skip` leaves cells out (open-plan halls, outdoor-feeling spaces).
+   */
+  lightRooms(o: { color?: string; intensity?: number; range?: number; fixture?: LightFixture; skip?: (x: number, y: number, z: number) => boolean } = {}): this {
+    this.flush();
+    const cell = this.doc.classicStructure.cellSize;
+    const level = this.doc.classicStructure.levelHeight;
+    const tiles = this.doc.classicStructure.tiles;
+    const above = new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`));
+    for (const t of tiles) {
+      if (!/^core\.(room|room_pillar|room_columns|room_cover|corridor)$/.test(t.tile)) continue;
+      if (!above.has(`${t.x},${t.y},${t.z + 1}`) || o.skip?.(t.x, t.y, t.z)) continue;
+      this.light([t.x * cell, t.z * level + level - 0.55, t.y * cell], o);
+    }
+    return this;
   }
 
   /** A jump pad throwing you `power` m/s up and `push` m/s along `yaw`. */

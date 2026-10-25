@@ -136,6 +136,8 @@ m.pickup('armor_large', at(2, 1, 3)).pickup('armor_small', at(0, 3, 1)).pickup('
 m.pickup('health_small', at(1, 0, 3)).pickup('health_small', at(2, 3, 2)).pickup('health_small', at(4, 1, 0)).pickup('ammo', at(1, 3, 1)).pickup('ammo', at(2, 0, 2));
 m.pickup('ammo_rifle', at(1, 0, 1)).pickup('ammo_shells', at(2, 3, 3)).pickup('ammo_sniper', at(3, 1, 4)).pickup('grenades', at(-1, 0, 0)).pickup('grenades', at(1, 3, 3));
 
+// Office lighting: a cool white panel in every room of the tower.
+m.lightRooms({ color: '#f2f5ff', intensity: 1.1 });
 m.bounds('invisible');
 m.meta({
   description:

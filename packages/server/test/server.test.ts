@@ -7,7 +7,7 @@ import { parseClientMessage } from '@chronosplit/shared';
 
 const room: MapDocument = {
   format: 'chronosplit.map',
-  formatVersion: 14,
+  formatVersion: 15,
   metadata: {
     id: 'test_room',
     name: 'Test Room',

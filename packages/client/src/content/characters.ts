@@ -78,6 +78,13 @@ export interface CharacterSpec {
  * the rig's animation clips are retargeted onto it by joint name. Everything
  * loads once per scene and is instanced per character.
  */
+/**
+ * What a library hands back when its scene is disposed mid-load: a promise that
+ * never settles, so callers' follow-ups (which would build into a dead scene)
+ * simply never run.
+ */
+export const gone = <T>(): Promise<T> => new Promise<T>(() => {});
+
 export class CharacterLibrary {
   private readonly files = new Map<string, Promise<AssetContainer>>();
   private readonly textures = new Map<string, Texture>();
@@ -110,6 +117,8 @@ export class CharacterLibrary {
     const role = spec.armsOnly ? null : npcLookRole(spec.look);
     if (role && !NPC_ROLE_SPECS[role].creature) spec = { npc: { color: NPC_LOOK_COLORS[role] ?? '#d04a3a', scale: 1, female: role === 'sniper' } };
     const rig = await this.load('rig.glb');
+    // The scene went while the files loaded (left a match, closed a preview): build nothing into it.
+    if (this.scene.isDisposed) return gone();
     const holder = new TransformNode(name, this.scene);
     const meshes: AbstractMesh[] = [];
     /** Which file each mesh came from (0 = the carrier), for pairing low-detail copies. */
@@ -130,6 +139,7 @@ export class CharacterLibrary {
       if (spec.npc.female) {
         // Swap in the female mannequin, bound to the same skeleton.
         const female = await this.load('mannequin_f.glb');
+        if (this.scene.isDisposed) return gone();
         // Only the geometry goes (not __root__, which holds the skeleton's nodes).
         const male = meshes.filter((m) => m.getTotalVertices() > 0);
         const anchor = male[0]!.parent!;
@@ -148,6 +158,10 @@ export class CharacterLibrary {
       const look = getLook(spec.look);
       const files = spec.armsOnly ? [firstPersonArms(look)] : [...look.parts, look.head, ...look.hair];
       const [carrierC, ...rest] = await Promise.all(files.map((p) => this.load(`${p}.glb`)));
+      if (this.scene.isDisposed) {
+        holder.dispose();
+        return gone();
+      }
       // The first part carries the skeleton; every part shares it (all are bound to this body's pose).
       const carrier = carrierC!.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true });
       for (const n of carrier.rootNodes) n.parent = holder;

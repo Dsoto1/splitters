@@ -34,6 +34,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [12, (doc) => ({ ...doc })],
   // v13 -> v14: `hostage` and `rescue` entity kinds (Hostage mode). Existing entities are unchanged.
   [13, (doc) => ({ ...doc })],
+  // v14 -> v15: `light` entity kind (lights and their fixtures). Existing entities are unchanged.
+  [14, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

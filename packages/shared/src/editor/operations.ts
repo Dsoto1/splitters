@@ -3,7 +3,7 @@ import { buildOccupancy, cellKey, edgeKey, localSide, rotateXZ } from '../map/ge
 import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid } from '../map/schema.ts';
+import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
@@ -293,6 +293,11 @@ export const SCENARIO_PALETTE = [
   { key: 'block:crumble', label: 'Crumbling Floor', search: 'block crumble crumbling platform give way collapse falling floor' },
   { key: 'block:trapdoor', label: 'Trapdoor', search: 'block trapdoor trap door fall drop pit floor hatch' },
   { key: 'block:breakable', label: 'Breakable Block', search: 'block breakable destructible platform shoot' },
+  { key: 'light:ceiling', label: 'Ceiling Light', search: 'light lamp ceiling panel lighting bright interior indoor' },
+  { key: 'light:wall', label: 'Wall Lamp', search: 'light lamp wall sconce lighting bright' },
+  { key: 'light:bulb', label: 'Light Bulb', search: 'light bulb lamp hanging lighting bright' },
+  { key: 'light:strip', label: 'Strip Light', search: 'light strip neon fluorescent tube lighting bright' },
+  { key: 'light:none', label: 'Hidden Light', search: 'light glow fill hidden invisible lighting bright' },
   { key: 'water:water', label: 'Water', search: 'water pool lake river swim liquid' },
   { key: 'water:lava', label: 'Lava', search: 'lava magma liquid hazard burn' },
   { key: 'water:acid', label: 'Acid', search: 'acid toxic liquid hazard pool' },
@@ -371,6 +376,14 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       const behaviour = key.slice(6) as BlockBehaviour;
       return { id: newId('block'), kind: 'block', position, yaw: 0, size: [4, 0.5, 4], material: null, tint: null, behaviour, trigger: 'step', delaySeconds: behaviour === 'trapdoor' ? 0.15 : 0.8, respawnSeconds: 8, health: 120 };
     }
+    case 'light:ceiling':
+    case 'light:wall':
+    case 'light:bulb':
+    case 'light:strip':
+    case 'light:none': {
+      const fixture = key.slice(6) as LightFixture;
+      return { id: newId('light'), kind: 'light', position, yaw, color: fixture === 'strip' ? '#e8f4ff' : '#fff1d6', intensity: 1, range: fixture === 'none' ? 12 : 10, fixture };
+    }
     case 'water:water':
     case 'water:lava':
     case 'water:acid':
@@ -398,7 +411,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {

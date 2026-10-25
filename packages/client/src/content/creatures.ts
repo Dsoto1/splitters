@@ -6,7 +6,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
 import { CREATURE_SPECS, type CreatureKind, type CreatureSpec } from '@chronosplit/shared';
-import type { CharacterSpec } from './characters.ts';
+import { gone, type CharacterSpec } from './characters.ts';
 import { GLB, versioned } from '../assetUrl.ts';
 
 /**
@@ -57,6 +57,8 @@ export class CreatureLibrary {
   async create(kind: CreatureKind, name: string): Promise<CreatureInstance> {
     const spec = CREATURE_SPECS[kind];
     const container = await this.load(kind);
+    // The scene went while the file loaded: build nothing into it.
+    if (this.scene.isDisposed) return gone();
     const root = new TransformNode(name, this.scene);
     const body = new TransformNode(`${name}_body`, this.scene);
     body.parent = root;

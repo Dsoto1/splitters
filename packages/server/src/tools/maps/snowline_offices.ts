@@ -133,6 +133,8 @@ m.pickup('weapon_auto_shotgun', [32, 0, 40]).pickup('armor_large', [48, 0, 24]).
 m.pickup('health_small', [8, 0, 16]).pickup('health_small', [56, 0, 48]).pickup('ammo', [24, 0, 24]).pickup('ammo', [40, 0, 40]);
 m.pickup('ammo_shells', [8, 0, 32]).pickup('grenades', [32, 0, 60]).pickup('grenades', [56, 0, 16]);
 
+// Office lighting: a cool white panel in every office and corridor.
+m.lightRooms({ color: '#eef3ff', intensity: 1.1 });
 m.bounds('invisible');
 m.meta({
   description:

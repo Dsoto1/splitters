@@ -1,6 +1,6 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 14,
+  "formatVersion": 15,
   "metadata": {
     "id": "kanto_plaza",
     "name": "Kanto Plaza",
@@ -5716,6 +5716,804 @@
       "kind": "pickup",
       "item": "core.grenades",
       "respawnSeconds": null
+    },
+    {
+      "id": "light_336",
+      "position": [
+        0,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_337",
+      "position": [
+        0,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_338",
+      "position": [
+        0,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_339",
+      "position": [
+        0,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_340",
+      "position": [
+        8,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_341",
+      "position": [
+        8,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_342",
+      "position": [
+        16,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_343",
+      "position": [
+        16,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_344",
+      "position": [
+        24,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_345",
+      "position": [
+        24,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_346",
+      "position": [
+        24,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_347",
+      "position": [
+        24,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_348",
+      "position": [
+        16,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_349",
+      "position": [
+        16,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_350",
+      "position": [
+        0,
+        7.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_351",
+      "position": [
+        0,
+        7.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_352",
+      "position": [
+        0,
+        7.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_353",
+      "position": [
+        0,
+        7.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_354",
+      "position": [
+        8,
+        7.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_355",
+      "position": [
+        8,
+        7.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_356",
+      "position": [
+        16,
+        7.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_357",
+      "position": [
+        16,
+        7.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_358",
+      "position": [
+        24,
+        7.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_359",
+      "position": [
+        24,
+        7.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_360",
+      "position": [
+        24,
+        7.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_361",
+      "position": [
+        24,
+        7.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_362",
+      "position": [
+        16,
+        7.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_363",
+      "position": [
+        16,
+        7.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_364",
+      "position": [
+        0,
+        11.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_365",
+      "position": [
+        0,
+        11.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_366",
+      "position": [
+        0,
+        11.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_367",
+      "position": [
+        0,
+        11.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_368",
+      "position": [
+        8,
+        11.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_369",
+      "position": [
+        8,
+        11.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_370",
+      "position": [
+        16,
+        11.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_371",
+      "position": [
+        16,
+        11.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_372",
+      "position": [
+        24,
+        11.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_373",
+      "position": [
+        24,
+        11.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_374",
+      "position": [
+        24,
+        11.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_375",
+      "position": [
+        24,
+        11.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_376",
+      "position": [
+        16,
+        11.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_377",
+      "position": [
+        16,
+        11.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_378",
+      "position": [
+        0,
+        15.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_379",
+      "position": [
+        0,
+        15.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_380",
+      "position": [
+        0,
+        15.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_381",
+      "position": [
+        0,
+        15.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_382",
+      "position": [
+        8,
+        15.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_383",
+      "position": [
+        8,
+        15.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_384",
+      "position": [
+        16,
+        15.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_385",
+      "position": [
+        16,
+        15.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_386",
+      "position": [
+        24,
+        15.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_387",
+      "position": [
+        24,
+        15.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_388",
+      "position": [
+        24,
+        15.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_389",
+      "position": [
+        24,
+        15.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_390",
+      "position": [
+        16,
+        15.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_391",
+      "position": [
+        16,
+        15.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_392",
+      "position": [
+        8,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f2f5ff",
+      "intensity": 1.1,
+      "range": 9,
+      "fixture": "ceiling"
     }
   ],
   "factions": [],

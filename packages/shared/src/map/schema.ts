@@ -18,7 +18,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
  * migrations as each system lands.
  */
 export const MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 14;
+export const MAP_FORMAT_VERSION = 15;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -363,7 +363,24 @@ export const RescueEntity = EntityBase.extend({
   radius: z.number().min(2).max(12).default(4),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity]);
+/** What a light looks like where it hangs: nothing, a ceiling panel, a wall lamp, a bare bulb, or a long strip. */
+export const LIGHT_FIXTURES = ['none', 'ceiling', 'wall', 'bulb', 'strip'] as const;
+export type LightFixture = (typeof LIGHT_FIXTURES)[number];
+
+/** A light: a glow of `color` fading out over `range` metres, drawn as its fixture (lighting only; no gameplay). */
+export const LightEntity = EntityBase.extend({
+  kind: z.literal('light'),
+  yaw: Yaw,
+  color: z
+    .string()
+    .regex(/^#[0-9a-f]{6}$/, 'light colours are lowercase #rrggbb')
+    .default('#fff1d6'),
+  intensity: z.number().min(0.1).max(5).default(1),
+  range: z.number().min(1).max(30).default(10),
+  fixture: z.enum(LIGHT_FIXTURES).default('ceiling'),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -490,6 +507,7 @@ export type HillEntity = z.infer<typeof HillEntity>;
 export type BombsiteEntity = z.infer<typeof BombsiteEntity>;
 export type HostageEntity = z.infer<typeof HostageEntity>;
 export type RescueEntity = z.infer<typeof RescueEntity>;
+export type LightEntity = z.infer<typeof LightEntity>;
 export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
 export type Liquid = (typeof LIQUIDS)[number];
 export type Faction = z.infer<typeof Faction>;

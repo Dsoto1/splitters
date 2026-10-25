@@ -128,6 +128,7 @@ import {
   type TerrainMaterial,
   NPC_PALETTE,
   placeNpcCommand,
+  type LightFixture,
 } from '@chronosplit/shared';
 import arenaTemplate from '../../../../maps/phase0_arena.json';
 import vaultTemplate from '../../../../maps/m3_vault.json';
@@ -171,6 +172,11 @@ type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string 
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
+  'light:ceiling': '<rect x="10" y="8" width="36" height="6" fill="#c9ccd2"/><rect x="14" y="14" width="28" height="4" fill="#fff1c4"/><path d="M16 22l-6 18M28 22v22M40 22l6 18" stroke="#ffe08a" stroke-width="2" stroke-opacity=".7"/>',
+  'light:wall': '<rect x="8" y="8" width="5" height="40" fill="#6f7884"/><path d="M13 22h10l6 8H13z" fill="#fff1c4"/><path d="M30 26l14-8M31 32l15 2M30 38l13 9" stroke="#ffe08a" stroke-width="2" stroke-opacity=".7"/>',
+  'light:bulb': '<path d="M28 6v12" stroke="#3a3f48" stroke-width="2"/><circle cx="28" cy="26" r="8" fill="#fff1c4"/><path d="M14 34l-4 6M28 38v8M42 34l4 6" stroke="#ffe08a" stroke-width="2" stroke-opacity=".7"/>',
+  'light:strip': '<rect x="6" y="10" width="44" height="5" rx="2" fill="#e8f4ff"/><path d="M10 20l-3 16M20 20l-1 20M36 20l1 20M46 20l3 16" stroke="#bfe6f5" stroke-width="2" stroke-opacity=".7"/>',
+  'light:none': '<circle cx="28" cy="28" r="18" fill="#ffe08a" fill-opacity=".25"/><circle cx="28" cy="28" r="8" fill="#ffe08a" fill-opacity=".6"/>',
   glass: '<rect x="8" y="14" width="40" height="26" fill="#bfe6f5" fill-opacity="0.55" stroke="#9fb6d8" stroke-width="2"/><path d="M14 18l8 8M30 18l10 14" stroke="#ffffff" stroke-width="1.5"/>',
   boards: '<rect x="10" y="8" width="36" height="42" fill="none" stroke="#5a4030" stroke-width="2"/><rect x="8" y="14" width="40" height="7" fill="#9a6b3d" transform="rotate(-6 28 17)"/><rect x="8" y="27" width="40" height="7" fill="#8a5d33" transform="rotate(5 28 30)"/><rect x="8" y="40" width="40" height="7" fill="#9a6b3d" transform="rotate(-4 28 43)"/>',
   gas: '<rect x="20" y="14" width="16" height="34" rx="7" fill="#d8d8d0"/><rect x="25" y="8" width="6" height="7" fill="#5a6066"/><rect x="20" y="26" width="16" height="5" fill="#d8483a"/>',
@@ -2395,6 +2401,19 @@ export class EditorApp {
         choose('Team', teams.map((t) => [t.id, t.name] as const), e.team, (v) => ({ team: v }));
         number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
         el.append(small('Capture the Flag: this team\'s flag stands here. Players bring the enemy flag to it to score, while their own flag is home. One base per team; put it somewhere the team can defend, off its spawn points.'));
+        break;
+      }
+      case 'light': {
+        choose('Fixture', [['ceiling', 'Ceiling panel'], ['wall', 'Wall lamp'], ['bulb', 'Hanging bulb'], ['strip', 'Strip light'], ['none', 'Hidden (light only)']] as const, e.fixture, (v) => ({ fixture: v as LightFixture }));
+        const color = document.createElement('input');
+        color.type = 'color';
+        color.value = e.color;
+        color.addEventListener('change', () => update('Colour light', { color: color.value.toLowerCase() }));
+        el.append(row('Colour', color));
+        number('Brightness', e.intensity, 0.1, (v) => ({ intensity: clamp(v, 0.1, 5) }));
+        number('Reach (m)', e.range, 1, (v) => ({ range: clamp(v, 1, 30) }));
+        number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
+        el.append(small('Lights the area round it out to its reach (lighting only). Ceiling panels and strips go just under a ceiling, wall lamps on a wall facing into the room. Hundreds are fine on most GPUs.'));
         break;
       }
       case 'hostage':
