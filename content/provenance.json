@@ -1360,9 +1360,9 @@
     },
     {
       "file": "characters/rig.glb",
-      "sha256": "06ac7e1bc228583f",
+      "sha256": "688a699faa4c4bb8",
       "triangles": 6872,
-      "bytes": 684616,
+      "bytes": 734588,
       "source": "quaternius-universal-animation-library, quaternius-universal-animation-library-2",
       "title": "Universal Animation Library + Universal Animation Library 2",
       "creator": "Quaternius",

@@ -88,6 +88,10 @@ const CLIPS = [
   [UAL2, 'OverhandThrow', 'throw'],
   [UAL2, 'Yes', 'cheer'],
   [UAL2, 'Idle_FoldArms_Loop', 'idle_arms'],
+  // Zombies (also added on their own by add-rig-clips.mjs).
+  [UAL2, 'Zombie_Idle_Loop', 'zombie_idle'],
+  [UAL2, 'Zombie_Walk_Fwd_Loop', 'zombie_walk'],
+  [UAL2, 'Zombie_Scratch', 'zombie_attack'],
 ];
 
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
