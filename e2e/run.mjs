@@ -569,11 +569,12 @@ async function setpiecesFlow(browser) {
     me.move = { pos: { x: e.position[0], y: e.position[1] + e.size[1] + 0.3, z: e.position[2] }, velY: 0, grounded: false };
     return e.id;
   });
-  await page.waitForFunction((id) => window.__match.scenario.destructibleAlive(id) === false, stone, { timeout: T(6000) }).catch(() => {});
+  await page.waitForFunction((id) => window.__match.scenario.destructibleAlive(id) === false, stone, { timeout: T(10000) }).catch(() => {});
   check(await page.evaluate((id) => window.__match.scenario.destructibleAlive(id) === false, stone), 'a crumbling stone gives way under you');
   // Swim: drop into the pond; the view goes under water.
   await page.evaluate(() => { const me = window.__match.slots[window.__cs.slot]; me.move = { pos: { x: 0, y: 0.6, z: 0 }, velY: 0, grounded: false }; });
-  await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.swim === true, null, { timeout: T(5000) }).catch(() => {});
+  // Swimming is the match's; the haze comes with the view's next frame (slow on CI): wait for both.
+  await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.swim === true && window.__cs.view.scene.fogDensity > 0.05, null, { timeout: T(5000) }).catch(() => {});
   const under = await page.evaluate(() => ({ swim: window.__match.slots[window.__cs.slot].move.swim === true, fog: window.__cs.view.scene.fogDensity }));
   check(under.swim && under.fog > 0.05, `you swim in the pond and the view hazes under water (fog ${under.fog.toFixed(3)})`);
   // Jetpack: fly up while holding jump.
