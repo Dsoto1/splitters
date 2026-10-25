@@ -45,6 +45,7 @@ import {
   DEFAULT_BLOOD,
   EffectsWorld,
   mapTerrainMesh,
+  type MapEntity,
 } from '@tiletrigger/shared';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { Ragdoll } from './ragdoll.ts';
@@ -250,7 +251,7 @@ export class GameView {
       if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`, true, true, doc.terrain));
     });
     this.scenario.build(doc.entities);
-    this.entrances = doc.entities.filter((e): e is Extract<MapEntity, { kind: 'encounter' }> => e.kind === 'encounter' && e.entrance !== 'none');
+    this.entrances = doc.entities.filter((e): e is Extract<MapEntity, { kind: 'encounter' }> => e.kind === 'encounter' && (e.entrance ?? 'none') !== 'none');
     // Warm the model cache so first switches and pickups don't hitch.
     for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);
     void this.models.load('projectiles/grenade.glb');
@@ -815,11 +816,11 @@ export class GameView {
       const mx = e.position[0] + Math.sin(e.yaw) * out;
       const mz = e.position[2] + Math.cos(e.yaw) * out;
       const dy = p.y - e.position[1];
-      if (Math.hypot(p.x - mx, p.z - mz) > 1.4 || dy < -0.5 || dy > e.ventHeight) continue;
+      if (Math.hypot(p.x - mx, p.z - mz) > 1.4 || dy < -0.5 || dy > (e.ventHeight ?? 3.5)) continue;
       const floor = { x: mx, y: e.position[1] + 0.2, z: mz };
       switch (e.entrance) {
         case 'vent':
-          this.impacts.puff({ x: e.position[0], y: e.position[1] + e.ventHeight - 0.3, z: e.position[2] }, '#6b6760', 1.1, 0.9, -0.6);
+          this.impacts.puff({ x: e.position[0], y: e.position[1] + (e.ventHeight ?? 3.5) - 0.3, z: e.position[2] }, '#6b6760', 1.1, 0.9, -0.6);
           break;
         case 'hatch':
           a.emergeAt = now;

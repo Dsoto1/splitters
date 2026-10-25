@@ -479,7 +479,7 @@ export class ScenarioVisuals {
   /** Editor-only marker: the spawn area in the faction's colour, a flag, and one figure per first-wave member. */
   private encounter(name: string, e: Extract<MapEntity, { kind: 'encounter' }>): Visual {
     const root = new TransformNode(name, this.scene);
-    if (e.entrance !== 'none') this.entrance(name, root, e);
+    if (e.entrance && e.entrance !== 'none') this.entrance(name, root, e);
     if (!this.opts.editor) return { root };
     const color = this.factionColor(e.faction);
     // Squads with an entrance come out of it, not across an area.
@@ -487,7 +487,7 @@ export class ScenarioVisuals {
     disc.parent = root;
     disc.position.y = 0.03;
     disc.material = this.mat('encArea', color, { emissive: 0.4, alpha: 0.18 });
-    disc.setEnabled(e.entrance === 'none');
+    disc.setEnabled((e.entrance ?? 'none') === 'none');
     this.box(`${name}_pole`, root, [0.08, 2.6, 0.08], [0, 1.3, 0], this.mat('pole', '#3a3f48'));
     this.box(`${name}_flag`, root, [0.7, 0.45, 0.03], [0.35, 2.3, 0], this.mat('encFlag', color, { emissive: 0.5 }));
     const count = Math.min(8, rosterSize(e.roster));
@@ -520,7 +520,7 @@ export class ScenarioVisuals {
     };
     switch (e.entrance) {
       case 'vent': {
-        const h = e.ventHeight;
+        const h = e.ventHeight ?? 3.5;
         this.box(`${name}_shaft`, root, [1.1, 0.04, 1.1], [0, h - 0.02, 0], dark);
         for (const s of [-1, 1]) {
           this.box(`${name}_frameX${s}`, root, [1.3, 0.08, 0.1], [0, h - 0.04, s * 0.6], steel);

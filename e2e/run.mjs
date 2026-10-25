@@ -668,15 +668,19 @@ async function physicsfxFlow(browser) {
     if (s.head !== null) track.push(s.head);
   }
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-ragdoll.png` });
+  // The sampling above stops once the body is down: give the blood time to land.
+  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'bloodSplat'), null, { timeout: T(2500) }).catch(() => {});
   const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat').length }));
   check(ragdolled && track[0] - Math.min(...track) > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
-  // Debris chunks are real bodies: they land and rest on the ground.
+  // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
+  await page.waitForFunction(() => !!window.__cs.view.physics, null, { timeout: T(3000) }).catch(() => {});
   await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const f = window.__cs.view.camera.getForwardRay(1).direction;
     window.__cs.view.debris({ x: me.move.pos.x + f.x * 3, y: me.move.pos.y + 1.5, z: me.move.pos.z + f.z * 3 }, '#8a5d33', 0.8);
   });
+  await page.waitForFunction(() => window.__cs.view.debrisBodies.length > 0, null, { timeout: T(2000) }).catch(() => {});
   // Headless frame rates are low, so run three seconds of physics at once rather than waiting on the frames.
   const chunks = await page.evaluate(() => {
     const view = window.__cs.view;

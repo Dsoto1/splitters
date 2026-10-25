@@ -130,7 +130,7 @@ export class Encounters {
           this.byNpc.set(id, r);
         }
         const firstWave = r.spawned < r.queue.length;
-        r.nextSpawn = tick + (firstWave ? (r.e.entrance === 'none' ? 1 : ENTRANCE_GAP_TICKS) : Math.round(r.e.respawnSeconds * TICK_RATE));
+        r.nextSpawn = tick + (firstWave ? ((r.e.entrance ?? 'none') === 'none' ? 1 : ENTRANCE_GAP_TICKS) : Math.round(r.e.respawnSeconds * TICK_RATE));
       }
       if ((tick + r.e.id.length) % ALERT_INTERVAL_TICKS === 0) this.shareSightings(living);
     }
@@ -138,7 +138,7 @@ export class Encounters {
 
   private spawnMember(r: EncounterRt, role: NpcRole): number | null {
     const origin = { x: r.e.position[0], y: r.e.position[1], z: r.e.position[2] };
-    if (r.e.entrance !== 'none') return this.throughEntrance(r, role, origin);
+    if (r.e.entrance && r.e.entrance !== 'none') return this.throughEntrance(r, role, origin);
     const hostiles = this.host.hostiles(r.e.faction);
     let best: { pos: Vec3; score: number } | null = null;
     for (let i = 0; i < 12; i++) {
@@ -176,7 +176,7 @@ export class Encounters {
     const ground = this.host.nav.closestPoint({ x: mouth.x, y: mouth.y + 0.5, z: mouth.z }, { x: 1, y: 2, z: 1 });
     const pos = ground ? { x: ground.x, y: ground.y, z: ground.z } : mouth;
     // Out of the vent with the head just below it.
-    if (e.entrance === 'vent') pos.y += clamp(e.ventHeight - PLAYER.height * (e.size ?? 1) - 0.1, 0, 10);
+    if (e.entrance === 'vent') pos.y += clamp((e.ventHeight ?? 3.5) - PLAYER.height * (e.size ?? 1) - 0.1, 0, 10);
     return this.host.spawnNpc(e, role, pos, e.yaw);
   }
 

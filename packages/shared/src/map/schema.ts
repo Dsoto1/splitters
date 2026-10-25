@@ -252,9 +252,10 @@ export const EncounterEntity = EntityBase.extend({
   health: z.number().min(0.25).max(10).optional(),
   damage: z.number().min(0).max(5).optional(),
   size: z.number().min(0.5).max(2.5).optional(),
-  entrance: z.enum(ENCOUNTER_ENTRANCES).default('none'),
-  /** A vent's height above the point (just under a standard ceiling by default). */
-  ventHeight: z.number().min(2).max(12).default(3.5),
+  /** Missing = none. */
+  entrance: z.enum(ENCOUNTER_ENTRANCES).optional(),
+  /** A vent's height above the point (missing = 3.5 m, just under a standard ceiling). */
+  ventHeight: z.number().min(2).max(12).optional(),
 });
 
 /** A placed prop (furniture, crates, trees, machines…) from the prop catalog. Position is the centre of its footprint on the floor. */
