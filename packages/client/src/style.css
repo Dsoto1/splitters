@@ -105,6 +105,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .map-card .meta { padding: 8px 12px 10px; }
 .map-card b { display: block; font: 700 18px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
 .map-card small { color: var(--muted); font: 500 13px var(--font-body); }
+.inspired { display: block; color: var(--orange); font: italic 600 12px var(--font-body); letter-spacing: 0.02em; margin: 1px 0 3px; }
 .map-card.on { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan), 0 0 24px rgba(0, 209, 255, 0.25); }
 .map-group { grid-column: 1 / -1; margin: 10px 0 0; font: 700 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-bottom: 6px; }
 .map-credit { margin: 0; color: var(--muted); font: 500 13px var(--font-body); }

@@ -8,6 +8,7 @@ export * from './map/geometry.ts';
 export * from './map/terrain.ts';
 export * from './map/settle.ts';
 export * from './map/backdrop.ts';
+export * from './map/inspirations.ts';
 export * from './map/migrate.ts';
 export * from './map/validate.ts';
 export * from './sim/constants.ts';

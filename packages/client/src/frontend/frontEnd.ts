@@ -23,6 +23,7 @@ import {
   type LobbyListing,
   type MapDocument,
   type MatchRules,
+  mapInspiration,
 } from '@tiletrigger/shared';
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/peerLink.ts';
@@ -39,6 +40,12 @@ import type { PortraitRenderer } from './portraits.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
 
 /** A built-in map the Arcade offers. */
+/** The "Inspired by …" line for a homage map (nothing for our own designs). */
+function inspired(key: string): HTMLElement[] {
+  const from = mapInspiration(key);
+  return from ? [el('em', { class: 'inspired', textContent: `Inspired by ${from}` })] : [];
+}
+
 export interface ArcadeMap {
   key: string;
   map: MapDocument;
@@ -289,7 +296,7 @@ export class FrontEnd {
       'button',
       { class: 'featured panel', title: 'Play this map' },
       plan,
-      el('div', { class: 'meta' }, el('div', { class: 'kicker', textContent: 'Featured map' }), el('h3', { textContent: featured.map.metadata.name }), el('p', { textContent: `${featured.modes.map((m) => MODE_LABEL[m]).join(' · ')} — ${featured.blurb}` })),
+      el('div', { class: 'meta' }, el('div', { class: 'kicker', textContent: 'Featured map' }), el('h3', { textContent: featured.map.metadata.name }), ...inspired(featured.key), el('p', { textContent: `${featured.modes.map((m) => MODE_LABEL[m]).join(' · ')} — ${featured.blurb}` })),
     );
     card.addEventListener('click', () => {
       this.pickMap(featured.key);
@@ -371,7 +378,7 @@ export class FrontEnd {
         'button',
         { class: `map-card${m.key === current.key ? ' on' : ''}` },
         plan,
-        el('div', { class: 'meta' }, el('b', { textContent: m.map.metadata.name }), el('small', { textContent: m.blurb }), el('div', { class: 'mode-tags' }, ...m.modes.map((x) => el('span', { textContent: MODE_LABEL[x] })))),
+        el('div', { class: 'meta' }, el('b', { textContent: m.map.metadata.name }), ...inspired(m.key), el('small', { textContent: m.blurb }), el('div', { class: 'mode-tags' }, ...m.modes.map((x) => el('span', { textContent: MODE_LABEL[x] })))),
       );
       card.dataset.map = m.key;
       card.addEventListener('click', () => {
@@ -455,7 +462,7 @@ export class FrontEnd {
     const panel = el(
       'div',
       { class: 'setup panel' },
-      el('div', { class: 'setup-head' }, plan, el('div', {}, el('small', { textContent: 'Map' }), el('h3', {}, current.map.metadata.name, ...(about ? [infoTip(about)] : [])), el('p', { class: 'setup-sub', textContent: `${MODE_LABEL[s.mode]} · ${players} players${coop ? '' : ` · ${s.minutes ? `${s.minutes} min` : 'no time limit'}`}` }))),
+      el('div', { class: 'setup-head' }, plan, el('div', {}, el('small', { textContent: 'Map' }), el('h3', {}, current.map.metadata.name, ...(about ? [infoTip(about)] : [])), ...inspired(current.key), el('p', { class: 'setup-sub', textContent: `${MODE_LABEL[s.mode]} · ${players} players${coop ? '' : ` · ${s.minutes ? `${s.minutes} min` : 'no time limit'}`}` }))),
       el('div', { class: 'setup-body' },
         el('section', {}, el('h4', { textContent: 'Mode' }), modeTabs),
         el('section', {}, el('h4', { textContent: coop ? 'Squad' : 'Players' }),
