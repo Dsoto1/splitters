@@ -9,14 +9,6 @@
       "licenseFile": "assets-src/quaternius-ultimate-gun-pack/License.txt",
       "retrieved": "2026-10-22"
     },
-    "kenney-blaster-kit": {
-      "title": "Blaster Kit 2.1",
-      "creator": "Kenney",
-      "url": "https://kenney.nl/assets/blaster-kit",
-      "license": "CC0-1.0",
-      "licenseFile": "assets-src/kenney-blaster-kit/License.txt",
-      "retrieved": "2026-10-22"
-    },
     "quaternius-universal-base-characters": {
       "title": "Universal Base Characters",
       "creator": "Quaternius",
@@ -88,6 +80,14 @@
       "license": "Owned",
       "licenseFile": "assets-src/meshy-owned/License.txt",
       "retrieved": "2026-10-25"
+    },
+    "quaternius-modular-scifi-guns": {
+      "title": "Modular Sci Fi Guns",
+      "creator": "Quaternius",
+      "url": "https://quaternius.com/packs/modularscifiguns.html",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-modular-scifi-guns/License.txt",
+      "retrieved": "2026-10-25"
     }
   },
   "models": [
@@ -142,61 +142,51 @@
     },
     {
       "out": "weapons/launcher.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-h.glb",
-      "forward": "-z",
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Grenade_1.gltf",
+      "forward": "+x",
       "length": 0.9,
-      "recolor": {
-        "desaturate": 0.85,
-        "tint": "#8a9078"
-      }
+      "accent": "#9aa070"
     },
     {
       "out": "projectiles/grenade.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "grenade-b.glb",
-      "forward": "-z",
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Grenade.gltf",
+      "forward": "+x",
       "length": 0.2,
-      "recolor": {
-        "desaturate": 0.5,
-        "tint": "#7d8466"
-      }
+      "accent": "#9aa070"
     },
     {
       "out": "weapons/rockets.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-b.glb",
-      "forward": "-z",
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Grenade_3.gltf",
+      "forward": "+x",
       "length": 1.0,
-      "recolor": {
-        "desaturate": 0.8,
-        "tint": "#7a8462"
-      }
+      "accent": "#c0402a"
     },
     {
       "out": "weapons/plasma.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-p.glb",
-      "forward": "-z",
-      "length": 0.85
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/AR_5.gltf",
+      "forward": "+x",
+      "length": 0.85,
+      "accent": "#57e38f"
     },
     {
       "out": "projectiles/frag.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "grenade-a.glb",
-      "forward": "-z",
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Grenade.gltf",
+      "forward": "+x",
       "length": 0.16,
-      "recolor": {
-        "desaturate": 0.9,
-        "tint": "#6a7458"
-      }
+      "accent": "#6a7458"
     },
     {
       "out": "weapons/pulse_pistol.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-a.glb",
-      "forward": "-z",
-      "length": 0.3
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Pistol_2.gltf",
+      "forward": "+x",
+      "length": 0.34,
+      "accent": "#a070ff"
     },
     {
       "out": "weapons/hand_cannon.glb",
@@ -218,10 +208,11 @@
     },
     {
       "out": "weapons/flare_gun.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-k.glb",
-      "forward": "-z",
-      "length": 0.32
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Pistol_3.gltf",
+      "forward": "+x",
+      "length": 0.34,
+      "accent": "#ff5a2a"
     },
     {
       "out": "weapons/machine_pistol.glb",
@@ -239,10 +230,11 @@
     },
     {
       "out": "weapons/laser_rifle.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-f.glb",
-      "forward": "-z",
-      "length": 0.95
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/AR_3.gltf",
+      "forward": "+x",
+      "length": 0.95,
+      "accent": "#ff3b4a"
     },
     {
       "out": "weapons/marksman.glb",
@@ -267,57 +259,51 @@
     },
     {
       "out": "weapons/flak.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-l.glb",
-      "forward": "-z",
-      "length": 0.7
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Grenade_2.gltf",
+      "forward": "+x",
+      "length": 0.85,
+      "accent": "#ffcf6a"
     },
     {
       "out": "weapons/railgun.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-e.glb",
-      "forward": "-z",
-      "length": 1.1
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Sniper_2.gltf",
+      "forward": "+x",
+      "length": 1.15,
+      "accent": "#5fe0ff"
     },
     {
       "out": "weapons/disc_launcher.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-g.glb",
-      "forward": "-z",
-      "length": 0.85
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Crossbow_1.gltf",
+      "forward": "+x",
+      "length": 0.9,
+      "accent": "#7ad6ff"
     },
     {
       "out": "weapons/bubble_blaster.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-c.glb",
-      "forward": "-z",
-      "length": 0.55,
-      "recolor": {
-        "desaturate": 0.7,
-        "tint": "#6ee06e"
-      }
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/SMG_2.gltf",
+      "forward": "+x",
+      "length": 0.62,
+      "accent": "#6ee06e"
     },
     {
       "out": "weapons/goo_gun.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-i.glb",
-      "forward": "-z",
-      "length": 0.42,
-      "recolor": {
-        "desaturate": 0.6,
-        "tint": "#f070c8"
-      }
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/SMG_1.gltf",
+      "forward": "+x",
+      "length": 0.5,
+      "accent": "#f070c8"
     },
     {
       "out": "weapons/oil_slicker.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-m.glb",
-      "forward": "-z",
-      "length": 0.45,
-      "recolor": {
-        "desaturate": 0.85,
-        "tint": "#6a5a48"
-      }
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/AR_6.gltf",
+      "forward": "+x",
+      "length": 0.8,
+      "accent": "#7a5a3a"
     },
     {
       "out": "weapons/lmg.glb",
@@ -328,49 +314,50 @@
     },
     {
       "out": "weapons/nailgun.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-q.glb",
-      "forward": "-z",
-      "length": 0.6
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Crossbow_2.gltf",
+      "forward": "+x",
+      "length": 0.7,
+      "accent": "#c8c8c8"
     },
     {
       "out": "weapons/swarm.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-o.glb",
-      "forward": "-z",
-      "length": 0.6
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/AR_4.gltf",
+      "forward": "+x",
+      "length": 0.85,
+      "accent": "#ffcc33"
     },
     {
       "out": "weapons/singularity.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-r.glb",
-      "forward": "-z",
-      "length": 0.75
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Sniper_3.gltf",
+      "forward": "+x",
+      "length": 0.85,
+      "accent": "#b07aff"
     },
     {
       "out": "weapons/arc_caster.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-d.glb",
-      "forward": "-z",
-      "length": 0.8
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/AR_2.gltf",
+      "forward": "+x",
+      "length": 0.8,
+      "accent": "#4ab0ff"
     },
     {
       "out": "weapons/flamethrower.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-n.glb",
-      "forward": "-z",
-      "length": 0.85
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/AR_1.gltf",
+      "forward": "+x",
+      "length": 0.95
     },
     {
       "out": "weapons/freeze_ray.glb",
-      "pack": "kenney-blaster-kit",
-      "file": "blaster-j.glb",
-      "forward": "-z",
-      "length": 0.45,
-      "recolor": {
-        "desaturate": 0.7,
-        "tint": "#a8e8ff"
-      }
+      "pack": "quaternius-modular-scifi-guns",
+      "file": "Guns/Pistol_1.gltf",
+      "forward": "+x",
+      "length": 0.44,
+      "accent": "#8fe3ff"
     },
     {
       "out": "vehicles/kart.glb",

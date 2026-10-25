@@ -40,8 +40,10 @@ Explosions chain into other destructibles in range.
 Several weapons now share each slot: a number key picks the slot and pressing
 it again cycles through what you carry there (the weapon bar shows a pip per
 extra weapon). Weapons are keyed by a small code on the wire (`weaponCode`).
-Models are Kenney Blaster Kit 2.1 blasters (CC0, some recoloured) and
-Quaternius Ultimate Gun Pack guns (CC0). Sounds come from our own synthesiser
+Models are Quaternius Modular Sci Fi Guns (CC0; each energy weapon gets its
+own accent colour on the kit's orange trim, and its hold points are placed on
+the model's own grip, handguard and stock) and Quaternius Ultimate Gun Pack
+guns (CC0). Sounds come from our own synthesiser
 recipes.
 
 | Slot | Weapon | How it fires |

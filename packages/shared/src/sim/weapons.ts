@@ -374,7 +374,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'explosive',
     botDesirability: 0.75,
     botRange: [6, 22],
-    view: { model: 'weapons/launcher.glb', viewOffset: [0.22, -0.22, 0.55], tracer: '#c2c9a8', hold: { style: 'long', grip: [0, -0.1, -0.33], support: [0, -0.08, 0.02], shoulder: [0, 0, -0.45] } },
+    view: { model: 'weapons/launcher.glb', viewOffset: [0.22, -0.22, 0.55], tracer: '#c2c9a8', hold: { style: 'long', grip: [0, -0.1, 0.02], support: [0, 0.029, 0.187], shoulder: [0, 0.023, -0.43] } },
   },
   'core.smg': {
     id: 'core.smg',
@@ -415,7 +415,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'explosive',
     botDesirability: 0.8,
     botRange: [7, 40],
-    view: { model: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ffb347', hold: { style: 'long', grip: [0, -0.12, -0.18], support: [0, -0.1, 0.18], shoulder: [0, 0.02, -0.5] } },
+    view: { model: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ffb347', hold: { style: 'long', grip: [0, -0.1, 0.0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] } },
   },
   'core.plasma': {
     id: 'core.plasma',
@@ -444,7 +444,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
     botDesirability: 0.7,
     botRange: [3, 25],
-    view: { model: 'weapons/plasma.glb', viewOffset: [0.21, -0.21, 0.52], tracer: '#7dffb0', hold: { style: 'long', grip: [0, -0.08, -0.25], support: [0, -0.06, 0.1], shoulder: [0, 0, -0.42] } },
+    view: { model: 'weapons/plasma.glb', viewOffset: [0.21, -0.21, 0.52], tracer: '#7dffb0', hold: { style: 'long', grip: [0, -0.08, 0.0], support: [0, -0.086, 0.204], shoulder: [0, -0.025, -0.405] } },
   },
   ...arsenal(),
   ...mountWeapons(),
@@ -488,7 +488,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     grapple: { speed: 17 },
     botDesirability: 0,
     botRange: [0, 0],
-    view: sidearm('flare_gun', 0.32, '#d8d2c0', { sound: 'fire.flare' }),
+    view: sidearm('flare_gun', 0.32, '#d8d2c0', { hold: { style: 'pistol', grip: [0, -0.045, -0.106], support: [-0.02, -0.055, -0.096] }, sound: 'fire.flare' }),
   },
   'core.spear': {
     id: 'core.spear',
@@ -582,7 +582,7 @@ function arsenal(): Record<string, WeaponDefinition> {
       id: 'core.pulse_pistol', displayName: 'Pulse Pistol', kind: 'hitscan', slot: 2, fireMode: 'semi',
       damage: 24, spread: 0.004, fireIntervalTicks: 9, range: 110, magazine: 15, reserveMax: 90, pickupAmmo: 30, reloadTicks: 55, raiseTicks: 12,
       ammo: 'cells', recoil: { kick: 0.012, bloom: 0.004, maxBloom: 0.02, recover: 0.0015 }, botDesirability: 0.42, botRange: [2, 28],
-      view: sidearm('pulse_pistol', 0.3, '#c69bff', { sound: 'fire.pulse', beam: true }),
+      view: sidearm('pulse_pistol', 0.3, '#c69bff', { hold: { style: 'pistol', grip: [0, -0.035, -0.157], support: [-0.02, -0.045, -0.147] }, sound: 'fire.pulse', beam: true }),
     }),
     weapon({
       id: 'core.hand_cannon', displayName: 'Hand Cannon', kind: 'hitscan', slot: 2, fireMode: 'semi',
@@ -601,7 +601,7 @@ function arsenal(): Record<string, WeaponDefinition> {
       fireIntervalTicks: 40, magazine: 1, reserveMax: 10, pickupAmmo: 4, reloadTicks: 50, raiseTicks: 15, ammo: 'fuel',
       projectile: { speed: 30, gravity: 9, fuseSeconds: 5, splashRadius: 1.6, splashDamage: 25, splashEdgeDamage: 10, selfDamageScale: 0.3, visual: 'flare', impactDamage: 20, sticky: 'any', status: { kind: 'burn', seconds: 4 }, zone: { kind: 'fire', radius: 1.8, seconds: 4 }, ignites: true },
       botDesirability: 0.45, botRange: [5, 25],
-      view: sidearm('flare_gun', 0.32, '#ff7a3a', { sound: 'fire.flare' }),
+      view: sidearm('flare_gun', 0.32, '#ff7a3a', { hold: { style: 'pistol', grip: [0, -0.045, -0.106], support: [-0.02, -0.055, -0.096] }, sound: 'fire.flare' }),
     }),
     weapon({
       id: 'core.machine_pistol', displayName: 'Machine Pistol', kind: 'hitscan', slot: 2,
@@ -620,7 +620,7 @@ function arsenal(): Record<string, WeaponDefinition> {
       id: 'core.laser_rifle', displayName: 'Laser Rifle', kind: 'hitscan', slot: 3,
       damage: 4, spread: 0, fireIntervalTicks: 2, range: 90, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 20,
       heat: { perShot: 0.022, coolPerTick: 0.01 }, botDesirability: 0.66, botRange: [3, 40],
-      view: longarm('laser_rifle', 0.95, '#ff3b4a', { sound: 'fire.laser', beam: true }),
+      view: longarm('laser_rifle', 0.95, '#ff3b4a', { hold: { style: 'long', grip: [0, -0.06, -0.08], support: [0, -0.012, 0.328], shoulder: [0, 0.078, -0.455] }, sound: 'fire.laser', beam: true }),
     }),
     weapon({
       id: 'core.marksman', displayName: 'Marksman Rifle', kind: 'hitscan', slot: 3, fireMode: 'semi',
@@ -646,7 +646,7 @@ function arsenal(): Record<string, WeaponDefinition> {
       fireIntervalTicks: 50, magazine: 4, reserveMax: 24, pickupAmmo: 8, reloadTicks: 95, raiseTicks: 24, ammo: 'shells',
       projectile: { speed: 48, gravity: 6, fuseSeconds: 1.2, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'shard', impactDamage: 13, bounce: 0.65, maxBounces: 2 },
       botDesirability: 0.62, botRange: [0, 14],
-      view: longarm('flak', 0.7, '#ffcf6a', { sound: 'fire.flak' }),
+      view: longarm('flak', 0.7, '#ffcf6a', { hold: { style: 'long', grip: [0, -0.087, -0.18], support: [0, -0.057, 0.177], shoulder: [0, 0.078, -0.405] }, sound: 'fire.flak' }),
     }),
     // ---------------------------------------------------------------- 5: precision
     weapon({
@@ -654,7 +654,7 @@ function arsenal(): Record<string, WeaponDefinition> {
       id: 'core.railgun', displayName: 'Railgun', kind: 'hitscan', slot: 5, windupTicks: 24, windupResets: true,
       damage: 100, spread: 0, fireIntervalTicks: 40, range: 320, magazine: 4, reserveMax: 16, pickupAmmo: 8, reloadTicks: 110, raiseTicks: 28,
       ammo: 'cells', pierce: 3, knockback: 6, recoil: { kick: 0.09, bloom: 0, maxBloom: 0, recover: 0 }, botDesirability: 0.7, botRange: [15, 150],
-      view: longarm('railgun', 1.1, '#5fe0ff', { zoomFov: 0.5, sound: 'fire.railgun', beam: true }),
+      view: longarm('railgun', 1.1, '#5fe0ff', { hold: { style: 'long', grip: [0, -0.029, -0.165], support: [0, 0.083, 0.318], shoulder: [0, 0.002, -0.555] }, zoomFov: 0.5, sound: 'fire.railgun', beam: true }),
     }),
     // ---------------------------------------------------------------- 6: lobbers
     weapon({
@@ -662,21 +662,21 @@ function arsenal(): Record<string, WeaponDefinition> {
       fireIntervalTicks: 50, magazine: 3, reserveMax: 18, pickupAmmo: 6, reloadTicks: 90, raiseTicks: 26, ammo: 'explosive',
       projectile: { speed: 34, gravity: 0, fuseSeconds: 3, splashRadius: 3.8, splashDamage: 75, splashEdgeDamage: 10, selfDamageScale: 0.45, visual: 'disc', impactDamage: 25, knockback: 10 },
       botDesirability: 0.72, botRange: [6, 35],
-      view: longarm('disc_launcher', 0.85, '#7ad6ff', { sound: 'fire.disc' }),
+      view: longarm('disc_launcher', 0.85, '#7ad6ff', { hold: { style: 'long', grip: [0, -0.06, -0.06], support: [0, -0.022, 0.142], shoulder: [0, -0.076, -0.43] }, sound: 'fire.disc' }),
     }),
     weapon({
       id: 'core.bubble_blaster', displayName: 'Bubble Blaster', kind: 'projectile', slot: 6,
       fireIntervalTicks: 22, magazine: 6, reserveMax: 30, pickupAmmo: 12, reloadTicks: 80, raiseTicks: 20, ammo: 'chem',
       projectile: { speed: 10, gravity: -0.6, drag: 0.12, fuseSeconds: 7, splashRadius: 2.4, splashDamage: 22, splashEdgeDamage: 8, selfDamageScale: 0.5, visual: 'bubble', bounce: 0.95, maxBounces: 7, zone: { kind: 'toxic', radius: 3, seconds: 5 }, status: { kind: 'poison', seconds: 3 } },
       botDesirability: 0.5, botRange: [3, 16],
-      view: longarm('bubble_blaster', 0.55, '#7dff6a', { sound: 'fire.bubble' }),
+      view: longarm('bubble_blaster', 0.55, '#7dff6a', { hold: { style: 'long', grip: [0, -0.036, -0.163], support: [0, -0.006, 0.129], shoulder: [0, 0.043, -0.29] }, sound: 'fire.bubble' }),
     }),
     weapon({
       id: 'core.goo_gun', displayName: 'Goo Gun', kind: 'projectile', slot: 6,
       fireIntervalTicks: 12, magazine: 20, reserveMax: 80, pickupAmmo: 30, reloadTicks: 75, raiseTicks: 18, ammo: 'chem',
       projectile: { speed: 22, gravity: 12, fuseSeconds: 3, splashRadius: 1.8, splashDamage: 10, splashEdgeDamage: 6, selfDamageScale: 0, visual: 'goo', impactDamage: 8, zone: { kind: 'goo', radius: 2.4, seconds: 7 }, status: { kind: 'slow', seconds: 2.5 } },
       botDesirability: 0.45, botRange: [3, 20],
-      view: sidearm('goo_gun', 0.42, '#ff6ad0', { sound: 'fire.goo' }),
+      view: sidearm('goo_gun', 0.42, '#ff6ad0', { hold: { style: 'pistol', grip: [0, -0.006, -0.039], support: [-0.02, -0.016, -0.029] }, sound: 'fire.goo' }),
     }),
     weapon({
       id: 'core.oil_slicker', displayName: 'Oil Slicker', kind: 'projectile', slot: 6,
@@ -687,7 +687,7 @@ function arsenal(): Record<string, WeaponDefinition> {
         projectile: { speed: 26, gravity: 8, fuseSeconds: 3, splashRadius: 1.4, splashDamage: 12, splashEdgeDamage: 6, selfDamageScale: 0.3, visual: 'flare', ignites: true, status: { kind: 'burn', seconds: 3 }, zone: { kind: 'fire', radius: 1.5, seconds: 3 } },
       },
       botDesirability: 0.3, botRange: [4, 16],
-      view: sidearm('oil_slicker', 0.45, '#8a7a5a', { sound: 'fire.goo' }),
+      view: sidearm('oil_slicker', 0.45, '#8a7a5a', { hold: { style: 'long', grip: [0, -0.07, 0.0], support: [0, -0.037, 0.192], shoulder: [0, 0.014, -0.38] }, sound: 'fire.goo' }),
     }),
     // ---------------------------------------------------------------- 7: automatics
     weapon({
@@ -701,7 +701,7 @@ function arsenal(): Record<string, WeaponDefinition> {
       fireIntervalTicks: 5, magazine: 50, reserveMax: 200, pickupAmmo: 60, reloadTicks: 80, raiseTicks: 18, ammo: 'light',
       projectile: { speed: 75, gravity: 2, fuseSeconds: 1.5, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'nail', impactDamage: 11, bounce: 0.75, maxBounces: 2 },
       botDesirability: 0.6, botRange: [2, 25],
-      view: longarm('nailgun', 0.6, '#d8d8d8', { sound: 'fire.nail' }),
+      view: longarm('nailgun', 0.6, '#d8d8d8', { hold: { style: 'long', grip: [0, -0.029, -0.126], support: [0, 0.058, 0.168], shoulder: [0, -0.002, -0.33] }, sound: 'fire.nail' }),
     }),
     // ---------------------------------------------------------------- 8: heavy
     weapon({
@@ -709,7 +709,7 @@ function arsenal(): Record<string, WeaponDefinition> {
       fireIntervalTicks: 70, magazine: 4, reserveMax: 12, pickupAmmo: 4, reloadTicks: 100, raiseTicks: 30, ammo: 'explosive',
       projectile: { speed: 20, gravity: 0, fuseSeconds: 4, splashRadius: 2.6, splashDamage: 40, splashEdgeDamage: 8, selfDamageScale: 0.5, visual: 'swarm', impactDamage: 10, homing: { turnRate: 2.6, range: 45 } },
       botDesirability: 0.78, botRange: [8, 45],
-      view: longarm('swarm', 0.6, '#ffb347', { sound: 'fire.swarm' }),
+      view: longarm('swarm', 0.6, '#ffb347', { hold: { style: 'long', grip: [0, -0.07, -0.07], support: [0, 0.012, 0.247], shoulder: [0, 0.029, -0.405] }, sound: 'fire.swarm' }),
     }),
     weapon({
       // Laser-guided: the rocket flies wherever you keep your crosshair. Slow, so steer it round corners.
@@ -717,34 +717,34 @@ function arsenal(): Record<string, WeaponDefinition> {
       fireIntervalTicks: 75, magazine: 1, reserveMax: 6, pickupAmmo: 3, reloadTicks: 90, raiseTicks: 32, ammo: 'explosive',
       projectile: { speed: 17, gravity: 0, fuseSeconds: 8, splashRadius: 5, splashDamage: 130, splashEdgeDamage: 20, selfDamageScale: 0.6, visual: 'rocket', impactDamage: 35, guided: { turnRate: 3.2 } },
       botDesirability: 0.7, botRange: [10, 60],
-      view: { model: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ff4a3a', sound: 'fire.rockets', hold: { style: 'long', grip: [0, -0.12, -0.18], support: [0, -0.1, 0.18], shoulder: [0, 0.02, -0.5] } },
+      view: { model: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ff4a3a', sound: 'fire.rockets', hold: { style: 'long', grip: [0, -0.1, 0.0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] } },
     }),
     weapon({
       id: 'core.singularity', displayName: 'Singularity Cannon', kind: 'projectile', slot: 8, fireMode: 'semi',
       fireIntervalTicks: 90, magazine: 1, reserveMax: 4, pickupAmmo: 2, reloadTicks: 110, raiseTicks: 34, ammo: 'cells',
       projectile: { speed: 13, gravity: 0, fuseSeconds: 1.6, splashRadius: 1, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'vortex', zone: { kind: 'singularity', radius: 8, seconds: 2.4 } },
       botDesirability: 0.65, botRange: [8, 30],
-      view: longarm('singularity', 0.75, '#b07aff', { sound: 'fire.vortex' }),
+      view: longarm('singularity', 0.75, '#b07aff', { hold: { style: 'long', grip: [0, -0.036, -0.073], support: [0, 0.061, 0.272], shoulder: [0, 0.017, -0.405] }, sound: 'fire.vortex' }),
     }),
     // ---------------------------------------------------------------- 9: energy and chemical
     weapon({
       id: 'core.arc_caster', displayName: 'Arc Caster', kind: 'hitscan', slot: 9,
       damage: 15, spread: 0.01, fireIntervalTicks: 9, range: 32, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 20,
       heat: { perShot: 0.08, coolPerTick: 0.009 }, chain: { jumps: 3, range: 9, falloff: 0.7 }, botDesirability: 0.62, botRange: [2, 25],
-      view: longarm('arc_caster', 0.8, '#9fd8ff', { sound: 'fire.arc', beam: true }),
+      view: longarm('arc_caster', 0.8, '#9fd8ff', { hold: { style: 'long', grip: [0, -0.08, 0.07], support: [0, -0.081, 0.192], shoulder: [0, 0.012, -0.38] }, sound: 'fire.arc', beam: true }),
     }),
     weapon({
       id: 'core.flamethrower', displayName: 'Flamethrower', kind: 'projectile', slot: 9, spread: 0.05,
       fireIntervalTicks: 3, magazine: 100, reserveMax: 200, pickupAmmo: 100, reloadTicks: 110, raiseTicks: 24, ammo: 'fuel',
       projectile: { speed: 17, gravity: -2, drag: 1.2, fuseSeconds: 0.55, splashRadius: 1.4, splashDamage: 5, splashEdgeDamage: 3, selfDamageScale: 0, visual: 'flame', impactDamage: 3, status: { kind: 'burn', seconds: 3 }, ignites: true },
       botDesirability: 0.58, botRange: [0, 8],
-      view: longarm('flamethrower', 0.85, '#ff8a2a', { sound: 'fire.flame' }),
+      view: longarm('flamethrower', 0.85, '#ff8a2a', { hold: { style: 'long', grip: [0, -0.084, -0.027], support: [0, -0.054, 0.328], shoulder: [0, 0.069, -0.455] }, sound: 'fire.flame' }),
     }),
     weapon({
       id: 'core.freeze_ray', displayName: 'Freeze Ray', kind: 'hitscan', slot: 9,
       damage: 3, spread: 0, fireIntervalTicks: 3, range: 40, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 20,
       heat: { perShot: 0.018, coolPerTick: 0.01 }, status: { kind: 'chill', seconds: 2, amount: 0.07 }, botDesirability: 0.5, botRange: [2, 30],
-      view: sidearm('freeze_ray', 0.45, '#bff0ff', { sound: 'fire.freeze', beam: true }),
+      view: sidearm('freeze_ray', 0.45, '#bff0ff', { hold: { style: 'pistol', grip: [0, -0.046, -0.207], support: [-0.02, -0.056, -0.197] }, sound: 'fire.freeze', beam: true }),
     }),
   ];
   return Object.fromEntries(list.map((w) => [w.id, w]));

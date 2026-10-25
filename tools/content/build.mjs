@@ -264,6 +264,8 @@ for (const entry of manifest.models) {
     doc = await io.read(src);
     bakeGlb(doc, await normaliser(entry, await glbPoints(doc)));
     if (entry.recolor) recolorTextures(doc, entry.recolor);
+    // Flat-coloured kits (Quaternius' sci-fi guns): one accent material ("Main") per weapon, so each reads apart.
+    if (entry.accent) for (const mat of doc.getRoot().listMaterials()) if (mat.getName() === 'Main') mat.setBaseColorFactor([...[1, 3, 5].map((i) => (parseInt(entry.accent.slice(i, i + 2), 16) / 255) ** 2.2), 1]);
   }
   doc.getRoot().getAsset().generator = 'tiletrigger content build';
   const glb = await io.writeBinary(doc);
@@ -289,7 +291,7 @@ for (const entry of manifest.models) {
     creator: pack.creator,
     url: pack.url,
     license: pack.license,
-    modifications: ['converted to glTF', 'reoriented and scaled', ...(entry.recolor ? ['recoloured'] : [])],
+    modifications: ['converted to glTF', 'reoriented and scaled', ...(entry.recolor || entry.accent ? ['recoloured'] : [])],
   });
   console.log(`${check ? 'checked' : 'built  '} ${entry.out.padEnd(26)} ${String(tris).padStart(5)} tris ${String(glb.byteLength).padStart(7)} B  ${pack.creator} (${pack.license})`);
 }
