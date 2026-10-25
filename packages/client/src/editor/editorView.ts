@@ -17,6 +17,7 @@ import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
 import { DESTRUCTIBLE_SPECS, MAX_TEAMS, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@tiletrigger/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
+import { applyToneMapping } from '../game/atmosphere.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { FoliageVisuals } from '../foliage.ts';
@@ -76,6 +77,7 @@ export class EditorView {
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
     this.scene.clearColor = new Color4(0.16, 0.18, 0.21, 1);
+    applyToneMapping(this.scene, { vignette: false });
     this.scene.skipPointerMovePicking = true;
     this.camera = new FreeCamera('editorCam', new Vector3(0, 22, -18), this.scene);
     this.camera.inputs.clear();

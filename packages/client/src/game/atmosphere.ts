@@ -42,6 +42,23 @@ export function saveGraphicsQuality(q: GraphicsQuality): void {
   }
 }
 
+/**
+ * The game's colour: ACES tone mapping with a touch more exposure and
+ * contrast, and a vignette (left off where it would hide work, as in the
+ * MapMaker). Matches, the menu and the MapMaker all use it, so a map and a
+ * character look the same wherever you see them.
+ */
+export function applyToneMapping(scene: Scene, o: { vignette?: boolean } = {}): void {
+  const ip = scene.imageProcessingConfiguration;
+  ip.toneMappingEnabled = true;
+  ip.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
+  ip.exposure = 1.15;
+  ip.contrast = 1.12;
+  ip.vignetteEnabled = o.vignette ?? true;
+  ip.vignetteWeight = 1.2;
+  ip.vignetteStretch = 0.6;
+}
+
 /** Half-size of the medium shadow box round the camera (metres): sharp nearby, none far away. */
 const BOX = 45;
 
@@ -65,14 +82,7 @@ export class Atmosphere {
     private readonly viewRoot: TransformNode,
     readonly quality: GraphicsQuality = loadGraphicsQuality(),
   ) {
-    const ip = scene.imageProcessingConfiguration;
-    ip.toneMappingEnabled = true;
-    ip.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
-    ip.exposure = 1.15;
-    ip.contrast = 1.12;
-    ip.vignetteEnabled = true;
-    ip.vignetteWeight = 1.2;
-    ip.vignetteStretch = 0.6;
+    applyToneMapping(scene);
     if (quality === 'low') return;
 
     const webgpu = (scene.getEngine() as { isWebGPU?: boolean }).isWebGPU === true;

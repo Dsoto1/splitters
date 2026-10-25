@@ -13,6 +13,7 @@ import { PLAYER, getWeapon, isCreature, npcLookRole } from '@tiletrigger/shared'
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CharacterLibrary } from '../content/characters.ts';
+import { applyToneMapping } from '../game/atmosphere.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
 
@@ -39,6 +40,7 @@ export class MenuScene {
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
     this.scene.clearColor = new Color4(0.043, 0.059, 0.102, 1);
+    applyToneMapping(this.scene);
     this.scene.fogMode = Scene.FOGMODE_EXP2;
     this.scene.fogDensity = 0.035;
     this.scene.fogColor = new Color3(0.07, 0.1, 0.17);
