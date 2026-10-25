@@ -1,11 +1,11 @@
 {
   "format": "chronosplit.map",
-  "formatVersion": 10,
+  "formatVersion": 14,
   "metadata": {
     "id": "canyon",
     "name": "Rockfall Canyon",
     "author": "ChronoSplit",
-    "description": "A long grassy canyon between sheer rock walls. Embers hold the south bunkers, Tide the north; each base has a railed roof with a sniper rifle. Boulder fields and two big hills cover the middle, a 5 m ledge runs up the west wall, and rockets wait in the ruins on the east side.",
+    "description": "A long grassy canyon between sheer rock walls. Embers hold the south bunkers, Tide the north; each base has a railed roof with a sniper rifle. Boulder fields and two big hills cover the middle, a 5 m ledge runs up the west wall, and rockets wait in the ruins on the east side. Each base keeps its flag in its west bunker; King of the Hill moves between mid, the ruins and the watchtower.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -1538,80 +1538,77 @@
       "faction": "tide"
     },
     {
-      "id": "pickup_120",
+      "id": "flag_120",
       "position": [
         -8,
-        -0.15,
-        -76
+        0,
+        -80
       ],
-      "kind": "pickup",
-      "item": "core.weapon_rifle",
-      "respawnSeconds": null
+      "kind": "flag",
+      "yaw": 0,
+      "team": "embers"
     },
     {
-      "id": "pickup_121",
+      "id": "flag_121",
       "position": [
-        8,
-        -0.15,
-        -76
+        -8,
+        0,
+        80
       ],
-      "kind": "pickup",
-      "item": "core.weapon_smg",
-      "respawnSeconds": null
+      "kind": "flag",
+      "yaw": 3.141592653589793,
+      "team": "tide"
     },
     {
-      "id": "pickup_122",
+      "id": "hill_122",
       "position": [
-        -2,
-        -0.15,
-        -82
+        0,
+        1.12,
+        0
       ],
-      "kind": "pickup",
-      "item": "core.ammo_rifle",
-      "respawnSeconds": null
+      "kind": "hill",
+      "radius": 6
     },
     {
-      "id": "pickup_123",
+      "id": "hill_123",
       "position": [
-        2,
+        24,
         -0.15,
-        -82
+        0
       ],
-      "kind": "pickup",
-      "item": "core.grenades",
-      "respawnSeconds": null
+      "kind": "hill",
+      "radius": 5
     },
     {
-      "id": "pickup_124",
+      "id": "hill_124",
       "position": [
-        8,
+        -24,
         -0.15,
-        76
+        -8
       ],
-      "kind": "pickup",
-      "item": "core.weapon_rifle",
-      "respawnSeconds": null
+      "kind": "hill",
+      "radius": 5
     },
     {
       "id": "pickup_125",
       "position": [
         -8,
         -0.15,
-        76
+        -76
       ],
       "kind": "pickup",
-      "item": "core.weapon_smg",
+      "item": "core.weapon_rifle",
       "respawnSeconds": null
     },
     {
       "id": "pickup_126",
       "position": [
-        2,
+        8,
         -0.15,
-        82
+        -76
       ],
       "kind": "pickup",
-      "item": "core.ammo_rifle",
+      "item": "core.weapon_smg",
       "respawnSeconds": null
     },
     {
@@ -1619,6 +1616,61 @@
       "position": [
         -2,
         -0.15,
+        -82
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_128",
+      "position": [
+        2,
+        -0.15,
+        -82
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_129",
+      "position": [
+        8,
+        -0.15,
+        76
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_130",
+      "position": [
+        -8,
+        -0.15,
+        76
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_131",
+      "position": [
+        2,
+        -0.15,
+        82
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_132",
+      "position": [
+        -2,
+        -0.15,
         82
       ],
       "kind": "pickup",
@@ -1626,7 +1678,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_128",
+      "id": "pickup_133",
       "position": [
         24,
         -0.15,
@@ -1637,7 +1689,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_129",
+      "id": "pickup_134",
       "position": [
         -24,
         -0.15,
@@ -1648,7 +1700,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_130",
+      "id": "pickup_135",
       "position": [
         -6,
         4.73,
@@ -1659,7 +1711,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_131",
+      "id": "pickup_136",
       "position": [
         8,
         3.52,
@@ -1670,7 +1722,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_132",
+      "id": "pickup_137",
       "position": [
         -36,
         3.26,
@@ -1681,7 +1733,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_133",
+      "id": "pickup_138",
       "position": [
         0,
         1.12,
@@ -1692,7 +1744,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_134",
+      "id": "pickup_139",
       "position": [
         28,
         2.42,
@@ -1703,7 +1755,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_135",
+      "id": "pickup_140",
       "position": [
         -24,
         2.46,
@@ -1714,7 +1766,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_136",
+      "id": "pickup_141",
       "position": [
         -20,
         1.16,
@@ -1725,7 +1777,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_137",
+      "id": "pickup_142",
       "position": [
         20,
         -0.04,
@@ -1736,7 +1788,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_138",
+      "id": "pickup_143",
       "position": [
         -34,
         4.33,
@@ -1747,7 +1799,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_139",
+      "id": "pickup_144",
       "position": [
         30,
         -0.14,
@@ -1758,7 +1810,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_140",
+      "id": "pickup_145",
       "position": [
         -12,
         2.02,
@@ -1769,7 +1821,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_141",
+      "id": "pickup_146",
       "position": [
         16,
         -0.15,
@@ -1780,7 +1832,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_142",
+      "id": "pickup_147",
       "position": [
         4,
         0.23,
@@ -1791,7 +1843,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_143",
+      "id": "pickup_148",
       "position": [
         -4,
         -0.15,
@@ -1802,7 +1854,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_144",
+      "id": "pickup_149",
       "position": [
         0,
         4,
@@ -1813,7 +1865,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_145",
+      "id": "pickup_150",
       "position": [
         0,
         4,
@@ -1824,7 +1876,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_146",
+      "id": "pickup_151",
       "position": [
         -8,
         4,
@@ -1835,7 +1887,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_147",
+      "id": "pickup_152",
       "position": [
         8,
         4,
@@ -30912,6 +30964,7 @@
   },
   "bounds": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

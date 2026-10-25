@@ -189,6 +189,8 @@ function buildBase(s: 1 | -1, team: string): void {
   m.pickup('ammo_rifle', [-10, BASE_Y, fz(114)]).pickup('grenades', [10, BASE_Y, fz(114)]);
   m.pickup('health_small', [0, BASE_Y, fz(114)]).pickup('armor_small', [-26, ground(-26, fz(104)), fz(104)]);
   m.pickup('weapon_sniper', [0, 16, fz(108)]).pickup('ammo_sniper', [-8, 16, fz(100)]);
+  // Capture the Flag: the flag stands behind the dais in the middle of the hall.
+  m.flag(team, [0, BASE_Y, fz(107.6)], facing);
 }
 buildBase(-1, embers);
 buildBase(1, tide);
@@ -211,6 +213,8 @@ m.spawn([-8, 0, 2.5], P2).spawn([0, 4, 2], -P2);
 // Sandbag-ish cover round the outpost.
 m.prop('barrier', [-18, 0, 7]).prop('barrier', [18, 0, -7]).prop('crate_large', [6, 0, 8], 1.2).prop('crate_large', [-6, 0, -8], 1.2);
 m.prop('barrier_high', [14, 0, 8]).prop('barrier_high', [-14, 0, -8]);
+// King of the Hill: the outpost roof, and each ridge pass.
+m.hill([4, 8, 0], 5).hill([0, ground(0, 50), 50], 6).hill([0, ground(0, -50), -50], 6);
 
 // ---------------------------------------------------------------- ridges: pads onto the crests
 
@@ -320,7 +324,7 @@ for (let n = 0; n < 400 && placed.length < 190; n++) {
 m.teams([8, 8]);
 m.meta({
   description:
-    'A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder and a hauler, and a cliff out front that only jump pads climb. Two rocky ridges cross the field with a pass in the middle; the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west. An homage in spirit to the great outdoor team maps of the early 2000s.',
+    'A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder and a hauler, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west. An homage in spirit to the great outdoor team maps of the early 2000s.',
   modes: ['core.tdm', 'core.deathmatch'],
   players: [4, 16],
 });

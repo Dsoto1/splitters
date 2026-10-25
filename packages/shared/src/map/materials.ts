@@ -181,7 +181,7 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('arctic', 'Arctic Base', '#c8dcec', 'pbr_snow', 'pbr_corrugated', 'hazard', 'pbr_steel', 'pbr_white_panel'),
   theme('saloon', 'Frontier Saloon', '#f0c890', 'pbr_floorboards', 'pbr_siding', 'crate_wood', 'pbr_planks', 'pbr_charred_wood'),
   theme('volcano', 'Volcano Lair', '#2a0e08', ['pbr_flagstone', '#8a7a70'], ['pbr_rock', '#7a5a4a'], 'pbr_onyx', 'pbr_charred_wood', 'pbr_lava'),
-  theme('city', 'Downtown', '#a8bcd0', 'pbr_asphalt', 'pbr_glass_facade', 'pbr_concrete', 'pbr_concrete', 'pbr_steel'),
+  theme('city', 'Downtown', '#a8bcd0', 'pbr_asphalt', 'pbr_brick_red', 'pbr_concrete', 'pbr_concrete', 'pbr_steel'),
   theme('temple', 'Marble Temple', '#f0e2c0', 'pbr_checker', 'pbr_travertine', 'pbr_marble_black', 'pbr_onyx', 'brass'),
   theme('harbour', 'Harbour', '#9ab8cc', 'pbr_hex_paving', 'pbr_brick_old', 'pbr_planks', 'pbr_delft', 'pbr_plaster_white'),
   theme('bunker', 'Bunker', '#5c6058', 'pbr_concrete_dark', 'pbr_concrete', 'pbr_canvas', 'pbr_steel', 'hazard'),

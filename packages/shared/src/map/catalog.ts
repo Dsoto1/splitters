@@ -982,6 +982,10 @@ function buildings(): TileDefinition[] {
         box(10.4, 0, -3.7, 11.7, 2.2, -1.2),
         // Pelmet over the shopfront, inside.
         trim(-3.75, 3, -3.75, 11.75, 3.4, -3.5),
+        // Flat roof with a parapet.
+        box(-4, 4, -4, 12, 4.35, 4),
+        trim(-4, 4.35, -4, 12, 4.8, -3.8),
+        trim(-4, 4.35, 3.8, 12, 4.8, 4),
       ],
     },
     {

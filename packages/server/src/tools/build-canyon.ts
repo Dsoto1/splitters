@@ -264,6 +264,16 @@ for (const [x, dz] of [[-9, 2], [-7, -2], [0, 2], [1, -2], [8, 2], [7, -2], [-13
 }
 
 
+// Capture the Flag: each flag in its base's west bunker. King of the Hill: the hill moves from mid to the ruins to the watchtower.
+run('Add objectives', {
+  kind: 'addEntities',
+  entities: [
+    { id: id('flag'), kind: 'flag', position: [-8, 0, -80], yaw: 0, team: embers!.id },
+    { id: id('flag'), kind: 'flag', position: [-8, 0, 80], yaw: Math.PI, team: tide!.id },
+    ...([[0, 0, 6], [24, 0, 5], [-24, -8, 5]] as const).map(([x, z, radius]) => ({ id: id('hill'), kind: 'hill' as const, position: [x, +ground(x, z).toFixed(2), z] as [number, number, number], radius })),
+  ],
+});
+
 const roof: [string, number, number][] = [['weapon_sniper', 0, -80], ['weapon_sniper', 0, 80], ['armor_small', -8, -80], ['armor_small', 8, 80]];
 run('Add pickups', {
   kind: 'addEntities',
@@ -283,7 +293,7 @@ run('Edit map', {
     id: 'canyon',
     author: 'ChronoSplit',
     description:
-      'A long grassy canyon between sheer rock walls. Embers hold the south bunkers, Tide the north; each base has a railed roof with a sniper rifle. Boulder fields and two big hills cover the middle, a 5 m ledge runs up the west wall, and rockets wait in the ruins on the east side.',
+      'A long grassy canyon between sheer rock walls. Embers hold the south bunkers, Tide the north; each base has a railed roof with a sniper rifle. Boulder fields and two big hills cover the middle, a 5 m ledge runs up the west wall, and rockets wait in the ruins on the east side. Each base keeps its flag in its west bunker; King of the Hill moves between mid, the ruins and the watchtower.',
     recommendedPlayers: { min: 4, max: 16 },
     supportedModes: ['core.tdm', 'core.deathmatch'],
   },
