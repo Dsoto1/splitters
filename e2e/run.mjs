@@ -961,8 +961,8 @@ async function charactersFlow(browser) {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?mode=characters`);
   await page.waitForFunction(() => window.__charsReady === true, null, { timeout: 30000 });
-  const n = await page.evaluate(() => window.__charAnimators.length);
-  check(n === 20, `character viewer builds every look and NPC (${n})`);
+  const [n, want] = await page.evaluate(() => [window.__charAnimators.length, window.__charSpecs]);
+  check(n === want && n >= 20, `character viewer builds every look and NPC (${n} of ${want})`);
   const lod = await page.evaluate(() => window.__charAnimators.flatMap((a) => a.ch.meshes).filter((m) => m.getLODLevels?.().length).length);
   check(lod > 100, `character meshes have low-detail levels (${lod})`);
   for (const label of ['Rifle', 'Run', 'shoot', 'Death', 'Idle']) {
@@ -1052,14 +1052,15 @@ async function hostgameFlow(browser) {
   await host.goto(`${CLIENT}/?offline=arena${peer}`);
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
   await host.evaluate(() => document.getElementById('host-game').click());
-  await host.waitForFunction(() => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? ''), null, { timeout: 20000 });
+  // CI renders in software, slowly: generous waits (readiness is checked by what follows each load).
+  await host.waitForFunction(() => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? ''), null, { timeout: 45000 });
   const code = await host.evaluate(() => document.querySelector('#host-info .host-code b').textContent);
   check(/^[A-Z0-9]{6}$/.test(code), `hosting opens a join code (${code})`);
   const friend = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
   await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
-  await friend.goto(`${CLIENT}/?join=${code}${peer}`);
-  const joined = await friend.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 40000 }).then(() => true, () => false);
+  await friend.goto(`${CLIENT}/?join=${code}${peer}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  const joined = await friend.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 60000 }).then(() => true, () => false);
   check(joined, 'a friend joins the hosted match by its link');
   if (joined) {
     await friend.waitForTimeout(2500);

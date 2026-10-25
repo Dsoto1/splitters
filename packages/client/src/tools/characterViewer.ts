@@ -104,7 +104,7 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   panel.append(' Aim pitch ', pitch, ` ${specs.map((s) => s.label).join(' · ')} · front: ${CREATURE_ROLES.join(', ')}`);
   document.body.append(panel);
   (window as unknown as { __charsReady: boolean; __charState: MotionState; __charAnimators: CharacterAnimator[] }).__charsReady = true;
-  Object.assign(window, { __charState: state, __charAnimators: animators, __creatureAnimators: creatures });
+  Object.assign(window, { __charState: state, __charAnimators: animators, __creatureAnimators: creatures, __charSpecs: specs.length });
 
   let last = performance.now();
   engine.runRenderLoop(() => {
