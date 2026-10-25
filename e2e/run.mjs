@@ -1030,6 +1030,12 @@ async function hostgameFlow(browser) {
       return f ? f.move.pos : null;
     });
     check(moved > 1 && !!onHost, `the friend moves and the host's match follows (${moved.toFixed(1)} m)`);
+    // The host's stream to a friend is compressed: a few KB/s, not the ~40 KB/s of raw snapshots.
+    const bytes = () => friend.evaluate(() => window.__cs.transport.bytesIn);
+    const b0 = await bytes();
+    await friend.waitForTimeout(5000);
+    const rate = ((await bytes()) - b0) / 5 / 1024;
+    check(rate > 0.2 && rate < 12, `the friend's stream is compressed (${rate.toFixed(1)} KB/s)`);
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await host.context().close();

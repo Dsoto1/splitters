@@ -2,6 +2,7 @@ import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
 import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@chronosplit/shared';
 import type { RemoteLink } from './localTransport.ts';
 import type { Transport } from './transport.ts';
+import { CHUNK, Unzipper, Zipper } from './peerZip.ts';
 
 /**
  * Host game / Join by code: friends connect straight to the host's browser
@@ -79,23 +80,34 @@ function peerOptions(): PeerOptions {
   return { ...base, host: m[2]!, port: Number(m[3] ?? (secure ? 443 : 80)), path: m[4] ?? '/', secure };
 }
 
-/** Data channels cap message size (~256 KB in Chrome): long texts (the map in the welcome) go in pieces. */
-const CHUNK = 60_000;
 let chunkIds = 0;
 
-function sendText(conn: DataConnection, text: string): void {
+function sendText(conn: DataConnection, text: string, zip?: Zipper): void {
   if (!conn.open) return;
+  if (zip) {
+    for (const piece of zip.pieces(text)) conn.send(piece);
+    return;
+  }
   if (text.length <= CHUNK) return void conn.send(text);
   const id = ++chunkIds;
   const n = Math.ceil(text.length / CHUNK);
   for (let i = 0; i < n; i++) conn.send(`\u0001${id}|${i}|${n}|${text.slice(i * CHUNK, (i + 1) * CHUNK)}`);
 }
 
-/** Calls `cb` with whole texts, putting chunked ones back together. */
-function onText(conn: DataConnection, cb: (text: string) => void): void {
+/** Calls `cb` with whole texts, putting chunked ones back together (and unzipping compressed ones). `wire` counts bytes received. */
+function onText(conn: DataConnection, cb: (text: string) => void, wire?: (bytes: number) => void): void {
   const parts = new Map<string, string[]>();
+  let unzip: Unzipper | null = null;
   conn.on('data', (data) => {
+    if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+      const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+      wire?.(bytes.length);
+      const text = (unzip ??= new Unzipper()).piece(bytes);
+      if (text !== null) cb(text);
+      return;
+    }
     const text = String(data);
+    wire?.(text.length);
     if (!text.startsWith('\u0001')) return cb(text);
     const [id, i, n] = text.slice(1).split('|', 3) as [string, string, string];
     const body = text.slice(1 + id.length + i.length + n.length + 3);
@@ -110,8 +122,10 @@ function onText(conn: DataConnection, cb: (text: string) => void): void {
 }
 
 function linkFor(conn: DataConnection): RemoteLink {
+  // Friends that ask for it (every current client) get the compressed stream.
+  const zip = (conn.metadata as { z?: number } | undefined)?.z === 1 ? new Zipper() : undefined;
   return {
-    send: (text) => sendText(conn, text),
+    send: (text) => sendText(conn, text, zip),
     onMessage: (cb) => onText(conn, cb),
     onClose: (cb) => {
       conn.on('close', cb);
@@ -220,7 +234,7 @@ export class PeerTransport implements Transport {
     });
     peer.on('open', () => {
       brokered = true;
-      const conn = peer.connect(PREFIX + this.code, { reliable: true, serialization: 'raw' });
+      const conn = peer.connect(PREFIX + this.code, { reliable: true, serialization: 'raw', metadata: { z: 1 } });
       this.conn = conn;
       conn.on('iceStateChanged', (state) => {
         if (state === 'failed' && !opened) fail(noDirect);
@@ -231,16 +245,19 @@ export class PeerTransport implements Transport {
         this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look });
         this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: 0, ct: performance.now() }), 1000);
       });
-      onText(conn, (text) => {
-        this.bytesIn += text.length;
-        const msg = JSON.parse(text) as ServerMessage;
-        if (msg.t === 'pong') {
-          const sample = performance.now() - msg.ct;
-          this.rttMs = this.rttMs ? this.rttMs * 0.8 + sample * 0.2 : sample;
-          return;
-        }
-        onMessage(msg);
-      });
+      onText(
+        conn,
+        (text) => {
+          const msg = JSON.parse(text) as ServerMessage;
+          if (msg.t === 'pong') {
+            const sample = performance.now() - msg.ct;
+            this.rttMs = this.rttMs ? this.rttMs * 0.8 + sample * 0.2 : sample;
+            return;
+          }
+          onMessage(msg);
+        },
+        (bytes) => (this.bytesIn += bytes),
+      );
       conn.on('close', () => fail(opened ? 'the host left the game' : noDirect));
     });
   }
