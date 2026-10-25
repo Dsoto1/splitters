@@ -420,7 +420,9 @@ const skyPacks = Object.fromEntries(
   skyManifest.skies.map((s) => [s.id, { title: s.title, creator: s.authors, url: `https://polyhaven.com/a/${s.source}`, license: skyManifest.license, licenseFile: 'assets-src/polyhaven/License.txt' }]),
 );
 const skyCount = checkLocked('content/skies.lock.json', 'skies', (f) => skyPacks[f.source], { maxBytes: 400000 }, ['tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG', 'colour graded where content/skies.json gives a grade (night)'], 'node tools/content/prepare-skies.mjs');
-console.log(`checked ${textureCount} texture files, ${propCount} props and ${skyCount} skies`);
+const cityManifest = JSON.parse(readFileSync(join(ROOT, 'content/city.json'), 'utf8'));
+const cityCount = checkLocked('content/city.lock.json', 'city', () => cityManifest.pack, cityManifest.budgets, ['scaled by 4/3 (buildings fitted to whole cells)', 'variant materials merged, normal and ORM maps dropped, colour maps shrunk', 'interior wall faces removed; buildings simplified'], 'node tools/content/prepare-city.mjs <kit folder>');
+console.log(`checked ${textureCount} texture files, ${propCount} props, ${skyCount} skies and ${cityCount} city files`);
 
 const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
 if (check) {

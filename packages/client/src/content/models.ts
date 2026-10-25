@@ -22,7 +22,7 @@ export class ModelLibrary {
 
   constructor(private readonly scene: Scene) {}
 
-  /** `path` is relative to public/models, or to public itself for placeable props ("props/…"). */
+  /** `path` is relative to public/models, or to public itself for placeable props, creatures and the city kit ("props/…", "creatures/…", "city/…"). */
   load(path: string): Promise<AssetContainer> {
     let p = this.containers.get(path);
     if (!p && path.startsWith('procedural/')) {
@@ -30,7 +30,7 @@ export class ModelLibrary {
       this.containers.set(path, p);
     }
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(/^(props|creatures)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB);
+      p = LoadAssetContainerAsync(versioned(/^(props|creatures|city)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB);
       this.containers.set(path, p);
     }
     return p;

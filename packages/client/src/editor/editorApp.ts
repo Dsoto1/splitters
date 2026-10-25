@@ -72,6 +72,8 @@ import {
   CEILING_LABELS,
   CORNERS,
   CORNER_LABELS,
+  FACADES,
+  FACADE_LABELS,
   FLOOR_INSERTS,
   FLOOR_INSERT_LABELS,
   ROOM_LAYOUTS,
@@ -2530,7 +2532,8 @@ export class EditorApp {
     pick('Floor', 'floor', FLOOR_INSERTS, FLOOR_INSERT_LABELS, FLOOR_INSERT_LABELS.standard);
     pick('Ceiling', 'ceiling', CEILINGS, CEILING_LABELS, CEILING_LABELS.open);
     pick('Corners', 'corners', CORNERS, CORNER_LABELS, CORNER_LABELS.square);
-    el.append(small('A roof is left off where something is built on top; a sunken centre needs nothing below it.'));
+    pick('Facade', 'facade', FACADES, FACADE_LABELS, FACADE_LABELS.none);
+    el.append(small('A roof is left off where something is built on top; a sunken centre needs nothing below it. A city facade dresses the outside walls (stack rooms for taller buildings).'));
   }
 
   private surfaceRow(t: MapDocument['classicStructure']['tiles'][number], slot: SurfaceSlot): HTMLElement {

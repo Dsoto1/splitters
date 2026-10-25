@@ -1,0 +1,1376 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 17,
+  "metadata": {
+    "id": "downtown",
+    "name": "Downtown",
+    "author": "Tile Trigger",
+    "description": "A city crossroads: two streets meet in the middle under an office block, a brownstone and a midrise; the south-east corner is a row of shops you can run through. Embers hold the west end, Tide the east.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 6,
+      "max": 16
+    },
+    "supportedModes": [
+      "core.tdm",
+      "core.deathmatch",
+      "core.koth",
+      "core.zombies"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.city",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "city.crossroads",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_002",
+        "tile": "city.street",
+        "x": -4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_003",
+        "tile": "city.street",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_004",
+        "tile": "city.street",
+        "x": -2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_005",
+        "tile": "city.street",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_006",
+        "tile": "city.street",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_007",
+        "tile": "city.street",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_008",
+        "tile": "city.street",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_009",
+        "tile": "city.street",
+        "x": 7,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_010",
+        "tile": "city.street",
+        "x": 1,
+        "y": -4,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_011",
+        "tile": "city.street",
+        "x": 1,
+        "y": -3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_012",
+        "tile": "city.street",
+        "x": 1,
+        "y": -2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_013",
+        "tile": "city.street",
+        "x": 1,
+        "y": -1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_014",
+        "tile": "city.street",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_015",
+        "tile": "city.street",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_016",
+        "tile": "city.street",
+        "x": 1,
+        "y": 6,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_017",
+        "tile": "city.street",
+        "x": 1,
+        "y": 7,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_018",
+        "tile": "city.highrise",
+        "x": 6,
+        "y": 6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_019",
+        "tile": "city.brownstone",
+        "x": -2,
+        "y": 5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_020",
+        "tile": "city.midrise",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.room_large",
+        "x": 4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "options": {
+          "layout": "low_cover",
+          "facade": "storefront"
+        }
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.room",
+        "x": 6,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "brick"
+        }
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.room",
+        "x": 6,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "brick"
+        }
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.room",
+        "x": 4,
+        "y": -4,
+        "z": 0,
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "plaster"
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.room",
+        "x": 6,
+        "y": -4,
+        "z": 0,
+        "rotation": 0,
+        "options": {
+          "layout": "pillar",
+          "ceiling": "roof",
+          "facade": "plaster"
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.room",
+        "x": -1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "windows"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "storefront"
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_057",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_059",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_060",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_061",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_062",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_064",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_065",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_066",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_067",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_068",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_069",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_070",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_071",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_072",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_073",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_074",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_075",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_076",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_077",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_078",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_079",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_080",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_081",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_082",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_083",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_084",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_085",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_086",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_087",
+        "tile": "core.yard",
+        "x": 7,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_088",
+        "tile": "core.yard",
+        "x": 7,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_089",
+        "tile": "core.yard",
+        "x": 7,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_090",
+        "tile": "core.yard",
+        "x": 7,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_091",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_092",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_093",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_094",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_095",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_096",
+        "tile": "core.yard",
+        "x": 7,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "prop_097",
+      "position": [
+        -12,
+        0,
+        4
+      ],
+      "kind": "prop",
+      "model": "prop.hm_floor_lamp",
+      "yaw": 0,
+      "scale": 2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_098",
+      "position": [
+        -12,
+        0,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.hm_floor_lamp",
+      "yaw": 0,
+      "scale": 2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_099",
+      "position": [
+        44,
+        0,
+        4
+      ],
+      "kind": "prop",
+      "model": "prop.hm_floor_lamp",
+      "yaw": 0,
+      "scale": 2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_100",
+      "position": [
+        44,
+        0,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.hm_floor_lamp",
+      "yaw": 0,
+      "scale": 2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "position": [
+        30,
+        0,
+        -4
+      ],
+      "kind": "prop",
+      "model": "prop.sv_trashcan_metal",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_102",
+      "position": [
+        -6,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.dg_crate",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "position": [
+        -5,
+        0,
+        32
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "position": [
+        44,
+        0,
+        52
+      ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "position": [
+        -28,
+        0,
+        -28
+      ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
+      "yaw": 1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_106",
+      "position": [
+        52,
+        0,
+        -28
+      ],
+      "kind": "prop",
+      "model": "prop.nt_birch",
+      "yaw": 2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_107",
+      "position": [
+        -30,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_108",
+      "position": [
+        -30,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_109",
+      "position": [
+        -26,
+        0,
+        4
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_110",
+      "position": [
+        -26,
+        0,
+        20
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_111",
+      "position": [
+        -30,
+        0,
+        36
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_112",
+      "position": [
+        -30,
+        0,
+        -12
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_113",
+      "position": [
+        -22,
+        0,
+        52
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_114",
+      "position": [
+        -22,
+        0,
+        -28
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_115",
+      "position": [
+        58,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_116",
+      "position": [
+        58,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_117",
+      "position": [
+        54,
+        0,
+        4
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_118",
+      "position": [
+        54,
+        0,
+        20
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_119",
+      "position": [
+        58,
+        0,
+        -12
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_120",
+      "position": [
+        58,
+        0,
+        -28
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_121",
+      "position": [
+        36,
+        0,
+        58
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_122",
+      "position": [
+        52,
+        0,
+        -20
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_123",
+      "position": [
+        12,
+        0,
+        12
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_124",
+      "position": [
+        0,
+        0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_125",
+      "position": [
+        24,
+        0,
+        -24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_126",
+      "position": [
+        40,
+        0,
+        -12
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_127",
+      "position": [
+        -8,
+        0,
+        -24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_128",
+      "position": [
+        -32,
+        0,
+        36
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_129",
+      "position": [
+        44,
+        0,
+        58
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_130",
+      "position": [
+        8,
+        0,
+        -32
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "pickup_131",
+      "position": [
+        12,
+        0,
+        12
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_132",
+      "position": [
+        36,
+        0,
+        -12
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_133",
+      "position": [
+        -8,
+        0,
+        48
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_134",
+      "position": [
+        52,
+        0,
+        -32
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_135",
+      "position": [
+        12,
+        0,
+        28
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_136",
+      "position": [
+        40,
+        0,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_137",
+      "position": [
+        -8,
+        0,
+        28
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_138",
+      "position": [
+        28,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_139",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "hill_140",
+      "position": [
+        12,
+        0,
+        12
+      ],
+      "kind": "hill",
+      "radius": 6
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -40,
+      -40
+    ],
+    "max": [
+      64,
+      64
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "city",
+    "ground": "gravel",
+    "haze": 0.4
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      8,
+      8
+    ]
+  },
+  "dependencies": []
+}

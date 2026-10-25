@@ -1,0 +1,13 @@
+{
+  "$comment": "City buildings, streets and facade pieces from Quaternius' Downtown City MegaKit [Standard] at 4/3 scale. tools/content/prepare-city.mjs builds packages/client/public/city from the downloaded kit (not kept in the repo) and writes content/city.lock.json.",
+  "pack": {
+    "id": "quaternius-downtown-city",
+    "title": "Downtown City MegaKit [Standard]",
+    "creator": "Quaternius",
+    "url": "https://quaternius.itch.io/downtown-city-megakit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/quaternius-downtown-city/License.txt",
+    "retrieved": "2026-10-25"
+  },
+  "budgets": { "maxBytes": 1500000, "maxTriangles": 24000 }
+}

@@ -60,6 +60,31 @@ narrower gaps drop out of the bots' navmesh.
 Trim (baseboards, cornices, door and window frames, railing posts) is drawn
 with the map but never collides, and has its own paintable slot.
 
+## City kit (Quaternius Downtown City MegaKit, 4/3 scale)
+
+The kit is scaled by 4/3 so its 3 m storeys are our 4 m levels and three of
+its 2 m bays fit an 8 m cell side (`tools/content/prepare-city.mjs` builds
+`packages/client/public/city/` from the download; the kit itself stays out
+of the repo).
+
+- **Buildings** (*Buildings* palette): Brownstone (2 × 2 cells), Midrise
+  (2 × 2) and Office Block (3 × 3). Each is a solid block the height of the
+  model (stand on the roof); its street face is local north. Nothing builds a
+  wall against one.
+- **Streets** (*Open* palette): City Street (1 cell along the road, 2 across)
+  and City Crossroads (4 × 4). Open ground with open edges: streets join each
+  other, courtyards and plazas without walls. The kerbs are flattened to a
+  few centimetres, so the whole tile is walked at floor height.
+- **Facades** (room option *Facade*: city brick, shopfront and brick, or
+  painted plaster): the outside of a room's walls is dressed bay by bay,
+  windows and plain wall in turn on upper floors (a shopfront or brick base
+  on the ground floor), bands over doorways and under windows, a cornice
+  where nothing is built above and columns on the outer corners. The facade
+  stands 0.32 m proud of the wall (past a neighbouring courtyard's own wall)
+  with frames round the openings; it is only visual, so doorways and windows
+  are exactly our own. Stack rooms with the same facade for taller buildings.
+  Downtown (`maps/downtown.json`) shows all of it.
+
 ## Materials and themes (`map/materials.ts`)
 
 28 procedural materials plus 41 scanned sets from ambientCG (CC0), prepared by

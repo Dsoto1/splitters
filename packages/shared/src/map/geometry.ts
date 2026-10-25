@@ -1,5 +1,5 @@
 import { PLAYER } from '../sim/constants.ts';
-import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, type Corner, type EdgeStyle, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
+import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, type Corner, type EdgeStyle, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { getProp } from '../content/props.ts';
 import { terrainBoundary, terrainTriangles } from './terrain.ts';
@@ -157,6 +157,9 @@ export function resolveEdge(cells: Map<string, CellOccupant>, x: number, y: numb
   const [dx, dy] = SIDE_DIRS[side];
   const there = cells.get(cellKey(x + dx, y + dy, z));
   if (there && there.placement === here.placement) return 'none';
+  // Nothing is built against a whole city building (a solid model with no doorways).
+  if (here.def.model && !here.def.ports.length) return 'none';
+  if (there?.def.model && !there.def.ports.length) return 'none';
   const choice = (occ: CellOccupant | undefined, s: Side) => occ?.placement.edges?.[edgeKey(occ.local, localSide(s, occ.placement.rotation))];
   const picked = choice(here, side) ?? choice(there, OPPOSITE[side]);
   const fallback = here.def.edgeDefaults?.[edgeKey(here.local, localSide(side, here.placement.rotation))] ?? here.def.edgeDefault ?? 'wall';
@@ -453,6 +456,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
   }
 
   if (decor) {
+    boxes.push(...facadeFrames(map, cells));
     // Trim on curved pieces (it never collides).
     for (const placement of map.classicStructure.tiles) {
       const def = catalog.get(placement.tile);
@@ -806,4 +810,160 @@ export function boxesToTriangles(boxes: readonly WorldBox[]): { positions: Float
     });
   });
   return { positions, indices };
+}
+
+// ---------------------------------------------------------------- city facades and tile models
+
+/** One facade piece (a node in city/facades.glb): its bottom centre on the street face, turned to face out, stretched by sx / sy. */
+export interface FacadePiece {
+  piece: string;
+  at: [number, number, number];
+  yaw: number;
+  sx: number;
+  sy: number;
+}
+
+/** Facade kit pieces at 4/3 scale: every wall piece is 2.667 m wide and 4 m (bands and cornices 1.333 m) tall. */
+const BAY = 8 / 3;
+const BAND = 4 / 3;
+/** Facades stand this far out from our walls: the kit's windows sit up to 0.3 m back from their face. */
+const FACADE_OUT = 0.32;
+/** Openings (doorways, windows) in each edge style, framed where a facade stands proud of the wall: [u0, u1, y0, y1]. */
+const OPENINGS: Partial<Record<ResolvedEdge, [number, number, number, number][]>> = {
+  door: [[-1.5, 1.5, 0, 3]],
+  wide: [[-2.5, 2.5, 0, 3.5]],
+  shutter: [[-2.5, 2.5, 0, 3.5]],
+  arch: [[-3.25, 3.25, 0, 3.4]],
+  window: [[-1.3, 1.3, 0.9, 2.5]],
+  windows: [[-2.7, -0.8, 0.9, 2.5], [0.8, 2.7, 0.9, 2.5]],
+  slit: [[-1.5, 1.5, 1.25, 1.6]],
+};
+
+/** Frames round the openings of walls that wear a facade (trim, never collides): the reveal between the facade and our wall. */
+function facadeFrames(map: MapDocument, cells: Map<string, CellOccupant>): WorldBox[] {
+  const { cellSize, levelHeight } = map.classicStructure;
+  const half = cellSize / 2;
+  const out: WorldBox[] = [];
+  const f = 0.15;
+  for (const [key, occ] of cells) {
+    const facade = occ.placement.options?.facade;
+    if (!facade || facade === 'none') continue;
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    for (const side of SIDES) {
+      const style = resolveEdge(cells, gx, gy, gz, side);
+      const [dx, dy] = SIDE_DIRS[side];
+      const there = cells.get(cellKey(gx + dx, gy + dy, gz));
+      if (there && !there.def.open) continue;
+      // Open ground next door builds its own wall on this side: the facade stands outside that one.
+      const base = there && resolveEdge(cells, gx + dx, gy + dy, gz, OPPOSITE[side]) !== 'none' ? TILE_DIMENSIONS.wallThickness : 0;
+      for (const [u0, u1, y0, y1] of OPENINGS[style] ?? []) {
+        const top = Math.min(y1, levelHeight);
+        const pieces: [number, number, number, number][] = [[u0 - f, u0, y0, top + f], [u1, u1 + f, y0, top + f], [u0, u1, top, top + f]];
+        if (y0 > 0) pieces.push([u0, u1, y0 - f, y0]);
+        for (const [a, b, c, d] of pieces) out.push(sideBox(side, gx * cellSize, gy * cellSize, half, a, b, gz * levelHeight + c, gz * levelHeight + d, -base - FACADE_OUT, -base, occ.placement.id, 'trim'));
+      }
+    }
+  }
+  return out;
+}
+const FACADE_SETS: Record<Exclude<Facade, 'none'>, { ground: string[]; upper: string[]; band: string; cornice: string; column: string }> = {
+  brick: { ground: ['Brick_Window_Trim_Single', 'Brick_BottomTrim'], upper: ['Brick_Window_Trim_Single', 'Brick_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Brick_Center', column: 'Trim_Column_Center' },
+  storefront: { ground: ['Metal_FullWindow', 'Metal_FirstFloor_Window'], upper: ['Brick_Window_Square_Single', 'Brick_Plain_3'], band: 'Metal_Plain_1', cornice: 'Cornice_Metal_Center', column: 'Metal_Column_Center' },
+  plaster: { ground: ['Trim_FirstFloor_Window_001', 'Trim_FirstFloor_Wall'], upper: ['Trim_Window', 'Trim_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Trim_Center', column: 'Trim_Column_Center' },
+};
+/** Every facade piece name (city/facades.glb holds exactly these). */
+export const FACADE_PIECES: readonly string[] = [...new Set(Object.values(FACADE_SETS).flatMap((f) => [...f.ground, ...f.upper, f.band, f.cornice, f.column]))];
+
+/** Edges that get a facade on their outside (solid enough to dress). */
+const FACADE_WALLS = new Set<ResolvedEdge>(['wall', 'door', 'wide', 'window', 'windows', 'slit', 'high', 'tower', 'shutter', 'arch', 'broken', 'half']);
+
+/**
+ * The city facade pieces for every room with a `facade` option: each outside
+ * wall (nothing beyond it, or open ground) is split into bays: windows and
+ * plain wall in turn on the upper floors, a shopfront or base on the ground
+ * floor, bands over doorways and under windows, a cornice along the top where
+ * nothing is built above, and a column on each outer corner. Openings are left
+ * as they are, so what you see matches what you can walk and shoot through.
+ */
+export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalog): FacadePiece[] {
+  const { cellSize, levelHeight } = map.classicStructure;
+  const { cells } = buildOccupancy(map, catalog);
+  const half = cellSize / 2;
+  const out: FacadePiece[] = [];
+  const outward: Record<Side, [number, number, number]> = { N: [0, 1, 0], S: [0, -1, Math.PI], E: [1, 0, Math.PI / 2], W: [-1, 0, -Math.PI / 2] };
+  const exterior = (gx: number, gy: number, gz: number, side: Side) => {
+    const [dx, dy] = SIDE_DIRS[side];
+    const there = cells.get(`${gx + dx},${gy + dy},${gz}`);
+    return !there || !!there.def.open;
+  };
+  /** How far out from the cell edge the facade's face stands: past the neighbour's own wall, if open ground next door builds one. */
+  const standOff = (gx: number, gy: number, gz: number, side: Side) => {
+    const [dx, dy] = SIDE_DIRS[side];
+    const walled = cells.has(`${gx + dx},${gy + dy},${gz}`) && resolveEdge(cells, gx + dx, gy + dy, gz, OPPOSITE[side]) !== 'none';
+    return (walled ? TILE_DIMENSIONS.wallThickness : 0) + FACADE_OUT;
+  };
+  for (const [key, occ] of cells) {
+    const facade = occ.placement.options?.facade;
+    if (!facade || facade === 'none') continue;
+    const set = FACADE_SETS[facade];
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    const cx = gx * cellSize;
+    const cz = gy * cellSize;
+    const baseY = gz * levelHeight;
+    const ground = !cells.has(`${gx},${gy},${gz - 1}`);
+    const roofed = cells.has(`${gx},${gy},${gz + 1}`);
+    const sides = new Map<Side, ResolvedEdge>();
+    for (const side of SIDES) {
+      const style = resolveEdge(cells, gx, gy, gz, side);
+      if (!FACADE_WALLS.has(style) || !exterior(gx, gy, gz, side)) continue;
+      sides.set(side, style);
+      const [ox, oz, yaw] = outward[side];
+      const off = standOff(gx, gy, gz, side);
+      const at = (u: number, y: number): [number, number, number] => (ox !== 0 ? [cx + ox * (half + off), y, cz + u] : [cx + u, y, cz + oz * (half + off)]);
+      for (const [u0, u1, y0, y1, t] of edgeSegments(style, half, levelHeight)) {
+        if (t < 0.3) continue;
+        const n = Math.max(1, Math.round((u1 - u0) / BAY));
+        const w = (u1 - u0) / n;
+        for (let i = 0; i < n; i++) {
+          const u = u0 + w * (i + 0.5);
+          if (y0 === 0 && y1 - y0 >= levelHeight - 1e-6) {
+            // Full-height bays, a storey (4 m) at a time (high walls stack).
+            for (let y = 0; y < y1 - 1e-6; y += levelHeight) {
+              const first = ground && y === 0;
+              const kinds = first ? set.ground : set.upper;
+              // Windows on alternate bays of a full wall, and on a pier beside an opening when it is wide enough.
+              const piece = (n >= 3 ? i % 2 === 0 : n === 1 && w >= 2.2) ? kinds[0]! : kinds[kinds.length - 1]!;
+              out.push({ piece, at: at(u, baseY + y), yaw, sx: w / BAY, sy: Math.min(levelHeight, y1 - y) / 4 });
+            }
+          } else {
+            out.push({ piece: set.band, at: at(u, baseY + y0), yaw, sx: w / BAY, sy: (y1 - y0) / BAND });
+          }
+          if (!roofed && y1 >= levelHeight - 1e-6 && (y0 > 0 || y1 - y0 >= levelHeight - 1e-6)) out.push({ piece: set.cornice, at: at(u, baseY + y1), yaw, sx: w / BAY, sy: 1 });
+        }
+      }
+    }
+    // Columns on outer corners (both sides dressed and solid at the corner).
+    for (const [a, b, sx, sz] of [['N', 'E', 1, 1], ['E', 'S', 1, -1], ['S', 'W', -1, -1], ['W', 'N', -1, 1]] as const) {
+      if (!sides.has(a) || !sides.has(b)) continue;
+      const top = Math.max(...[sides.get(a)!, sides.get(b)!].map((st) => Math.max(...edgeSegments(st, half, levelHeight).map((g) => g[3]))));
+      const ca = standOff(gx, gy, gz, sx > 0 ? 'E' : 'W') - FACADE_OUT / 2;
+      const cb = standOff(gx, gy, gz, sz > 0 ? 'N' : 'S') - FACADE_OUT / 2;
+      for (let y = 0; y < top - 1e-6; y += levelHeight) out.push({ piece: set.column, at: [cx + sx * (half + ca), baseY + y, cz + sz * (half + cb)], yaw: 0, sx: 1, sy: Math.min(levelHeight, top - y) / 4 });
+    }
+  }
+  return out;
+}
+
+/** Tiles drawn with a model (city buildings and streets): the model, where its centre goes and how it is turned. */
+export function tileModels(map: MapDocument, catalog: TileCatalog = coreCatalog): { id: string; file: string; at: [number, number, number]; yaw: number }[] {
+  const { cellSize, levelHeight } = map.classicStructure;
+  const out: { id: string; file: string; at: [number, number, number]; yaw: number }[] = [];
+  for (const placement of map.classicStructure.tiles) {
+    const def = catalog.get(placement.tile);
+    if (!def?.model) continue;
+    const [w, d] = footprintSize(def);
+    const [mx, mz] = rotateXZ(((w - 1) * cellSize) / 2, ((d - 1) * cellSize) / 2, placement.rotation);
+    out.push({ id: placement.id, file: def.model.file, at: [placement.x * cellSize + mx, placement.z * levelHeight + (def.model.lift ?? 0), placement.y * cellSize + mz], yaw: (placement.rotation % 4) * (Math.PI / 2) });
+  }
+  return out;
 }

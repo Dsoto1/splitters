@@ -98,6 +98,21 @@ export const CEILING_LABELS: Record<Ceiling, string> = {
 
 export const CORNERS = ['square', 'posts', 'columns', 'chamfered', 'rounded'] as const;
 export type Corner = (typeof CORNERS)[number];
+/**
+ * City facades (Quaternius' Downtown City MegaKit at 4/3 scale): the outside of
+ * a room's walls dressed in brick, a shopfront ground floor or painted
+ * plaster, with a cornice along the top and columns on the outer corners.
+ * Purely visual: doorways and windows stay our own openings.
+ */
+export const FACADES = ['none', 'brick', 'storefront', 'plaster'] as const;
+export type Facade = (typeof FACADES)[number];
+export const FACADE_LABELS: Record<Facade, string> = {
+  none: 'None',
+  brick: 'City brick',
+  storefront: 'Shopfront and brick',
+  plaster: 'Painted plaster',
+};
+
 export const CORNER_LABELS: Record<Corner, string> = {
   square: 'Square',
   posts: 'Posts',
@@ -117,7 +132,7 @@ export interface LocalBox {
   /** Turn about the box's vertical centre line (radians, like `WorldBox.yaw`). */
   yaw?: number;
   /** What the box is built as (default `solid`; curved walls use `wall` so they take the walls' paint, `trim` is visual only). */
-  kind?: 'solid' | 'wall' | 'floor' | 'trim';
+  kind?: 'solid' | 'wall' | 'floor' | 'trim' | 'prop';
 }
 
 export interface TileDefinition {
@@ -151,6 +166,12 @@ export interface TileDefinition {
   blurb?: string;
   /** Takes room options (layout, floor, ceiling, corners) in MapMaker. */
   configurable?: boolean;
+  /**
+   * Drawn with a model (city buildings and streets) centred on the tile's
+   * footprint and turned with it; collision comes from `solids` (`prop` boxes
+   * are invisible) and the floor slabs as usual.
+   */
+  model?: { file: string; lift?: number };
 }
 
 /** Shared tile dimensions (metres). Tiles assume the default 8 m cell / 4 m level. */
@@ -235,6 +256,7 @@ export interface RoomOptions {
   floor?: FloorInsert;
   ceiling?: Ceiling;
   corners?: Corner;
+  facade?: Facade;
 }
 
 /** Width and depth in cells of a tile's ground floor. */
@@ -736,6 +758,29 @@ export const CORE_TILES: readonly TileDefinition[] = [
       { min: [-1, 0, -2], max: [1, 0.25, -1.5] },
     ],
   },
+  // City streets (Downtown City MegaKit at 4/3): walked at floor height, the kerbs are only a few centimetres.
+  {
+    id: 'city.street', category: 'Open',
+    displayName: 'City Street',
+    blurb: 'A two-lane road with pavements: 1 cell along the road, 2 across',
+    cells: footprint(1, 2),
+    floors: [0],
+    ports: perimeterPorts(1, 2),
+    open: true,
+    edgeDefault: 'open',
+    model: { file: 'city/street.glb', lift: 0.02 },
+  },
+  {
+    id: 'city.crossroads', category: 'Open',
+    displayName: 'City Crossroads',
+    blurb: '4 × 4 cells: two streets crossing, with crossings and corner pavements',
+    cells: footprint(4, 4),
+    floors: [0],
+    ports: perimeterPorts(4, 4),
+    open: true,
+    edgeDefault: 'open',
+    model: { file: 'city/crossroads.glb', lift: 0.02 },
+  },
   { id: 'core.yard', category: 'Open', displayName: 'Courtyard', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES, open: true, configurable: true },
   {
     id: 'core.yard_crates', category: 'Open',
@@ -852,6 +897,40 @@ export const CORE_TILES: readonly TileDefinition[] = [
     floors: [0],
     ports: perimeterPorts(2, 2),
     solids: [box(0.8, 0, 0.8, 1.6, 4, 1.6), box(6.4, 0, 0.8, 7.2, 4, 1.6), box(0.8, 0, 6.4, 1.6, 4, 7.2), box(6.4, 0, 6.4, 7.2, 4, 7.2)],
+  },
+  // Whole city buildings (not enterable): solid blocks you can stand on, their street face toward local +z (north at rotation 0).
+  {
+    id: 'city.brownstone', category: 'Buildings',
+    displayName: 'Brownstone',
+    blurb: '2 × 2 cells, five storeys of pale brick with a stoop (solid; climb the roof)',
+    cells: footprint(2, 2, 6),
+    floors: [0],
+    ports: [],
+    edgeDefault: 'open',
+    solids: [{ min: [-4, 0, -4], max: [12, 22.7, 12], kind: 'prop' }],
+    model: { file: 'city/brownstone.glb' },
+  },
+  {
+    id: 'city.midrise', category: 'Buildings',
+    displayName: 'Midrise',
+    blurb: '2 × 2 cells, seven storeys with a green shopfront (solid)',
+    cells: footprint(2, 2, 8),
+    floors: [0],
+    ports: [],
+    edgeDefault: 'open',
+    solids: [{ min: [-4, 0, -1.7], max: [12, 28.6, 12], kind: 'prop' }],
+    model: { file: 'city/midrise.glb' },
+  },
+  {
+    id: 'city.highrise', category: 'Buildings',
+    displayName: 'Office Block',
+    blurb: '3 × 3 cells, eight storeys of glass and brick (solid)',
+    cells: footprint(3, 3, 9),
+    floors: [0],
+    ports: [],
+    edgeDefault: 'open',
+    solids: [{ min: [-4, 0, 0.8], max: [20, 33.6, 20], kind: 'prop' }],
+    model: { file: 'city/highrise.glb' },
   },
   {
     id: 'core.hall', configurable: true,

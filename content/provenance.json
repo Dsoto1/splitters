@@ -11544,6 +11544,102 @@
         "tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG",
         "colour graded where content/skies.json gives a grade (night)"
       ]
+    },
+    {
+      "file": "city/facades.glb",
+      "sha256": "53662d2a2e86d30f",
+      "triangles": 2000,
+      "bytes": 296012,
+      "source": "quaternius-downtown-city/undefined",
+      "title": "Downtown City MegaKit [Standard]",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/downtown-city-megakit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "scaled by 4/3 (buildings fitted to whole cells)",
+        "variant materials merged, normal and ORM maps dropped, colour maps shrunk",
+        "interior wall faces removed; buildings simplified"
+      ]
+    },
+    {
+      "file": "city/brownstone.glb",
+      "sha256": "b03cc9fcce9490c9",
+      "triangles": 9141,
+      "bytes": 728516,
+      "source": "quaternius-downtown-city/undefined",
+      "title": "Downtown City MegaKit [Standard]",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/downtown-city-megakit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "scaled by 4/3 (buildings fitted to whole cells)",
+        "variant materials merged, normal and ORM maps dropped, colour maps shrunk",
+        "interior wall faces removed; buildings simplified"
+      ]
+    },
+    {
+      "file": "city/midrise.glb",
+      "sha256": "47a10810b2aae641",
+      "triangles": 17102,
+      "bytes": 1233008,
+      "source": "quaternius-downtown-city/undefined",
+      "title": "Downtown City MegaKit [Standard]",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/downtown-city-megakit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "scaled by 4/3 (buildings fitted to whole cells)",
+        "variant materials merged, normal and ORM maps dropped, colour maps shrunk",
+        "interior wall faces removed; buildings simplified"
+      ]
+    },
+    {
+      "file": "city/highrise.glb",
+      "sha256": "dfb5f35865c58689",
+      "triangles": 20693,
+      "bytes": 1374492,
+      "source": "quaternius-downtown-city/undefined",
+      "title": "Downtown City MegaKit [Standard]",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/downtown-city-megakit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "scaled by 4/3 (buildings fitted to whole cells)",
+        "variant materials merged, normal and ORM maps dropped, colour maps shrunk",
+        "interior wall faces removed; buildings simplified"
+      ]
+    },
+    {
+      "file": "city/street.glb",
+      "sha256": "a85f3bca84399af8",
+      "triangles": 220,
+      "bytes": 143408,
+      "source": "quaternius-downtown-city/undefined",
+      "title": "Downtown City MegaKit [Standard]",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/downtown-city-megakit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "scaled by 4/3 (buildings fitted to whole cells)",
+        "variant materials merged, normal and ORM maps dropped, colour maps shrunk",
+        "interior wall faces removed; buildings simplified"
+      ]
+    },
+    {
+      "file": "city/crossroads.glb",
+      "sha256": "1105056ed6a0a4b3",
+      "triangles": 892,
+      "bytes": 171012,
+      "source": "quaternius-downtown-city/undefined",
+      "title": "Downtown City MegaKit [Standard]",
+      "creator": "Quaternius",
+      "url": "https://quaternius.itch.io/downtown-city-megakit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "scaled by 4/3 (buildings fitted to whole cells)",
+        "variant materials merged, normal and ORM maps dropped, colour maps shrunk",
+        "interior wall faces removed; buildings simplified"
+      ]
     }
   ]
 }

@@ -24,6 +24,7 @@ import { FoliageVisuals } from '../foliage.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
 import { createPropNode, orientProp } from '../game/propVisuals.ts';
+import { CityVisuals } from '../game/cityVisuals.ts';
 import { createMountNode } from '../game/mountVisuals.ts';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -61,6 +62,7 @@ export class EditorView {
   private outlines: Mesh[] = [];
   private markers = new Map<string, EntityMarker>();
   private readonly models: ModelLibrary;
+  private readonly city: CityVisuals;
   private readonly scenario: ScenarioVisuals;
   private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'hover' | 'spawn' | 'spawnSel' | 'visor' | 'face' | 'erase' | 'pick' | 'eraseFill' | 'pickFill', StandardMaterial>;
   /** Draws the levels other than the one being edited, ghosted. */
@@ -92,6 +94,7 @@ export class EditorView {
     this.dimStyler = new MapStyler(this.scene, this.styler);
     this.backdrop = new BackdropVisuals(this.scene, this.styler);
     this.models = new ModelLibrary(this.scene);
+    this.city = new CityVisuals(this.models, 'edcity');
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.scene.onBeforeRenderObservable.add(() => this.foliage.update(this.camera.position));
     this.scenario = new ScenarioVisuals(this.scene, { editor: true });
@@ -221,6 +224,7 @@ export class EditorView {
     for (const m of this.dimMeshes) m.visibility = 0.4;
     this.applyTileLayer();
     this.backdrop.build(doc, boxes);
+    void this.city.setMap(visible);
     // Regrow plants only when the ground or what stands on it changed.
     const foliageKey = doc.terrain ? `${doc.terrain.heights.length}:${boxes.length}` : '';
     if (doc.terrain !== this.foliageTerrain || foliageKey !== this.foliageKey) {

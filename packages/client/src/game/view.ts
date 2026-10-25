@@ -61,6 +61,7 @@ import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
+import { CityVisuals } from './cityVisuals.ts';
 import { CharacterLibrary, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { CreatureLibrary, type AvatarSpec } from '../content/creatures.ts';
@@ -160,6 +161,8 @@ export class GameView {
   readonly scene: Scene;
   readonly camera: FreeCamera;
   readonly models: ModelLibrary;
+  /** City facades and building/street tile models. */
+  readonly city: CityVisuals;
   readonly scenario: ScenarioVisuals;
   readonly characters: CharacterLibrary;
   readonly creatures: CreatureLibrary;
@@ -203,6 +206,7 @@ export class GameView {
     this.camera.fov = DEFAULT_FOV;
     this.camera.inputs.clear();
     this.models = new ModelLibrary(this.scene);
+    this.city = new CityVisuals(this.models);
     this.scenario = new ScenarioVisuals(this.scene);
     this.zoneVisuals = new ZoneVisuals(this.scene);
     this.characters = new CharacterLibrary(this.scene);
@@ -237,6 +241,7 @@ export class GameView {
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);
     new BackdropVisuals(this.scene, styler, this.models).build(doc, boxes);
+    this.city.setMap(doc);
     this.liquids = mapLiquids(doc.entities);
     this.physics?.free();
     try {
