@@ -20,12 +20,14 @@ import {
   getWeapon,
   partInfo,
   type GameMode,
+  type LobbyListing,
   type MapDocument,
   type MatchRules,
 } from '@chronosplit/shared';
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/peerLink.ts';
 import { installTooltips } from './tooltip.ts';
+import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { drawMapPlan } from './mapPlan.ts';
@@ -211,6 +213,7 @@ export class FrontEnd {
   }
 
   private go(screen: ScreenId): void {
+    clearInterval(this.browserTimer);
     this.screen = screen;
     this.hovered = null;
     this.scene.setLook(this.look);
@@ -316,6 +319,8 @@ export class FrontEnd {
 
   /** Scroll position of the map list, kept across redraws of the play screen. */
   private mapScroll = 0;
+  /** Refreshes the game browser while the Online screen is open. */
+  private browserTimer?: number;
   /** The Arcade panel's "More rules" fold is open. */
   private moreRules = false;
 
@@ -655,7 +660,60 @@ export class FrontEnd {
       storage('cs.name', this.name);
       this.hooks.joinCode(c, this.displayName);
     });
-    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), form, codeForm);
+    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), el('div', { class: 'online-grid' }, this.gameBrowser(), el('div', { class: 'online-side' }, codeForm, form)));
+  }
+
+  /** Public games players are hosting from their browsers (Host game → List in the game browser). */
+  private gameBrowser(): HTMLElement {
+    const list = el('div', { class: 'gb-list' });
+    const status = el('span', { class: 'gb-status' });
+    const refresh = el('button', { class: 'tab', textContent: 'Refresh' });
+    const hub = el('input', { value: hubSetting(), placeholder: 'host:port', autocomplete: 'off', title: 'Community hub address' });
+    const saveHubBtn = el('button', { class: 'tab', textContent: 'Use' });
+    saveHubBtn.addEventListener('click', () => (saveHub(hub.value), void load()));
+    const row = (g: LobbyListing) => {
+      const join = el('button', { class: 'primary', textContent: g.players >= g.max ? 'Full' : 'Join' });
+      join.disabled = g.players >= g.max;
+      join.addEventListener('click', () => this.hooks.joinCode(g.code, this.displayName));
+      const tags = [el('span', { class: 'gb-tag', textContent: 'Player-hosted' }), ...(g.relay ? [el('span', { class: 'gb-tag relay', textContent: 'Relay' })] : [])];
+      tags[0]!.dataset.tip = "Runs in the host's browser: it ends if they leave, and the host's game decides what happens (play with people you trust for anything serious).";
+      if (tags[1]) tags[1].dataset.tip = 'The host set up a relay, so players on strict networks can usually still connect.';
+      return el(
+        'div',
+        { class: 'gb-row' },
+        el('div', { class: 'gb-name' }, el('b', { textContent: g.name }), el('small', { textContent: `hosted by ${g.host}` }), el('div', { class: 'gb-tags' }, ...tags)),
+        el('span', { class: 'gb-map', textContent: g.map }),
+        el('span', { class: 'gb-mode', textContent: MODE_LABEL[g.mode] ?? g.mode }),
+        el('span', { class: 'gb-players', textContent: `${g.players}/${g.max}` }),
+        join,
+      );
+    };
+    const load = async () => {
+      if (!hubSetting()) {
+        status.textContent = '';
+        list.replaceChildren(el('p', { class: 'gb-empty', textContent: 'No community hub set. Enter one below (run `pnpm dev:hub` for a local one), or use a join code from a friend.' }));
+        return;
+      }
+      status.textContent = 'Refreshing…';
+      try {
+        const games = await fetchGames();
+        status.textContent = `${games.length} game${games.length === 1 ? '' : 's'} · updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+        list.replaceChildren(...(games.length ? [el('div', { class: 'gb-row gb-head' }, el('span', { textContent: 'Game' }), el('span', { textContent: 'Map' }), el('span', { textContent: 'Mode' }), el('span', { textContent: 'Players' }), el('span')), ...games.map(row)] : [el('p', { class: 'gb-empty', textContent: 'No public games right now. Host one: start a match, press Esc, Host game, and tick "List in the game browser".' })]));
+      } catch (e) {
+        status.textContent = '';
+        list.replaceChildren(el('p', { class: 'gb-empty', textContent: `Couldn't reach the game browser (${(e as Error).message}). Check the hub address below.` }));
+      }
+    };
+    refresh.addEventListener('click', () => void load());
+    void load();
+    this.browserTimer = window.setInterval(() => void load(), 10_000);
+    return el(
+      'div',
+      { class: 'panel game-browser' },
+      el('div', { class: 'gb-top' }, el('h3', { class: 'panel-title', textContent: 'Game browser' }), status, refresh),
+      list,
+      el('div', { class: 'gb-hub' }, el('span', { textContent: 'Community hub' }), hub, saveHubBtn),
+    );
   }
 
   private options(): HTMLElement {

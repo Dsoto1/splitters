@@ -14,7 +14,8 @@
     "e2e": "node e2e/run.mjs",
     "content:build": "node tools/content/build.mjs",
     "content:check": "node tools/content/build.mjs --check",
-    "dev:peer": "node -e \"import('peer').then(({ PeerServer }) => { PeerServer({ port: Number(process.env.PEER_PORT ?? 9000), path: '/', host: process.env.HOST ?? '0.0.0.0' }); console.log('PeerJS broker on :' + (process.env.PEER_PORT ?? 9000) + ' (open the game with ?peer=<this machine>:' + (process.env.PEER_PORT ?? 9000) + ')'); })\""
+    "dev:hub": "pnpm --filter @chronosplit/server hub",
+    "dev:peer": "pnpm --filter @chronosplit/server hub"
   },
   "devDependencies": {
     "@gltf-transform/core": "4.5.1",

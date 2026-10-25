@@ -55,6 +55,11 @@ export class LocalTransport implements Transport {
   /** Friends playing in this match (Host game), and the hook that lets them in once it's running. */
   private remotes = new Set<{ link: RemoteLink; slot: number | null }>();
   private admit?: (link: RemoteLink) => void;
+  /** How many people can play: friends take bots' places up to the match's size. */
+  get capacity(): number {
+    return Math.max(1, Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));
+  }
+
   /** Players connected from elsewhere (Host game). */
   get guests(): number {
     return [...this.remotes].filter((r) => r.slot !== null).length;

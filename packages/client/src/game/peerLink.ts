@@ -3,6 +3,7 @@ import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMess
 import type { RemoteLink } from './localTransport.ts';
 import type { Transport } from './transport.ts';
 import { CHUNK, Unzipper, Zipper } from './peerZip.ts';
+import { hubAddress } from './hub.ts';
 
 /**
  * Host game / Join by code: friends connect straight to the host's browser
@@ -73,7 +74,11 @@ function iceServers(): RTCIceServer[] {
 function peerOptions(): PeerOptions {
   const custom = new URLSearchParams(location.search).get('peer');
   const base: PeerOptions = { config: { iceServers: iceServers() }, debug: 0 };
-  if (!custom) return base;
+  // No broker named: the community hub's, when there is one; otherwise PeerJS's public one.
+  if (!custom) {
+    const hub = hubAddress();
+    return hub ? { ...base, host: hub.host, port: hub.port, path: hub.path, secure: hub.secure } : base;
+  }
   const m = /^(?:(wss?|https?):\/\/)?([^:/]+)(?::(\d+))?(\/.*)?$/.exec(custom);
   if (!m) return base;
   const secure = m[1] === 'wss' || m[1] === 'https';

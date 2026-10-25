@@ -993,6 +993,52 @@ async function onlineFlow(browser) {
 }
 
 /** Host game: one browser hosts its offline match with a code, a second joins by link (through a local PeerJS broker). */
+async function lobbyFlow(browser) {
+  // A community hub: broker + game browser. A host lists its match; a player finds it and joins from the list.
+  const HUB_PORT = +(process.env.E2E_HUB_PORT ?? 9078);
+  start('pnpm', ['--filter', '@chronosplit/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
+  await sleep(5000);
+  const hub = `hub=127.0.0.1:${HUB_PORT}`;
+  const errors = [];
+  const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+  host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
+  await host.goto(`${CLIENT}/?offline=arena&${hub}`);
+  await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 30000 });
+  const offered = await host.evaluate(() => !document.getElementById('host-public').hidden);
+  check(offered, 'hosting offers "List in the game browser" when a hub is set');
+  await host.evaluate(() => {
+    document.getElementById('host-name').value = 'E2E Friday Night';
+    const box = document.getElementById('host-list');
+    box.checked = true;
+    box.dispatchEvent(new Event('change'));
+    document.getElementById('host-game').click();
+  });
+  const listed = await host.waitForFunction(() => /^Listed/.test(document.getElementById('host-public-status').textContent), null, { timeout: 20000 }).then(() => true, () => false);
+  check(listed, `the host's match is listed (${await host.evaluate(() => document.getElementById('host-public-status').textContent)})`);
+  const player = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  player.on('pageerror', (e) => errors.push(`player: ${e.message}`));
+  await player.addInitScript(() => localStorage.setItem('cs.name', 'Stranger'));
+  await player.goto(`${CLIENT}/?${hub}`);
+  await player.waitForFunction(() => window.__front, null, { timeout: 30000 });
+  await player.evaluate(() => document.getElementById('nav-online')?.click());
+  const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: 15000 }).then((h) => h.jsonValue(), () => null);
+  check(!!row && row.includes('1/') && row.includes('Hosty'), `the game browser lists it (${row})`);
+  await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Friday Night')).querySelector('button').click());
+  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: 40000 }).then(() => true, () => false);
+  check(joined, 'joining from the game browser puts the player in the match');
+  if (joined) {
+    // The next check-in reports two players.
+    const two = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.find((g) => g.name === 'E2E Friday Night')?.players === 2), null, { timeout: 30000, polling: 2000 }).then(() => true, () => false);
+    check(two, 'the listing updates to 2 players');
+  }
+  await host.context().close();
+  const gone = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night')), null, { timeout: 15000, polling: 1000 }).then(() => true, () => false);
+  check(gone, 'the listing goes away when the host closes the game');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await player.context().close();
+}
+
 async function hostgameFlow(browser) {
   const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
   start('node', ['-e', `import('peer').then(({ PeerServer }) => PeerServer({ port: ${PEER_PORT}, path: '/', host: '127.0.0.1' }))`]);
@@ -1050,7 +1096,7 @@ try {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   // E2E_ONLY=editor,characters runs a subset of the flows.
   const only = process.env.E2E_ONLY?.split(',');
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
   for (const [name, flow] of Object.entries(flows)) if (!only || only.includes(name)) await flow(browser);
   await browser.close();
 } catch (e) {

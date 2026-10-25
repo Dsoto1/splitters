@@ -28,6 +28,7 @@ export * from './content/looks.ts';
 export * from './content/props.ts';
 export * from './protocol.ts';
 export * from './net/clientMessages.ts';
+export * from './net/lobby.ts';
 export * from './bots/profile.ts';
 export * from './editor/commands.ts';
 export * from './editor/operations.ts';

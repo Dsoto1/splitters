@@ -63,6 +63,7 @@ import { LocalTransport } from './localTransport.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
+import { LobbyAdvertiser, hubSetting } from './hub.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { markerSetting } from './crosshair.ts';
@@ -155,7 +156,9 @@ export class GameSession {
   /** H: a camera over your shoulder, to see your own character. */
   private thirdPerson = false;
   /** The join code's registration while this match is hosted for friends. */
-  private peerHost?: { close(): void };
+  private peerHost?: { close(): void; code: string };
+  /** The host has a relay set up (Options → Relay), for the game browser's badge. */
+  private relayOn = false;
   private tpClose = false;
   /** Your position as drawn this frame (blended between prediction ticks). */
   private drawnPos: Vec3 = { x: 0, y: 0, z: 0 };
@@ -243,6 +246,15 @@ export class GameSession {
     hostBtn.textContent = 'Host game (invite friends)';
     hostBtn.disabled = false;
     hostBtn.addEventListener('click', () => void this.startHosting(hostBtn, hostInfo), { signal });
+    // Public: the hosted match shows up in everyone's game browser (needs a community hub).
+    const pub = $('host-public');
+    const listBox = $('host-list') as HTMLInputElement;
+    const listName = $('host-name') as HTMLInputElement;
+    pub.hidden = hostBtn.hidden || !hubSetting();
+    listBox.checked = false;
+    listName.value = '';
+    listBox.addEventListener('change', () => this.updateListing(), { signal });
+    listName.addEventListener('change', () => this.updateListing(), { signal });
     // Mouse sensitivity and invert, saved for next time.
     const sens = $('mouse-sens') as HTMLInputElement;
     const sensVal = $('mouse-sens-val');
@@ -393,8 +405,12 @@ export class GameSession {
       this.peerHost = host;
       const code = await host.start();
       if (this.closed) return host.close();
-      const peer = new URLSearchParams(location.search).get('peer');
-      const link = `${location.origin}${location.pathname}?join=${code}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}${relayParams()}`;
+      this.relayOn = !!loadRelay();
+      const q = new URLSearchParams(location.search);
+      const peer = q.get('peer');
+      // Friends must use the same broker: carry the hub unless it's the site's built-in one.
+      const hub = hubSetting() && hubSetting() !== import.meta.env.VITE_HUB ? hubSetting() : null;
+      const link = `${location.origin}${location.pathname}?join=${code}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}${hub ? `&hub=${encodeURIComponent(hub)}` : ''}${relayParams()}`;
       // "localhost" only works on this machine: friends need the address the game is served from.
       const onlyHere = /^(localhost|127\.|\[::1\])/.test(location.hostname);
       btn.hidden = true;
@@ -402,6 +418,7 @@ export class GameSession {
       info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options.'}</p>${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
       info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
       this.hud.showMessage(`Hosting: join code ${code}`, 5);
+      this.updateListing();
     } catch (e) {
       this.peerHost = undefined;
       btn.disabled = false;
@@ -410,9 +427,44 @@ export class GameSession {
     }
   }
 
+  private advertiser?: LobbyAdvertiser;
+
+  /** Start or stop listing the hosted match in the game browser, following the pause-menu checkbox. */
+  private updateListing(): void {
+    const box = $('host-list') as HTMLInputElement;
+    const status = $('host-public-status');
+    const local = this.opts.transport;
+    const host = this.peerHost;
+    if (!box.checked || !host?.code || !(local instanceof LocalTransport)) {
+      this.advertiser?.stop();
+      this.advertiser = undefined;
+      status.textContent = box.checked ? 'Listed once you host (Host game above).' : 'Friends only: share the code or link.';
+      return;
+    }
+    if (this.advertiser) return;
+    const me = this.hud.name(this.slot);
+    const show = () => (status.textContent = this.advertiser?.error ? `Not listed: ${this.advertiser.error}` : 'Listed: anyone can join from Online → Game browser.');
+    this.advertiser = new LobbyAdvertiser(
+      () => ({
+        code: host.code,
+        name: ($('host-name') as HTMLInputElement).value.trim() || `${me}'s game`,
+        host: me,
+        map: this.map?.metadata.name ?? 'Unknown map',
+        mode: this.rules?.mode ?? 'core.deathmatch',
+        players: 1 + local.guests,
+        max: local.capacity,
+        relay: this.relayOn,
+      }),
+      show,
+    );
+    this.advertiser.start();
+    show();
+  }
+
   exit(reason?: string): void {
     if (this.closed) return;
     this.closed = true;
+    this.advertiser?.stop();
     this.peerHost?.close();
     if (document.pointerLockElement) document.exitPointerLock();
     this.opts.transport.close();

@@ -78,6 +78,9 @@ importers:
       '@chronosplit/shared':
         specifier: workspace:*
         version: link:../shared
+      peer:
+        specifier: 1.0.2
+        version: 1.0.2
       ws:
         specifier: ^8.22.0
         version: 8.22.0

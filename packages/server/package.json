@@ -10,10 +10,12 @@
     "typecheck": "tsc -p .",
     "build-sandgate": "tsx src/tools/build-sandgate.ts",
     "build-citadel": "tsx src/tools/build-citadel.ts",
-    "build-canyon": "tsx src/tools/build-canyon.ts"
+    "build-canyon": "tsx src/tools/build-canyon.ts",
+    "hub": "tsx src/hub.ts"
   },
   "dependencies": {
     "@chronosplit/shared": "workspace:*",
+    "peer": "1.0.2",
     "ws": "^8.22.0"
   },
   "devDependencies": {
