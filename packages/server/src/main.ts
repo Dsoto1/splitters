@@ -29,7 +29,7 @@ const server = await startServer({
   // LEADERS=on (team leaders) or LEADERS=vip (Leader variant: downing a leader scores extra).
   leaders: env.LEADERS === 'vip' ? 'vip' : env.LEADERS === 'on' ? true : undefined,
   name: env.SERVER_NAME,
-  // LAN_DISCOVERY=0 stops answering LAN discovery broadcasts (UDP 7787).
+  // LAN_DISCOVERY=0 stops answering LAN discovery broadcasts (UDP 7790).
   lanDiscovery: env.LAN_DISCOVERY !== '0',
   onStats: env.QUIET_STATS ? undefined : (line) => console.log(`[stats] ${line}`),
 });

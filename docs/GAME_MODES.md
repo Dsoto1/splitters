@@ -345,6 +345,46 @@ Map scripts: `m.flag(team, at, yaw)` and `m.hill(at, radius)` in
 Bunker Cross, Rail Stockyard and Twin Spires have both. Twin Spires is a
 low-scoring CTF map: its bases are 108 m apart on a sniper causeway.
 
+## Big matches, taking over bots, team leaders
+
+- **48 v 48.** Up to 96 players and bots (Arcade team sizes go to 48; presets
+  16v16, 24v24, 48v48). See HOSTING.md (96 players) for what keeps it fast.
+- **Taking over bots.** A player joining a running match (dedicated server,
+  Host game, or a LAN game) doesn't spawn fresh: they take over a Player Bot
+  on the team that most needs a person, right where it stands, with its
+  health, weapons, seat and score. The feed says "Ana took over Mildred".
+  When a player leaves, a bot takes over where they were ("Mildred took over
+  for Ana"); servers can turn that off (`BOT_TAKEBACK=0`).
+- **Team leaders** (Arcade → More rules → Team leaders; servers `LEADERS=on`).
+  Each team's first person leads it (a bot leads a team without one; a
+  person joining takes over from a bot leader). Leaders wear a gold star that
+  both sides see. A leader's "Follow me!" / "Hold here!" (B, then 1 or 7)
+  orders every bot on the team wherever they are; anyone else's reaches the
+  bots within 30 m. **Leader hunt** (`vip`): in Team Deathmatch, downing an
+  enemy leader scores 3 extra for your team (the feed calls it out).
+
+## Scenario chains
+
+Co-op maps can be played back to back:
+
+- **Playlists** are JSON files in `maps/playlists/` (`format:
+  "tiletrigger.playlist"`, `id`, `name`, `description`, `maps: [{ map, mode? }]`,
+  `carry: { score, loadout }`, `loop`). Win a map and everyone goes on to the
+  next; lose and the map restarts. `carry` keeps your score and your weapons
+  (with their ammo) into the next map. The first one is **Night Shift**:
+  Outpost Siege → Creature Lab → Blackout → Dead Reel.
+  Play one from Arcade → a co-op map → Playlist, or on a server with
+  `PLAYLIST=maps/playlists/night_shift.json`.
+- **MapMaker "Next map"** (Logic → DO → "Next map (wins, then loads it)",
+  text: a map ID such as `creature_lab`) wins the match and sends everyone on
+  to that map, carrying score and weapons. Only maps of our own suite load:
+  the ID must be a file in `maps/` (MapMaker warns about a malformed ID; the
+  host and the dedicated server look it up and ignore anything else).
+- On a dedicated server the map changes CS-style: clients get a `travel`
+  message, reconnect by themselves, and get their score and weapons back.
+  In Host game, friends are dropped at the change and rejoin with the new
+  code (the host's browser starts a new match).
+
 ## Playing
 
 - **Arcade:** pick a map. Its mode tabs include the new modes it supports.

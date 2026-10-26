@@ -7,7 +7,8 @@ import { Match, initNavigation } from '@tiletrigger/shared/match';
 /**
  * Headless load harness: runs a full match with N Player Bots as fast as
  * possible and reports per-tick cost against the 60 Hz budget.
- * Usage: pnpm bench [bots=32] [seconds=60] [map.json] [--npcs=N] [--mode=core.ctf]
+ * Usage: pnpm bench [bots=96] [seconds=60] [map.json] [--npcs=N] [--mode=core.ctf]
+ * `pnpm bench:96`: the 48 v 48 check (96 bots, Frost Basin, Team Deathmatch, 60 s; target avg tick < 8 ms).
  *
  * --npcs adds N always-attacking enemy NPCs (spread over encounters at the
  * map's spawn points, endlessly reinforced) for mixed player + NPC load tests.

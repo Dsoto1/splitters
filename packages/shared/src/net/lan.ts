@@ -25,7 +25,7 @@ export interface ServerInfo {
 }
 
 /** UDP port dedicated servers answer LAN discovery broadcasts on. */
-export const LAN_DISCOVERY_PORT = 7787;
+export const LAN_DISCOVERY_PORT = 7790;
 /** The broadcast a scanner sends; servers answer with their ServerInfo as JSON. */
 export const LAN_DISCOVERY_PROBE = 'tiletrigger:discover';
 /** Game ports a browser tries on the hosts it can see (the default 7777 and the next few). */
