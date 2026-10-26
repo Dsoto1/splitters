@@ -37,13 +37,29 @@ export const HOST_BOT_STYLES = ['mixed', 'arena', 'tactical'] as const;
  * over; `end` ends it now, to the scoreboard.
  */
 export type HostCommand =
-  | { c: 'bots'; fill?: number; teamSize?: number; skill?: (typeof HOST_BOT_SKILLS)[number]; style?: (typeof HOST_BOT_STYLES)[number] }
+  /** `teamSizes`: every team's own size (uneven teams); `teamSize`: every team the same size. */
+  | { c: 'bots'; fill?: number; teamSize?: number; teamSizes?: number[]; skill?: (typeof HOST_BOT_SKILLS)[number]; style?: (typeof HOST_BOT_STYLES)[number] }
+  /** Rules that take effect when the match restarts (Restart match applies them). */
+  | { c: 'rules'; rules: HostRulesPatch }
   | { c: 'map'; map: string; mode?: GameMode }
   | { c: 'restart' }
   | { c: 'end' };
 
+/** Rules a host can change mid-match; they wait for the next restart. */
+export interface HostRulesPatch {
+  scoreLimit?: number;
+  timeLimitSeconds?: number;
+  friendlyFire?: 'off' | 'half' | 'on';
+  respawnDelayTicks?: number;
+}
+
 /** The match's host settings, for the pause menu of whoever runs it. */
 export interface HostState {
+  /** Team modes: every team's size, in team order (empty otherwise). */
+  sizes?: number[];
+  /** The restart-only rules as they play now, and any change waiting for the restart. */
+  rules?: Required<HostRulesPatch>;
+  pending?: HostRulesPatch;
   /** Players to keep, bots included (team modes: teams × teamSize). */
   fill: number;
   /** Team modes: players per team (the largest team, when they differ); null otherwise. */
