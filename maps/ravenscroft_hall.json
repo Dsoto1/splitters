@@ -1,0 +1,2362 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 20,
+  "metadata": {
+    "id": "ravenscroft_hall",
+    "name": "Ravenscroft Hall",
+    "author": "Tile Trigger",
+    "description": "A Victorian manor on a stormy night, built from the Gothic Estate style pack: a galleried library whose chandeliers gutter as you come in, a parlour with a secret bookcase (pull the candle sconce), a study with rotten floorboards that drop you into the wine cellar and the crypt, a picture gallery with a bookshelf that will not stay put, formal gardens and a hedge maze behind iron railings, and a cemetery with its mausoleum where the crypt stairs come out.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 4,
+      "max": 12
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.gothic_estate",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "gothic.library",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.room",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "door",
+          "0,0,0:W": "wall",
+          "0,0,0:E": "door",
+          "0,0,0:N": "door"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof",
+          "facade": "manor_brick"
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.room",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "wide",
+          "0,0,0:E": "door",
+          "0,0,0:N": "door"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof",
+          "facade": "manor_brick"
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.room",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:N": "door",
+          "0,0,0:E": "window"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof",
+          "facade": "manor_brick"
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.pit",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "wall",
+          "0,0,0:N": "wall",
+          "0,0,0:E": "wall"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.room",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:E": "door",
+          "0,0,0:N": "door"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof",
+          "facade": "manor_brick"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.room",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "windows",
+          "0,0,0:E": "window"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof",
+          "facade": "gothic_stone"
+        }
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_011",
+        "tile": "gothic.hedge_garden",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_012",
+        "tile": "gothic.hedge_maze",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_013",
+        "tile": "gothic.hedge_maze",
+        "x": 1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_014",
+        "tile": "gothic.iron_fence",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_015",
+        "tile": "gothic.iron_fence",
+        "x": -2,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_016",
+        "tile": "gothic.iron_fence",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_017",
+        "tile": "gothic.iron_fence",
+        "x": 1,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_018",
+        "tile": "gothic.iron_gate",
+        "x": -1,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_033",
+        "tile": "gothic.cemetery",
+        "x": -3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_034",
+        "tile": "gothic.cemetery",
+        "x": -2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_035",
+        "tile": "gothic.cemetery",
+        "x": -1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_036",
+        "tile": "gothic.cemetery",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_037",
+        "tile": "gothic.mausoleum",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.room",
+        "x": -1,
+        "y": 1,
+        "z": -1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "door"
+        },
+        "options": {
+          "layout": "empty"
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "gothic.crypt",
+        "x": -1,
+        "y": 2,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_040",
+        "tile": "gothic.crypt",
+        "x": -1,
+        "y": 3,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.stairs",
+        "x": -1,
+        "y": 4,
+        "z": -1,
+        "rotation": 3
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "block_008",
+      "position": [
+        -8,
+        3.75,
+        8
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        0.3,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.dark_wood",
+      "tint": "#6a4a34",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_042",
+      "position": [
+        -11,
+        -4,
+        10.8
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_043",
+      "position": [
+        -10,
+        -4,
+        11
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_044",
+      "position": [
+        -5,
+        -4,
+        10.8
+      ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_045",
+      "position": [
+        -5,
+        -4,
+        5.2
+      ],
+      "kind": "prop",
+      "model": "prop.crate_bottles",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_046",
+      "position": [
+        -11,
+        -4,
+        5.2
+      ],
+      "kind": "prop",
+      "model": "prop.crate_bottles",
+      "yaw": -0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_047",
+      "position": [
+        -8,
+        -4,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.ge_sarcophagus",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_048",
+      "position": [
+        -6.2,
+        -4,
+        16.4
+      ],
+      "kind": "prop",
+      "model": "prop.coffin_old",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_049",
+      "position": [
+        -9.8,
+        -4,
+        17.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_skull",
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_050",
+      "position": [
+        -6.2,
+        -4,
+        21.8
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "bookcase_door",
+      "position": [
+        -8,
+        0,
+        4
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        3,
+        0.5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_walnut",
+      "tint": "#6a4a34",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "bookcase_shelves",
+      "position": [
+        -8,
+        0,
+        3.73
+      ],
+      "kind": "prop",
+      "model": "prop.ge_bookcase_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "mover_bookcase",
+      "position": [
+        -8,
+        0,
+        4
+      ],
+      "name": "Secret bookcase",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "bookcase_door"
+      ],
+      "props": [
+        "bookcase_shelves"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          -3.2,
+          0,
+          0
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 1.2,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "btn_sconce",
+      "position": [
+        -5.4,
+        1.4,
+        3.5
+      ],
+      "name": "Candle sconce",
+      "kind": "button",
+      "yaw": 3.141592653589793,
+      "label": "Pull the candle sconce",
+      "once": false,
+      "cooldownSeconds": 10,
+      "startEnabled": true
+    },
+    {
+      "id": "btn_study",
+      "position": [
+        -4.6,
+        1.2,
+        6
+      ],
+      "name": "Study lever",
+      "kind": "button",
+      "yaw": -1.5707963267948966,
+      "label": "Pull the lever",
+      "once": false,
+      "cooldownSeconds": 10,
+      "startEnabled": true
+    },
+    {
+      "id": "candle_sconce",
+      "position": [
+        -5.4,
+        1.9,
+        3.4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb45a",
+      "intensity": 0.8,
+      "range": 6,
+      "fixture": "candle"
+    },
+    {
+      "id": "rotten_floor",
+      "position": [
+        -8,
+        -0.3,
+        8
+      ],
+      "kind": "block",
+      "size": [
+        4,
+        0.3,
+        4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_floorboards",
+      "tint": "#9a8a7a",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.5,
+      "respawnSeconds": 15,
+      "health": 120
+    },
+    {
+      "id": "prop_051",
+      "position": [
+        -10.6,
+        0,
+        10.6
+      ],
+      "kind": "prop",
+      "model": "prop.ge_writing_desk",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_052",
+      "position": [
+        -8,
+        1.4,
+        11.55
+      ],
+      "kind": "prop",
+      "model": "prop.ge_portrait",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_053",
+      "position": [
+        -5,
+        0,
+        11
+      ],
+      "kind": "prop",
+      "model": "prop.ge_candelabra",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_054",
+      "position": [
+        -11.4,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.hm_fireplace",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_055",
+      "position": [
+        -9.6,
+        0,
+        -1.2
+      ],
+      "kind": "prop",
+      "model": "prop.ge_wingback_chair",
+      "yaw": 2.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_056",
+      "position": [
+        -9.6,
+        0,
+        1.2
+      ],
+      "kind": "prop",
+      "model": "prop.ge_wingback_chair",
+      "yaw": 0.9,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_057",
+      "position": [
+        -4.6,
+        0,
+        -2.6
+      ],
+      "kind": "prop",
+      "model": "prop.ge_grandfather_clock",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_058",
+      "position": [
+        -8,
+        1.4,
+        -3.55
+      ],
+      "kind": "prop",
+      "model": "prop.ge_portrait",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_059",
+      "position": [
+        -9,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.hm_rug",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_060",
+      "position": [
+        -3.3,
+        0,
+        2.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_suit_of_armour",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_061",
+      "position": [
+        3.3,
+        0,
+        2.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_suit_of_armour",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_062",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.hm_rug",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_063",
+      "position": [
+        0,
+        1.9,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.ge_chandelier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_064",
+      "position": [
+        7.5,
+        0,
+        1.2
+      ],
+      "kind": "prop",
+      "model": "prop.ge_grand_piano",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_065",
+      "position": [
+        10.6,
+        0,
+        -1.8
+      ],
+      "kind": "prop",
+      "model": "prop.ge_wingback_chair",
+      "yaw": -2.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_066",
+      "position": [
+        11.2,
+        0,
+        3.2
+      ],
+      "kind": "prop",
+      "model": "prop.ge_candelabra",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_067",
+      "position": [
+        0,
+        0,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_068",
+      "position": [
+        -0.9,
+        0,
+        6.8
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_069",
+      "position": [
+        0.9,
+        0,
+        9.2
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_070",
+      "position": [
+        0,
+        1.9,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.ge_chandelier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_071",
+      "position": [
+        -3.3,
+        0,
+        10.5
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        5.6,
+        1.4,
+        4.45
+      ],
+      "kind": "prop",
+      "model": "prop.ge_portrait",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        8,
+        1.4,
+        4.45
+      ],
+      "kind": "prop",
+      "model": "prop.ge_portrait",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        10.4,
+        1.4,
+        4.45
+      ],
+      "kind": "prop",
+      "model": "prop.ge_portrait",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        10.5,
+        0,
+        6.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_angel_statue",
+      "yaw": -2.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "shelf_block",
+      "position": [
+        6,
+        0,
+        10.6
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_walnut",
+      "tint": "#6a4a34",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "shelf_case",
+      "position": [
+        6,
+        0,
+        10.28
+      ],
+      "kind": "prop",
+      "model": "prop.ge_bookcase_tall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "mover_shelf",
+      "position": [
+        6,
+        0,
+        10.6
+      ],
+      "name": "Moving bookshelf",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "shelf_block"
+      ],
+      "props": [
+        "shelf_case"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 0.8,
+      "turnSpeed": 45,
+      "wait": 3,
+      "startActive": true
+    },
+    {
+      "id": "prop_076",
+      "position": [
+        -23.5,
+        0,
+        2.2
+      ],
+      "kind": "prop",
+      "model": "prop.ge_wingback_chair",
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        -17,
+        0,
+        8.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_writing_desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "position": [
+        -26.6,
+        0,
+        -2.6
+      ],
+      "kind": "prop",
+      "model": "prop.ge_candelabra",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "position": [
+        -28,
+        0,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.ge_topiary",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "position": [
+        -12,
+        0,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.ge_topiary",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "position": [
+        12,
+        0,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.ge_topiary",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "position": [
+        -16,
+        0,
+        -9
+      ],
+      "kind": "prop",
+      "model": "prop.ge_angel_statue",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "position": [
+        -21,
+        0,
+        -5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_gas_lamp",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "position": [
+        -19,
+        0,
+        -5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_gas_lamp",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "position": [
+        -4.8,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.ge_gas_lamp",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "position": [
+        8,
+        0,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.ge_gas_lamp",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_087",
+      "position": [
+        8,
+        0,
+        -11.6
+      ],
+      "kind": "prop",
+      "model": "prop.ge_hedge_arch",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "position": [
+        -24,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.ge_hedge_wall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "position": [
+        8,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.ge_hedge_wall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "position": [
+        -14,
+        0,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.ge_headstone_tall",
+      "yaw": 0.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "position": [
+        -2,
+        0,
+        34.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_headstone_tall",
+      "yaw": -0.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "position": [
+        10,
+        0,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.gravestone_cross",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "position": [
+        -26,
+        0,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.gravestone_broken",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "position": [
+        -16,
+        0,
+        43.4
+      ],
+      "kind": "prop",
+      "model": "prop.ge_angel_statue",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "position": [
+        5.5,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.rn_dead_tree",
+      "yaw": 0.6,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_096",
+      "position": [
+        -26,
+        0,
+        17
+      ],
+      "kind": "prop",
+      "model": "prop.nt_dead_tree",
+      "yaw": 1.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_097",
+      "position": [
+        3,
+        0,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.pumpkin",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_098",
+      "position": [
+        -22,
+        0,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.coffin",
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_099",
+      "position": [
+        -8,
+        0,
+        27.6
+      ],
+      "kind": "prop",
+      "model": "prop.lantern",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "chandelier_foyer",
+      "position": [
+        0,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc070",
+      "intensity": 1.4,
+      "range": 12,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "chandelier_dining",
+      "position": [
+        0,
+        3.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc070",
+      "intensity": 1.4,
+      "range": 12,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "chandelier_lib1",
+      "position": [
+        -20,
+        7.6,
+        4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc070",
+      "intensity": 1.6,
+      "range": 14,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "chandelier_lib2",
+      "position": [
+        -20,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc070",
+      "intensity": 1.2,
+      "range": 10,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "candle_parlour",
+      "position": [
+        -10.6,
+        1,
+        -2.6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb45a",
+      "intensity": 0.9,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "candle_music",
+      "position": [
+        11.2,
+        1.8,
+        3.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb45a",
+      "intensity": 0.9,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "chandelier_gallery",
+      "position": [
+        8,
+        3.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffc070",
+      "intensity": 1.2,
+      "range": 11,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "cellar_bulb",
+      "position": [
+        -8,
+        -0.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb060",
+      "intensity": 0.7,
+      "range": 8,
+      "fixture": "bulb"
+    },
+    {
+      "id": "candle_crypt1",
+      "position": [
+        -5.6,
+        -2.7,
+        16
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffa850",
+      "intensity": 0.9,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "candle_crypt2",
+      "position": [
+        -5.6,
+        -2.7,
+        24
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffa850",
+      "intensity": 0.9,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "light_100",
+      "position": [
+        -8,
+        -0.8,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffa850",
+      "intensity": 0.6,
+      "range": 7,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_101",
+      "position": [
+        -21,
+        3.4,
+        -5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd890",
+      "intensity": 1,
+      "range": 11,
+      "fixture": "none"
+    },
+    {
+      "id": "light_102",
+      "position": [
+        -19,
+        3.4,
+        -5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd890",
+      "intensity": 1,
+      "range": 11,
+      "fixture": "none"
+    },
+    {
+      "id": "light_103",
+      "position": [
+        -4.8,
+        3.4,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd890",
+      "intensity": 1,
+      "range": 11,
+      "fixture": "none"
+    },
+    {
+      "id": "light_104",
+      "position": [
+        8,
+        3.4,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd890",
+      "intensity": 1,
+      "range": 11,
+      "fixture": "none"
+    },
+    {
+      "id": "light_105",
+      "position": [
+        0,
+        3,
+        38
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#a0b8ff",
+      "intensity": 0.8,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "light_106",
+      "position": [
+        -16,
+        3,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#a0b8ff",
+      "intensity": 0.7,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "zone_library",
+      "position": [
+        -20,
+        0,
+        4
+      ],
+      "name": "Library",
+      "kind": "zone",
+      "size": [
+        14,
+        3,
+        14
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true
+    },
+    {
+      "id": "zone_crypt",
+      "position": [
+        -8,
+        -4,
+        20
+      ],
+      "name": "Crypt",
+      "kind": "zone",
+      "size": [
+        7,
+        3,
+        15
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true
+    },
+    {
+      "id": "spawn_107",
+      "position": [
+        -25,
+        0,
+        -9
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_108",
+      "position": [
+        -15,
+        0,
+        -9
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_109",
+      "position": [
+        -8,
+        0,
+        -10.4
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_110",
+      "position": [
+        -2.4,
+        0,
+        -8
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_111",
+      "position": [
+        10.4,
+        0,
+        -8
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_112",
+      "position": [
+        -8,
+        0,
+        -17.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_113",
+      "position": [
+        -24,
+        0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_114",
+      "position": [
+        -16,
+        0,
+        39
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_115",
+      "position": [
+        -8,
+        0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_116",
+      "position": [
+        8,
+        0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_117",
+      "position": [
+        -24,
+        0,
+        32
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_118",
+      "position": [
+        9,
+        0,
+        32
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_119",
+      "position": [
+        1.5,
+        0,
+        -1.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_120",
+      "position": [
+        10,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_121",
+      "position": [
+        2.5,
+        0,
+        5.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_122",
+      "position": [
+        -23,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_123",
+      "position": [
+        -14,
+        0,
+        12
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_124",
+      "position": [
+        -24,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_125",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_126",
+      "position": [
+        -8,
+        -4,
+        26
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "pickup_127",
+      "position": [
+        -26,
+        4,
+        11
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_hand_cannon",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_128",
+      "position": [
+        -8,
+        -4,
+        13.4
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sawed_off",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_129",
+      "position": [
+        0,
+        0,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_130",
+      "position": [
+        0,
+        0.25,
+        40.6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": 30
+    },
+    {
+      "id": "pickup_131",
+      "position": [
+        -8,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_132",
+      "position": [
+        9.5,
+        0,
+        6.5
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_133",
+      "position": [
+        -8,
+        0,
+        -11
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_134",
+      "position": [
+        -8,
+        -4,
+        6.5
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": 40
+    },
+    {
+      "id": "pickup_135",
+      "position": [
+        8,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_136",
+      "position": [
+        -13,
+        4,
+        12
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_137",
+      "position": [
+        2,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_138",
+      "position": [
+        6,
+        0,
+        -2
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_139",
+      "position": [
+        -16,
+        0,
+        -1
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_140",
+      "position": [
+        -16,
+        0,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": [
+      {
+        "id": "rule_start",
+        "name": "Welcome",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Ravenscroft Hall. Mind the floorboards in the study.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_sconce",
+        "name": "The candle sconce",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_sconce"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "A bookcase grinds aside...",
+            "state": ""
+          },
+          {
+            "type": "mover_go",
+            "target": "mover_bookcase",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 8,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_go",
+            "target": "mover_bookcase",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_study",
+        "name": "The study lever",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_study"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "A bookcase grinds aside...",
+            "state": ""
+          },
+          {
+            "type": "mover_go",
+            "target": "mover_bookcase",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 8,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_go",
+            "target": "mover_bookcase",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_library",
+        "name": "The library candles gutter",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_library"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_blink",
+            "target": "chandelier_lib1",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "chandelier_lib2",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "chandelier_lib1",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "chandelier_lib2",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          }
+        ]
+      },
+      {
+        "id": "rule_crypt",
+        "name": "The crypt candles flare",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_crypt"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_blink",
+            "target": "candle_crypt1",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "candle_crypt2",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "cellar_bulb",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "candle_crypt1",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "candle_crypt2",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "cellar_bulb",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -32,
+      -24
+    ],
+    "max": [
+      16.5,
+      48
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "track": null,
+  "backdrop": {
+    "sky": "storm",
+    "scenery": "forest",
+    "ground": "grass",
+    "haze": 0.6,
+    "mist": 0.35
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      6,
+      6
+    ]
+  },
+  "dependencies": []
+}

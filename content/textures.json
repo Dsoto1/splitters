@@ -16,8 +16,8 @@
     "Concrete042A", "CorrugatedSteel006A", "CorrugatedSteel007A", "CorrugatedSteel009", "Fabric028", "Fabric061", "Facade006", "Grass001",
     "Gravel023", "Ground037", "Ground054", "Ground109", "Ice002", "Lava004", "Marble006", "Metal049A",
     "Metal063", "MetalPlates006", "MetalPlates013", "MetalWalkway014", "Moss002", "Onyx015", "PaintedPlaster017", "PaintedWood005",
-    "PavingStones130", "Planks037A", "Planks039", "Plaster001", "Rock064", "RoofingTiles008", "SheetMetal004", "Snow015",
-    "Terrazzo013", "Tiles074", "Tiles090", "Tiles101", "Travertine009", "Wood051", "WoodFloor041", "WoodSiding008",
-    "WoodSiding013"
+    "PavingStones130", "PavingStones138", "Planks037A", "Planks039", "Plaster001", "Rock051", "Rock064", "RoofingTiles002",
+    "RoofingTiles008", "SheetMetal004", "Snow015", "Terrazzo013", "Tiles074", "Tiles090", "Tiles101", "Tiles132A",
+    "Travertine009", "Wood051", "WoodFloor041", "WoodSiding008", "WoodSiding009", "WoodSiding013"
   ]
 }

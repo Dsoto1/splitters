@@ -1,5 +1,5 @@
 import { PLAYER } from '../sim/constants.ts';
-import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, type Corner, type EdgeStyle, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
+import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, type Corner, type EdgeStyle, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
@@ -904,12 +904,13 @@ function sideBox(side: Side, cx: number, cz: number, half: number, u0: number, u
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
   // Style Pack pieces keep their own material in any theme.
   const surface = box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {};
-  if (box.yaw) {
-    // Turned boxes keep their size; the centre turns with the tile and the yaw adds the tile's quarter turns.
+  if (box.yaw || box.pitch || box.roll) {
+    // Turned (and tilted) boxes keep their size; the centre turns with the tile and the yaw adds the tile's quarter turns.
     const hx = (box.max[0] - box.min[0]) / 2;
     const hz = (box.max[2] - box.min[2]) / 2;
     const [mx, mz] = rotateXZ((box.min[0] + box.max[0]) / 2, (box.min[2] + box.max[2]) / 2, rotation);
-    return { min: [cx + mx - hx, baseY + box.min[1], cz + mz - hz], max: [cx + mx + hx, baseY + box.max[1], cz + mz + hz], kind, sourceId, yaw: box.yaw + (rotation % 4) * (Math.PI / 2), ...surface };
+    const yaw = (box.yaw ?? 0) + (rotation % 4) * (Math.PI / 2);
+    return { min: [cx + mx - hx, baseY + box.min[1], cz + mz - hz], max: [cx + mx + hx, baseY + box.max[1], cz + mz + hz], kind, sourceId, ...(yaw ? { yaw } : {}), ...(box.pitch ? { pitch: box.pitch } : {}), ...(box.roll ? { roll: box.roll } : {}), ...surface };
   }
   const [ax, az] = rotateXZ(box.min[0], box.min[2], rotation);
   const [bx, bz] = rotateXZ(box.max[0], box.max[2], rotation);
@@ -1109,7 +1110,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1122,7 +1123,24 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   corrugated: { skin: 'core.pbr_grey_corrugated', tint: null, depth: 0.08 },
   false_front: { skin: 'core.pbr_weathered_siding', tint: null, depth: 0.08 },
   adobe: { skin: 'core.pbr_adobe', tint: null, depth: 0.16 },
+  // 05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos.
+  gothic_stone: { skin: 'core.pbr_castle_stone', tint: '#9a9aa4', depth: 0.14 },
+  manor_brick: { skin: 'core.pbr_brick_red', tint: '#a07c70', depth: 0.1 },
+  temple: { skin: 'core.pbr_castle_stone', tint: '#d8d8b8', depth: 0.16 },
+  overgrown: { skin: 'core.pbr_jungle_rock', tint: null, depth: 0.16 },
+  clapboard: { skin: 'core.pbr_clapboard', tint: null, depth: 0.08 },
+  suburban_brick: { skin: 'core.pbr_brick_red', tint: null, depth: 0.1 },
 };
+/** Openings in a dressed wall (from its segments): `top` is the lintel, `sill` the sill (0 for a doorway). */
+function facadeOpenings(segs: readonly [number, number, number, number, number][]): { u0: number; u1: number; sill: number; top: number }[] {
+  const out: { u0: number; u1: number; sill: number; top: number }[] = [];
+  for (const [u0, u1, y0] of segs) {
+    if (y0 <= 0.01) continue;
+    const sill = segs.find((g) => Math.abs(g[0] - u0) < 1e-6 && Math.abs(g[1] - u1) < 1e-6 && g[2] <= 0.01 && g[3] < y0);
+    out.push({ u0, u1, sill: sill ? sill[3] : 0, top: y0 });
+  }
+  return out;
+}
 /** Walls whose street face gets a frontier false front, awning and boardwalk. */
 const STREET_FACES = new Set<ResolvedEdge>(['door', 'wide', 'windows', 'shutter', 'arch']);
 
@@ -1185,6 +1203,93 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
             }
           } else if (!roofed && full) add(side, -half, half, top, top + 0.2, out0 - 0.06, TILE_DIMENSIONS.wallThickness, 'core.pbr_charred_wood');
           break;
+        case 'gothic_stone': {
+          // A dark stone plinth, buttresses at the ends of each wall, a string course, hood moulds over
+          // the openings and a battlemented parapet with pinnacles over the buttresses.
+          if (ground) add(side, -half, half, 0, 0.6, out0 - 0.1, -base, 'core.pbr_flagstone', '#8a8a90');
+          if (full) for (const u of [-half + 0.45, half - 0.45]) {
+            add(side, u - 0.32, u + 0.32, 0, levelHeight * 0.6, out0 - 0.55, out0, look.skin, look.tint);
+            add(side, u - 0.26, u + 0.26, levelHeight * 0.6, levelHeight, out0 - 0.3, out0, look.skin, look.tint);
+          }
+          if (full) add(side, -half, half, levelHeight - 0.62, levelHeight - 0.5, out0 - 0.1, out0, 'core.pbr_flagstone', '#a0a0a8');
+          for (const o of facadeOpenings(segs)) if (o.top < levelHeight - 0.4) add(side, o.u0 - 0.2, o.u1 + 0.2, o.top, o.top + 0.16, out0 - 0.12, out0, 'core.pbr_flagstone', '#a0a0a8');
+          if (!roofed && full) {
+            add(side, -half, half, top, top + 0.3, out0 - 0.08, TILE_DIMENSIONS.wallThickness, look.skin, look.tint);
+            for (let u = -half + 1.2; u < half - 0.9; u += 1.2) add(side, u - 0.3, u + 0.3, top + 0.3, top + 0.75, out0 - 0.08, 0, look.skin, look.tint);
+            for (const u of [-half + 0.45, half - 0.45]) {
+              add(side, u - 0.22, u + 0.22, top, top + 1.3, out0 - 0.3, out0, look.skin, look.tint);
+              add(side, u - 0.12, u + 0.12, top + 1.3, top + 1.7, out0 - 0.2, out0 - 0.1, 'core.pbr_flagstone', '#a0a0a8');
+            }
+          }
+          break;
+        }
+        case 'manor_brick': {
+          // Victorian brick: a stone plinth, stone quoins up the corners, stone sills and lintels, a bracketed cornice.
+          if (ground) add(side, -half, half, 0, 0.5, out0 - 0.08, -base, 'core.pbr_concrete', '#b8b0a4');
+          if (full) for (let y = 0.5, i = 0; y < levelHeight - 0.1; y += 0.35, i++) for (const sgn of [-1, 1]) {
+            const w = i % 2 ? 0.35 : 0.55;
+            const u = sgn * half;
+            add(side, sgn < 0 ? u : u - w, sgn < 0 ? u + w : u, y, y + 0.3, out0 - 0.05, out0, 'core.pbr_concrete', '#c8c0b4');
+          }
+          for (const o of facadeOpenings(segs)) {
+            if (o.top < levelHeight - 0.3) add(side, o.u0 - 0.12, o.u1 + 0.12, o.top, o.top + 0.24, out0 - 0.06, out0, 'core.pbr_concrete', '#c8c0b4');
+            if (o.sill > 0.3) add(side, o.u0 - 0.1, o.u1 + 0.1, o.sill - 0.08, o.sill, out0 - 0.12, out0, 'core.pbr_concrete', '#c8c0b4');
+          }
+          if (!roofed && full) {
+            add(side, -half, half, top - 0.1, top + 0.25, out0 - 0.35, TILE_DIMENSIONS.wallThickness, 'core.dark_wood');
+            for (let u = -half + 0.5; u < half - 0.3; u += 1) add(side, u - 0.07, u + 0.07, top - 0.4, top - 0.1, out0 - 0.28, out0, 'core.dark_wood');
+          }
+          break;
+        }
+        case 'temple': {
+          // A stepped base (talud), a carved frieze of glyph blocks and stepped merlons along the top.
+          if (ground) {
+            add(side, -half, half, 0, 0.5, out0 - 0.5, -base, look.skin, '#b8b8a0');
+            add(side, -half, half, 0.5, 0.9, out0 - 0.25, -base, look.skin, '#b8b8a0');
+          }
+          if (full) {
+            add(side, -half, half, levelHeight - 0.9, levelHeight - 0.25, out0 - 0.12, out0, 'core.pbr_travertine', '#a8b090');
+            for (let u = -half + 0.5; u < half - 0.2; u += 1) add(side, u - 0.22, u + 0.22, levelHeight - 0.8, levelHeight - 0.35, out0 - 0.2, out0 - 0.12, 'core.pbr_jungle_rock');
+          }
+          if (!roofed && full) for (let u = -half + 0.5; u < half - 0.2; u += 1.33) {
+            add(side, u - 0.4, u + 0.4, top, top + 0.35, out0 - 0.06, 0, look.skin, look.tint);
+            add(side, u - 0.22, u + 0.22, top + 0.35, top + 0.7, out0 - 0.06, -0.1, look.skin, look.tint);
+          }
+          break;
+        }
+        case 'overgrown': {
+          // Old rock walls swallowed by the jungle: moss along the foot and the top, vines hanging down the face.
+          const rnd = seededRandom(`${id}:${key}:${side}`);
+          if (ground) add(side, -half, half, 0, 0.35, out0 - 0.25, -base, 'core.pbr_moss');
+          if (!roofed && full) add(side, -half, half, top - 0.25, top + 0.2, out0 - 0.2, TILE_DIMENSIONS.wallThickness, 'core.pbr_moss');
+          const openings = facadeOpenings(segs);
+          for (let i = 0; i < 6; i++) {
+            const u = -half + 0.4 + rnd() * (2 * half - 0.8);
+            const hang = 0.8 + rnd() * (levelHeight - 1.2);
+            // Keep vines out of doorways and windows.
+            if (openings.some((o) => u > o.u0 - 0.2 && u < o.u1 + 0.2 && levelHeight - hang < o.top)) continue;
+            add(side, u - 0.06 - rnd() * 0.1, u + 0.06 + rnd() * 0.1, levelHeight - hang, levelHeight, out0 - 0.05, out0, 'core.pbr_moss', '#6a8a40');
+          }
+          break;
+        }
+        case 'clapboard':
+        case 'suburban_brick': {
+          // Painted trim: corner boards, a block or brick plinth, window shutters and sills, a fascia under the roof.
+          const white = 'core.paint_matte';
+          const trimTint = '#f2f0ea';
+          if (ground) add(side, -half, half, 0, 0.45, out0 - 0.05, -base, facade === 'clapboard' ? 'core.pbr_brick_red' : 'core.pbr_concrete', facade === 'clapboard' ? '#b08070' : '#c8c4bc');
+          if (facade === 'clapboard' && full) for (const u of [-half, half - 0.22]) add(side, u, u + 0.22, 0, levelHeight, out0 - 0.04, out0, white, trimTint);
+          const shutter = facade === 'clapboard' ? '#2e4a6a' : '#3a5a3a';
+          for (const o of facadeOpenings(segs)) {
+            if (o.sill > 0.3) {
+              for (const [a, b] of [[o.u0 - 0.6, o.u0 - 0.08], [o.u1 + 0.08, o.u1 + 0.6]] as const) if (a > -half + 0.2 && b < half - 0.2) add(side, a, b, o.sill, o.top, out0 - 0.06, out0, 'core.paint_matte', shutter);
+              add(side, o.u0 - 0.1, o.u1 + 0.1, o.sill - 0.06, o.sill, out0 - 0.1, out0, white, trimTint);
+            }
+            if (o.top < levelHeight - 0.2) add(side, o.u0 - 0.1, o.u1 + 0.1, o.top, o.top + 0.14, out0 - 0.05, out0, white, trimTint);
+          }
+          if (!roofed && full) add(side, -half, half, top - 0.3, top, out0 - 0.08, out0, white, trimTint);
+          break;
+        }
         case 'adobe':
           if (!roofed && full) {
             add(side, -half, half, top, top + 0.4, out0, TILE_DIMENSIONS.wallThickness, look.skin);

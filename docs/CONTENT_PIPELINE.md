@@ -101,8 +101,13 @@ accepts for our own work:
 - `node tools/content/build-kit-props.mjs` writes the Military Compound and
   Frontier Dust props (flat colours, a few hundred to 2,700 triangles each) to
   `assets-src/tiletrigger-kit/`.
+- `node tools/content/build-style-props.mjs` writes the Gothic Estate, Jungle
+  Ruins and Suburban Chaos props (56 pieces, flat colours, modelled with
+  `tools/content/pieces.mjs`) to `assets-src/tiletrigger-styleprops/`.
 
-`prepare-props.mjs` then builds both like any in-repo pack.
+`prepare-props.mjs` then builds them like any in-repo pack. The 05, 06 and 08
+facades are boxes drawn with the level (`map/geometry.ts`), so they need no
+files; their new ambientCG sets come from `prepare-textures.mjs --only`.
 
 Kit props (`content/props.json` entries of a pack with a `download` folder)
 take extra fields: `src` may list several pieces merged in kit space (a wall

@@ -170,12 +170,13 @@ Quaternius, Poly Pizza CC0, ambientCG textures), then pieces we model ourselves.
 | ✅ 02 Frontier Dust | Wild West | saloon, bank, jail, store, mine, train station, water tower, rail pieces | moving train, mine carts, dynamite, breakable wood |
 | 03 Imperial Arena | Roman | arena walls/seating, columns, arches, forum, aqueduct, tunnels | gates, cages, spike traps, portcullis |
 | 04 Orbital Station | Clean sci-fi | corridors, labs, hangars, airlocks, control rooms (partly covered by the new Quaternius sci-fi kit) | force fields, low gravity, auto doors |
-| 05 Gothic Estate | Victorian horror | mansion rooms, library, crypt, cemetery, gardens | secret doors, moving bookshelves, breakable floors |
-| 06 Jungle Ruins | Lost civilization | jungle terrain, cliffs, caves, waterfalls, temples, giant trees | rope bridges, climbable vines, falling rocks |
+| ✅ 05 Gothic Estate | Victorian horror | mansion rooms, library, crypt, cemetery, gardens | secret doors, moving bookshelves, breakable floors |
+| ✅ 06 Jungle Ruins | Lost civilization | jungle terrain, cliffs, caves, waterfalls, temples, giant trees | rope bridges, climbable vines, falling rocks |
 | 07 Neon Megacity | Futuristic city | streets, alleys, rooftops, neon signs, billboards, transit | elevators, transit, rooftop traversal |
-| 08 Suburban Chaos | Everyday modern | houses, garages, rooms, pools, playground, store, gas station | garage doors, breakable fences, appliances |
+| ✅ 08 Suburban Chaos | Everyday modern | houses, garages, rooms, pools, playground, store, gas station | garage doors, breakable fences, appliances |
 
 01 and 02 are in (BUILDING_KIT.md, "Style Packs"; demo maps Iron Compound and Dustwater): the MapMaker palette's Style Pack picker groups each pack's pieces.
+05, 06 and 08 are in too (demo maps Ravenscroft Hall, Verdant Ziggurat and Cedar Lane).
 
 Also requested: **Egypt** theme (builds on Imperial Arena + desert), **portals**, terrain-editor optimisation.
 

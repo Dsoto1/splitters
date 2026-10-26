@@ -1,0 +1,17 @@
+Tile Trigger originals: Style Pack props modelled in code
+
+These props (Style Packs 05 Gothic Estate, 06 Jungle Ruins and 08 Suburban
+Chaos: bookcases, chandelier, candelabra, clock, piano, armour, bed, desk,
+sarcophagus, angel, headstone, railings and gates, hedges and topiary, gas
+lamp; temple idols, pillars, stele, altar, vines, liana, rope-bridge anchor,
+waterfall, roots, jungle plants, bamboo, brazier, golden idol; appliances,
+barbecue, propane tank, mailbox, bins, lawnmower, gnome, picket fence,
+playground pieces, petrol pump, family car, patio furniture and hydrant) are
+made by the Tile Trigger team from simple solids (boxes, cylinders, rings,
+spheres and turned slabs) written as code in tools/content/build-style-props.mjs
+with the modeller in tools/content/pieces.mjs. No asset pack, scan, generated
+model, AI service or third-party file is used.
+
+They are owned by the game and ship as part of it (licence "Owned" in
+content/props.json and the provenance ledger). Re-run
+`node tools/content/build-style-props.mjs` to rebuild them exactly.

@@ -85,10 +85,11 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
-## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`)
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`)
 
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 04
-Orbital Station and 07 Neon Megacity, one registry (`STYLE_PACKS`). A Style
+Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon Megacity and 08
+Suburban Chaos, one registry (`STYLE_PACKS`, in pack-number order). A Style
 Pack is a themed selection of the kit: the **Style Pack** picker under the
 MapMaker palette's search box narrows the tiles, props, gameplay pieces
 (Entities → Scenario), vehicles and pickups to one pack (headings left empty
@@ -218,6 +219,107 @@ pieces in code (`tools/content/pieces.mjs`) and fits the Kenney towers;
 `prepare-props.mjs --downloads` builds the Kenney kit props (see
 CONTENT_PIPELINE.md and ASSET_SOURCES.md).
 
+### 05 Gothic Estate, 06 Jungle Ruins and 08 Suburban Chaos
+
+| Pack | Themes | Facades (box-built) | Own tiles | Own props | Demo map |
+|---|---|---|---|---|---|
+| 05 Gothic Estate (Victorian horror) | **Gothic Estate** (`core.gothic_estate`: old floorboards, Damask Wallpaper, walnut, dark panels, brass); Gothic Manor, Castle Keep | **Gothic stone** (buttresses, string course, hood moulds, battlements and pinnacles), **Victorian brick** (stone plinth, quoins, sills and lintels, bracketed cornice) | 8 | 19 (category *Gothic Estate*) | Ravenscroft Hall |
+| 06 Jungle Ruins (lost civilisation) | **Jungle Temple** (`core.jungle_temple`: mossy cobbles, mossy castle stone, layered rock); Jungle Ruins, Forest Camp | **Temple stone** (stepped base, glyph frieze, stepped merlons), **Overgrown rock** (moss at foot and top, vines hanging down, never across openings) | 12 | 17 (category *Jungle Ruins*) | Verdant Ziggurat |
+| 08 Suburban Chaos (everyday modern) | **Suburban** (`core.suburban`: oak boards, white plaster, painted clapboard, white trim); Walled Garden, Downtown | **Clapboard siding** (corner boards, brick plinth, shutters, sills and lintels, fascia), **Suburban brick** (the same trim on brick) | 8 | 20 (category *Suburban Chaos*) | Cedar Lane |
+
+New materials: Damask Wallpaper (procedural stripes), Slate Shingles,
+Mossy Cobbles, Layered Rock, Pool Tiles and Painted Clapboard (ambientCG
+RoofingTiles002, PavingStones138, Rock051, Tiles132A, WoodSiding009). Tile
+boxes can now be tilted like pitched blocks (`LocalBox.pitch` / `roll`,
+turned with the tile), which is how the house, garage and mausoleum get
+real gable roofs (`gable()` in `packTiles2.ts`).
+
+**Gothic Estate tiles.** *Manor Library* (2 × 2, two storeys: walls of
+bookcases, reading tables, stairs up the east wall to a railed gallery round
+three sides), *Crypt* (a vaulted stone chamber north to south: coffin niches,
+a tomb; put it a level down), *Mausoleum* (columned porch, slate gable, a
+tomb chamber), *Cemetery Plot* (crossing gravel paths between kerbed graves),
+*Hedge Maze* and *Formal Garden* (2.4 m hedges with gaps on every side; low
+beds round a fountain), *Iron Railings* and *Railings Gateway* (bars you see
+and shoot through on a stone plinth; a 3 m gateway between piers). Props:
+tall bookcase, candle chandelier, floor candelabra, grandfather clock,
+wingback chair, grand piano, portrait, suit of armour, four-poster bed,
+writing desk, sarcophagus, weeping angel, tall headstone, wrought-iron
+railing and gates, box hedge, hedge arch, topiary, gas lamp; the pack also
+lists the graveyard, house, ruins and dungeon props already in the game.
+
+**Jungle Ruins tiles.** *Stepped Temple* (3 × 3: terraces 2, 4 and 6 m up
+round a stair of 24 steps to the shrine on top), *Temple Gateway*, *Ruined
+Temple Wall*, *Cliff*, *Cliff Corner* (8 m of rock; their tops are a walk
+two levels up), *Rock Stair* (one level up against a rock wall), *Cave
+Passage* and *Cave Mouth*, *Waterfall Basin* (a rock face with a hidden
+recess behind the falls, a ledge, a 4 m basin sunk 1.5 m with steps),
+*River Channel* (a 4 m bed sunk 1 m, steps down either bank; add Water),
+*Giant Tree* (plank flights climbing twice round the trunk to a lookout 7.5 m
+up), *Overgrown Court*. Props: colossal head, serpent head, carved pillar,
+altar stone, stele, vine curtain, liana, rope-bridge anchor, waterfall
+(see-through sheets and foam), giant root, banana plant, giant fern,
+monstera, bamboo, fire brazier, fallen blocks, golden idol.
+
+**Suburban Chaos tiles.** *Family House* (2 × 1, two storeys under a slate
+gable: living room, kitchen, stairs to a landing, two bedrooms), *Garage*
+(a 3.6 × 2.8 m opening for the Garage Door, a back door), *Swimming Pool*
+(1 × 2: a 3.6 × 12 m pool 1.8 m deep, steps at the shallow end, a diving
+board; add Pool Water), *Playground* (climbing tower, slide, sandpit),
+*Corner Store* (glass front, aisles, counter, glowing fridges), *Gas Station*
+(2 × 2: canopy, pump islands, kiosk), *Suburban Street*, *Back Yard*. Props:
+microwave, fridge freezer, gas barbecue, large propane tank, washing machine,
+flat-screen TV, mailbox, wheelie bin, lawnmower, garden gnome, picket fence,
+swing set, slide, trampoline, basketball hoop, petrol pump, family car, patio
+set, sun lounger, hydrant. Appliances are breakable props: the microwave,
+barbecue, propane tank, lawnmower, petrol pump and car explode (they are rule
+targets for *Object destroyed* like any breakable prop); fridges, washers,
+TVs, bins, gnomes and fences just break.
+
+**Gameplay pieces** (built on the v20 kit: movers, logic lights and blocks, pitched blocks, ladders, traps):
+
+| Piece | What it is |
+|---|---|
+| Secret Bookcase | A walnut block filling a doorway carrying a walk-through Tall Bookcase on a `trigger` mover: *Send mover* slides it 3.2 m aside, sending it again closes it (wire a button, a candle sconce, a zone) |
+| Moving Bookshelf | The same bookcase on a `pingpong` mover running 4 m back and forth along a wall: cover that moves |
+| Rotten Floorboards | A crumble block in old floorboards (3 × 3 m): gives way 0.5 s after you step on it, back after 15 s (lay it over a Pit for a drop into the cellar) |
+| Candelabra, Chandelier | Light fixtures `candle` and `chandelier`: candles that flicker by themselves; set blinking (or logic *Blink light*) they gutter and flare at random instead of flashing, *Light off* snuffs them |
+| Rope Bridge | Eight plank blocks over 12 m along the facing, pitched to sag 0.6 m in the middle (every step walkable), the middle two crumbling; anchor props at both ends |
+| Crumbling Planks | A rotten plank (crumble block) to patch bridges and ledges with |
+| Climbing Vines | A ladder (`LadderEntity.style: 'vines'`, 6 m) drawn as twisting vines thick with leaves; climbs like any ladder (bots too) |
+| Falling Rocks | A crusher trap drawn as boulders lodged overhead (`TrapEntity.style: 'rockfall'`, no frame) that shudder, drop and are back once it rearms; *proximity* by default, or *logic* fired from a trigger zone |
+| Garage Door | An up-and-over door: a 3.6 × 2.8 m panel on a `trigger` mover hinged at the top of the opening, swinging up level into the garage (`angles` [0, -90°]) when logic sends it |
+| Breakable Fence | A white picket breakable block (4 m, 40 HP, back after 25 s) |
+| Pitched Roof | Two slate pitched blocks (34°) meeting at a ridge over one cell |
+| Pool Water | Water (tinted pool blue) sized for the Swimming Pool tile |
+
+Room dressing gains four room types for these packs: *Victorian parlour*,
+*Crypt*, *Conservatory* and *Temple shrine* (Gothic Estate and Suburban
+themes guess like homes, Jungle Temple like the ruins).
+
+**Demo maps.** *Ravenscroft Hall* (`maps/ravenscroft_hall.json`, script
+`packages/server/src/tools/maps/ravenscroft_hall.ts`): a manor on a stormy
+night: the galleried library (its chandeliers gutter when you walk in), a
+parlour whose candle sconce slides a bookcase aside into the secret study,
+the study's rotten floor dropping you into the wine cellar and the crypt
+(its candles flare as you come down), a picture gallery with a bookshelf
+that will not stay put, formal gardens and a hedge maze behind iron
+railings, a cemetery and mausoleum where the crypt stairs come out.
+*Verdant Ziggurat* (`maps/verdant_ziggurat.json`): the stepped temple and
+its golden idol, a court and gateway, caves where the roof comes down behind
+you (a zone fires the falling rocks) and more rocks hang further in, a ridge
+with vines up to a sniper walk over the waterfall and its hidden recess,
+rotten planks over the pool, a river with a sagging rope bridge between two
+stone lookouts, and a giant tree. *Cedar Lane* (`maps/cedar_lane.json`): a
+street of clapboard houses and garages (up-and-over doors on buttons and
+drive keypads), a corner store and gas station, back yards with barbecues,
+a pool, a playground and a carport under a pitched roof, picket fences that
+splinter and appliances, pumps and cars that go off; a trampoline throws you
+onto the store roof.
+
+Content: `tools/content/build-style-props.mjs` models the 56 props in code
+(licence Owned); the facades are boxes drawn with the level.
+
 ## Materials and themes (`map/materials.ts`)
 
 28 procedural materials plus 49 scanned sets from ambientCG (CC0), prepared by
@@ -309,8 +411,8 @@ reachable only by pad count as reachable for map validation.
 Furnishes a room so it reads as what it is, from a recipe per room type:
 kitchen, dining, living, bedroom, bathroom, office, classroom, library,
 storage, warehouse, barracks, lab, bar / restaurant, shop, garage /
-workshop, chapel, prison cell, armoury, server room, lobby / reception and
-conference. A recipe is data (`DRESS_RECIPES`): items of props, each a slot,
+workshop, chapel, prison cell, armoury, server room, lobby / reception,
+conference, Victorian parlour, crypt, conservatory and temple shrine. A recipe is data (`DRESS_RECIPES`): items of props, each a slot,
 how many per cell of floor (49 m²), a minimum and a maximum.
 
 | Slot | What goes there | Examples |

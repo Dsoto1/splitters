@@ -161,6 +161,13 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   t('pbr_weathered_siding', 'Weathered Siding', 'Wood', 'WoodSiding013', '#665845', 2.5),
   t('pbr_adobe', 'Adobe', 'Stone', 'Clay005', '#9d785d', 3),
   t('pbr_dusty_road', 'Dusty Road', 'Ground', 'Ground109', '#7e6e54', 4),
+  // Style Packs 05 Gothic Estate, 06 Jungle Ruins and 08 Suburban Chaos.
+  m('wallpaper_damask', 'Damask Wallpaper', 'Paint', 'stripes', '#5a1a24', '#44121a', 0.6),
+  t('pbr_slate_roof', 'Slate Shingles', 'Tile', 'RoofingTiles002', '#3e403d', 2),
+  t('pbr_mossy_cobble', 'Mossy Cobbles', 'Stone', 'PavingStones138', '#97906f', 2.5),
+  t('pbr_jungle_rock', 'Layered Rock', 'Stone', 'Rock051', '#767261', 4),
+  t('pbr_pool_tiles', 'Pool Tiles', 'Tile', 'Tiles132A', '#3bb5d3', 1.5, 0.6),
+  t('pbr_clapboard', 'Painted Clapboard', 'Wood', 'WoodSiding009', '#cac19c', 2.5),
 ];
 
 /** A textured material from a scanned set (see MaterialDefinition.texture). */
@@ -209,6 +216,9 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('military', 'Military Compound', '#8fa0ae', ['pbr_concrete_dark', '#b4b0a6'], 'pbr_bunker_panels', ['pbr_olive_corrugated', '#d8dcc0'], 'pbr_concrete', ['pbr_steel', '#a8aca8']),
   theme('frontier', 'Frontier Dust', '#f0cc98', 'pbr_weathered_planks', 'pbr_weathered_siding', ['crate_wood', '#c8a070'], 'pbr_planks', 'pbr_charred_wood'),
   theme('adobe', 'Frontier Adobe', '#f4d2a0', ['pbr_floorboards', '#d8b890'], 'pbr_adobe', ['pbr_adobe', '#e8d0b0'], 'pbr_weathered_planks', 'pbr_walnut'),
+  theme('gothic_estate', 'Gothic Estate', '#231d2c', 'pbr_floorboards', 'wallpaper_damask', 'pbr_walnut', 'dark_wood', 'brass'),
+  theme('jungle_temple', 'Jungle Temple', '#a8c8a0', 'pbr_mossy_cobble', 'pbr_castle_stone', 'pbr_jungle_rock', 'pbr_rock', ['pbr_travertine', '#b8c0a0']),
+  theme('suburban', 'Suburban', '#9cc8f0', 'oak_planks', 'pbr_plaster_white', 'pbr_clapboard', 'pbr_plaster_white', ['paint_matte', '#f4f2ec']),
 ];
 
 /** Shorthand for a theme: each slot is a material name or [material, tint]. */

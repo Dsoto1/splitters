@@ -329,19 +329,36 @@ export const SCENARIO_PALETTE = [
   { key: 'block:planks', label: 'Breakable Planks', search: 'block planks wood breakable boards wall western frontier' },
   { key: 'mover:minecart', label: 'Mine Cart', search: 'mover mine cart rails ride ore western frontier' },
   { key: 'mover:train', label: 'Steam Train', search: 'mover train locomotive railroad rails ride western frontier wagon' },
+  // Style Pack gameplay pieces (05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos), built on the same systems.
+  { key: 'mover:bookcase', label: 'Secret Bookcase', search: 'mover secret door bookcase bookshelf hidden passage slide logic gothic manor library' },
+  { key: 'mover:shelf', label: 'Moving Bookshelf', search: 'mover moving bookshelf bookcase cover sliding gothic manor library' },
+  { key: 'block:rotten', label: 'Rotten Floorboards', search: 'block rotten floor floorboards crumble give way breakable floor gothic manor attic' },
+  { key: 'light:candle', label: 'Candelabra', search: 'light candle candelabra flicker gothic manor horror logic' },
+  { key: 'light:chandelier', label: 'Chandelier', search: 'light chandelier candles flicker hanging gothic manor horror logic' },
+  { key: 'block:rope_bridge', label: 'Rope Bridge', search: 'block rope bridge planks sag crumble jungle ruins chasm river' },
+  { key: 'block:old_planks', label: 'Crumbling Planks', search: 'block planks crumble rope bridge give way jungle ruins' },
+  { key: 'ladder:vines', label: 'Climbing Vines', search: 'ladder vines climb creepers jungle ruins wall cliff' },
+  { key: 'trap:rockfall', label: 'Falling Rocks', search: 'trap rockfall falling rocks boulders crusher zone jungle ruins cave' },
+  { key: 'mover:garage_door', label: 'Garage Door', search: 'mover garage door up and over roll up logic suburban house' },
+  { key: 'block:fence', label: 'Breakable Fence', search: 'block fence picket breakable wood suburban garden yard' },
+  { key: 'block:roof', label: 'Pitched Roof', search: 'block roof pitched gable slate shingles house suburban' },
+  { key: 'water:pool', label: 'Pool Water', search: 'water pool swimming blue suburban' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 
 /** Entities that sit in a doorway and snap to cell edges. */
-export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field';
+export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field' || key === 'mover:bookcase' || key === 'mover:garage_door';
+
+/** Palette entries that place several entities at once (movers with their blocks, rope bridges, roofs). */
+const MULTI_KEYS = new Set<string>(['block:rope_bridge', 'block:roof']);
 
 /**
  * What a palette entry places: one entity, or for movers a block and the
  * mover that carries it (lift platform, sliding wall, drawbridge deck).
  */
 export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, number, number], yaw: number, doc?: MapDocument): MapEntity[] {
-  if (!key.startsWith('mover:')) return [newScenarioEntity(key, position, yaw, doc)];
+  if (!key.startsWith('mover:') && !MULTI_KEYS.has(key)) return [newScenarioEntity(key, position, yaw, doc)];
   const block = (size: [number, number, number], at: [number, number, number]): Extract<MapEntity, { kind: 'block' }> => ({ id: newId('block'), kind: 'block', position: at, yaw, size, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
   const mover = (blocks: string[], points: [number, number, number][], extra: Partial<Extract<MapEntity, { kind: 'mover' }>>): Extract<MapEntity, { kind: 'mover' }> => ({ id: newId('mover'), kind: 'mover', position, yaw, blocks, points, mode: 'pingpong', speed: 2, turnSpeed: 45, wait: 2, startActive: true, ...extra });
   const [x, y, z] = position;
@@ -372,6 +389,46 @@ export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, 
     const blocks = [hull([2.0, 2.0, 3.6], 1.5, 0.6, 'core.pbr_steel', dark), hull([2.9, 3.1, 2.8], -1.8, 0.6, 'core.pbr_steel', dark), ...cars.map((c, i) => hull([2.7, 0.35, 6.6], -7.4 - 7.5 * i, 0.55, 'core.pbr_weathered_planks', null))];
     const [ex, ez] = along(60);
     return [...blocks, loco, ...cars, { ...mover(blocks.map((b) => b.id), [[0, 0, 0], [ex, 0, ez]], { speed: 8, wait: 6 }), props: [loco.id, ...cars.map((c) => c.id)] }];
+  }
+  /** A point `d` along the facing and `s` across it (local +X), `up` above the marker. */
+  const local = (s: number, up: number, d: number): [number, number, number] => [Math.round((x + Math.cos(yaw) * s + Math.sin(yaw) * d) * 100) / 100, Math.round((y + up) * 100) / 100, Math.round((z - Math.sin(yaw) * s + Math.cos(yaw) * d) * 100) / 100];
+  if (key === 'mover:bookcase' || key === 'mover:shelf') {
+    // A bookcase on a walnut block. The secret one fills a doorway and slides 3.2 m sideways when logic sends it
+    // (Send mover again closes it); the moving one trundles 4 m back and forth by itself (moving cover).
+    const secret = key === 'mover:bookcase';
+    const b = { ...block(secret ? [3, 3, 0.5] : [2.2, 3, 0.6], [x, y, z]), material: 'core.pbr_walnut', tint: '#6a4a34' };
+    const shelf = { ...prop('prop.ge_bookcase_tall', secret ? 0.27 : 0.32), position: local(0, 0, secret ? 0.27 : 0.32) };
+    const [ex, , ez] = local(secret ? 3.2 : 4, 0, 0);
+    const end: [number, number, number] = [Math.round((ex - x) * 100) / 100, 0, Math.round((ez - z) * 100) / 100];
+    return [b, shelf, { ...mover([b.id], [[0, 0, 0], end], secret ? { mode: 'trigger', speed: 1.2, wait: 0, name: 'Secret bookcase' } : { speed: 0.8, wait: 3, name: 'Moving bookshelf' }), props: [shelf.id] }];
+  }
+  if (key === 'mover:garage_door') {
+    // An up-and-over door: a 3.6 × 2.8 m panel hinged at its top, swinging up level under the ceiling when logic sends it.
+    const b = { ...block([3.6, 2.8, 0.2], [x, y, z]), material: 'core.pbr_white_panel', tint: '#f0eee8' };
+    return [b, { ...mover([b.id], [[0, 0, 0], [0, 0, 0]], { angles: [0, -Math.PI / 2], mode: 'trigger', turnSpeed: 60, wait: 0, name: 'Garage door' }), position: [x, y + 2.8, z] }];
+  }
+  if (key === 'block:rope_bridge') {
+    // Eight planks over 12 m along the facing, sagging 0.6 m in the middle; the middle two give way under you.
+    const L = 12;
+    const n = 8;
+    const sag = (d: number) => -4 * 0.6 * (d / L) * (1 - d / L);
+    const planks = Array.from({ length: n }, (_, i): Extract<MapEntity, { kind: 'block' }> => {
+      const d = (i + 0.5) * (L / n);
+      const pitch = Math.round(Math.atan((-4 * 0.6 * (1 - (2 * d) / L)) / L) * 1000) / 1000;
+      const rotten = i === 3 || i === 4;
+      return { ...block([2.4, 0.15, L / n + 0.04], local(0, Math.round((sag(d) - 0.15) * 100) / 100, d)), material: 'core.pbr_weathered_planks', tint: rotten ? '#8a7a68' : null, behaviour: rotten ? 'crumble' : 'solid', delaySeconds: 0.6, respawnSeconds: 10, ...(pitch ? { pitch } : {}) };
+    });
+    const posts = [prop('prop.jg_bridge_post', 0), prop('prop.jg_bridge_post', L, Math.PI)].map((p) => ({ ...p, solid: false }));
+    return [...planks, ...posts];
+  }
+  if (key === 'block:roof') {
+    // A gable over one 8 m cell: two slate slabs pitched 34° from eaves at the marker up to a ridge along the facing's X.
+    const pitch = 0.6;
+    const span = 4.4;
+    const slope = Math.round((span / Math.cos(pitch)) * 100) / 100;
+    const rise = Math.tan(pitch) * span;
+    const mid = Math.round((rise / 2 - 0.4 * Math.tan(pitch) - 0.11) * 100) / 100;
+    return [-1, 1].map((sgn) => ({ ...block([8.8, 0.22, slope], local(0, mid, sgn * (span / 2 - 0.4))), material: 'core.pbr_slate_roof', pitch: -sgn * pitch }));
   }
   if (key === 'mover:lift') {
     // A 3 m platform that rides one storey up and back.
@@ -439,6 +496,25 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: true, auto: false, style: 'vault' };
     case 'light:alarm':
       return { id: newId('light'), kind: 'light', position, yaw, color: '#ff3020', intensity: 1.6, range: 12, fixture: 'bulb', off: true, blink: 2.5 };
+    case 'light:candle':
+      return { id: newId('light'), kind: 'light', position, yaw, color: '#ffb45a', intensity: 0.9, range: 7, fixture: 'candle' };
+    case 'light:chandelier':
+      return { id: newId('light'), kind: 'light', position, yaw, color: '#ffc070', intensity: 1.4, range: 12, fixture: 'chandelier' };
+    case 'block:rotten':
+      return { id: newId('block'), kind: 'block', position, yaw: 0, size: [3, 0.3, 3], material: 'core.pbr_floorboards', tint: '#9a8a7a', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.5, respawnSeconds: 15, health: 120 };
+    case 'block:old_planks':
+      return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 0.15, 1.5], material: 'core.pbr_weathered_planks', tint: '#8a7a68', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.4, respawnSeconds: 12, health: 120 };
+    case 'block:fence':
+      return { id: newId('block'), kind: 'block', position, yaw, size: [4, 1.1, 0.2], material: 'core.paint_matte', tint: '#f2f0ea', behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 25, health: 40 };
+    case 'ladder:vines':
+      return { id: newId('ladder'), kind: 'ladder', ...base, height: 6, width: 1.2, style: 'vines' };
+    case 'trap:rockfall':
+      return { id: newId('rockfall'), kind: 'trap', trap: 'crusher', ...base, activation: 'proximity', onSeconds: 1.2, offSeconds: 8, offsetSeconds: 0, startEnabled: true, damage: null, style: 'rockfall' };
+    case 'water:pool':
+      return { id: newId('pool'), kind: 'water', position, size: [5, 1.75, 12], liquid: 'water', tint: '#3fc8e8' };
+    case 'block:rope_bridge':
+    case 'block:roof':
+      return newScenarioEntities(key, position, yaw, doc)[0]!;
     case 'block:barrier':
       return { id: newId('block'), kind: 'block', position, yaw, size: [3, 1.1, 0.8], material: 'core.pbr_bunker_panels', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 30, health: 400 };
     case 'block:planks':
@@ -525,7 +601,10 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'mover:elevator':
     case 'mover:tram':
     case 'mover:minecart':
-    case 'mover:train': {
+    case 'mover:train':
+    case 'mover:bookcase':
+    case 'mover:shelf':
+    case 'mover:garage_door': {
       const all = newScenarioEntities(key, position, yaw, doc);
       return all[all.length - 1]!;
     }

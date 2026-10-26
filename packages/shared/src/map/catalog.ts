@@ -8,6 +8,7 @@
  */
 
 import { boxPackTiles } from './packTiles.ts';
+import { boxPackTiles2 } from './packTiles2.ts';
 
 /** Sides in clockwise order; rotating a tile by k quarter turns maps side i to (i + k) % 4. */
 export const SIDES = ['N', 'E', 'S', 'W'] as const;
@@ -109,9 +110,12 @@ export type Corner = (typeof CORNERS)[number];
  * Station), a glass curtain wall and a neon-lit block (Neon Megacity), drawn
  * from models; and boxes in library materials: bunker concrete or corrugated
  * sheet (01 Military Compound), a plank false front with an awning and
- * boardwalk, or adobe with roof beams (02 Frontier Dust).
+ * boardwalk, or adobe with roof beams (02 Frontier Dust); gothic stone with
+ * buttresses and pinnacles or Victorian brick with quoins (05 Gothic Estate);
+ * temple stone with a glyph frieze or overgrown rock hung with vines (06
+ * Jungle Ruins); clapboard siding or brick with shutters (08 Suburban Chaos).
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
@@ -126,6 +130,12 @@ export const FACADE_LABELS: Record<Facade, string> = {
   corrugated: 'Corrugated sheet',
   false_front: 'Frontier false front',
   adobe: 'Adobe',
+  gothic_stone: 'Gothic stone',
+  manor_brick: 'Victorian brick',
+  temple: 'Temple stone',
+  overgrown: 'Overgrown rock',
+  clapboard: 'Clapboard siding',
+  suburban_brick: 'Suburban brick',
 };
 /** Facades drawn from models: the city kit's, and the Orbital and Neon packs' own pieces (the rest are boxes drawn with the level). */
 export const MODEL_FACADES: ReadonlySet<Facade> = new Set(['brick', 'storefront', 'plaster', 'hull', 'glass', 'neon']);
@@ -148,6 +158,9 @@ export interface LocalBox {
   max: readonly [number, number, number];
   /** Turn about the box's vertical centre line (radians, like `WorldBox.yaw`). */
   yaw?: number;
+  /** Tilt (like a pitched free block): pitch lifts the box's +Z end, roll its +X side, before the yaw. Pitched roofs, ramps. */
+  pitch?: number;
+  roll?: number;
   /** What the box is built as (default `solid`; curved walls use `wall` so they take the walls' paint, `trim` is visual only). */
   kind?: 'solid' | 'wall' | 'floor' | 'trim' | 'prop';
   /**
@@ -1176,6 +1189,8 @@ export const CORE_TILES: readonly TileDefinition[] = [
   },
   // Style Pack pieces (01 Military Compound, 02 Frontier Dust): see packTiles.ts and editor/stylePacks.ts.
   ...boxPackTiles(),
+  // Style Pack pieces (05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos): see packTiles2.ts.
+  ...boxPackTiles2(),
 ];
 
 // ---------------------------------------------------------------- buildings

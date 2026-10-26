@@ -538,6 +538,22 @@
       "sha256": "04c25f64aa835308"
     },
     {
+      "file": "textures/PavingStones138_color.jpg",
+      "asset": "PavingStones138",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=PavingStones138_1K-JPG.zip",
+      "bytes": 58815,
+      "sha256": "97281d4ab6dc510c"
+    },
+    {
+      "file": "textures/PavingStones138_normal.jpg",
+      "asset": "PavingStones138",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=PavingStones138_1K-JPG.zip",
+      "bytes": 34980,
+      "sha256": "12c1c68c5ab66eec"
+    },
+    {
       "file": "textures/Planks037A_color.jpg",
       "asset": "Planks037A",
       "map": "color",
@@ -586,6 +602,22 @@
       "sha256": "4f70d49688210e9b"
     },
     {
+      "file": "textures/Rock051_color.jpg",
+      "asset": "Rock051",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Rock051_1K-JPG.zip",
+      "bytes": 58680,
+      "sha256": "7b430c93b19a7b5e"
+    },
+    {
+      "file": "textures/Rock051_normal.jpg",
+      "asset": "Rock051",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Rock051_1K-JPG.zip",
+      "bytes": 62515,
+      "sha256": "187195d44f4767ad"
+    },
+    {
       "file": "textures/Rock064_color.jpg",
       "asset": "Rock064",
       "map": "color",
@@ -600,6 +632,22 @@
       "source": "https://ambientcg.com/get?file=Rock064_1K-JPG.zip",
       "bytes": 41510,
       "sha256": "74a5ed4d7a2664c1"
+    },
+    {
+      "file": "textures/RoofingTiles002_color.jpg",
+      "asset": "RoofingTiles002",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=RoofingTiles002_1K-JPG.zip",
+      "bytes": 37403,
+      "sha256": "5abf77b62f07a084"
+    },
+    {
+      "file": "textures/RoofingTiles002_normal.jpg",
+      "asset": "RoofingTiles002",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=RoofingTiles002_1K-JPG.zip",
+      "bytes": 56132,
+      "sha256": "1ed8c704f9691b92"
     },
     {
       "file": "textures/RoofingTiles008_color.jpg",
@@ -714,6 +762,22 @@
       "sha256": "d538b254c28f2200"
     },
     {
+      "file": "textures/Tiles132A_color.jpg",
+      "asset": "Tiles132A",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Tiles132A_1K-JPG.zip",
+      "bytes": 27779,
+      "sha256": "14d25938cb854a0e"
+    },
+    {
+      "file": "textures/Tiles132A_normal.jpg",
+      "asset": "Tiles132A",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Tiles132A_1K-JPG.zip",
+      "bytes": 31131,
+      "sha256": "cb88b6f4100c371e"
+    },
+    {
       "file": "textures/Travertine009_color.jpg",
       "asset": "Travertine009",
       "map": "color",
@@ -776,6 +840,22 @@
       "source": "https://ambientcg.com/get?file=WoodSiding008_1K-JPG.zip",
       "bytes": 57383,
       "sha256": "62174a321406f541"
+    },
+    {
+      "file": "textures/WoodSiding009_color.jpg",
+      "asset": "WoodSiding009",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=WoodSiding009_1K-JPG.zip",
+      "bytes": 32091,
+      "sha256": "7ebf94f8357eeeeb"
+    },
+    {
+      "file": "textures/WoodSiding009_normal.jpg",
+      "asset": "WoodSiding009",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=WoodSiding009_1K-JPG.zip",
+      "bytes": 25653,
+      "sha256": "a163f93145944bf4"
     },
     {
       "file": "textures/WoodSiding013_color.jpg",

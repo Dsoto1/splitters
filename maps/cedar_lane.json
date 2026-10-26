@@ -1,0 +1,2238 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 20,
+  "metadata": {
+    "id": "cedar_lane",
+    "name": "Cedar Lane",
+    "author": "Tile Trigger",
+    "description": "A sunny afternoon on a suburban street, built from the Suburban Chaos style pack: clapboard family houses under slate gables, garages with up-and-over doors (buttons inside and keypads by the drive), a corner store and a gas station across the road, back yards with barbecues, a swimming pool, a playground and a carport. Picket fences splinter, and microwaves, barbecues, propane tanks, petrol pumps and the family cars all go off when shot.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 4,
+      "max": 14
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm",
+      "core.koth"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.suburban",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "suburban.street",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_002",
+        "tile": "suburban.street",
+        "x": -2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_003",
+        "tile": "suburban.street",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_004",
+        "tile": "suburban.street",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_005",
+        "tile": "suburban.street",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_006",
+        "tile": "suburban.street",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_007",
+        "tile": "suburban.street",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_008",
+        "tile": "suburban.house",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_009",
+        "tile": "suburban.garage",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_010",
+        "tile": "suburban.house",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_011",
+        "tile": "suburban.pool",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_013",
+        "tile": "suburban.backyard",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_014",
+        "tile": "suburban.backyard",
+        "x": -2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_015",
+        "tile": "suburban.backyard",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_016",
+        "tile": "suburban.backyard",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_017",
+        "tile": "suburban.backyard",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_018",
+        "tile": "suburban.playground",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_019",
+        "tile": "suburban.store",
+        "x": -2,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_020",
+        "tile": "suburban.gas_station",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_021",
+        "tile": "suburban.house",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_022",
+        "tile": "suburban.garage",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_025",
+        "tile": "suburban.backyard",
+        "x": 1,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_026",
+        "tile": "suburban.backyard",
+        "x": 2,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "garage_door_n_panel",
+      "position": [
+        -8,
+        0,
+        4.05
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        2.8,
+        0.2
+      ],
+      "yaw": 3.141592653589793,
+      "material": "core.pbr_white_panel",
+      "tint": "#f0eee8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "garage_door_n",
+      "position": [
+        -8,
+        2.8,
+        4.05
+      ],
+      "name": "Garage door",
+      "kind": "mover",
+      "yaw": 3.141592653589793,
+      "blocks": [
+        "garage_door_n_panel"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "angles": [
+        0,
+        -1.5707963267948966
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 60,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "garage_door_s_panel",
+      "position": [
+        24,
+        0,
+        -4.05
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        2.8,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_white_panel",
+      "tint": "#f0eee8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "garage_door_s",
+      "position": [
+        24,
+        2.8,
+        -4.05
+      ],
+      "name": "Garage door",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "garage_door_s_panel"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "angles": [
+        0,
+        -1.5707963267948966
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 60,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "btn_garage_n_in",
+      "position": [
+        -4.5,
+        1.2,
+        7
+      ],
+      "name": "Garage button",
+      "kind": "button",
+      "yaw": -1.5707963267948966,
+      "label": "Garage door",
+      "once": false,
+      "cooldownSeconds": 3,
+      "startEnabled": true
+    },
+    {
+      "id": "btn_garage_n_out",
+      "position": [
+        -5.4,
+        1.2,
+        3
+      ],
+      "name": "Drive keypad",
+      "kind": "button",
+      "yaw": 0,
+      "label": "Garage door",
+      "once": false,
+      "cooldownSeconds": 3,
+      "startEnabled": true
+    },
+    {
+      "id": "btn_garage_s_in",
+      "position": [
+        20.5,
+        1.2,
+        -7
+      ],
+      "name": "Garage button",
+      "kind": "button",
+      "yaw": 1.5707963267948966,
+      "label": "Garage door",
+      "once": false,
+      "cooldownSeconds": 3,
+      "startEnabled": true
+    },
+    {
+      "id": "btn_garage_s_out",
+      "position": [
+        21.4,
+        1.2,
+        -3
+      ],
+      "name": "Drive keypad",
+      "kind": "button",
+      "yaw": 3.141592653589793,
+      "label": "Garage door",
+      "once": false,
+      "cooldownSeconds": 3,
+      "startEnabled": true
+    },
+    {
+      "id": "block_028",
+      "position": [
+        -25.8,
+        0,
+        3.6
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        1.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 25,
+      "health": 40
+    },
+    {
+      "id": "block_029",
+      "position": [
+        -14.2,
+        0,
+        3.6
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        1.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 25,
+      "health": 40
+    },
+    {
+      "id": "block_030",
+      "position": [
+        -1.8,
+        0,
+        3.6
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        1.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 25,
+      "health": 40
+    },
+    {
+      "id": "block_031",
+      "position": [
+        9.8,
+        0,
+        3.6
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        1.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 25,
+      "health": 40
+    },
+    {
+      "id": "block_032",
+      "position": [
+        9.8,
+        0,
+        -3.6
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        1.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 25,
+      "health": 40
+    },
+    {
+      "id": "block_033",
+      "position": [
+        14.2,
+        0,
+        -3.6
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        1.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 25,
+      "health": 40
+    },
+    {
+      "id": "block_034",
+      "position": [
+        21.4,
+        0,
+        5.4
+      ],
+      "kind": "block",
+      "size": [
+        0.25,
+        2.6,
+        0.25
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_035",
+      "position": [
+        26.6,
+        0,
+        5.4
+      ],
+      "kind": "block",
+      "size": [
+        0.25,
+        2.6,
+        0.25
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_036",
+      "position": [
+        21.4,
+        0,
+        10.6
+      ],
+      "kind": "block",
+      "size": [
+        0.25,
+        2.6,
+        0.25
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_037",
+      "position": [
+        26.6,
+        0,
+        10.6
+      ],
+      "kind": "block",
+      "size": [
+        0.25,
+        2.6,
+        0.25
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f2f0ea",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_038",
+      "position": [
+        24,
+        2.95,
+        6.35
+      ],
+      "kind": "block",
+      "size": [
+        6.2,
+        0.2,
+        3.9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_slate_roof",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "pitch": 0.5
+    },
+    {
+      "id": "block_039",
+      "position": [
+        24,
+        2.95,
+        9.65
+      ],
+      "kind": "block",
+      "size": [
+        6.2,
+        0.2,
+        3.9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_slate_roof",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "pitch": -0.5
+    },
+    {
+      "id": "water_040",
+      "position": [
+        16,
+        -1.8,
+        12
+      ],
+      "kind": "water",
+      "size": [
+        3.6,
+        1.6,
+        12
+      ],
+      "liquid": "water",
+      "tint": "#3fc8e8"
+    },
+    {
+      "id": "prop_041",
+      "position": [
+        -12.8,
+        0.95,
+        5.8
+      ],
+      "kind": "prop",
+      "model": "prop.sb_microwave",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_042",
+      "position": [
+        -12.9,
+        0,
+        8.9
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fridge",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_043",
+      "position": [
+        -18.2,
+        0,
+        5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_washing_machine",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_044",
+      "position": [
+        11.2,
+        0.95,
+        5.8
+      ],
+      "kind": "prop",
+      "model": "prop.sb_microwave",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_045",
+      "position": [
+        11.1,
+        0,
+        8.9
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fridge",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_046",
+      "position": [
+        5.8,
+        0,
+        5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_washing_machine",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_047",
+      "position": [
+        4.9,
+        0.95,
+        -5.8
+      ],
+      "kind": "prop",
+      "model": "prop.sb_microwave",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_048",
+      "position": [
+        4.9,
+        0,
+        -8.9
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fridge",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_049",
+      "position": [
+        -25.2,
+        0,
+        4.8
+      ],
+      "kind": "prop",
+      "model": "prop.sb_tv_flat",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_050",
+      "position": [
+        -1.2,
+        0,
+        4.8
+      ],
+      "kind": "prop",
+      "model": "prop.sb_tv_flat",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_051",
+      "position": [
+        17.2,
+        0,
+        -4.8
+      ],
+      "kind": "prop",
+      "model": "prop.sb_tv_flat",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_052",
+      "position": [
+        -25.5,
+        0,
+        17
+      ],
+      "kind": "prop",
+      "model": "prop.sb_bbq_grill",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_053",
+      "position": [
+        -27.2,
+        0,
+        18.6
+      ],
+      "kind": "prop",
+      "model": "prop.sb_propane_tank",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_054",
+      "position": [
+        -16,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.sb_patio_set",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_055",
+      "position": [
+        1.5,
+        0,
+        17.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_bbq_grill",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_056",
+      "position": [
+        6,
+        0,
+        14.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_lawnmower",
+      "yaw": 0.6,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_057",
+      "position": [
+        10.5,
+        0,
+        18.4
+      ],
+      "kind": "prop",
+      "model": "prop.sb_garden_gnome",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_058",
+      "position": [
+        -19,
+        0,
+        18.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_garden_gnome",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_059",
+      "position": [
+        -20,
+        0,
+        -17
+      ],
+      "kind": "prop",
+      "model": "prop.sb_trampoline",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "pad_060",
+      "position": [
+        -20,
+        0,
+        -17
+      ],
+      "kind": "pad",
+      "yaw": 0,
+      "power": 14,
+      "push": 11.69
+    },
+    {
+      "id": "prop_061",
+      "position": [
+        14.5,
+        0,
+        -17.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_bbq_grill",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_062",
+      "position": [
+        5,
+        0,
+        -18.8
+      ],
+      "kind": "prop",
+      "model": "prop.sb_propane_tank",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_063",
+      "position": [
+        9,
+        0,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.sb_patio_set",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_064",
+      "position": [
+        24,
+        0,
+        -17
+      ],
+      "kind": "prop",
+      "model": "prop.sb_swing_set",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_065",
+      "position": [
+        13.6,
+        0,
+        19.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_sun_lounger",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_066",
+      "position": [
+        18.4,
+        0,
+        19.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_sun_lounger",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_067",
+      "position": [
+        26.5,
+        0,
+        18.4
+      ],
+      "kind": "prop",
+      "model": "prop.sb_slide",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_068",
+      "position": [
+        27.3,
+        0,
+        4.6
+      ],
+      "kind": "prop",
+      "model": "prop.sb_basketball_hoop",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_069",
+      "position": [
+        16,
+        0,
+        -1.6
+      ],
+      "kind": "prop",
+      "model": "prop.sb_sedan",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_070",
+      "position": [
+        -15,
+        0,
+        1.6
+      ],
+      "kind": "prop",
+      "model": "prop.sb_sedan",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_071",
+      "position": [
+        -21.4,
+        0,
+        3.1
+      ],
+      "kind": "prop",
+      "model": "prop.sb_mailbox",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        2.6,
+        0,
+        3.1
+      ],
+      "kind": "prop",
+      "model": "prop.sb_mailbox",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        13.4,
+        0,
+        -3.1
+      ],
+      "kind": "prop",
+      "model": "prop.sb_mailbox",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        -12.6,
+        0,
+        3.1
+      ],
+      "kind": "prop",
+      "model": "prop.sb_wheelie_bin",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        11.4,
+        0,
+        3.1
+      ],
+      "kind": "prop",
+      "model": "prop.sb_wheelie_bin",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "position": [
+        8,
+        0,
+        3.3
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fire_hydrant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        -16,
+        0,
+        -3.3
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fire_hydrant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "position": [
+        -1.5,
+        0.15,
+        -9.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_gas_pump",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "position": [
+        -1.5,
+        0.15,
+        -11.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_gas_pump",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "position": [
+        -6.5,
+        0.15,
+        -9.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_gas_pump",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "position": [
+        -6.5,
+        0.15,
+        -11.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_gas_pump",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "position": [
+        -10.5,
+        0,
+        -18.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_propane_tank",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "position": [
+        -11.2,
+        0,
+        -18.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_propane_tank",
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "position": [
+        -26,
+        0,
+        -18.5
+      ],
+      "kind": "prop",
+      "model": "prop.dumpster",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "mount_085",
+      "position": [
+        -8,
+        0,
+        1.4
+      ],
+      "kind": "mount",
+      "model": "ice_cream_truck",
+      "yaw": 1.5707963267948966,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "light_086",
+      "position": [
+        -24,
+        4.5,
+        3.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff0d0",
+      "intensity": 0.9,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "light_087",
+      "position": [
+        -8,
+        4.5,
+        3.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff0d0",
+      "intensity": 0.9,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "light_088",
+      "position": [
+        8,
+        4.5,
+        3.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff0d0",
+      "intensity": 0.9,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "light_089",
+      "position": [
+        24,
+        4.5,
+        3.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff0d0",
+      "intensity": 0.9,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "light_090",
+      "position": [
+        -24,
+        3.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_091",
+      "position": [
+        -16,
+        3.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_092",
+      "position": [
+        0,
+        3.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_093",
+      "position": [
+        8,
+        3.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_094",
+      "position": [
+        8,
+        3.6,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_095",
+      "position": [
+        16,
+        3.6,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_096",
+      "position": [
+        -24,
+        7.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_097",
+      "position": [
+        0,
+        7.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_098",
+      "position": [
+        16,
+        7.6,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_099",
+      "position": [
+        -8,
+        3.3,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_100",
+      "position": [
+        24,
+        3.3,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff4e0",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_101",
+      "position": [
+        -24,
+        4,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef6ff",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_102",
+      "position": [
+        -16,
+        4,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef6ff",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_103",
+      "position": [
+        -4,
+        4.8,
+        -12
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef6ff",
+      "intensity": 1.1,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_104",
+      "position": [
+        -23,
+        2.8,
+        4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffd8a0",
+      "intensity": 0.8,
+      "range": 7,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_105",
+      "position": [
+        1,
+        2.8,
+        4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffd8a0",
+      "intensity": 0.8,
+      "range": 7,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_106",
+      "position": [
+        15,
+        2.8,
+        -4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd8a0",
+      "intensity": 0.8,
+      "range": 7,
+      "fixture": "wall"
+    },
+    {
+      "id": "spawn_107",
+      "position": [
+        -25,
+        0,
+        15
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_108",
+      "position": [
+        -15,
+        0,
+        15
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_109",
+      "position": [
+        -24,
+        0,
+        -15
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_110",
+      "position": [
+        -18,
+        0,
+        -14
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_111",
+      "position": [
+        -26,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_112",
+      "position": [
+        -25.5,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_113",
+      "position": [
+        -26,
+        0,
+        -8
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_114",
+      "position": [
+        25,
+        0,
+        14.5
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_115",
+      "position": [
+        24,
+        0,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_116",
+      "position": [
+        16,
+        0,
+        -18.5
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_117",
+      "position": [
+        26,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_118",
+      "position": [
+        10,
+        0,
+        15
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_119",
+      "position": [
+        24,
+        0,
+        5.2
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_120",
+      "position": [
+        9,
+        0,
+        -9
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_121",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_122",
+      "position": [
+        -10,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_123",
+      "position": [
+        16,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_124",
+      "position": [
+        -5.5,
+        0,
+        18
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_125",
+      "position": [
+        -2,
+        0,
+        15
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_126",
+      "position": [
+        -12,
+        0,
+        -4
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_127",
+      "position": [
+        12.7,
+        0,
+        15
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_128",
+      "position": [
+        1,
+        4,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "pickup_129",
+      "position": [
+        -20,
+        4.5,
+        -7.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": 40
+    },
+    {
+      "id": "pickup_130",
+      "position": [
+        -22.5,
+        4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_131",
+      "position": [
+        -16,
+        0,
+        -9
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_132",
+      "position": [
+        -2,
+        0,
+        -5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_133",
+      "position": [
+        22,
+        0,
+        15
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_134",
+      "position": [
+        17,
+        4,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_135",
+      "position": [
+        -8,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_136",
+      "position": [
+        24,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_137",
+      "position": [
+        16,
+        -1.8,
+        12
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": 40
+    },
+    {
+      "id": "pickup_138",
+      "position": [
+        -22,
+        0,
+        17
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_139",
+      "position": [
+        -2,
+        4,
+        10
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_140",
+      "position": [
+        -6,
+        0,
+        -12.6
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_141",
+      "position": [
+        8,
+        0,
+        17
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_142",
+      "position": [
+        26,
+        0,
+        -14
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_143",
+      "position": [
+        -24,
+        0,
+        -2
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_144",
+      "position": [
+        24,
+        0,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "hill_145",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "hill",
+      "radius": 5
+    },
+    {
+      "id": "hill_146",
+      "position": [
+        16,
+        0,
+        5.6
+      ],
+      "kind": "hill",
+      "radius": 3
+    },
+    {
+      "id": "hill_147",
+      "position": [
+        -12,
+        0,
+        -4
+      ],
+      "kind": "hill",
+      "radius": 4
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": [
+      {
+        "id": "rule_start",
+        "name": "Welcome",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Cedar Lane. Everything with a plug or a gas bottle goes bang.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_btn_garage_n_in",
+        "name": "North garage door",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_garage_n_in"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_go",
+            "target": "garage_door_n",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_btn_garage_n_out",
+        "name": "North garage door",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_garage_n_out"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_go",
+            "target": "garage_door_n",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_btn_garage_s_in",
+        "name": "South garage door",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_garage_s_in"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_go",
+            "target": "garage_door_s",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_btn_garage_s_out",
+        "name": "South garage door",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_garage_s_out"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_go",
+            "target": "garage_door_s",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -32,
+      -24
+    ],
+    "max": [
+      32,
+      24
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "track": null,
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "hills",
+    "ground": "grass",
+    "haze": 0.35,
+    "border": "forest"
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      7,
+      7
+    ]
+  },
+  "dependencies": []
+}

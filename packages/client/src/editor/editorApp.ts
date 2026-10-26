@@ -44,6 +44,9 @@ import {
   type StylePack,
   DOOR_STYLES,
   DOOR_STYLE_LABELS,
+  LADDER_STYLES,
+  LADDER_STYLE_LABELS,
+  type LadderStyle,
   type DoorStyle,
   TRAP_ACTIVATIONS,
   TRAP_KINDS,
@@ -276,6 +279,20 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'block:planks': '<rect x="8" y="8" width="40" height="40" fill="#b49467"/><path d="M8 18h40M8 28h40M8 38h40" stroke="#7a5a3a" stroke-width="2"/><path d="M22 20l6 6-4 6 6 6" stroke="#2a2d33" stroke-width="2" fill="none"/>',
   'mover:minecart': '<path d="M6 48h44" stroke="#5a5f68" stroke-width="2"/><path d="M12 22h32l-4 18H16z" fill="#7a4a2e"/><circle cx="20" cy="42" r="4" fill="#3c3a38"/><circle cx="36" cy="42" r="4" fill="#3c3a38"/><path d="M16 20q6-6 10 0t10 0" fill="#6e6258"/><path d="M44 12h8M48 8l4 4-4 4" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
   'mover:train': '<path d="M4 48h48" stroke="#5a5f68" stroke-width="2"/><rect x="26" y="18" width="16" height="22" fill="#b3261e"/><rect x="8" y="26" width="20" height="14" fill="#3a3a3a"/><rect x="12" y="16" width="5" height="10" fill="#3a3a3a"/><path d="M8 40l-4 6h8z" fill="#3a3a3a"/><circle cx="16" cy="43" r="4" fill="#2a2a2a"/><circle cx="34" cy="43" r="4" fill="#2a2a2a"/><path d="M14 12q-4-6 2-8" stroke="#c9ccd2" stroke-width="3" fill="none"/>',
+  // 05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos.
+  'mover:bookcase': '<rect x="8" y="6" width="30" height="44" fill="#4a2e1c"/><path d="M10 16h26M10 26h26M10 36h26" stroke="#2e1c12" stroke-width="2"/><path d="M12 8v7M15 9v6M19 8v7M24 18v7M28 17v8M13 28v7M30 27v8" stroke="#a03030" stroke-width="2.5"/><path d="M42 28h10M48 24l4 4-4 4" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
+  'mover:shelf': '<rect x="16" y="8" width="24" height="40" fill="#4a2e1c"/><path d="M18 18h20M18 28h20M18 38h20" stroke="#2e1c12" stroke-width="2"/><path d="M20 10v7M24 11v6M30 20v7M34 30v7" stroke="#24502e" stroke-width="2.5"/><path d="M4 28h8M8 24l-4 4 4 4M44 28h8M48 24l4 4-4 4" stroke="#2ec4b6" stroke-width="2" fill="none"/>',
+  'block:rotten': '<rect x="6" y="22" width="44" height="12" fill="#6a5040"/><path d="M14 22v12M24 22v12M34 22v12M44 22v12" stroke="#3a2a20" stroke-width="1.5"/><path d="M20 30l4 8 4-6 4 10" stroke="#1a1410" stroke-width="2.5" fill="none"/><path d="M28 44v6M24 48l4 3 4-3" stroke="#e3b021" stroke-width="2" fill="none"/>',
+  'light:candle': '<path d="M28 50V24M16 50h24M14 30h28" stroke="#3a3c40" stroke-width="3"/><rect x="12" y="20" width="4" height="10" fill="#efe6cf"/><rect x="26" y="16" width="4" height="10" fill="#efe6cf"/><rect x="40" y="20" width="4" height="10" fill="#efe6cf"/><path d="M14 18q-2-4 0-7q2 3 0 7M28 14q-2-4 0-7q2 3 0 7M42 18q-2-4 0-7q2 3 0 7" fill="#ffb040"/>',
+  'light:chandelier': '<path d="M28 4v16" stroke="#b08d3a" stroke-width="2"/><ellipse cx="28" cy="32" rx="20" ry="5" fill="none" stroke="#b08d3a" stroke-width="3"/><path d="M28 20L10 31M28 20l18 11" stroke="#b08d3a" stroke-width="2"/><rect x="7" y="22" width="3" height="8" fill="#efe6cf"/><rect x="27" y="24" width="3" height="8" fill="#efe6cf"/><rect x="46" y="22" width="3" height="8" fill="#efe6cf"/><circle cx="8.5" cy="19" r="2" fill="#ffb040"/><circle cx="28.5" cy="21" r="2" fill="#ffb040"/><circle cx="47.5" cy="19" r="2" fill="#ffb040"/>',
+  'block:rope_bridge': '<path d="M4 18q24 16 48 0M4 26q24 16 48 0" stroke="#a08a5a" stroke-width="2" fill="none"/><path d="M8 30l4 2M14 33l4 2M22 35l4 1M30 36l4-1M38 34l4-2M44 31l4-2" stroke="#7a5a3a" stroke-width="4"/><rect x="2" y="16" width="4" height="22" fill="#5a4630"/><rect x="50" y="16" width="4" height="22" fill="#5a4630"/>',
+  'block:old_planks': '<rect x="6" y="24" width="44" height="8" fill="#8a7a68"/><path d="M18 24v8M30 24v8M42 24v8" stroke="#5a4a38" stroke-width="1.5"/><path d="M22 34l3 8M34 34l-2 10M14 34l-1 6" stroke="#5a4a38" stroke-width="3"/>',
+  'ladder:vines': '<path d="M18 4q-6 12 0 24t0 24M30 4q6 12 0 24t0 24M40 6q-5 12 0 22" stroke="#2e5a1a" stroke-width="3" fill="none"/><path d="M14 12l-5 2 5 2M22 22l5 2-5 2M26 34l-5 2 5 2M34 14l5 2-5 2M36 40l5 2-5 2" fill="#5a9a30" stroke="#3c7a24"/>',
+  'trap:rockfall': '<circle cx="18" cy="14" r="8" fill="#767261"/><circle cx="34" cy="12" r="7" fill="#8a8a7a"/><circle cx="27" cy="22" r="6" fill="#5e5e48"/><path d="M18 30v10M28 32v10M38 30v10" stroke="#e3b021" stroke-width="2.5" stroke-dasharray="3 2"/><rect x="8" y="46" width="40" height="4" fill="#e3b021"/>',
+  'mover:garage_door': '<path d="M8 50V18l20-12 20 12v32" fill="#cac19c"/><rect x="14" y="26" width="28" height="24" fill="#3a3c40"/><rect x="14" y="26" width="28" height="12" fill="#f0eee8"/><path d="M14 30h28M14 34h28" stroke="#b8b4ac"/><path d="M28 46v-6M24 43l4-4 4 4" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
+  'block:fence': '<path d="M8 22l4-6 4 6v24H8zM20 22l4-6 4 6v24h-8zM32 22l4-6 4 6v24h-8zM44 22l4-6 4 6v24h-8z" fill="#f2f0ea" stroke="#b8b4ac"/><path d="M6 28h48M6 40h48" stroke="#d8d4cc" stroke-width="3"/><path d="M26 30l4 4-3 4 4 4" stroke="#2a2d33" stroke-width="2" fill="none"/>',
+  'block:roof': '<path d="M4 34L28 12l24 22" fill="none" stroke="#3e403d" stroke-width="7"/><rect x="12" y="34" width="32" height="16" fill="#cac19c"/><rect x="24" y="40" width="8" height="10" fill="#5a3a24"/>',
+  'water:pool': '<rect x="6" y="18" width="44" height="28" fill="#f0ece4"/><rect x="10" y="22" width="36" height="20" fill="#3fc8e8"/><path d="M14 30q4-3 8 0t8 0t8 0" stroke="#d8f6ff" stroke-width="2" fill="none"/><path d="M40 10v14M44 10v14M40 14h4M40 19h4" stroke="#8c9298" stroke-width="2"/>',
   'water:swamp': '<rect x="6" y="24" width="44" height="22" fill="#5a6a32"/><path d="M14 24q2-10 4-14M38 24q-1-9 2-13" stroke="#6fbf4a" stroke-width="2" fill="none"/>',
   'block:field': '<rect x="6" y="8" width="5" height="40" fill="#2a2f3a"/><rect x="45" y="8" width="5" height="40" fill="#2a2f3a"/><rect x="11" y="10" width="34" height="36" fill="#5ad8ff" fill-opacity=".35"/><path d="M11 16h34M11 24h34M11 32h34M11 40h34" stroke="#5ad8ff" stroke-width="2"/>',
   'zone:lowgrav': '<rect x="10" y="10" width="36" height="38" fill="#8f7bff" fill-opacity=".15" stroke="#8f7bff" stroke-width="2" stroke-dasharray="4 3"/><circle cx="28" cy="24" r="6" fill="#d8e6ff"/><path d="M20 44v-8M28 44v-10M36 44v-8" stroke="#8fc4ff" stroke-width="2"/><path d="M17 38l3-4 3 4M25 36l3-4 3 4M33 38l3-4 3 4" stroke="#8fc4ff" stroke-width="2" fill="none"/>',
@@ -2617,6 +2634,7 @@ export class EditorApp {
         if (e.trap !== 'mine' && e.activation !== 'always') number('On (s)', e.onSeconds, 0.5, (v) => ({ onSeconds: clamp(v, 0.2, 60) }));
         if (e.activation === 'cycle' && e.trap !== 'mine') number('Offset (s)', e.offsetSeconds, 0.25, (v) => ({ offsetSeconds: clamp(v, 0, 60) }));
         if (e.trap === 'shock') number('Length (m)', e.length ?? ELECTRIC_FENCE.defaultLength, 2, (v) => ({ length: clamp(v, 2, 96) }));
+        if (e.trap === 'crusher') choose('Look', [['press', 'Steel press'], ['rockfall', 'Falling rocks']] as const, e.style ?? 'press', (v) => ({ style: v === 'rockfall' ? 'rockfall' : undefined }));
         number('Damage', e.damage ?? spec.blast?.damage ?? spec.damage, 5, (v) => ({ damage: v === (spec.blast?.damage ?? spec.damage) ? null : clamp(v, 1, 1000) }));
         toggle('Starts enabled', e.startEnabled, (v) => ({ startEnabled: v }));
         break;
@@ -2662,7 +2680,8 @@ export class EditorApp {
         break;
       }
       case 'light': {
-        choose('Fixture', [['ceiling', 'Ceiling panel'], ['wall', 'Wall lamp'], ['bulb', 'Hanging bulb'], ['strip', 'Strip light'], ['sign', 'Neon sign'], ['billboard', 'Holo billboard'], ['none', 'Hidden (light only)']] as const, e.fixture, (v) => ({ fixture: v as LightFixture }));
+        choose('Fixture', [['ceiling', 'Ceiling panel'], ['wall', 'Wall lamp'], ['bulb', 'Hanging bulb'], ['strip', 'Strip light'], ['sign', 'Neon sign'], ['billboard', 'Holo billboard'], ['candle', 'Candelabra (flickers)'], ['chandelier', 'Chandelier (flickers)'], ['none', 'Hidden (light only)']] as const, e.fixture, (v) => ({ fixture: v as LightFixture }));
+        if (e.fixture === 'candle' || e.fixture === 'chandelier') el.append(small('Candles flicker by themselves; blinking (here or from logic) makes them gutter and flare.'));
         if (e.fixture === 'sign' || e.fixture === 'billboard') {
           const words = document.createElement('input');
           words.type = 'text';
@@ -2710,6 +2729,7 @@ export class EditorApp {
         number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
         number('Height (m)', e.height, 0.5, (v) => ({ height: Math.max(1, Math.min(24, v)) }));
         number('Width (m)', e.width, 0.1, (v) => ({ width: Math.max(0.5, Math.min(3, v)) }));
+        choose('Look', LADDER_STYLES.map((st) => [st, LADDER_STYLE_LABELS[st]] as const), e.style ?? 'rungs', (v) => ({ style: v === 'rungs' ? undefined : (v as LadderStyle) }));
         el.append(small('Put its foot against a wall, facing out (R turns it). Players and bots walk into it to climb and jump to let go. 4 m reaches the next level.'));
         break;
       case 'pad':
