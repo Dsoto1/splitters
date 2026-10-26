@@ -42,6 +42,8 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   lucky_strip: 'the Las Vegas Strip',
   obsidian_orb: 'the Death Star (Star Wars)',
   dune_harbor: 'Mos Eisley (Star Wars)',
+  fernwood_moon: 'Endor (Star Wars)',
+  glacier_line: 'Hoth (Star Wars)',
 };
 
 /** "Inspired by …" for a map, if it has one (imported TimeSplitters maps name their game). */
