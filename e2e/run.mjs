@@ -25,6 +25,28 @@ const SHARDS = [
 ];
 const T = (ms) => ms * SLOW;
 let failures = 0;
+/**
+ * The game runs its offline match in a Web Worker. These flows reach into it synchronously through
+ * `window.__match` (place players, step it, read its state between frames), so they run it on the page's
+ * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
+ * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
+ */
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'zombies', 'classes', 'vehicles', 'race', 'maps', 'maps2']);
+
+/** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
+async function sim(page, fn, arg) {
+  return page.evaluate(([src, a]) => window.__sim.eval(src, a), [fn.toString(), arg]);
+}
+
+/** Wait until `fn(match, me, arg)` is truthy where the page's match runs (across a map change too); true if it got there in time. */
+async function simWait(page, fn, arg, ms) {
+  const until = Date.now() + ms;
+  while (Date.now() < until) {
+    if (await sim(page, fn, arg).catch(() => false)) return true;
+    await sleep(100);
+  }
+  return false;
+}
 
 function start(cmd, args, env = {}) {
   // Own process group, so stopping it also stops pnpm's children (vite, tsx).
@@ -432,6 +454,12 @@ async function offlineFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const inv = await page.evaluate(() => [...window.__cs.local.inventory.keys()]);
   check(inv.join(',') === '1,2', `offline match spawns with knife + pistol (${inv})`);
+  // The match runs in its own worker (rendering keeps the page's thread): it ticks there, and the page only hears about it.
+  const where = await page.evaluate(() => ({ mode: window.__sim?.mode, match: 'window.__match' in window }));
+  const t0 = await sim(page, (m) => m.tick);
+  await page.waitForTimeout(1000);
+  const t1 = await sim(page, (m) => m.tick);
+  check(where.mode === 'worker' && !where.match && t1 - t0 > 20, `the offline match runs in a Web Worker (${where.mode}, ${t1 - t0} ticks in 1 s)`);
   await page.waitForTimeout(1500);
   const ammo = await page.evaluate(() => `${document.getElementById('ammo-count').textContent} / ${document.getElementById('ammo-reserve').textContent}`);
   check(/^\d+ \/ \d+$/.test(ammo), `HUD shows ammo (${ammo})`);
@@ -1533,15 +1561,15 @@ async function lobbyFlow(browser) {
   const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !(document.getElementById('online-badge')?.hidden ?? true) }));
   check(offline.online && !offline.badge, 'an offline match stays offline and offers "Go online"');
   const listedAs = (name) => solo.evaluate((n) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.some((g) => g.name === n)), name);
+  await sim(solo, (m) => void (m.combatants().find((c) => c.kind === 'human').kills = 5));
   await solo.evaluate(() => {
     document.getElementById('host-name').value = 'E2E Go Online';
-    window.__match.combatants().find((c) => c.kind === 'human').kills = 5;
     document.getElementById('go-online').click();
   });
   const asked = await solo.evaluate(() => document.getElementById('online-confirm')?.textContent ?? '');
   check(/restarts/.test(asked) && /listed publicly/.test(asked), 'Go online asks first: the match restarts and is listed');
   await solo.evaluate(() => document.getElementById('online-yes').click());
-  const reset = await solo.evaluate(() => window.__match.combatants().find((c) => c.kind === 'human').kills);
+  const reset = await sim(solo, (m) => m.combatants().find((c) => c.kind === 'human').kills);
   check(reset === 0, `going online restarts the match (score ${reset})`);
   const up = await solo.waitForFunction(() => /^Online · listed/.test(document.getElementById('online-badge')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
   const badge = await solo.evaluate(() => document.getElementById('online-badge')?.textContent ?? '');
@@ -1584,11 +1612,11 @@ async function hostgameFlow(browser) {
   check(joined, `a friend joins the hosted match by its link${screen ? ` (${screen})` : ''}`);
   if (joined) {
     await friend.waitForTimeout(2500);
-    const seen = await host.evaluate(() => window.__match.combatants().filter((c) => c.kind === 'human').map((c) => c.name));
+    const seen = await sim(host, (m) => m.combatants().filter((c) => c.kind === 'human').map((c) => c.name));
     check(seen.length === 2 && seen.includes('Friend'), `the host's match has both players (${seen.join(', ')})`);
     // The friend takes over a bot where it stands, maybe mid-fight: keep them alive while they walk.
-    await host.evaluate(() => {
-      const f = window.__match.combatants().find((c) => c.name === 'Friend');
+    await sim(host, (m) => {
+      const f = m.combatants().find((c) => c.name === 'Friend');
       if (f) setInterval(() => (f.health = f.maxHealth), 50);
     });
     // The friend now spawns at a spawn point, which can face a wall or a bot: turn and try again if blocked.
@@ -1605,9 +1633,9 @@ async function hostgameFlow(browser) {
       }
       return best;
     });
-    const onHost = await host.evaluate(() => {
-      const f = window.__match.combatants().find((c) => c.name === 'Friend');
-      return f ? f.move.pos : null;
+    const onHost = await sim(host, (m) => {
+      const f = m.combatants().find((c) => c.name === 'Friend');
+      return f ? { ...f.move.pos } : null;
     });
     const alive = await friend.evaluate(() => window.__cs.local.alive);
     check(moved > 1 && !!onHost, `the friend moves and the host's match follows (${moved.toFixed(1)} m${alive ? '' : ', friend down'})`);
@@ -1673,10 +1701,10 @@ async function hostcontrolsFlow(browser) {
     document.querySelector('#hc-skill [data-value="hard"]').click();
     document.getElementById('hc-apply').click();
   });
-  const six = await page.waitForFunction(() => window.__match.combatants().length === 6, null, { timeout: T(5000) }).then(() => true, () => false);
+  const six = await simWait(page, (m) => m.combatants().length === 6, null, T(5000));
   const feed = await page.evaluate(() => document.getElementById('feed').textContent);
   check(six && feed.includes('Host set the match to 6 players, bot skill to hard'), `Apply adds bots live, with a feed line (${feed})`);
-  const hard = await page.evaluate(() => window.__match.combatants().filter((c) => c.bot).every((c) => c.bot.difficulty.id === 'hard'));
+  const hard = await sim(page, (m) => m.combatants().filter((c) => c.bot).every((c) => c.bot.difficulty.id === 'hard'));
   check(hard, 'bot skill changes live');
   await page.evaluate(() => document.getElementById('hc-end').click());
   const ended = await page.waitForFunction(() => window.__cs.phase() === 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
@@ -1687,9 +1715,9 @@ async function hostcontrolsFlow(browser) {
   await pickMap(page, 'm3_vault');
   const toast = await page.evaluate(() => document.getElementById('message').textContent);
   check(/Changing map to .*Vault/i.test(toast), `the change is announced (${toast})`);
-  const moved = await page.waitForFunction(() => window.__match?.map.metadata.id === 'm3_vault' && window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false);
+  const moved = (await simWait(page, (m) => m.map.metadata.id === 'm3_vault', null, T(60000))) && (await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false));
   await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
-  const after = await page.evaluate(() => ({ n: window.__match.combatants().length, skill: window.__cs.host()?.skill }));
+  const after = { n: await sim(page, (m) => m.combatants().length), skill: await page.evaluate(() => window.__cs.host()?.skill) };
   check(moved && after.n === 6 && after.skill === 'hard', `the match restarts on the new map with the same players and bots (${JSON.stringify(after)})`);
   await page.context().close();
 
@@ -1726,7 +1754,7 @@ async function hostcontrolsFlow(browser) {
     });
     await openPanel(host);
     await pickMap(host, 'm3_vault');
-    const together = await host.waitForFunction(() => window.__match?.map.metadata.id === 'm3_vault' && window.__match.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, { timeout: T(90000) }).then(() => true, () => false);
+    const together = await simWait(host, (m) => m.map.metadata.id === 'm3_vault' && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, T(90000));
     check(together, "the friend rejoins the host's new map by themselves");
     const friendThere = await friend.waitForFunction(() => window.__cs?.map === 'm3_vault' && window.__cs.local && document.getElementById('menu').hidden, null, { timeout: T(60000) }).then(() => true, () => false);
     const sameCode = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
@@ -1758,13 +1786,14 @@ try {
     });
     // Low graphics unless a flow asks otherwise: software rendering on CI can't afford shadows and
     // post effects, and no check looks at them (the WebGPU flow uses its own browser).
-    await ctx.addInitScript(() => {
+    await ctx.addInitScript((simThread) => {
       try {
         if (!localStorage.getItem('tiletrigger.graphics')) localStorage.setItem('tiletrigger.graphics', 'low');
+        if (simThread) localStorage.setItem('tiletrigger.sim', simThread);
       } catch {
         // No storage: the default applies.
       }
-    });
+    }, MAIN_THREAD_FLOWS.has(currentFlow) ? 'main' : '');
     // A flow closing its pages right after a failed check must not cut that check's screenshot short.
     const close = ctx.close.bind(ctx);
     ctx.close = async (...c) => {

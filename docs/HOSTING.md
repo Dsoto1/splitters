@@ -59,7 +59,18 @@ want always-on official matches.
   Credentials last `ICE_TTL` seconds (default 6 h); each address can ask
   12 times a minute. Relayed play is about 3 KB/s per player. Without a
   provider, players can still enter their own relay in Options → Relay.
-- **Matches** run in the host player's browser. An offline match stays
+- **Matches** run in the host player's browser, in a Web Worker (its own
+  core, apart from rendering; the page's thread where workers aren't
+  available). See docs/PERF_96.md.
+- **Size: 24 players at most with friends in** (`BROWSER_HOST_MAX_PLAYERS`,
+  bots included). The host's browser runs every bot and relays every friend's
+  snapshots, next to its own rendering; 96-player matches are for dedicated
+  servers. Offline, with bots alone, a match may still have up to 96 (the
+  Arcade setup notes that a computer needs to be fast for that). When the
+  first friend joins a bigger match, the bots go down to 24 (the feed says
+  so) and the host controls stop at 24 until the last friend has left; the
+  game browser lists such a game as 24 at most.
+- An offline match stays
   offline and private: nothing listens or connects until the player chooses.
   Pause menu → **Go online** (after a confirm) restarts the match on the same
   map and rules (scores reset, bots back to the host's count), opens a join

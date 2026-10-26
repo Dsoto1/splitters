@@ -1,5 +1,6 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
+  BROWSER_HOST_MAX_PLAYERS,
   BUILT_MOUNT_BASE,
   CLASS_DEFS,
   CLASS_IDS,
@@ -84,6 +85,7 @@ import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
 import { LocalTransport } from './localTransport.ts';
+import { perfProbe } from './perfProbe.ts';
 import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
 import type { PeerHost } from './peerLink.ts';
@@ -471,7 +473,12 @@ export class GameSession {
     );
 
     opts.transport.start(
-      (m) => this.onMessage(m),
+      (m) => {
+        if (!perfProbe.on) return this.onMessage(m);
+        const t0 = performance.now();
+        this.onMessage(m);
+        perfProbe.msg += performance.now() - t0;
+      },
       (reason) => this.exit(reason),
     );
   }
@@ -688,7 +695,10 @@ export class GameSession {
   /** "Go online": a short confirm, then the match restarts and is listed (and joinable by code). */
   private confirmGoOnline(): void {
     if (!this.listable) return;
-    this.confirmBox('online-confirm', 'Go online?', 'The match restarts on the same map and rules (scores reset) and is listed publicly in the game browser. Friends can also join with the code.', 'Go online', () => void this.goOnline());
+    // A browser holds BROWSER_HOST_MAX_PLAYERS with people joining (96-player games are for dedicated servers).
+    const fill = this.hostState?.fill ?? 0;
+    const cap = fill > BROWSER_HOST_MAX_PLAYERS ? ` Your browser hosts ${BROWSER_HOST_MAX_PLAYERS} players at most: the bots go down to that when the first person joins.` : '';
+    this.confirmBox('online-confirm', 'Go online?', `The match restarts on the same map and rules (scores reset) and is listed publicly in the game browser. Friends can also join with the code.${cap}`, 'Go online', () => void this.goOnline());
   }
 
   private async goOnline(): Promise<void> {
@@ -1487,6 +1497,7 @@ export class GameSession {
       this.drawPause();
     }
     const now = performance.now();
+    if (perfProbe.on) perfProbe.beginFrame(now);
     const dt = Math.min(0.25, (now - this.last) / 1000);
     this.frameMs = now - this.last;
     this.last = now;
@@ -1832,7 +1843,12 @@ export class GameSession {
       this.serverStats,
       this.botStates,
     );
+    if (!perfProbe.on) return this.view.render();
+    const r0 = performance.now();
     this.view.render();
+    const end = performance.now();
+    perfProbe.render = end - r0;
+    perfProbe.endFrame(end);
   }
 }
 

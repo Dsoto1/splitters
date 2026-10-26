@@ -1,6 +1,15 @@
 /** Architectural maximum (MASTER_SPEC_V2 §3.4). Never hard-code a smaller structural limit. */
 export const MAX_PLAYER_SLOTS = 96;
 
+/**
+ * Most players (bots included) in a game a browser hosts for friends (Host game,
+ * Go online): that browser runs the whole match next to its own rendering and
+ * relays every friend's snapshots, so it can't carry MAX_PLAYER_SLOTS.
+ * 96-player matches are for dedicated servers; offline play with bots alone may
+ * still use every slot. A policy for browser hosts, not a structural limit.
+ */
+export const BROWSER_HOST_MAX_PLAYERS = 24;
+
 export const TICK_RATE = 60;
 export const TICK_DT = 1 / TICK_RATE;
 /** Server sends a snapshot every N ticks (30 Hz at 60 Hz simulation). */

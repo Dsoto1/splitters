@@ -13,6 +13,7 @@ import {
   isTeamMode,
   LOOK_BIOS,
   MAX_PLAYER_SLOTS,
+  BROWSER_HOST_MAX_PLAYERS,
   MAX_TEAMS,
   TEAM_PRESETS,
   getLook,
@@ -543,7 +544,9 @@ export class FrontEnd {
           ...(coop && PLAYLISTS.length
             ? [row('Playlist', `Play a chain of co-op maps: win one and you go on to the next${PLAYLISTS.map((p) => `\n\n${p.name} (${p.maps.length} maps): ${p.description}`).join('')}`, tabs([['', 'Just this map'], ...PLAYLISTS.map((p): [string, string] => [p.id, `${p.name} (${p.maps.length})`])], s.playlist ?? '', (v) => (this.setup.playlist = v || undefined)))]
             : []),
-          row('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill'])))),
+          row('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill']))),
+          // Big offline matches are allowed, but this browser runs every bot: say so (and what hosting it does).
+          ...(players > BROWSER_HOST_MAX_PLAYERS ? [el('p', { class: 'hint setup-note', id: 'setup-big-note', textContent: `${players} players: your computer runs every bot, so it needs a fast one. Hosting for friends holds ${BROWSER_HOST_MAX_PLAYERS}; 96-player games are for dedicated servers.` })] : [])),
         ...(coop
           ? []
           : s.mode === 'core.race'
