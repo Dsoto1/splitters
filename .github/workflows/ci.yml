@@ -1,10 +1,13 @@
 name: CI
 
 # Branch pushes are covered by their pull request; main is checked on every push.
+# check/* branches are merge candidates: the full suite runs there on GitHub's
+# runners, and only a green candidate is fast-forwarded to main.
 on:
   push:
-    branches: [main]
+    branches: [main, 'check/**']
   pull_request:
+  workflow_dispatch:
 
 # A newer commit makes the run for the older one pointless.
 concurrency:
