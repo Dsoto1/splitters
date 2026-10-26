@@ -6,7 +6,7 @@
 # In the Lightsail console: create an Ubuntu 24.04 instance, attach a static IP,
 # point your domain's A record at it, open the firewall ports listed at the end,
 # then in the browser SSH window:
-#   curl -fsSL https://raw.githubusercontent.com/Dsoto1/splitters/main/deploy/aws-lightsail-setup.sh | sudo bash -s -- play.example.com
+#   curl -fsSL https://raw.githubusercontent.com/Dsoto1/splitters/main/deploy/aws-lightsail-setup.sh | sudo bash -s -- trigger.toshiroplay.com
 # (Another branch: put its name in the URL instead of main, and run `sudo BRANCH=<name> bash -s -- …`.)
 # Re-running it is safe (it updates). Later updates: sudo tiletrigger-update
 set -euo pipefail

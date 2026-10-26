@@ -1,22 +1,34 @@
 # Hosting Tile Trigger
 
-## Quickest: one AWS Lightsail instance (~$5/month)
+## Live site: trigger.toshiroplay.com (one AWS Lightsail instance)
 
-Everything on one small server: the site, the hub (broker + game browser),
-a relay for strict networks (coturn) and HTTPS (Caddy). Nothing else to sign
-up for. Script: `deploy/aws-lightsail-setup.sh`.
+The official site is **https://trigger.toshiroplay.com**. Everything runs on
+one small Lightsail server: the site, the hub (broker + game browser), a relay
+for strict networks (coturn) and HTTPS (Caddy, certificates fetched and renewed
+automatically). The domain `toshiroplay.com` is registered in AWS, so its DNS
+is a Route 53 hosted zone. Script: `deploy/aws-lightsail-setup.sh`.
 
-1. Lightsail → Create instance → Linux, **Ubuntu 24.04**, the $5 plan.
-2. Networking → attach a **static IP**; in Route 53, point an **A record**
-   (for example `play.yourdomain.com`) at it.
-3. Instance → Networking → IPv4 firewall: add **TCP 443**, **TCP 3478**,
-   **UDP 3478**, **UDP 49160–49200** (22 and 80 are open already).
-4. Connect (browser SSH) and run, with your domain:
+1. **Instance:** Lightsail → Create instance → Linux/Unix → OS only →
+   **Ubuntu 24.04**. Plan: 2 GB (~$12/month) builds the game comfortably; the
+   $5 plan works but builds slowly on swap. Resize later if needed.
+2. **Static IP:** Instance → Networking → attach a **static IP**.
+3. **DNS:** Route 53 → Hosted zones → `toshiroplay.com` → Create record:
+   name `trigger`, type **A**, value the static IP, TTL 300.
+4. **Firewall:** Instance → Networking → IPv4 firewall: add **TCP 443**,
+   **TCP 3478**, **UDP 3478**, **UDP 49160–49200** (22 and 80 are open
+   already; 80 is needed for the HTTPS certificate).
+5. **Install:** once `trigger.toshiroplay.com` resolves to the static IP
+   (a few minutes after step 3), open Connect (browser SSH) and run:
    ```
-   curl -fsSL https://raw.githubusercontent.com/Dsoto1/splitters/main/deploy/aws-lightsail-setup.sh | sudo bash -s -- play.yourdomain.com
+   curl -fsSL https://raw.githubusercontent.com/Dsoto1/splitters/main/deploy/aws-lightsail-setup.sh | sudo bash -s -- trigger.toshiroplay.com
    ```
    For another branch, put its name in the URL and add `BRANCH=<name>` after `sudo`.
-5. Open `https://play.yourdomain.com`. Updates later: `sudo tiletrigger-update`.
+6. **Play:** https://trigger.toshiroplay.com. After new pushes to `main`, update
+   the server with `sudo tiletrigger-update`.
+
+Other games on `toshiroplay.com` get their own subdomain the same way (a new A
+record in the same hosted zone). For any other domain, use your own name in
+steps 3 and 5.
 
 The other options below are the same pieces, run elsewhere.
 
