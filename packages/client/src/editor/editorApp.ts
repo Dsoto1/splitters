@@ -161,6 +161,7 @@ import {
   MOUNT_MODELS,
   type MountModel,
   MOUNT_SKINS,
+  FLOAT,
   MOUNT_SKIN_LABELS,
   type MountSkin,
   AIRDROP_MODES,
@@ -2793,6 +2794,10 @@ export class EditorApp {
         else {
           choose('Team', [['', 'Nobody (anyone\'s)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));
           choose('Paint', MOUNT_SKINS.map((k) => [k, MOUNT_SKIN_LABELS[k]] as const), e.skin ?? 'auto', (v) => ({ skin: v === 'auto' ? undefined : (v as MountSkin) }));
+        }
+        if (def.kind === 'vehicle' && !def.vehicle?.fly) {
+          toggle('Rides on water', !!e.onWater, (v) => ({ onWater: v ? true : undefined }));
+          el.append(small(e.onWater ? `Floats on water and swamp, ${def.vehicle?.draft ?? FLOAT.draft} m deep in it: a bit slower and slidier there, and it drives up the shore. Lava and acid still take it.` : 'Sinks to the bottom in water (tick Rides on water for a boat or jet ski).'));
         }
         number('Respawn (s)', e.respawnSeconds ?? def.respawnSeconds, 5, (v) => ({ respawnSeconds: Math.max(5, Math.min(600, v)) }));
         const seats = def.seats.length ? def.seats.map((s) => `${s.label}${s.weapon ? ` (${CORE_WEAPONS[s.weapon]?.displayName})` : ''}`).join(', ') : 'none: it fires on its own';

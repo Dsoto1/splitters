@@ -496,16 +496,18 @@ m.prop('nt_boulder_moss', on(-4, -39), 0.3, 0.9).prop('rock_large', on(22, -31),
 
 // ---------------------------------------------------------------- vehicles: jet skis, bass boats, a pontoon; cars on the roads
 
-const ON_WATER = WATER + 0.15;
+// The boats ride on the lake (onWater): they float a few tenths of a metre deep, cross it and run up the banks.
+const ON_WATER = WATER - 0.3; // their float line: feet a draft (FLOAT.draft) under the surface
+const BOAT = { onWater: true };
 for (const h of HOUSES) {
   const s = h.lake === 'E' ? 1 : -1;
-  m.mount('hover_bike', [r2(h.boathouse[0] - s * 8), ON_WATER, h.dock[2] + 4], h.lake === 'E' ? P : -P);
-  m.mount('speeder', [r2(h.boathouse[0] + s * 9), ON_WATER, h.boathouse[2] - 6], h.lake === 'E' ? P : -P);
+  m.mount('hover_bike', [r2(h.boathouse[0] - s * 8), ON_WATER, h.dock[2] + 4], h.lake === 'E' ? P : -P, null, BOAT);
+  m.mount('speeder', [r2(h.boathouse[0] + s * 9), ON_WATER, h.boathouse[2] - 6], h.lake === 'E' ? P : -P, null, BOAT);
 }
-for (const z of [-18.5, -11.5]) m.mount('hover_bike', [r2(MARINA_X - 13), ON_WATER, z], -P);
-m.mount('hauler', [34, ON_WATER, -27], -P);
-m.mount('speeder', [8, ON_WATER, -50], 0); // in the island's cove
-m.mount('hover_bike', [-48, ON_WATER, -40], P); // in the west cove
+for (const z of [-18.5, -11.5]) m.mount('hover_bike', [r2(MARINA_X - 13), ON_WATER, z], -P, null, BOAT);
+m.mount('hauler', [34, ON_WATER, -27], -P, null, BOAT);
+m.mount('speeder', [8, ON_WATER, -50], 0, null, BOAT); // in the island's cove
+m.mount('hover_bike', [-48, ON_WATER, -40], P, null, BOAT); // in the west cove
 m.mount('gun_jeep', [-112, gy(-112, -60), -60], 0, westTeam);
 m.mount('gun_jeep', [112, gy(112, -60), -60], 0, eastTeam);
 m.mount('buggy', [-108, gy(-108, 80), 80], PI);
