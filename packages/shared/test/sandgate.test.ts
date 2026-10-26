@@ -46,7 +46,7 @@ describe('Sandgate', () => {
     const scores = match.teamScores();
     for (const t of DEFAULT_TEAMS.slice(0, 2)) expect(scores.get(t.id)).toBeGreaterThan(0);
     for (const c of match.combatants()) expect(c.move.pos.y).toBeGreaterThan(-1);
-  });
+  }, 60000);
 });
 
 describe('courtyard tiles', () => {

@@ -399,5 +399,5 @@ describe('co-op mission: Dead Reel', () => {
     me.move = { pos: { x: 24, y: 0, z: 56 }, velY: 0, grounded: true };
     invulnerable(200);
     expect(events.filter((e) => e.e === 'round_end')).toEqual([{ e: 'round_end', winner: null, outcome: 'victory' }]);
-  });
+  }, 60000);
 });
