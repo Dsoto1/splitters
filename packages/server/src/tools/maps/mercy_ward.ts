@@ -106,13 +106,15 @@ for (const t of rooms) m.history.execute('Paint', { kind: 'updateTiles', before:
 for (const t of m.doc.classicStructure.tiles.filter((x) => x.tile === 'core.stairs')) m.history.execute('Paint', { kind: 'updateTiles', before: [t], after: [{ ...t, surfaces: { ...t.surfaces, floor: mat('pbr_concrete'), walls: mat('paint_matte', '#eceeef'), solids: mat('pbr_concrete') } }] });
 /** A room cell at this level (where a dado runs), from a world point. */
 const roomAt = (wx: number, wz: number, level: number) => rooms.some((t) => t.z === level && Math.abs(t.x * 8 - wx) < 4 && Math.abs(t.y * 8 - wz) < 4);
-// The dado: a dark grey band 1.15 m high on every wall face inside the building.
+// The dado: a dark grey band 1.15 m high on every wall face inside the building, under the windows too (up to the sill).
 const DADO = 1.15;
 let dado = 0;
 for (const b of buildMapGeometry(m.doc)) {
   if (b.kind !== 'wall') continue;
   const level = Math.round(b.min[1] / 4);
-  if (Math.abs(b.min[1] - level * 4) > 0.01 || b.max[1] - b.min[1] < 2.5) continue;
+  // Full-height walls, and the sills under windows (shorter pieces standing on the floor).
+  if (Math.abs(b.min[1] - level * 4) > 0.01 || b.max[1] - b.min[1] < 0.5) continue;
+  const high = Math.min(DADO, b.max[1] - b.min[1] + 0.02);
   const [w, d] = [b.max[0] - b.min[0], b.max[2] - b.min[2]];
   if (Math.max(w, d) < 0.3) continue;
   const alongX = w >= d;
@@ -124,7 +126,7 @@ for (const b of buildMapGeometry(m.doc)) {
     if (!probe) continue;
     // Blocks are at least 0.2 m thick: sunk into the wall, 2 cm proud of it.
     const pos: V3 = alongX ? [r2(cx), level * 4, r2(face - sgn * 0.08)] : [r2(face - sgn * 0.08), level * 4, r2(cz)];
-    const size: V3 = alongX ? [r2(w), DADO, 0.2] : [0.2, DADO, r2(d)];
+    const size: V3 = alongX ? [r2(w), r2(high), 0.2] : [0.2, r2(high), r2(d)];
     m.block(pos, size, 'solid', { material: 'paint_matte', tint: '#55595e', id: `dado_${++dado}` });
   }
 }
@@ -263,6 +265,8 @@ m.pickup('armor_small', at(1, -1, 0, 2, -2.2)).pickup('grenades', at(-2, 0, 1, 1
 
 await m.fillTeamSpawns(6);
 m.lightRooms({ color: '#eef4ff', intensity: 0.9, range: 10 });
+// lightRooms lights only rooms with a floor over them: the upstairs and the roofed front rooms get theirs here.
+for (const t of rooms) if (!rooms.some((u) => u.x === t.x && u.y === t.y && u.z === t.z + 1)) m.light([t.x * 8, r2(t.z * 4 + CEIL - 0.55), t.y * 8], { color: '#eef4ff', intensity: 0.9, range: 10 });
 m.light(at(0, -2, 0, 0, -1, 4.5), { fixture: 'none', color: '#ffd9a8', intensity: 0.9, range: 14 });
 m.light(at(3, -2, 0, 0, 0, 4.5), { fixture: 'none', color: '#ffd9a8', intensity: 0.8, range: 12 });
 m.light(at(-3, -2, 0, 0, 0, 4.5), { fixture: 'none', color: '#ffd9a8', intensity: 0.8, range: 12 });

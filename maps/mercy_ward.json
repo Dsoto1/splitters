@@ -1570,14 +1570,14 @@
     {
       "id": "dado_7",
       "position": [
-        -19.35,
+        -17.75,
         0,
-        -3.58
+        3.58
       ],
       "kind": "block",
       "size": [
-        1.3,
-        1.15,
+        1.9,
+        0.92,
         0.2
       ],
       "yaw": 0,
@@ -1592,14 +1592,14 @@
     {
       "id": "dado_8",
       "position": [
-        -16,
+        -17.75,
         0,
-        -3.58
+        3.92
       ],
       "kind": "block",
       "size": [
-        1.6,
-        1.15,
+        1.9,
+        0.92,
         0.2
       ],
       "yaw": 0,
@@ -1614,14 +1614,14 @@
     {
       "id": "dado_9",
       "position": [
-        -12.65,
+        -14.25,
         0,
-        -3.58
+        3.58
       ],
       "kind": "block",
       "size": [
-        1.3,
-        1.15,
+        1.9,
+        0.92,
         0.2
       ],
       "yaw": 0,
@@ -1636,15 +1636,15 @@
     {
       "id": "dado_10",
       "position": [
-        -19.58,
+        -14.25,
         0,
-        0
+        3.92
       ],
       "kind": "block",
       "size": [
-        0.2,
-        1.15,
-        8
+        1.9,
+        0.92,
+        0.2
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -1660,7 +1660,7 @@
       "position": [
         -19.35,
         0,
-        19.58
+        -3.58
       ],
       "kind": "block",
       "size": [
@@ -1682,7 +1682,7 @@
       "position": [
         -16,
         0,
-        19.58
+        -3.58
       ],
       "kind": "block",
       "size": [
@@ -1704,7 +1704,7 @@
       "position": [
         -12.65,
         0,
-        19.58
+        -3.58
       ],
       "kind": "block",
       "size": [
@@ -1724,14 +1724,14 @@
     {
       "id": "dado_14",
       "position": [
-        -18.75,
+        -17.75,
         0,
-        12.08
+        -3.58
       ],
       "kind": "block",
       "size": [
-        2.5,
-        1.15,
+        1.9,
+        0.92,
         0.2
       ],
       "yaw": 0,
@@ -1746,14 +1746,14 @@
     {
       "id": "dado_15",
       "position": [
-        -18.75,
+        -14.25,
         0,
-        12.42
+        -3.58
       ],
       "kind": "block",
       "size": [
-        2.5,
-        1.15,
+        1.9,
+        0.92,
         0.2
       ],
       "yaw": 0,
@@ -1768,15 +1768,15 @@
     {
       "id": "dado_16",
       "position": [
-        -13.25,
+        -19.58,
         0,
-        12.08
+        0
       ],
       "kind": "block",
       "size": [
-        2.5,
+        0.2,
         1.15,
-        0.2
+        8
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -1790,13 +1790,13 @@
     {
       "id": "dado_17",
       "position": [
-        -13.25,
+        -19.35,
         0,
-        12.42
+        19.58
       ],
       "kind": "block",
       "size": [
-        2.5,
+        1.3,
         1.15,
         0.2
       ],
@@ -1812,15 +1812,15 @@
     {
       "id": "dado_18",
       "position": [
-        -19.58,
+        -16,
         0,
-        12.65
+        19.58
       ],
       "kind": "block",
       "size": [
-        0.2,
+        1.6,
         1.15,
-        1.3
+        0.2
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -1834,15 +1834,15 @@
     {
       "id": "dado_19",
       "position": [
-        -19.58,
+        -12.65,
         0,
-        16
+        19.58
       ],
       "kind": "block",
       "size": [
-        0.2,
+        1.3,
         1.15,
-        1.6
+        0.2
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -1856,15 +1856,15 @@
     {
       "id": "dado_20",
       "position": [
-        -19.58,
+        -17.75,
         0,
-        19.35
+        19.58
       ],
       "kind": "block",
       "size": [
-        0.2,
-        1.15,
-        1.3
+        1.9,
+        0.92,
+        0.2
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -1878,14 +1878,14 @@
     {
       "id": "dado_21",
       "position": [
-        -18.75,
+        -14.25,
         0,
-        11.58
+        19.58
       ],
       "kind": "block",
       "size": [
-        2.5,
-        1.15,
+        1.9,
+        0.92,
         0.2
       ],
       "yaw": 0,
@@ -1902,7 +1902,7 @@
       "position": [
         -18.75,
         0,
-        11.92
+        12.08
       ],
       "kind": "block",
       "size": [
@@ -1922,9 +1922,9 @@
     {
       "id": "dado_23",
       "position": [
-        -13.25,
+        -18.75,
         0,
-        11.58
+        12.42
       ],
       "kind": "block",
       "size": [
@@ -1946,7 +1946,7 @@
       "position": [
         -13.25,
         0,
-        11.92
+        12.08
       ],
       "kind": "block",
       "size": [
@@ -1966,13 +1966,13 @@
     {
       "id": "dado_25",
       "position": [
-        -19.35,
+        -13.25,
         0,
-        4.08
+        12.42
       ],
       "kind": "block",
       "size": [
-        1.3,
+        2.5,
         1.15,
         0.2
       ],
@@ -1988,6 +1988,226 @@
     {
       "id": "dado_26",
       "position": [
+        -19.58,
+        0,
+        12.65
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_27",
+      "position": [
+        -19.58,
+        0,
+        16
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_28",
+      "position": [
+        -19.58,
+        0,
+        19.35
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_29",
+      "position": [
+        -19.58,
+        0,
+        14.25
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_30",
+      "position": [
+        -19.58,
+        0,
+        17.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_31",
+      "position": [
+        -18.75,
+        0,
+        11.58
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_32",
+      "position": [
+        -18.75,
+        0,
+        11.92
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_33",
+      "position": [
+        -13.25,
+        0,
+        11.58
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_34",
+      "position": [
+        -13.25,
+        0,
+        11.92
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_35",
+      "position": [
+        -19.35,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_36",
+      "position": [
         -19.35,
         0,
         4.42
@@ -2008,7 +2228,7 @@
       "health": 120
     },
     {
-      "id": "dado_27",
+      "id": "dado_37",
       "position": [
         -16,
         0,
@@ -2030,7 +2250,7 @@
       "health": 120
     },
     {
-      "id": "dado_28",
+      "id": "dado_38",
       "position": [
         -16,
         0,
@@ -2052,7 +2272,7 @@
       "health": 120
     },
     {
-      "id": "dado_29",
+      "id": "dado_39",
       "position": [
         -12.65,
         0,
@@ -2074,7 +2294,7 @@
       "health": 120
     },
     {
-      "id": "dado_30",
+      "id": "dado_40",
       "position": [
         -12.65,
         0,
@@ -2096,7 +2316,95 @@
       "health": 120
     },
     {
-      "id": "dado_31",
+      "id": "dado_41",
+      "position": [
+        -17.75,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_42",
+      "position": [
+        -17.75,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_43",
+      "position": [
+        -14.25,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_44",
+      "position": [
+        -14.25,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_45",
       "position": [
         -19.58,
         0,
@@ -2118,7 +2426,7 @@
       "health": 120
     },
     {
-      "id": "dado_32",
+      "id": "dado_46",
       "position": [
         -19.58,
         0,
@@ -2140,7 +2448,7 @@
       "health": 120
     },
     {
-      "id": "dado_33",
+      "id": "dado_47",
       "position": [
         -19.58,
         0,
@@ -2162,325 +2470,17 @@
       "health": 120
     },
     {
-      "id": "dado_34",
-      "position": [
-        -11.25,
-        0,
-        3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_35",
-      "position": [
-        -11.25,
-        0,
-        3.92
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_36",
-      "position": [
-        -4.75,
-        0,
-        3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_37",
-      "position": [
-        -4.75,
-        0,
-        3.92
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_38",
-      "position": [
-        -11.25,
-        0,
-        -3.92
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_39",
-      "position": [
-        -11.25,
-        0,
-        -3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_40",
-      "position": [
-        -4.75,
-        0,
-        -3.92
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_41",
-      "position": [
-        -4.75,
-        0,
-        -3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_42",
-      "position": [
-        -11.35,
-        0,
-        19.58
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_43",
-      "position": [
-        -8,
-        0,
-        19.58
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_44",
-      "position": [
-        -4.65,
-        0,
-        19.58
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_45",
-      "position": [
-        -10.75,
-        0,
-        12.08
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_46",
-      "position": [
-        -10.75,
-        0,
-        12.42
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_47",
-      "position": [
-        -5.25,
-        0,
-        12.08
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
       "id": "dado_48",
       "position": [
-        -5.25,
+        -19.58,
         0,
-        12.42
+        6.25
       ],
       "kind": "block",
       "size": [
-        2.5,
-        1.15,
-        0.2
+        0.2,
+        0.92,
+        1.9
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -2494,15 +2494,15 @@
     {
       "id": "dado_49",
       "position": [
-        -10.75,
+        -19.58,
         0,
-        11.58
+        9.75
       ],
       "kind": "block",
       "size": [
-        2.5,
-        1.15,
-        0.2
+        0.2,
+        0.92,
+        1.9
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -2516,13 +2516,13 @@
     {
       "id": "dado_50",
       "position": [
-        -10.75,
+        -11.25,
         0,
-        11.92
+        3.58
       ],
       "kind": "block",
       "size": [
-        2.5,
+        1.5,
         1.15,
         0.2
       ],
@@ -2538,13 +2538,13 @@
     {
       "id": "dado_51",
       "position": [
-        -5.25,
+        -11.25,
         0,
-        11.58
+        3.92
       ],
       "kind": "block",
       "size": [
-        2.5,
+        1.5,
         1.15,
         0.2
       ],
@@ -2560,13 +2560,13 @@
     {
       "id": "dado_52",
       "position": [
-        -5.25,
+        -4.75,
         0,
-        11.92
+        3.58
       ],
       "kind": "block",
       "size": [
-        2.5,
+        1.5,
         1.15,
         0.2
       ],
@@ -2582,15 +2582,15 @@
     {
       "id": "dado_53",
       "position": [
-        -4.42,
+        -4.75,
         0,
-        8
+        3.92
       ],
       "kind": "block",
       "size": [
-        0.2,
+        1.5,
         1.15,
-        8
+        0.2
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -2606,7 +2606,7 @@
       "position": [
         -11.25,
         0,
-        4.08
+        -3.92
       ],
       "kind": "block",
       "size": [
@@ -2628,7 +2628,7 @@
       "position": [
         -11.25,
         0,
-        4.42
+        -3.58
       ],
       "kind": "block",
       "size": [
@@ -2650,7 +2650,7 @@
       "position": [
         -4.75,
         0,
-        4.08
+        -3.92
       ],
       "kind": "block",
       "size": [
@@ -2672,7 +2672,7 @@
       "position": [
         -4.75,
         0,
-        4.42
+        -3.58
       ],
       "kind": "block",
       "size": [
@@ -2691,6 +2691,402 @@
     },
     {
       "id": "dado_58",
+      "position": [
+        -11.35,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_59",
+      "position": [
+        -8,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_60",
+      "position": [
+        -4.65,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_61",
+      "position": [
+        -9.75,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_62",
+      "position": [
+        -6.25,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_63",
+      "position": [
+        -10.75,
+        0,
+        12.08
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_64",
+      "position": [
+        -10.75,
+        0,
+        12.42
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_65",
+      "position": [
+        -5.25,
+        0,
+        12.08
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_66",
+      "position": [
+        -5.25,
+        0,
+        12.42
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_67",
+      "position": [
+        -10.75,
+        0,
+        11.58
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_68",
+      "position": [
+        -10.75,
+        0,
+        11.92
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_69",
+      "position": [
+        -5.25,
+        0,
+        11.58
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_70",
+      "position": [
+        -5.25,
+        0,
+        11.92
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_71",
+      "position": [
+        -4.42,
+        0,
+        8
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_72",
+      "position": [
+        -11.25,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_73",
+      "position": [
+        -11.25,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_74",
+      "position": [
+        -4.75,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_75",
+      "position": [
+        -4.75,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_76",
       "position": [
         -2.75,
         0,
@@ -2712,7 +3108,7 @@
       "health": 120
     },
     {
-      "id": "dado_59",
+      "id": "dado_77",
       "position": [
         2.75,
         0,
@@ -2734,7 +3130,7 @@
       "health": 120
     },
     {
-      "id": "dado_60",
+      "id": "dado_78",
       "position": [
         -3.25,
         0,
@@ -2756,7 +3152,7 @@
       "health": 120
     },
     {
-      "id": "dado_61",
+      "id": "dado_79",
       "position": [
         -3.25,
         0,
@@ -2778,7 +3174,7 @@
       "health": 120
     },
     {
-      "id": "dado_62",
+      "id": "dado_80",
       "position": [
         3.25,
         0,
@@ -2800,7 +3196,7 @@
       "health": 120
     },
     {
-      "id": "dado_63",
+      "id": "dado_81",
       "position": [
         3.25,
         0,
@@ -2822,7 +3218,7 @@
       "health": 120
     },
     {
-      "id": "dado_64",
+      "id": "dado_82",
       "position": [
         -3.35,
         0,
@@ -2844,7 +3240,7 @@
       "health": 120
     },
     {
-      "id": "dado_65",
+      "id": "dado_83",
       "position": [
         0,
         0,
@@ -2866,7 +3262,7 @@
       "health": 120
     },
     {
-      "id": "dado_66",
+      "id": "dado_84",
       "position": [
         3.35,
         0,
@@ -2888,412 +3284,16 @@
       "health": 120
     },
     {
-      "id": "dado_67",
-      "position": [
-        0,
-        0,
-        12.42
-      ],
-      "kind": "block",
-      "size": [
-        8,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_68",
-      "position": [
-        4.75,
-        0,
-        3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_69",
-      "position": [
-        4.75,
-        0,
-        3.92
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_70",
-      "position": [
-        11.25,
-        0,
-        3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_71",
-      "position": [
-        11.25,
-        0,
-        3.92
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_72",
-      "position": [
-        4.75,
-        0,
-        -3.92
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_73",
-      "position": [
-        4.75,
-        0,
-        -3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_74",
-      "position": [
-        11.25,
-        0,
-        -3.92
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_75",
-      "position": [
-        11.25,
-        0,
-        -3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_76",
-      "position": [
-        4.65,
-        0,
-        19.58
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_77",
-      "position": [
-        8,
-        0,
-        19.58
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_78",
-      "position": [
-        11.35,
-        0,
-        19.58
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_79",
-      "position": [
-        5.25,
-        0,
-        12.08
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_80",
-      "position": [
-        5.25,
-        0,
-        12.42
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_81",
-      "position": [
-        10.75,
-        0,
-        12.08
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_82",
-      "position": [
-        10.75,
-        0,
-        12.42
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_83",
-      "position": [
-        5.25,
-        0,
-        11.58
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_84",
-      "position": [
-        5.25,
-        0,
-        11.92
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
       "id": "dado_85",
       "position": [
-        10.75,
+        -1.75,
         0,
-        11.58
+        19.58
       ],
       "kind": "block",
       "size": [
-        2.5,
-        1.15,
+        1.9,
+        0.92,
         0.2
       ],
       "yaw": 0,
@@ -3308,14 +3308,14 @@
     {
       "id": "dado_86",
       "position": [
-        10.75,
+        1.75,
         0,
-        11.92
+        19.58
       ],
       "kind": "block",
       "size": [
-        2.5,
-        1.15,
+        1.9,
+        0.92,
         0.2
       ],
       "yaw": 0,
@@ -3330,13 +3330,13 @@
     {
       "id": "dado_87",
       "position": [
-        4.75,
         0,
-        4.08
+        0,
+        12.42
       ],
       "kind": "block",
       "size": [
-        1.5,
+        8,
         1.15,
         0.2
       ],
@@ -3354,7 +3354,7 @@
       "position": [
         4.75,
         0,
-        4.42
+        3.58
       ],
       "kind": "block",
       "size": [
@@ -3374,9 +3374,9 @@
     {
       "id": "dado_89",
       "position": [
-        11.25,
+        4.75,
         0,
-        4.08
+        3.92
       ],
       "kind": "block",
       "size": [
@@ -3398,7 +3398,7 @@
       "position": [
         11.25,
         0,
-        4.42
+        3.58
       ],
       "kind": "block",
       "size": [
@@ -3417,6 +3417,490 @@
     },
     {
       "id": "dado_91",
+      "position": [
+        11.25,
+        0,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_92",
+      "position": [
+        4.75,
+        0,
+        -3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_93",
+      "position": [
+        4.75,
+        0,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_94",
+      "position": [
+        11.25,
+        0,
+        -3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_95",
+      "position": [
+        11.25,
+        0,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_96",
+      "position": [
+        4.65,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_97",
+      "position": [
+        8,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_98",
+      "position": [
+        11.35,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_99",
+      "position": [
+        6.25,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_100",
+      "position": [
+        9.75,
+        0,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_101",
+      "position": [
+        5.25,
+        0,
+        12.08
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_102",
+      "position": [
+        5.25,
+        0,
+        12.42
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_103",
+      "position": [
+        10.75,
+        0,
+        12.08
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_104",
+      "position": [
+        10.75,
+        0,
+        12.42
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_105",
+      "position": [
+        5.25,
+        0,
+        11.58
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_106",
+      "position": [
+        5.25,
+        0,
+        11.92
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_107",
+      "position": [
+        10.75,
+        0,
+        11.58
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_108",
+      "position": [
+        10.75,
+        0,
+        11.92
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_109",
+      "position": [
+        4.75,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_110",
+      "position": [
+        4.75,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_111",
+      "position": [
+        11.25,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_112",
+      "position": [
+        11.25,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_113",
       "position": [
         4.42,
         0,
@@ -3438,7 +3922,7 @@
       "health": 120
     },
     {
-      "id": "dado_92",
+      "id": "dado_114",
       "position": [
         12.65,
         0,
@@ -3460,7 +3944,7 @@
       "health": 120
     },
     {
-      "id": "dado_93",
+      "id": "dado_115",
       "position": [
         12.65,
         0,
@@ -3482,7 +3966,7 @@
       "health": 120
     },
     {
-      "id": "dado_94",
+      "id": "dado_116",
       "position": [
         16,
         0,
@@ -3504,7 +3988,7 @@
       "health": 120
     },
     {
-      "id": "dado_95",
+      "id": "dado_117",
       "position": [
         16,
         0,
@@ -3526,7 +4010,7 @@
       "health": 120
     },
     {
-      "id": "dado_96",
+      "id": "dado_118",
       "position": [
         19.35,
         0,
@@ -3548,7 +4032,7 @@
       "health": 120
     },
     {
-      "id": "dado_97",
+      "id": "dado_119",
       "position": [
         19.35,
         0,
@@ -3570,7 +4054,95 @@
       "health": 120
     },
     {
-      "id": "dado_98",
+      "id": "dado_120",
+      "position": [
+        14.25,
+        0,
+        3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_121",
+      "position": [
+        14.25,
+        0,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_122",
+      "position": [
+        17.75,
+        0,
+        3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_123",
+      "position": [
+        17.75,
+        0,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_124",
       "position": [
         19.58,
         0,
@@ -3592,583 +4164,11 @@
       "health": 120
     },
     {
-      "id": "dado_99",
-      "position": [
-        12.65,
-        0,
-        -3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_100",
-      "position": [
-        16,
-        0,
-        -3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_101",
-      "position": [
-        19.35,
-        0,
-        -3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_102",
-      "position": [
-        12.65,
-        0,
-        19.58
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_103",
-      "position": [
-        16,
-        0,
-        19.58
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_104",
-      "position": [
-        19.35,
-        0,
-        19.58
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_105",
-      "position": [
-        19.58,
-        0,
-        12.65
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        1.15,
-        1.3
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_106",
-      "position": [
-        19.58,
-        0,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        1.15,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_107",
-      "position": [
-        19.58,
-        0,
-        19.35
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        1.15,
-        1.3
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_108",
-      "position": [
-        13.25,
-        0,
-        12.08
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_109",
-      "position": [
-        13.25,
-        0,
-        12.42
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_110",
-      "position": [
-        18.75,
-        0,
-        12.08
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_111",
-      "position": [
-        18.75,
-        0,
-        12.42
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_112",
-      "position": [
-        13.25,
-        0,
-        11.58
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_113",
-      "position": [
-        13.25,
-        0,
-        11.92
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_114",
-      "position": [
-        18.75,
-        0,
-        11.58
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_115",
-      "position": [
-        18.75,
-        0,
-        11.92
-      ],
-      "kind": "block",
-      "size": [
-        2.5,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_116",
-      "position": [
-        19.58,
-        0,
-        4.65
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        1.15,
-        1.3
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_117",
-      "position": [
-        19.58,
-        0,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        1.15,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_118",
-      "position": [
-        19.58,
-        0,
-        11.35
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        1.15,
-        1.3
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_119",
-      "position": [
-        12.65,
-        0,
-        4.08
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_120",
-      "position": [
-        12.65,
-        0,
-        4.42
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_121",
-      "position": [
-        16,
-        0,
-        4.08
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_122",
-      "position": [
-        16,
-        0,
-        4.42
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_123",
-      "position": [
-        19.35,
-        0,
-        4.08
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_124",
-      "position": [
-        19.35,
-        0,
-        4.42
-      ],
-      "kind": "block",
-      "size": [
-        1.3,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
       "id": "dado_125",
       "position": [
-        -19.35,
-        4,
-        3.58
+        12.65,
+        0,
+        -3.58
       ],
       "kind": "block",
       "size": [
@@ -4188,13 +4188,13 @@
     {
       "id": "dado_126",
       "position": [
-        -19.35,
-        4,
-        3.92
+        16,
+        0,
+        -3.58
       ],
       "kind": "block",
       "size": [
-        1.3,
+        1.6,
         1.15,
         0.2
       ],
@@ -4210,53 +4210,9 @@
     {
       "id": "dado_127",
       "position": [
-        -16,
-        4,
-        3.58
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_128",
-      "position": [
-        -16,
-        4,
-        3.92
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        1.15,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#55595e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "dado_129",
-      "position": [
-        -12.65,
-        4,
-        3.58
+        19.35,
+        0,
+        -3.58
       ],
       "kind": "block",
       "size": [
@@ -4274,11 +4230,55 @@
       "health": 120
     },
     {
+      "id": "dado_128",
+      "position": [
+        14.25,
+        0,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_129",
+      "position": [
+        17.75,
+        0,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
       "id": "dado_130",
       "position": [
-        -12.65,
-        4,
-        3.92
+        12.65,
+        0,
+        19.58
       ],
       "kind": "block",
       "size": [
@@ -4298,13 +4298,13 @@
     {
       "id": "dado_131",
       "position": [
-        -19.35,
-        4,
-        -3.58
+        16,
+        0,
+        19.58
       ],
       "kind": "block",
       "size": [
-        1.3,
+        1.6,
         1.15,
         0.2
       ],
@@ -4320,13 +4320,13 @@
     {
       "id": "dado_132",
       "position": [
-        -16,
-        4,
-        -3.58
+        19.35,
+        0,
+        19.58
       ],
       "kind": "block",
       "size": [
-        1.6,
+        1.3,
         1.15,
         0.2
       ],
@@ -4342,14 +4342,14 @@
     {
       "id": "dado_133",
       "position": [
-        -12.65,
-        4,
-        -3.58
+        14.25,
+        0,
+        19.58
       ],
       "kind": "block",
       "size": [
-        1.3,
-        1.15,
+        1.9,
+        0.92,
         0.2
       ],
       "yaw": 0,
@@ -4364,15 +4364,15 @@
     {
       "id": "dado_134",
       "position": [
-        -19.58,
-        4,
-        -2.75
+        17.75,
+        0,
+        19.58
       ],
       "kind": "block",
       "size": [
-        0.2,
-        1.15,
-        2.5
+        1.9,
+        0.92,
+        0.2
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -4386,15 +4386,15 @@
     {
       "id": "dado_135",
       "position": [
-        -19.58,
-        4,
-        2.75
+        19.58,
+        0,
+        12.65
       ],
       "kind": "block",
       "size": [
         0.2,
         1.15,
-        2.5
+        1.3
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -4408,15 +4408,15 @@
     {
       "id": "dado_136",
       "position": [
-        -19.35,
-        4,
-        19.58
+        19.58,
+        0,
+        16
       ],
       "kind": "block",
       "size": [
-        1.3,
+        0.2,
         1.15,
-        0.2
+        1.6
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -4430,15 +4430,15 @@
     {
       "id": "dado_137",
       "position": [
-        -16,
-        4,
-        19.58
+        19.58,
+        0,
+        19.35
       ],
       "kind": "block",
       "size": [
-        1.6,
+        0.2,
         1.15,
-        0.2
+        1.3
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -4452,15 +4452,15 @@
     {
       "id": "dado_138",
       "position": [
-        -12.65,
-        4,
-        19.58
+        19.58,
+        0,
+        14.25
       ],
       "kind": "block",
       "size": [
-        1.3,
-        1.15,
-        0.2
+        0.2,
+        0.92,
+        1.9
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -4474,15 +4474,15 @@
     {
       "id": "dado_139",
       "position": [
-        -18.75,
-        4,
-        12.08
+        19.58,
+        0,
+        17.75
       ],
       "kind": "block",
       "size": [
-        2.5,
-        1.15,
-        0.2
+        0.2,
+        0.92,
+        1.9
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -4496,9 +4496,9 @@
     {
       "id": "dado_140",
       "position": [
-        -18.75,
-        4,
-        12.42
+        13.25,
+        0,
+        12.08
       ],
       "kind": "block",
       "size": [
@@ -4518,9 +4518,9 @@
     {
       "id": "dado_141",
       "position": [
-        -13.25,
-        4,
-        12.08
+        13.25,
+        0,
+        12.42
       ],
       "kind": "block",
       "size": [
@@ -4540,9 +4540,9 @@
     {
       "id": "dado_142",
       "position": [
-        -13.25,
-        4,
-        12.42
+        18.75,
+        0,
+        12.08
       ],
       "kind": "block",
       "size": [
@@ -4562,15 +4562,15 @@
     {
       "id": "dado_143",
       "position": [
-        -19.58,
-        4,
-        12.65
+        18.75,
+        0,
+        12.42
       ],
       "kind": "block",
       "size": [
-        0.2,
+        2.5,
         1.15,
-        1.3
+        0.2
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -4584,15 +4584,15 @@
     {
       "id": "dado_144",
       "position": [
-        -19.58,
-        4,
-        16
+        13.25,
+        0,
+        11.58
       ],
       "kind": "block",
       "size": [
-        0.2,
+        2.5,
         1.15,
-        1.6
+        0.2
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -4606,15 +4606,15 @@
     {
       "id": "dado_145",
       "position": [
-        -19.58,
-        4,
-        19.35
+        13.25,
+        0,
+        11.92
       ],
       "kind": "block",
       "size": [
-        0.2,
+        2.5,
         1.15,
-        1.3
+        0.2
       ],
       "yaw": 0,
       "material": "core.paint_matte",
@@ -4628,8 +4628,8 @@
     {
       "id": "dado_146",
       "position": [
-        -18.75,
-        4,
+        18.75,
+        0,
         11.58
       ],
       "kind": "block",
@@ -4650,6 +4650,1062 @@
     {
       "id": "dado_147",
       "position": [
+        18.75,
+        0,
+        11.92
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_148",
+      "position": [
+        19.58,
+        0,
+        4.65
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_149",
+      "position": [
+        19.58,
+        0,
+        8
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_150",
+      "position": [
+        19.58,
+        0,
+        11.35
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_151",
+      "position": [
+        19.58,
+        0,
+        6.25
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_152",
+      "position": [
+        19.58,
+        0,
+        9.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_153",
+      "position": [
+        12.65,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_154",
+      "position": [
+        12.65,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_155",
+      "position": [
+        16,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_156",
+      "position": [
+        16,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_157",
+      "position": [
+        19.35,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_158",
+      "position": [
+        19.35,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_159",
+      "position": [
+        14.25,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_160",
+      "position": [
+        14.25,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_161",
+      "position": [
+        17.75,
+        0,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_162",
+      "position": [
+        17.75,
+        0,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_163",
+      "position": [
+        -19.35,
+        4,
+        3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_164",
+      "position": [
+        -19.35,
+        4,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_165",
+      "position": [
+        -16,
+        4,
+        3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_166",
+      "position": [
+        -16,
+        4,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_167",
+      "position": [
+        -12.65,
+        4,
+        3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_168",
+      "position": [
+        -12.65,
+        4,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_169",
+      "position": [
+        -17.75,
+        4,
+        3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_170",
+      "position": [
+        -17.75,
+        4,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_171",
+      "position": [
+        -14.25,
+        4,
+        3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_172",
+      "position": [
+        -14.25,
+        4,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_173",
+      "position": [
+        -19.35,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_174",
+      "position": [
+        -16,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_175",
+      "position": [
+        -12.65,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_176",
+      "position": [
+        -17.75,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_177",
+      "position": [
+        -14.25,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_178",
+      "position": [
+        -19.58,
+        4,
+        -2.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        2.5
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_179",
+      "position": [
+        -19.58,
+        4,
+        2.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        2.5
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_180",
+      "position": [
+        -19.35,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_181",
+      "position": [
+        -16,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_182",
+      "position": [
+        -12.65,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_183",
+      "position": [
+        -17.75,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_184",
+      "position": [
+        -14.25,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_185",
+      "position": [
+        -18.75,
+        4,
+        12.08
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_186",
+      "position": [
+        -18.75,
+        4,
+        12.42
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_187",
+      "position": [
+        -13.25,
+        4,
+        12.08
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_188",
+      "position": [
+        -13.25,
+        4,
+        12.42
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_189",
+      "position": [
+        -19.58,
+        4,
+        12.65
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_190",
+      "position": [
+        -19.58,
+        4,
+        16
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_191",
+      "position": [
+        -19.58,
+        4,
+        19.35
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.15,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_192",
+      "position": [
+        -19.58,
+        4,
+        14.25
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_193",
+      "position": [
+        -19.58,
+        4,
+        17.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_194",
+      "position": [
+        -18.75,
+        4,
+        11.58
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        1.15,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_195",
+      "position": [
         -18.75,
         4,
         11.92
@@ -4670,7 +5726,7 @@
       "health": 120
     },
     {
-      "id": "dado_148",
+      "id": "dado_196",
       "position": [
         -13.25,
         4,
@@ -4692,7 +5748,7 @@
       "health": 120
     },
     {
-      "id": "dado_149",
+      "id": "dado_197",
       "position": [
         -13.25,
         4,
@@ -4714,7 +5770,7 @@
       "health": 120
     },
     {
-      "id": "dado_150",
+      "id": "dado_198",
       "position": [
         -19.35,
         4,
@@ -4736,7 +5792,7 @@
       "health": 120
     },
     {
-      "id": "dado_151",
+      "id": "dado_199",
       "position": [
         -19.35,
         4,
@@ -4758,7 +5814,7 @@
       "health": 120
     },
     {
-      "id": "dado_152",
+      "id": "dado_200",
       "position": [
         -16,
         4,
@@ -4780,7 +5836,7 @@
       "health": 120
     },
     {
-      "id": "dado_153",
+      "id": "dado_201",
       "position": [
         -16,
         4,
@@ -4802,7 +5858,7 @@
       "health": 120
     },
     {
-      "id": "dado_154",
+      "id": "dado_202",
       "position": [
         -12.65,
         4,
@@ -4824,7 +5880,7 @@
       "health": 120
     },
     {
-      "id": "dado_155",
+      "id": "dado_203",
       "position": [
         -12.65,
         4,
@@ -4846,7 +5902,95 @@
       "health": 120
     },
     {
-      "id": "dado_156",
+      "id": "dado_204",
+      "position": [
+        -17.75,
+        4,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_205",
+      "position": [
+        -17.75,
+        4,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_206",
+      "position": [
+        -14.25,
+        4,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_207",
+      "position": [
+        -14.25,
+        4,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_208",
       "position": [
         -19.58,
         4,
@@ -4868,7 +6012,7 @@
       "health": 120
     },
     {
-      "id": "dado_157",
+      "id": "dado_209",
       "position": [
         -19.58,
         4,
@@ -4890,7 +6034,7 @@
       "health": 120
     },
     {
-      "id": "dado_158",
+      "id": "dado_210",
       "position": [
         -19.58,
         4,
@@ -4912,7 +6056,51 @@
       "health": 120
     },
     {
-      "id": "dado_159",
+      "id": "dado_211",
+      "position": [
+        -19.58,
+        4,
+        6.25
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_212",
+      "position": [
+        -19.58,
+        4,
+        9.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_213",
       "position": [
         -11.25,
         4,
@@ -4934,7 +6122,7 @@
       "health": 120
     },
     {
-      "id": "dado_160",
+      "id": "dado_214",
       "position": [
         -11.25,
         4,
@@ -4956,7 +6144,7 @@
       "health": 120
     },
     {
-      "id": "dado_161",
+      "id": "dado_215",
       "position": [
         -4.75,
         4,
@@ -4978,7 +6166,7 @@
       "health": 120
     },
     {
-      "id": "dado_162",
+      "id": "dado_216",
       "position": [
         -4.75,
         4,
@@ -5000,7 +6188,7 @@
       "health": 120
     },
     {
-      "id": "dado_163",
+      "id": "dado_217",
       "position": [
         -11.35,
         4,
@@ -5022,7 +6210,7 @@
       "health": 120
     },
     {
-      "id": "dado_164",
+      "id": "dado_218",
       "position": [
         -8,
         4,
@@ -5044,7 +6232,7 @@
       "health": 120
     },
     {
-      "id": "dado_165",
+      "id": "dado_219",
       "position": [
         -4.65,
         4,
@@ -5066,7 +6254,51 @@
       "health": 120
     },
     {
-      "id": "dado_166",
+      "id": "dado_220",
+      "position": [
+        -9.75,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_221",
+      "position": [
+        -6.25,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_222",
       "position": [
         -11.35,
         4,
@@ -5088,7 +6320,7 @@
       "health": 120
     },
     {
-      "id": "dado_167",
+      "id": "dado_223",
       "position": [
         -8,
         4,
@@ -5110,7 +6342,7 @@
       "health": 120
     },
     {
-      "id": "dado_168",
+      "id": "dado_224",
       "position": [
         -4.65,
         4,
@@ -5132,7 +6364,51 @@
       "health": 120
     },
     {
-      "id": "dado_169",
+      "id": "dado_225",
+      "position": [
+        -9.75,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_226",
+      "position": [
+        -6.25,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_227",
       "position": [
         -10.75,
         4,
@@ -5154,7 +6430,7 @@
       "health": 120
     },
     {
-      "id": "dado_170",
+      "id": "dado_228",
       "position": [
         -10.75,
         4,
@@ -5176,7 +6452,7 @@
       "health": 120
     },
     {
-      "id": "dado_171",
+      "id": "dado_229",
       "position": [
         -5.25,
         4,
@@ -5198,7 +6474,7 @@
       "health": 120
     },
     {
-      "id": "dado_172",
+      "id": "dado_230",
       "position": [
         -5.25,
         4,
@@ -5220,7 +6496,7 @@
       "health": 120
     },
     {
-      "id": "dado_173",
+      "id": "dado_231",
       "position": [
         -10.75,
         4,
@@ -5242,7 +6518,7 @@
       "health": 120
     },
     {
-      "id": "dado_174",
+      "id": "dado_232",
       "position": [
         -10.75,
         4,
@@ -5264,7 +6540,7 @@
       "health": 120
     },
     {
-      "id": "dado_175",
+      "id": "dado_233",
       "position": [
         -5.25,
         4,
@@ -5286,7 +6562,7 @@
       "health": 120
     },
     {
-      "id": "dado_176",
+      "id": "dado_234",
       "position": [
         -5.25,
         4,
@@ -5308,7 +6584,7 @@
       "health": 120
     },
     {
-      "id": "dado_177",
+      "id": "dado_235",
       "position": [
         -4.42,
         4,
@@ -5330,7 +6606,7 @@
       "health": 120
     },
     {
-      "id": "dado_178",
+      "id": "dado_236",
       "position": [
         -11.25,
         4,
@@ -5352,7 +6628,7 @@
       "health": 120
     },
     {
-      "id": "dado_179",
+      "id": "dado_237",
       "position": [
         -11.25,
         4,
@@ -5374,7 +6650,7 @@
       "health": 120
     },
     {
-      "id": "dado_180",
+      "id": "dado_238",
       "position": [
         -4.75,
         4,
@@ -5396,7 +6672,7 @@
       "health": 120
     },
     {
-      "id": "dado_181",
+      "id": "dado_239",
       "position": [
         -4.75,
         4,
@@ -5418,7 +6694,7 @@
       "health": 120
     },
     {
-      "id": "dado_182",
+      "id": "dado_240",
       "position": [
         0,
         4,
@@ -5440,7 +6716,7 @@
       "health": 120
     },
     {
-      "id": "dado_183",
+      "id": "dado_241",
       "position": [
         -3.35,
         4,
@@ -5462,7 +6738,7 @@
       "health": 120
     },
     {
-      "id": "dado_184",
+      "id": "dado_242",
       "position": [
         0,
         4,
@@ -5484,7 +6760,7 @@
       "health": 120
     },
     {
-      "id": "dado_185",
+      "id": "dado_243",
       "position": [
         3.35,
         4,
@@ -5506,7 +6782,51 @@
       "health": 120
     },
     {
-      "id": "dado_186",
+      "id": "dado_244",
+      "position": [
+        -1.75,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_245",
+      "position": [
+        1.75,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_246",
       "position": [
         -3.35,
         4,
@@ -5528,7 +6848,7 @@
       "health": 120
     },
     {
-      "id": "dado_187",
+      "id": "dado_247",
       "position": [
         0,
         4,
@@ -5550,7 +6870,7 @@
       "health": 120
     },
     {
-      "id": "dado_188",
+      "id": "dado_248",
       "position": [
         3.35,
         4,
@@ -5572,7 +6892,51 @@
       "health": 120
     },
     {
-      "id": "dado_189",
+      "id": "dado_249",
+      "position": [
+        -1.75,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_250",
+      "position": [
+        1.75,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_251",
       "position": [
         -2.75,
         4,
@@ -5594,7 +6958,7 @@
       "health": 120
     },
     {
-      "id": "dado_190",
+      "id": "dado_252",
       "position": [
         2.75,
         4,
@@ -5616,7 +6980,7 @@
       "health": 120
     },
     {
-      "id": "dado_191",
+      "id": "dado_253",
       "position": [
         4.75,
         4,
@@ -5638,7 +7002,7 @@
       "health": 120
     },
     {
-      "id": "dado_192",
+      "id": "dado_254",
       "position": [
         4.75,
         4,
@@ -5660,7 +7024,7 @@
       "health": 120
     },
     {
-      "id": "dado_193",
+      "id": "dado_255",
       "position": [
         11.25,
         4,
@@ -5682,7 +7046,7 @@
       "health": 120
     },
     {
-      "id": "dado_194",
+      "id": "dado_256",
       "position": [
         11.25,
         4,
@@ -5704,7 +7068,7 @@
       "health": 120
     },
     {
-      "id": "dado_195",
+      "id": "dado_257",
       "position": [
         4.65,
         4,
@@ -5726,7 +7090,7 @@
       "health": 120
     },
     {
-      "id": "dado_196",
+      "id": "dado_258",
       "position": [
         8,
         4,
@@ -5748,7 +7112,7 @@
       "health": 120
     },
     {
-      "id": "dado_197",
+      "id": "dado_259",
       "position": [
         11.35,
         4,
@@ -5770,7 +7134,51 @@
       "health": 120
     },
     {
-      "id": "dado_198",
+      "id": "dado_260",
+      "position": [
+        6.25,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_261",
+      "position": [
+        9.75,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_262",
       "position": [
         4.65,
         4,
@@ -5792,7 +7200,7 @@
       "health": 120
     },
     {
-      "id": "dado_199",
+      "id": "dado_263",
       "position": [
         8,
         4,
@@ -5814,7 +7222,7 @@
       "health": 120
     },
     {
-      "id": "dado_200",
+      "id": "dado_264",
       "position": [
         11.35,
         4,
@@ -5836,7 +7244,51 @@
       "health": 120
     },
     {
-      "id": "dado_201",
+      "id": "dado_265",
+      "position": [
+        6.25,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_266",
+      "position": [
+        9.75,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_267",
       "position": [
         5.25,
         4,
@@ -5858,7 +7310,7 @@
       "health": 120
     },
     {
-      "id": "dado_202",
+      "id": "dado_268",
       "position": [
         5.25,
         4,
@@ -5880,7 +7332,7 @@
       "health": 120
     },
     {
-      "id": "dado_203",
+      "id": "dado_269",
       "position": [
         10.75,
         4,
@@ -5902,7 +7354,7 @@
       "health": 120
     },
     {
-      "id": "dado_204",
+      "id": "dado_270",
       "position": [
         10.75,
         4,
@@ -5924,7 +7376,7 @@
       "health": 120
     },
     {
-      "id": "dado_205",
+      "id": "dado_271",
       "position": [
         5.25,
         4,
@@ -5946,7 +7398,7 @@
       "health": 120
     },
     {
-      "id": "dado_206",
+      "id": "dado_272",
       "position": [
         5.25,
         4,
@@ -5968,7 +7420,7 @@
       "health": 120
     },
     {
-      "id": "dado_207",
+      "id": "dado_273",
       "position": [
         10.75,
         4,
@@ -5990,7 +7442,7 @@
       "health": 120
     },
     {
-      "id": "dado_208",
+      "id": "dado_274",
       "position": [
         10.75,
         4,
@@ -6012,7 +7464,7 @@
       "health": 120
     },
     {
-      "id": "dado_209",
+      "id": "dado_275",
       "position": [
         4.75,
         4,
@@ -6034,7 +7486,7 @@
       "health": 120
     },
     {
-      "id": "dado_210",
+      "id": "dado_276",
       "position": [
         4.75,
         4,
@@ -6056,7 +7508,7 @@
       "health": 120
     },
     {
-      "id": "dado_211",
+      "id": "dado_277",
       "position": [
         11.25,
         4,
@@ -6078,7 +7530,7 @@
       "health": 120
     },
     {
-      "id": "dado_212",
+      "id": "dado_278",
       "position": [
         11.25,
         4,
@@ -6100,7 +7552,7 @@
       "health": 120
     },
     {
-      "id": "dado_213",
+      "id": "dado_279",
       "position": [
         4.42,
         4,
@@ -6122,7 +7574,7 @@
       "health": 120
     },
     {
-      "id": "dado_214",
+      "id": "dado_280",
       "position": [
         12.65,
         4,
@@ -6144,7 +7596,7 @@
       "health": 120
     },
     {
-      "id": "dado_215",
+      "id": "dado_281",
       "position": [
         12.65,
         4,
@@ -6166,7 +7618,7 @@
       "health": 120
     },
     {
-      "id": "dado_216",
+      "id": "dado_282",
       "position": [
         16,
         4,
@@ -6188,7 +7640,7 @@
       "health": 120
     },
     {
-      "id": "dado_217",
+      "id": "dado_283",
       "position": [
         16,
         4,
@@ -6210,7 +7662,7 @@
       "health": 120
     },
     {
-      "id": "dado_218",
+      "id": "dado_284",
       "position": [
         19.35,
         4,
@@ -6232,7 +7684,7 @@
       "health": 120
     },
     {
-      "id": "dado_219",
+      "id": "dado_285",
       "position": [
         19.35,
         4,
@@ -6254,7 +7706,95 @@
       "health": 120
     },
     {
-      "id": "dado_220",
+      "id": "dado_286",
+      "position": [
+        14.25,
+        4,
+        3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_287",
+      "position": [
+        14.25,
+        4,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_288",
+      "position": [
+        17.75,
+        4,
+        3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_289",
+      "position": [
+        17.75,
+        4,
+        3.92
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_290",
       "position": [
         19.58,
         4,
@@ -6276,7 +7816,7 @@
       "health": 120
     },
     {
-      "id": "dado_221",
+      "id": "dado_291",
       "position": [
         19.58,
         4,
@@ -6298,7 +7838,7 @@
       "health": 120
     },
     {
-      "id": "dado_222",
+      "id": "dado_292",
       "position": [
         12.65,
         4,
@@ -6320,7 +7860,7 @@
       "health": 120
     },
     {
-      "id": "dado_223",
+      "id": "dado_293",
       "position": [
         16,
         4,
@@ -6342,7 +7882,7 @@
       "health": 120
     },
     {
-      "id": "dado_224",
+      "id": "dado_294",
       "position": [
         19.35,
         4,
@@ -6364,7 +7904,51 @@
       "health": 120
     },
     {
-      "id": "dado_225",
+      "id": "dado_295",
+      "position": [
+        14.25,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_296",
+      "position": [
+        17.75,
+        4,
+        -3.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_297",
       "position": [
         12.65,
         4,
@@ -6386,7 +7970,7 @@
       "health": 120
     },
     {
-      "id": "dado_226",
+      "id": "dado_298",
       "position": [
         16,
         4,
@@ -6408,7 +7992,7 @@
       "health": 120
     },
     {
-      "id": "dado_227",
+      "id": "dado_299",
       "position": [
         19.35,
         4,
@@ -6430,7 +8014,51 @@
       "health": 120
     },
     {
-      "id": "dado_228",
+      "id": "dado_300",
+      "position": [
+        14.25,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_301",
+      "position": [
+        17.75,
+        4,
+        19.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_302",
       "position": [
         19.58,
         4,
@@ -6452,7 +8080,7 @@
       "health": 120
     },
     {
-      "id": "dado_229",
+      "id": "dado_303",
       "position": [
         19.58,
         4,
@@ -6474,7 +8102,7 @@
       "health": 120
     },
     {
-      "id": "dado_230",
+      "id": "dado_304",
       "position": [
         19.58,
         4,
@@ -6496,7 +8124,51 @@
       "health": 120
     },
     {
-      "id": "dado_231",
+      "id": "dado_305",
+      "position": [
+        19.58,
+        4,
+        14.25
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_306",
+      "position": [
+        19.58,
+        4,
+        17.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_307",
       "position": [
         13.25,
         4,
@@ -6518,7 +8190,7 @@
       "health": 120
     },
     {
-      "id": "dado_232",
+      "id": "dado_308",
       "position": [
         13.25,
         4,
@@ -6540,7 +8212,7 @@
       "health": 120
     },
     {
-      "id": "dado_233",
+      "id": "dado_309",
       "position": [
         18.75,
         4,
@@ -6562,7 +8234,7 @@
       "health": 120
     },
     {
-      "id": "dado_234",
+      "id": "dado_310",
       "position": [
         18.75,
         4,
@@ -6584,7 +8256,7 @@
       "health": 120
     },
     {
-      "id": "dado_235",
+      "id": "dado_311",
       "position": [
         13.25,
         4,
@@ -6606,7 +8278,7 @@
       "health": 120
     },
     {
-      "id": "dado_236",
+      "id": "dado_312",
       "position": [
         13.25,
         4,
@@ -6628,7 +8300,7 @@
       "health": 120
     },
     {
-      "id": "dado_237",
+      "id": "dado_313",
       "position": [
         18.75,
         4,
@@ -6650,7 +8322,7 @@
       "health": 120
     },
     {
-      "id": "dado_238",
+      "id": "dado_314",
       "position": [
         18.75,
         4,
@@ -6672,7 +8344,7 @@
       "health": 120
     },
     {
-      "id": "dado_239",
+      "id": "dado_315",
       "position": [
         19.58,
         4,
@@ -6694,7 +8366,7 @@
       "health": 120
     },
     {
-      "id": "dado_240",
+      "id": "dado_316",
       "position": [
         19.58,
         4,
@@ -6716,7 +8388,7 @@
       "health": 120
     },
     {
-      "id": "dado_241",
+      "id": "dado_317",
       "position": [
         19.58,
         4,
@@ -6738,7 +8410,51 @@
       "health": 120
     },
     {
-      "id": "dado_242",
+      "id": "dado_318",
+      "position": [
+        19.58,
+        4,
+        6.25
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_319",
+      "position": [
+        19.58,
+        4,
+        9.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.92,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_320",
       "position": [
         12.65,
         4,
@@ -6760,7 +8476,7 @@
       "health": 120
     },
     {
-      "id": "dado_243",
+      "id": "dado_321",
       "position": [
         12.65,
         4,
@@ -6782,7 +8498,7 @@
       "health": 120
     },
     {
-      "id": "dado_244",
+      "id": "dado_322",
       "position": [
         16,
         4,
@@ -6804,7 +8520,7 @@
       "health": 120
     },
     {
-      "id": "dado_245",
+      "id": "dado_323",
       "position": [
         16,
         4,
@@ -6826,7 +8542,7 @@
       "health": 120
     },
     {
-      "id": "dado_246",
+      "id": "dado_324",
       "position": [
         19.35,
         4,
@@ -6848,7 +8564,7 @@
       "health": 120
     },
     {
-      "id": "dado_247",
+      "id": "dado_325",
       "position": [
         19.35,
         4,
@@ -6870,7 +8586,95 @@
       "health": 120
     },
     {
-      "id": "dado_248",
+      "id": "dado_326",
+      "position": [
+        14.25,
+        4,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_327",
+      "position": [
+        14.25,
+        4,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_328",
+      "position": [
+        17.75,
+        4,
+        4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_329",
+      "position": [
+        17.75,
+        4,
+        4.42
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_330",
       "position": [
         0,
         0,
@@ -6892,7 +8696,7 @@
       "health": 120
     },
     {
-      "id": "dado_249",
+      "id": "dado_331",
       "position": [
         3.92,
         0,
@@ -6914,7 +8718,7 @@
       "health": 120
     },
     {
-      "id": "dado_250",
+      "id": "dado_332",
       "position": [
         -2.75,
         0,
@@ -6936,7 +8740,7 @@
       "health": 120
     },
     {
-      "id": "dado_251",
+      "id": "dado_333",
       "position": [
         2.75,
         0,
@@ -6958,7 +8762,7 @@
       "health": 120
     },
     {
-      "id": "dado_252",
+      "id": "dado_334",
       "position": [
         -3.92,
         0,
@@ -6980,7 +8784,7 @@
       "health": 120
     },
     {
-      "id": "dado_253",
+      "id": "dado_335",
       "position": [
         -2.75,
         4,
@@ -7002,7 +8806,7 @@
       "health": 120
     },
     {
-      "id": "dado_254",
+      "id": "dado_336",
       "position": [
         2.75,
         4,
@@ -7024,7 +8828,7 @@
       "health": 120
     },
     {
-      "id": "dado_255",
+      "id": "dado_337",
       "position": [
         3.92,
         4,
@@ -7046,7 +8850,7 @@
       "health": 120
     },
     {
-      "id": "dado_256",
+      "id": "dado_338",
       "position": [
         0,
         4,
@@ -7068,7 +8872,7 @@
       "health": 120
     },
     {
-      "id": "dado_257",
+      "id": "dado_339",
       "position": [
         -3.92,
         4,
@@ -7090,7 +8894,7 @@
       "health": 120
     },
     {
-      "id": "dado_258",
+      "id": "dado_340",
       "position": [
         -11.25,
         0,
@@ -7112,7 +8916,7 @@
       "health": 120
     },
     {
-      "id": "dado_259",
+      "id": "dado_341",
       "position": [
         -11.25,
         0,
@@ -7134,7 +8938,7 @@
       "health": 120
     },
     {
-      "id": "dado_260",
+      "id": "dado_342",
       "position": [
         -4.75,
         0,
@@ -7156,7 +8960,7 @@
       "health": 120
     },
     {
-      "id": "dado_261",
+      "id": "dado_343",
       "position": [
         -4.75,
         0,
@@ -7178,7 +8982,7 @@
       "health": 120
     },
     {
-      "id": "dado_262",
+      "id": "dado_344",
       "position": [
         -4.42,
         0,
@@ -7200,7 +9004,7 @@
       "health": 120
     },
     {
-      "id": "dado_263",
+      "id": "dado_345",
       "position": [
         -4.08,
         0,
@@ -7222,7 +9026,7 @@
       "health": 120
     },
     {
-      "id": "dado_264",
+      "id": "dado_346",
       "position": [
         -4.42,
         0,
@@ -7244,7 +9048,7 @@
       "health": 120
     },
     {
-      "id": "dado_265",
+      "id": "dado_347",
       "position": [
         -4.08,
         0,
@@ -7266,7 +9070,7 @@
       "health": 120
     },
     {
-      "id": "dado_266",
+      "id": "dado_348",
       "position": [
         -11.35,
         0,
@@ -7288,7 +9092,7 @@
       "health": 120
     },
     {
-      "id": "dado_267",
+      "id": "dado_349",
       "position": [
         -8,
         0,
@@ -7310,7 +9114,7 @@
       "health": 120
     },
     {
-      "id": "dado_268",
+      "id": "dado_350",
       "position": [
         -4.65,
         0,
@@ -7332,7 +9136,51 @@
       "health": 120
     },
     {
-      "id": "dado_269",
+      "id": "dado_351",
+      "position": [
+        -9.75,
+        0,
+        -11.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_352",
+      "position": [
+        -6.25,
+        0,
+        -11.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_353",
       "position": [
         -11.58,
         0,
@@ -7354,7 +9202,7 @@
       "health": 120
     },
     {
-      "id": "dado_270",
+      "id": "dado_354",
       "position": [
         -11.58,
         0,
@@ -7376,7 +9224,7 @@
       "health": 120
     },
     {
-      "id": "dado_271",
+      "id": "dado_355",
       "position": [
         -3.25,
         0,
@@ -7398,7 +9246,7 @@
       "health": 120
     },
     {
-      "id": "dado_272",
+      "id": "dado_356",
       "position": [
         -3.25,
         0,
@@ -7420,7 +9268,7 @@
       "health": 120
     },
     {
-      "id": "dado_273",
+      "id": "dado_357",
       "position": [
         3.25,
         0,
@@ -7442,7 +9290,7 @@
       "health": 120
     },
     {
-      "id": "dado_274",
+      "id": "dado_358",
       "position": [
         3.25,
         0,
@@ -7464,7 +9312,7 @@
       "health": 120
     },
     {
-      "id": "dado_275",
+      "id": "dado_359",
       "position": [
         3.58,
         0,
@@ -7486,7 +9334,7 @@
       "health": 120
     },
     {
-      "id": "dado_276",
+      "id": "dado_360",
       "position": [
         3.92,
         0,
@@ -7508,7 +9356,7 @@
       "health": 120
     },
     {
-      "id": "dado_277",
+      "id": "dado_361",
       "position": [
         3.58,
         0,
@@ -7530,7 +9378,7 @@
       "health": 120
     },
     {
-      "id": "dado_278",
+      "id": "dado_362",
       "position": [
         3.92,
         0,
@@ -7552,7 +9400,7 @@
       "health": 120
     },
     {
-      "id": "dado_279",
+      "id": "dado_363",
       "position": [
         -3.25,
         0,
@@ -7574,7 +9422,7 @@
       "health": 120
     },
     {
-      "id": "dado_280",
+      "id": "dado_364",
       "position": [
         3.25,
         0,
@@ -7596,7 +9444,7 @@
       "health": 120
     },
     {
-      "id": "dado_281",
+      "id": "dado_365",
       "position": [
         -3.92,
         0,
@@ -7618,7 +9466,7 @@
       "health": 120
     },
     {
-      "id": "dado_282",
+      "id": "dado_366",
       "position": [
         -3.58,
         0,
@@ -7640,7 +9488,7 @@
       "health": 120
     },
     {
-      "id": "dado_283",
+      "id": "dado_367",
       "position": [
         -3.92,
         0,
@@ -7662,7 +9510,7 @@
       "health": 120
     },
     {
-      "id": "dado_284",
+      "id": "dado_368",
       "position": [
         -3.58,
         0,
@@ -7684,7 +9532,7 @@
       "health": 120
     },
     {
-      "id": "dado_285",
+      "id": "dado_369",
       "position": [
         4.75,
         0,
@@ -7706,7 +9554,7 @@
       "health": 120
     },
     {
-      "id": "dado_286",
+      "id": "dado_370",
       "position": [
         4.75,
         0,
@@ -7728,7 +9576,7 @@
       "health": 120
     },
     {
-      "id": "dado_287",
+      "id": "dado_371",
       "position": [
         11.25,
         0,
@@ -7750,7 +9598,7 @@
       "health": 120
     },
     {
-      "id": "dado_288",
+      "id": "dado_372",
       "position": [
         11.25,
         0,
@@ -7772,7 +9620,7 @@
       "health": 120
     },
     {
-      "id": "dado_289",
+      "id": "dado_373",
       "position": [
         11.58,
         0,
@@ -7794,7 +9642,7 @@
       "health": 120
     },
     {
-      "id": "dado_290",
+      "id": "dado_374",
       "position": [
         11.58,
         0,
@@ -7816,7 +9664,7 @@
       "health": 120
     },
     {
-      "id": "dado_291",
+      "id": "dado_375",
       "position": [
         4.65,
         0,
@@ -7838,7 +9686,7 @@
       "health": 120
     },
     {
-      "id": "dado_292",
+      "id": "dado_376",
       "position": [
         8,
         0,
@@ -7860,7 +9708,7 @@
       "health": 120
     },
     {
-      "id": "dado_293",
+      "id": "dado_377",
       "position": [
         11.35,
         0,
@@ -7882,7 +9730,51 @@
       "health": 120
     },
     {
-      "id": "dado_294",
+      "id": "dado_378",
+      "position": [
+        6.25,
+        0,
+        -11.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_379",
+      "position": [
+        9.75,
+        0,
+        -11.58
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_380",
       "position": [
         4.08,
         0,
@@ -7904,7 +9796,7 @@
       "health": 120
     },
     {
-      "id": "dado_295",
+      "id": "dado_381",
       "position": [
         4.42,
         0,
@@ -7926,7 +9818,7 @@
       "health": 120
     },
     {
-      "id": "dado_296",
+      "id": "dado_382",
       "position": [
         4.08,
         0,
@@ -7948,7 +9840,7 @@
       "health": 120
     },
     {
-      "id": "dado_297",
+      "id": "dado_383",
       "position": [
         4.42,
         0,
@@ -7970,7 +9862,7 @@
       "health": 120
     },
     {
-      "id": "dado_298",
+      "id": "dado_384",
       "position": [
         -20.08,
         0,
@@ -7992,7 +9884,7 @@
       "health": 120
     },
     {
-      "id": "dado_299",
+      "id": "dado_385",
       "position": [
         -20.08,
         4,
@@ -8014,7 +9906,7 @@
       "health": 120
     },
     {
-      "id": "dado_300",
+      "id": "dado_386",
       "position": [
         -20.08,
         4,
@@ -8036,7 +9928,7 @@
       "health": 120
     },
     {
-      "id": "dado_301",
+      "id": "dado_387",
       "position": [
         20.08,
         0,
@@ -8058,7 +9950,7 @@
       "health": 120
     },
     {
-      "id": "dado_302",
+      "id": "dado_388",
       "position": [
         20.08,
         4,
@@ -8080,7 +9972,7 @@
       "health": 120
     },
     {
-      "id": "dado_303",
+      "id": "dado_389",
       "position": [
         20.08,
         4,
@@ -8102,7 +9994,7 @@
       "health": 120
     },
     {
-      "id": "dado_304",
+      "id": "dado_390",
       "position": [
         -11.35,
         0,
@@ -8124,7 +10016,7 @@
       "health": 120
     },
     {
-      "id": "dado_305",
+      "id": "dado_391",
       "position": [
         -8,
         0,
@@ -8146,7 +10038,7 @@
       "health": 120
     },
     {
-      "id": "dado_306",
+      "id": "dado_392",
       "position": [
         -4.65,
         0,
@@ -8168,7 +10060,51 @@
       "health": 120
     },
     {
-      "id": "dado_307",
+      "id": "dado_393",
+      "position": [
+        -9.75,
+        0,
+        -12.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_394",
+      "position": [
+        -6.25,
+        0,
+        -12.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_395",
       "position": [
         -3.25,
         0,
@@ -8190,7 +10126,7 @@
       "health": 120
     },
     {
-      "id": "dado_308",
+      "id": "dado_396",
       "position": [
         3.25,
         0,
@@ -8212,7 +10148,7 @@
       "health": 120
     },
     {
-      "id": "dado_309",
+      "id": "dado_397",
       "position": [
         4.65,
         0,
@@ -8234,7 +10170,7 @@
       "health": 120
     },
     {
-      "id": "dado_310",
+      "id": "dado_398",
       "position": [
         8,
         0,
@@ -8256,7 +10192,7 @@
       "health": 120
     },
     {
-      "id": "dado_311",
+      "id": "dado_399",
       "position": [
         11.35,
         0,
@@ -8278,7 +10214,51 @@
       "health": 120
     },
     {
-      "id": "dado_312",
+      "id": "dado_400",
+      "position": [
+        6.25,
+        0,
+        -12.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_401",
+      "position": [
+        9.75,
+        0,
+        -12.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_402",
       "position": [
         -19.35,
         0,
@@ -8300,7 +10280,7 @@
       "health": 120
     },
     {
-      "id": "dado_313",
+      "id": "dado_403",
       "position": [
         -16,
         0,
@@ -8322,7 +10302,7 @@
       "health": 120
     },
     {
-      "id": "dado_314",
+      "id": "dado_404",
       "position": [
         -12.65,
         0,
@@ -8344,7 +10324,51 @@
       "health": 120
     },
     {
-      "id": "dado_315",
+      "id": "dado_405",
+      "position": [
+        -17.75,
+        0,
+        -4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_406",
+      "position": [
+        -14.25,
+        0,
+        -4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_407",
       "position": [
         -12.08,
         0,
@@ -8366,7 +10390,7 @@
       "health": 120
     },
     {
-      "id": "dado_316",
+      "id": "dado_408",
       "position": [
         -12.08,
         0,
@@ -8388,7 +10412,7 @@
       "health": 120
     },
     {
-      "id": "dado_317",
+      "id": "dado_409",
       "position": [
         12.65,
         0,
@@ -8410,7 +10434,7 @@
       "health": 120
     },
     {
-      "id": "dado_318",
+      "id": "dado_410",
       "position": [
         16,
         0,
@@ -8432,7 +10456,7 @@
       "health": 120
     },
     {
-      "id": "dado_319",
+      "id": "dado_411",
       "position": [
         19.35,
         0,
@@ -8454,7 +10478,51 @@
       "health": 120
     },
     {
-      "id": "dado_320",
+      "id": "dado_412",
+      "position": [
+        14.25,
+        0,
+        -4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_413",
+      "position": [
+        17.75,
+        0,
+        -4.08
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.92,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#55595e",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "dado_414",
       "position": [
         12.08,
         0,
@@ -8476,7 +10544,7 @@
       "health": 120
     },
     {
-      "id": "dado_321",
+      "id": "dado_415",
       "position": [
         12.08,
         0,
@@ -12036,6 +14104,244 @@
     {
       "id": "light_305",
       "position": [
+        -16,
+        6.95,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_306",
+      "position": [
+        -16,
+        6.95,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_307",
+      "position": [
+        -16,
+        6.95,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_308",
+      "position": [
+        -8,
+        6.95,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_309",
+      "position": [
+        -8,
+        6.95,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_310",
+      "position": [
+        -8,
+        6.95,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_311",
+      "position": [
+        0,
+        6.95,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_312",
+      "position": [
+        0,
+        6.95,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_313",
+      "position": [
+        8,
+        6.95,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_314",
+      "position": [
+        8,
+        6.95,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_315",
+      "position": [
+        8,
+        6.95,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_316",
+      "position": [
+        16,
+        6.95,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_317",
+      "position": [
+        16,
+        6.95,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_318",
+      "position": [
+        16,
+        6.95,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_319",
+      "position": [
+        -8,
+        2.95,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_320",
+      "position": [
+        0,
+        2.95,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_321",
+      "position": [
+        8,
+        2.95,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#eef4ff",
+      "intensity": 0.9,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_322",
+      "position": [
         0,
         4.5,
         -17
@@ -12048,7 +14354,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_306",
+      "id": "light_323",
       "position": [
         24,
         4.5,
@@ -12062,7 +14368,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_307",
+      "id": "light_324",
       "position": [
         -24,
         4.5,

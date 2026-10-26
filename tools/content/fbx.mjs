@@ -133,7 +133,9 @@ export async function fbxToDocument(fbxPath, { pick = null, keepUv = false } = {
       }
       out.setBaseColorFactor([1, 1, 1, out.getBaseColorFactor()[3]]).setBaseColorTexture(textures.get(key));
     }
-    if (m.emissive && (m.emissive.r || m.emissive.g || m.emissive.b)) out.setEmissiveFactor([m.emissive.r, m.emissive.g, m.emissive.b]);
+    // The emissive colour counts only at its intensity: madduck's hospital set pairs a white emissive colour with factor 0.
+    const glow = m.emissiveIntensity ?? 1;
+    if (m.emissive && glow > 0 && (m.emissive.r || m.emissive.g || m.emissive.b)) out.setEmissiveFactor([m.emissive.r * glow, m.emissive.g * glow, m.emissive.b * glow]);
     if (m.transparent && m.opacity < 1) out.setAlphaMode('BLEND');
     materials.set(m, out);
     return out;
