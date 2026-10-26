@@ -6,6 +6,7 @@ import type { ValidationIssue } from '../map/validate.ts';
 import type { Vec3 } from '../math.ts';
 import { PLAYER } from '../sim/constants.ts';
 import { trackGeometry } from '../map/track.ts';
+import { mapPortals, portalEntry, PORTAL_EXIT } from '../sim/portals.ts';
 
 let initPromise: Promise<void> | undefined;
 
@@ -169,6 +170,16 @@ export function validateNavigation(map: MapDocument, nav: NavWorld): ValidationI
       const end = path?.[path.length - 1];
       if (!end || Math.hypot(end.x - to.x, end.z - to.z) > 1.5 || Math.abs(end.y - to.y) > 2) {
         issues.push({ severity: 'warning', code: `nav.${p.kind}_unreachable`, message: `${what[p.kind]} ${p.id} cannot be reached on foot from spawn ${first.id}`, targetId: p.id });
+      }
+    }
+  }
+  // Portals: bots and players must be able to stand where they step in and where they come out.
+  for (const p of mapPortals(map.entities)) {
+    if (p.link < 0) continue;
+    for (const [what, at] of [['in front of', portalEntry(p, 0.9)], ['out of', portalEntry(p, PORTAL_EXIT + 0.6)]] as const) {
+      if (!nav.closestPoint(at, { x: 1.2, y: 1.5, z: 1.2 })) {
+        issues.push({ severity: 'warning', code: 'nav.portal_blocked', message: `the ground ${what} portal ${p.id} is not walkable (nothing to stand on, or something in the way)`, targetId: p.id });
+        break;
       }
     }
   }

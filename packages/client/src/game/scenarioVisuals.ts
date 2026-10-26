@@ -63,7 +63,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal'];
 
 /**
  * Place an entity's visual root: at its position, turned to its facing.
@@ -252,7 +252,92 @@ export class ScenarioVisuals {
         return this.airplane(name, e);
       case 'mover':
         return this.mover(name, e);
+      case 'portal':
+        return this.portal(name, e);
     }
+  }
+
+  /**
+   * A portal (Style Packs 03 and 09): a stone frame round a swirling disc of
+   * light in the pair's colour, spinning and pulsing (a stylised effect: no
+   * view through it). Switched off, the swirl drains away and the frame
+   * stays. Its back is plain stone: portals are one-sided.
+   */
+  private portal(name: string, e: Extract<MapEntity, { kind: 'portal' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const [w, h] = e.size;
+    const colour = e.color ?? '#3aa8ff';
+    const stone = this.mat('portalFrame', '#cbb48a', { spec: 0.1 });
+    const dark = this.mat('portalBack', '#3a3026');
+    const t = 0.35;
+    // Posts, lintel and sill, set back so the front of the disc is the portal's surface.
+    for (const side of [-1, 1]) this.box(`${name}_post${side}`, root, [t, h + t, 0.5], [side * (w / 2 + t / 2), (h + t) / 2, -0.2], stone);
+    this.box(`${name}_lintel`, root, [w + t * 2 + 0.2, t + 0.1, 0.6], [0, h + t / 2 + 0.05, -0.2], stone);
+    this.box(`${name}_sill`, root, [w + t * 2, 0.08, 0.5], [0, 0.04, -0.2], stone);
+    this.box(`${name}_back`, root, [w, h, 0.06], [0, h / 2, -0.42], dark);
+    // The swirl: an emissive disc with a spiral painted on it, turning; a glowing rim.
+    const tex = new DynamicTexture(`${name}_swirl`, { width: 256, height: 256 }, this.scene, true);
+    const ctx = tex.getContext() as unknown as CanvasRenderingContext2D;
+    const c = Color3.FromHexString(colour);
+    const rgb = (k: number, a: number) => `rgba(${Math.round(Math.min(255, c.r * 255 * k))},${Math.round(Math.min(255, c.g * 255 * k))},${Math.round(Math.min(255, c.b * 255 * k))},${a})`;
+    const grad = ctx.createRadialGradient(128, 128, 8, 128, 128, 128);
+    grad.addColorStop(0, rgb(1.6, 1));
+    grad.addColorStop(0.55, rgb(1, 0.9));
+    grad.addColorStop(1, rgb(0.5, 0.0));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.lineWidth = 7;
+    for (let arm = 0; arm < 4; arm++) {
+      ctx.beginPath();
+      for (let k = 0; k <= 60; k++) {
+        const u = k / 60;
+        const a = arm * (Math.PI / 2) + u * Math.PI * 2.2;
+        const r = 10 + u * 112;
+        const x = 128 + Math.cos(a) * r;
+        const y = 128 + Math.sin(a) * r;
+        if (k) ctx.lineTo(x, y);
+        else ctx.moveTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(255,255,255,${0.55 - arm * 0.06})`;
+      ctx.stroke();
+    }
+    tex.update();
+    tex.hasAlpha = true;
+    const swirlMat = new StandardMaterial(`${name}_swirlMat`, this.scene);
+    swirlMat.diffuseTexture = tex;
+    swirlMat.emissiveTexture = tex;
+    swirlMat.opacityTexture = tex;
+    swirlMat.disableLighting = true;
+    swirlMat.backFaceCulling = false;
+    const disc = CreatePlane(`${name}_disc`, { width: w, height: h }, this.scene);
+    disc.parent = root;
+    disc.position.set(0, h / 2, -0.12);
+    disc.rotation.y = Math.PI;
+    disc.material = swirlMat;
+    const rim = this.mat(`portalRim${colour}`, colour, { emissive: 1 });
+    for (const side of [-1, 1]) this.box(`${name}_rim${side}`, root, [0.08, h, 0.08], [side * (w / 2 - 0.04), h / 2, -0.06], rim);
+    this.box(`${name}_rimTop`, root, [w, 0.08, 0.08], [0, h - 0.04, -0.06], rim);
+    let on = e.startEnabled ? 1 : 0;
+    let shown = on;
+    const spin = this.opts.editor ? null : this.scene.onBeforeRenderObservable.add(() => {
+      const dt = Math.min(0.1, this.scene.getEngine().getDeltaTime() / 1000);
+      shown += Math.sign(on - shown) * Math.min(Math.abs(on - shown), dt * 2);
+      tex.wAng += dt * 1.8;
+      const pulse = 0.85 + Math.sin(performance.now() / 260) * 0.15;
+      swirlMat.alpha = shown * pulse;
+      disc.isVisible = shown > 0.02;
+    });
+    if (spin) root.onDisposeObservable.add(() => this.scene.onBeforeRenderObservable.remove(spin));
+    root.onDisposeObservable.add(() => {
+      tex.dispose();
+      swirlMat.dispose();
+    });
+    return {
+      root,
+      update: (a) => {
+        on = a > 0 ? 1 : 0;
+      },
+    };
   }
 
   /**
@@ -1002,6 +1087,7 @@ export class ScenarioVisuals {
   private door(name: string, e: Extract<MapEntity, { kind: 'door' }>): Visual {
     const style = e.style ?? 'sliding';
     if (style === 'saloon' || style === 'vault') return this.swingDoor(name, e, style);
+    if (style === 'portcullis') return this.portcullis(name, e);
     const root = new TransformNode(name, this.scene);
     const w = DOOR.width / 2;
     const blast = style === 'blast';
@@ -1055,6 +1141,44 @@ export class ScenarioVisuals {
         const c = Color3.FromHexString(b ? '#e0412f' : e.auto ? '#3fd26b' : '#f2c14e');
         lampMat.diffuseColor = c;
         lampMat.emissiveColor = c.scale(0.9);
+      },
+    };
+  }
+
+  /**
+   * A portcullis (Style Pack 03): an iron grille that winds up into a stone
+   * lintel between two piers. It blocks like any door (the collider is the
+   * door's); it rises instead of sliding apart.
+   */
+  private portcullis(name: string, e: Extract<MapEntity, { kind: 'door' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const w = DOOR.width;
+    const H = DOOR.height;
+    const iron = this.mat('portcullisIron', '#4a4440', { spec: 0.4 });
+    const stone = this.mat('portcullisStone', '#cbb48a', { spec: 0.1 });
+    const grille = new TransformNode(`${name}_grille`, this.scene);
+    grille.parent = root;
+    for (let i = 0; i < 7; i++) {
+      const x = -w / 2 + 0.2 + (i * (w - 0.4)) / 6;
+      this.box(`${name}_bar${i}`, grille, [0.09, H, 0.09], [x, H / 2, 0], iron);
+      // Spiked feet.
+      this.box(`${name}_spike${i}`, grille, [0.05, 0.25, 0.05], [x, -0.1, 0], iron);
+    }
+    for (const y of [0.6, 1.5, 2.4]) this.box(`${name}_rail${y}`, grille, [w - 0.2, 0.08, 0.12], [0, y, 0], iron);
+    for (const side of [-1, 1]) this.box(`${name}_pier${side}`, root, [0.45, H + 0.6, 0.7], [side * (w / 2 + 0.22), (H + 0.6) / 2, 0], stone);
+    this.box(`${name}_lintel`, root, [w + 0.9, 0.6, 0.7], [0, H + 0.3, 0], stone);
+    const place = (open: number) => {
+      grille.position.y = open * (H - 0.3);
+      grille.getChildMeshes().forEach((m) => (m.isVisible = true));
+    };
+    let shown = e.startOpen ? 1 : 0;
+    place(shown);
+    return {
+      root,
+      update: (a, _b, _now, dt) => {
+        const target = a / 100;
+        shown += Math.sign(target - shown) * Math.min(Math.abs(target - shown), dt * 1.4);
+        place(shown);
       },
     };
   }

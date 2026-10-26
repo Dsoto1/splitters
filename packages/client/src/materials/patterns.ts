@@ -46,6 +46,79 @@ const edgeDist = (fu: number, fv: number) => Math.min(fu, 1 - fu, fv, 1 - fv);
 
 type Painter = (u: number, v: number, base: RGB, accent: RGB) => RGB;
 
+/**
+ * Hieroglyphs (Style Pack 09): columns of signs between register lines,
+ * every sign a little shape of our own (sun disc, eye, ankh, bird, water,
+ * reed, loaf, seated figure, cartouche…) picked by hash, so walls read as
+ * inscribed without copying any real text. Carved: the accent cut into the
+ * base. Painted: ochre red, turquoise and the accent.
+ */
+function glyphPaint(u: number, v: number, b: RGB, a: RGB, painted: boolean): RGB {
+  const COLS = 6;
+  const ROWS = 5;
+  // A register line every repeat (top band), column rules between the columns.
+  const band = fract(v);
+  const stone = shade(b, 0.93 + fbm(u, v, 71) * 0.12);
+  if (band < 0.035 || (band > 0.06 && band < 0.075)) return painted ? [178, 72, 40] : shade(a, 0.9);
+  const cu = Math.floor(u * COLS);
+  const fu = fract(u * COLS);
+  if (fu < 0.035) return painted ? shade(a, 0.8) : mix(stone, a, 0.55);
+  const vv = (band - 0.075) / 0.925;
+  const cv = Math.floor(vv * ROWS);
+  const x = fu * 2 - 1;
+  const y = fract(vv * ROWS) * 2 - 1;
+  const kind = Math.floor(hash(cu, cv, 83) * 10);
+  const ring = (cx: number, cy: number, r: number, w: number) => Math.abs(Math.hypot(x - cx, y - cy) - r) < w;
+  const disc = (cx: number, cy: number, rx: number, ry: number) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 < 1;
+  const rect = (x0: number, y0: number, x1: number, y1: number) => x >= x0 && x <= x1 && y >= y0 && y <= y1;
+  let hit = false;
+  let fill = 0;
+  switch (kind) {
+    case 0: // Sun disc with a uraeus line under it.
+      hit = disc(0, -0.15, 0.45, 0.45) || rect(-0.6, 0.45, 0.6, 0.55);
+      fill = 1;
+      break;
+    case 1: // The eye: lid, pupil and the tear line.
+      hit = (ring(0, 0, 0.5, 0.07) && y < 0.15 && Math.abs(x) < 0.55) || disc(0, 0, 0.2, 0.2) || (rect(-0.05, 0.2, 0.05, 0.7) && x < 0.1) || rect(0.15, 0.35, 0.55, 0.45);
+      break;
+    case 2: // Ankh: a loop over a cross.
+      hit = ring(0, -0.5, 0.25, 0.08) || rect(-0.07, -0.25, 0.07, 0.85) || rect(-0.45, -0.2, 0.45, -0.08);
+      fill = 2;
+      break;
+    case 3: // A bird in profile: body, head, beak, legs.
+      hit = disc(0.05, 0.05, 0.42, 0.24) || disc(-0.35, -0.3, 0.16, 0.16) || rect(-0.7, -0.33, -0.48, -0.27) || rect(0.0, 0.25, 0.06, 0.7) || rect(0.2, 0.25, 0.26, 0.7) || (y > -0.05 && y < 0.15 && x > 0.4 && x < 0.75);
+      fill = 0;
+      break;
+    case 4: // Water: three zigzag lines.
+      for (const r of [-0.4, 0, 0.4]) if (Math.abs(y - r - Math.abs(fract(x * 2.5) - 0.5) * 0.3) < 0.06 && Math.abs(x) < 0.75) hit = true;
+      fill = 2;
+      break;
+    case 5: // A reed leaf.
+      hit = disc(0, -0.1, 0.16, 0.6) || rect(-0.04, 0.4, 0.04, 0.8);
+      fill = 2;
+      break;
+    case 6: // A loaf (half disc).
+      hit = disc(0, 0.35, 0.55, 0.45) && y < 0.35;
+      fill = 1;
+      break;
+    case 7: // A seated figure: head, body, knees.
+      hit = disc(-0.15, -0.6, 0.17, 0.17) || rect(-0.3, -0.42, 0.05, 0.35) || rect(-0.3, 0.2, 0.45, 0.4) || rect(0.3, 0.2, 0.45, 0.8) || rect(-0.3, 0.6, 0.45, 0.8);
+      fill = 0;
+      break;
+    case 8: // A cartouche: an oval loop with a bar under it and a sign in it.
+      hit = (Math.abs(((x / 0.45) ** 2 + (y / 0.85) ** 2) - 1) < 0.25 && Math.abs(x) < 0.5) || rect(-0.5, 0.85, 0.5, 0.95) || disc(0, 0, 0.12, 0.12);
+      fill = 1;
+      break;
+    default: // A horned viper.
+      hit = (Math.abs(y - 0.25 - Math.sin(x * 4) * 0.12) < 0.08 && Math.abs(x) < 0.7) || disc(-0.62, 0.1, 0.12, 0.1) || rect(-0.62, -0.15, -0.56, 0.05);
+      fill = 0;
+  }
+  if (!hit) return stone;
+  if (!painted) return mix(shade(a, 0.95), stone, 0.15 + fbm(u, v, 73) * 0.15);
+  const palette: RGB[] = [a, [178, 72, 40], [52, 150, 150]];
+  return shade(palette[fill]!, 0.92 + fbm(u, v, 79) * 0.12);
+}
+
 const PAINTERS: Record<PatternId, Painter> = {
   grid: (u, v, b, a) => {
     const e = edgeDist(u, v);
@@ -134,6 +207,34 @@ const PAINTERS: Record<PatternId, Painter> = {
     const vein = Math.pow(1 - Math.abs(t), 6);
     return mix(shade(b, 0.97 + fbm(u, v, 53) * 0.05), a, vein * 0.8);
   },
+  glyphs: (u, v, b, a) => glyphPaint(u, v, b, a, false),
+  glyphs_painted: (u, v, b, a) => glyphPaint(u, v, b, a, true),
+  mosaic: (u, v, b, a) => {
+    // Tesserae 1/32 of a repeat, grouted; a key-pattern (meander) border band round a field with a lozenge in it.
+    const n = 32;
+    const cu = Math.floor(u * n);
+    const cv = Math.floor(v * n);
+    const fu = fract(u * n);
+    const fv = fract(v * n);
+    const grout = fu < 0.1 || fv < 0.1;
+    const edge = Math.min(cu, cv, n - 1 - cu, n - 1 - cv);
+    let c: RGB = b;
+    if (edge === 0 || edge === 5) c = a;
+    else if (edge >= 1 && edge <= 4) {
+      // A meander: the key repeats every 4 tesserae along the band.
+      const along = (edge === Math.min(cu, n - 1 - cu) ? cv : cu) % 4;
+      const across = edge - 1;
+      const key = across === 0 || (across === 3 && along !== 3) || (along === 0 && across < 3) || (across === 2 && along === 2);
+      if (key) c = a;
+    } else {
+      const d = Math.abs(cu - n / 2 + 0.5) + Math.abs(cv - n / 2 + 0.5);
+      if (d < 4) c = mix(a, [230, 180, 60], 0.5);
+      else if (d < 6) c = a;
+      else if (d > 9 && d < 11) c = shade(a, 0.7);
+    }
+    if (grout) return shade(mix(b, [120, 110, 95], 0.6), 0.8);
+    return shade(c, 0.88 + hash(cu, cv, 61) * 0.2);
+  },
   weave: (u, v, b, a) => {
     const n = 24;
     const cu = Math.floor(u * n);
@@ -145,6 +246,9 @@ const PAINTERS: Record<PatternId, Painter> = {
 };
 
 const cache = new Map<string, Uint8Array>();
+
+/** Fine patterns (hieroglyphs, mosaics) are painted at twice the usual size so their shapes read. */
+export const patternSize = (def: MaterialDefinition): number => (def.pattern === 'glyphs' || def.pattern === 'glyphs_painted' || def.pattern === 'mosaic' ? 256 : 128);
 
 /** RGBA pixels for a material's pattern (cached per material). */
 export function materialPixels(def: MaterialDefinition, size = 128): Uint8Array {

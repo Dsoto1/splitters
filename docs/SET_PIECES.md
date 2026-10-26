@@ -80,6 +80,26 @@ or ride on top. Doors take a look (*Blast*, *Saloon*, *Vault*); **Alarm Light**,
 **Destructible Barrier** and **Breakable Planks** are presets of lights and
 blocks.
 
+### Portals, portcullises and lift cages (Style Packs 03 and 09)
+
+- **Portal Pair** (entity `portal`, two sharing a `pair`): walk, fall, fly or
+  shoot into the front of one and come out of the front of the other, moving
+  the same way relative to it (speed kept, turned by the difference in their
+  facings). Put one at the end of a dead-end tunnel and the other somewhere
+  far away for a shortcut (Sandfall Colosseum's hypogeum to the forum,
+  Pharaoh's Reach's burial chamber to the top of the pyramid); leave room to
+  stand in front of both. Logic switches them (Enable / Disable); bots take
+  them. See BUILDING_KIT.md, *Portals*.
+- **Portcullis** (door look) and **Portcullis Gate** (a grille on a trigger
+  mover): gladiator gates worked from a winch or a rule.
+- **Lift Cage**: a cage rising from the hypogeum through an Arena Hatch, its
+  sand roof closing the hole while it is down.
+
+```ts
+m.add({ kind: 'portal', id: 'portal_a', position: [x, y, z], yaw: Math.PI / 2, size: [2.4, 3.2], pair: 'hypogeum', startEnabled: true });
+m.add({ kind: 'portal', id: 'portal_b', position: [x2, y2, z2], yaw: 0, size: [2.4, 3.2], pair: 'hypogeum', startEnabled: true });
+```
+
 ## Liquids (Entities tab)
 
 Water, Lava, Acid and Swamp are boxes of liquid; *Height* is the floor and

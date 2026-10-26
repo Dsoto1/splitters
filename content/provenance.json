@@ -4139,6 +4139,146 @@
       ]
     },
     {
+      "file": "textures/Tiles139_color.jpg",
+      "sha256": "86963e3bd6084858",
+      "bytes": 29588,
+      "source": "ambientcg:Tiles139",
+      "title": "ambientCG PBR materials: Tiles139",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles139",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles139_normal.jpg",
+      "sha256": "8dc7be5c534224a1",
+      "bytes": 5123,
+      "source": "ambientcg:Tiles139",
+      "title": "ambientCG PBR materials: Tiles139",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles139",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Marble012_color.jpg",
+      "sha256": "675e1308c809c35f",
+      "bytes": 40118,
+      "source": "ambientcg:Marble012",
+      "title": "ambientCG PBR materials: Marble012",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Marble012",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Marble012_normal.jpg",
+      "sha256": "b8eac8e63163d9b3",
+      "bytes": 1109,
+      "source": "ambientcg:Marble012",
+      "title": "ambientCG PBR materials: Marble012",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Marble012",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks075A_color.jpg",
+      "sha256": "4d09a8b0e162d5fd",
+      "bytes": 59953,
+      "source": "ambientcg:Bricks075A",
+      "title": "ambientCG PBR materials: Bricks075A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks075A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks075A_normal.jpg",
+      "sha256": "c2ac09b8ed05ae82",
+      "bytes": 74756,
+      "source": "ambientcg:Bricks075A",
+      "title": "ambientCG PBR materials: Bricks075A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks075A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles142_color.jpg",
+      "sha256": "19bb268cf094e946",
+      "bytes": 37171,
+      "source": "ambientcg:Tiles142",
+      "title": "ambientCG PBR materials: Tiles142",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles142",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles142_normal.jpg",
+      "sha256": "952453f4b54fa96e",
+      "bytes": 1342,
+      "source": "ambientcg:Tiles142",
+      "title": "ambientCG PBR materials: Tiles142",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles142",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks083_color.jpg",
+      "sha256": "325b64463f540b98",
+      "bytes": 49406,
+      "source": "ambientcg:Bricks083",
+      "title": "ambientCG PBR materials: Bricks083",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks083",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Bricks083_normal.jpg",
+      "sha256": "d649c957d72a25eb",
+      "bytes": 60079,
+      "source": "ambientcg:Bricks083",
+      "title": "ambientCG PBR materials: Bricks083",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Bricks083",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
       "file": "props/barrel.glb",
       "sha256": "baf840b019b10529",
       "triangles": 412,
@@ -16200,6 +16340,486 @@
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/im_column_ionic.glb",
+      "sha256": "6fc1df966e1007ce",
+      "triangles": 492,
+      "bytes": 21372,
+      "source": "tiletrigger-ancient/im_column_ionic.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_brazier.glb",
+      "sha256": "5246ef8eea492841",
+      "triangles": 493,
+      "bytes": 22544,
+      "source": "tiletrigger-ancient/im_brazier.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_statue_emperor.glb",
+      "sha256": "d787a04e966cb1f3",
+      "triangles": 596,
+      "bytes": 23840,
+      "source": "tiletrigger-ancient/im_statue_emperor.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_amphorae.glb",
+      "sha256": "5bf9f1da03c10c41",
+      "triangles": 1852,
+      "bytes": 55736,
+      "source": "tiletrigger-ancient/im_amphorae.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_weapon_rack.glb",
+      "sha256": "c7330f46924240d6",
+      "triangles": 476,
+      "bytes": 20612,
+      "source": "tiletrigger-ancient/im_weapon_rack.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_training_post.glb",
+      "sha256": "7092fb5781aeb7ef",
+      "triangles": 212,
+      "bytes": 8972,
+      "source": "tiletrigger-ancient/im_training_post.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_aquila.glb",
+      "sha256": "7db3436d3b85cced",
+      "triangles": 415,
+      "bytes": 17284,
+      "source": "tiletrigger-ancient/im_aquila.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_vexillum.glb",
+      "sha256": "82f6fd52b02ffc53",
+      "triangles": 104,
+      "bytes": 7140,
+      "source": "tiletrigger-ancient/im_vexillum.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_chariot.glb",
+      "sha256": "9daf63df7a962194",
+      "triangles": 584,
+      "bytes": 30168,
+      "source": "tiletrigger-ancient/im_chariot.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_lift_cage.glb",
+      "sha256": "00902ed16569cf58",
+      "triangles": 596,
+      "bytes": 31816,
+      "source": "tiletrigger-ancient/im_lift_cage.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_stakes.glb",
+      "sha256": "8e171f630b357720",
+      "triangles": 418,
+      "bytes": 15828,
+      "source": "tiletrigger-ancient/im_stakes.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_altar.glb",
+      "sha256": "ef39763b1fa22367",
+      "triangles": 273,
+      "bytes": 15108,
+      "source": "tiletrigger-ancient/im_altar.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_bench.glb",
+      "sha256": "0fc890cc2a99350b",
+      "triangles": 164,
+      "bytes": 6092,
+      "source": "tiletrigger-ancient/im_bench.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_fountain.glb",
+      "sha256": "8a421625510aeae3",
+      "triangles": 568,
+      "bytes": 22656,
+      "source": "tiletrigger-ancient/im_fountain.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_velarium.glb",
+      "sha256": "afb0a2dd6978c231",
+      "triangles": 208,
+      "bytes": 11576,
+      "source": "tiletrigger-ancient/im_velarium.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_bust.glb",
+      "sha256": "6a377020cbef2402",
+      "triangles": 372,
+      "bytes": 14072,
+      "source": "tiletrigger-ancient/im_bust.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/im_throne.glb",
+      "sha256": "922f6d62a5f95ba4",
+      "triangles": 224,
+      "bytes": 9672,
+      "source": "tiletrigger-ancient/im_throne.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_obelisk.glb",
+      "sha256": "29b0dd4be0b6cd92",
+      "triangles": 960,
+      "bytes": 53932,
+      "source": "tiletrigger-ancient/eg_obelisk.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_sphinx.glb",
+      "sha256": "f9b06a25db337a20",
+      "triangles": 444,
+      "bytes": 26464,
+      "source": "tiletrigger-ancient/eg_sphinx.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_statue_pharaoh.glb",
+      "sha256": "81f9c64aa9c34007",
+      "triangles": 444,
+      "bytes": 23900,
+      "source": "tiletrigger-ancient/eg_statue_pharaoh.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_anubis.glb",
+      "sha256": "ea532ecbcd73a4a6",
+      "triangles": 204,
+      "bytes": 11768,
+      "source": "tiletrigger-ancient/eg_anubis.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_sarcophagus.glb",
+      "sha256": "60f4f19e3cceac9e",
+      "triangles": 240,
+      "bytes": 11668,
+      "source": "tiletrigger-ancient/eg_sarcophagus.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_canopic_jars.glb",
+      "sha256": "d70f0131a040953a",
+      "triangles": 504,
+      "bytes": 13492,
+      "source": "tiletrigger-ancient/eg_canopic_jars.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_column_papyrus.glb",
+      "sha256": "a7030278156af2af",
+      "triangles": 708,
+      "bytes": 27104,
+      "source": "tiletrigger-ancient/eg_column_papyrus.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_felucca.glb",
+      "sha256": "9895ec06339706c5",
+      "triangles": 142,
+      "bytes": 8836,
+      "source": "tiletrigger-ancient/eg_felucca.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_reed_boat.glb",
+      "sha256": "91cfd0dbe1e70d8a",
+      "triangles": 1156,
+      "bytes": 47072,
+      "source": "tiletrigger-ancient/eg_reed_boat.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_palm.glb",
+      "sha256": "64ef783f3cf2dc42",
+      "triangles": 500,
+      "bytes": 19776,
+      "source": "tiletrigger-ancient/eg_palm.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_papyrus.glb",
+      "sha256": "ed1f33ce22075ece",
+      "triangles": 392,
+      "bytes": 15468,
+      "source": "tiletrigger-ancient/eg_papyrus.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_torch.glb",
+      "sha256": "cceb399927ce044d",
+      "triangles": 317,
+      "bytes": 16624,
+      "source": "tiletrigger-ancient/eg_torch.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_chest.glb",
+      "sha256": "babf6dbc3d620708",
+      "triangles": 468,
+      "bytes": 15444,
+      "source": "tiletrigger-ancient/eg_chest.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_stele.glb",
+      "sha256": "6ee15e421d01bd46",
+      "triangles": 452,
+      "bytes": 24284,
+      "source": "tiletrigger-ancient/eg_stele.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/eg_cat_statue.glb",
+      "sha256": "66af409d76df08fc",
+      "triangles": 468,
+      "bytes": 17636,
+      "source": "tiletrigger-ancient/eg_cat_statue.glb",
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-ancient.mjs",
+        "centred, stood on the ground and scaled to metres"
       ]
     },
     {

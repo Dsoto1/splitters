@@ -1110,7 +1110,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1130,6 +1130,8 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   overgrown: { skin: 'core.pbr_jungle_rock', tint: null, depth: 0.16 },
   clapboard: { skin: 'core.pbr_clapboard', tint: null, depth: 0.08 },
   suburban_brick: { skin: 'core.pbr_brick_red', tint: null, depth: 0.1 },
+  roman: { skin: 'core.pbr_limestone', tint: null, depth: 0.1 },
+  egyptian: { skin: 'core.pbr_sandstone_blocks', tint: null, depth: 0.12 },
 };
 /** Openings in a dressed wall (from its segments): `top` is the lintel, `sill` the sill (0 for a doorway). */
 function facadeOpenings(segs: readonly [number, number, number, number, number][]): { u0: number; u1: number; sill: number; top: number }[] {
@@ -1290,6 +1292,21 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
           if (!roofed && full) add(side, -half, half, top - 0.3, top, out0 - 0.08, out0, white, trimTint);
           break;
         }
+        case 'roman':
+          // A plinth, pilasters at the ends of each wall, a marble cornice along the top.
+          if (ground) add(side, -half, half, 0, 0.5, out0 - 0.1, -base, 'core.pbr_travertine');
+          for (const u of [-half + 0.35, half - 0.35]) add(side, u - 0.3, u + 0.3, ground ? 0.5 : 0, Math.min(top, levelHeight), out0 - 0.14, out0, 'core.pbr_white_marble');
+          if (!roofed && full) add(side, -half, half, top - 0.1, top + 0.35, out0 - 0.2, TILE_DIMENSIONS.wallThickness, 'core.pbr_white_marble');
+          break;
+        case 'egyptian':
+          // A painted band of hieroglyphs under a gilded roll and a cavetto cornice; a sandstone plinth.
+          if (ground) add(side, -half, half, 0, 0.4, out0 - 0.08, -base, 'core.pbr_rough_sandstone');
+          if (full) add(side, -half, half, levelHeight - 1.5, levelHeight - 0.45, out0 - 0.01, out0, 'core.hieroglyphs_painted');
+          if (!roofed && full) {
+            add(side, -half, half, top - 0.45, top - 0.3, out0 - 0.08, out0, 'core.gold_leaf');
+            add(side, -half, half, top - 0.3, top + 0.45, out0 - 0.35, TILE_DIMENSIONS.wallThickness, 'core.pbr_sandstone_blocks');
+          }
+          break;
         case 'adobe':
           if (!roofed && full) {
             add(side, -half, half, top, top + 0.4, out0, TILE_DIMENSIONS.wallThickness, look.skin);

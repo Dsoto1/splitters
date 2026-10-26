@@ -9,6 +9,7 @@
 
 import { boxPackTiles } from './packTiles.ts';
 import { boxPackTiles2 } from './packTiles2.ts';
+import { ancientPackTiles } from './packTilesAncient.ts';
 
 /** Sides in clockwise order; rotating a tile by k quarter turns maps side i to (i + k) % 4. */
 export const SIDES = ['N', 'E', 'S', 'W'] as const;
@@ -113,9 +114,12 @@ export type Corner = (typeof CORNERS)[number];
  * boardwalk, or adobe with roof beams (02 Frontier Dust); gothic stone with
  * buttresses and pinnacles or Victorian brick with quoins (05 Gothic Estate);
  * temple stone with a glyph frieze or overgrown rock hung with vines (06
- * Jungle Ruins); clapboard siding or brick with shutters (08 Suburban Chaos).
+ * Jungle Ruins); clapboard siding or brick with shutters (08 Suburban Chaos); dressed
+ * limestone with pilasters and a cornice (03 Imperial Arena), or sandstone
+ * with a painted hieroglyph band under a gilded cavetto cornice (09 Sands
+ * of Egypt).
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick', 'roman', 'egyptian'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
@@ -136,6 +140,8 @@ export const FACADE_LABELS: Record<Facade, string> = {
   overgrown: 'Overgrown rock',
   clapboard: 'Clapboard siding',
   suburban_brick: 'Suburban brick',
+  roman: 'Roman limestone',
+  egyptian: 'Egyptian temple',
 };
 /** Facades drawn from models: the city kit's, and the Orbital and Neon packs' own pieces (the rest are boxes drawn with the level). */
 export const MODEL_FACADES: ReadonlySet<Facade> = new Set(['brick', 'storefront', 'plaster', 'hull', 'glass', 'neon']);
@@ -1191,6 +1197,8 @@ export const CORE_TILES: readonly TileDefinition[] = [
   ...boxPackTiles(),
   // Style Pack pieces (05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos): see packTiles2.ts.
   ...boxPackTiles2(),
+  // Style Pack pieces (03 Imperial Arena, 09 Sands of Egypt): see packTilesAncient.ts.
+  ...ancientPackTiles(),
 ];
 
 // ---------------------------------------------------------------- buildings
