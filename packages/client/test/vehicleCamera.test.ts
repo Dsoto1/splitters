@@ -204,7 +204,7 @@ describe('geometry', () => {
     expect(rayBoxExit({ x: 0, y: 5, z: 0 }, { x: 0, y: 0, z: -1 }, { x: 0, y: 0, z: 0 }, [1, 1, 2], 0)).toBeNull();
   });
 
-  it('puts every driver eye within the vehicle, at about a seated height', () => {
+  it('puts every driver eye within the vehicle, seated or up in a hatch', () => {
     for (const def of Object.values(MOUNT_DEFS)) {
       const seat = def.seats.findIndex((s) => s.role === 'driver');
       if (def.kind !== 'vehicle' || seat < 0) continue;
@@ -212,7 +212,8 @@ describe('geometry', () => {
       expect(Math.abs(x), def.id).toBeLessThan(def.half[0]);
       expect(Math.abs(z), def.id).toBeLessThan(def.half[2]);
       expect(y, def.id).toBeGreaterThan(0.8);
-      expect(y, def.id).toBeLessThan(def.seats[seat]!.offset[1] + 1.5);
+      // Up to a head out of a hatch (the tank's commander) above the seat.
+      expect(y, def.id).toBeLessThan(def.seats[seat]!.offset[1] + 1.6);
     }
   });
 });

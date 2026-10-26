@@ -279,8 +279,8 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     respawnSeconds: 75,
     blast: { radius: 6, damage: 120 },
     vehicle: { maxSpeed: 11, reverseSpeed: 5, accel: 5, turnRate: 1.0, grip: 0.45, mass: 6 },
-    // The driver's hatch: the hull's front edge below, the gun barrel off to the right.
-    cockpitEye: [-0.5, 2.3, 1.4],
+    // The commander's hatch on the turret roof, left of and behind the gun: you look out over the barrel.
+    cockpitEye: [-0.6, 3.5, -0.9],
     blurb: 'A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun',
   },
   gun_jeep: {
