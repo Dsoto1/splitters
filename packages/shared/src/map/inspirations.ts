@@ -38,6 +38,8 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   executive_grounds: 'the White House, Washington, D.C.',
   norman_shores: 'Lake Norman, North Carolina',
   primeval_park: 'Jurassic Park',
+  starhaven: 'the Enterprise (Star Trek)',
+  lucky_strip: 'the Las Vegas Strip',
 };
 
 /** "Inspired by …" for a map, if it has one (imported TimeSplitters maps name their game). */
