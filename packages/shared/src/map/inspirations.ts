@@ -36,6 +36,8 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   iron_tide: 'Assault Ship (Counter-Strike: Condition Zero)',
   capitol_mall: 'the National Mall, Washington, D.C.',
   executive_grounds: 'the White House, Washington, D.C.',
+  norman_shores: 'Lake Norman, North Carolina',
+  primeval_park: 'Jurassic Park',
 };
 
 /** "Inspired by …" for a map, if it has one (imported TimeSplitters maps name their game). */
