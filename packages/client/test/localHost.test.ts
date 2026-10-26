@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { BROWSER_HOST_MAX_PLAYERS, DEFAULT_RULES, PROTOCOL_VERSION, type ServerMessage } from '@tiletrigger/shared';
+import { BROWSER_HOST_MAX_GUESTS, DEFAULT_RULES, PROTOCOL_VERSION, type ServerMessage } from '@tiletrigger/shared';
 import { makeMap } from '../../shared/test/helpers.ts';
 import { LocalTransport, type RemoteLink } from '../src/game/localTransport.ts';
 import { MAX_CATCH_UP_TICKS, simWake } from '../src/game/matchHost.ts';
@@ -72,31 +72,32 @@ describe('host controls in a browser match (offline, Host game)', () => {
     expect(got.some((m) => m.t === 'notice' && m.text === 'Host set teams to 8v8')).toBe(true);
     expect(f.got.some((m) => m.t === 'notice' && m.text === 'Host set teams to 8v8')).toBe(true);
     expect(f.got.some((m) => m.t === 'host' && m.state)).toBe(false);
-    expect(t.capacity).toBe(16);
+    expect(t.capacity).toBe(Math.min(16, 1 + BROWSER_HOST_MAX_GUESTS));
     expect(t.liveRules()!.teamSizes).toEqual([8, 8]);
   });
 
-  it('a browser host holds 24 players with friends in: a bigger match loses bots as the first one joins', async () => {
-    const t = new LocalTransport(yard(), { name: 'Host', botFill: 48, difficulty: 'normal', rules: { ...DEFAULT_RULES['core.tdm'], teamSizes: [24, 24] } });
+  it('a browser host keeps 48 v 48 with friends in, and takes up to BROWSER_HOST_MAX_GUESTS of them', async () => {
+    const t = new LocalTransport(yard(), { name: 'Host', botFill: 96, difficulty: 'normal', rules: { ...DEFAULT_RULES['core.tdm'], teamSizes: [48, 48] } });
     open.push(t);
     const got: ServerMessage[] = [];
     t.start((m) => got.push(m), () => undefined);
     await until(() => got.some((m) => m.t === 'host'));
-    // Offline, with bots alone, it may be as big as a server's.
-    expect(t.hostState()).toMatchObject({ fill: 48, max: 96 });
-    expect(t.capacity).toBe(BROWSER_HOST_MAX_PLAYERS);
-    const f = friend();
-    t.accept(f.link);
-    f.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Friend' });
-    expect(f.got.find((m) => m.t === 'welcome')).toBeTruthy();
-    expect(t.hostState()).toMatchObject({ fill: BROWSER_HOST_MAX_PLAYERS, teamSize: BROWSER_HOST_MAX_PLAYERS / 2, max: BROWSER_HOST_MAX_PLAYERS });
-    expect(got.some((m) => m.t === 'notice' && m.text.startsWith('Browser-hosted games hold up to 24 players'))).toBe(true);
-    // The host can't go past it while friends play; once they're gone, the limit goes too.
-    t.host({ c: 'bots', teamSize: 30 });
-    expect(t.hostState()!.fill).toBe(BROWSER_HOST_MAX_PLAYERS);
-    t.dropGuests('The host took the game offline');
-    expect(t.hostState()!.max).toBe(96);
-  });
+    expect(t.hostState()).toMatchObject({ fill: 96, max: 96 });
+    // Seats for people: the host and its friends (the host's upload carries their snapshots).
+    expect(t.capacity).toBe(1 + BROWSER_HOST_MAX_GUESTS);
+    const friends = Array.from({ length: BROWSER_HOST_MAX_GUESTS + 1 }, () => friend());
+    friends.forEach((f, i) => {
+      t.accept(f.link);
+      f.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: `Friend${i}` });
+    });
+    // Friends take bots' places: still 48 v 48.
+    for (const f of friends.slice(0, -1)) expect(f.got.find((m) => m.t === 'welcome')).toBeTruthy();
+    expect(t.guests).toBe(BROWSER_HOST_MAX_GUESTS);
+    expect(t.hostState()).toMatchObject({ fill: 96, teamSize: 48, max: 96 });
+    const last = friends[friends.length - 1]!;
+    expect(last.got.find((m) => m.t === 'welcome')).toBeUndefined();
+    expect(last.got.find((m) => m.t === 'reject')).toMatchObject({ reason: expect.stringContaining('match full') });
+  }, 60_000);
 
   it('a slow moment does not snowball: the loop catches up a few ticks at most, then drops the backlog', async () => {
     const { got } = await host(4);

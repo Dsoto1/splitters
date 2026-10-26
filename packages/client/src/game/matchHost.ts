@@ -1,6 +1,6 @@
 import {
   BOT_DIFFICULTIES,
-  BROWSER_HOST_MAX_PLAYERS,
+  BROWSER_HOST_MAX_GUESTS,
   rulesForMap,
   MAX_PLAYER_SLOTS,
   PROTOCOL_VERSION,
@@ -11,7 +11,6 @@ import {
   initPhysics,
   parseClientMessage,
   sanitizeName,
-  teamCount,
   weaponCode,
   type BotDifficulty,
   type CarryOver,
@@ -282,7 +281,6 @@ export class MatchHost {
       // A moment for the message to get there before the link closes.
       this.sink.close(r.id, 500);
     }
-    this.hostLimit();
     if (this.control && !this.stopped) this.announce({ t: 'roster', players: this.control.match.roster() });
   }
 
@@ -310,13 +308,15 @@ export class MatchHost {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: `protocol ${msg.protocol} unsupported (host speaks ${PROTOCOL_VERSION})` }));
         return this.drop(id);
       }
-      // A browser hosting friends holds BROWSER_HOST_MAX_PLAYERS at most: fewer bots first.
-      this.hostLimit(true);
+      // The host's upload carries every friend's snapshots: BROWSER_HOST_MAX_GUESTS of them at most (bots fill the rest).
+      if (this.guests >= BROWSER_HOST_MAX_GUESTS) {
+        this.sink.send(id, JSON.stringify({ t: 'reject', reason: `match full (a player-hosted game takes up to ${BROWSER_HOST_MAX_GUESTS} friends)` }));
+        return this.drop(id);
+      }
       // The friend takes over a bot where it stands, on the team that needs a player.
       const player = bots.join(sanitizeName(msg.name), msg.look, control.fill);
       if (!player) {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: 'match full' }));
-        this.hostLimit();
         return this.drop(id);
       }
       r.slot = player.slot;
@@ -337,7 +337,6 @@ export class MatchHost {
     this.remotes.delete(id);
     if (r.slot === null || this.stopped) return;
     this.leave(r);
-    this.hostLimit();
     this.rosterToAll();
   }
 
@@ -379,28 +378,6 @@ export class MatchHost {
     if (r.slot !== null && this.control && !this.stopped) this.control.bots.leave(r.slot, this.control.fill);
     r.slot = null;
     this.sink.guest(r.id, null);
-  }
-
-  /**
-   * Friends here: the host's limit is BROWSER_HOST_MAX_PLAYERS (96 players are for
-   * dedicated servers), and a bigger match loses bots down to it as the first one
-   * joins (`joining`). Back to offline, the limit goes (the bots stay as they are).
-   */
-  private hostLimit(joining = false): void {
-    const c = this.control;
-    if (!c || this.stopped) return;
-    const online = joining || this.guests > 0;
-    const limit = online ? BROWSER_HOST_MAX_PLAYERS : MAX_PLAYER_SLOTS;
-    if (c.limit === limit) return;
-    c.limit = limit;
-    if (online && c.fill > limit) {
-      const teams = teamCount(c.match.rules);
-      c.apply(teams ? { c: 'bots', teamSize: Math.floor(limit / teams) } : { c: 'bots', fill: limit });
-      this.announce({ t: 'notice', text: `Browser-hosted games hold up to ${limit} players: bots cut to ${c.fill}` });
-      this.announce({ t: 'roster', players: c.match.roster() });
-    }
-    this.announce({ t: 'host', state: c.state() });
-    this.sendFacts();
   }
 
   private rosterToAll(): void {

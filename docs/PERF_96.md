@@ -24,12 +24,12 @@ the core that also renders, and a slow frame made the next one slower.
 - **No catch-up spiral**: a wake runs at most `MAX_CATCH_UP_TICKS` (4) ticks,
   then drops the backlog (reported as `lateTicks` in stats); a hidden tab may
   run up to 150 a wake so the match keeps real time while nothing renders.
-- **Browser hosts hold 24 players with friends in**
-  (`BROWSER_HOST_MAX_PLAYERS`): the host's browser runs every bot and encodes
-  every friend's snapshots next to its own rendering. Bots are cut to 24 when
-  the first friend joins (feed line), host controls stop at 24 until the last
-  friend leaves, listings advertise 24 at most. Offline with bots alone still
-  allows 96, with a note in the Arcade setup above 24. See HOSTING.md.
+- **48 v 48 stays the target, offline and hosted.** Bots fill any match up
+  to 96. A player-hosted online game takes up to `BROWSER_HOST_MAX_GUESTS`
+  (10) friends: the host's upload carries their snapshots. No warning in the
+  Arcade setup; if the device can't keep up (the match falls behind real time
+  or frames crawl for 5 s), one quiet HUD line suggests fewer bots or lower
+  graphics. See HOSTING.md.
 
 ## Measuring
 

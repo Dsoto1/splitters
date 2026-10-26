@@ -2,13 +2,12 @@
 export const MAX_PLAYER_SLOTS = 96;
 
 /**
- * Most players (bots included) in a game a browser hosts for friends (Host game,
- * Go online): that browser runs the whole match next to its own rendering and
- * relays every friend's snapshots, so it can't carry MAX_PLAYER_SLOTS.
- * 96-player matches are for dedicated servers; offline play with bots alone may
- * still use every slot. A policy for browser hosts, not a structural limit.
+ * Most friends (people, not bots) who can join a game a browser hosts (Host
+ * game, Go online): the host's upload carries every friend's snapshots, so
+ * that is the limit there. Bots still fill the match up to MAX_PLAYER_SLOTS
+ * (48 v 48). A policy for browser hosts, not a structural limit.
  */
-export const BROWSER_HOST_MAX_PLAYERS = 24;
+export const BROWSER_HOST_MAX_GUESTS = 10;
 
 export const TICK_RATE = 60;
 export const TICK_DT = 1 / TICK_RATE;

@@ -62,14 +62,14 @@ want always-on official matches.
 - **Matches** run in the host player's browser, in a Web Worker (its own
   core, apart from rendering; the page's thread where workers aren't
   available). See docs/PERF_96.md.
-- **Size: 24 players at most with friends in** (`BROWSER_HOST_MAX_PLAYERS`,
-  bots included). The host's browser runs every bot and relays every friend's
-  snapshots, next to its own rendering; 96-player matches are for dedicated
-  servers. Offline, with bots alone, a match may still have up to 96 (the
-  Arcade setup notes that a computer needs to be fast for that). When the
-  first friend joins a bigger match, the bots go down to 24 (the feed says
-  so) and the host controls stop at 24 until the last friend has left; the
-  game browser lists such a game as 24 at most.
+- **Size: up to 96 players (48 v 48), up to 10 friends.** Bots fill the
+  match to any size up to 96, offline or hosted; friends take bots' places.
+  The host's upload carries every friend's snapshots, so a player-hosted
+  game takes up to `BROWSER_HOST_MAX_GUESTS` (10) friends; the next one is
+  turned away ("match full") and the game browser lists the game with that
+  many seats. If the host's device can't keep up with a big match (the
+  match falls behind real time, or frames crawl, for 5 s), one quiet line
+  suggests fewer bots or lower graphics; nothing otherwise.
 - An offline match stays
   offline and private: nothing listens or connects until the player chooses.
   Pause menu → **Go online** (after a confirm) restarts the match on the same

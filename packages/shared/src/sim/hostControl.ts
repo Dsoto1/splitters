@@ -23,9 +23,6 @@ export class HostControl {
     private readonly title: HostTitle = 'Host',
   ) {}
 
-  /** Most players the host may set (a browser hosting friends keeps under BROWSER_HOST_MAX_PLAYERS). */
-  limit = MAX_PLAYER_SLOTS;
-
   state(): HostState {
     const r = this.match.rules;
     const teams = teamCount(r);
@@ -34,7 +31,7 @@ export class HostControl {
       fill: this.fill,
       teamSize: teams ? (sizes.length ? Math.max(...sizes) : Math.max(1, Math.round(this.fill / teams))) : null,
       teams,
-      max: this.limit,
+      max: MAX_PLAYER_SLOTS,
       skill: this.bots.skill.id,
       style: r.botStyle ?? 'mixed',
       map: this.match.map.metadata.id,
@@ -57,12 +54,12 @@ export class HostControl {
     const lines: string[] = [];
     const teams = teamCount(this.match.rules);
     if (teams && cmd.teamSize !== undefined) {
-      const size = Math.max(1, Math.min(Math.floor(this.limit / teams), cmd.teamSize));
+      const size = Math.max(1, Math.min(Math.floor(MAX_PLAYER_SLOTS / teams), cmd.teamSize));
       this.match.setRules({ teamSizes: Array.from({ length: teams }, () => size) });
       this.fill = size * teams;
       lines.push(`teams to ${teamsLabel(teams, size)}`);
     } else if (!teams && cmd.fill !== undefined) {
-      this.fill = Math.max(1, Math.min(this.limit, cmd.fill));
+      this.fill = Math.max(1, Math.min(MAX_PLAYER_SLOTS, cmd.fill));
       const coop = this.match.rules.mode === 'core.coop' || this.match.rules.mode === 'core.zombies';
       lines.push(coop ? `the squad to ${this.fill}` : `the match to ${this.fill} players`);
     }

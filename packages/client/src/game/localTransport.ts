@@ -1,4 +1,4 @@
-import { BROWSER_HOST_MAX_PLAYERS, MAX_PLAYER_SLOTS, type CarryOver, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
+import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
 import { perfProbe } from './perfProbe.ts';
 import type { Transport } from './transport.ts';
@@ -91,10 +91,10 @@ export class LocalTransport implements Transport {
 
   /**
    * How many people can play: friends take bots' places up to the match's size,
-   * and a browser hosting friends holds BROWSER_HOST_MAX_PLAYERS at most (96 are for dedicated servers).
+   * and the host's browser takes BROWSER_HOST_MAX_GUESTS friends at most (its upload carries their snapshots).
    */
   get capacity(): number {
-    return Math.max(1, Math.min(this.facts?.state.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS, BROWSER_HOST_MAX_PLAYERS));
+    return Math.max(1, Math.min(this.facts?.state.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS, 1 + BROWSER_HOST_MAX_GUESTS));
   }
 
   /** The match's host settings now (null before it runs). */
