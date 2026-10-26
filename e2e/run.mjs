@@ -199,13 +199,41 @@ async function editorFlow(browser) {
 
   await page.keyboard.press('Control+KeyS');
   const id = (await doc()).metadata.id;
+  // An edit after saving: Quit asks first (in-game dialog), and the change is kept as a draft.
+  await page.fill('#ed-name', 'Draft Edit');
+  await page.press('#ed-name', 'Enter');
+  await page.waitForFunction(() => window.__editor.doc.metadata.name === 'Draft Edit', null, { timeout: T(10000) });
+  await page.click('#ed-home');
+  const quitAsk = await page.evaluate(() => ({
+    open: document.getElementById('ed-quit-dialog').open,
+    named: !document.getElementById('ed-quit-name-row').hidden,
+    buttons: [...document.querySelectorAll('#ed-quit-dialog button')].map((b) => b.textContent),
+  }));
+  check(quitAsk.open && !quitAsk.named && quitAsk.buttons.join('|') === 'Save & quit|Quit without saving|Cancel', `Quit with unsaved changes asks Save & quit / Quit without saving / Cancel (${JSON.stringify(quitAsk)})`);
+  await page.click('#ed-quit-cancel');
+  check(!(await page.evaluate(() => document.getElementById('ed-quit-dialog').open || document.getElementById('editor').hidden)), 'Cancel stays in MapMaker');
+  await page.waitForFunction((id) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(id), id, { timeout: T(10000) });
   await page.reload();
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   d = await doc();
-  check(d.metadata.id === id && d.classicStructure.tiles.length === 3 && d.classicStructure.tiles[0].surfaces?.floor?.material === 'core.checker', 'autosave restores the painted map after reload');
+  check(d.metadata.id !== id && d.metadata.name === 'Untitled Map' && d.classicStructure.tiles.length === 1 && d.entities.length === 1, 'reopening MapMaker shows the blank starter map');
   await page.click('#ed-open');
   const lib = await page.$$eval('#ed-library li', (ls) => ls.map((l) => l.textContent));
-  check(lib.some((t) => t.includes('Untitled Map')), 'saved map is listed in the library');
+  check(lib.some((t) => t.includes('Untitled Map') && t.includes('Saved')), 'saved map is listed in the library');
+  check(lib.some((t) => t.startsWith('Unsaved draft (Draft Edit,')), `the unsaved edit is offered as a draft in Open (${lib.slice(0, 3).join(' / ')})`);
+  await page.click('#ed-library li.draft > button:first-child');
+  d = await doc();
+  check(d.metadata.id === id && d.metadata.name === 'Draft Edit' && d.classicStructure.tiles.length === 3 && d.classicStructure.tiles[0].surfaces?.floor?.material === 'core.checker', 'opening the draft brings back the painted map with the edit');
+  check(await page.evaluate(() => document.getElementById('ed-dirty').classList.contains('on')), 'an opened draft still counts as unsaved');
+  // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
+  await page.click('#ed-home');
+  await page.click('#ed-quit-discard');
+  await page.waitForFunction(() => document.getElementById('editor').hidden && !document.getElementById('menu').hidden, null, { timeout: T(10000) });
+  check(!(await page.evaluate((id) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(id), id)), 'Quit without saving returns to the menu and drops the draft');
+  await page.click('#nav-mapmaker');
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
+  d = await doc();
+  check(d.metadata.id !== id && d.classicStructure.tiles.length === 1, 're-entering MapMaker from the menu starts on the blank starter');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   // Close it, or its render loop keeps eating CPU through the later flows.
   await page.context().close();

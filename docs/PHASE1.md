@@ -53,7 +53,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 - Levels: PgUp/PgDn (or `[` `]`) changes the active floor. Floors above are hidden unless "Show all levels" (H) is on.
 - Undo/redo for every change, including renames and inspector edits. Multi-object operations are one step. History keeps exact documents, so undo restores item order.
 - Validation panel: schema/semantic checks plus navmesh reachability between spawns, recomputed after each change. Clicking an issue selects and frames the object. The top-bar pill summarises status. TEST is blocked while errors exist.
-- Persistence: rolling autosave (restored on reload), a local map library (Save / Open), Export/Import of `.cmap.json` files, and the Phase 0 Arena as a remixable template (keeps `parentId` lineage).
+- Persistence: rolling autosave (since kept as unsaved drafts offered in Open…; MapMaker now always opens blank, see [UI.md](UI.md)), a local map library (Save / Open), Export/Import of `.cmap.json` files, and the Phase 0 Arena as a remixable template (keeps `parentId` lineage).
 
 **TEST** (F5 or ▶ TEST): the current, unsaved document runs as an in-browser `Match` behind `LocalTransport`. This is the same simulation and protocol as the dedicated server, with a chosen bot count and skill. The second Esc (or F5, or "Back to MapMaker") returns to the editor with camera, selection, level and history untouched. Startup measured at 150–220 ms in the container, against a 1–3 s target.
 

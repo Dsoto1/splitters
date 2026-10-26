@@ -196,6 +196,8 @@ class App {
     });
     $('menu').hidden = true;
     this.mode = 'editor';
+    // Always a blank starter map; the user opens what they want from Open….
+    this.editor.startFresh();
     this.editor.show();
     // Automation hook for browser tests.
     (window as unknown as { __editor: EditorApp }).__editor = this.editor;
