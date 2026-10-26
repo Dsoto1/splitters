@@ -375,9 +375,10 @@ lowrider(14, 23.4, 0, '#7a1f4a', '#f0e8e0');
 lowrider(34, 32.6, PI, '#2a6ab0');
 lowrider(70, 23.4, 0.04, '#d8a22a', '#f4efe4');
 lowrider(96, 32.6, PI, '#3a8a5a');
-lowrider(50, 40.5, P, '#5a2a7a'); // H1's driveway
-lowrider(64, 40.5, -P, '#c84a2a', '#f0e8e0'); // H5's driveway
-lowrider(84, 2.5, P, '#1a1a1e'); // the burger lot
+// Everyday cars in the driveways and the lot: Designersoup's low-poly cars (CC0; props face +Z, the lowriders run along x).
+m.prop('car_offroader', [50, 0, 40.5], 0); // H1's driveway
+m.prop('car_beetle', [64, 0, 40.5], PI); // H5's driveway
+m.prop('car_pickup', [84, 0, 2.5], 0); // the burger lot
 lowrider(96, 6, P + 0.1, '#b02a3a', '#f0e8e0');
 lowrider(104, 2.5, P, '#2a8ab0');
 lowrider(64, 97, 0.3, '#e2d2a0'); // the turning circle

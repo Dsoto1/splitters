@@ -674,15 +674,12 @@ for (let s = -60; s <= 52; s += 4) {
   box(-86, 0.05, s - 0.1, -81, 0.06, s + 0.1, CHALK);
   box(-75, 0.05, s - 0.1, -70, 0.06, s + 0.1, CHALK);
 }
-const CAR_TINTS = ['#b8312f', '#2c5aa0', '#e8e6e0', '#2a2c30', '#3f7f4a', '#c9a227', '#8a8f96'];
+/** Designersoup's low-poly cars (CC0), taken in turn. */
+const CAR_MODELS = ['car_beetle', 'car_racer', 'car_offroader', 'car_pickup'] as const;
 let carN = 0;
-/** A parked car (body, cabin, wheels) at (x, z) facing `yaw`. */
+/** A parked car at (x, z) facing `yaw`: Designersoup's cars in turn. */
 function car(x: number, z: number, yaw: number): void {
-  const f: Frame = { x, z, yaw };
-  const paint = { material: 'paint_gloss', tint: CAR_TINTS[carN++ % CAR_TINTS.length]! };
-  lbox(f, -0.95, -2.2, 0.95, 2.2, 0.4, 1.1, paint);
-  lbox(f, -0.85, -1.2, 0.85, 0.9, 1.1, 1.7, { material: 'pbr_glass_facade', tint: '#5a6a7a' });
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) lbox(f, sx * 0.95 - 0.13, sz * 1.4 - 0.35, sx * 0.95 + 0.13, sz * 1.4 + 0.35, 0.05, 0.65, { material: 'paint_matte', tint: '#1a1a1a' });
+  m.prop(CAR_MODELS[carN++ % CAR_MODELS.length]!, [r2(x), 0, r2(z)], yaw);
 }
 for (const [s, row] of [[-58, 0], [-46, 1], [-30, 0], [-18, 1], [-6, 0], [6, 1], [26, 0], [38, 1], [50, 0]] as const) {
   car(s, row ? -72.5 : -83.5, row ? 0 : PI);

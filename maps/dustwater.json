@@ -1077,7 +1077,77 @@
       "tint": null
     },
     {
-      "id": "block_070",
+      "id": "prop_070",
+      "position": [
+        16.2,
+        4,
+        54.8
+      ],
+      "kind": "prop",
+      "model": "prop.mc_mound",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_071",
+      "position": [
+        34,
+        4,
+        53.5
+      ],
+      "kind": "prop",
+      "model": "prop.mc_cave_rocks_b",
+      "yaw": 1.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        13.8,
+        4,
+        58.8
+      ],
+      "kind": "prop",
+      "model": "prop.mc_cave_rocks_d",
+      "yaw": 2.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        33.5,
+        4,
+        57.5
+      ],
+      "kind": "prop",
+      "model": "prop.mc_cart_tipper",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        24,
+        4,
+        53.4
+      ],
+      "kind": "prop",
+      "model": "prop.mc_rail_end",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "block_075",
       "position": [
         24,
         4,
@@ -1099,7 +1169,7 @@
       "health": 80
     },
     {
-      "id": "block_071",
+      "id": "block_076",
       "position": [
         -36,
         0,
@@ -1121,7 +1191,7 @@
       "health": 80
     },
     {
-      "id": "prop_072",
+      "id": "prop_077",
       "position": [
         30,
         4,
@@ -1135,7 +1205,7 @@
       "tint": null
     },
     {
-      "id": "prop_073",
+      "id": "prop_078",
       "position": [
         17.5,
         4,
@@ -1149,7 +1219,7 @@
       "tint": null
     },
     {
-      "id": "prop_074",
+      "id": "prop_079",
       "position": [
         30,
         4.6,
@@ -1163,7 +1233,7 @@
       "tint": null
     },
     {
-      "id": "prop_075",
+      "id": "prop_080",
       "position": [
         37,
         -0.18,
@@ -1177,7 +1247,7 @@
       "tint": null
     },
     {
-      "id": "prop_076",
+      "id": "prop_081",
       "position": [
         -1,
         0,
@@ -1191,7 +1261,7 @@
       "tint": null
     },
     {
-      "id": "pickup_077",
+      "id": "pickup_082",
       "position": [
         24,
         4,
@@ -1202,7 +1272,7 @@
       "respawnSeconds": 30
     },
     {
-      "id": "pickup_078",
+      "id": "pickup_083",
       "position": [
         -36,
         0,
@@ -1213,7 +1283,7 @@
       "respawnSeconds": 30
     },
     {
-      "id": "pickup_079",
+      "id": "pickup_084",
       "position": [
         40,
         0,
@@ -1224,7 +1294,7 @@
       "respawnSeconds": 30
     },
     {
-      "id": "prop_080",
+      "id": "prop_085",
       "position": [
         -44,
         0,
@@ -1238,7 +1308,7 @@
       "tint": null
     },
     {
-      "id": "prop_081",
+      "id": "prop_086",
       "position": [
         -28.8,
         0,
@@ -1252,7 +1322,7 @@
       "tint": null
     },
     {
-      "id": "prop_082",
+      "id": "prop_087",
       "position": [
         -12.8,
         0,
@@ -1266,7 +1336,7 @@
       "tint": null
     },
     {
-      "id": "prop_083",
+      "id": "prop_088",
       "position": [
         36.8,
         0,
@@ -1280,7 +1350,7 @@
       "tint": null
     },
     {
-      "id": "prop_084",
+      "id": "prop_089",
       "position": [
         -36,
         0,
@@ -1294,7 +1364,7 @@
       "tint": null
     },
     {
-      "id": "prop_085",
+      "id": "prop_090",
       "position": [
         20.8,
         0,
@@ -1308,7 +1378,7 @@
       "tint": null
     },
     {
-      "id": "prop_086",
+      "id": "prop_091",
       "position": [
         -32,
         0,
@@ -1322,7 +1392,7 @@
       "tint": null
     },
     {
-      "id": "prop_087",
+      "id": "prop_092",
       "position": [
         28,
         0,
@@ -1336,7 +1406,7 @@
       "tint": null
     },
     {
-      "id": "prop_088",
+      "id": "prop_093",
       "position": [
         -10,
         0,
@@ -1350,7 +1420,7 @@
       "tint": null
     },
     {
-      "id": "prop_089",
+      "id": "prop_094",
       "position": [
         22,
         0,
@@ -1364,7 +1434,7 @@
       "tint": null
     },
     {
-      "id": "prop_090",
+      "id": "prop_095",
       "position": [
         -12.8,
         -0.18,
@@ -1378,7 +1448,7 @@
       "tint": null
     },
     {
-      "id": "prop_091",
+      "id": "prop_096",
       "position": [
         -26.4,
         -0.18,
@@ -1392,7 +1462,7 @@
       "tint": null
     },
     {
-      "id": "prop_092",
+      "id": "prop_097",
       "position": [
         -24.8,
         -0.18,
@@ -1406,7 +1476,7 @@
       "tint": null
     },
     {
-      "id": "prop_093",
+      "id": "prop_098",
       "position": [
         44.8,
         0,
@@ -1420,7 +1490,7 @@
       "tint": null
     },
     {
-      "id": "prop_094",
+      "id": "prop_099",
       "position": [
         46.4,
         0,
@@ -1434,7 +1504,7 @@
       "tint": null
     },
     {
-      "id": "prop_095",
+      "id": "prop_100",
       "position": [
         48,
         -0.18,
@@ -1448,7 +1518,7 @@
       "tint": null
     },
     {
-      "id": "prop_096",
+      "id": "prop_101",
       "position": [
         -20.8,
         0,
@@ -1462,7 +1532,7 @@
       "tint": null
     },
     {
-      "id": "prop_097",
+      "id": "prop_102",
       "position": [
         -43.2,
         -0.18,
@@ -1476,7 +1546,7 @@
       "tint": null
     },
     {
-      "id": "prop_098",
+      "id": "prop_103",
       "position": [
         -4.8,
         -0.18,
@@ -1490,7 +1560,7 @@
       "tint": null
     },
     {
-      "id": "prop_099",
+      "id": "prop_104",
       "position": [
         -16.8,
         0,
@@ -1504,7 +1574,7 @@
       "tint": null
     },
     {
-      "id": "prop_100",
+      "id": "prop_105",
       "position": [
         -12.8,
         0,
@@ -1518,7 +1588,7 @@
       "tint": null
     },
     {
-      "id": "prop_101",
+      "id": "prop_106",
       "position": [
         8,
         -0.18,
@@ -1532,7 +1602,7 @@
       "tint": null
     },
     {
-      "id": "prop_102",
+      "id": "prop_107",
       "position": [
         10.4,
         -0.18,
@@ -1546,7 +1616,7 @@
       "tint": null
     },
     {
-      "id": "prop_103",
+      "id": "prop_108",
       "position": [
         8,
         -0.18,
@@ -1560,7 +1630,7 @@
       "tint": null
     },
     {
-      "id": "prop_104",
+      "id": "prop_109",
       "position": [
         10.4,
         -0.18,
@@ -1574,7 +1644,7 @@
       "tint": null
     },
     {
-      "id": "prop_105",
+      "id": "prop_110",
       "position": [
         28.8,
         -0.18,
@@ -1588,7 +1658,7 @@
       "tint": null
     },
     {
-      "id": "prop_106",
+      "id": "prop_111",
       "position": [
         60,
         0,
@@ -1602,7 +1672,7 @@
       "tint": null
     },
     {
-      "id": "prop_107",
+      "id": "prop_112",
       "position": [
         -60,
         0,
@@ -1616,7 +1686,7 @@
       "tint": null
     },
     {
-      "id": "prop_108",
+      "id": "prop_113",
       "position": [
         -72,
         -0.18,
@@ -1630,7 +1700,7 @@
       "tint": null
     },
     {
-      "id": "prop_109",
+      "id": "prop_114",
       "position": [
         -80,
         -0.18,
@@ -1644,7 +1714,7 @@
       "tint": null
     },
     {
-      "id": "prop_110",
+      "id": "prop_115",
       "position": [
         72,
         -0.18,
@@ -1658,7 +1728,7 @@
       "tint": null
     },
     {
-      "id": "prop_111",
+      "id": "prop_116",
       "position": [
         80,
         -0.18,
@@ -1672,7 +1742,7 @@
       "tint": null
     },
     {
-      "id": "prop_112",
+      "id": "prop_117",
       "position": [
         -64,
         -0.18,
@@ -1686,7 +1756,7 @@
       "tint": null
     },
     {
-      "id": "prop_113",
+      "id": "prop_118",
       "position": [
         80,
         -0.18,
@@ -1700,7 +1770,7 @@
       "tint": null
     },
     {
-      "id": "prop_114",
+      "id": "prop_119",
       "position": [
         -16,
         -0.18,
@@ -1714,7 +1784,7 @@
       "tint": null
     },
     {
-      "id": "prop_115",
+      "id": "prop_120",
       "position": [
         48,
         -0.18,
@@ -1728,7 +1798,7 @@
       "tint": null
     },
     {
-      "id": "prop_116",
+      "id": "prop_121",
       "position": [
         -52,
         -0.18,
@@ -1742,7 +1812,7 @@
       "tint": null
     },
     {
-      "id": "prop_117",
+      "id": "prop_122",
       "position": [
         16,
         -0.18,
@@ -1756,7 +1826,7 @@
       "tint": null
     },
     {
-      "id": "prop_118",
+      "id": "prop_123",
       "position": [
         52,
         -0.18,
@@ -1770,7 +1840,7 @@
       "tint": null
     },
     {
-      "id": "prop_119",
+      "id": "prop_124",
       "position": [
         -24,
         -0.18,
@@ -1784,7 +1854,7 @@
       "tint": null
     },
     {
-      "id": "prop_120",
+      "id": "prop_125",
       "position": [
         36.8,
         -0.18,
@@ -1798,7 +1868,7 @@
       "tint": null
     },
     {
-      "id": "prop_121",
+      "id": "prop_126",
       "position": [
         43.2,
         -0.18,
@@ -1812,7 +1882,7 @@
       "tint": null
     },
     {
-      "id": "prop_122",
+      "id": "prop_127",
       "position": [
         -5,
         0,
@@ -1826,7 +1896,7 @@
       "tint": null
     },
     {
-      "id": "spawn_123",
+      "id": "spawn_128",
       "position": [
         -59.2,
         0,
@@ -1837,7 +1907,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_124",
+      "id": "spawn_129",
       "position": [
         -59.2,
         0,
@@ -1848,7 +1918,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_125",
+      "id": "spawn_130",
       "position": [
         -52.8,
         0,
@@ -1859,7 +1929,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_126",
+      "id": "spawn_131",
       "position": [
         -46.4,
         0,
@@ -1870,7 +1940,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_127",
+      "id": "spawn_132",
       "position": [
         -27.2,
         0,
@@ -1881,7 +1951,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_128",
+      "id": "spawn_133",
       "position": [
         -54.4,
         0,
@@ -1892,7 +1962,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_129",
+      "id": "spawn_134",
       "position": [
         -27.2,
         0,
@@ -1903,7 +1973,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_130",
+      "id": "spawn_135",
       "position": [
         -60.8,
         0,
@@ -1914,7 +1984,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_131",
+      "id": "spawn_136",
       "position": [
         59.2,
         0,
@@ -1925,7 +1995,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_132",
+      "id": "spawn_137",
       "position": [
         59.2,
         0,
@@ -1936,7 +2006,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_133",
+      "id": "spawn_138",
       "position": [
         52.8,
         0,
@@ -1947,7 +2017,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_134",
+      "id": "spawn_139",
       "position": [
         43.2,
         0,
@@ -1958,7 +2028,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_135",
+      "id": "spawn_140",
       "position": [
         27.2,
         0,
@@ -1969,7 +2039,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_136",
+      "id": "spawn_141",
       "position": [
         54.4,
         0,
@@ -1980,7 +2050,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_137",
+      "id": "spawn_142",
       "position": [
         36.8,
         0,
@@ -1991,7 +2061,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_138",
+      "id": "spawn_143",
       "position": [
         60.8,
         0,
@@ -2002,7 +2072,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_139",
+      "id": "spawn_144",
       "position": [
         0,
         0,
@@ -2013,7 +2083,7 @@
       "faction": null
     },
     {
-      "id": "spawn_140",
+      "id": "spawn_145",
       "position": [
         -16,
         0,
@@ -2024,7 +2094,7 @@
       "faction": null
     },
     {
-      "id": "spawn_141",
+      "id": "spawn_146",
       "position": [
         19.2,
         0,
@@ -2035,7 +2105,7 @@
       "faction": null
     },
     {
-      "id": "spawn_142",
+      "id": "spawn_147",
       "position": [
         -12,
         0,
@@ -2046,7 +2116,7 @@
       "faction": null
     },
     {
-      "id": "spawn_143",
+      "id": "spawn_148",
       "position": [
         12,
         0,
@@ -2057,7 +2127,7 @@
       "faction": null
     },
     {
-      "id": "spawn_144",
+      "id": "spawn_149",
       "position": [
         -40,
         0,
@@ -2068,7 +2138,7 @@
       "faction": null
     },
     {
-      "id": "spawn_145",
+      "id": "spawn_150",
       "position": [
         40,
         0,
@@ -2079,7 +2149,7 @@
       "faction": null
     },
     {
-      "id": "spawn_146",
+      "id": "spawn_151",
       "position": [
         4.8,
         0,
@@ -2090,7 +2160,7 @@
       "faction": null
     },
     {
-      "id": "pickup_147",
+      "id": "pickup_152",
       "position": [
         -33.5,
         0,
@@ -2101,7 +2171,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_148",
+      "id": "pickup_153",
       "position": [
         14.5,
         0,
@@ -2112,7 +2182,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_149",
+      "id": "pickup_154",
       "position": [
         -36,
         4,
@@ -2123,7 +2193,7 @@
       "respawnSeconds": 30
     },
     {
-      "id": "pickup_150",
+      "id": "pickup_155",
       "position": [
         35.5,
         0,
@@ -2134,7 +2204,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_151",
+      "id": "pickup_156",
       "position": [
         -4.8,
         0.25,
@@ -2145,7 +2215,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_152",
+      "id": "pickup_157",
       "position": [
         27,
         4,
@@ -2156,7 +2226,7 @@
       "respawnSeconds": 35
     },
     {
-      "id": "pickup_153",
+      "id": "pickup_158",
       "position": [
         0,
         0,
@@ -2167,7 +2237,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_154",
+      "id": "pickup_159",
       "position": [
         -36,
         0,
@@ -2178,7 +2248,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_155",
+      "id": "pickup_160",
       "position": [
         48,
         0,
@@ -2189,7 +2259,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_156",
+      "id": "pickup_161",
       "position": [
         24,
         0,
@@ -2200,7 +2270,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_157",
+      "id": "pickup_162",
       "position": [
         25.3,
         4,
@@ -2211,7 +2281,7 @@
       "respawnSeconds": 40
     },
     {
-      "id": "pickup_158",
+      "id": "pickup_163",
       "position": [
         -24,
         0,
@@ -2222,7 +2292,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_159",
+      "id": "pickup_164",
       "position": [
         24,
         0,
@@ -2233,7 +2303,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "hill_160",
+      "id": "hill_165",
       "position": [
         0,
         0,
@@ -2243,7 +2313,7 @@
       "radius": 6
     },
     {
-      "id": "flag_161",
+      "id": "flag_166",
       "position": [
         -56,
         0,
@@ -2254,7 +2324,7 @@
       "team": "embers"
     },
     {
-      "id": "flag_162",
+      "id": "flag_167",
       "position": [
         56,
         0,

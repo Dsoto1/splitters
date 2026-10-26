@@ -718,6 +718,8 @@ motorhome(14, -66, EMBER);
 for (const x of [50, 62, 74]) truck(x, -70, true, TIDE);
 motorhome(84, -52, TIDE);
 motorhome(108, -52, TIDE);
+// The teams' road cars parked by the motorhomes (Designersoup's racer, CC0).
+for (const [x, z] of [[-10, -62.4], [14, -62.4], [84, -55.6], [108, -55.6]] as const) m.prop('car_racer', [x, 0, z], P);
 // Helipad in the infield, inside the sweeper.
 {
   const [hx, hz] = [118, 30];

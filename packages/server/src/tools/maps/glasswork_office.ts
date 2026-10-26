@@ -197,22 +197,21 @@ for (const x of [4, 5, 7, 8]) m.edge(x, 9, 0, 'N', 'half'); // planters across t
 
 // ---------------------------------------------------------------- cars (blocks)
 const TYRES = { material: 'pbr_steel', tint: '#2a2a2a' };
-const GLASS = { material: 'paint_gloss', tint: '#1c2228' };
 const SNOWCAP = { material: 'pbr_snow' };
-function car(cx: number, cz: number, ns: boolean, tint: string, snowy = true): void {
-  const [w, l] = ns ? [2, 4.4] : [4.4, 2];
-  m.block([cx, 0.25, cz], [w, 0.85, l], 'solid', { material: 'paint_gloss', tint });
-  m.block([cx, 1.1, cz], ns ? [1.8, 0.6, 2.2] : [2.2, 0.6, 1.8], 'solid', GLASS);
-  m.block([cx, 0, cz], ns ? [1.9, 0.25, 3.6] : [3.6, 0.25, 1.9], 'solid', TYRES);
-  if (snowy) m.block([cx, 1.7, cz], ns ? [1.7, 0.12, 2.1] : [2.1, 0.12, 1.7], 'solid', SNOWCAP);
+/** Designersoup's low-poly cars (CC0), taken in turn. */
+const CAR_MODELS = ['car_beetle', 'car_racer', 'car_offroader', 'car_pickup'] as const;
+let carN = 0;
+/** A parked car, north-south or east-west: Designersoup's cars in turn. */
+function car(cx: number, cz: number, ns: boolean): void {
+  m.prop(CAR_MODELS[carN++ % CAR_MODELS.length]!, [cx, 0, cz], ns ? 0 : P);
 }
-car(14, 2, true, '#3a6fb0');
-car(26, 8, false, '#c8c8c8');
-car(50, 3, true, '#7a2a24');
-car(62, 9, false, '#2a2a2e');
-car(76, 2, true, '#3e6b3a');
-car(2, 22, true, '#c9a227', false); // in the garage
-car(10, 30, true, '#5a5e66', false);
+car(14, 2, true);
+car(26, 8, false);
+car(50, 3, true);
+car(62, 9, false);
+car(76, 2, true);
+car(2, 22, true); // in the garage
+car(10, 30, true);
 // A van parked on the plaza.
 m.block([60, 0.3, 78], [6, 2.4, 2.4], 'solid', { material: 'pbr_white_panel' });
 m.block([60, 0, 78], [4.6, 0.3, 2.2], 'solid', TYRES);

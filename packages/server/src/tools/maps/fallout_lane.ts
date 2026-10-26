@@ -216,19 +216,15 @@ function truck(cx: number, cz: number, yaw: number): void {
   part(cx, cz, yaw, 3.1, 0, 1.8, [1.8, 0.95, 2.36], GLASS_DARK);
   part(cx, cz, yaw, 3.15, 0, 2.75, [1.9, 0.15, 2.4], PAINT('#a8382c'));
 }
-/** A 1950s car with fins. */
-function car(cx: number, cz: number, yaw: number, tint: string): void {
-  for (const lx of [-1.5, 1.5]) for (const lz of [-0.85, 0.85]) part(cx, cz, yaw, lx, lz, 0, [0.75, 0.6, 0.3], TYRE);
-  part(cx, cz, yaw, 0, 0, 0.3, [4.8, 0.65, 2], PAINT(tint));
-  part(cx, cz, yaw, -0.3, 0, 0.95, [2.3, 0.55, 1.8], GLASS_DARK);
-  part(cx, cz, yaw, -0.3, 0, 1.5, [2.4, 0.1, 1.85], PAINT('#f2efe6'));
-  for (const lz of [-0.8, 0.8]) part(cx, cz, yaw, -2.2, lz, 0.95, [0.6, 0.25, 0.2], PAINT(tint));
+/** A parked car along local x: one of Designersoup's low-poly cars (CC0; props face +Z, so a quarter turn more). */
+function car(cx: number, cz: number, yaw: number, model: 'car_beetle' | 'car_offroader' | 'car_pickup' | 'car_racer'): void {
+  m.prop(model, [r2(cx), 0, r2(cz)], r2(yaw + P));
 }
 bus(-3, 0.4, 0.18);
 truck(15, -0.8, -0.32);
-car(14, 25, PI / 2, '#d0574a'); // under the carport
-car(16, -29, P, '#6a8ab8'); // in the garage
-car(-28, -1.8, -0.06, '#8fb88a'); // by the road block
+car(14, 25, PI / 2, 'car_beetle'); // under the carport
+car(16, -29, P, 'car_racer'); // in the garage
+car(-28, -1.8, -0.06, 'car_pickup'); // by the road block
 
 // The carport (north-east side yard): four posts and a flat roof.
 for (const [x, z] of [[10.4, 20.4], [17.6, 20.4], [10.4, 29.6], [17.6, 29.6]] as const) m.block([x, G, z], [0.3, 3.15, 0.3], 'solid', { material: 'pbr_steel', tint: '#e8e4da' });

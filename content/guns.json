@@ -1,0 +1,81 @@
+{
+  "$comment": "Weapon models built by tools/content/prepare-guns.mjs from pack downloads kept out of the repo (see docs/CONTENT_PIPELINE.md). `forward`: the source's barrel axis; `length`: metres along the barrel once built. The weapons keep the models they used before as `fallback` (packages/shared/src/sim/weapons.ts).",
+  "packs": {
+    "styloo-guns": {
+      "title": "Guns Asset Pack",
+      "creator": "Styloo",
+      "url": "https://styloo.itch.io/guns-asset-pack",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/styloo-guns/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Styloo Guns Asset Pack GLTF FBX V1.1",
+      "models": "Normal version Color and NormalMap/GLB"
+    },
+    "3dmodelscc0-guns-explosives": {
+      "title": "Free CC0 Guns & Explosives Pack",
+      "creator": "3DModelsCC0",
+      "url": "https://3dmodelscc0.itch.io/free-cc0-guns-explosives-pack",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/3dmodelscc0-guns-explosives/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Guns&Explosives",
+      "models": "."
+    }
+  },
+  "budgets": {
+    "maxTriangles": 8000,
+    "maxBytes": 524288
+  },
+  "models": [
+    {
+      "out": "guns/ak47.glb",
+      "pack": "styloo-guns",
+      "file": "ak47.glb",
+      "forward": "+x",
+      "length": 0.85
+    },
+    {
+      "out": "guns/awp.glb",
+      "pack": "styloo-guns",
+      "file": "awp.glb",
+      "forward": "+x",
+      "length": 1.15
+    },
+    {
+      "out": "guns/mac10.glb",
+      "pack": "styloo-guns",
+      "file": "mac10.glb",
+      "forward": "+x",
+      "length": 0.32
+    },
+    {
+      "out": "guns/shotgun.glb",
+      "pack": "styloo-guns",
+      "file": "shotgun.glb",
+      "forward": "+x",
+      "length": 0.95
+    },
+    {
+      "out": "guns/rocket_launcher.glb",
+      "pack": "styloo-guns",
+      "file": "rocketlaucher.glb",
+      "forward": "+x",
+      "length": 1.1
+    },
+    {
+      "out": "guns/frag.glb",
+      "pack": "styloo-guns",
+      "file": "nade_low.glb",
+      "forward": "+z",
+      "length": 0.11
+    },
+    {
+      "out": "guns/at_mine.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "AT_MINE/AT_MINE.fbx",
+      "baseColor": "AT_MINE_Base_Color.png",
+      "forward": "+z",
+      "length": 0.34
+    }
+  ]
+}
