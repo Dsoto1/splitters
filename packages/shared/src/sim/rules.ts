@@ -2,10 +2,10 @@ import type { MapDocument } from '../map/schema.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.zombies' | 'core.forts';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.zombies' | 'core.forts' | 'core.discs';
 
 /** Every mode, in menu order. */
-export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.forts', 'core.coop', 'core.zombies'];
+export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.forts', 'core.coop', 'core.zombies', 'core.discs'];
 
 export const MODE_LABELS: Record<GameMode, string> = {
   'core.deathmatch': 'Deathmatch',
@@ -18,6 +18,7 @@ export const MODE_LABELS: Record<GameMode, string> = {
   'core.coop': 'Co-op',
   'core.zombies': 'Zombies',
   'core.forts': 'Fort Wars',
+  'core.discs': 'Disc Arena',
 };
 
 /** Modes played in teams (factions from mapTeams). */
@@ -67,8 +68,16 @@ export interface MatchRules {
   /** Team names and colours chosen for this match (by team order); absent: the map's. */
   teamNames?: string[];
   teamColors?: string[];
-  /** Spears only: everyone holds one throwing spear (one hit kills; fetch it back); no weapon, ammo or grenade pickups. */
-  weapons?: 'normal' | 'spears';
+  /**
+   * Spears only: everyone holds one throwing spear (one hit kills; fetch it back). Discs only: everyone
+   * throws arena discs that knock players off instead of hurting them (Disc Arena). Either way, no
+   * weapon, ammo or grenade pickups.
+   */
+  weapons?: 'normal' | 'spears' | 'discs';
+  /** Classes (sim/classes.ts): everyone picks a class with its own loadout, health, speed and ability. */
+  classes?: boolean;
+  /** Classes: most players per team (all players in free-for-all) in any one class; 0 or absent = no limit. */
+  classLimit?: number;
   /** How much damage vehicles take: normal, tough (half) or off (they can't be destroyed except by falling off the map). Default normal. */
   vehicleDamage?: 'normal' | 'tough' | 'off';
   /** Fort Wars: seconds of each build phase and each combat (Capture the Flag) phase, build/combat cycles, and build points per team per match. */
@@ -77,6 +86,9 @@ export interface MatchRules {
   fortCycles?: number;
   fortBudget?: number;
 }
+
+/** Weapons-only rules (spears, discs) take away weapon, ammo and grenade pickups. */
+export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons && rules.weapons !== 'normal';
 
 /** The gravity multiple and fall damage a match plays with: its own rules, else the map's, else normal / off. */
 export function matchPhysics(rules: MatchRules, map: { physics?: { gravity: number; fallDamage: boolean } | null }): { gravity: number; fallDamage: boolean } {
@@ -217,6 +229,23 @@ export const DEFAULT_FORTS_RULES: MatchRules = {
   fortBudget: 120,
 };
 
+/**
+ * Disc Arena (Ricochet-style): free-for-all with arena discs only. Discs
+ * knock players about instead of hurting them; whoever knocked you into the
+ * void scores. Power discs lie about the arena.
+ */
+export const DEFAULT_DISCS_RULES: MatchRules = {
+  mode: 'core.discs',
+  scoreLimit: 10,
+  timeLimitSeconds: 480,
+  respawnDelayTicks: Math.round(TICK_RATE * 2),
+  startingWeapons: ['core.arena_disc'],
+  startingGrenades: 0,
+  intermissionTicks: TICK_RATE * 6,
+  weapons: 'discs',
+  killstreaks: false,
+};
+
 export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.deathmatch': DEFAULT_DEATHMATCH_RULES,
   'core.tdm': DEFAULT_TDM_RULES,
@@ -228,6 +257,7 @@ export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.hostage': DEFAULT_HOSTAGE_RULES,
   'core.zombies': DEFAULT_ZOMBIES_RULES,
   'core.forts': DEFAULT_FORTS_RULES,
+  'core.discs': DEFAULT_DISCS_RULES,
 };
 
 /** Capture the Flag needs a flag base for each of its two teams. */

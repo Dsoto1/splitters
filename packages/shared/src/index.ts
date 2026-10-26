@@ -37,3 +37,5 @@ export * from './editor/operations.ts';
 export * from './editor/scatter.ts';
 export * from './editor/npcs.ts';
 export * from './sim/forts.ts';
+export * from './sim/classes.ts';
+export * from './sim/discs.ts';

@@ -72,6 +72,15 @@ recipes.
 | 9 | Flamethrower | Short-range flame stream: sets players burning, lights oil |
 | 9 | Freeze Ray | Beam that chills; enough chill freezes the target solid for 1.4 s |
 
+**Variants for Classes and Disc Arena** (added last, so older weapon codes
+are unchanged; each has a pickup like every weapon):
+
+| Slot | Weapon | Variant of | How it fires |
+|---|---|---|---|
+| 6 | Arena Disc | Disc Launcher | Three discs that bounce and come back; a hit shoves, never hurts (Disc Arena) |
+| 8 | Blast Rockets | Rocket Launcher | Four-rocket drum, smaller blast, knockback: rocket-jump (Rocketeer) |
+| 1 | Medi-Beam | Medkit | Heals the teammate in your sights 6 HP five times a second, 9 m (Medic) |
+
 **Grenades (G):** frag, proximity mine, sticky (rides on whoever it hits),
 incendiary (a pool of fire), gas (a toxic cloud) and vortex (a small
 singularity).

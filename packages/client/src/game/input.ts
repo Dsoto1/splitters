@@ -1,4 +1,4 @@
-import { EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
+import { CLASS_SAY_BASE, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'tiletrigger.mouse';
@@ -68,6 +68,9 @@ export class InputState {
   msgMenu = false;
   /** A quick message or emote to send with the next input. */
   private sayQueued = 0;
+  /** Classes: how many classes there are (0: the match has none), and whether the class screen is open (L or ,): digits pick a class. */
+  classCount = 0;
+  classMenu = false;
   proneOn = false;
   /** Set by the session: right mouse fires the held weapon's second trigger instead of aiming (melee heavy swings). */
   altTrigger = false;
@@ -116,8 +119,14 @@ export class InputState {
         if (e.code === 'KeyB' && !e.repeat) this.msgMenu = !this.msgMenu;
         if (e.code === 'KeyN' && !e.repeat) this.sayQueued = EMOTE_DANCE;
         if (e.code === 'KeyT' && !e.repeat) this.sayQueued = PING;
+        if ((e.code === 'KeyL' || e.code === 'Comma') && !e.repeat && this.classCount) {
+          this.classMenu = !this.classMenu;
+          this.msgMenu = false;
+        }
         const digit = /^Digit([1-9])$/.exec(e.code);
-        if (digit && this.msgMenu) {
+        if (digit && this.classMenu) {
+          if (Number(digit[1]) <= this.classCount) this.chooseClass(Number(digit[1]) - 1);
+        } else if (digit && this.msgMenu) {
           if (Number(digit[1]) <= QUICK_MESSAGES.length) this.sayQueued = Number(digit[1]);
           this.msgMenu = false;
         } else if (digit) this.slotRequest = Number(digit[1]);
@@ -269,6 +278,12 @@ export class InputState {
   }
 
   /** Sample movement axes and buttons for one simulation tick. */
+  /** Classes: pick class `index` (CLASS_IDS order), sent with the next input; closes the class screen. */
+  chooseClass(index: number): void {
+    this.sayQueued = CLASS_SAY_BASE + index;
+    this.classMenu = false;
+  }
+
   sample(): { forward: number; right: number; buttons: number; say?: number } {
     // Automation hook for browser tests and screenshots (no pointer lock in headless browsers).
     const auto = (window as unknown as { __autoInput?: { forward?: number; right?: number; buttons?: number; once?: number } }).__autoInput;
@@ -278,7 +293,15 @@ export class InputState {
       auto.once = 0;
       return { forward: auto.forward ?? 0, right: auto.right ?? 0, buttons: (auto.buttons ?? 0) | once };
     }
-    if (!this.locked) return { forward: 0, right: 0, buttons: 0 };
+    if (!this.locked) {
+      // The class screen works with the pointer free (clicking a class): its pick still goes out.
+      if (this.sayQueued >= CLASS_SAY_BASE) {
+        const say = this.sayQueued;
+        this.sayQueued = 0;
+        return { forward: 0, right: 0, buttons: 0, say };
+      }
+      return { forward: 0, right: 0, buttons: 0 };
+    }
     const axis = (pos: string, neg: string) => (this.keys.has(pos) ? 1 : 0) - (this.keys.has(neg) ? 1 : 0);
     let buttons = 0;
     if (this.jumpQueued || this.keys.has('Space') || this.pad.jump) buttons |= BUTTON_JUMP;

@@ -38,6 +38,7 @@ import {
   type WorldBox,
   PROJECTILE_VISUALS,
   type ZoneSnapshot,
+  FX_CLOAK,
   FX_JET,
   liquidAt,
   mapLiquids,
@@ -108,6 +109,8 @@ interface Avatar {
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
   aura?: Mesh;
   jet?: Mesh;
+  /** How see-through it is drawn now (Classes: a cloaked Shade); 1 = solid. */
+  shown?: number;
   /** Physics body after death (until the next spawn). */
   ragdoll?: Ragdoll;
   wasAlive?: boolean;
@@ -795,7 +798,17 @@ export class GameView {
         a.jet.setEnabled(jetting);
         if (jetting) a.jet.scaling.set(1, 0.8 + Math.random() * 0.5, 1);
       }
-      this.setTag(a, p.alive ? allyColor(p.slot) : null);
+      // Classes: a cloaked Shade is a faint shimmer to enemies (no tag over it), a ghost to teammates.
+      const tag = p.alive ? allyColor(p.slot) : null;
+      const cloaked = p.alive && (p.status & FX_CLOAK) !== 0;
+      const enemy = !tag || tag.toLowerCase() === '#ff3b3b';
+      const shown = cloaked ? (enemy ? 0.06 : 0.35) : 1;
+      this.setTag(a, cloaked && enemy ? null : tag);
+      // Applied every frame while see-through: the model may finish loading under it.
+      if (shown !== 1 || (a.shown ?? 1) !== 1) {
+        a.shown = shown;
+        for (const m of a.root.getChildMeshes()) m.visibility = shown;
+      }
     }
     for (const [slot, a] of this.avatars) {
       if (!seen.has(slot)) {
