@@ -3,6 +3,7 @@ import { CtfMode } from './ctf.ts';
 import { ElimMode } from './elim.ts';
 import { BombMode } from './bomb.ts';
 import { HostageMode } from './hostage.ts';
+import { FortsMode } from './forts.ts';
 import { KothMode } from './koth.ts';
 import type { ModeHost, ModeLogic } from './types.ts';
 
@@ -11,6 +12,8 @@ export { CtfMode, FLAG_CAPTURE_RADIUS, FLAG_CARRIER_SPEED, FLAG_TOUCH_RADIUS, ty
 export { CARRIER_AWARENESS, ctfBotAwareness, ctfBotGoal, ctfRole, type CtfRole } from './ctfBots.ts';
 export { KothMode, onHill, type HillRt } from './koth.ts';
 export { ElimMode, ELIM_BREAK_SECONDS, ELIM_ROUND_SECONDS } from './elim.ts';
+export { FortsMode, type FortPieceRt } from './forts.ts';
+export { FortBots } from './fortsBots.ts';
 export { HostageMode, HOSTAGE_ROUND_SECONDS } from './hostage.ts';
 export { BombMode, BOMB_DEFUSE_SECONDS, BOMB_FUSE_SECONDS, BOMB_PLANT_SECONDS, BOMB_ROUND_SECONDS } from './bomb.ts';
 
@@ -27,6 +30,8 @@ export function createMode(mode: GameMode, host: ModeHost): ModeLogic | null {
       return new BombMode(host);
     case 'core.hostage':
       return new HostageMode(host);
+    case 'core.forts':
+      return new FortsMode(host);
     default:
       return null;
   }

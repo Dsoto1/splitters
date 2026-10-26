@@ -128,7 +128,7 @@ export class ModeVisuals {
     private readonly teams: readonly Faction[],
     mode: string,
   ) {
-    if (mode === 'core.ctf') {
+    if (mode === 'core.ctf' || mode === 'core.forts') {
       for (const t of teams.slice(0, 2)) {
         const e = map.entities.find((x) => x.kind === 'flag' && x.team === t.id);
         if (!e) continue;

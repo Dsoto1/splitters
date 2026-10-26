@@ -126,8 +126,9 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
   // Capture the Flag: one base for each of the two teams.
   const flags = map.entities.filter((e) => e.kind === 'flag');
   const ctfTeams = mapTeams(map, 2);
-  if (map.metadata.supportedModes.includes('core.ctf') || flags.length) {
-    const listed = map.metadata.supportedModes.includes('core.ctf');
+  // Fort Wars builds round the same two bases.
+  if (map.metadata.supportedModes.includes('core.ctf') || map.metadata.supportedModes.includes('core.forts') || flags.length) {
+    const listed = map.metadata.supportedModes.includes('core.ctf') || map.metadata.supportedModes.includes('core.forts');
     for (const t of ctfTeams) {
       const n = flags.filter((f) => f.team === t.id).length;
       if (n === 0) issues.push({ severity: listed ? 'error' : 'warning', code: 'ctf.flag_missing', message: `Capture the Flag needs a flag base for ${t.name}` });

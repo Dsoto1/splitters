@@ -91,7 +91,7 @@ sounds (needs new CC0 sounds and a grip pose).
 | 2 | 🟡 **[ux]** Team setup: host defines teams (count, size, name, colour, leader) instead of a long dropdown — ✅ Arcade: each team's name and colour beside its size (+/− teams, presets). Leader still to do |
 | 3 | ✅ **[feature]** Friendly-fire toggle and many more match settings — friendly fire (off/half/full), gravity, fall damage, kill streaks, squad spawns, bot style, emotes, body sizes |
 | 4 | ✅ **[feature]** Elimination: spectate remaining players or your corpse after you're out — out of an Elimination or Bomb round you watch a living teammate from over their shoulder; Space cycles |
-| 5 | **[feature]** Fort-building mode like SourceForts (build phase then CTF) over any map |
+| 5 | ✅ **[feature]** Fort-building mode like SourceForts (build phase then CTF) over any map — **Fort Wars** (`core.forts`, docs/GAME_MODES.md): build phase behind a midfield force field with the Builder (8 pieces on a 0.5 m grid, team build points, pick up to refund), then CTF; pieces break (explosives best); arcade build/combat time, cycles, budget; bots build a template fort then play CTF (navmesh rebuilt round the forts on maps up to ~150 m, they shoot enemy walls in the way); new map **Fort Meadow** |
 | 6 | **[feature]** Ricochet-style mode (disc arenas) and a Team Fortress-style class mode |
 | 7 | **[feature]** Race mode + **road/track tool** in MapMaker (draw road, set laps); podracer-style race with shooters on the side |
 | 8 | ✅ **[feature]** Tribal spear mode: only throwable spears, hold one, one-hit impale, go fetch more — Arcade "Weapons: Spears only" (any mode); spears stick where they land or drop under whoever they hit, anyone out of spears picks one up; bots fetch them |

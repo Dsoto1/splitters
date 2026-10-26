@@ -83,6 +83,11 @@ export interface ArcadeSetup {
   friendlyFire?: 'half' | 'on';
   /** Spears only (absent: normal weapons). */
   spears?: boolean;
+  /** Fort Wars: build and combat minutes, build/combat cycles and build points per team (absent: the defaults). */
+  fortBuild?: number;
+  fortCombat?: number;
+  fortCycles?: number;
+  fortBudget?: number;
 }
 
 export interface FrontEndHooks {
@@ -102,6 +107,7 @@ const BASE_RULES = DEFAULT_RULES;
 const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: number; max: number }>> = {
   'core.tdm': { label: 'Team score', step: 5, min: 5, max: 200 },
   'core.ctf': { label: 'Captures', step: 1, min: 1, max: 20 },
+  'core.forts': { label: 'Captures', step: 1, min: 1, max: 20 },
   'core.koth': { label: 'Hill seconds', step: 10, min: 30, max: 600 },
   'core.elim': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
   'core.bomb': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
@@ -112,6 +118,7 @@ const MODE_TIPS: Partial<Record<GameMode, string>> = {
   'core.deathmatch': 'Everyone for themselves. Most kills wins.',
   'core.tdm': 'Teams score a point per kill. First team to the score wins.',
   'core.ctf': "Grab the enemy flag from their base and bring it to yours while your own flag is home.",
+  'core.forts': 'Fort Wars: a build phase with a force field between the teams (spend build points on walls, ramps and crates round your flag; LMB place, RMB pick up, R turn), then Capture the Flag over the forts. Explosives smash pieces.',
   'core.koth': 'Stand on the hill to score seconds for your team; the hill moves now and then.',
   'core.elim': 'Rounds with no respawns: wipe out the other teams to win the round.',
   'core.bomb': 'Attackers plant the bomb at site A or B (stand still, E); defenders stop them or defuse it. No respawns in a round.',
@@ -408,7 +415,8 @@ export class FrontEnd {
       );
     const s = this.setup;
     const coop = s.mode === 'core.coop' || s.mode === 'core.zombies';
-    const twoTeams = s.mode === 'core.ctf' || s.mode === 'core.bomb' || s.mode === 'core.hostage';
+    const twoTeams = s.mode === 'core.ctf' || s.mode === 'core.forts' || s.mode === 'core.bomb' || s.mode === 'core.hostage';
+    const forts = s.mode === 'core.forts';
     const start = el('button', { class: 'primary go', id: 'arcade-start' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
     start.addEventListener('click', () => this.start());
     // A setting row: its name with an (i) explaining it on hover, then the control.
@@ -462,7 +470,7 @@ export class FrontEnd {
     const panel = el(
       'div',
       { class: 'setup panel' },
-      el('div', { class: 'setup-head' }, plan, el('div', {}, el('small', { textContent: 'Map' }), el('h3', {}, current.map.metadata.name, ...(about ? [infoTip(about)] : [])), ...inspired(current.key), el('p', { class: 'setup-sub', textContent: `${MODE_LABEL[s.mode]} · ${players} players${coop ? '' : ` · ${s.minutes ? `${s.minutes} min` : 'no time limit'}`}` }))),
+      el('div', { class: 'setup-head' }, plan, el('div', {}, el('small', { textContent: 'Map' }), el('h3', {}, current.map.metadata.name, ...(about ? [infoTip(about)] : [])), ...inspired(current.key), el('p', { class: 'setup-sub', textContent: `${MODE_LABEL[s.mode]} · ${players} players${coop ? '' : forts ? ` · ${s.fortCycles ?? 1} × (${s.fortBuild ?? 2.5} + ${s.fortCombat ?? 5} min)` : ` · ${s.minutes ? `${s.minutes} min` : 'no time limit'}`}` }))),
       el('div', { class: 'setup-body' },
         el('section', {}, el('h4', { textContent: 'Mode' }), modeTabs),
         el('section', {}, el('h4', { textContent: coop ? 'Squad' : 'Players' }),
@@ -473,8 +481,17 @@ export class FrontEnd {
           : [
               el('section', {}, el('h4', { textContent: 'To win' }),
                 ((r) => row(r.label, 'The match ends when someone reaches this.', stepper(s.scoreLimit, r.step, r.min, r.max, (v) => (this.setup.scoreLimit = v)))) (SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 }),
-                row('Time limit', 'When time runs out the highest score wins. ∞: no limit.', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v} min` : '∞')))),
+                ...(forts ? [] : [row('Time limit', 'When time runs out the highest score wins. ∞: no limit.', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v} min` : '∞')))])),
             ]),
+        ...(forts
+          ? [
+              el('section', {}, el('h4', { textContent: 'Fort Wars' }),
+                row('Build phase', 'Minutes to build before the barrier drops.', stepper(s.fortBuild ?? 2.5, 0.5, 1, 6, (v) => (this.setup.fortBuild = v), (v) => `${v} min`)),
+                row('Combat phase', 'Minutes of Capture the Flag after each build phase.', stepper(s.fortCombat ?? 5, 1, 2, 20, (v) => (this.setup.fortCombat = v), (v) => `${v} min`)),
+                row('Cycles', 'Build-then-fight rounds before the match ends. Pieces stand until they are broken; each build phase you can rebuild with the points they cost.', stepper(s.fortCycles ?? 1, 1, 1, 5, (v) => (this.setup.fortCycles = v))),
+                row('Build points', "Each team's budget: a block costs 2, a wall 4, a metal wall 8.", stepper(s.fortBudget ?? 120, 20, 40, 400, (v) => (this.setup.fortBudget = v)))),
+            ]
+          : []),
         more,
       ),
       el('div', { class: 'setup-foot' }, ...(changed.length ? [el('div', { class: 'rule-chips' }, ...changed.map((x) => el('span', { textContent: x.value })))] : []), start),
@@ -489,11 +506,11 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : {}) };
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : {}), ...(this.setup.mode === 'core.forts' ? { timeLimitSeconds: 0, fortBuildSeconds: Math.round((this.setup.fortBuild ?? 2.5) * 60), fortCombatSeconds: Math.round((this.setup.fortCombat ?? 5) * 60), fortCycles: this.setup.fortCycles ?? 1, fortBudget: this.setup.fortBudget ?? 120 } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.
-      const teams = this.teamSizes(m.map, this.setup.mode === 'core.ctf' || this.setup.mode === 'core.bomb' || this.setup.mode === 'core.hostage');
+      const teams = this.teamSizes(m.map, this.setup.mode === 'core.ctf' || this.setup.mode === 'core.forts' || this.setup.mode === 'core.bomb' || this.setup.mode === 'core.hostage');
       const names = (this.setup.teamNames ?? []).slice(0, teams.length);
       const colors = (this.setup.teamColors ?? []).slice(0, teams.length);
       this.hooks.playLocal(m.map, { ...rules, teamSizes: teams, ...(names.some(Boolean) ? { teamNames: names } : {}), ...(colors.some(Boolean) ? { teamColors: colors } : {}) }, Math.min(MAX_PLAYER_SLOTS, teams.reduce((a, b) => a + b, 0)), this.setup.skill);

@@ -512,6 +512,27 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [3, 30],
     view: { model: 'procedural/spear', viewOffset: [0.24, -0.16, 0.3], tracer: '#c8a46a', sound: 'throw', hold: { style: 'pistol', grip: [0, 0, 0] } },
   },
+  // Fort Wars: held through the build phase; the mode turns its clicks into placing and picking up pieces.
+  'core.builder': {
+    id: 'core.builder',
+    displayName: 'Builder',
+    kind: 'melee',
+    slot: 1,
+    fireMode: 'semi',
+    damage: 0,
+    pellets: 1,
+    spread: 0,
+    fireIntervalTicks: 12,
+    range: 7,
+    magazine: 0,
+    reserveMax: 0,
+    pickupAmmo: 0,
+    reloadTicks: 0,
+    raiseTicks: 8,
+    botDesirability: 0,
+    botRange: [0, 0],
+    view: { model: 'procedural/builder', viewOffset: [0.22, -0.2, 0.4], tracer: '#ffffff', sound: 'fire.knife', hold: { style: 'melee', grip: [0, 0, -0.1] } },
+  },
 };
 
 // Helpers are function declarations: CORE_WEAPONS calls arsenal() while the module is still loading.

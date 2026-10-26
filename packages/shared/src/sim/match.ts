@@ -236,6 +236,8 @@ interface Zone {
 }
 
 const MAX_ZONES = 48;
+/** Fort Wars rebuilds the navmesh mid-match only on maps up to this many square metres (about 150 × 150 m). */
+const NAV_REBUILD_MAX_AREA = 22_500;
 /** Deployed sandbag walls standing at once; the oldest goes when another lands. */
 const MAX_COVERS = 16;
 
@@ -283,7 +285,8 @@ export class Match {
   /** Gravity multiple and fall damage in force (match rules over the map's own). */
   readonly phys: { gravity: number; fallDamage: boolean };
   readonly physics: PhysicsWorld;
-  readonly nav: NavWorld;
+  /** Rebuilt mid-match only by Fort Wars (when the forts are done). */
+  nav: NavWorld;
   readonly slots: (Combatant | null)[] = new Array(MAX_PLAYER_SLOTS).fill(null);
   readonly spawnPoints: { pos: Vec3; yaw: number; team: string | null }[];
   readonly pickups: PickupState[];
@@ -411,7 +414,9 @@ export class Match {
       get tick() {
         return match.tick;
       },
-      nav: this.nav,
+      get nav() {
+        return match.nav;
+      },
       players: () => this.combatants().filter((c) => c.alive).map((c) => ({ slot: c.slot, pos: c.move.pos })),
       hostiles: (faction) => this.actors().filter((c) => c.alive && relation(this.factions, faction, c.faction) === 'enemy').map((c) => ({ id: c.slot, pos: c.move.pos })),
       spawnNpc: (e, role, pos, yaw) => this.spawnNpc(e, role, pos, yaw),
@@ -451,9 +456,34 @@ export class Match {
             this.pendingEvents.push({ e: 'explode', s: by?.slot ?? -1, p: tuple(at), r: radius });
             this.splash(at, radius, damage, damage * 0.15, by, 'core.bomb', 1, 8);
           },
+          physics: this.physics,
+          spawnPoints: this.spawnPoints,
+          rebuildNav: (extra) => this.rebuildNav(extra),
         })
       : null;
     this.zombies = rules.mode === 'core.zombies' ? this.zombieDirector() : null;
+  }
+
+  /**
+   * A fresh navmesh with extra obstacles (Fort Wars forts); bots replan on it.
+   * Recast rebuilds the whole mesh, which on big terrain maps takes seconds,
+   * so those keep the mesh they have (false).
+   */
+  private rebuildNav(extra: readonly WorldBox[]): boolean {
+    const t = this.map.terrain;
+    const xs = this.geometry.filter((b) => b.sourceId !== 'ground').flatMap((b) => [b.min[0], b.max[0]]);
+    const zs = this.geometry.filter((b) => b.sourceId !== 'ground').flatMap((b) => [b.min[2], b.max[2]]);
+    if (t) {
+      xs.push(t.origin[0], t.origin[0] + (t.cols - 1) * t.spacing);
+      zs.push(t.origin[1], t.origin[1] + (t.rows - 1) * t.spacing);
+    }
+    const area = xs.length ? (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs)) : 0;
+    if (area > NAV_REBUILD_MAX_AREA) return false;
+    const old = this.nav;
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], mapTerrainMesh(this.map), navLinks(this.map.entities, this.physics, this.phys.gravity));
+    old.destroy();
+    this.nav.places();
+    return true;
   }
 
   /** Zombies: the horde spawner the director raises zombies through, and its link to the match. */
@@ -867,6 +897,7 @@ export class Match {
         const target = c.bot.target === null ? null : this.actor(c.bot.target);
         chargeIntoMelee(input, c.move.pos, target?.alive ? target.move.pos : null, getWeapon(NPC_ROLE_SPECS[npc.role].weapon).range);
       }
+      if (!npc) this.mode?.botInput?.(c, input);
       c.queue.push(input);
     }
     this.lastAiMs = performance.now() - t0;
@@ -1063,6 +1094,8 @@ export class Match {
         else if (!this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
         if (this.phase !== 'playing') break;
       }
+      // A mode tool (the Fort Wars Builder) takes the trigger for itself.
+      if (!c.mount && this.mode?.useInput?.(c, input)) input.buttons &= ~(BUTTON_FIRE | BUTTON_ALT | BUTTON_ZOOM | BUTTON_RELOAD);
       // Seated: the seat's gun if it has one; drivers without one can't shoot; passengers use their own.
       const seatNow = c.mount ? this.seatOf(c) : null;
       const gun = seatNow?.weapon ? this.mounts[c.mount!.index]!.guns[c.mount!.seat]! : null;
@@ -1821,6 +1854,7 @@ export class Match {
 
   /** Damage whatever mount owns this collider; false when it isn't one. */
   private damageMountBody(handle: number, amount: number, attacker: Combatant | null): boolean {
+    if (this.mode?.damageBody?.(handle, amount, attacker)) return true;
     const cv = this.covers.find((c) => c.body.handle === handle);
     if (cv) {
       this.damageCover(cv, amount);
@@ -2154,6 +2188,7 @@ export class Match {
       if (d <= radius) this.damageCover(cv, (damage + (edge - damage) * (d / radius)) * boost * 1.5);
     }
     this.scenario.splash(at, radius, damage * boost, edge * boost, owner?.slot ?? null, this.physics);
+    this.mode?.splash?.(at, radius, damage * boost, edge * boost, owner);
   }
 
   private boosted(attacker: Combatant, amount: number): number {
@@ -2188,6 +2223,7 @@ export class Match {
   /** Apply damage through armor and the attacker's damage boost. */
   private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string, head = false): void {
     if (!victim.alive || this.phase !== 'playing') return;
+    if (this.mode?.blocksDamage?.(victim, attacker)) return;
     // No friendly fire; hazards (no attacker) and your own grenades still hurt.
     if (attacker && attacker !== victim && !this.hostile(attacker, victim)) {
       // Friendly fire (team modes and co-op, when the match turns it on): players hurt teammates, NPCs never do.
@@ -2391,6 +2427,7 @@ export class Match {
     c.speedTicks = 0;
     c.damageTicks = 0;
     c.bot?.onSpawn(sp.yaw);
+    this.mode?.onSpawn?.(c);
     this.pendingEvents.push({ e: 'spawn', s: c.slot });
   }
 

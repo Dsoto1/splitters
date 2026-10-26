@@ -190,6 +190,13 @@ export class PhysicsWorld {
     return hit ? hit.timeOfImpact : null;
   }
 
+  /** True when no world collider (level, door, crate, built piece) overlaps the upright box. */
+  boxClear(center: Vec3, half: Vec3): boolean {
+    if (this.dirty) this.commit();
+    const shape = new RAPIER.Cuboid(Math.max(0.01, half.x), Math.max(0.01, half.y), Math.max(0.01, half.z));
+    return !this.world.intersectionWithShape(center, { x: 0, y: 0, z: 0, w: 1 }, shape, undefined, WORLD_ONLY_QUERY);
+  }
+
   /** True when nothing static blocks the segment a -> b. */
   lineOfSight(a: Vec3, b: Vec3): boolean {
     const d = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
