@@ -59,11 +59,28 @@ want always-on official matches.
   Credentials last `ICE_TTL` seconds (default 6 h); each address can ask
   12 times a minute. Relayed play is about 3 KB/s per player. Without a
   provider, players can still enter their own relay in Options → Relay.
-- **Matches** run in the host player's browser (pause menu → Host game).
-  Ticking "List in the game browser" lists it; it checks in every 20 s and
-  drops off within about a minute of the host leaving.
+- **Matches** run in the host player's browser. An offline match stays
+  offline and private: nothing listens or connects until the player chooses.
+  Pause menu → **Go online** (after a confirm) restarts the match on the same
+  map and rules (scores reset, bots back to the host's count), opens a join
+  code and lists it in the game browser; the HUD shows an "Online" badge with
+  players and the code. **Go offline** tells friends "The host took the game
+  offline", disconnects them (bots take their places), removes the listing
+  and closes the code; the match itself carries on (no restart).
+  **Host with code only (not listed)** opens a code without restarting or
+  listing (the "List in the game browser" box can still list it later).
+  Only maps of our suite can be listed: on an imported or MapMaker map,
+  listing is disabled with a note and code-only hosting still works. A
+  listing checks in every 20 s and drops off within about a minute of the
+  host leaving.
 - Traffic per player is ~3 KB/s (8 players) to ~10 KB/s (16 players),
   compressed, from the host's upload.
+- **Host controls** (pause menu → Match): the host changes the players
+  (free-for-all) or team size (4v4 → 8v8, presets up to 48v48), bot skill and
+  style live, restarts or ends the match, and changes map (our suite's maps
+  only). Friends are sent `travel` and rejoin the same join code by
+  themselves; a friend's own host commands are refused. See "Host controls"
+  below.
 
 What a player-hosted game can't do: survive the host leaving, or stop the
 host from cheating. The game browser tags these games "Player-hosted".
@@ -84,6 +101,7 @@ Other settings (environment variables):
 | `LEADERS=on` / `vip` | Team leaders (gold star; their Follow me / Hold here orders every bot on the team). `vip`: Leader hunt, downing a leader scores 3 for Team Deathmatch. |
 | `PLAYLIST=maps/playlists/night_shift.json` | Plays a scenario chain: each won map moves everyone on to the next (see GAME_MODES.md, Scenario chains). |
 | `SERVER_NAME` | Name shown in Online → LAN. |
+| `ADMIN_TOKEN` | Lets a player run the match from the pause menu (Match: players or team size, bot skill and style, change map, restart, end). A player is admin when they join with `?admin=<token>` in the page address (`/?autojoin&server=ws://…&admin=<token>`) or enter it under pause menu → Server admin. Unset: nobody can. Five wrong tokens close the connection. |
 | `LAN_DISCOVERY=0` | Don't answer LAN discovery broadcasts (UDP 7790). |
 
 ### 96 players
@@ -137,6 +155,39 @@ Other settings (environment variables):
   the load average. After the movement-detail, physics and long-route work
   (October 2026) the process CPU per tick went from 11–16 ms to 7.4–10 ms on
   those maps; see MAP_BUDGETS.md for the table.
+
+### Host controls
+
+Whoever runs a match changes it mid-match from the pause menu's **Match**
+section:
+
+| Who | Where the match runs | How a command gets there |
+| --- | --- | --- |
+| Offline player | their browser | straight to the match |
+| Host game host | the host's browser | straight to the match; friends' `host` messages are refused |
+| Server admin (`ADMIN_TOKEN`) | the dedicated server | `{ t: 'host', cmd }`; the server checks the sender is an admin |
+
+- **Bots.** Free-for-all and co-op: a total-players stepper. Team modes: a
+  per-team size stepper (every team the same size) and presets. Apply
+  rebalances live: new bots spawn normally at spawn points; extra bots go,
+  the worst-scoring first (fewest kills less deaths, as when a player joins),
+  from the team most over its size. Bot skill and style apply to every bot at
+  once. Everyone's feed and a toast say what changed ("Host set teams to
+  8v8").
+- **Change map.** The Arcade's map cards, a tab per mode. Offline also lists
+  your MapMaker maps. Servers and Host game only take maps of our suite: the
+  server looks the ID up in `maps/` and refuses anything else. Everyone sees
+  "Changing map to Diamond Park (Team Deathmatch)…", then:
+  - offline, the match restarts on the new map with the same rules (the
+    host's own settings, and the score and time limits when the mode stays),
+    players and bot skill;
+  - Host game, the same, and friends get `travel` and rejoin the same join
+    code by themselves (the next match holds their connection until it has
+    loaded);
+  - dedicated server, everyone gets `travel` and reconnects (an admin with
+    `?admin=` or a token entered this session stays admin).
+- **Restart match** starts over on the same map (scores cleared, everyone
+  respawns, countdown). **End match** ends it now, to the scoreboard.
 
 ## 3. LAN games
 

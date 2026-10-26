@@ -29,6 +29,7 @@ export * from './sim/airplane.ts';
 export * from './sim/items.ts';
 export * from './sim/rules.ts';
 export * from './sim/playlist.ts';
+export * from './sim/hostRules.ts';
 export * from './sim/scenarioDefs.ts';
 export * from './sim/scenario.ts';
 export * from './sim/movers.ts';

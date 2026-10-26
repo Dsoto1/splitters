@@ -749,7 +749,7 @@
     },
     {
       "file": "models/vehicles/hover_bike.glb",
-      "sha256": "0eab9a0d49ad5596",
+      "sha256": "c096f9dfcf5bb0a9",
       "triangles": 280,
       "bytes": 19708,
       "source": "kenney-space-kit/craft_speederA.glb",

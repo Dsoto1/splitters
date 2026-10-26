@@ -31,6 +31,8 @@ const server = await startServer({
   name: env.SERVER_NAME,
   // LAN_DISCOVERY=0 stops answering LAN discovery broadcasts (UDP 7790).
   lanDiscovery: env.LAN_DISCOVERY !== '0',
+  // ADMIN_TOKEN=…: players who join with ?admin=… (or enter it in the pause menu) change bots and map, restart and end the match.
+  adminToken: env.ADMIN_TOKEN || undefined,
   onStats: env.QUIET_STATS ? undefined : (line) => console.log(`[stats] ${line}`),
 });
 console.log(`Tile Trigger server listening on ws://localhost:${server.port}`);

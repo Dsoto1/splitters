@@ -47,6 +47,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v19 -> v20: `mover` entity kind; optional light `off`/`blink`, block `pitch`/`roll`/`startHidden`, liquid `tint`,
   // and `team` on buttons, doors and zones; new logic actions and conditions. All additive: v19 data is valid as is.
   [19, (doc) => ({ ...doc })],
+  // v20 -> v21: optional `onWater` on mounts (vehicles that float). Absent = sinks, as before: v20 data is valid as is.
+  [20, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

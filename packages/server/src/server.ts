@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,7 +22,10 @@ import {
   sanitizeName,
   isMapId,
   playlistNext,
+  rulesForTravel,
+  travelNotice,
   type BotDifficulty,
+  type HostCommand,
   type CarryOver,
   type Playlist,
   type GameEvent,
@@ -31,7 +35,7 @@ import {
   type ServerInfo,
   type ServerMessage,
 } from '@tiletrigger/shared';
-import { BotFiller, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
+import { BotFiller, HostControl, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 import { answerDiscovery, lanAddresses } from './lan.ts';
 import { StatsWindow } from './stats.ts';
 
@@ -66,6 +70,11 @@ export interface ServerOptions {
   mapsDir?: string;
   /** Answer LAN discovery broadcasts (UDP, LAN_DISCOVERY_PORT unless a port is given). Off by default; main.ts turns it on. */
   lanDiscovery?: boolean | number;
+  /**
+   * ADMIN_TOKEN: a player who joins with it (?admin=… or pause menu → Server
+   * admin) runs the match: bots, map (our suite only), restart, end. Unset: nobody can.
+   */
+  adminToken?: string;
 }
 
 export interface RunningServer {
@@ -81,7 +90,18 @@ interface Client {
   ws: WebSocket;
   slot: number | null;
   bytesOut: number;
+  /** Logged in with the server's ADMIN_TOKEN: may run the match (HostCommand). */
+  admin: boolean;
+  /** Wrong admin tokens so far (the connection closes after a few). */
+  badTokens: number;
+  /** The round trip the client last reported (ms), for everyone's scoreboard. */
+  rtt?: number;
 }
+
+/** Wrong admin tokens a connection may send before it is closed. */
+const MAX_BAD_TOKENS = 5;
+/** Ticks between a host's map change and the travel (time for the notice to reach everyone). */
+const HOST_TRAVEL_TICKS = 45;
 
 const HELLO_TIMEOUT_MS = 5000;
 
@@ -118,17 +138,21 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const withLeaders = (r: MatchRules): MatchRules => (opts.leaders ? { ...r, leaders: opts.leaders } : r);
   let match = new Match(map, withLeaders(baseRules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
   for (const issue of validateNavigation(map, match.nav)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
-  const difficulty = BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'];
   const botFill = Math.min(opts.botFill, MAX_PLAYER_SLOTS);
 
   const clients = new Set<Client>();
   const stats = new StatsWindow();
   let pendingEvents: GameEvent[] = [];
-  let bots = new BotFiller(match, difficulty, { takeBack: opts.botTakeBack });
+  let bots = new BotFiller(match, BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'], { takeBack: opts.botTakeBack });
+  /** Players to keep (bots included), bot skill and style: the admin can change them mid-match (HostControl). */
+  let control = new HostControl(match, bots, botFill, 'Admin');
   /** Scenario chains: what each player (by name) takes into the next map, until they rejoin. */
   let carried = new Map<string, CarryOver>();
   /** A won map with somewhere to go: travel at this tick (late in the intermission). */
-  let travel: { atTick: number; map: MapDocument; rules: MatchRules; index: number; carry: { score: boolean; loadout: boolean } } | null = null;
+  let travel: { atTick: number; map: MapDocument; rules: MatchRules; index: number; carry: { score: boolean; loadout: boolean }; fill?: number } | null = null;
+  /** The token compared in constant time (as hashes, so lengths don't matter). */
+  const adminHash = opts.adminToken ? createHash('sha256').update(opts.adminToken).digest() : null;
+  const isAdminToken = (token: string | undefined) => !!adminHash && !!token && timingSafeEqual(adminHash, createHash('sha256').update(token).digest());
 
   const send = (c: Client, msg: ServerMessage | string) => {
     const data = typeof msg === 'string' ? msg : JSON.stringify(msg);
@@ -141,8 +165,29 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   };
 
   /** Keep humans + bots at the fill target: bots leave when humans join and return when they go. */
-  const rebalanceBots = () => bots.rebalance(botFill);
-  rebalanceBots();
+  bots.rebalance(control.fill);
+  const hostState = (c: Client) => send(c, { t: 'host', state: control.state() });
+  const notice = (text: string) => {
+    console.log(`[admin] ${text}`);
+    broadcast({ t: 'notice', text });
+  };
+  /** An admin's command: run it, tell everyone what changed and every admin the new settings. */
+  const hostCommand = (client: Client, cmd: HostCommand) => {
+    if (!client.admin) return send(client, { t: 'host', state: null, error: adminHash ? 'Only the server admin can change the match (pause menu → Server admin)' : 'This server has no admin (ADMIN_TOKEN is not set)' });
+    if (cmd.c === 'map') {
+      const m = suiteMap(cmd.map);
+      if (!m) return send(client, { t: 'host', state: control.state(), error: `"${cmd.map}" is not a map of our suite` });
+      if (travel) return send(client, { t: 'host', state: control.state(), error: 'Already changing map' });
+      const next = rulesForTravel(match.rules, m, control.fill, cmd.mode, control.state().teamSize);
+      travel = { atTick: match.tick + HOST_TRAVEL_TICKS, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
+      return notice(travelNotice(m.metadata.name, next.rules.mode));
+    }
+    const r = control.apply(cmd);
+    if (r.error) return send(client, { t: 'host', state: control.state(), error: r.error });
+    if (r.notice) notice(r.notice);
+    broadcast({ t: 'roster', players: match.roster() });
+    for (const c of clients) if (c.admin && c.slot !== null) hostState(c);
+  };
 
   // Snapshots are JSON with lots of repetition: compressing them cuts the traffic several times over
   // (browsers decompress on their own). Small messages aren't worth it.
@@ -164,7 +209,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const wss = new WebSocketServer({ server: http, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
 
   wss.on('connection', (ws) => {
-    const client: Client = { ws, slot: null, bytesOut: 0 };
+    const client: Client = { ws, slot: null, bytesOut: 0, admin: false, badTokens: 0 };
     clients.add(client);
     const helloTimer = setTimeout(() => ws.close(4000, 'hello timeout'), HELLO_TIMEOUT_MS);
 
@@ -181,7 +226,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           return;
         }
         // Take over a bot where it stands (team that needs a player), or a free slot.
-        const player = bots.join(sanitizeName(msg.name), msg.look, botFill);
+        const player = bots.join(sanitizeName(msg.name), msg.look, control.fill);
         if (!player) {
           send(client, { t: 'reject', reason: 'server full' });
           ws.close(4002, 'full');
@@ -207,11 +252,24 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           ...(lan.length ? { lan } : {}),
         });
         broadcast({ t: 'roster', players: match.roster() });
+        client.admin = isAdminToken(msg.admin);
+        if (client.admin) hostState(client);
+      } else if (msg.t === 'admin' && client.slot !== null) {
+        if (isAdminToken(msg.token)) {
+          client.admin = true;
+          hostState(client);
+        } else {
+          send(client, { t: 'host', state: null, error: 'Wrong admin token' });
+          if (++client.badTokens >= MAX_BAD_TOKENS) ws.close(4006, 'admin');
+        }
+      } else if (msg.t === 'host' && client.slot !== null) {
+        hostCommand(client, msg.cmd);
       } else if (msg.t === 'input' && client.slot !== null) {
         match.queueInputs(client.slot, msg.inputs);
       } else if (msg.t === 'ready' && client.slot !== null) {
         match.ready(client.slot);
       } else if (msg.t === 'ping') {
+        if (msg.rtt !== undefined) client.rtt = msg.rtt;
         send(client, { t: 'pong', id: msg.id, ct: msg.ct });
       }
     });
@@ -221,7 +279,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       clients.delete(client);
       if (client.slot !== null) {
         // A bot takes the leaver's place where they were (unless botTakeBack is off).
-        bots.leave(client.slot, botFill);
+        bots.leave(client.slot, control.fill);
         broadcast({ t: 'roster', players: match.roster() });
       }
     });
@@ -271,6 +329,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const tickMs = 1000 / TICK_RATE;
   let nextTickAt = performance.now();
   let lastStatsAt = performance.now();
+  let pingRounds = 0;
   let stopped = false;
   let timer: NodeJS.Timeout;
 
@@ -311,8 +370,9 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     map = t.map;
     playIndex = t.index;
     match = new Match(map, withLeaders(t.rules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
-    bots = new BotFiller(match, difficulty, { takeBack: opts.botTakeBack });
-    bots.rebalance(botFill);
+    bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack });
+    control = new HostControl(match, bots, t.fill ?? control.fill, 'Admin');
+    bots.rebalance(control.fill);
     console.log(`[chain] now playing ${map.metadata.name}`);
   };
 
@@ -349,6 +409,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       });
       broadcast({ t: 'stats', ...summary });
       opts.onStats?.(StatsWindow.format(summary));
+      // Every other second: each human's ping, for the scoreboard.
+      if (++pingRounds % 2 === 0) {
+        const p = connected.flatMap((c) => (c.rtt !== undefined ? [c.slot!, c.rtt] : []));
+        if (p.length) broadcast({ t: 'pings', p });
+      }
     }
     timer = setTimeout(loop, Math.max(0, nextTickAt - performance.now()));
   };

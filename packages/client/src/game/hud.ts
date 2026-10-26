@@ -3,6 +3,7 @@ import { slotColor } from './view.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
 import { Minimap } from './minimap.ts';
+import { ScoreBoard, type BoardData, type BoardRow } from './scoreBoard.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -58,6 +59,17 @@ export class Hud {
   private readonly feed = $('feed');
   private readonly banner = $('banner');
   private readonly scoreboard = $('scoreboard');
+  private readonly board = new ScoreBoard(this.scoreboard, { maxWidth: 1240, sizeSelf: true });
+  private pauseBoard: ScoreBoard | null = null;
+  /** Scoreboard facts from snapshots: who is alive, team leaders, online pings, the race order. */
+  private alive = new Map<number, boolean>();
+  private leaders = new Set<number>();
+  private pings = new Map<number, number>();
+  private raceOrder: Map<number, readonly [number, string]> | null = null;
+  /** The mode's per-player objective stat ('Caps', 'Bomb', 'Saves'), or null. */
+  private objLabel: string | null = null;
+  /** Co-op and Zombies: everyone on one side, one list. */
+  private coop = false;
   private readonly perf = $('perf');
   private readonly hitmarker = $('hitmarker');
   private readonly armor = $('armor');
@@ -121,6 +133,15 @@ export class Hud {
     this.powerups.innerHTML = '';
     this.scope.hidden = true;
     this.scoreboard.hidden = true;
+    this.board.clear();
+    this.boardOpen = false;
+    this.pauseBoard?.clear();
+    this.alive.clear();
+    this.leaders.clear();
+    this.pings.clear();
+    this.raceOrder = null;
+    this.objLabel = null;
+    this.coop = false;
     this.objectives.replaceChildren();
     this.lastObjectives = '';
     this.message.classList.remove('on');
@@ -131,6 +152,34 @@ export class Hud {
     this.classes.clear();
     this.statusLines = [];
     this.setClassMenu(false, null);
+  }
+
+  /** The match's mode, for the scoreboard: its objective column, and co-op as one list. */
+  setBoardMode(mode: string): void {
+    this.objLabel = mode === 'core.ctf' || mode === 'core.forts' ? 'Caps' : mode === 'core.bomb' ? 'Bomb' : mode === 'core.hostage' ? 'Saves' : null;
+    this.coop = mode === 'core.coop' || mode === 'core.zombies';
+  }
+
+  /** Who is alive (from a snapshot; players a big match leaves out keep their last state). */
+  setLife(players: readonly { s: number; alive: 0 | 1 }[]): void {
+    for (const p of players) this.alive.set(p.s, p.alive === 1);
+  }
+
+  /** Team leaders (rules.leaders), or none. */
+  setLeaders(slots: readonly number[] | undefined): void {
+    if (!slots?.length && !this.leaders.size) return;
+    this.leaders = new Set((slots ?? []).filter((s) => s >= 0));
+  }
+
+  /** Online: each human's round trip, as flat [slot, ms, …]. */
+  setPings(flat: readonly number[]): void {
+    this.pings.clear();
+    for (let i = 0; i + 1 < flat.length; i += 2) this.pings.set(flat[i]!, flat[i + 1]!);
+  }
+
+  /** Race: the running order, with each racer's lap or finish time. */
+  setRaceOrder(order: readonly (readonly [number, string])[]): void {
+    this.raceOrder = new Map(order.map(([slot, lap], i) => [slot, [i, lap] as const]));
   }
 
   /** Classes: who plays what (for the scoreboard). */
@@ -273,8 +322,16 @@ export class Hud {
   private mapName = '';
   setMapName(name: string): void {
     this.mapName = name;
-    const title = document.querySelector('#pause .pause-title');
-    if (title) title.innerHTML = `Paused <small>${escapeHtml(name)} · ${escapeHtml(this.modeLabel.textContent ?? '')}</small>`;
+    this.pauseContext();
+  }
+
+  /** The pause menu's match line: map, mode and time left. */
+  pauseContext(): void {
+    const line = document.getElementById('pause-context');
+    if (!line) return;
+    const clock = this.timer.textContent ? ` · ${this.timer.textContent} left` : '';
+    const text = `${this.mapName} · ${this.modeLabel.textContent ?? ''}${clock}`;
+    if (line.textContent !== text) line.textContent = text;
   }
 
   setPortrait(src: string): void {
@@ -603,6 +660,16 @@ export class Hud {
     window.setTimeout(() => line.remove(), 6000);
   }
 
+  /** A line from the match itself in the feed: what the host changed ("Host set teams to 8v8"). */
+  note(text: string): void {
+    const line = document.createElement('div');
+    line.className = 'say note';
+    line.textContent = text;
+    this.feed.prepend(line);
+    while (this.feed.children.length > 5) this.feed.lastChild?.remove();
+    window.setTimeout(() => line.remove(), 6000);
+  }
+
   /** A quick message in the feed: "Name: Enemy spotted!". */
   say(slot: number, text: string): void {
     if (!text) return;
@@ -725,34 +792,71 @@ export class Hud {
     el.classList.add('on');
   }
 
-  renderScoreboard(visible: boolean, scores: ScoreEntry[], localSlot: number): void {
-    this.scoreboard.hidden = !visible;
-    if (!visible) return;
-    const row = (s: ScoreEntry) => {
-      const p = this.roster.get(s.s);
-      const color = this.team(s.s)?.color ?? slotColor(s.s);
-      const cls = this.classes.get(s.s);
-      const clsName = cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? '');
-      return `<tr class="${s.s === localSlot ? 'me' : ''}"><td><span style="color:${color}">●</span> ${escapeHtml(this.name(s.s))}${p?.bot ? ' <small>(bot)</small>' : ''}${clsName ? `<small class="sb-class">${escapeHtml(clsName)}</small>` : ''}</td><td>${s.k}</td><td>${s.d}</td></tr>`;
-    };
-    const sorted = [...scores].sort((a, b) => b.k - a.k || a.d - b.d);
-    // Map, mode and time left over the tables.
-    const clock = this.timer.textContent ? ` · ${escapeHtml(this.timer.textContent)} left` : '';
-    const head = `<div class="sb-head"><b>${escapeHtml(this.mapName)}</b> · ${escapeHtml(this.modeLabel.textContent ?? '')}${clock}</div>`;
-    if (!this.teams) {
-      this.scoreboard.innerHTML = `${head}<table><tr><th>Player</th><th>Kills</th><th>Deaths</th></tr>${sorted.map(row).join('')}</table>`;
+  /**
+   * The Tab / end-of-round scoreboard. Drawn when it opens, then patched at
+   * most 4 times a second while it stays open (cheap at 96 players).
+   */
+  renderScoreboard(visible: boolean, scores: readonly ScoreEntry[], localSlot: number, final = false): void {
+    if (this.scoreboard.hidden !== !visible) this.scoreboard.hidden = !visible;
+    if (!visible) {
+      this.boardOpen = false;
       return;
     }
-    // Team Deathmatch: one table per team, the higher score first.
+    const now = performance.now();
+    if (this.boardOpen && now - this.boardAt < 250) return;
+    this.boardAt = now;
+    this.boardOpen = true;
+    this.board.render(this.boardData(scores, localSlot, final));
+  }
+  private boardAt = 0;
+  private boardOpen = false;
+
+  /** The pause menu's Match tab: the same board, in the menu's width. */
+  renderPauseScores(box: HTMLElement, scores: readonly ScoreEntry[], localSlot: number): void {
+    if (this.pauseBoard?.root !== box) this.pauseBoard = new ScoreBoard(box, { maxWidth: 560, sizeSelf: false });
+    this.pauseBoard.render(this.boardData(scores, localSlot, false));
+  }
+
+  /** What the scoreboards show: the teams (or everyone), sorted, with each row's stats. */
+  boardData(scores: readonly ScoreEntry[], localSlot: number, final: boolean): BoardData {
+    const race = this.raceOrder;
+    const row = (s: ScoreEntry): BoardRow => {
+      const p = this.roster.get(s.s);
+      const cls = this.classes.get(s.s);
+      const ping = this.pings.get(s.s);
+      return {
+        slot: s.s,
+        name: this.name(s.s),
+        bot: !!p?.bot,
+        color: this.team(s.s)?.color ?? slotColor(s.s),
+        cls: cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? ''),
+        k: s.k,
+        d: s.d,
+        obj: race ? (race.get(s.s)?.[1] ?? '') : this.objLabel ? String(s.o ?? 0) : '',
+        ping: p?.bot ? '–' : ping === undefined ? '' : String(ping),
+        leader: this.leaders.has(s.s),
+        dead: this.alive.get(s.s) === false,
+        me: s.s === localSlot,
+      };
+    };
+    const sorted = [...scores].sort(race ? (a, b) => (race.get(a.s)?.[0] ?? 999) - (race.get(b.s)?.[0] ?? 999) || a.s - b.s : (a, b) => b.k - a.k || (b.o ?? 0) - (a.o ?? 0) || a.d - b.d || a.s - b.s);
+    const clock = this.timer.textContent ? ` · ${this.timer.textContent} left` : '';
+    const head = `${final ? 'Final · ' : ''}${this.mapName} · ${this.modeLabel.textContent ?? ''}${final ? '' : clock}`;
+    const flags = { cls: this.classes.size > 0, obj: race ? 'Lap' : this.objLabel, ping: this.pings.size > 0 };
+    if (!this.teams) {
+      return { head, kind: this.coop ? 'coop' : 'ffa', groups: [{ id: 'all', name: '', color: '', score: 0, lead: false, rows: sorted.map(row) }], ...flags };
+    }
     const totals = this.teamTotals(scores);
-    const teams = [...this.teams].sort((a, b) => (totals.get(b.id) ?? 0) - (totals.get(a.id) ?? 0));
-    this.scoreboard.classList.toggle('many', teams.length > 2);
-    this.scoreboard.innerHTML = head + teams
-      .map((t) => {
-        const rows = sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row).join('');
-        return `<table class="team"><tr><th style="color:${t.color}">${escapeHtml(t.name)} <b>${totals.get(t.id) ?? 0}</b></th><th>Kills</th><th>Deaths</th></tr>${rows}</table>`;
-      })
-      .join('');
+    const top = Math.max(...this.teams.map((t) => totals.get(t.id) ?? 0));
+    const groups = this.teams.map((t) => ({
+      id: t.id,
+      name: t.name,
+      color: t.color,
+      score: totals.get(t.id) ?? 0,
+      lead: top > 0 && (totals.get(t.id) ?? 0) === top,
+      rows: sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row),
+    }));
+    return { head, kind: 'teams', groups, ...flags };
   }
 
   renderPerf(visible: boolean, lines: Record<string, string | number>, server: ServerStats | null, botStates: string[]): void {

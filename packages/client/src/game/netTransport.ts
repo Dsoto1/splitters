@@ -1,6 +1,28 @@
 import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { Transport } from './transport.ts';
 
+const ADMIN_KEY = 'tiletrigger.admin.';
+
+/** The admin token this tab uses on `url`: ?admin=… in the page address, else the one entered in the pause menu. */
+export function adminToken(url: string): string | undefined {
+  const fromPage = new URLSearchParams(location.search).get('admin');
+  if (fromPage) return fromPage;
+  try {
+    return sessionStorage.getItem(ADMIN_KEY + url) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Remember an admin token for `url` in this tab, so a map change (reconnect) keeps you admin. */
+export function rememberAdminToken(url: string, token: string): void {
+  try {
+    sessionStorage.setItem(ADMIN_KEY + url, token);
+  } catch {
+    // Private windows: lasts until the next reconnect.
+  }
+}
+
 /** WebSocket connection to the dedicated server, with RTT measurement. */
 export class NetTransport implements Transport {
   private ws?: WebSocket;
@@ -24,8 +46,9 @@ export class NetTransport implements Transport {
     const ws = new WebSocket(this.url);
     this.ws = ws;
     ws.addEventListener('open', () => {
-      this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look });
-      this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: ++this.pingId, ct: performance.now() }), 1000);
+      const admin = adminToken(this.url);
+      this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, ...(admin ? { admin } : {}) });
+      this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: ++this.pingId, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) }), 1000);
     });
     ws.addEventListener('message', (e) => {
       const text = e.data as string;
@@ -50,6 +73,11 @@ export class NetTransport implements Transport {
 
   sendReady(): void {
     this.send({ t: 'ready' });
+  }
+
+  sendCommand(msg: Extract<ClientMessage, { t: 'host' | 'admin' }>): void {
+    if (msg.t === 'admin') rememberAdminToken(this.url, msg.token);
+    this.send(msg);
   }
 
   close(): void {

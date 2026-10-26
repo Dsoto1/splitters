@@ -1,4 +1,5 @@
-import type { ClientMessage } from '../protocol.ts';
+import { HOST_BOT_SKILLS, HOST_BOT_STYLES, type ClientMessage, type HostCommand } from '../protocol.ts';
+import { isGameMode } from '../sim/rules.ts';
 import type { PlayerInput } from '../sim/movement.ts';
 
 /**
@@ -26,11 +27,20 @@ export function parseClientMessage(text: string): ClientMessage | null {
   const o = m as Record<string, unknown>;
   switch (o.t) {
     case 'hello':
-      return typeof o.protocol === 'number' && typeof o.name === 'string' ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}) } : null;
+      return typeof o.protocol === 'number' && typeof o.name === 'string'
+        ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}), ...(typeof o.admin === 'string' && o.admin && o.admin.length <= 200 ? { admin: o.admin } : {}) }
+        : null;
+    case 'admin':
+      return typeof o.token === 'string' && o.token.length <= 200 ? { t: 'admin', token: o.token } : null;
+    case 'host': {
+      const cmd = parseHostCommand(o.cmd);
+      return cmd ? { t: 'host', cmd } : null;
+    }
     case 'ready':
       return { t: 'ready' };
     case 'ping':
-      return typeof o.id === 'number' && typeof o.ct === 'number' ? { t: 'ping', id: o.id, ct: o.ct } : null;
+      if (typeof o.id !== 'number' || typeof o.ct !== 'number') return null;
+      return { t: 'ping', id: o.id, ct: o.ct, ...(typeof o.rtt === 'number' && Number.isFinite(o.rtt) && o.rtt >= 0 ? { rtt: Math.min(9999, Math.round(o.rtt)) } : {}) };
     case 'input': {
       if (!Array.isArray(o.inputs) || o.inputs.length > MAX_INPUTS_PER_MESSAGE) return null;
       const inputs: PlayerInput[] = [];
@@ -49,6 +59,35 @@ export function parseClientMessage(text: string): ClientMessage | null {
       }
       return { t: 'input', inputs };
     }
+    default:
+      return null;
+  }
+}
+
+const count = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 1000;
+
+/** A host command's shape (whether the sender may run the match is the host's to check). */
+function parseHostCommand(raw: unknown): HostCommand | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const o = raw as Record<string, unknown>;
+  switch (o.c) {
+    case 'bots': {
+      if (o.fill !== undefined && !count(o.fill)) return null;
+      if (o.teamSize !== undefined && !count(o.teamSize)) return null;
+      if (o.skill !== undefined && !(HOST_BOT_SKILLS as readonly unknown[]).includes(o.skill)) return null;
+      if (o.style !== undefined && !(HOST_BOT_STYLES as readonly unknown[]).includes(o.style)) return null;
+      const cmd = { c: 'bots', fill: o.fill, teamSize: o.teamSize, skill: o.skill, style: o.style } as Extract<HostCommand, { c: 'bots' }>;
+      for (const k of ['fill', 'teamSize', 'skill', 'style'] as const) if (cmd[k] === undefined) delete cmd[k];
+      return cmd;
+    }
+    case 'map':
+      if (typeof o.map !== 'string' || !o.map || o.map.length > 80) return null;
+      if (o.mode !== undefined && (typeof o.mode !== 'string' || !isGameMode(o.mode))) return null;
+      return { c: 'map', map: o.map, ...(o.mode !== undefined ? { mode: o.mode as Extract<HostCommand, { c: 'map' }>['mode'] & string } : {}) };
+    case 'restart':
+      return { c: 'restart' };
+    case 'end':
+      return { c: 'end' };
     default:
       return null;
   }

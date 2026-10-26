@@ -1,6 +1,6 @@
 import type { MapDocument } from './map/schema.ts';
 import type { PlayerInput } from './sim/movement.ts';
-import type { MatchRules } from './sim/rules.ts';
+import type { GameMode, MatchRules } from './sim/rules.ts';
 
 /**
  * Wire protocol, version 1. JSON over WebSocket for Phase 0; the message shapes
@@ -12,11 +12,52 @@ export const PROTOCOL_VERSION = 3;
 export type Tuple3 = [number, number, number];
 
 export type ClientMessage =
-  | { t: 'hello'; protocol: number; name: string; look?: string }
+  /** `admin`: a dedicated server's ADMIN_TOKEN (?admin=… in the page address): this player may run the match (HostCommand). */
+  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string }
   | { t: 'input'; inputs: PlayerInput[] }
-  | { t: 'ping'; id: number; ct: number }
+  /** `rtt`: the sender's measured round trip (ms), shown on everyone's scoreboard. */
+  | { t: 'ping'; id: number; ct: number; rtt?: number }
   /** The client has loaded the map, everyone's characters and the weapons: it can start. */
-  | { t: 'ready' };
+  | { t: 'ready' }
+  /** Log in as the dedicated server's admin mid-match (pause menu → Server admin). */
+  | { t: 'admin'; token: string }
+  /** Run the match: only the host (offline, Host game) or a dedicated server's admin; anyone else gets an error. */
+  | { t: 'host'; cmd: HostCommand };
+
+/** Bot skills and styles a host can switch to mid-match. */
+export const HOST_BOT_SKILLS = ['easy', 'normal', 'hard'] as const;
+export const HOST_BOT_STYLES = ['mixed', 'arena', 'tactical'] as const;
+
+/**
+ * What whoever runs the match can do mid-match (pause menu → Match):
+ * `bots` sets the players (free-for-all and co-op: everyone, you included;
+ * team modes: per team), bot skill and style, live; `map` travels to another
+ * map (servers and Host game: a map of our suite, by ID) in `mode`
+ * (default: the current one, else the map's own); `restart` starts the match
+ * over; `end` ends it now, to the scoreboard.
+ */
+export type HostCommand =
+  | { c: 'bots'; fill?: number; teamSize?: number; skill?: (typeof HOST_BOT_SKILLS)[number]; style?: (typeof HOST_BOT_STYLES)[number] }
+  | { c: 'map'; map: string; mode?: GameMode }
+  | { c: 'restart' }
+  | { c: 'end' };
+
+/** The match's host settings, for the pause menu of whoever runs it. */
+export interface HostState {
+  /** Players to keep, bots included (team modes: teams × teamSize). */
+  fill: number;
+  /** Team modes: players per team (the largest team, when they differ); null otherwise. */
+  teamSize: number | null;
+  /** Teams in play (0 outside team modes). */
+  teams: number;
+  /** Most players the match can hold. */
+  max: number;
+  skill: (typeof HOST_BOT_SKILLS)[number];
+  style: (typeof HOST_BOT_STYLES)[number];
+  /** The current map (ID) and mode. */
+  map: string;
+  mode: GameMode;
+}
 
 export interface PlayerSnapshot {
   /** Slot index, 0..MAX_PLAYER_SLOTS-1. */
@@ -228,6 +269,8 @@ export interface ScoreEntry {
   d: number;
   /** Suicides (already taken off `k`); they don't count against the team. */
   x?: number;
+  /** Objective plays: flag captures, bomb plants and defuses, hostage rescues (only when > 0). */
+  o?: number;
 }
 
 export interface RosterEntry {
@@ -387,6 +430,12 @@ export type ServerMessage =
       ld?: number[];
     }
   | { t: 'pong'; id: number; ct: number }
-  /** The server is changing map (a scenario chain): reconnect in a moment to play `map` (its display name). */
+  /** Online: each human's round trip for the scoreboard, as flat [slot, ms, slot, ms, …] (every couple of seconds). */
+  | { t: 'pings'; p: number[] }
+  /** The server is changing map (a scenario chain, or its host changed it): reconnect in a moment to play `map` (its display name). */
   | { t: 'travel'; map: string }
+  /** You run this match (HostCommand): its settings now (`state`), or why a command was refused (`error`; `state` null when you may not run it). */
+  | { t: 'host'; state: HostState | null; error?: string }
+  /** A line for everyone's feed and a toast: what the host changed ("Host set teams to 8v8"). */
+  | { t: 'notice'; text: string }
   | ({ t: 'stats' } & ServerStats);

@@ -19,7 +19,7 @@ const SLOW = process.env.CI ? 3 : 1;
  */
 const SHARDS = [
   ['maps', 'online', 'webgpu'],
-  ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby'],
+  ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby', 'hostcontrols'],
   ['maps2', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'zombies'],
   ['setpieces', 'physicsfx', 'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'classes', 'race'],
 ];
@@ -771,6 +771,32 @@ async function physicsfxFlow(browser) {
   await page.context().close();
 }
 
+/**
+ * Scoreboard open: is the local player's row on screen, inside its list's
+ * visible area (sticky when the list scrolls) and inside the window?
+ */
+async function scoreboardMeVisible(page) {
+  return page.evaluate(() => {
+    const me = document.querySelector('#scoreboard .sb-row.me');
+    if (!me) return { ok: false, why: 'no row marked as you' };
+    const r = me.getBoundingClientRect();
+    const list = me.closest('.sb-list');
+    const box = (list && list.scrollHeight > list.clientHeight ? list : me.closest('.sb-body')).getBoundingClientRect();
+    const inList = r.top >= box.top - 1 && r.bottom <= box.bottom + 1;
+    const inWindow = r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth;
+    const sideways = document.documentElement.scrollWidth > innerWidth;
+    return { ok: inList && inWindow && !sideways && r.height > 0, why: `row ${Math.round(r.top)}–${Math.round(r.bottom)}, list ${Math.round(box.top)}–${Math.round(box.bottom)}, window ${innerWidth}×${innerHeight}` };
+  });
+}
+
+/** The scoreboard's team columns: their rectangles, left to right. */
+async function scoreboardColumns(page) {
+  return page.evaluate(() => [...document.querySelectorAll('#scoreboard .sb-group')].map((g) => {
+    const r = g.getBoundingClientRect();
+    return { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top) };
+  }));
+}
+
 async function teamsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
@@ -785,10 +811,17 @@ async function teamsFlow(browser) {
   // Every team's table fills in once the roster for all 24 has arrived.
   await page.waitForTimeout(T(2500));
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard table').length >= 7, null, { timeout: T(8000) }).catch(() => {});
-  const board = await page.evaluate(() => ({ many: document.getElementById('scoreboard').classList.contains('many'), tables: [...document.querySelectorAll('#scoreboard table')].map((t) => t.querySelectorAll('tr').length - 1) }));
+  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length >= 7 && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 24, null, { timeout: T(8000) }).catch(() => {});
+  const board = await page.evaluate(() => ({
+    many: document.getElementById('scoreboard').classList.contains('sb-tn'),
+    tables: [...document.querySelectorAll('#scoreboard .sb-group')].map((t) => t.querySelectorAll('.sb-row[data-slot]').length),
+    cols: getComputedStyle(document.querySelector('#scoreboard .sb-body')).gridTemplateColumns.split(' ').length,
+  }));
+  const meSeen = await scoreboardMeVisible(page);
   await page.keyboard.up('Tab');
   check(board.many && board.tables.length === 7, `the scoreboard shows seven teams (${board.tables.length})`);
+  check(board.cols >= 3, `seven teams sit in a grid of columns (${board.cols} across)`);
+  check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
   check([...board.tables].sort((a, b) => a - b).join(',') === '2,2,2,2,2,2,12', `teams are filled to 2v2v2v2v2v2v12 (${board.tables.join(',')})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -869,6 +902,20 @@ async function ctfFlow(browser) {
   const after = await page.evaluate(() => ({ ts: window.__cs.mode.state.ts, left: document.querySelector('#sb-left b')?.textContent, msg: document.getElementById('message').textContent }));
   check(after.ts.some((n) => n === 1) && after.left === '1', `bringing it home scores a capture (${JSON.stringify(after)})`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-captured.png`, timeout: T(60000) }).catch(() => {});
+  // Tab: the two teams side by side, each its own column, your capture on your row.
+  await page.keyboard.down('Tab');
+  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length === 2 && document.querySelector('#scoreboard .sb-row.me'), null, { timeout: T(5000) }).catch(() => {});
+  const cols = await scoreboardColumns(page);
+  const meSeen = await scoreboardMeVisible(page);
+  const caps = await page.evaluate(() => {
+    const hd = [...document.querySelectorAll('#scoreboard .sb-hd')][0];
+    const at = [...(hd?.children ?? [])].findIndex((c) => c.textContent === 'Caps');
+    return at < 0 ? null : document.querySelector('#scoreboard .sb-row.me')?.children[at]?.textContent;
+  });
+  await page.keyboard.up('Tab');
+  check(cols.length === 2 && cols[0].top === cols[1].top && cols[1].left >= cols[0].right, `two teams show as two side-by-side columns (${JSON.stringify(cols)})`);
+  check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
+  check(caps === '1', `the scoreboard's Caps column counts your capture (${caps})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -991,6 +1038,14 @@ async function zombiesFlow(browser) {
   await page.waitForFunction(() => window.__cs.view.creatureCount('zombie') > 0, null, { timeout: T(15000) }).catch(() => {});
   const bodies = await page.evaluate(() => window.__cs.view.creatureCount('zombie'));
   check(bodies > 0, `zombies wear the zombie body (${bodies})`);
+  // Co-op: the scoreboard is one list of the squad.
+  await page.keyboard.down('Tab');
+  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length === 4, null, { timeout: T(5000) }).catch(() => {});
+  const coop = await page.evaluate(() => ({ coop: document.getElementById('scoreboard').classList.contains('sb-coop'), lists: document.querySelectorAll('#scoreboard .sb-group').length, rows: document.querySelectorAll('#scoreboard .sb-row[data-slot]').length }));
+  const meSeen = await scoreboardMeVisible(page);
+  await page.keyboard.up('Tab');
+  check(coop.coop && coop.lists === 1 && coop.rows === 4, `co-op shows the squad as one list (${JSON.stringify(coop)})`);
+  check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -1030,7 +1085,8 @@ async function classesFlow(browser) {
   await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name)), null, { timeout: T(10000) }).catch(() => {});
   check(await page.evaluate(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name))), 'a Mechanic bot builds a sentry and it is drawn');
   await page.keyboard.down('Tab');
-  await page.waitForTimeout(400);
+  // CI's software renderer can take a moment to fill the board.
+  await page.waitForFunction(() => /Bulwark/i.test(document.getElementById('scoreboard')?.textContent ?? ''), null, { timeout: T(3000) }).catch(() => {});
   const board = await page.evaluate(() => document.getElementById('scoreboard')?.textContent ?? '');
   await page.keyboard.up('Tab');
   check(/Bulwark/i.test(board), 'the scoreboard shows classes');
@@ -1159,7 +1215,8 @@ async function vehiclesFlow(browser) {
     const e = cs.local.eye;
     return { view: cs.rideView(), off: Math.hypot(c.x - e.x, c.y - e.y, c.z - e.z), roll: cs.view.camera.rotation.z };
   });
-  check(foot.view === null && foot.off < 0.4 && Math.abs(foot.roll) < 1e-6, `after getting out the camera is at your eye and level (${foot.view}, ${foot.off.toFixed(2)} m off, roll ${foot.roll})`);
+  // A blast nearby can still be shaking the view a little: level means within a fraction of a degree.
+  check(foot.view === null && foot.off < 0.4 && Math.abs(foot.roll) < 0.01, `after getting out the camera is at your eye and level (${foot.view}, ${foot.off.toFixed(2)} m off, roll ${foot.roll})`);
   // A blast next to you while looking up shakes the view; once it settles, turning and looking around stay level
   // (Babylon kept the up vector from the shake's last frame, which rolled the view and gun with every turn).
   await page.evaluate(() => {
@@ -1526,8 +1583,36 @@ async function lobbyFlow(browser) {
   await host.context().close();
   const gone = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
   check(gone, 'the listing goes away when the host closes the game');
-  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await player.context().close();
+
+  // Offline by default; "Go online" restarts the match and lists it; "Go offline" takes it down again.
+  const solo = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+  solo.on('pageerror', (e) => errors.push(`solo: ${e.message}`));
+  await solo.addInitScript(() => localStorage.setItem('cs.name', 'Solo'));
+  await solo.goto(`${CLIENT}/?offline=arena&${hub}`, { waitUntil: 'domcontentloaded' });
+  await solo.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !(document.getElementById('online-badge')?.hidden ?? true) }));
+  check(offline.online && !offline.badge, 'an offline match stays offline and offers "Go online"');
+  const listedAs = (name) => solo.evaluate((n) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.some((g) => g.name === n)), name);
+  await solo.evaluate(() => {
+    document.getElementById('host-name').value = 'E2E Go Online';
+    window.__match.combatants().find((c) => c.kind === 'human').kills = 5;
+    document.getElementById('go-online').click();
+  });
+  const asked = await solo.evaluate(() => document.getElementById('online-confirm')?.textContent ?? '');
+  check(/restarts/.test(asked) && /listed publicly/.test(asked), 'Go online asks first: the match restarts and is listed');
+  await solo.evaluate(() => document.getElementById('online-yes').click());
+  const reset = await solo.evaluate(() => window.__match.combatants().find((c) => c.kind === 'human').kills);
+  check(reset === 0, `going online restarts the match (score ${reset})`);
+  const up = await solo.waitForFunction(() => /^Online · listed/.test(document.getElementById('online-badge')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
+  const badge = await solo.evaluate(() => document.getElementById('online-badge')?.textContent ?? '');
+  check(up && (await listedAs('E2E Go Online')), `the match is online and in the game browser (${badge})`);
+  await solo.evaluate(() => document.getElementById('go-offline').click());
+  const down = await solo.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Go Online')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
+  const after = await solo.evaluate(() => ({ badge: !(document.getElementById('online-badge')?.hidden ?? true), online: !document.getElementById('go-online').hidden }));
+  check(down && !after.badge && after.online, 'Go offline removes the listing and the badge');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await solo.context().close();
 }
 
 /** Host game: one browser hosts its offline match with a code, a second joins by link through a hub's broker. */
@@ -1600,6 +1685,121 @@ async function hostgameFlow(browser) {
   await friend.context().close();
 }
 
+/**
+ * Host controls (pause menu → Match): offline, change the bots live, end and
+ * restart, then change map; in Host game, change map with a friend who comes
+ * along to the new map by themselves.
+ */
+async function hostcontrolsFlow(browser) {
+  const errors = [];
+  const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
+  const openPanel = (page) => page.evaluate(() => (document.getElementById('host-controls').open = true));
+  const pickMap = async (page, id) => {
+    await page.evaluate(() => document.getElementById('hc-map').click());
+    await page.waitForSelector('#host-maps', { timeout: T(10000) });
+    await page.evaluate((mapId) => {
+      document.querySelector('#host-maps .hm-modes [data-mode="core.deathmatch"]')?.click();
+      document.querySelector(`#host-maps .map-card[data-id="${mapId}"]`).click();
+      document.getElementById('hm-go').click();
+    }, id);
+  };
+
+  // Offline: the player runs the match.
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  page.on('pageerror', (e) => errors.push(`offline: ${e.message}`));
+  await page.goto(`${CLIENT}/?offline=arena`, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(playing, null, { timeout: T(60000) });
+  const state = await page.waitForFunction(() => window.__cs.host(), null, { timeout: T(10000) }).then((h) => h.jsonValue());
+  check(state?.fill === 4 && state.teams === 0, `the offline player runs the match (${JSON.stringify(state)})`);
+  // The pause menu: Match first; Esc goes back from a tab to Match; the host gets a Host tab.
+  const menu = await page.evaluate(() => {
+    const tab = (id) => document.querySelector(`#pause .pause-tabs [data-tab="${id}"]`);
+    const open = () => [...document.querySelectorAll('#pause .pause-sec')].find((x) => !x.hidden)?.dataset.sec;
+    const first = open();
+    tab('settings').click();
+    const settings = open();
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', key: 'Escape', bubbles: true }));
+    return { first, settings, back: open(), host: !tab('host').hidden };
+  });
+  check(menu.first === 'match' && menu.settings === 'settings' && menu.back === 'match' && menu.host, `pause menu tabs: Match first, Esc back to it, a Host tab for the host (${JSON.stringify(menu)})`);
+  const fits = await page.evaluate(() => {
+    const r = document.querySelector('#pause .pause-card').getBoundingClientRect();
+    return r.top >= 0 && r.bottom <= innerHeight + 1 && r.right <= innerWidth + 1;
+  });
+  check(fits, 'the pause menu fits the window');
+  await openPanel(page);
+  await page.evaluate(() => {
+    document.getElementById('hc-players-plus').click();
+    document.getElementById('hc-players-plus').click();
+    document.querySelector('#hc-skill [data-value="hard"]').click();
+    document.getElementById('hc-apply').click();
+  });
+  const six = await page.waitForFunction(() => window.__match.combatants().length === 6, null, { timeout: T(5000) }).then(() => true, () => false);
+  const feed = await page.evaluate(() => document.getElementById('feed').textContent);
+  check(six && feed.includes('Host set the match to 6 players, bot skill to hard'), `Apply adds bots live, with a feed line (${feed})`);
+  const hard = await page.evaluate(() => window.__match.combatants().filter((c) => c.bot).every((c) => c.bot.difficulty.id === 'hard'));
+  check(hard, 'bot skill changes live');
+  await page.evaluate(() => document.getElementById('hc-end').click());
+  const ended = await page.waitForFunction(() => window.__cs.phase() === 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
+  check(ended, 'End match goes to the scoreboard');
+  await page.evaluate(() => document.getElementById('hc-restart').click());
+  const restarted = await page.waitForFunction(() => window.__cs.phase() !== 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
+  check(restarted, 'Restart match starts it over');
+  await pickMap(page, 'm3_vault');
+  const toast = await page.evaluate(() => document.getElementById('message').textContent);
+  check(/Changing map to .*Vault/i.test(toast), `the change is announced (${toast})`);
+  const moved = await page.waitForFunction(() => window.__match?.map.metadata.id === 'm3_vault' && window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false);
+  await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
+  const after = await page.evaluate(() => ({ n: window.__match.combatants().length, skill: window.__cs.host()?.skill }));
+  check(moved && after.n === 6 && after.skill === 'hard', `the match restarts on the new map with the same players and bots (${JSON.stringify(after)})`);
+  await page.context().close();
+
+  // Host game: the host changes map; the friend comes along without a new code.
+  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
+  await sleep(5000);
+  const peer = `&hub=127.0.0.1:${PEER_PORT}`;
+  const host = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
+  await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded' });
+  await host.waitForFunction(playing, null, { timeout: T(90000) });
+  const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
+  for (let i = 0; i < 3; i++) {
+    await host.evaluate(() => document.getElementById('host-game').click());
+    if (await host.waitForFunction(hasCode, null, { timeout: T(30000) }).then(() => true, () => false)) break;
+  }
+  const code = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
+  const friend = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+  friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
+  await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
+  await friend.goto(`${CLIENT}/?join=${code}${peer}`, { waitUntil: 'domcontentloaded' });
+  const joined = await friend.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(joined, `a friend joins the hosted match (${code})`);
+  if (joined) {
+    const guest = await friend.evaluate(() => ({ panel: document.getElementById('host-controls')?.hidden ?? true, tab: document.querySelector('#pause .pause-tabs [data-tab="host"]').hidden, fits: document.querySelector('#pause .pause-card').getBoundingClientRect().bottom <= innerHeight + 1 }));
+    check(guest.panel && guest.tab, 'the friend gets no Host tab or host controls');
+    check(guest.fits, 'the pause menu fits at 640×360');
+    // Everything the friend's feed shows from here on (the match moves on soon after the announcement).
+    await friend.evaluate(() => {
+      window.__notes = [];
+      new MutationObserver(() => window.__notes.push(document.getElementById('feed').textContent)).observe(document.getElementById('feed'), { childList: true, subtree: true });
+    });
+    await openPanel(host);
+    await pickMap(host, 'm3_vault');
+    const together = await host.waitForFunction(() => window.__match?.map.metadata.id === 'm3_vault' && window.__match.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, { timeout: T(90000) }).then(() => true, () => false);
+    check(together, "the friend rejoins the host's new map by themselves");
+    const friendThere = await friend.waitForFunction(() => window.__cs?.map === 'm3_vault' && window.__cs.local && document.getElementById('menu').hidden, null, { timeout: T(60000) }).then(() => true, () => false);
+    const sameCode = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
+    check(friendThere && sameCode === code, `the friend plays on with the same join code (${sameCode})`);
+    const heard = await friend.evaluate(() => window.__notes.some((t) => t.includes('Changing map to')));
+    check(heard, 'the friend saw the map change announced in the feed');
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await host.context().close();
+  await friend.context().close();
+}
+
 try {
   start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
   start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1' });
@@ -1640,7 +1840,7 @@ try {
   const shard = process.env.E2E_SHARD ? SHARDS[Number(process.env.E2E_SHARD.split('/')[0]) - 1] : null;
   if (process.env.E2E_SHARD && !shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
   const only = process.env.E2E_ONLY?.split(',') ?? shard;
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, maps: mapsFlow, maps2: (b) => mapsFlow(b, 1), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, maps: mapsFlow, maps2: (b) => mapsFlow(b, 1), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
   // Every flow belongs to exactly one shard, so CI's parallel jobs between them run everything.
   const sharded = SHARDS.flat();
   const lost = Object.keys(flows).filter((f) => sharded.filter((x) => x === f).length !== 1);

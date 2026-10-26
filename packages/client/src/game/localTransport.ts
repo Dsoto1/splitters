@@ -14,6 +14,8 @@ import {
   type BotDifficulty,
   type CarryOver,
   type GameEvent,
+  type HostCommand,
+  type HostState,
   type MapDocument,
   type MatchRules,
   type PlayerInput,
@@ -63,12 +65,82 @@ export class LocalTransport implements Transport {
   /** Time from start() to the welcome message, for the TEST transition budget. */
   startupMs = 0;
   /** Friends playing in this match (Host game), and the hook that lets them in once it's running. */
-  private remotes = new Set<{ link: RemoteLink; slot: number | null }>();
+  private remotes = new Set<{ link: RemoteLink; slot: number | null; rtt?: number | undefined }>();
   private admit?: (link: RemoteLink) => void;
+  /** Friends who connected before the match had loaded (after a map change, they come straight back): let in once it runs. */
+  private waiting: RemoteLink[] = [];
+  /** The host's controls over this match (pause menu → Match): bots, skill, style, restart, end. */
+  private control?: import('@tiletrigger/shared/match').HostControl;
+  private announce?: (msg: ServerMessage) => void;
   /** How many people can play: friends take bots' places up to the match's size. */
   get capacity(): number {
-    return Math.max(1, Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));
+    return Math.max(1, Math.min(this.control?.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS));
   }
+
+  /** The match's host settings now (null before it runs). */
+  hostState(): HostState | null {
+    return this.stopped ? null : (this.control?.state() ?? null);
+  }
+
+  /** The rules the match plays now (the host may have changed team sizes and bot style), or null before it runs. */
+  liveRules(): MatchRules | null {
+    return this.stopped ? null : (this.control?.match.rules ?? null);
+  }
+
+  /**
+   * The host runs the match (this browser's player: offline, or Host game).
+   * A map change is the session's (it restarts the match on the new map);
+   * everything else happens here, live. Friends can't: their commands are refused.
+   */
+  host(cmd: Exclude<HostCommand, { c: 'map' }>): string | null {
+    const c = this.control;
+    if (!c || this.stopped) return 'The match has not started';
+    const r = c.apply(cmd);
+    if (r.error) return r.error;
+    if (r.notice) this.announce?.({ t: 'notice', text: r.notice });
+    this.announce?.({ t: 'roster', players: c.match.roster() });
+    this.announce?.({ t: 'host', state: c.state() });
+    return null;
+  }
+
+  /**
+   * Go offline: every friend is told why and disconnected, and bots take
+   * their places again (the match itself carries on).
+   */
+  dropGuests(reason: string): void {
+    const c = this.control;
+    const text = JSON.stringify({ t: 'reject', reason } satisfies ServerMessage);
+    for (const r of [...this.remotes]) {
+      if (r.slot !== null) {
+        r.link.send(text);
+        if (c && !this.stopped) c.bots.leave(r.slot, c.fill);
+        r.slot = null;
+      }
+      this.remotes.delete(r);
+      const link = r.link;
+      // A moment for the message to get there before the link closes.
+      window.setTimeout(() => link.close(), 500);
+    }
+    if (c && !this.stopped) this.announce?.({ t: 'roster', players: c.match.roster() });
+  }
+
+  /** Tell everyone the map is about to change ("Changing map to …"). */
+  notice(text: string): void {
+    this.announce?.({ t: 'notice', text });
+  }
+
+  /**
+   * Host game, map change: friends get `travel` and reconnect by themselves
+   * to the same join code, where the next match lets them in.
+   */
+  travelGuests(mapName: string): void {
+    const text = JSON.stringify({ t: 'travel', map: mapName } satisfies ServerMessage);
+    for (const r of this.remotes) if (r.slot !== null) r.link.send(text);
+    this.departing = true;
+  }
+
+  /** Friends were sent `travel`: give it time to arrive before their links close. */
+  private departing = false;
 
   /** Players connected from elsewhere (Host game). */
   get guests(): number {
@@ -87,7 +159,7 @@ export class LocalTransport implements Transport {
 
   private async run(onMessage: (m: ServerMessage) => void, t0: number): Promise<void> {
     // The match module pulls in Recast; load it only when a local match starts.
-    const [{ Match, BotFiller, initNavigation }] = await Promise.all([import('@tiletrigger/shared/match'), initPhysics()]);
+    const [{ Match, BotFiller, HostControl, initNavigation }] = await Promise.all([import('@tiletrigger/shared/match'), initPhysics()]);
     await initNavigation();
     if (this.stopped) return;
     const rules = this.opts.rules ?? rulesForMap(this.map);
@@ -104,8 +176,9 @@ export class LocalTransport implements Transport {
       me.raiseTicks = 0;
     };
     const bots = new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]);
-    const botFill = Math.min(this.opts.botFill, MAX_PLAYER_SLOTS);
-    bots.rebalance(botFill);
+    const control = new HostControl(match, bots, Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));
+    this.control = control;
+    bots.rebalance(control.fill);
     // Host game: friends join like they would a dedicated server (same messages, same checks).
     const rosterToAll = () => {
       const msg: ServerMessage = { t: 'roster', players: match.roster() };
@@ -114,7 +187,7 @@ export class LocalTransport implements Transport {
       for (const r of this.remotes) if (r.slot !== null) r.link.send(text);
     };
     this.admit = (link) => {
-      const r = { link, slot: null as number | null };
+      const r = { link, slot: null as number | null, rtt: undefined as number | undefined };
       this.remotes.add(r);
       link.onMessage((text) => {
         const msg = parseClientMessage(text);
@@ -125,25 +198,37 @@ export class LocalTransport implements Transport {
             return link.close();
           }
           // The friend takes over a bot where it stands, on the team that needs a player.
-          const player = bots.join(sanitizeName(msg.name), msg.look, botFill);
+          const player = bots.join(sanitizeName(msg.name), msg.look, control.fill);
           if (!player) {
             link.send(JSON.stringify({ t: 'reject', reason: 'match full' }));
             return link.close();
           }
           r.slot = player.slot;
-          link.send(JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() } satisfies ServerMessage));
+          link.send(JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState() } satisfies ServerMessage));
           rosterToAll();
         } else if (msg.t === 'input' && r.slot !== null) match.queueInputs(r.slot, msg.inputs);
         else if (msg.t === 'ready' && r.slot !== null) match.ready(r.slot);
-        else if (msg.t === 'ping') link.send(JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
+        else if (msg.t === 'ping') {
+          if (msg.rtt !== undefined) r.rtt = msg.rtt;
+          link.send(JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
+        }
+        // Only the host runs the match: a friend's host commands (or admin logins) are refused.
+        else if ((msg.t === 'host' || msg.t === 'admin') && r.slot !== null) link.send(JSON.stringify({ t: 'host', state: null, error: 'Only the host can change the match' } satisfies ServerMessage));
       });
       link.onClose(() => {
         this.remotes.delete(r);
         if (r.slot === null || this.stopped) return;
         // A bot takes their place where they were.
-        bots.leave(r.slot, botFill);
+        bots.leave(r.slot, control.fill);
         rosterToAll();
       });
+    };
+    // Notices, rosters and the host's settings: to this player, and (except the settings) to every friend.
+    this.announce = (msg) => {
+      onMessage(msg);
+      if (msg.t === 'host') return;
+      const text = JSON.stringify(msg);
+      for (const r of this.remotes) if (r.slot !== null) r.link.send(text);
     };
     this.queueInputs = (inputs) => match.queueInputs(me.slot, inputs);
     this.markReady = () => match.ready(me.slot);
@@ -151,12 +236,16 @@ export class LocalTransport implements Transport {
 
     onMessage({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() });
     onMessage({ t: 'roster', players: match.roster() });
+    onMessage({ t: 'host', state: control.state() });
     this.startupMs = performance.now() - t0;
+    // Friends who came back from a map change before the match had loaded.
+    for (const link of this.waiting.splice(0)) this.admit(link);
 
     let events: GameEvent[] = [];
     const tickMs = 1000 / TICK_RATE;
     let next = performance.now();
     let statsAt = next;
+    let pingRounds = 0;
     let tickTotal = 0;
     let tickMax = 0;
     let aiTotal = 0;
@@ -204,16 +293,36 @@ export class LocalTransport implements Transport {
           lateTicks: 0,
         });
         tickTotal = tickMax = aiTotal = ticks = 0;
+        // Host game, every other second: each friend's ping (the host's own is 0) for everyone's scoreboard.
+        if (this.remotes.size && ++pingRounds % 2 === 0) {
+          const p = [me.slot, 0, ...[...this.remotes].flatMap((r) => (r.slot !== null && r.rtt !== undefined ? [r.slot, r.rtt] : []))];
+          this.announce?.({ t: 'pings', p });
+        }
       }
       this.timer = window.setTimeout(loop, Math.max(0, next - performance.now()));
     };
     loop();
   }
 
-  /** Let a friend into this match (Host game). Links arriving before the match has loaded are turned away. */
+  /** Let a friend into this match (Host game). Links arriving while the match loads wait for it (a map change brings everyone back at once). */
   accept(link: RemoteLink): void {
-    if (this.admit && !this.stopped) this.admit(link);
-    else link.close();
+    if (this.stopped) return link.close();
+    if (this.admit) return this.admit(link);
+    // Keep what they say meanwhile (their hello comes at once) for when they're let in.
+    const early: string[] = [];
+    let deliver: ((text: string) => void) | null = null;
+    link.onMessage((text) => (deliver ? deliver(text) : early.push(text)));
+    const held: RemoteLink = {
+      send: (text) => link.send(text),
+      close: () => link.close(),
+      onClose: (cb) => link.onClose(cb),
+      onMessage: (cb) => {
+        deliver = cb;
+        for (const text of early.splice(0)) cb(text);
+      },
+    };
+    this.waiting.push(held);
+    link.onClose(() => (this.waiting = this.waiting.filter((l) => l !== held)));
   }
 
   sendInputs(inputs: PlayerInput[]): void {
@@ -225,8 +334,12 @@ export class LocalTransport implements Transport {
   }
 
   close(): void {
-    for (const r of this.remotes) r.link.close();
+    if (this.stopped) return;
+    const links = [...this.remotes].map((r) => r.link);
+    if (this.departing) window.setTimeout(() => links.forEach((l) => l.close()), 3000);
+    else links.forEach((l) => l.close());
     this.remotes.clear();
+    for (const l of this.waiting.splice(0)) l.close();
     this.stopped = true;
     clearTimeout(this.timer);
     this.teardown?.();

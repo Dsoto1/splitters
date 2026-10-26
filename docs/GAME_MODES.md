@@ -384,8 +384,11 @@ Co-op maps can be played back to back:
   host and the dedicated server look it up and ignore anything else).
 - On a dedicated server the map changes CS-style: clients get a `travel`
   message, reconnect by themselves, and get their score and weapons back.
-  In Host game, friends are dropped at the change and rejoin with the new
-  code (the host's browser starts a new match).
+  In Host game, friends get `travel` too and rejoin the same join code by
+  themselves (the host's browser starts the next match on the same code).
+- **The host can change map any time** (pause menu → Match → Change map):
+  see HOSTING.md, Host controls. The same section changes the players or
+  team size and bot skill and style live, and restarts or ends the match.
 
 ## Playing
 
