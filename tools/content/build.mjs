@@ -413,7 +413,7 @@ const propCount = checkLocked(
   'props',
   (f) => propManifest.packs[f.source],
   propManifest.budgets,
-  (f, pack) => (pack.download ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
+  (f, pack) => (pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? [`built in code by ${pack.url}`, 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
   'node tools/content/prepare-props.mjs',
 );
 const skyManifest = JSON.parse(readFileSync(join(ROOT, 'content/skies.json'), 'utf8'));

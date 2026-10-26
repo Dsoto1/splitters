@@ -316,6 +316,12 @@ export class Scenario {
     return this.movers.carry(feet, this.host.tick, (i) => this.destructibles.get(i)?.alive !== false);
   }
 
+  /** Speed of a fast carried block (a train) running into a body standing at `feet` this tick (0: none). */
+  strike(feet: Vec3, radius: number, height: number): number {
+    if (!this.movers.defs.length) return 0;
+    return this.movers.strike(feet, radius, height, this.host.tick, (i) => this.destructibles.get(i)?.alive !== false);
+  }
+
   /** Lifts as bots see them: the ride (navmesh link) and where the platform's top is now. */
   liftViews(): { start: Vec3; end: Vec3; top: Vec3; half: number }[] {
     const tick = this.host.tick;

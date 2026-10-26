@@ -21,7 +21,7 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
-  'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear',
+  'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -822,7 +822,7 @@ function arsenal(): Record<string, WeaponDefinition> {
 }
 
 /** Thrown equipment (G): one kind carried at a time, with a count. */
-export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike', 'sandbag'] as const;
+export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike', 'sandbag', 'dynamite'] as const;
 export type ThrowableKind = (typeof THROWABLES)[number];
 export interface ThrowableDefinition {
   kind: ThrowableKind;
@@ -919,6 +919,14 @@ export const THROWABLE_DEFS: Record<ThrowableKind, ThrowableDefinition> = {
     throwIntervalTicks: 40,
     // Tossed a few metres ahead; where it lands it becomes a waist-high wall facing you.
     projectile: { speed: 7, gravity: 16, fuseSeconds: 1.5, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'sandbag', cover: { half: [0.95, 0.5, 0.3], health: 300 } },
+  },
+  // Style Pack 02 Frontier Dust: a lit stick on a long fuse, a big blast that throws people about.
+  dynamite: {
+    kind: 'dynamite',
+    displayName: 'Dynamite',
+    max: 3,
+    throwIntervalTicks: 50,
+    projectile: { speed: 14, gravity: 14, fuseSeconds: 3, splashRadius: 6, splashDamage: 140, splashEdgeDamage: 20, selfDamageScale: 0.9, visual: 'dynamite', bounce: 0.3, knockback: 12 },
   },
 };
 /** Weapon IDs used for kill credit of thrown equipment. */

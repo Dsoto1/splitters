@@ -134,7 +134,6 @@
           <button class="tab" data-ws="build" data-pane="advanced">Advanced</button>
           <button class="tab" data-ws="build" data-pane="terrain">Terrain</button>
           <button class="tab" data-ws="build" data-pane="props">Props</button>
-          <button class="tab" data-ws="build" data-pane="packs" title="Style Packs: tiles, props and gameplay pieces in one look">Packs</button>
           <button class="tab" data-ws="entities" data-pane="npcs" hidden>NPCs</button>
           <button class="tab" data-ws="entities" data-pane="entities" hidden>Gameplay</button>
           <button class="tab" data-ws="entities" data-pane="vehicles" hidden>Vehicles</button>
@@ -145,6 +144,11 @@
           <button class="tab" data-ws="environment" data-pane="terrain" hidden>Terrain</button>
         </div>
         <input id="ed-search" placeholder="Search tiles, props, NPCs…" autocomplete="off" />
+        <div id="ed-pack-row" class="ed-pack-row">
+          <select id="ed-pack" title="Style Pack: show only one pack's tiles, props, gameplay pieces, vehicles and pickups; mix packs freely"><option value="">All pieces</option></select>
+          <button id="ed-pack-theme" title="Use the pack's theme for this map" hidden>Use theme</button>
+        </div>
+        <div id="ed-pack-note" class="ed-note" hidden></div>
         <div class="ed-pane" data-pane="tiles">
           <div id="ed-tiles" class="tiles"></div>
         </div>
@@ -155,11 +159,6 @@
         </div>
         <div class="ed-pane" data-pane="props" hidden>
           <div id="ed-props" class="tiles"></div>
-        </div>
-        <div class="ed-pane" data-pane="packs" hidden>
-          <h3>Style Packs</h3>
-          <p class="ed-note">Each pack is a look: its theme, tiles, props and gameplay pieces together. Mix them freely; "Use this look" switches the map's theme.</p>
-          <div id="ed-packs" class="tiles"></div>
         </div>
         <div class="ed-pane" data-pane="plants" hidden>
           <h3>Scatter brush</h3>

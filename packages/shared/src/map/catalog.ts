@@ -7,6 +7,8 @@
  * ports auto-cap into solid walls.
  */
 
+import { boxPackTiles } from './packTiles.ts';
+
 /** Sides in clockwise order; rotating a tile by k quarter turns maps side i to (i + k) % 4. */
 export const SIDES = ['N', 'E', 'S', 'W'] as const;
 export type Side = (typeof SIDES)[number];
@@ -99,14 +101,17 @@ export const CEILING_LABELS: Record<Ceiling, string> = {
 export const CORNERS = ['square', 'posts', 'columns', 'chamfered', 'rounded'] as const;
 export type Corner = (typeof CORNERS)[number];
 /**
- * City facades (Quaternius' Downtown City MegaKit at 4/3 scale): the outside of
- * a room's walls dressed in brick, a shopfront ground floor or painted
- * plaster, with a cornice along the top and columns on the outer corners.
- * The Style Packs add our own: white station hull with round viewports
- * (Orbital Station), a glass curtain wall and a neon-lit block (Neon Megacity).
- * Purely visual: doorways and windows stay our own openings.
+ * Facades: the outside of a room's walls dressed, purely visual (doorways and
+ * windows stay our own openings). City facades (Quaternius' Downtown City
+ * MegaKit at 4/3 scale): brick, a shopfront ground floor or painted plaster,
+ * with a cornice along the top and columns on the outer corners. The Style
+ * Packs add their own: white station hull with round viewports (Orbital
+ * Station), a glass curtain wall and a neon-lit block (Neon Megacity), drawn
+ * from models; and boxes in library materials: bunker concrete or corrugated
+ * sheet (01 Military Compound), a plank false front with an awning and
+ * boardwalk, or adobe with roof beams (02 Frontier Dust).
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
@@ -117,7 +122,13 @@ export const FACADE_LABELS: Record<Facade, string> = {
   hull: 'Station hull (viewports)',
   glass: 'Glass tower',
   neon: 'Neon block',
+  concrete: 'Bunker concrete',
+  corrugated: 'Corrugated sheet',
+  false_front: 'Frontier false front',
+  adobe: 'Adobe',
 };
+/** Facades drawn from models: the city kit's, and the Orbital and Neon packs' own pieces (the rest are boxes drawn with the level). */
+export const MODEL_FACADES: ReadonlySet<Facade> = new Set(['brick', 'storefront', 'plaster', 'hull', 'glass', 'neon']);
 
 export const CORNER_LABELS: Record<Corner, string> = {
   square: 'Square',
@@ -139,6 +150,12 @@ export interface LocalBox {
   yaw?: number;
   /** What the box is built as (default `solid`; curved walls use `wall` so they take the walls' paint, `trim` is visual only). */
   kind?: 'solid' | 'wall' | 'floor' | 'trim' | 'prop';
+  /**
+   * A library material (and tint) on every face instead of the theme's paint:
+   * Style Pack pieces whose sandbags, corrugated roofs or rails should look
+   * the part in any theme.
+   */
+  surface?: { material: string; tint?: string | null };
 }
 
 export interface TileDefinition {
@@ -1157,6 +1174,8 @@ export const CORE_TILES: readonly TileDefinition[] = [
     extraFloors: [box(-4, -0.5, 1.5, 4, 0, 4)],
     solids: [rail(-4, 1.5, -1.6, 1.5), rail(1.6, 1.5, 4, 1.5)],
   },
+  // Style Pack pieces (01 Military Compound, 02 Frontier Dust): see packTiles.ts and editor/stylePacks.ts.
+  ...boxPackTiles(),
 ];
 
 // ---------------------------------------------------------------- buildings
@@ -1381,7 +1400,7 @@ function buildings(): TileDefinition[] {
 // ---------------------------------------------------------------- Style Packs (Set 1)
 
 /**
- * Tiles of the MapMaker Style Packs (see map/stylePacks.ts): 04 Orbital
+ * Tiles of the MapMaker Style Packs (see editor/stylePacks.ts): 04 Orbital
  * Station's hangar and reactor hall (our own geometry, painted by the theme)
  * and 07 Neon Megacity's towers (Kenney's City Kit (Commercial), CC0, fitted
  * to whole cells by tools/content/prepare-packs.mjs). Towers are solid blocks

@@ -1,5 +1,5 @@
 import { PLAYER } from '../sim/constants.ts';
-import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, type Corner, type EdgeStyle, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
+import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, type Corner, type EdgeStyle, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
@@ -404,9 +404,11 @@ const isRock = (def: { id: string; category: string }): boolean => def.category 
 
 export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   const out: WorldBox[] = [];
+  // Props riding a mover are drawn only (its blocks collide).
+  const carried = new Set(map.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
   for (const e of map.entities) {
     // Breakable props are not static: the scenario runtime owns their colliders (ask for them with `breakable`).
-    if (e.kind !== 'prop' || !e.solid || isBreakableProp(e) !== breakable) continue;
+    if (e.kind !== 'prop' || !e.solid || isBreakableProp(e) !== breakable || carried.has(e.id)) continue;
     const def = getProp(e.model);
     if (!def?.collision) continue;
     const [x, y, z] = e.position;
@@ -583,6 +585,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
 
   if (decor) {
     boxes.push(...facadeFrames(map, cells));
+    boxes.push(...packFacadeBoxes(map, cells));
     // Trim on curved pieces (it never collides).
     for (const placement of map.classicStructure.tiles) {
       const def = catalog.get(placement.tile);
@@ -899,12 +902,14 @@ function sideBox(side: Side, cx: number, cz: number, half: number, u0: number, u
 }
 
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
+  // Style Pack pieces keep their own material in any theme.
+  const surface = box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {};
   if (box.yaw) {
     // Turned boxes keep their size; the centre turns with the tile and the yaw adds the tile's quarter turns.
     const hx = (box.max[0] - box.min[0]) / 2;
     const hz = (box.max[2] - box.min[2]) / 2;
     const [mx, mz] = rotateXZ((box.min[0] + box.max[0]) / 2, (box.min[2] + box.max[2]) / 2, rotation);
-    return { min: [cx + mx - hx, baseY + box.min[1], cz + mz - hz], max: [cx + mx + hx, baseY + box.max[1], cz + mz + hz], kind, sourceId, yaw: box.yaw + (rotation % 4) * (Math.PI / 2) };
+    return { min: [cx + mx - hx, baseY + box.min[1], cz + mz - hz], max: [cx + mx + hx, baseY + box.max[1], cz + mz + hz], kind, sourceId, yaw: box.yaw + (rotation % 4) * (Math.PI / 2), ...surface };
   }
   const [ax, az] = rotateXZ(box.min[0], box.min[2], rotation);
   const [bx, bz] = rotateXZ(box.max[0], box.max[2], rotation);
@@ -913,6 +918,7 @@ function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: numb
     max: [cx + Math.max(ax, bx), baseY + box.max[1], cz + Math.max(az, bz)],
     kind,
     sourceId,
+    ...surface,
   };
 }
 
@@ -979,6 +985,7 @@ function facadeFrames(map: MapDocument, cells: Map<string, CellOccupant>): World
   for (const [key, occ] of cells) {
     const facade = occ.placement.options?.facade;
     if (!facade || facade === 'none') continue;
+    const depth = MODEL_FACADES.has(facade) ? FACADE_OUT : PACK_FACADES[facade as PackFacade].depth;
     const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
     for (const side of SIDES) {
       const style = resolveEdge(cells, gx, gy, gz, side);
@@ -991,30 +998,32 @@ function facadeFrames(map: MapDocument, cells: Map<string, CellOccupant>): World
         const top = Math.min(y1, levelHeight);
         const pieces: [number, number, number, number][] = [[u0 - f, u0, y0, top + f], [u1, u1 + f, y0, top + f], [u0, u1, top, top + f]];
         if (y0 > 0) pieces.push([u0, u1, y0 - f, y0]);
-        for (const [a, b, c, d] of pieces) out.push(sideBox(side, gx * cellSize, gy * cellSize, half, a, b, gz * levelHeight + c, gz * levelHeight + d, -base - FACADE_OUT, -base, occ.placement.id, 'trim'));
+        for (const [a, b, c, d] of pieces) out.push(sideBox(side, gx * cellSize, gy * cellSize, half, a, b, gz * levelHeight + c, gz * levelHeight + d, -base - depth - 0.02, -base, occ.placement.id, 'trim'));
       }
     }
   }
   return out;
 }
-const CITY_FACADES = 'city/facades.glb';
-const FACADE_SETS: Record<Exclude<Facade, 'none'>, { ground: string[]; upper: string[]; band: string; cornice: string; column: string; file: string }> = {
-  brick: { ground: ['Brick_Window_Trim_Single', 'Brick_BottomTrim'], upper: ['Brick_Window_Trim_Single', 'Brick_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Brick_Center', column: 'Trim_Column_Center', file: CITY_FACADES },
-  storefront: { ground: ['Metal_FullWindow', 'Metal_FirstFloor_Window'], upper: ['Brick_Window_Square_Single', 'Brick_Plain_3'], band: 'Metal_Plain_1', cornice: 'Cornice_Metal_Center', column: 'Metal_Column_Center', file: CITY_FACADES },
-  plaster: { ground: ['Trim_FirstFloor_Window_001', 'Trim_FirstFloor_Wall'], upper: ['Trim_Window', 'Trim_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Trim_Center', column: 'Trim_Column_Center', file: CITY_FACADES },
+const CITY_FACADE_FILE = 'city/facades.glb';
+/** Facades drawn from models (the city kit, and the Orbital and Neon packs' own pieces); the box-built Style Pack facades are packFacadeBoxes. */
+const FACADE_SETS: Partial<Record<Facade, { ground: string[]; upper: string[]; band: string; cornice: string; column: string; file: string }>> = {
+  brick: { ground: ['Brick_Window_Trim_Single', 'Brick_BottomTrim'], upper: ['Brick_Window_Trim_Single', 'Brick_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Brick_Center', column: 'Trim_Column_Center', file: CITY_FACADE_FILE },
+  storefront: { ground: ['Metal_FullWindow', 'Metal_FirstFloor_Window'], upper: ['Brick_Window_Square_Single', 'Brick_Plain_3'], band: 'Metal_Plain_1', cornice: 'Cornice_Metal_Center', column: 'Metal_Column_Center', file: CITY_FACADE_FILE },
+  plaster: { ground: ['Trim_FirstFloor_Window_001', 'Trim_FirstFloor_Wall'], upper: ['Trim_Window', 'Trim_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Trim_Center', column: 'Trim_Column_Center', file: CITY_FACADE_FILE },
   // Style Packs: our own pieces (tools/content/prepare-packs.mjs), on the same 8/3 m bays and 4 m storeys.
   hull: { ground: ['Hull_Viewport', 'Hull_Panel'], upper: ['Hull_Viewport', 'Hull_Panel'], band: 'Hull_Band', cornice: 'Hull_Cornice', column: 'Hull_Column', file: 'packs/facades_orbital.glb' },
   glass: { ground: ['Glass_Lobby', 'Glass_Pane'], upper: ['Glass_Lit', 'Glass_Pane'], band: 'Glass_Band', cornice: 'Glass_Cornice', column: 'Glass_Column', file: 'packs/facades_neon.glb' },
   neon: { ground: ['Neon_Shop', 'Neon_ShopWall'], upper: ['Neon_Window', 'Neon_Wall'], band: 'Neon_Band', cornice: 'Neon_Cornice', column: 'Neon_Column', file: 'packs/facades_neon.glb' },
 };
-const piecesOf = (f: (typeof FACADE_SETS)[keyof typeof FACADE_SETS]) => [...f.ground, ...f.upper, f.band, f.cornice, f.column];
+type FacadeSet = NonNullable<(typeof FACADE_SETS)[Facade]>;
+const piecesOf = (f: FacadeSet) => [...f.ground, ...f.upper, f.band, f.cornice, f.column];
 /** Every facade piece name in each facade file (a GLB holding a node per piece). */
-export const FACADE_FILES: Readonly<Record<string, readonly string[]>> = Object.values(FACADE_SETS).reduce<Record<string, string[]>>((acc, f) => {
+export const FACADE_FILES: Readonly<Record<string, readonly string[]>> = (Object.values(FACADE_SETS) as FacadeSet[]).reduce<Record<string, string[]>>((acc, f) => {
   acc[f.file] = [...new Set([...(acc[f.file] ?? []), ...piecesOf(f)])];
   return acc;
 }, {});
 /** Every city facade piece name (city/facades.glb holds exactly these). */
-export const FACADE_PIECES: readonly string[] = FACADE_FILES[CITY_FACADES]!;
+export const FACADE_PIECES: readonly string[] = FACADE_FILES[CITY_FACADE_FILE]!;
 
 /** Edges that get a facade on their outside (solid enough to dress). */
 const FACADE_WALLS = new Set<ResolvedEdge>(['wall', 'door', 'wide', 'window', 'windows', 'slit', 'high', 'tower', 'shutter', 'arch', 'broken', 'half']);
@@ -1048,6 +1057,8 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
     const facade = occ.placement.options?.facade;
     if (!facade || facade === 'none') continue;
     const set = FACADE_SETS[facade];
+    // Style Pack facades are boxes drawn with the level (packFacadeBoxes), not kit models.
+    if (!set) continue;
     const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
     const cx = gx * cellSize;
     const cz = gy * cellSize;
@@ -1091,6 +1102,105 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
       const ca = standOff(gx, gy, gz, sx > 0 ? 'E' : 'W') - FACADE_OUT / 2;
       const cb = standOff(gx, gy, gz, sz > 0 ? 'N' : 'S') - FACADE_OUT / 2;
       for (let y = 0; y < top - 1e-6; y += levelHeight) out.push({ piece: set.column, file: set.file, at: [cx + sx * (half + ca), baseY + y, cz + sz * (half + cb)], yaw: 0, sx: 1, sy: Math.min(levelHeight, top - y) / 4 });
+    }
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------- Style Pack facades
+
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe';
+/**
+ * Style Pack facades, built from boxes in library materials: the cladding
+ * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
+ * a plinth and cap (concrete), flashing (corrugated), a plank false front
+ * over the street door with an awning and boardwalk (false front), or roof
+ * beams poking through a rounded parapet (adobe).
+ */
+const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; depth: number }> = {
+  concrete: { skin: 'core.pbr_bunker_panels', tint: null, depth: 0.12 },
+  corrugated: { skin: 'core.pbr_grey_corrugated', tint: null, depth: 0.08 },
+  false_front: { skin: 'core.pbr_weathered_siding', tint: null, depth: 0.08 },
+  adobe: { skin: 'core.pbr_adobe', tint: null, depth: 0.16 },
+};
+/** Walls whose street face gets a frontier false front, awning and boardwalk. */
+const STREET_FACES = new Set<ResolvedEdge>(['door', 'wide', 'windows', 'shutter', 'arch']);
+
+/** The boxes of every Style Pack facade (visual only: trim with its own material). */
+function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): WorldBox[] {
+  const { cellSize, levelHeight } = map.classicStructure;
+  const half = cellSize / 2;
+  const out: WorldBox[] = [];
+  for (const [key, occ] of cells) {
+    const facade = occ.placement.options?.facade;
+    if (!facade || facade === 'none' || MODEL_FACADES.has(facade)) continue;
+    const look = PACK_FACADES[facade as PackFacade];
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    const cx = gx * cellSize;
+    const cz = gy * cellSize;
+    const baseY = gz * levelHeight;
+    const ground = !cells.has(`${gx},${gy},${gz - 1}`);
+    const roofed = cells.has(`${gx},${gy},${gz + 1}`);
+    const id = occ.placement.id;
+    const add = (side: Side, u0: number, u1: number, y0: number, y1: number, v0: number, v1: number, material: string, tint: string | null = null) => {
+      out.push({ ...sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, v0, v1, id, 'trim'), surface: { material, tint } });
+    };
+    const dressed = new Set<Side>();
+    for (const side of SIDES) {
+      const style = resolveEdge(cells, gx, gy, gz, side);
+      if (!FACADE_WALLS.has(style)) continue;
+      const [dx, dy] = SIDE_DIRS[side];
+      const there = cells.get(`${gx + dx},${gy + dy},${gz}`);
+      if (there && !there.def.open) continue;
+      dressed.add(side);
+      const base = there && resolveEdge(cells, gx + dx, gy + dy, gz, OPPOSITE[side]) !== 'none' ? TILE_DIMENSIONS.wallThickness : 0;
+      const out0 = -base - look.depth;
+      const segs = edgeSegments(style, half, levelHeight).filter((g) => g[4] >= 0.3);
+      for (const [u0, u1, y0, y1] of segs) add(side, u0, u1, y0, y1, out0, -base, look.skin, look.tint);
+      const top = Math.max(0, ...segs.map((g) => g[3]));
+      const full = top >= levelHeight - 1e-6;
+      switch (facade) {
+        case 'concrete':
+          if (ground) add(side, -half, half, 0, 0.45, out0 - 0.08, -base, 'core.pbr_concrete_dark');
+          if (!roofed && full) add(side, -half, half, top, top + 0.3, out0 - 0.12, TILE_DIMENSIONS.wallThickness, 'core.pbr_concrete');
+          break;
+        case 'corrugated':
+          if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.15, out0 - 0.06, TILE_DIMENSIONS.wallThickness, 'core.pbr_steel');
+          if (ground) add(side, -half, half, 0, 0.2, out0 - 0.03, -base, 'core.pbr_concrete');
+          break;
+        case 'false_front':
+          if (STREET_FACES.has(style)) {
+            // A tall plank front over the roofline, stepped up in the middle.
+            if (!roofed && full) {
+              add(side, -half, half, top, top + 1.4, out0 - 0.02, -base + 0.1, 'core.pbr_weathered_planks');
+              add(side, -half / 2, half / 2, top + 1.4, top + 2.0, out0 - 0.02, -base + 0.1, 'core.pbr_weathered_planks');
+              add(side, -half - 0.05, half + 0.05, top + 1.4, top + 1.52, out0 - 0.1, -base + 0.1, 'core.pbr_charred_wood');
+              add(side, -half / 2 - 0.05, half / 2 + 0.05, top + 2.0, top + 2.12, out0 - 0.1, -base + 0.1, 'core.pbr_charred_wood');
+            }
+            if (ground) {
+              // An awning over the street and a boardwalk under it.
+              add(side, -half, half, 3.05, 3.17, out0 - 1.8, out0, 'core.pbr_weathered_planks', '#b8a080');
+              for (const u of [-half + 0.2, half - 0.2]) add(side, u - 0.06, u + 0.06, 2.5, 3.05, out0 - 0.6, out0, 'core.pbr_charred_wood');
+              add(side, -half, half, 0, 0.06, out0 - 1.8, out0, 'core.pbr_weathered_planks');
+            }
+          } else if (!roofed && full) add(side, -half, half, top, top + 0.2, out0 - 0.06, TILE_DIMENSIONS.wallThickness, 'core.pbr_charred_wood');
+          break;
+        case 'adobe':
+          if (!roofed && full) {
+            add(side, -half, half, top, top + 0.4, out0, TILE_DIMENSIONS.wallThickness, look.skin);
+            // Vigas: roof beams poking out below the parapet.
+            for (let u = -half + 0.8; u < half - 0.4; u += 1.6) add(side, u - 0.11, u + 0.11, top - 0.75, top - 0.53, out0 - 0.55, out0, 'core.pbr_walnut', '#8a6a4a');
+          }
+          break;
+      }
+    }
+    // Fill the outer corners where two dressed sides meet.
+    for (const [a, c, sx, sz] of CELL_CORNERS) {
+      if (!dressed.has(a) || !dressed.has(c)) continue;
+      const d = look.depth;
+      const x0 = sx > 0 ? cx + half : cx - half - d;
+      const z0 = sz > 0 ? cz + half : cz - half - d;
+      out.push({ min: [x0, baseY, z0], max: [x0 + d, baseY + levelHeight, z0 + d], kind: 'trim', sourceId: id, surface: { material: look.skin, tint: look.tint } });
     }
   }
   return out;

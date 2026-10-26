@@ -127,7 +127,7 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
 export const DISC_COLORS: Record<DiscPower, string> = { fast: '#ffe14a', triple: '#5ff2ff', split: '#ff6ad0', freeze: '#bff0ff' };
 
 /** Grenade colour per kind on pickups. */
-const THROWABLE_COLORS: Partial<Record<string, string>> = { frag: '#5e6a46', sticky: '#5ad24a', incendiary: '#ff7a2a', toxic: '#a8ff3a', vortex: '#b07aff', holy: '#ffd24a', cluster: '#f5d33a', sheep: '#f4f2ea', airstrike: '#ff4a2a', sandbag: '#b39b6b' };
+const THROWABLE_COLORS: Partial<Record<string, string>> = { frag: '#5e6a46', sticky: '#5ad24a', incendiary: '#ff7a2a', toxic: '#a8ff3a', vortex: '#b07aff', holy: '#ffd24a', cluster: '#f5d33a', sheep: '#f4f2ea', airstrike: '#ff4a2a', sandbag: '#b39b6b', dynamite: '#b3261e' };
 
 /** Stripe colour per ammo type (pickups and MapMaker icons). */
 const AMMO_COLORS: Record<AmmoType, string> = { light: '#f2e28a', rifle: '#e8a33a', shells: '#d8483a', sniper: '#5ab4e6', explosive: '#7a8a3a', cells: '#7dffb0', fuel: '#ff7a2a', chem: '#9a5ae0' };

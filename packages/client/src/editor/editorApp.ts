@@ -39,6 +39,12 @@ import {
   MODE_LABELS,
   SCENARIO_PALETTE,
   STYLE_PACKS,
+  getStylePack,
+  stylePackHas,
+  type StylePack,
+  DOOR_STYLES,
+  DOOR_STYLE_LABELS,
+  type DoorStyle,
   TRAP_ACTIVATIONS,
   TRAP_KINDS,
   TRAP_SPECS,
@@ -262,6 +268,14 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'mover:lift': '<rect x="14" y="8" width="4" height="40" fill="#5a5f68"/><rect x="38" y="8" width="4" height="40" fill="#5a5f68"/><rect x="16" y="30" width="24" height="5" fill="#2ec4b6"/><path d="M28 12v12M23 17l5-5 5 5" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
   'mover:slider': '<rect x="10" y="12" width="20" height="32" fill="#8a8f98"/><path d="M34 28h14M43 23l5 5-5 5" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
   'mover:drawbridge': '<rect x="6" y="40" width="10" height="10" fill="#5a5f68"/><path d="M16 42L44 18" stroke="#8a6a42" stroke-width="5"/><path d="M40 44a20 20 0 0 0-6-18" stroke="#2ec4b6" stroke-width="2" fill="none"/>',
+  'door:blast': '<rect x="6" y="6" width="44" height="44" fill="#3a3f45"/><rect x="10" y="10" width="17" height="40" fill="#4c535b"/><rect x="29" y="10" width="17" height="40" fill="#4c535b"/><path d="M10 14h36v6H10zM10 40h36v6H10z" fill="#e3b021"/><path d="M14 14l4 6M22 14l4 6M30 14l4 6M38 14l4 6M14 40l4 6M22 40l4 6M30 40l4 6M38 40l4 6" stroke="#2a2d33" stroke-width="2"/>',
+  'door:saloon': '<rect x="8" y="16" width="19" height="22" fill="#8a5a32"/><rect x="29" y="16" width="19" height="22" fill="#8a5a32"/><path d="M11 21h13M11 26h13M11 31h13M32 21h13M32 26h13M32 31h13" stroke="#5e3c20" stroke-width="2"/><path d="M8 50V8M48 50V8" stroke="#5e3c20" stroke-width="3"/>',
+  'door:vault': '<rect x="6" y="6" width="44" height="44" fill="#41464c"/><circle cx="28" cy="28" r="19" fill="#8c939b"/><circle cx="28" cy="28" r="11" fill="#41464c"/><path d="M17 28h22M28 17v22M20 20l16 16M36 20L20 36" stroke="#b08d3a" stroke-width="2.5"/>',
+  'light:alarm': '<rect x="18" y="38" width="20" height="8" fill="#3a3f48"/><path d="M20 38v-12a8 8 0 0 1 16 0v12z" fill="#ff3020"/><path d="M10 18l6 4M46 18l-6 4M28 8v6" stroke="#ff7a5a" stroke-width="3"/>',
+  'block:barrier': '<path d="M6 44h44l-6-18H12z" fill="#9c9a94"/><path d="M12 26h32" stroke="#7c7a74" stroke-width="2"/><path d="M20 34l6 4 4-6M34 30l-3 6" stroke="#2a2d33" stroke-width="2" fill="none"/>',
+  'block:planks': '<rect x="8" y="8" width="40" height="40" fill="#b49467"/><path d="M8 18h40M8 28h40M8 38h40" stroke="#7a5a3a" stroke-width="2"/><path d="M22 20l6 6-4 6 6 6" stroke="#2a2d33" stroke-width="2" fill="none"/>',
+  'mover:minecart': '<path d="M6 48h44" stroke="#5a5f68" stroke-width="2"/><path d="M12 22h32l-4 18H16z" fill="#7a4a2e"/><circle cx="20" cy="42" r="4" fill="#3c3a38"/><circle cx="36" cy="42" r="4" fill="#3c3a38"/><path d="M16 20q6-6 10 0t10 0" fill="#6e6258"/><path d="M44 12h8M48 8l4 4-4 4" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
+  'mover:train': '<path d="M4 48h48" stroke="#5a5f68" stroke-width="2"/><rect x="26" y="18" width="16" height="22" fill="#b3261e"/><rect x="8" y="26" width="20" height="14" fill="#3a3a3a"/><rect x="12" y="16" width="5" height="10" fill="#3a3a3a"/><path d="M8 40l-4 6h8z" fill="#3a3a3a"/><circle cx="16" cy="43" r="4" fill="#2a2a2a"/><circle cx="34" cy="43" r="4" fill="#2a2a2a"/><path d="M14 12q-4-6 2-8" stroke="#c9ccd2" stroke-width="3" fill="none"/>',
   'water:swamp': '<rect x="6" y="24" width="44" height="22" fill="#5a6a32"/><path d="M14 24q2-10 4-14M38 24q-1-9 2-13" stroke="#6fbf4a" stroke-width="2" fill="none"/>',
   'block:field': '<rect x="6" y="8" width="5" height="40" fill="#2a2f3a"/><rect x="45" y="8" width="5" height="40" fill="#2a2f3a"/><rect x="11" y="10" width="34" height="36" fill="#5ad8ff" fill-opacity=".35"/><path d="M11 16h34M11 24h34M11 32h34M11 40h34" stroke="#5ad8ff" stroke-width="2"/>',
   'zone:lowgrav': '<rect x="10" y="10" width="36" height="38" fill="#8f7bff" fill-opacity=".15" stroke="#8f7bff" stroke-width="2" stroke-dasharray="4 3"/><circle cx="28" cy="24" r="6" fill="#d8e6ff"/><path d="M20 44v-8M28 44v-10M36 44v-8" stroke="#8fc4ff" stroke-width="2"/><path d="M17 38l3-4 3 4M25 36l3-4 3 4M33 38l3-4 3 4" stroke="#8fc4ff" stroke-width="2" fill="none"/>',
@@ -1513,7 +1527,6 @@ export class EditorApp {
 
     this.buildScatterPalette();
     this.buildPropPalette();
-    this.buildStylePackPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
     const roadBtn = document.createElement('button');
@@ -1558,9 +1571,62 @@ export class EditorApp {
       const q = (e.target as HTMLInputElement).value.trim().toLowerCase();
       // While searching, every group is shown so matches anywhere turn up.
       for (const p of document.querySelectorAll<HTMLElement>('#ed-palette .ed-pane')) p.hidden = q ? false : p.dataset.pane !== ($('ed-pal-tabs').querySelector<HTMLElement>('.tab.on')?.dataset.pane ?? 'tiles');
-      for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn, #ed-palette .mat-btn')) b.hidden = !!q && !(b.dataset.search ?? '').includes(q);
+      this.filterPalette();
     });
+    this.buildPackPicker();
     this.setTool({ kind: 'select' });
+  }
+
+  // ---------------------------------------------------------------- style packs
+
+  /** The Style Pack the palette is narrowed to (null: every piece). */
+  private stylePack: StylePack | null = null;
+
+  /** The palette's Style Pack picker: each pack narrows tiles, props, gameplay pieces, vehicles and pickups to its own. */
+  private buildPackPicker(): void {
+    const sel = $<HTMLSelectElement>('ed-pack');
+    for (const p of STYLE_PACKS) sel.append(new Option(`${p.number} ${p.displayName} (${p.style})`, p.id));
+    const themeBtn = $<HTMLButtonElement>('ed-pack-theme');
+    sel.addEventListener('change', () => {
+      this.stylePack = getStylePack(sel.value) ?? null;
+      themeBtn.hidden = !this.stylePack;
+      const pack = this.stylePack;
+      const note = $('ed-pack-note');
+      note.hidden = !pack;
+      note.textContent = pack ? `${pack.style}. ${pack.blurb} Dress rooms with the ${pack.facades.map((f) => FACADE_LABELS[f]).join(' or ')} facade in the tile inspector; demo map: ${pack.demo}.` : '';
+      themeBtn.textContent = pack ? `Use theme (${coreThemes.get(pack.themes[0]!)?.displayName ?? pack.themes[0]})` : 'Use theme';
+      // Gameplay pieces say what they are for in this pack.
+      for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn[data-tool^="scenario:"]')) {
+        if (b.dataset.baseTitle === undefined) b.dataset.baseTitle = b.title;
+        const why = pack?.gameplayNotes?.[b.dataset.tool!.slice('scenario:'.length) as ScenarioPaletteKey];
+        b.title = why ?? b.dataset.baseTitle;
+      }
+      this.filterPalette();
+    });
+    themeBtn.addEventListener('click', () => {
+      const theme = this.stylePack?.themes[0];
+      if (!theme || theme === this.doc.classicStructure.theme) return;
+      this.run('Set theme', setThemeCommand(this.doc, theme));
+      const picker = document.getElementById('ed-theme') as HTMLSelectElement | null;
+      if (picker) picker.value = theme;
+      this.toast(`Theme: ${coreThemes.get(theme)?.displayName ?? theme}`);
+    });
+  }
+
+  /** Show the palette entries matching the search and the chosen Style Pack; hide group headings left empty. */
+  private filterPalette(): void {
+    const q = $<HTMLInputElement>('ed-search').value.trim().toLowerCase();
+    const pack = this.stylePack;
+    for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn, #ed-palette .mat-btn')) {
+      const tool = b.dataset.tool;
+      const inPack = !pack || !tool || stylePackHas(pack, tool);
+      b.hidden = (!!q && !(b.dataset.search ?? '').includes(q)) || !inPack;
+    }
+    for (const head of document.querySelectorAll<HTMLElement>('#ed-palette .tile-cat')) {
+      let any = false;
+      for (let n = head.nextElementSibling; n && !n.classList.contains('tile-cat'); n = n.nextElementSibling) if (!(n as HTMLElement).hidden) any = true;
+      head.hidden = !any;
+    }
   }
 
   // ---------------------------------------------------------------- teams
@@ -2016,85 +2082,6 @@ export class EditorApp {
     }
   }
 
-  /**
-   * Style Packs (map/stylePacks.ts): per pack a heading, a button that switches
-   * the map to the pack's theme, then its gameplay pieces, tiles and props, the
-   * same tools as in the other tabs.
-   */
-  private buildStylePackPalette(): void {
-    const box = $('ed-packs');
-    const seen = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        const img = entry.target as HTMLImageElement;
-        seen.unobserve(img);
-        void this.thumbs.get(img.dataset.file!).then((src) => (img.src = src), () => undefined);
-      }
-    });
-    const sub = (text: string) => {
-      const h = document.createElement('div');
-      h.className = 'sub-h';
-      h.style.gridColumn = '1 / -1';
-      h.textContent = text;
-      return h;
-    };
-    for (const pack of STYLE_PACKS) {
-      const head = document.createElement('div');
-      head.className = 'tile-cat';
-      head.textContent = `${pack.number} ${pack.name}`;
-      head.title = pack.blurb;
-      const note = document.createElement('div');
-      note.className = 'ed-note';
-      note.style.gridColumn = '1 / -1';
-      note.textContent = `${pack.style}. ${pack.blurb}`;
-      const look = document.createElement('button');
-      look.className = 'tile-btn';
-      look.style.gridColumn = '1 / -1';
-      look.dataset.search = `${pack.name} ${pack.style} style pack theme look`.toLowerCase();
-      const theme = coreThemes.get(pack.theme);
-      look.textContent = `Use this look (${theme?.displayName ?? pack.theme} theme)`;
-      look.title = `Switch the map's theme to ${theme?.displayName ?? pack.theme}; dress rooms with the ${FACADE_LABELS[pack.room.facade]} facade in the tile inspector`;
-      look.addEventListener('click', () => {
-        if (this.doc.classicStructure.theme !== pack.theme) this.run('Change theme', setThemeCommand(this.doc, pack.theme));
-      });
-      box.append(head, note, look, sub('Gameplay'));
-      for (const g of pack.gameplay) {
-        const entry = SCENARIO_PALETTE.find((e) => e.key === g.key);
-        if (!entry) continue;
-        const b = document.createElement('button');
-        b.className = 'tile-btn';
-        b.dataset.tool = `scenario:${entry.key}`;
-        b.dataset.search = `${entry.label} ${entry.search} ${pack.name}`.toLowerCase();
-        b.title = g.note;
-        b.innerHTML = `<svg viewBox="0 0 56 56">${SCENARIO_ICONS[entry.key]}</svg>${escapeHtml(entry.label)}`;
-        b.addEventListener('click', () => this.setTool({ kind: 'scenario', key: entry.key }));
-        box.append(b);
-      }
-      box.append(sub('Tiles'));
-      for (const id of pack.tiles) {
-        const def = coreCatalog.get(id);
-        if (def) box.append(this.paletteButton(def));
-      }
-      box.append(sub('Props'));
-      for (const id of pack.props) {
-        const def = getProp(`prop.${id}`);
-        if (!def) continue;
-        const b = document.createElement('button');
-        b.className = 'tile-btn prop-btn';
-        b.dataset.tool = `prop:${def.id}`;
-        b.dataset.search = `${def.displayName} ${def.category} ${pack.name} prop`.toLowerCase();
-        b.title = `${def.displayName}\n${def.size.map((v) => v.toFixed(1)).join(' × ')} m${def.collision ? '' : ' · walk-through'}`;
-        const img = document.createElement('img');
-        img.alt = '';
-        img.dataset.file = def.file;
-        b.append(img, document.createTextNode(def.displayName));
-        b.addEventListener('click', () => this.setTool({ kind: 'prop', model: def.id }));
-        box.append(b);
-        seen.observe(img);
-      }
-    }
-  }
-
   private buildPaintPalette(): void {
     const mats = $('ed-materials');
     let category = '';
@@ -2514,6 +2501,7 @@ export class EditorApp {
         break;
       }
       case 'door':
+        choose('Look', DOOR_STYLES.map((s) => [s, DOOR_STYLE_LABELS[s]] as const), e.style ?? 'sliding', (v) => ({ style: v === 'sliding' ? undefined : (v as DoorStyle) }));
         toggle('Opens by itself', e.auto, (v) => ({ auto: v }));
         toggle('Locked', e.locked, (v) => ({ locked: v }));
         toggle('Starts open', e.startOpen, (v) => ({ startOpen: v }));
@@ -2834,7 +2822,33 @@ export class EditorApp {
           });
           el.append(row(entityLabel(doc, b), c));
         }
-        el.append(small('Points are metres from where the blocks are placed (point 1 is usually 0, 0, 0). Players standing on a carried block ride it; bots ride lifts that run by themselves. Logic: "Send mover", "Move mover to point", Enable/Disable (start, park), and the "Mover arrives" event.'));
+        // Props riding along (a locomotive, a mine cart): drawn only, so ticking one makes it walk-through.
+        const nearProps = doc.entities
+          .filter((o): o is Extract<MapEntity, { kind: 'prop' }> => o.kind === 'prop' && ((e.props ?? []).includes(o.id) || Math.hypot(o.position[0] - e.position[0], o.position[2] - e.position[2]) < 24))
+          .sort((a, b) => Math.hypot(a.position[0] - e.position[0], a.position[2] - e.position[2]) - Math.hypot(b.position[0] - e.position[0], b.position[2] - e.position[2]))
+          .slice(0, 16);
+        if (nearProps.length) {
+          const h3c = document.createElement('h3');
+          h3c.textContent = 'Props riding along';
+          el.append(h3c);
+          for (const pr of nearProps) {
+            const c = document.createElement('input');
+            c.type = 'checkbox';
+            c.checked = (e.props ?? []).includes(pr.id);
+            c.addEventListener('change', () => {
+              const list = c.checked ? [...(e.props ?? []), pr.id] : (e.props ?? []).filter((id) => id !== pr.id);
+              const after = [{ ...e, props: list.length ? list : undefined } as MapEntity];
+              const before: MapEntity[] = [e];
+              if (c.checked && pr.solid) {
+                before.push(pr);
+                after.push({ ...pr, solid: false });
+              }
+              this.run('Carry props', { kind: 'updateEntities', before, after });
+            });
+            el.append(row(`${getProp(pr.model)?.displayName ?? pr.model} (${pr.id})`, c));
+          }
+        }
+        el.append(small('Points are metres from where the blocks are placed (point 1 is usually 0, 0, 0). Players standing on a carried block ride it; bots ride lifts that run by themselves. Props riding along are drawn only (their blocks collide); blocks moving faster than 4 m/s run over whoever is in the way. Logic: "Send mover", "Move mover to point", Enable/Disable (start, park), and the "Mover arrives" event.'));
         break;
       }
       case 'spawn': {

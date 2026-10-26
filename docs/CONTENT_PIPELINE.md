@@ -78,20 +78,31 @@ folder can sit directly in it or one level down), and run:
 | Universal Base Characters, Modular Outfits – Fantasy, Universal Animation Library 1 + 2 | `node tools/content/prepare-characters.mjs <dir>` | `public/characters`, `content/characters.lock.json` |
 | Modular SciFi MegaKit (`Modular SciFi MegaKit[Standard]`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `sf_*` props in `public/props`, `content/props.lock.json`, `shared/src/content/props.generated.ts` |
 | Bestiary – Dungeon Monsters Kit (`Bestiary - Dungeon Monsters Kit[Standard]`) and the MegaKit's aliens | `node tools/content/prepare-creatures.mjs <dir>` | `public/creatures`, `content/creatures.lock.json` |
-| Kenney Modular Space Kit, Space Kit and City Kit Roads, each unzipped into a folder named after its zip (`kenney_modular-space-kit_1.0`, `kenney_space-kit`, `kenney_city-kit-roads`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the Style Pack `os_*` / `nc_*` kit props in `public/props`, `content/props.lock.json`, `shared/src/content/props.generated.ts` |
+| Kenney Modular Space Kit, Space Kit and City Kit Roads, each unzipped into a folder named after its zip (`kenney_modular-space-kit_1.0`, `kenney_space-kit`, `kenney_city-kit-roads`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the Orbital Station and Neon Megacity `os_*` / `nc_*` kit props in `public/props`, `content/props.lock.json`, `shared/src/content/props.generated.ts` |
+| Kenney Retro Urban Kit, City Kit (Industrial), Train Kit (`kenney_retro-urban-kit`, `kenney_city-kit-industrial_2.0`, `kenney_train-kit`, the zips from kenney.nl unzipped) | `node tools/content/prepare-props.mjs --downloads <dir>` | the Military Compound and Frontier Dust Kenney props in `public/props`, `content/props.lock.json`, `shared/src/content/props.generated.ts` |
 | Kenney City Kit (Commercial) (`kenney_city-kit-commercial_2.1`) | `node tools/content/prepare-packs.mjs --downloads <dir>` | the Neon Megacity towers in `public/packs`, `content/packs.lock.json` |
 
 Then `pnpm content:build` (provenance) and `pnpm content:check`. Without
 `--downloads` (or when a pack's folder is not in the downloads directory),
 `prepare-props.mjs` rebuilds the in-repo packs and keeps the kit props as
-built (checking them against the lock file). Never copy the raw downloads
-into the repo.
+built (checking them against the lock file), so a downloads directory holding
+only some of the kits rebuilds just those. Kits with an `images` folder in
+`content/props.json` (the MegaKit, and the Orbital and Neon Kenney kits) get
+their materials baked and shrunk; the other GLB kits are normalised as they
+are. Never copy the raw downloads into the repo. (Older Train Kit props whose
+source GLB is in `assets-src/kenney-train-kit/` keep building from there.)
 
-Pieces we make ourselves in code (the Style Pack props and facades) are
-written by `node tools/content/prepare-packs.mjs` on every run: the props'
-sources go to `assets-src/tiletrigger-stylepacks/` (then `prepare-props.mjs`
-builds them like any in-repo pack) and the facade files to `public/packs`.
-Their licence is `Owned`, which `content:check` accepts for our own work.
+Pieces we make ourselves in code are licence `Owned`, which `content:check`
+accepts for our own work:
+
+- `node tools/content/prepare-packs.mjs` writes the Orbital Station and Neon
+  Megacity props' sources to `assets-src/tiletrigger-stylepacks/` and the
+  facade files to `public/packs` on every run.
+- `node tools/content/build-kit-props.mjs` writes the Military Compound and
+  Frontier Dust props (flat colours, a few hundred to 2,700 triangles each) to
+  `assets-src/tiletrigger-kit/`.
+
+`prepare-props.mjs` then builds both like any in-repo pack.
 
 Kit props (`content/props.json` entries of a pack with a `download` folder)
 take extra fields: `src` may list several pieces merged in kit space (a wall

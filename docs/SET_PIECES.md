@@ -68,6 +68,17 @@ maps load unchanged:
 
 The Packs also add two mover presets, **Tower Elevator** (three storeys up)
 and **Sky Tram** (a car with a roof on posts, 24 m along its facing).
+### Style Pack movers and doors
+
+**Steam Train** and **Mine Cart** (Style Packs, see BUILDING_KIT.md) are
+movers whose blocks are hidden inside models that ride along
+(`MoverEntity.props`): a locomotive and two flatbeds running 60 m and back
+at 8 m/s, a mine cart running 12 m and back at 3 m/s. Stand on a carried
+block to ride. Movers set to **4 m/s or more** run over whoever their blocks
+sweep into (`Movers.strike`, the "was run over" kill), so stay off the line
+or ride on top. Doors take a look (*Blast*, *Saloon*, *Vault*); **Alarm Light**,
+**Destructible Barrier** and **Breakable Planks** are presets of lights and
+blocks.
 
 ## Liquids (Entities tab)
 
@@ -116,5 +127,6 @@ m.mover('mover_lift', [x, y, z], ['lift_1'], [[0, 0, 0], [0, 4, 0]], { speed: 2,
 m.field([x, y, z], 3, 3, { yaw: Math.PI / 2, id: 'field_lab', hidden: true }); // a force field across a doorway, raised by logic
 m.gravityZone([x, y, z], [15, 8, 15], 0.35); // a third of normal gravity
 m.light([x, y, z], { fixture: 'sign', text: 'NOODLES', color: '#ff4fd8', id: 'sign_1' }); // a neon sign logic can switch
+m.mover('train', [x, y, z], ['train_cab', 'train_deck'], [[0, 0, 0], [120, 0, 0]], { speed: 9, props: ['train_loco', 'train_flatbed'] }); // models ride along (not solid)
 m.pickup('jetpack', [x, y, z]);
 ```
