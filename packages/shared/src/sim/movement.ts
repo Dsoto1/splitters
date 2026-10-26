@@ -41,6 +41,8 @@ export interface PlayerInput {
   viewTick?: number;
   /** A quick message (1-QUICK_MESSAGES.length) or emote (EMOTE_DANCE) sent with this input. */
   say?: number;
+  /** Fort Wars Builder: the piece picked (FORT_PIECE_KINDS index) plus quarter turns × 16. */
+  build?: number;
 }
 
 /** Quick messages players can send (keys 1-6 while the quick-message menu is open). */
@@ -160,6 +162,7 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
     weapon: Math.max(0, Math.min(255, Math.trunc(finite(i.weapon ?? 0)))),
     ...(i.say ? { say: Math.max(0, Math.min(255, Math.trunc(finite(i.say)))) } : {}),
     viewTick: Math.max(0, Math.trunc(finite(i.viewTick ?? 0))),
+    ...(i.build ? { build: Math.max(0, Math.min(63, Math.trunc(finite(i.build)))) } : {}),
   };
 }
 

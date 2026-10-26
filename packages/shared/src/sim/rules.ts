@@ -2,10 +2,10 @@ import type { MapDocument } from '../map/schema.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.zombies';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.zombies' | 'core.forts';
 
 /** Every mode, in menu order. */
-export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.coop', 'core.zombies'];
+export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.forts', 'core.coop', 'core.zombies'];
 
 export const MODE_LABELS: Record<GameMode, string> = {
   'core.deathmatch': 'Deathmatch',
@@ -17,10 +17,11 @@ export const MODE_LABELS: Record<GameMode, string> = {
   'core.hostage': 'Hostage Rescue',
   'core.coop': 'Co-op',
   'core.zombies': 'Zombies',
+  'core.forts': 'Fort Wars',
 };
 
 /** Modes played in teams (factions from mapTeams). */
-export const isTeamMode = (mode: string): boolean => mode === 'core.tdm' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.elim' || mode === 'core.bomb' || mode === 'core.hostage';
+export const isTeamMode = (mode: string): boolean => mode === 'core.tdm' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.elim' || mode === 'core.bomb' || mode === 'core.hostage' || mode === 'core.forts';
 
 export const isGameMode = (mode: string): mode is GameMode => (GAME_MODES as readonly string[]).includes(mode);
 
@@ -70,6 +71,11 @@ export interface MatchRules {
   weapons?: 'normal' | 'spears';
   /** How much damage vehicles take: normal, tough (half) or off (they can't be destroyed except by falling off the map). Default normal. */
   vehicleDamage?: 'normal' | 'tough' | 'off';
+  /** Fort Wars: seconds of each build phase and each combat (Capture the Flag) phase, build/combat cycles, and build points per team per match. */
+  fortBuildSeconds?: number;
+  fortCombatSeconds?: number;
+  fortCycles?: number;
+  fortBudget?: number;
 }
 
 /** The gravity multiple and fall damage a match plays with: its own rules, else the map's, else normal / off. */
@@ -195,6 +201,22 @@ export const DEFAULT_BOMB_RULES: MatchRules = {
 /** Hostage Rescue: rounds; the first team brings hostages to a rescue zone, the second guards them. */
 export const DEFAULT_HOSTAGE_RULES: MatchRules = { ...DEFAULT_BOMB_RULES, mode: 'core.hostage' };
 
+/**
+ * Fort Wars (SourceForts-style): a build phase with the teams walled apart,
+ * each spending build points on pieces round its flag, then Capture the Flag
+ * over the forts; optionally several build/combat cycles. The mode ends the
+ * match itself after the last combat phase (no match time limit).
+ */
+export const DEFAULT_FORTS_RULES: MatchRules = {
+  ...DEFAULT_CTF_RULES,
+  mode: 'core.forts',
+  timeLimitSeconds: 0,
+  fortBuildSeconds: 150,
+  fortCombatSeconds: 300,
+  fortCycles: 1,
+  fortBudget: 120,
+};
+
 export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.deathmatch': DEFAULT_DEATHMATCH_RULES,
   'core.tdm': DEFAULT_TDM_RULES,
@@ -205,6 +227,7 @@ export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.bomb': DEFAULT_BOMB_RULES,
   'core.hostage': DEFAULT_HOSTAGE_RULES,
   'core.zombies': DEFAULT_ZOMBIES_RULES,
+  'core.forts': DEFAULT_FORTS_RULES,
 };
 
 /** Capture the Flag needs a flag base for each of its two teams. */
@@ -225,7 +248,7 @@ export const hasHostages = (map: MapDocument): boolean => map.entities.some((e) 
 export function mapCanRun(map: MapDocument, mode: GameMode): boolean {
   if (mode === 'core.bomb') return hasBombsites(map);
   if (mode === 'core.hostage') return hasHostages(map);
-  if (mode === 'core.ctf') return hasFlagBases(map);
+  if (mode === 'core.ctf' || mode === 'core.forts') return hasFlagBases(map);
   if (mode === 'core.koth') return hasHills(map);
   return true;
 }
@@ -239,6 +262,8 @@ export function playableModes(map: MapDocument): GameMode[] {
   const listed = map.metadata.supportedModes.filter(isGameMode).filter((m) => mapCanRun(map, m));
   const out = listed.length ? [...listed] : (['core.deathmatch'] as GameMode[]);
   if (hasFlagBases(map) && !out.includes('core.ctf')) out.push('core.ctf');
+  // Fort Wars builds round the same two flag bases, so any CTF map plays it.
+  if (hasFlagBases(map) && !out.includes('core.forts')) out.push('core.forts');
   if (hasHills(map) && !out.includes('core.koth')) out.push('core.koth');
   if (out.includes('core.tdm') && !out.includes('core.elim')) out.push('core.elim');
   if (hasBombsites(map) && !out.includes('core.bomb')) out.push('core.bomb');
@@ -251,7 +276,7 @@ export function playableModes(map: MapDocument): GameMode[] {
 /** Default rules for a mode on a map (team modes take the map's recommended teams; CTF is always two). */
 export function rulesForMode(map: MapDocument, mode: GameMode): MatchRules {
   const base = DEFAULT_RULES[mode];
-  if (mode === 'core.ctf' || mode === 'core.bomb' || mode === 'core.hostage') return { ...base, teamSizes: [...(map.teamSetup?.sizes.slice(0, 2) ?? [8, 8])] };
+  if (mode === 'core.ctf' || mode === 'core.forts' || mode === 'core.bomb' || mode === 'core.hostage') return { ...base, teamSizes: [...(map.teamSetup?.sizes.slice(0, 2) ?? [8, 8])] };
   if (isTeamMode(mode) && map.teamSetup) return { ...base, teamSizes: [...map.teamSetup.sizes] };
   return base;
 }

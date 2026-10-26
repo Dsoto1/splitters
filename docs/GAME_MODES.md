@@ -8,6 +8,7 @@
 | King of the Hill | `core.koth` | 2–8 | seconds on the hill (default 120) | one or more **Hills** |
 | Elimination | `core.elim` | 2–8 | rounds won (default 5) | what TDM needs |
 | Co-op | `core.coop` | players vs NPCs | none (logic ends it) | NPC encounters |
+| Fort Wars | `core.forts` | 2 | captures (default 3) | a **Flag Base** per team (any CTF map) |
 
 Teams, team sizes and team spawns work the same in every team mode (see
 [TEAMS.md](TEAMS.md)). A team spawns on its own spawn points if the map has
@@ -40,6 +41,82 @@ and the higher team score wins.
   in slot order (attack, defend, attack, escort). Defenders and escorts, plus
   any bot within 22 m, chase an enemy carrier or return a dropped flag. The
   carrier runs home and only reacts to enemies within 4 m.
+
+## Fort Wars
+
+SourceForts-style: build a fort round your flag, then Capture the Flag over
+the forts (`sim/modes/forts.ts`, pieces and placement rules in
+`sim/forts.ts`). Plays on any map with a flag base for both teams.
+
+- **Phases.** A build phase (default 2.5 min), then a combat phase of CTF
+  (default 5 min); optionally several build/combat **cycles** (default 1).
+  Captures carry over between cycles; the match ends after the last combat
+  phase (or at the capture limit). Everyone respawns at each phase change.
+- **Build phase.** A force field (`FORT_BARRIER_HALF`, a tall thin wall
+  through the midpoint between the flag bases, square to the line between
+  them) splits the map; nobody can hurt anybody, flags can't be taken, and
+  anyone on the wrong half is put back by their flag. Everyone holds only
+  the **Builder** (`core.builder`).
+- **The Builder.** Number keys 1-8 or the wheel pick a piece, **R** turns it
+  a quarter, **LMB** places, **RMB** (aim / alt fire) picks up one of your
+  team's pieces for a full refund. A ghost shows where it goes: green, or
+  red with the reason. The input carries the pick as `build` (piece + 16 ×
+  turns); the server works out the spot from your aim (`fortAimPlacement`).
+- **Pieces** (cost, health): Block 1×1×1 (2, 160), Plank 2×0.25×1 (1, 90),
+  Wall 2×2×0.5 (4, 320), Metal wall (8, 650), Ramp 2 wide rising 1 m over
+  2 m (3, 220), Stairs 1 wide rising 2 m over 2 m (3, 220), Crate 1.5 m
+  (3, 300, metal), Sandbags 2×1×0.5 (2, 300). Pieces turn in quarter turns
+  and their edges sit on a **0.5 m grid**; ramps and stairs are built from
+  low steps, so they walk like stairs. No team doors (yet).
+- **Rules** (`fortPlacementProblem`, shared by server, client ghost and
+  bots): on your own half and at least 1 m from the barrier, at least 3 m
+  from either flag base and 1.2 m from spawn points, not into a player,
+  another piece or the level (a little sinking into uneven ground is fine),
+  something underneath, enough build points, and at most 80 pieces per team.
+- **Build points** (default 120 per team): what your standing pieces cost
+  comes off the budget, so picking up refunds and each new build phase lets
+  you rebuild what was broken.
+- **Combat.** The barrier drops and the Builder goes. Pieces take damage:
+  bullets and blades chip them (×0.5 wood, ×0.15 metal, ×0.3 sandbags),
+  explosions smash them (×2.5, ×1.3, ×1.6). Your own team's shots don't
+  hurt your pieces (unless friendly fire is on). Pieces darken as they're
+  hurt and burst into splinters when they break.
+- **Networking.** Pieces ride in the mode snapshot: `md.fo` (phase, seconds
+  left, cycle, cycles, points left and piece count per team, budget) every
+  snapshot, and `md.fp` (every piece) only when pieces change (health at
+  most twice a second) plus every 60th snapshot. The client puts every
+  piece (and the barrier, during the build phase) into its prediction
+  physics, so walking into a wall predicts exactly like on the server.
+- **Bots** (`sim/modes/fortsBots.ts`). During the build phase each team's
+  bots work through a template laid out round their flag (facing the enemy):
+  a front wall with a gap, sandbags out in front, a metal wall inside, side
+  walls, a two-high block tower with stairs up to it, a crate. Each bot
+  claims the next piece, walks to it and places it through the same rules
+  (skipping what doesn't fit). In combat they play CTF. On maps up to about
+  150 × 150 m the navmesh is rebuilt with the forts in when combat starts,
+  so they path round walls and through gaps; Recast rebuilds the whole mesh,
+  which takes seconds on big terrain maps, so those keep their mesh. A bot
+  whose way ahead is shut by an enemy piece (and isn't fighting, or has been
+  stuck a second) shoots it down, picking an explosive weapon if it has one;
+  one stuck on its own team's piece sidesteps.
+- **Arcade:** Fort Wars appears on every map with flag bases. The panel
+  sets the build and combat minutes, cycles and build points (the match
+  time limit doesn't apply). Quick start:
+  `?offline=fort_meadow&gamemode=core.forts`. Dedicated server:
+  `MODE=core.forts MAP=maps/fort_meadow.json pnpm dev:server`.
+- **HUD:** the Fort Wars panel above the weapon bar shows the phase and its
+  clock, your build points, both teams' piece counts and, with the Builder
+  out, the piece picker with costs, why the ghost can't go where it is, and
+  the keys. The flags show as in CTF.
+- **Maps.** **Fort Meadow** (`maps/fort_meadow.json`, built by
+  `packages/server/src/tools/maps/fort_meadow.ts`) is made for it: a wide,
+  rolling meadow with the bases 84 m apart on flat greens, a low ridge with
+  two saddles across the middle and knolls on the flanks. Of the other CTF
+  maps, the open ones work well: in a 40 s build test bots put up most of
+  their template on St John's, Twin Spires, Canyon, Elm Grove and Ridge
+  Camp. Bases indoors or on narrow ground leave little room (Temple, Step
+  Temple, Void Yard, Bottling), and the huge maps (Blood Gulch, Frost Basin)
+  keep their bases on structures and are too big for the navmesh rebuild.
 
 ## King of the Hill
 

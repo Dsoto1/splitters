@@ -87,6 +87,17 @@ function proceduralModel(scene: Scene, path: string): AssetContainer {
     box('head', [0.06, 0.012, 0.2], [0, 0, 1.18], iron);
     box('tip', [0.03, 0.012, 0.08], [0, 0, 1.31], iron);
   }
+  if (path === 'procedural/builder') {
+    // Fort Wars Builder: a claw hammer with a steel head and a taped wooden handle, held like a pistol.
+    const wood = material('wood', '#9a6b3f');
+    const steel = material('steel', '#9aa3ab', 0.08);
+    const tape = material('tape', '#d8a630', 0.2);
+    box('handle', [0.035, 0.035, 0.34], [0, 0, 0.05], wood);
+    box('grip', [0.042, 0.042, 0.12], [0, 0, -0.06], tape);
+    box('head', [0.05, 0.05, 0.16], [0, 0.03, 0.23], steel);
+    box('face', [0.06, 0.06, 0.03], [0, 0.03, 0.31], steel);
+    box('claw', [0.03, 0.025, 0.08], [0, 0.07, 0.16], steel);
+  }
   if (path === 'procedural/medkit') {
     // A white first-aid case with a red cross and a dark handle, held like a pistol (barrel along +z).
     const white = material('white', '#eeeeea');

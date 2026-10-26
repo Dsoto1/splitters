@@ -157,7 +157,8 @@ describe('extended arsenal', () => {
     for (const w of WEAPONS_BY_SLOT) {
       expect(models.has(w.view.model) || w.view.model.startsWith('procedural/'), `${w.id} model`).toBe(true);
       expect(weaponByCode(weaponCode(w))).toBe(w);
-      if (w.id !== 'core.knife' && w.id !== 'core.pistol') expect(CORE_ITEMS.some((i) => i.effect.kind === 'weapon' && i.effect.weapon === w.id), `${w.id} pickup`).toBe(true);
+      // The Fort Wars Builder is handed out by the mode, never picked up.
+      if (w.id !== 'core.knife' && w.id !== 'core.pistol' && w.id !== 'core.builder') expect(CORE_ITEMS.some((i) => i.effect.kind === 'weapon' && i.effect.weapon === w.id), `${w.id} pickup`).toBe(true);
       expect(w.slot).toBeGreaterThanOrEqual(1);
       expect(w.slot).toBeLessThanOrEqual(9);
       expect(w.fireIntervalTicks).toBeGreaterThan(0);

@@ -21,7 +21,7 @@ const SHARDS = [
   ['maps', 'online', 'webgpu'],
   ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby'],
   ['vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'zombies'],
-  ['setpieces', 'physicsfx', 'teams', 'ctf', 'arsenal', 'vehicles'],
+  ['setpieces', 'physicsfx', 'teams', 'ctf', 'forts', 'arsenal', 'vehicles'],
 ];
 const T = (ms) => ms * SLOW;
 let failures = 0;
@@ -805,6 +805,65 @@ async function ctfFlow(browser) {
   await page.context().close();
 }
 
+async function fortsFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=fort_meadow&gamemode=core.forts`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__match && window.__cs.forts?.fo, null, { timeout: T(60000) });
+  await page.waitForTimeout(1000);
+  const start = await page.evaluate(() => ({
+    label: document.getElementById('mode-label')?.textContent,
+    held: window.__cs.local.weapon?.id,
+    barrier: window.__cs.forts.barrierUp,
+    panel: document.querySelector('#fort-panel .fp-phase')?.textContent ?? '',
+    picker: document.querySelectorAll('#fort-panel .fp-pieces span').length,
+    flags: window.__cs.mode?.flagCount,
+  }));
+  check(start.label === 'Fort Wars', `the match runs Fort Wars (${start.label})`);
+  check(start.held === 'core.builder' && start.barrier, `build phase: Builder in hand, barrier up (${JSON.stringify(start)})`);
+  check(/Build phase/i.test(start.panel) && start.picker === 8 && start.flags === 2, `the panel shows the phase clock and the piece picker, flags are drawn (${JSON.stringify(start)})`);
+  // Stand on open ground on our side, look down at the grass ahead, pick a metal wall (4) and click.
+  await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    me.health = 1e6;
+    const f = m.mode;
+    const t = f.teamIndex(me.faction);
+    const home = f.bases[t];
+    const s = t === 0 ? 1 : -1;
+    const pos = { x: home.x + 14, y: home.y + 0.5, z: home.z + f.midfield.dir.z * s * 8 };
+    me.move = { pos, velY: 0, grounded: false };
+    window.__cs.input.yaw = Math.atan2(f.midfield.dir.x * s, f.midfield.dir.z * s);
+    window.__cs.input.pitch = -0.55;
+    window.__cs.forts.pick(3);
+    document.getElementById('pause').style.visibility = 'hidden';
+  });
+  await page.waitForFunction(() => window.__cs.forts.why === '' && window.__cs.view.scene.transformNodes.some((n) => n.name === 'fort_ghost' && n.isEnabled()), null, { timeout: T(10000) }).catch(() => {});
+  const ghost = await page.evaluate(() => ({ why: window.__cs.forts.why, ghost: window.__cs.view.scene.transformNodes.some((n) => n.name === 'fort_ghost' && n.isEnabled()) }));
+  check(ghost.ghost && ghost.why === '', `the ghost shows where the wall will go, and it can (${JSON.stringify(ghost)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/forts-build.png`, timeout: T(60000) }).catch(() => {});
+  await page.evaluate(() => (window.__autoInput = { once: 2 }));
+  await page.waitForFunction(() => window.__match.mode.pieces.some((p) => p.by === window.__cs.slot) && [...window.__cs.forts.pieces.values()].some((p) => p.kind === 'metal_wall'), null, { timeout: T(8000) }).catch(() => {});
+  const placed = await page.evaluate(() => ({
+    server: window.__match.mode.pieces.filter((p) => p.by === window.__cs.slot).map((p) => p.kind),
+    client: [...window.__cs.forts.pieces.values()].length,
+    drawn: window.__cs.view.scene.transformNodes.filter((n) => /^fort_\d+$/.test(n.name)).length,
+  }));
+  check(placed.server.includes('metal_wall') && placed.client >= 1 && placed.drawn === placed.client, `clicking builds the piece, and every client piece is drawn (${JSON.stringify(placed)})`);
+  // Skip to the fight: the barrier drops and the Builder goes.
+  await page.evaluate(() => {
+    window.__autoInput = undefined;
+    window.__match.mode.phaseEnd = window.__match.tick + 2;
+  });
+  await page.waitForFunction(() => !window.__cs.forts.barrierUp && window.__cs.local.weapon?.id !== 'core.builder' && /Combat/i.test(document.querySelector('#fort-panel .fp-phase')?.textContent ?? ''), null, { timeout: T(10000) }).catch(() => {});
+  const combat = await page.evaluate(() => ({ barrier: window.__cs.forts.barrierUp, held: window.__cs.local.weapon?.id, panel: document.querySelector('#fort-panel .fp-phase')?.textContent ?? '', picker: document.querySelectorAll('#fort-panel .fp-pieces span').length }));
+  check(!combat.barrier && combat.held !== 'core.builder' && /Combat/i.test(combat.panel) && combat.picker === 0, `combat: barrier down, Builder put away (${JSON.stringify(combat)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/forts-combat.png`, timeout: T(60000) }).catch(() => {});
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function arsenalFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
@@ -1262,7 +1321,7 @@ try {
   const shard = process.env.E2E_SHARD ? SHARDS[Number(process.env.E2E_SHARD.split('/')[0]) - 1] : null;
   if (process.env.E2E_SHARD && !shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
   const only = process.env.E2E_ONLY?.split(',') ?? shard;
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, zombies: zombiesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, zombies: zombiesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
   // Every flow belongs to exactly one shard, so CI's parallel jobs between them run everything.
   const sharded = SHARDS.flat();
   const lost = Object.keys(flows).filter((f) => sharded.filter((x) => x === f).length !== 1);

@@ -44,6 +44,7 @@ export function parseClientMessage(text: string): ClientMessage | null {
         if (typeof r.weapon === 'number') input.weapon = r.weapon;
         if (typeof r.viewTick === 'number') input.viewTick = r.viewTick;
         if (typeof r.say === 'number') input.say = r.say;
+        if (typeof r.build === 'number') input.build = r.build;
         inputs.push(input);
       }
       return { t: 'input', inputs };

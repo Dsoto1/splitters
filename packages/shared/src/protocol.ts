@@ -249,6 +249,16 @@ export interface ModeSnapshot {
   bm?: [number, number, number, number, number, number, number, number, number];
   /** Hostage Rescue: per hostage [x, y, z, yaw, state (HOSTAGE_*), following slot (-1 none)]. */
   hg?: [number, number, number, number, number, number][];
+  /**
+   * Fort Wars: [phase (FORT_BUILD / FORT_COMBAT), seconds left in it, cycle (1-based), cycles,
+   * points left per team (2), pieces per team (2), budget per team].
+   */
+  fo?: [number, number, number, number, number, number, number, number, number];
+  /**
+   * Fort Wars pieces as [id, kind (FORT_PIECE_KINDS index), team index, x, y, z (footprint centre, bottom), quarter turns, health %].
+   * Sent when the pieces change (and every few seconds); absent means unchanged.
+   */
+  fp?: [number, number, number, number, number, number, number, number][];
 }
 
 export const HOSTAGE_WAITING = 0;

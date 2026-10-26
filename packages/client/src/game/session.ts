@@ -12,6 +12,7 @@ import {
   viewDirection,
   type ZoneSnapshot,
   BUTTON_FIRE,
+  BUTTON_RELOAD,
   PhysicsWorld,
   SPEED_BOOST,
   TICK_DT,
@@ -65,6 +66,7 @@ import { MountState } from './mountState.ts';
 import { LocalTransport } from './localTransport.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
+import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import { LobbyAdvertiser, builtHub, hubSetting } from './hub.ts';
 import { statusColor } from './arsenalVisuals.ts';
@@ -176,6 +178,8 @@ export class GameSession {
   private lastWeapon = 0;
   /** Capture the Flag, King of the Hill, Elimination: flags, hill, status line, markers, announcer. */
   private modeHud: ModeHud | null = null;
+  /** Fort Wars: pieces, the build-phase barrier, the Builder's ghost and panel. */
+  private forts: FortsClient | null = null;
 
   // Frame timing / instrumentation.
   private acc = 0;
@@ -479,6 +483,7 @@ export class GameSession {
     this.input.dispose();
     this.opts.audio.stopAll();
     this.modeHud?.dispose();
+    this.forts?.dispose();
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
@@ -507,7 +512,7 @@ export class GameSession {
         const geometry = buildMapGeometry(loaded.map);
         this.map = loaded.map;
         this.view.buildMap(loaded.map, geometry);
-        if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
+        if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
@@ -520,11 +525,12 @@ export class GameSession {
         this.scenario = new ScenarioState(loaded.map, physics);
         this.mounts = new MountState(loaded.map, physics);
         this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7));
+        if (teams && msg.rules.mode === 'core.forts') this.forts = new FortsClient(this.view, physics, loaded.map, teams, () => this.hud.team(this.slot)?.id ?? null, this.opts.audio);
         this.scenario.apply(msg.sc);
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, phase: () => this.phase };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase };
         this.opts.onReady?.();
         void this.prepareMatch();
         break;
@@ -561,6 +567,7 @@ export class GameSession {
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         this.taken = new Set(msg.pk);
         this.modeHud?.snapshot(msg.md);
+        this.forts?.apply(msg.md);
         this.zombieHud(msg.md?.zb);
         // Door and crate colliders first, so reconciliation replays against the same world as the server.
         this.scenario?.apply(msg.sc);
@@ -900,6 +907,14 @@ export class GameSession {
     this.last = now;
     const local = this.local;
 
+    // Fort Wars: with the Builder out in the build phase, number keys and the wheel pick pieces (R turns them).
+    const building = !!local && !!this.forts?.holding(local.held, local.weapon?.id);
+    if (local && building) {
+      const pick = this.input.takeSlotRequest();
+      if (pick) this.forts!.pick(pick - 1);
+      const steps = this.input.takeWheel();
+      if (steps) this.forts!.cycle(steps);
+    }
     if (local) {
       // Weapon selection: a number key picks that slot (again to cycle the weapons in it); the wheel steps through everything owned.
       const key = this.input.takeSlotRequest();
@@ -933,9 +948,14 @@ export class GameSession {
           sample.right = 0;
           sample.buttons = 0;
         }
+        if (building && sample.buttons & BUTTON_RELOAD) {
+          this.forts!.rotate();
+          sample.buttons &= ~BUTTON_RELOAD;
+        }
         moving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
         const { input: cmd, shot } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
+        if (this.forts) cmd.build = this.forts.code;
         this.outbox.push(cmd);
         this.sfx.localStep(local, before, local.speedTicks > 0 ? SPEED_BOOST : 1);
         const ammo = local.inventory.get(local.held);
@@ -1089,6 +1109,7 @@ export class GameSession {
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
+    this.forts?.frame(local?.alive ? local.eye : null, this.input.yaw, this.input.pitch, !!local?.alive && building, poses.filter((p) => p.slot !== this.slot), local?.alive ? local.state.pos : null);
     // Third person: your own character drawn where prediction has you (not the delayed server copy).
     const self = this.thirdPerson && !this.tpClose && local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
     if (self && local) Object.assign(self, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held });

@@ -187,7 +187,7 @@ export function armsLookFor(look: string): string {
  * else as many as the rules' team sizes), renamed and recoloured by the rules.
  */
 export function matchTeams(map: MapDocument, rules: { mode: string; teamSizes?: number[]; teamNames?: string[]; teamColors?: string[] }): readonly Faction[] {
-  const two = rules.mode === 'core.ctf' || rules.mode === 'core.bomb' || rules.mode === 'core.hostage';
+  const two = rules.mode === 'core.ctf' || rules.mode === 'core.forts' || rules.mode === 'core.bomb' || rules.mode === 'core.hostage';
   return mapTeams(map, two ? 2 : (rules.teamSizes?.length ?? 2)).map((t, i) => ({
     ...t,
     name: rules.teamNames?.[i]?.trim().slice(0, 24) || t.name,
