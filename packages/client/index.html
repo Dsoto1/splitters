@@ -74,25 +74,59 @@
     </div>
     <div id="menu" hidden></div>
     <div id="pause" hidden>
-      <h2 class="pause-title">Paused</h2>
-      <button id="resume" class="primary">Resume</button>
-      <button id="respawn-now" title="Stuck? Die here and respawn (counts as a suicide). Hotkey: K">Respawn</button>
-      <button id="host-game" hidden title="Let friends join this match from their browsers with a code">Host game (invite friends)</button>
-      <div id="host-public" hidden>
-        <label class="volume" title="Anyone can find and join this match from Online → Game browser">List in the game browser <input id="host-list" type="checkbox" /></label>
-        <input id="host-name" maxlength="40" placeholder="Server name" />
-        <p class="hint" id="host-public-status"></p>
+      <div class="pause-card panel" role="dialog" aria-labelledby="pause-heading">
+        <header class="pause-head">
+          <h2 class="pause-title" id="pause-heading">Paused</h2>
+          <p id="pause-context" class="pause-context"></p>
+        </header>
+        <nav class="tabs pause-tabs" role="tablist" aria-label="Pause menu">
+          <button class="tab on" data-tab="match" role="tab" aria-selected="true">Match</button>
+          <button class="tab" data-tab="host" role="tab" hidden>Host</button>
+          <button class="tab" data-tab="settings" role="tab">Settings</button>
+        </nav>
+        <div class="pause-body">
+          <section class="pause-sec" data-sec="match">
+            <div class="pause-actions">
+              <button id="resume" class="primary">Resume</button>
+              <button id="respawn-now" title="Stuck? Die here and respawn (counts as a suicide). Hotkey: K">Respawn</button>
+              <button id="pause-class" hidden title="Pick your class for your next spawn (L)">Change class</button>
+            </div>
+            <div id="pause-online-state" class="pause-note" hidden></div>
+            <div id="pause-scores" class="pause-scores"></div>
+            <div id="pause-admin-slot"></div>
+          </section>
+          <section class="pause-sec" data-sec="host" hidden>
+            <h4 class="pause-h">Online</h4>
+            <div class="pause-online">
+              <button id="go-online" class="primary" hidden title="Restart this match and list it in the game browser">Go online</button>
+              <button id="go-offline" hidden title="Disconnect friends and stop listing this match">Go offline</button>
+              <p class="hint" id="online-note" hidden></p>
+              <button id="host-game" hidden title="Let friends join this match from their browsers with a code (not listed)">Host with code only (not listed)</button>
+              <div id="host-public" hidden>
+                <label class="pause-row" title="Anyone can find and join this match from Online → Game browser"><span>List in the game browser</span> <input id="host-list" type="checkbox" /></label>
+                <input id="host-name" maxlength="40" placeholder="Server name" aria-label="Server name" />
+                <p class="hint" id="host-public-status"></p>
+              </div>
+              <div id="host-info" hidden></div>
+            </div>
+            <div id="pause-host-slot"></div>
+          </section>
+          <section class="pause-sec" data-sec="settings" hidden>
+            <label class="pause-row"><span>Volume</span> <input id="volume" type="range" min="0" max="100" step="5" /></label>
+            <label class="pause-row"><span>Mouse</span> <input id="mouse-sens" type="range" min="0.2" max="4" step="0.1" /> <output id="mouse-sens-val"></output></label>
+            <label class="pause-row"><span>Invert look</span> <input id="mouse-invert" type="checkbox" /></label>
+            <label class="pause-row"><span>Aim assist</span> <input id="aim-assist" type="checkbox" /></label>
+            <label class="pause-row"><span>Blood</span> <input id="blood-toggle" type="checkbox" checked /></label>
+            <label class="pause-row"><span>Bodies</span> <select id="bodies-setting"><option value="stay">Stay all match</option><option value="fade">Fade after 30 s</option></select></label>
+            <div class="pause-row"><span>Screen</span> <button id="pause-fullscreen">Fullscreen</button></div>
+            <p class="hint">Graphics, crosshair and keys: main menu → Options.</p>
+          </section>
+        </div>
+        <footer class="pause-foot">
+          <p class="hint">Esc back · Q/E tabs · F11 fullscreen</p>
+          <button id="exitmatch" class="danger">Leave</button>
+        </footer>
       </div>
-      <div id="host-info" hidden></div>
-      <button id="exitmatch">Leave</button>
-      <button id="pause-fullscreen">Fullscreen</button>
-      <label class="volume">Volume <input id="volume" type="range" min="0" max="100" step="5" /></label>
-      <label class="volume">Mouse <input id="mouse-sens" type="range" min="0.2" max="4" step="0.1" /> <output id="mouse-sens-val"></output></label>
-      <label class="volume">Invert look <input id="mouse-invert" type="checkbox" /></label>
-      <label class="volume">Aim assist <input id="aim-assist" type="checkbox" /></label>
-      <label class="volume">Blood <input id="blood-toggle" type="checkbox" checked /></label>
-      <label class="volume">Bodies <select id="bodies-setting"><option value="stay">Stay all match</option><option value="fade">Fade after 30 s</option></select></label>
-      <p class="hint">Esc again to leave · F11 or Alt+Enter: fullscreen</p>
     </div>
 
     <div id="editor" hidden>

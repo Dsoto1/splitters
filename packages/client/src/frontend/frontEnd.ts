@@ -8,6 +8,7 @@ import {
   validLookId,
   DEFAULT_LOOK,
   DEFAULT_RULES,
+  GAME_MODES,
   MODE_LABELS,
   isTeamMode,
   LOOK_BIOS,
@@ -643,6 +644,74 @@ export class FrontEnd {
     // Capture the Flag is always two teams: just their sizes.
     if (twoTeams) return [el('div', { class: 'team-grid' }, ...steppers)];
     return [el('div', { class: 'row' }, 'Teams', el('div', { class: 'team-layout' }, preset, plus, minus)), el('div', { class: 'team-grid' }, ...steppers)];
+  }
+
+  // ---------------------------------------------------------------- host: change map mid-match
+
+  /**
+   * The map picker for a host changing map mid-match (pause menu → Match →
+   * Change map): the Arcade's map cards with their screenshots, for one mode
+   * at a time (tabs: every mode the maps offer). `suiteOnly`: only maps of our
+   * suite (servers and Host game); otherwise `own` maps join too (offline:
+   * your MapMaker maps).
+   */
+  hostMapPicker(o: { mode: GameMode; current: string; suiteOnly: boolean; isSuite: (id: string) => boolean; own?: readonly ArcadeMap[]; onPick: (m: ArcadeMap, mode: GameMode) => void; onClose: () => void }): HTMLElement {
+    const maps = [...this.maps.filter((m) => !o.suiteOnly || (!m.group && o.isSuite(m.map.metadata.id))), ...(o.suiteOnly ? [] : (o.own ?? []))];
+    const modes = GAME_MODES.filter((mode) => maps.some((m) => m.modes.includes(mode)));
+    let mode: GameMode = modes.includes(o.mode) ? o.mode : (modes[0] ?? 'core.deathmatch');
+    let picked: ArcadeMap | null = null;
+    const cards = el('div', { class: 'map-cards' });
+    const tabs = el('div', { class: 'tabs hm-modes' });
+    const chosen = el('span', { class: 'hm-chosen' });
+    const go = el('button', { class: 'primary', id: 'hm-go', textContent: 'Change map', disabled: true });
+    const close = el('button', { class: 'hm-close', id: 'hm-close', textContent: 'Cancel' });
+    close.addEventListener('click', () => o.onClose());
+    go.addEventListener('click', () => picked && o.onPick(picked, mode));
+    const lazy = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver((seen) => {
+      for (const e of seen) {
+        if (!e.isIntersecting) continue;
+        lazy!.unobserve(e.target);
+        const m = maps.find((x) => x.key === (e.target as HTMLElement).dataset.map);
+        const c = e.target.querySelector('canvas');
+        if (m && c && !e.target.querySelector('.map-pic.has-shot')) drawMapPlan(c, m.map);
+      }
+    }, { root: cards });
+    const draw = () => {
+      tabs.replaceChildren(...modes.map((m) => {
+        const b = el('button', { class: `tab${m === mode ? ' on' : ''}`, textContent: MODE_LABEL[m] });
+        b.dataset.mode = m;
+        b.addEventListener('click', () => {
+          mode = m;
+          if (picked && !picked.modes.includes(m)) picked = null;
+          draw();
+        });
+        return b;
+      }));
+      cards.replaceChildren();
+      let group: string | undefined;
+      for (const m of maps.filter((x) => x.modes.includes(mode))) {
+        if (m.group !== group) {
+          group = m.group;
+          if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
+        }
+        const pic = mapPicture(m.map, 'card-pic', false, !m.group);
+        const here = m.map.metadata.id === o.current;
+        const card = el('button', { class: `map-card${picked === m ? ' on' : ''}` }, pic.el, el('div', { class: 'meta' }, el('b', { textContent: m.map.metadata.name }), el('small', { textContent: here ? 'Playing now' : m.blurb })));
+        card.dataset.map = m.key;
+        card.dataset.id = m.map.metadata.id;
+        card.addEventListener('click', () => {
+          picked = m;
+          draw();
+        });
+        cards.append(card);
+        if (m.group && lazy) lazy.observe(card);
+        else requestAnimationFrame(pic.draw);
+      }
+      chosen.textContent = picked ? `${picked.map.metadata.name} · ${MODE_LABEL[mode]}` : 'Pick a map';
+      go.disabled = !picked;
+    };
+    draw();
+    return el('div', { class: 'host-maps', id: 'host-maps' }, el('div', { class: 'hm-head' }, el('h3', { textContent: 'Change map' }), tabs), cards, el('div', { class: 'hm-foot' }, chosen, close, go));
   }
 
   // ---------------------------------------------------------------- character select

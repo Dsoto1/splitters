@@ -273,8 +273,16 @@ export class Hud {
   private mapName = '';
   setMapName(name: string): void {
     this.mapName = name;
-    const title = document.querySelector('#pause .pause-title');
-    if (title) title.innerHTML = `Paused <small>${escapeHtml(name)} · ${escapeHtml(this.modeLabel.textContent ?? '')}</small>`;
+    this.pauseContext();
+  }
+
+  /** The pause menu's match line: map, mode and time left. */
+  pauseContext(): void {
+    const line = document.getElementById('pause-context');
+    if (!line) return;
+    const clock = this.timer.textContent ? ` · ${this.timer.textContent} left` : '';
+    const text = `${this.mapName} · ${this.modeLabel.textContent ?? ''}${clock}`;
+    if (line.textContent !== text) line.textContent = text;
   }
 
   setPortrait(src: string): void {
@@ -603,6 +611,16 @@ export class Hud {
     window.setTimeout(() => line.remove(), 6000);
   }
 
+  /** A line from the match itself in the feed: what the host changed ("Host set teams to 8v8"). */
+  note(text: string): void {
+    const line = document.createElement('div');
+    line.className = 'say note';
+    line.textContent = text;
+    this.feed.prepend(line);
+    while (this.feed.children.length > 5) this.feed.lastChild?.remove();
+    window.setTimeout(() => line.remove(), 6000);
+  }
+
   /** A quick message in the feed: "Name: Enemy spotted!". */
   say(slot: number, text: string): void {
     if (!text) return;
@@ -728,6 +746,12 @@ export class Hud {
   renderScoreboard(visible: boolean, scores: ScoreEntry[], localSlot: number): void {
     this.scoreboard.hidden = !visible;
     if (!visible) return;
+    this.scoreboard.classList.toggle('many', !!this.teams && this.teams.length > 2);
+    this.scoreboard.innerHTML = this.scoreHtml(scores, localSlot);
+  }
+
+  /** The scoreboard's tables (also shown in the pause menu's Match tab). */
+  scoreHtml(scores: ScoreEntry[], localSlot: number): string {
     const row = (s: ScoreEntry) => {
       const p = this.roster.get(s.s);
       const color = this.team(s.s)?.color ?? slotColor(s.s);
@@ -739,15 +763,11 @@ export class Hud {
     // Map, mode and time left over the tables.
     const clock = this.timer.textContent ? ` · ${escapeHtml(this.timer.textContent)} left` : '';
     const head = `<div class="sb-head"><b>${escapeHtml(this.mapName)}</b> · ${escapeHtml(this.modeLabel.textContent ?? '')}${clock}</div>`;
-    if (!this.teams) {
-      this.scoreboard.innerHTML = `${head}<table><tr><th>Player</th><th>Kills</th><th>Deaths</th></tr>${sorted.map(row).join('')}</table>`;
-      return;
-    }
+    if (!this.teams) return `${head}<table><tr><th>Player</th><th>Kills</th><th>Deaths</th></tr>${sorted.map(row).join('')}</table>`;
     // Team Deathmatch: one table per team, the higher score first.
     const totals = this.teamTotals(scores);
     const teams = [...this.teams].sort((a, b) => (totals.get(b.id) ?? 0) - (totals.get(a.id) ?? 0));
-    this.scoreboard.classList.toggle('many', teams.length > 2);
-    this.scoreboard.innerHTML = head + teams
+    return head + teams
       .map((t) => {
         const rows = sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row).join('');
         return `<table class="team"><tr><th style="color:${t.color}">${escapeHtml(t.name)} <b>${totals.get(t.id) ?? 0}</b></th><th>Kills</th><th>Deaths</th></tr>${rows}</table>`;

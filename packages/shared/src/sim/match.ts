@@ -1147,6 +1147,42 @@ export class Match {
     return c;
   }
 
+  /**
+   * The host changed bot skill or style mid-match: every Player Bot gets a
+   * fresh brain with the new skill, playing its character under the new style
+   * (rules.botStyle), from where it stands.
+   */
+  retuneBots(difficulty: BotDifficulty, style?: MatchRules['botStyle']): void {
+    if (style) this.setRules({ botStyle: style === 'mixed' ? undefined : style });
+    for (const c of this.combatants()) {
+      if (c.kind !== 'bot' || !c.bot) continue;
+      c.bot = new BotBrain(c.slot, profileFor(c.look, c.bot.profile, this.rules.botStyle), difficulty, this.seed);
+      c.bot.onSpawn(c.yaw);
+      this.botThought.delete(c.slot);
+    }
+  }
+
+  /**
+   * The host changed a setting mid-match (team sizes, bot style): the match
+   * takes a new rules object (the one it was given may be shared, e.g. a
+   * mode's defaults). Team count stays as it started.
+   */
+  setRules(patch: Partial<MatchRules>): void {
+    (this as { rules: MatchRules }).rules = { ...this.rules, ...patch };
+  }
+
+  /** The host ends the match now: the results as they stand, then the scoreboard (and a fresh round after the intermission). */
+  endMatch(): boolean {
+    if (this.phase !== 'playing') return false;
+    this.endRound();
+    return true;
+  }
+
+  /** The host starts the match over on the same map: scores cleared, everyone respawned, the countdown again. */
+  restartMatch(): void {
+    this.startRound();
+  }
+
   /** Small and large looks play differently unless the match turns body sizes off. */
   private applyBodySize(c: Combatant): void {
     const spec = BODY_SIZES[this.rules.bodySizes === false ? 'standard' : bodySizeOf(c.look)];
@@ -4065,7 +4101,7 @@ export class BotFiller {
 
   constructor(
     private readonly match: Match,
-    private readonly difficulty: BotDifficulty = BOT_DIFFICULTIES.normal,
+    private difficulty: BotDifficulty = BOT_DIFFICULTIES.normal,
     /** `takeBack`: a bot takes a leaving player's place where they stood; off (the default), the slot empties and a fresh bot spawns normally. */
     private readonly opts: { takeBack?: boolean } = {},
   ) {}
@@ -4105,6 +4141,23 @@ export class BotFiller {
     this.rebalance(fill);
   }
 
+  /** Bot skill now (the host can change it mid-match: retune). */
+  get skill(): BotDifficulty {
+    return this.difficulty;
+  }
+
+  /** The host changed bot skill (and maybe style): bots in the match and bots added later play that way. */
+  retune(difficulty: BotDifficulty, style?: MatchRules['botStyle']): void {
+    this.difficulty = difficulty;
+    this.match.retuneBots(difficulty, style);
+  }
+
+  /**
+   * Keep humans + bots at `fill`. Too many: bots go, the worst-scoring first
+   * (fewest kills less deaths, as when a player joins), from the team most
+   * over its size so the sides stay as set. Too few: bots join and spawn
+   * normally on the teams that need them.
+   */
   rebalance(fill: number): void {
     const all = this.match.combatants();
     const humans = all.filter((c) => c.kind === 'human').length;
@@ -4114,8 +4167,10 @@ export class BotFiller {
     for (let i = bots.length; i > want; i--) {
       // In team modes, take bots from the team most over its size so the sides stay as set.
       const live = this.match.combatants();
-      const over = (team: string | null) => live.filter((c) => c.faction === team).length / (team ? (targets.get(team) ?? 1) : 1);
-      const left = live.filter((c) => c.kind === 'bot').sort((a, b) => over(b.faction) - over(a.faction) || b.slot - a.slot);
+      // How full the team stays without one of its bots: the team left fullest gives one up (ties: the bigger team).
+      const over = (team: string | null) => (live.filter((c) => c.faction === team).length - 1) / (team ? (targets.get(team) ?? 1) : 1);
+      const score = (c: Combatant) => c.kills - c.deaths;
+      const left = live.filter((c) => c.kind === 'bot').sort((a, b) => over(b.faction) - over(a.faction) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
       this.match.remove(left[0]!.slot);
     }
     for (let i = bots.length; i < want; i++) {
