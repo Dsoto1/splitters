@@ -103,6 +103,27 @@ export class LocalTransport implements Transport {
     return null;
   }
 
+  /**
+   * Go offline: every friend is told why and disconnected, and bots take
+   * their places again (the match itself carries on).
+   */
+  dropGuests(reason: string): void {
+    const c = this.control;
+    const text = JSON.stringify({ t: 'reject', reason } satisfies ServerMessage);
+    for (const r of [...this.remotes]) {
+      if (r.slot !== null) {
+        r.link.send(text);
+        if (c && !this.stopped) c.bots.leave(r.slot, c.fill);
+        r.slot = null;
+      }
+      this.remotes.delete(r);
+      const link = r.link;
+      // A moment for the message to get there before the link closes.
+      window.setTimeout(() => link.close(), 500);
+    }
+    if (c && !this.stopped) this.announce?.({ t: 'roster', players: c.match.roster() });
+  }
+
   /** Tell everyone the map is about to change ("Changing map to …"). */
   notice(text: string): void {
     this.announce?.({ t: 'notice', text });

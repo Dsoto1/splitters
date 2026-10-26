@@ -75,6 +75,19 @@ describe('host controls in a browser match (offline, Host game)', () => {
     expect(t.liveRules()!.teamSizes).toEqual([8, 8]);
   });
 
+  it('going offline tells friends why, disconnects them and hands their places back to bots', async () => {
+    const { t } = await host(4);
+    const f = friend();
+    t.accept(f.link);
+    f.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Friend' });
+    expect(t.guests).toBe(1);
+    t.dropGuests('The host took the game offline');
+    expect(f.got.at(-1)).toEqual({ t: 'reject', reason: 'The host took the game offline' });
+    expect(t.guests).toBe(0);
+    expect(t.hostState()!.fill).toBe(4);
+    await until(() => f.closed());
+  });
+
   it('a map change sends friends travel, and the next match lets them back in as soon as it runs', async () => {
     const { t } = await host(4);
     const f = friend();

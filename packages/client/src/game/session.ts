@@ -83,6 +83,7 @@ import { LocalTransport } from './localTransport.ts';
 import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
 import type { PeerHost } from './peerLink.ts';
+import { inSuite } from '../playlists.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
 import { FortsClient } from './fortsClient.ts';
@@ -302,7 +303,7 @@ export class GameSession {
     const hostInfo = $('host-info');
     hostBtn.hidden = !opts.hostable || !(opts.transport instanceof LocalTransport);
     hostInfo.hidden = true;
-    hostBtn.textContent = 'Host game (invite friends)';
+    hostBtn.textContent = 'Host with code only (not listed)';
     hostBtn.disabled = false;
     hostBtn.addEventListener('click', () => void this.startHosting(hostBtn, hostInfo), { signal });
     // Host game across a map change: the same code, friends come back to it.
@@ -317,6 +318,9 @@ export class GameSession {
       void this.showHostInfo(hostBtn, hostInfo, this.peerHost.code);
     }
     this.hostPanel = this.makeHostPanel();
+    // Offline by default: nothing listens until the player goes online (or hosts with a code).
+    $('go-online').addEventListener('click', () => this.confirmGoOnline(), { signal });
+    $('go-offline').addEventListener('click', () => this.goOffline(), { signal });
     // Public: the hosted match shows up in everyone's game browser (needs a community hub).
     const pub = $('host-public');
     const listBox = $('host-list') as HTMLInputElement;
@@ -481,7 +485,7 @@ export class GameSession {
     } catch (e) {
       this.peerHost = undefined;
       btn.disabled = false;
-      btn.textContent = 'Host game (invite friends)';
+      btn.textContent = 'Host with code only (not listed)';
       this.hud.showMessage(`Couldn't host: ${(e as Error).message}`, 5);
     }
   }
@@ -509,6 +513,87 @@ export class GameSession {
     if (onlyHere) void this.lanInvite(info, code, link);
     this.hud.showMessage(`Hosting: join code ${code}`, 5);
     this.updateListing();
+  }
+
+  /** Our suite's maps may be listed publicly; imported and MapMaker maps only by code. */
+  private get listable(): boolean {
+    return !!this.map && inSuite(this.map.metadata.id);
+  }
+
+  /** The online controls and status badge, after any change (hosting, friends, listing). */
+  private updateOnline(): void {
+    const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
+    const can = !!this.opts.hostable && !!local && !!this.map;
+    const online = !!this.peerHost;
+    const goOn = $('go-online') as HTMLButtonElement;
+    const goOff = $('go-offline') as HTMLButtonElement;
+    const note = $('online-note');
+    const listed = online && ($('host-list') as HTMLInputElement).checked && !!this.advertiser;
+    goOn.hidden = !can || (online && listed) || !hubSetting();
+    goOn.disabled = !this.listable;
+    goOn.textContent = online ? 'List in the game browser' : 'Go online';
+    goOff.hidden = !can || !online;
+    note.hidden = !can || this.listable || !hubSetting();
+    note.textContent = this.listable ? '' : "This map isn't one of our suite's, so it can't be listed publicly: host with a code instead.";
+    ($('host-list') as HTMLInputElement).disabled = !this.listable;
+    let badge = document.getElementById('online-badge');
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = 'online-badge';
+      $('hud').append(badge);
+    }
+    badge.hidden = !online || !local;
+    if (online && local && this.peerHost) badge.textContent = `${listed ? 'Online · listed' : 'Online · code only'} · ${1 + local.guests}/${local.capacity} · ${this.peerHost.code}`;
+  }
+
+  /** "Go online": a short confirm, then the match restarts and is listed (and joinable by code). */
+  private confirmGoOnline(): void {
+    if (!this.listable || document.getElementById('online-confirm')) return;
+    const box = document.createElement('div');
+    box.id = 'online-confirm';
+    box.className = 'panel confirm';
+    box.setAttribute('role', 'dialog');
+    box.innerHTML = '<h3 class="panel-title">Go online?</h3><p>The match restarts on the same map and rules (scores reset) and is listed publicly in the game browser. Friends can also join with the code.</p><div class="confirm-actions"><button id="online-cancel">Cancel</button><button id="online-yes" class="primary">Go online</button></div>';
+    $('pause').append(box);
+    const close = () => box.remove();
+    box.querySelector('#online-cancel')!.addEventListener('click', close);
+    box.querySelector('#online-yes')!.addEventListener('click', () => {
+      close();
+      void this.goOnline();
+    });
+    (box.querySelector('#online-yes') as HTMLButtonElement).focus();
+  }
+
+  private async goOnline(): Promise<void> {
+    const local = this.opts.transport;
+    if (!(local instanceof LocalTransport) || !this.listable) return;
+    const first = !this.peerHost;
+    // A fresh match for the public: scores reset, bots back to the host's count.
+    if (first) local.host({ c: 'restart' });
+    ($('host-list') as HTMLInputElement).checked = true;
+    if (first) await this.startHosting($('host-game') as HTMLButtonElement, $('host-info'));
+    else this.updateListing();
+    this.updateOnline();
+  }
+
+  /** "Go offline": friends are told and disconnected, the listing and join code go; the match itself carries on. */
+  private goOffline(): void {
+    const local = this.opts.transport;
+    if (!(local instanceof LocalTransport) || !this.peerHost) return;
+    local.dropGuests('The host took the game offline');
+    ($('host-list') as HTMLInputElement).checked = false;
+    this.advertiser?.stop();
+    this.advertiser = undefined;
+    this.peerHost.close();
+    this.peerHost = undefined;
+    const btn = $('host-game') as HTMLButtonElement;
+    btn.hidden = false;
+    btn.disabled = false;
+    btn.textContent = 'Host with code only (not listed)';
+    $('host-info').hidden = true;
+    $('host-public-status').textContent = 'Offline: only you and your bots.';
+    this.hud.showMessage('Offline: friends were disconnected and the listing removed', 4);
+    this.updateOnline();
   }
 
   /** The pause menu's Match section: the offline player and the Host game host run their match; on a dedicated server, its admin. */
@@ -661,10 +746,11 @@ export class GameSession {
     const status = $('host-public-status');
     const local = this.opts.transport;
     const host = this.peerHost;
-    if (!box.checked || !host?.code || !(local instanceof LocalTransport)) {
+    if (!box.checked || !host?.code || !(local instanceof LocalTransport) || !this.listable) {
       this.advertiser?.stop();
       this.advertiser = undefined;
-      status.textContent = box.checked ? 'Will be listed once you host (Host game above).' : 'Friends only: share the code or link.';
+      status.textContent = !this.listable && this.map ? 'Not listed: only our own maps go in the game browser.' : box.checked ? 'Will be listed once you host (Go online, or Host with code).' : 'Friends only: share the code or link.';
+      this.updateOnline();
       return;
     }
     if (this.advertiser) return;
@@ -685,6 +771,7 @@ export class GameSession {
     );
     this.advertiser.start();
     show();
+    this.updateOnline();
   }
 
   exit(reason?: string): void {
@@ -700,6 +787,8 @@ export class GameSession {
     } else this.peerHost?.close();
     this.hostPanel.root.remove();
     this.mapPicker?.remove();
+    document.getElementById('online-confirm')?.remove();
+    document.getElementById('online-badge')?.remove();
     if (document.pointerLockElement) document.exitPointerLock();
     this.opts.transport.close();
     this.abort.abort();
@@ -763,16 +852,18 @@ export class GameSession {
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
+        this.updateOnline();
         (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, host: () => this.hostState, map: loaded.map.metadata.id };
         this.opts.onReady?.();
         void this.prepareMatch();
         break;
       }
       case 'reject':
-        this.exit(`rejected: ${msg.reason}`);
+        this.exit(msg.reason);
         break;
       case 'roster':
         this.hud.setRoster(msg.players);
+        if (this.peerHost) this.updateOnline();
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
         this.view.setLocalLook(this.looks.get(this.slot));
         if (this.local) this.local.scale = this.sizeOf(this.slot);

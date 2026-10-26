@@ -1420,8 +1420,36 @@ async function lobbyFlow(browser) {
   await host.context().close();
   const gone = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
   check(gone, 'the listing goes away when the host closes the game');
-  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await player.context().close();
+
+  // Offline by default; "Go online" restarts the match and lists it; "Go offline" takes it down again.
+  const solo = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+  solo.on('pageerror', (e) => errors.push(`solo: ${e.message}`));
+  await solo.addInitScript(() => localStorage.setItem('cs.name', 'Solo'));
+  await solo.goto(`${CLIENT}/?offline=arena&${hub}`, { waitUntil: 'domcontentloaded' });
+  await solo.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !(document.getElementById('online-badge')?.hidden ?? true) }));
+  check(offline.online && !offline.badge, 'an offline match stays offline and offers "Go online"');
+  const listedAs = (name) => solo.evaluate((n) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.some((g) => g.name === n)), name);
+  await solo.evaluate(() => {
+    document.getElementById('host-name').value = 'E2E Go Online';
+    window.__match.combatants().find((c) => c.kind === 'human').kills = 5;
+    document.getElementById('go-online').click();
+  });
+  const asked = await solo.evaluate(() => document.getElementById('online-confirm')?.textContent ?? '');
+  check(/restarts/.test(asked) && /listed publicly/.test(asked), 'Go online asks first: the match restarts and is listed');
+  await solo.evaluate(() => document.getElementById('online-yes').click());
+  const reset = await solo.evaluate(() => window.__match.combatants().find((c) => c.kind === 'human').kills);
+  check(reset === 0, `going online restarts the match (score ${reset})`);
+  const up = await solo.waitForFunction(() => /^Online · listed/.test(document.getElementById('online-badge')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
+  const badge = await solo.evaluate(() => document.getElementById('online-badge')?.textContent ?? '');
+  check(up && (await listedAs('E2E Go Online')), `the match is online and in the game browser (${badge})`);
+  await solo.evaluate(() => document.getElementById('go-offline').click());
+  const down = await solo.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Go Online')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
+  const after = await solo.evaluate(() => ({ badge: !(document.getElementById('online-badge')?.hidden ?? true), online: !document.getElementById('go-online').hidden }));
+  check(down && !after.badge && after.online, 'Go offline removes the listing and the badge');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await solo.context().close();
 }
 
 /** Host game: one browser hosts its offline match with a code, a second joins by link through a hub's broker. */

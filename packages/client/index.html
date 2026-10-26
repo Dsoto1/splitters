@@ -77,7 +77,10 @@
       <h2 class="pause-title">Paused</h2>
       <button id="resume" class="primary">Resume</button>
       <button id="respawn-now" title="Stuck? Die here and respawn (counts as a suicide). Hotkey: K">Respawn</button>
-      <button id="host-game" hidden title="Let friends join this match from their browsers with a code">Host game (invite friends)</button>
+      <button id="go-online" hidden title="Restart this match and list it in the game browser">Go online</button>
+      <button id="go-offline" hidden title="Disconnect friends and stop listing this match">Go offline</button>
+      <p class="hint" id="online-note" hidden></p>
+      <button id="host-game" hidden title="Let friends join this match from their browsers with a code (not listed)">Host with code only (not listed)</button>
       <div id="host-public" hidden>
         <label class="volume" title="Anyone can find and join this match from Online → Game browser">List in the game browser <input id="host-list" type="checkbox" /></label>
         <input id="host-name" maxlength="40" placeholder="Server name" />

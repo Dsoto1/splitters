@@ -47,9 +47,20 @@ want always-on official matches.
   Credentials last `ICE_TTL` seconds (default 6 h); each address can ask
   12 times a minute. Relayed play is about 3 KB/s per player. Without a
   provider, players can still enter their own relay in Options → Relay.
-- **Matches** run in the host player's browser (pause menu → Host game).
-  Ticking "List in the game browser" lists it; it checks in every 20 s and
-  drops off within about a minute of the host leaving.
+- **Matches** run in the host player's browser. An offline match stays
+  offline and private: nothing listens or connects until the player chooses.
+  Pause menu → **Go online** (after a confirm) restarts the match on the same
+  map and rules (scores reset, bots back to the host's count), opens a join
+  code and lists it in the game browser; the HUD shows an "Online" badge with
+  players and the code. **Go offline** tells friends "The host took the game
+  offline", disconnects them (bots take their places), removes the listing
+  and closes the code; the match itself carries on (no restart).
+  **Host with code only (not listed)** opens a code without restarting or
+  listing (the "List in the game browser" box can still list it later).
+  Only maps of our suite can be listed: on an imported or MapMaker map,
+  listing is disabled with a note and code-only hosting still works. A
+  listing checks in every 20 s and drops off within about a minute of the
+  host leaving.
 - Traffic per player is ~3 KB/s (8 players) to ~10 KB/s (16 players),
   compressed, from the host's upload.
 - **Host controls** (pause menu → Match): the host changes the players

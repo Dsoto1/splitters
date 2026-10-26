@@ -46,6 +46,7 @@ export class HostControl {
   apply(cmd: Exclude<HostCommand, { c: 'map' }>): { notice?: string; error?: string } {
     const who = this.title;
     if (cmd.c === 'restart') {
+      this.bots.rebalance(this.fill);
       this.match.restartMatch();
       return { notice: `${who} restarted the match` };
     }
