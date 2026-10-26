@@ -133,7 +133,7 @@ sounds (needs new CC0 sounds and a grip pose).
 
 - **Size targets per mode** (playable floor, not the bounding box): duel 2–4 players ≈ 800–1,500 m²; deathmatch 8 ≈ 2,500–4,000 m²; TDM 16 ≈ 5,000–8,000 m² with a base per team 60–100 m apart; CTF symmetric, bases 80–140 m apart with three routes; KOTH 3–5 hill spots on contested ground; Elimination compact (≈3,000 m²) with three lanes.
 - ✅ **TDM spawns on maps without team bases now rotate** (Oct 24): you spawn away from enemies, out of their sight, and near your teammates, so each side keeps a working area wherever the fight is. Teammates can also spawn beside a teammate who is out of the fight (Sprint 2 #15).
-- Interiors: **thoughtful prop placement** (furniture against walls, rooms that read as kitchens/offices) instead of random scatter. Build an interior-dressing helper per room type.
+- ✅ Interiors: **thoughtful prop placement** (furniture against walls, rooms that read as kitchens/offices) instead of random scatter. Build an interior-dressing helper per room type. (Oct 26: `map/dressing.ts`, 21 room-type recipes placed against walls, in corners and as centre groups, doorways, windows and a 2 m lane between doors kept clear; `m.dress()` in map scripts; "Dress room" and "Dress all bare rooms" in MapMaker. Snowline Offices, Crossroads and Pump Tower dressed; see BUILDING_KIT.md.)
 - Crossfire homage: remake it from the original's layout reference.
 - Map cards: show **one image** per map — a real aerial/player-camera screenshot — and let the user cycle to the grid layout.
 
