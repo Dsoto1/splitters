@@ -8,6 +8,11 @@
  * runs you over; jump on the flatbed and ride it). Up the hill behind, a mine
  * tunnel runs through the ridge, a cart trundling in and out on its rails.
  *
+ * Dressed with LowPolyAssets' Low Poly Wild West (CC0): shop signs on the
+ * porch roofs, welcome arches over both ends of the street, hitching posts,
+ * troughs and barrels, a gallows behind the jail, a stagecoach waiting west of
+ * town and a windmill.
+ *
  * Dynamite is the town's weapon of choice: sticks to pick up and throw, crates
  * that go up when shot (one of them right by the vault door, which blows the
  * vault open), and plank barricades to blast or shoot through.
@@ -83,7 +88,7 @@ m.tile('frontier.water_tower', -3, -2, 0, 0);
 m.tile('frontier.corral', -1, -1, 0, 2); // cells x -2..-1, y -2..-1
 m.tile('frontier.church', 0, -1, 0, 2); // cells (0,-1), (0,-2)
 m.tile('core.room', 2, -1, 0, 0, { facade: 'adobe', ceiling: 'roof', layout: 'empty' });
-m.tile('core.room', 3, -1, 0, 0, { facade: 'false_front', ceiling: 'roof', layout: 'empty' }); // the undertaker
+m.tile('core.room', 3, -1, 0, 0, { facade: 'false_front', ceiling: 'roof', layout: 'empty' }); // the gunsmith (and undertaker)
 m.edge(-6, -1, 0, 'N', 'wide').edge(-6, -1, 0, 'E', 'window').edge(-6, -1, 0, 'S', 'door');
 m.edge(2, -1, 0, 'N', 'door').edge(2, -1, 0, 'W', 'window').edge(2, -1, 0, 'S', 'window');
 m.edge(3, -1, 0, 'N', 'door').edge(3, -1, 0, 'E', 'window').edge(3, -1, 0, 'S', 'door');
@@ -182,17 +187,43 @@ m.pickup('dynamite', [CART_X, 4, 52.5], 30).pickup('dynamite', [-4.5 * C, 0, -1 
 
 // ---------------------------------------------------------------- dressing
 
-for (const [x, z, yaw] of [[-5.5, 0.32, 0], [-3.6, 0.32, 0], [-1.6, 0.32, 0], [4.6, 0.32, 0], [-4.5, -0.32, 0], [2.6, -0.32, 0]] as const) m.prop('hitching_post', [x * C, 0, z * C], yaw);
-m.prop('water_trough', [-4 * C, 0, 0.42 * C], 0).prop('water_trough', [3.5 * C, 0, -0.42 * C], 0).prop('water_trough', [-10, 0, -8.8], 0);
+for (const [x, z, yaw] of [[-5.5, 0.32, 0], [-3.6, 0.32, 0], [-1.6, 0.32, 0], [4.6, 0.32, 0], [-4.5, -0.32, 0], [2.6, -0.32, 0]] as const) m.prop('ww_hitching_post', [x * C, 0, z * C], yaw + P);
+m.prop('ww_trough_a', [-4 * C, 0, 0.42 * C], P).prop('ww_trough_b', [3.5 * C, 0, -0.42 * C], P).prop('ww_trough_a', [-10, 0, -8.8], P);
+m.prop('ww_bucket', [-4 * C + 1.3, 0, 0.42 * C + 0.1], 0.4).prop('ww_bucket', [3.5 * C - 1.3, 0, -0.42 * C - 0.1], 1.2);
 m.prop('wanted_board', [3 * C - 2, 0, 0.5 * C + 0.4], 0).prop('wanted_board', [-1.6 * C, 0, 4 * C - 2], 0);
-m.prop('barrel', [-3.3 * C, 0, 1 * C + 1]).prop('barrel_open', [-3.1 * C, 0, 1 * C + 1.8]).prop('crate_large', [5.6 * C, 0, 0.3 * C], 0.3).prop('crate_small', [5.8 * C, 0, 0.32 * C + 0.4], 0.6);
-m.prop('covered_wagon', [6 * C, 0, -2.5 * C], 0.4).prop('wagon_wheel', [-2.6 * C, 0, -1.6 * C], 0.6).prop('outhouse', [-5.4 * C, 0, 3 * C], Math.PI);
-m.prop('wind_pump', [-0.6 * C, 0, -3.3 * C], 0.3).prop('hay_bale', [-2.1 * C, 0, -1.4 * C], 0.2).prop('hay_bale', [-1.6 * C, 0, -2.4 * C], 1.1);
+m.prop('ww_barrel_a', [-3.3 * C, 0, 1 * C + 1]).prop('ww_barrel_b', [-3.1 * C, 0, 1 * C + 1.8]).prop('crate_large', [5.6 * C, 0, 0.3 * C], 0.3).prop('crate_small', [5.8 * C, 0, 0.32 * C + 0.4], 0.6);
+m.prop('covered_wagon', [6 * C, 0, -2.5 * C], 0.4).prop('ww_wheel_b', [-2.6 * C, 0, -1.6 * C], 0.6).prop('outhouse', [-5.4 * C, 0, 3 * C], Math.PI);
+m.prop('ww_windmill', [-0.6 * C, 0, -3.3 * C], 0.3).prop('hay_bale', [-2.1 * C, 0, -1.4 * C], 0.2).prop('hay_bale', [-1.6 * C, 0, -2.4 * C], 1.1);
 for (const [x, z] of [[1.0, -1.2], [1.3, -1.7], [1.0, -2.2], [1.3, -2.6]] as const) m.prop('gravestone_cross', [x * C, 0, z * C], 0);
 m.prop('coffin', [3.6 * C, 0, -0.55 * C], 0.2).prop('signpost', [7.5 * C, 0, -0.5 * C], 0.4).prop('signpost', [-7.5 * C, 0, 0.5 * C], 2);
 for (const [x, z, s] of [[-9, -3, 1], [-10, 4, 1.2], [9, -3.5, 1], [10, 2.5, 1.1], [-8, 7, 1], [10, 8, 1.3], [-2, -4.6, 1], [6, -4.4, 0.9]] as const) m.prop(x % 2 ? 'nt_saguaro' : 'cactus_tall', [x * C, 0, z * C], x, s);
-for (const [x, z] of [[-6.5, 2.6], [2, 3], [6.5, -3.5], [-3, 6.2]] as const) m.prop('tumbleweed', [x * C, 0, z * C], x);
-m.prop('woodpile', [4.6 * C, 0, 2.4 * C], 0).prop('planks_stack', [5.4 * C, 0, 2.5 * C], 0.3).prop('barrel', [-1 * C + 3, 0, 4 * C - 3.2]);
+for (const [x, z] of [[-6.5, 2.6], [2, 3], [6.5, -3.5], [-3, 6.2]] as const) m.prop('ww_tumbleweed', [x * C, 0, z * C], x);
+m.prop('woodpile', [4.6 * C, 0, 2.4 * C], 0).prop('planks_stack', [5.4 * C, 0, 2.5 * C], 0.3).prop('ww_barrel_a', [-1 * C + 3, 0, 4 * C - 3.2]);
+
+// Low Poly Wild West (LowPolyAssets, CC0). Shop signs stand on the porch roofs (a porch is 2.6 m deep, its roof
+// 3.6 m up, 3.8 m on the saloon), boards to the street; the one-cell false fronts carry smaller ones on their awnings
+// (1.8 m deep, 3.17 m up).
+// The kit's signs face +Z, their braces behind; `facing` 1 stands one on a north-side porch, its board to the street.
+const sign = (model: string, x: number, y: number, front: number, facing: 1 | -1, scale = 1) => m.prop(model, [x, y, front + facing * (0.1 + 1.17 * scale)], facing > 0 ? Math.PI : 0, scale, false);
+sign('ww_saloon_sign_a', -5 * C + 4, 3.8, 1 * C - 4, 1);
+sign('ww_bank_sign_a', -2 * C + 4, 3.6, 1 * C - 4, 1);
+sign('ww_sheriff_sign_a', 2 * C + 4, 3.6, 1 * C - 4, 1);
+sign('ww_general_sign_a', 4 * C + 4, 3.6, 1 * C - 4, 1);
+sign('ww_hotel_sign_a', -6 * C, 3.17, 1 * C - 6.05, 1, 0.72);
+sign('ww_doctor_sign_a', 1 * C, 3.17, 1 * C - 6.05, 1, 0.72);
+sign('ww_gun_sign_a', 3 * C, 3.17, -1 * C + 6.05, -1, 0.72);
+// Welcome arches over both ends of the main street.
+m.prop('ww_welcome_sign', [-7.6 * C, 0, 0], P, 1, false).prop('ww_welcome_sign', [7.6 * C, 0, 0], -P, 1, false);
+// The gallows behind the jail, a stagecoach waiting west of town, a cart by the store, the station's water tank.
+m.prop('ww_gallows', [2.5 * C, 0, 2.1 * C], 0).prop('ww_stagecoach', [-9.4 * C, 0, -1.3 * C], P + 0.15);
+m.prop('ww_cart_a', [3.75 * C, 0, 2 * C], 0.2).prop('ww_water_tank', [-3 * C, 0, 4.1 * C], 0.4);
+// Porch and boardwalk clutter: chairs outside the hotel, crates and a barrel on the store's porch.
+m.prop('ww_chair', [-6 * C - 2.5, 0.06, 1 * C - 4.9], Math.PI).prop('ww_chair', [-6 * C - 1.4, 0.06, 1 * C - 4.9], Math.PI - 0.3);
+m.prop('ww_crate', [4 * C - 3.3, 0.25, 1 * C - 1.9], 0.1).prop('ww_crate', [4 * C - 3.3, 0.63, 1 * C - 1.9], 0.4).prop('ww_barrel_b', [5 * C + 3.2, 0.25, 1 * C - 2], 0);
+// The mine yard: a pick and a bucket by the rails.
+m.prop('ww_pickaxe', [CART_X - 3, 4, 52.5], 0.5, 1, false).prop('ww_bucket', [CART_X - 4.5, 4, 55], 0);
+// Cacti out on the flats.
+for (const [x, z, k] of [[-10, -3.8, 'a'], [-8.8, 2.5, 'b'], [9, 2.8, 'c'], [10, -3.8, 'd'], [3.8, -5, 'a'], [-5, -5.2, 'b'], [-11, 9, 'd'], [9.2, 7.6, 'c']] as const) m.prop(`ww_cactus_${k}`, [x * C, 0, z * C], x + z);
 
 // ---------------------------------------------------------------- spawns, pickups, objectives
 

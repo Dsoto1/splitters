@@ -1301,8 +1301,8 @@
         2.56
       ],
       "kind": "prop",
-      "model": "prop.hitching_post",
-      "yaw": 0,
+      "model": "prop.ww_hitching_post",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1315,8 +1315,8 @@
         2.56
       ],
       "kind": "prop",
-      "model": "prop.hitching_post",
-      "yaw": 0,
+      "model": "prop.ww_hitching_post",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1329,8 +1329,8 @@
         2.56
       ],
       "kind": "prop",
-      "model": "prop.hitching_post",
-      "yaw": 0,
+      "model": "prop.ww_hitching_post",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1343,8 +1343,8 @@
         2.56
       ],
       "kind": "prop",
-      "model": "prop.hitching_post",
-      "yaw": 0,
+      "model": "prop.ww_hitching_post",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1357,8 +1357,8 @@
         -2.56
       ],
       "kind": "prop",
-      "model": "prop.hitching_post",
-      "yaw": 0,
+      "model": "prop.ww_hitching_post",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1371,8 +1371,8 @@
         -2.56
       ],
       "kind": "prop",
-      "model": "prop.hitching_post",
-      "yaw": 0,
+      "model": "prop.ww_hitching_post",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1385,8 +1385,8 @@
         3.36
       ],
       "kind": "prop",
-      "model": "prop.water_trough",
-      "yaw": 0,
+      "model": "prop.ww_trough_a",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1399,8 +1399,8 @@
         -3.36
       ],
       "kind": "prop",
-      "model": "prop.water_trough",
-      "yaw": 0,
+      "model": "prop.ww_trough_b",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1413,14 +1413,42 @@
         -8.8
       ],
       "kind": "prop",
-      "model": "prop.water_trough",
-      "yaw": 0,
+      "model": "prop.ww_trough_a",
+      "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_094",
+      "position": [
+        -30.7,
+        0,
+        3.46
+      ],
+      "kind": "prop",
+      "model": "prop.ww_bucket",
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "position": [
+        26.7,
+        0,
+        -3.46
+      ],
+      "kind": "prop",
+      "model": "prop.ww_bucket",
+      "yaw": 1.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_096",
       "position": [
         22,
         0,
@@ -1434,7 +1462,7 @@
       "tint": null
     },
     {
-      "id": "prop_095",
+      "id": "prop_097",
       "position": [
         -12.8,
         -0.18,
@@ -1448,35 +1476,35 @@
       "tint": null
     },
     {
-      "id": "prop_096",
+      "id": "prop_098",
       "position": [
         -26.4,
         -0.18,
         9
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "prop.ww_barrel_a",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_097",
+      "id": "prop_099",
       "position": [
         -24.8,
         -0.18,
         9.8
       ],
       "kind": "prop",
-      "model": "prop.barrel_open",
+      "model": "prop.ww_barrel_b",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_098",
+      "id": "prop_100",
       "position": [
         44.8,
         0,
@@ -1490,7 +1518,7 @@
       "tint": null
     },
     {
-      "id": "prop_099",
+      "id": "prop_101",
       "position": [
         46.4,
         0,
@@ -1504,7 +1532,7 @@
       "tint": null
     },
     {
-      "id": "prop_100",
+      "id": "prop_102",
       "position": [
         48,
         -0.18,
@@ -1518,21 +1546,21 @@
       "tint": null
     },
     {
-      "id": "prop_101",
+      "id": "prop_103",
       "position": [
         -20.8,
         0,
         -12.8
       ],
       "kind": "prop",
-      "model": "prop.wagon_wheel",
+      "model": "prop.ww_wheel_b",
       "yaw": 0.6,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_102",
+      "id": "prop_104",
       "position": [
         -43.2,
         -0.18,
@@ -1546,21 +1574,21 @@
       "tint": null
     },
     {
-      "id": "prop_103",
+      "id": "prop_105",
       "position": [
         -4.8,
         -0.18,
         -26.4
       ],
       "kind": "prop",
-      "model": "prop.wind_pump",
+      "model": "prop.ww_windmill",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_104",
+      "id": "prop_106",
       "position": [
         -16.8,
         0,
@@ -1574,7 +1602,7 @@
       "tint": null
     },
     {
-      "id": "prop_105",
+      "id": "prop_107",
       "position": [
         -12.8,
         0,
@@ -1588,7 +1616,7 @@
       "tint": null
     },
     {
-      "id": "prop_106",
+      "id": "prop_108",
       "position": [
         8,
         -0.18,
@@ -1602,7 +1630,7 @@
       "tint": null
     },
     {
-      "id": "prop_107",
+      "id": "prop_109",
       "position": [
         10.4,
         -0.18,
@@ -1616,7 +1644,7 @@
       "tint": null
     },
     {
-      "id": "prop_108",
+      "id": "prop_110",
       "position": [
         8,
         -0.18,
@@ -1630,7 +1658,7 @@
       "tint": null
     },
     {
-      "id": "prop_109",
+      "id": "prop_111",
       "position": [
         10.4,
         -0.18,
@@ -1644,7 +1672,7 @@
       "tint": null
     },
     {
-      "id": "prop_110",
+      "id": "prop_112",
       "position": [
         28.8,
         -0.18,
@@ -1658,7 +1686,7 @@
       "tint": null
     },
     {
-      "id": "prop_111",
+      "id": "prop_113",
       "position": [
         60,
         0,
@@ -1672,7 +1700,7 @@
       "tint": null
     },
     {
-      "id": "prop_112",
+      "id": "prop_114",
       "position": [
         -60,
         0,
@@ -1686,7 +1714,7 @@
       "tint": null
     },
     {
-      "id": "prop_113",
+      "id": "prop_115",
       "position": [
         -72,
         -0.18,
@@ -1700,7 +1728,7 @@
       "tint": null
     },
     {
-      "id": "prop_114",
+      "id": "prop_116",
       "position": [
         -80,
         -0.18,
@@ -1714,7 +1742,7 @@
       "tint": null
     },
     {
-      "id": "prop_115",
+      "id": "prop_117",
       "position": [
         72,
         -0.18,
@@ -1728,7 +1756,7 @@
       "tint": null
     },
     {
-      "id": "prop_116",
+      "id": "prop_118",
       "position": [
         80,
         -0.18,
@@ -1742,7 +1770,7 @@
       "tint": null
     },
     {
-      "id": "prop_117",
+      "id": "prop_119",
       "position": [
         -64,
         -0.18,
@@ -1756,7 +1784,7 @@
       "tint": null
     },
     {
-      "id": "prop_118",
+      "id": "prop_120",
       "position": [
         80,
         -0.18,
@@ -1770,7 +1798,7 @@
       "tint": null
     },
     {
-      "id": "prop_119",
+      "id": "prop_121",
       "position": [
         -16,
         -0.18,
@@ -1784,7 +1812,7 @@
       "tint": null
     },
     {
-      "id": "prop_120",
+      "id": "prop_122",
       "position": [
         48,
         -0.18,
@@ -1798,43 +1826,15 @@
       "tint": null
     },
     {
-      "id": "prop_121",
+      "id": "prop_123",
       "position": [
         -52,
         -0.18,
         20.8
       ],
       "kind": "prop",
-      "model": "prop.tumbleweed",
+      "model": "prop.ww_tumbleweed",
       "yaw": -6.5,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_122",
-      "position": [
-        16,
-        -0.18,
-        24
-      ],
-      "kind": "prop",
-      "model": "prop.tumbleweed",
-      "yaw": 2,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_123",
-      "position": [
-        52,
-        -0.18,
-        -28
-      ],
-      "kind": "prop",
-      "model": "prop.tumbleweed",
-      "yaw": 6.5,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1842,19 +1842,47 @@
     {
       "id": "prop_124",
       "position": [
-        -24,
+        16,
         -0.18,
-        49.6
+        24
       ],
       "kind": "prop",
-      "model": "prop.tumbleweed",
-      "yaw": -3,
+      "model": "prop.ww_tumbleweed",
+      "yaw": 2,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_125",
+      "position": [
+        52,
+        -0.18,
+        -28
+      ],
+      "kind": "prop",
+      "model": "prop.ww_tumbleweed",
+      "yaw": 6.5,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_126",
+      "position": [
+        -24,
+        -0.18,
+        49.6
+      ],
+      "kind": "prop",
+      "model": "prop.ww_tumbleweed",
+      "yaw": -3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_127",
       "position": [
         36.8,
         -0.18,
@@ -1868,7 +1896,7 @@
       "tint": null
     },
     {
-      "id": "prop_126",
+      "id": "prop_128",
       "position": [
         43.2,
         -0.18,
@@ -1882,21 +1910,413 @@
       "tint": null
     },
     {
-      "id": "prop_127",
+      "id": "prop_129",
       "position": [
         -5,
         0,
         28.8
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "prop.ww_barrel_a",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "spawn_128",
+      "id": "prop_130",
+      "position": [
+        -36,
+        3.8,
+        5.27
+      ],
+      "kind": "prop",
+      "model": "prop.ww_saloon_sign_a",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_131",
+      "position": [
+        -12,
+        3.6,
+        5.27
+      ],
+      "kind": "prop",
+      "model": "prop.ww_bank_sign_a",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_132",
+      "position": [
+        20,
+        3.6,
+        5.27
+      ],
+      "kind": "prop",
+      "model": "prop.ww_sheriff_sign_a",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_133",
+      "position": [
+        36,
+        3.6,
+        5.27
+      ],
+      "kind": "prop",
+      "model": "prop.ww_general_sign_a",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_134",
+      "position": [
+        -48,
+        3.17,
+        2.8924000000000003
+      ],
+      "kind": "prop",
+      "model": "prop.ww_hotel_sign_a",
+      "yaw": 3.141592653589793,
+      "scale": 0.72,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_135",
+      "position": [
+        8,
+        3.17,
+        2.8924000000000003
+      ],
+      "kind": "prop",
+      "model": "prop.ww_doctor_sign_a",
+      "yaw": 3.141592653589793,
+      "scale": 0.72,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_136",
+      "position": [
+        24,
+        3.17,
+        -2.8924000000000003
+      ],
+      "kind": "prop",
+      "model": "prop.ww_gun_sign_a",
+      "yaw": 0,
+      "scale": 0.72,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_137",
+      "position": [
+        -60.8,
+        -0.18,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.ww_welcome_sign",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_138",
+      "position": [
+        60.8,
+        -0.18,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.ww_welcome_sign",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        20,
+        -0.18,
+        16.8
+      ],
+      "kind": "prop",
+      "model": "prop.ww_gallows",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        -75.2,
+        -0.18,
+        -10.4
+      ],
+      "kind": "prop",
+      "model": "prop.ww_stagecoach",
+      "yaw": 1.7207963267948965,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        30,
+        -0.18,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.ww_cart_a",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
+        -24,
+        -0.18,
+        32.8
+      ],
+      "kind": "prop",
+      "model": "prop.ww_water_tank",
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        -50.5,
+        0.06,
+        3.0999999999999996
+      ],
+      "kind": "prop",
+      "model": "prop.ww_chair",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        -49.4,
+        0.06,
+        3.0999999999999996
+      ],
+      "kind": "prop",
+      "model": "prop.ww_chair",
+      "yaw": 2.8415926535897933,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_145",
+      "position": [
+        28.7,
+        0.25,
+        6.1
+      ],
+      "kind": "prop",
+      "model": "prop.ww_crate",
+      "yaw": 0.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        28.7,
+        0.63,
+        6.1
+      ],
+      "kind": "prop",
+      "model": "prop.ww_crate",
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        43.2,
+        0.25,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.ww_barrel_b",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        21,
+        4,
+        52.5
+      ],
+      "kind": "prop",
+      "model": "prop.ww_pickaxe",
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_149",
+      "position": [
+        19.5,
+        4,
+        55
+      ],
+      "kind": "prop",
+      "model": "prop.ww_bucket",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        -80,
+        -0.18,
+        -30.4
+      ],
+      "kind": "prop",
+      "model": "prop.ww_cactus_a",
+      "yaw": -13.8,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_151",
+      "position": [
+        -70.4,
+        -0.18,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.ww_cactus_b",
+      "yaw": -6.300000000000001,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        72,
+        -0.18,
+        22.4
+      ],
+      "kind": "prop",
+      "model": "prop.ww_cactus_c",
+      "yaw": 11.8,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_153",
+      "position": [
+        80,
+        -0.18,
+        -30.4
+      ],
+      "kind": "prop",
+      "model": "prop.ww_cactus_d",
+      "yaw": 6.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        30.4,
+        -0.18,
+        -40
+      ],
+      "kind": "prop",
+      "model": "prop.ww_cactus_a",
+      "yaw": -1.2000000000000002,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        -40,
+        -0.18,
+        -41.6
+      ],
+      "kind": "prop",
+      "model": "prop.ww_cactus_b",
+      "yaw": -10.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        -88,
+        -0.18,
+        72
+      ],
+      "kind": "prop",
+      "model": "prop.ww_cactus_d",
+      "yaw": -2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        73.6,
+        -0.18,
+        60.8
+      ],
+      "kind": "prop",
+      "model": "prop.ww_cactus_c",
+      "yaw": 16.799999999999997,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_158",
       "position": [
         -59.2,
         0,
@@ -1907,7 +2327,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_129",
+      "id": "spawn_159",
       "position": [
         -59.2,
         0,
@@ -1918,7 +2338,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_130",
+      "id": "spawn_160",
       "position": [
         -52.8,
         0,
@@ -1929,7 +2349,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_131",
+      "id": "spawn_161",
       "position": [
         -46.4,
         0,
@@ -1940,7 +2360,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_132",
+      "id": "spawn_162",
       "position": [
         -27.2,
         0,
@@ -1951,7 +2371,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_133",
+      "id": "spawn_163",
       "position": [
         -54.4,
         0,
@@ -1962,7 +2382,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_134",
+      "id": "spawn_164",
       "position": [
         -27.2,
         0,
@@ -1973,7 +2393,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_135",
+      "id": "spawn_165",
       "position": [
         -60.8,
         0,
@@ -1984,7 +2404,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_136",
+      "id": "spawn_166",
       "position": [
         59.2,
         0,
@@ -1995,7 +2415,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_137",
+      "id": "spawn_167",
       "position": [
         59.2,
         0,
@@ -2006,7 +2426,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_138",
+      "id": "spawn_168",
       "position": [
         52.8,
         0,
@@ -2017,7 +2437,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_139",
+      "id": "spawn_169",
       "position": [
         43.2,
         0,
@@ -2028,7 +2448,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_140",
+      "id": "spawn_170",
       "position": [
         27.2,
         0,
@@ -2039,7 +2459,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_141",
+      "id": "spawn_171",
       "position": [
         54.4,
         0,
@@ -2050,7 +2470,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_142",
+      "id": "spawn_172",
       "position": [
         36.8,
         0,
@@ -2061,7 +2481,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_143",
+      "id": "spawn_173",
       "position": [
         60.8,
         0,
@@ -2072,7 +2492,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_144",
+      "id": "spawn_174",
       "position": [
         0,
         0,
@@ -2083,7 +2503,7 @@
       "faction": null
     },
     {
-      "id": "spawn_145",
+      "id": "spawn_175",
       "position": [
         -16,
         0,
@@ -2094,7 +2514,7 @@
       "faction": null
     },
     {
-      "id": "spawn_146",
+      "id": "spawn_176",
       "position": [
         19.2,
         0,
@@ -2105,7 +2525,7 @@
       "faction": null
     },
     {
-      "id": "spawn_147",
+      "id": "spawn_177",
       "position": [
         -12,
         0,
@@ -2116,7 +2536,7 @@
       "faction": null
     },
     {
-      "id": "spawn_148",
+      "id": "spawn_178",
       "position": [
         12,
         0,
@@ -2127,7 +2547,7 @@
       "faction": null
     },
     {
-      "id": "spawn_149",
+      "id": "spawn_179",
       "position": [
         -40,
         0,
@@ -2138,7 +2558,7 @@
       "faction": null
     },
     {
-      "id": "spawn_150",
+      "id": "spawn_180",
       "position": [
         40,
         0,
@@ -2149,7 +2569,7 @@
       "faction": null
     },
     {
-      "id": "spawn_151",
+      "id": "spawn_181",
       "position": [
         4.8,
         0,
@@ -2160,7 +2580,7 @@
       "faction": null
     },
     {
-      "id": "pickup_152",
+      "id": "pickup_182",
       "position": [
         -33.5,
         0,
@@ -2171,7 +2591,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_153",
+      "id": "pickup_183",
       "position": [
         14.5,
         0,
@@ -2182,7 +2602,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_154",
+      "id": "pickup_184",
       "position": [
         -36,
         4,
@@ -2193,7 +2613,7 @@
       "respawnSeconds": 30
     },
     {
-      "id": "pickup_155",
+      "id": "pickup_185",
       "position": [
         35.5,
         0,
@@ -2204,7 +2624,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_156",
+      "id": "pickup_186",
       "position": [
         -4.8,
         0.25,
@@ -2215,7 +2635,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_157",
+      "id": "pickup_187",
       "position": [
         27,
         4,
@@ -2226,7 +2646,7 @@
       "respawnSeconds": 35
     },
     {
-      "id": "pickup_158",
+      "id": "pickup_188",
       "position": [
         0,
         0,
@@ -2237,7 +2657,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_159",
+      "id": "pickup_189",
       "position": [
         -36,
         0,
@@ -2248,7 +2668,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_160",
+      "id": "pickup_190",
       "position": [
         48,
         0,
@@ -2259,7 +2679,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_161",
+      "id": "pickup_191",
       "position": [
         24,
         0,
@@ -2270,7 +2690,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_162",
+      "id": "pickup_192",
       "position": [
         25.3,
         4,
@@ -2281,7 +2701,7 @@
       "respawnSeconds": 40
     },
     {
-      "id": "pickup_163",
+      "id": "pickup_193",
       "position": [
         -24,
         0,
@@ -2292,7 +2712,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_164",
+      "id": "pickup_194",
       "position": [
         24,
         0,
@@ -2303,7 +2723,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "hill_165",
+      "id": "hill_195",
       "position": [
         0,
         0,
@@ -2313,7 +2733,7 @@
       "radius": 6
     },
     {
-      "id": "flag_166",
+      "id": "flag_196",
       "position": [
         -56,
         0,
@@ -2324,7 +2744,7 @@
       "team": "embers"
     },
     {
-      "id": "flag_167",
+      "id": "flag_197",
       "position": [
         56,
         0,

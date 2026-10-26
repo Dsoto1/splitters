@@ -17239,6 +17239,2470 @@
       ]
     },
     {
+      "file": "props/ww_barrel_a.glb",
+      "sha256": "1ea5c8b8e7ab69e7",
+      "triangles": 648,
+      "bytes": 38592,
+      "source": "lowpolyassets-wild-west/Clutter/Barrel A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_barrel_b.glb",
+      "sha256": "be34057c7ad0650e",
+      "triangles": 672,
+      "bytes": 30988,
+      "source": "lowpolyassets-wild-west/Clutter/Barrel B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_bottle_a.glb",
+      "sha256": "283d338cf6a14ee4",
+      "triangles": 260,
+      "bytes": 12520,
+      "source": "lowpolyassets-wild-west/Clutter/Bottle A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_bottle_b.glb",
+      "sha256": "57fe31b71c6ca544",
+      "triangles": 276,
+      "bytes": 14264,
+      "source": "lowpolyassets-wild-west/Clutter/Bottle B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_bottle_c.glb",
+      "sha256": "0263853a6f30eb40",
+      "triangles": 416,
+      "bytes": 21004,
+      "source": "lowpolyassets-wild-west/Clutter/Bottle C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_bottle_d.glb",
+      "sha256": "45a4dcbc92c95d35",
+      "triangles": 332,
+      "bytes": 16160,
+      "source": "lowpolyassets-wild-west/Clutter/Bottle D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_bucket.glb",
+      "sha256": "acffc484a3ff7e70",
+      "triangles": 418,
+      "bytes": 19752,
+      "source": "lowpolyassets-wild-west/Clutter/Bucket.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_carpet.glb",
+      "sha256": "49235f946d339781",
+      "triangles": 12,
+      "bytes": 1748,
+      "source": "lowpolyassets-wild-west/Clutter/Carpet.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_chair.glb",
+      "sha256": "d60901d8709b577d",
+      "triangles": 482,
+      "bytes": 18852,
+      "source": "lowpolyassets-wild-west/Clutter/Chair.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_crate.glb",
+      "sha256": "a719b845760c8d3d",
+      "triangles": 924,
+      "bytes": 39204,
+      "source": "lowpolyassets-wild-west/Clutter/Crate.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_dynamite_a.glb",
+      "sha256": "be6181b41467b7c8",
+      "triangles": 78,
+      "bytes": 5640,
+      "source": "lowpolyassets-wild-west/Clutter/Dynamite A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_dynamite_b.glb",
+      "sha256": "9b14fbb3fd6a88c5",
+      "triangles": 834,
+      "bytes": 33712,
+      "source": "lowpolyassets-wild-west/Clutter/Dynamite B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_fence_a.glb",
+      "sha256": "30ec28a39f0167ed",
+      "triangles": 148,
+      "bytes": 7368,
+      "source": "lowpolyassets-wild-west/Clutter/Fence A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_fence_b.glb",
+      "sha256": "08f39f0b5b75f8c3",
+      "triangles": 352,
+      "bytes": 15356,
+      "source": "lowpolyassets-wild-west/Clutter/Fence B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_glass.glb",
+      "sha256": "eebb045c655e7de9",
+      "triangles": 92,
+      "bytes": 4548,
+      "source": "lowpolyassets-wild-west/Clutter/Glass.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_gold_bar.glb",
+      "sha256": "7be5535a3735d54d",
+      "triangles": 44,
+      "bytes": 3160,
+      "source": "lowpolyassets-wild-west/Clutter/Gold Bar.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_hat_a.glb",
+      "sha256": "4358920ad45c9117",
+      "triangles": 600,
+      "bytes": 37704,
+      "source": "lowpolyassets-wild-west/Clutter/Hat A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_hat_b.glb",
+      "sha256": "21946502e2ed2293",
+      "triangles": 560,
+      "bytes": 37648,
+      "source": "lowpolyassets-wild-west/Clutter/Hat B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_hat_c.glb",
+      "sha256": "1644b435896c29c5",
+      "triangles": 560,
+      "bytes": 37492,
+      "source": "lowpolyassets-wild-west/Clutter/Hat C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_hitching_post.glb",
+      "sha256": "ce358a07ab2daaf2",
+      "triangles": 228,
+      "bytes": 9308,
+      "source": "lowpolyassets-wild-west/Clutter/Hitching Post.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_horseshoe.glb",
+      "sha256": "c8161a2d5224df87",
+      "triangles": 132,
+      "bytes": 6388,
+      "source": "lowpolyassets-wild-west/Clutter/Horseshoe.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_ladder.glb",
+      "sha256": "b95ada17112df7f5",
+      "triangles": 440,
+      "bytes": 19348,
+      "source": "lowpolyassets-wild-west/Clutter/Ladder.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_lantern.glb",
+      "sha256": "3abfadfb8433f3f0",
+      "triangles": 960,
+      "bytes": 39568,
+      "source": "lowpolyassets-wild-west/Clutter/Lantern.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_pickaxe.glb",
+      "sha256": "463b60ced58ce5bf",
+      "triangles": 144,
+      "bytes": 12636,
+      "source": "lowpolyassets-wild-west/Clutter/Pickaxe.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_table_a.glb",
+      "sha256": "d0c6a8f1646ba0d3",
+      "triangles": 512,
+      "bytes": 21120,
+      "source": "lowpolyassets-wild-west/Clutter/Table A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_table_b.glb",
+      "sha256": "0afebaa9fd2181cc",
+      "triangles": 536,
+      "bytes": 22740,
+      "source": "lowpolyassets-wild-west/Clutter/Table B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_trough_a.glb",
+      "sha256": "7d3bb27900428135",
+      "triangles": 68,
+      "bytes": 4708,
+      "source": "lowpolyassets-wild-west/Clutter/Trough A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_trough_b.glb",
+      "sha256": "0ab601e8a84fcf19",
+      "triangles": 68,
+      "bytes": 3988,
+      "source": "lowpolyassets-wild-west/Clutter/Trough B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wheel_a.glb",
+      "sha256": "932eaf4b5e0241e9",
+      "triangles": 472,
+      "bytes": 18672,
+      "source": "lowpolyassets-wild-west/Clutter/Wheel A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wheel_b.glb",
+      "sha256": "ce5f0d9e3059ae23",
+      "triangles": 472,
+      "bytes": 18752,
+      "source": "lowpolyassets-wild-west/Clutter/Wheel B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_bar.glb",
+      "sha256": "4b54e131cb022208",
+      "triangles": 236,
+      "bytes": 9592,
+      "source": "lowpolyassets-wild-west/Miscellaneous/Bar.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_gallows.glb",
+      "sha256": "acdddddea14b3c32",
+      "triangles": 2502,
+      "bytes": 100472,
+      "source": "lowpolyassets-wild-west/Miscellaneous/Gallows.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_rail.glb",
+      "sha256": "e376f07109a04c3d",
+      "triangles": 352,
+      "bytes": 19600,
+      "source": "lowpolyassets-wild-west/Miscellaneous/Rail.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_water_tank.glb",
+      "sha256": "5e146ebf70a1cc48",
+      "triangles": 1496,
+      "bytes": 77196,
+      "source": "lowpolyassets-wild-west/Miscellaneous/Water Tank.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_windmill.glb",
+      "sha256": "05388b86164dfd50",
+      "triangles": 1326,
+      "bytes": 54712,
+      "source": "lowpolyassets-wild-west/Miscellaneous/Windmill.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_balcony_a.glb",
+      "sha256": "99fe6772ec715e44",
+      "triangles": 1028,
+      "bytes": 42416,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Balcony A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_balcony_b.glb",
+      "sha256": "9e656ef492ad440d",
+      "triangles": 1016,
+      "bytes": 42692,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Balcony B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_balcony_c.glb",
+      "sha256": "9f486b8ff2938780",
+      "triangles": 1416,
+      "bytes": 57764,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Balcony C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_balcony_d.glb",
+      "sha256": "ccf7e0e296c3e16d",
+      "triangles": 1640,
+      "bytes": 67948,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Balcony D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_balcony_e.glb",
+      "sha256": "5fdefdd7ca637287",
+      "triangles": 1496,
+      "bytes": 61216,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Balcony E.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_balcony_f.glb",
+      "sha256": "5d367e823fb4b264",
+      "triangles": 1640,
+      "bytes": 70360,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Balcony F.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_balcony_with_railing_a.glb",
+      "sha256": "8f19acf20a9fc34d",
+      "triangles": 1736,
+      "bytes": 70612,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Balcony With Railing A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_balcony_with_railing_b.glb",
+      "sha256": "bcb9beec5ac10f84",
+      "triangles": 2204,
+      "bytes": 88316,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Balcony With Railing B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_balcony_with_railing_c.glb",
+      "sha256": "6f61f7b126b13aa1",
+      "triangles": 2396,
+      "bytes": 97576,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Balcony With Railing C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_post.glb",
+      "sha256": "78f0d046af705f02",
+      "triangles": 68,
+      "bytes": 4004,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Post.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_railing.glb",
+      "sha256": "4113f78e21319a4e",
+      "triangles": 152,
+      "bytes": 7308,
+      "source": "lowpolyassets-wild-west/Modular/Balconies/Railing.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_cell_door.glb",
+      "sha256": "b30c84baf810c0ad",
+      "triangles": 140,
+      "bytes": 6492,
+      "source": "lowpolyassets-wild-west/Modular/Doors/Cell Door.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_door_a.glb",
+      "sha256": "6fad1cbbd76caf57",
+      "triangles": 148,
+      "bytes": 6928,
+      "source": "lowpolyassets-wild-west/Modular/Doors/Door A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_door_b.glb",
+      "sha256": "f2a347affc9557a1",
+      "triangles": 528,
+      "bytes": 24020,
+      "source": "lowpolyassets-wild-west/Modular/Doors/Door B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door.glb",
+      "sha256": "417e38d20aa74a83",
+      "triangles": 260,
+      "bytes": 10184,
+      "source": "lowpolyassets-wild-west/Modular/Doors/Saloon Door.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_floor_a.glb",
+      "sha256": "62a3b195c135df5c",
+      "triangles": 632,
+      "bytes": 25888,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Floor A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_floor_b.glb",
+      "sha256": "d7820991a60bf4f4",
+      "triangles": 996,
+      "bytes": 38696,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Floor B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_floor_c.glb",
+      "sha256": "832b56319e5a0b3c",
+      "triangles": 628,
+      "bytes": 25700,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Floor C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_floor_d.glb",
+      "sha256": "db1b785584519e3c",
+      "triangles": 916,
+      "bytes": 36116,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Floor D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_floor_e.glb",
+      "sha256": "ef3727eb5c499028",
+      "triangles": 640,
+      "bytes": 26172,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Floor E.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_foundation_a.glb",
+      "sha256": "240ce2d83e13ccdd",
+      "triangles": 632,
+      "bytes": 26500,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Foundation A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_foundation_b.glb",
+      "sha256": "b2ccbf583f2d472f",
+      "triangles": 996,
+      "bytes": 39412,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Foundation B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_foundation_c.glb",
+      "sha256": "3b9fbfcb1f18037f",
+      "triangles": 628,
+      "bytes": 27320,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Foundation C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_foundation_d.glb",
+      "sha256": "6bf1764eb1da235b",
+      "triangles": 1388,
+      "bytes": 55240,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Foundation D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_foundation_e.glb",
+      "sha256": "3dccfce30d5f3e32",
+      "triangles": 1752,
+      "bytes": 68088,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Foundation E.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_foundation_f.glb",
+      "sha256": "77fa9f62957ea05c",
+      "triangles": 1232,
+      "bytes": 49284,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Foundation F.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_roof_a.glb",
+      "sha256": "bc93297c063fc17d",
+      "triangles": 16,
+      "bytes": 2608,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Roof A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_roof_b.glb",
+      "sha256": "10f2719af2180e39",
+      "triangles": 48,
+      "bytes": 4052,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Roof B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_roof_c.glb",
+      "sha256": "af079e0431b2f38f",
+      "triangles": 28,
+      "bytes": 2972,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Roof C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_roof_d.glb",
+      "sha256": "bf02535975464936",
+      "triangles": 36,
+      "bytes": 3944,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Roof D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_roof_e.glb",
+      "sha256": "271ab3a0bae0253a",
+      "triangles": 648,
+      "bytes": 27112,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Roof E.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_foundation_a.glb",
+      "sha256": "b81783cdbe754902",
+      "triangles": 956,
+      "bytes": 38872,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Small Foundation A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_foundation_b.glb",
+      "sha256": "ee83ea7cdd8d8ca9",
+      "triangles": 1212,
+      "bytes": 49564,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Small Foundation B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_foundation_c.glb",
+      "sha256": "6dac0520eb81c14f",
+      "triangles": 1572,
+      "bytes": 67040,
+      "source": "lowpolyassets-wild-west/Modular/Floor & Roof/Small Foundation C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_bank_sign_a.glb",
+      "sha256": "42bb4a725e0a7ae7",
+      "triangles": 972,
+      "bytes": 44228,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Bank Sign A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_bank_sign_b.glb",
+      "sha256": "61b89fd232c278f5",
+      "triangles": 1292,
+      "bytes": 57404,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Bank Sign B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_bank_sign_c.glb",
+      "sha256": "66213c6e966fe915",
+      "triangles": 1198,
+      "bytes": 54100,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Bank Sign C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_doctor_sign_a.glb",
+      "sha256": "ccc10c49b9e1413c",
+      "triangles": 1792,
+      "bytes": 84436,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Doctor Sign A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_doctor_sign_b.glb",
+      "sha256": "75d7c49c01cdf128",
+      "triangles": 2112,
+      "bytes": 97548,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Doctor Sign B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_doctor_sign_c.glb",
+      "sha256": "e15019cb116b7b79",
+      "triangles": 2018,
+      "bytes": 94404,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Doctor Sign C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_general_sign_a.glb",
+      "sha256": "00ce47624b9388de",
+      "triangles": 1648,
+      "bytes": 73964,
+      "source": "lowpolyassets-wild-west/Modular/Signs/General Sign A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_general_sign_b.glb",
+      "sha256": "67ef804e353ad63e",
+      "triangles": 2452,
+      "bytes": 113152,
+      "source": "lowpolyassets-wild-west/Modular/Signs/General Sign B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_general_sign_c.glb",
+      "sha256": "67ef804e353ad63e",
+      "triangles": 2452,
+      "bytes": 113152,
+      "source": "lowpolyassets-wild-west/Modular/Signs/General Sign C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_gun_sign_a.glb",
+      "sha256": "9554c634714fd4cf",
+      "triangles": 1418,
+      "bytes": 66220,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Gun Sign A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_gun_sign_b.glb",
+      "sha256": "fb8e77998019db21",
+      "triangles": 1738,
+      "bytes": 79204,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Gun Sign B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_gun_sign_c.glb",
+      "sha256": "c495400dd318c618",
+      "triangles": 2214,
+      "bytes": 101816,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Gun Sign C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_hotel_sign_a.glb",
+      "sha256": "78d4337d340ef940",
+      "triangles": 980,
+      "bytes": 44900,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Hotel Sign A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_hotel_sign_b.glb",
+      "sha256": "b7808d610d021546",
+      "triangles": 1300,
+      "bytes": 58064,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Hotel Sign B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_hotel_sign_c.glb",
+      "sha256": "ea472abde44e1bcb",
+      "triangles": 1206,
+      "bytes": 54964,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Hotel Sign C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_saloon_sign_a.glb",
+      "sha256": "a8fb6e4979483c1f",
+      "triangles": 2104,
+      "bytes": 74432,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Saloon Sign A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_saloon_sign_b.glb",
+      "sha256": "de5b70f58d8a6bd3",
+      "triangles": 1900,
+      "bytes": 87364,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Saloon Sign B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_saloon_sign_c.glb",
+      "sha256": "d1ef8f9aac92eae7",
+      "triangles": 1328,
+      "bytes": 60964,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Saloon Sign C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_sheriff_sign_a.glb",
+      "sha256": "f907fbccc1f4ae39",
+      "triangles": 1256,
+      "bytes": 57604,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Sheriff Sign A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_sheriff_sign_b.glb",
+      "sha256": "f3dd92fd19c9ebe4",
+      "triangles": 1576,
+      "bytes": 70652,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Sheriff Sign B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_sheriff_sign_c.glb",
+      "sha256": "6de01b29845ca74b",
+      "triangles": 1482,
+      "bytes": 67412,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Sheriff Sign C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_sign_a.glb",
+      "sha256": "29337d236d9b1673",
+      "triangles": 524,
+      "bytes": 23304,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Sign A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_sign_b.glb",
+      "sha256": "94f2cb40ec622884",
+      "triangles": 844,
+      "bytes": 36444,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Sign B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_sign_c.glb",
+      "sha256": "5aae73ca7810e0e8",
+      "triangles": 750,
+      "bytes": 33188,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Sign C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_sign_d.glb",
+      "sha256": "363daf1304f0a442",
+      "triangles": 488,
+      "bytes": 22580,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Sign D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_sign_e.glb",
+      "sha256": "b37300dc6adf5a11",
+      "triangles": 196,
+      "bytes": 9000,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Sign E.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_sign_f.glb",
+      "sha256": "ac13f6a1e429f78f",
+      "triangles": 226,
+      "bytes": 11028,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Sign F.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_sign.glb",
+      "sha256": "9e096813d7fc458f",
+      "triangles": 336,
+      "bytes": 15356,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Small Sign.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_welcome_sign.glb",
+      "sha256": "2c718dbd314f2705",
+      "triangles": 424,
+      "bytes": 19060,
+      "source": "lowpolyassets-wild-west/Modular/Signs/Welcome Sign.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_big_staircase_a.glb",
+      "sha256": "16b8e32f596fffeb",
+      "triangles": 1952,
+      "bytes": 75820,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Big Staircase A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_corner_staircase_a.glb",
+      "sha256": "985762ee34efa2b1",
+      "triangles": 660,
+      "bytes": 24276,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Corner Staircase A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_corner_staircase_b.glb",
+      "sha256": "26163797951d09e4",
+      "triangles": 1182,
+      "bytes": 45660,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Corner Staircase B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_corner_stairs.glb",
+      "sha256": "a56f62e845e09627",
+      "triangles": 1364,
+      "bytes": 58340,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Corner Stairs.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_stairs.glb",
+      "sha256": "ec800e89182e6a63",
+      "triangles": 564,
+      "bytes": 23820,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Small Stairs.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_staircase_a.glb",
+      "sha256": "8b75d5b4cabf2548",
+      "triangles": 628,
+      "bytes": 22396,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Staircase A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_staircase_b.glb",
+      "sha256": "ab3ad8398f3ecdaf",
+      "triangles": 984,
+      "bytes": 37256,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Staircase B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_stairs_a.glb",
+      "sha256": "e8f2df0702a5b10e",
+      "triangles": 528,
+      "bytes": 23668,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Stairs A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_stairs_b.glb",
+      "sha256": "584a1d2f87ed3c9b",
+      "triangles": 868,
+      "bytes": 38008,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Stairs B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_stairs_c.glb",
+      "sha256": "c00b8ee62b69477f",
+      "triangles": 868,
+      "bytes": 38040,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Stairs C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_stairs_d.glb",
+      "sha256": "318aa8b64190d3fc",
+      "triangles": 1932,
+      "bytes": 78876,
+      "source": "lowpolyassets-wild-west/Modular/Stairs/Stairs D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_cell_wall.glb",
+      "sha256": "48c3229bf688f342",
+      "triangles": 168,
+      "bytes": 7424,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Cell Wall.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_corner_post_a.glb",
+      "sha256": "023b20f15c433d05",
+      "triangles": 48,
+      "bytes": 3072,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Corner Post A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_corner_post_b.glb",
+      "sha256": "895e9a44d662eceb",
+      "triangles": 44,
+      "bytes": 2536,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Corner Post B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_door_and_window_a.glb",
+      "sha256": "558ddb04e7db8890",
+      "triangles": 540,
+      "bytes": 29240,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Door and Window A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_door_and_window_b.glb",
+      "sha256": "3ae127efdc5c7fe9",
+      "triangles": 804,
+      "bytes": 45116,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Door and Window B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_interior_door_a.glb",
+      "sha256": "b0c55f2f82ab57c4",
+      "triangles": 376,
+      "bytes": 20164,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Int. Door A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_interior_door_b.glb",
+      "sha256": "2e378a52200228f3",
+      "triangles": 376,
+      "bytes": 20984,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Int. Door B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_interior_small_wall.glb",
+      "sha256": "59279bafb52abe4a",
+      "triangles": 212,
+      "bytes": 10232,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Int. Small Wall.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_interior_wall.glb",
+      "sha256": "993bdebb1fb3dc72",
+      "triangles": 212,
+      "bytes": 10188,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Int. Wall.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_large_wall_a.glb",
+      "sha256": "a86ee0d53100f2fd",
+      "triangles": 132,
+      "bytes": 6436,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Large Wall A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_large_wall_b.glb",
+      "sha256": "bfd8a158b3907e68",
+      "triangles": 236,
+      "bytes": 11824,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Large Wall B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_a.glb",
+      "sha256": "ddde90f47993a853",
+      "triangles": 282,
+      "bytes": 13096,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Saloon Door A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_b.glb",
+      "sha256": "123eb7e7936ea294",
+      "triangles": 660,
+      "bytes": 29044,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Saloon Door B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_c.glb",
+      "sha256": "9009747cd05fc148",
+      "triangles": 426,
+      "bytes": 25172,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Saloon Door C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_d.glb",
+      "sha256": "bbb77e9c1f069a11",
+      "triangles": 972,
+      "bytes": 55876,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Saloon Door D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_door_a.glb",
+      "sha256": "94ab7489bb47a3de",
+      "triangles": 272,
+      "bytes": 12776,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Small Door A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_door_b.glb",
+      "sha256": "e41ca45af70cc013",
+      "triangles": 430,
+      "bytes": 24380,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Small Door B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_wall_a.glb",
+      "sha256": "329a011c58c3f369",
+      "triangles": 132,
+      "bytes": 6412,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Small Wall A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_wall_b.glb",
+      "sha256": "9a922737284ad473",
+      "triangles": 236,
+      "bytes": 11840,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Small Wall B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_window_a.glb",
+      "sha256": "5378879665e6d671",
+      "triangles": 616,
+      "bytes": 33592,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Small Window A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_small_window_b.glb",
+      "sha256": "b0f22efe3c38eb60",
+      "triangles": 832,
+      "bytes": 41936,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Small Window B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_triangle_wall_a.glb",
+      "sha256": "054412a41a2b0a70",
+      "triangles": 192,
+      "bytes": 8672,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Triangle Wall A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_triangle_wall_b.glb",
+      "sha256": "db50b56e13d5a0e9",
+      "triangles": 294,
+      "bytes": 17192,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Triangle Wall B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wall_a.glb",
+      "sha256": "609f508e69340b37",
+      "triangles": 132,
+      "bytes": 6432,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Wall A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wall_b.glb",
+      "sha256": "37cc13680c637bd2",
+      "triangles": 132,
+      "bytes": 6340,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Wall B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wall_c.glb",
+      "sha256": "4d5af1e1d86647b2",
+      "triangles": 236,
+      "bytes": 11796,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Wall C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wall_d.glb",
+      "sha256": "6b703c24d96b49ec",
+      "triangles": 236,
+      "bytes": 12560,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Wall D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_a.glb",
+      "sha256": "57e539ef3a94c887",
+      "triangles": 272,
+      "bytes": 12772,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Wall Door A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_b.glb",
+      "sha256": "b66485b800e6542f",
+      "triangles": 268,
+      "bytes": 12684,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Wall Door B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_c.glb",
+      "sha256": "59aaf553be66f62e",
+      "triangles": 426,
+      "bytes": 23168,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Wall Door C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_d.glb",
+      "sha256": "51dcd4a31b4a47ad",
+      "triangles": 437,
+      "bytes": 26792,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Wall Door D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_e.glb",
+      "sha256": "957070a16b648538",
+      "triangles": 430,
+      "bytes": 24220,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Wall Door E.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_window_a.glb",
+      "sha256": "521a771d91ada3c3",
+      "triangles": 1170,
+      "bytes": 55716,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Window A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_window_b.glb",
+      "sha256": "e6eee49714a86481",
+      "triangles": 1688,
+      "bytes": 77188,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Window B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_window_c.glb",
+      "sha256": "eb85c61fb9de543f",
+      "triangles": 1386,
+      "bytes": 70660,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Window C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_window_d.glb",
+      "sha256": "76ffe75634ce4364",
+      "triangles": 1972,
+      "bytes": 95540,
+      "source": "lowpolyassets-wild-west/Modular/Walls/Window D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_cactus_a.glb",
+      "sha256": "6787f0409418d4af",
+      "triangles": 900,
+      "bytes": 37336,
+      "source": "lowpolyassets-wild-west/Nature/Cactus A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_cactus_b.glb",
+      "sha256": "46eccfc00a117cfa",
+      "triangles": 1224,
+      "bytes": 50220,
+      "source": "lowpolyassets-wild-west/Nature/Cactus B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_cactus_c.glb",
+      "sha256": "81ad8fc5f071d954",
+      "triangles": 400,
+      "bytes": 22948,
+      "source": "lowpolyassets-wild-west/Nature/Cactus C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_cactus_d.glb",
+      "sha256": "fb3d5ef4e29d6ead",
+      "triangles": 1512,
+      "bytes": 62320,
+      "source": "lowpolyassets-wild-west/Nature/Cactus D.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_tumbleweed.glb",
+      "sha256": "02f1138e9d864109",
+      "triangles": 1816,
+      "bytes": 72736,
+      "source": "lowpolyassets-wild-west/Nature/Tumbleweed.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_cart_a.glb",
+      "sha256": "be5cf490f2190d33",
+      "triangles": 2072,
+      "bytes": 85840,
+      "source": "lowpolyassets-wild-west/Transportation/Cart A.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_cart_b.glb",
+      "sha256": "cdad29ef6a65cf4c",
+      "triangles": 3100,
+      "bytes": 108140,
+      "source": "lowpolyassets-wild-west/Transportation/Cart B.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_cart_c.glb",
+      "sha256": "0006cc7f9f6dee9f",
+      "triangles": 3756,
+      "bytes": 133584,
+      "source": "lowpolyassets-wild-west/Transportation/Cart C.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ww_stagecoach.glb",
+      "sha256": "87815342278cccf7",
+      "triangles": 3026,
+      "bytes": 127828,
+      "source": "lowpolyassets-wild-west/Transportation/Stagecoach.fbx",
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
       "file": "skies/clear.jpg",
       "sha256": "4ba9d3b02f1b3acf",
       "bytes": 37359,

@@ -7679,6 +7679,2008 @@
         0.062,
         0.608
       ]
+    },
+    {
+      "file": "props/ww_barrel_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Barrel A.fbx",
+      "triangles": 648,
+      "bytes": 38592,
+      "sha256": "1ea5c8b8e7ab69e7",
+      "size": [
+        0.87,
+        1,
+        0.87
+      ]
+    },
+    {
+      "file": "props/ww_barrel_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Barrel B.fbx",
+      "triangles": 672,
+      "bytes": 30988,
+      "sha256": "be34057c7ad0650e",
+      "size": [
+        0.899,
+        1,
+        0.899
+      ]
+    },
+    {
+      "file": "props/ww_bottle_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle A.fbx",
+      "triangles": 260,
+      "bytes": 12520,
+      "sha256": "283d338cf6a14ee4",
+      "size": [
+        0.077,
+        0.364,
+        0.081
+      ]
+    },
+    {
+      "file": "props/ww_bottle_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle B.fbx",
+      "triangles": 276,
+      "bytes": 14264,
+      "sha256": "57fe31b71c6ca544",
+      "size": [
+        0.08,
+        0.313,
+        0.08
+      ]
+    },
+    {
+      "file": "props/ww_bottle_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle C.fbx",
+      "triangles": 416,
+      "bytes": 21004,
+      "sha256": "0263853a6f30eb40",
+      "size": [
+        0.097,
+        0.297,
+        0.097
+      ]
+    },
+    {
+      "file": "props/ww_bottle_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle D.fbx",
+      "triangles": 332,
+      "bytes": 16160,
+      "sha256": "45a4dcbc92c95d35",
+      "size": [
+        0.063,
+        0.214,
+        0.101
+      ]
+    },
+    {
+      "file": "props/ww_bucket.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bucket.fbx",
+      "triangles": 418,
+      "bytes": 19752,
+      "sha256": "acffc484a3ff7e70",
+      "size": [
+        0.624,
+        0.642,
+        0.624
+      ]
+    },
+    {
+      "file": "props/ww_carpet.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Carpet.fbx",
+      "triangles": 12,
+      "bytes": 1748,
+      "sha256": "49235f946d339781",
+      "size": [
+        1.079,
+        0.021,
+        1
+      ]
+    },
+    {
+      "file": "props/ww_chair.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Chair.fbx",
+      "triangles": 482,
+      "bytes": 18852,
+      "sha256": "d60901d8709b577d",
+      "size": [
+        0.504,
+        1.095,
+        0.56
+      ]
+    },
+    {
+      "file": "props/ww_crate.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Crate.fbx",
+      "triangles": 924,
+      "bytes": 39204,
+      "sha256": "a719b845760c8d3d",
+      "size": [
+        0.654,
+        0.379,
+        0.83
+      ]
+    },
+    {
+      "file": "props/ww_dynamite_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Dynamite A.fbx",
+      "triangles": 78,
+      "bytes": 5640,
+      "sha256": "be6181b41467b7c8",
+      "size": [
+        0.052,
+        0.482,
+        0.055
+      ]
+    },
+    {
+      "file": "props/ww_dynamite_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Dynamite B.fbx",
+      "triangles": 834,
+      "bytes": 33712,
+      "sha256": "9b14fbb3fd6a88c5",
+      "size": [
+        0.188,
+        0.506,
+        0.199
+      ]
+    },
+    {
+      "file": "props/ww_fence_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Fence A.fbx",
+      "triangles": 148,
+      "bytes": 7368,
+      "sha256": "30ec28a39f0167ed",
+      "size": [
+        0.109,
+        1.2,
+        3
+      ]
+    },
+    {
+      "file": "props/ww_fence_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Fence B.fbx",
+      "triangles": 352,
+      "bytes": 15356,
+      "sha256": "08f39f0b5b75f8c3",
+      "size": [
+        0.179,
+        2.184,
+        1.5
+      ]
+    },
+    {
+      "file": "props/ww_glass.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Glass.fbx",
+      "triangles": 92,
+      "bytes": 4548,
+      "sha256": "eebb045c655e7de9",
+      "size": [
+        0.091,
+        0.087,
+        0.091
+      ]
+    },
+    {
+      "file": "props/ww_gold_bar.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Gold Bar.fbx",
+      "triangles": 44,
+      "bytes": 3160,
+      "sha256": "7be5535a3735d54d",
+      "size": [
+        0.264,
+        0.072,
+        0.119
+      ]
+    },
+    {
+      "file": "props/ww_hat_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat A.fbx",
+      "triangles": 600,
+      "bytes": 37704,
+      "sha256": "4358920ad45c9117",
+      "size": [
+        0.542,
+        0.22,
+        0.457
+      ]
+    },
+    {
+      "file": "props/ww_hat_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat B.fbx",
+      "triangles": 560,
+      "bytes": 37648,
+      "sha256": "21946502e2ed2293",
+      "size": [
+        0.571,
+        0.142,
+        0.571
+      ]
+    },
+    {
+      "file": "props/ww_hat_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat C.fbx",
+      "triangles": 560,
+      "bytes": 37492,
+      "sha256": "1644b435896c29c5",
+      "size": [
+        0.489,
+        0.241,
+        0.489
+      ]
+    },
+    {
+      "file": "props/ww_hitching_post.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Hitching Post.fbx",
+      "triangles": 228,
+      "bytes": 9308,
+      "sha256": "ce358a07ab2daaf2",
+      "size": [
+        0.189,
+        1,
+        1.6
+      ]
+    },
+    {
+      "file": "props/ww_horseshoe.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Horseshoe.fbx",
+      "triangles": 132,
+      "bytes": 6388,
+      "sha256": "c8161a2d5224df87",
+      "size": [
+        0.018,
+        0.182,
+        0.179
+      ]
+    },
+    {
+      "file": "props/ww_ladder.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Ladder.fbx",
+      "triangles": 440,
+      "bytes": 19348,
+      "sha256": "b95ada17112df7f5",
+      "size": [
+        0.055,
+        2.3,
+        0.567
+      ]
+    },
+    {
+      "file": "props/ww_lantern.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Lantern.fbx",
+      "triangles": 960,
+      "bytes": 39568,
+      "sha256": "3abfadfb8433f3f0",
+      "size": [
+        0.225,
+        0.678,
+        0.313
+      ]
+    },
+    {
+      "file": "props/ww_pickaxe.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Pickaxe.fbx",
+      "triangles": 144,
+      "bytes": 12636,
+      "sha256": "463b60ced58ce5bf",
+      "size": [
+        0.189,
+        1.378,
+        1.071
+      ]
+    },
+    {
+      "file": "props/ww_table_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Table A.fbx",
+      "triangles": 512,
+      "bytes": 21120,
+      "sha256": "d0c6a8f1646ba0d3",
+      "size": [
+        1.353,
+        0.912,
+        1.353
+      ]
+    },
+    {
+      "file": "props/ww_table_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Table B.fbx",
+      "triangles": 536,
+      "bytes": 22740,
+      "sha256": "0afebaa9fd2181cc",
+      "size": [
+        1.353,
+        0.935,
+        1.353
+      ]
+    },
+    {
+      "file": "props/ww_trough_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Trough A.fbx",
+      "triangles": 68,
+      "bytes": 4708,
+      "sha256": "7d3bb27900428135",
+      "size": [
+        0.453,
+        0.4,
+        1.5
+      ]
+    },
+    {
+      "file": "props/ww_trough_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Trough B.fbx",
+      "triangles": 68,
+      "bytes": 3988,
+      "sha256": "0ab601e8a84fcf19",
+      "size": [
+        0.453,
+        0.4,
+        1.5
+      ]
+    },
+    {
+      "file": "props/ww_wheel_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Wheel A.fbx",
+      "triangles": 472,
+      "bytes": 18672,
+      "sha256": "932eaf4b5e0241e9",
+      "size": [
+        0.092,
+        1.042,
+        1.042
+      ]
+    },
+    {
+      "file": "props/ww_wheel_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Wheel B.fbx",
+      "triangles": 472,
+      "bytes": 18752,
+      "sha256": "ce5f0d9e3059ae23",
+      "size": [
+        0.13,
+        1.475,
+        1.475
+      ]
+    },
+    {
+      "file": "props/ww_bar.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Bar.fbx",
+      "triangles": 236,
+      "bytes": 9592,
+      "sha256": "4b54e131cb022208",
+      "size": [
+        1.937,
+        0.944,
+        3.616
+      ]
+    },
+    {
+      "file": "props/ww_gallows.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Gallows.fbx",
+      "triangles": 2502,
+      "bytes": 100472,
+      "sha256": "acdddddea14b3c32",
+      "size": [
+        3.493,
+        4.107,
+        4.131
+      ]
+    },
+    {
+      "file": "props/ww_rail.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Rail.fbx",
+      "triangles": 352,
+      "bytes": 19600,
+      "sha256": "e376f07109a04c3d",
+      "size": [
+        1.478,
+        0.226,
+        3.471
+      ]
+    },
+    {
+      "file": "props/ww_water_tank.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Water Tank.fbx",
+      "triangles": 1496,
+      "bytes": 77196,
+      "sha256": "5e146ebf70a1cc48",
+      "size": [
+        2.201,
+        5.678,
+        2.232
+      ]
+    },
+    {
+      "file": "props/ww_windmill.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Windmill.fbx",
+      "triangles": 1326,
+      "bytes": 54712,
+      "sha256": "05388b86164dfd50",
+      "size": [
+        2.426,
+        8.595,
+        2.665
+      ]
+    },
+    {
+      "file": "props/ww_balcony_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony A.fbx",
+      "triangles": 1028,
+      "bytes": 42416,
+      "sha256": "99fe6772ec715e44",
+      "size": [
+        1.844,
+        3.52,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_balcony_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony B.fbx",
+      "triangles": 1016,
+      "bytes": 42692,
+      "sha256": "9e656ef492ad440d",
+      "size": [
+        2.142,
+        4.055,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_balcony_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony C.fbx",
+      "triangles": 1416,
+      "bytes": 57764,
+      "sha256": "9f486b8ff2938780",
+      "size": [
+        6.516,
+        3.513,
+        6.52
+      ]
+    },
+    {
+      "file": "props/ww_balcony_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony D.fbx",
+      "triangles": 1640,
+      "bytes": 67948,
+      "sha256": "ccf7e0e296c3e16d",
+      "size": [
+        6.87,
+        3.508,
+        6.904
+      ]
+    },
+    {
+      "file": "props/ww_balcony_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony E.fbx",
+      "triangles": 1496,
+      "bytes": 61216,
+      "sha256": "5fdefdd7ca637287",
+      "size": [
+        6.691,
+        4.04,
+        6.698
+      ]
+    },
+    {
+      "file": "props/ww_balcony_f.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony F.fbx",
+      "triangles": 1640,
+      "bytes": 70360,
+      "sha256": "5d367e823fb4b264",
+      "size": [
+        6.993,
+        4.04,
+        6.993
+      ]
+    },
+    {
+      "file": "props/ww_balcony_with_railing_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing A.fbx",
+      "triangles": 1736,
+      "bytes": 70612,
+      "sha256": "8f19acf20a9fc34d",
+      "size": [
+        1.843,
+        5.108,
+        5.285
+      ]
+    },
+    {
+      "file": "props/ww_balcony_with_railing_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing B.fbx",
+      "triangles": 2204,
+      "bytes": 88316,
+      "sha256": "bcb9beec5ac10f84",
+      "size": [
+        6.516,
+        5.096,
+        6.52
+      ]
+    },
+    {
+      "file": "props/ww_balcony_with_railing_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing C.fbx",
+      "triangles": 2396,
+      "bytes": 97576,
+      "sha256": "6f61f7b126b13aa1",
+      "size": [
+        6.87,
+        5.104,
+        6.904
+      ]
+    },
+    {
+      "file": "props/ww_post.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Post.fbx",
+      "triangles": 68,
+      "bytes": 4004,
+      "sha256": "78f0d046af705f02",
+      "size": [
+        0.21,
+        1.6,
+        0.21
+      ]
+    },
+    {
+      "file": "props/ww_railing.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Railing.fbx",
+      "triangles": 152,
+      "bytes": 7308,
+      "sha256": "4113f78e21319a4e",
+      "size": [
+        0.106,
+        1.189,
+        1.6
+      ]
+    },
+    {
+      "file": "props/ww_cell_door.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Cell Door.fbx",
+      "triangles": 140,
+      "bytes": 6492,
+      "sha256": "b30c84baf810c0ad",
+      "size": [
+        1.92,
+        3.387,
+        0.224
+      ]
+    },
+    {
+      "file": "props/ww_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Door A.fbx",
+      "triangles": 148,
+      "bytes": 6928,
+      "sha256": "6fad1cbbd76caf57",
+      "size": [
+        1.413,
+        2.88,
+        0.327
+      ]
+    },
+    {
+      "file": "props/ww_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Door B.fbx",
+      "triangles": 528,
+      "bytes": 24020,
+      "sha256": "f2a347affc9557a1",
+      "size": [
+        1.413,
+        2.88,
+        0.402
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Saloon Door.fbx",
+      "triangles": 260,
+      "bytes": 10184,
+      "sha256": "417e38d20aa74a83",
+      "size": [
+        1.065,
+        1.414,
+        0.076
+      ]
+    },
+    {
+      "file": "props/ww_floor_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor A.fbx",
+      "triangles": 632,
+      "bytes": 25888,
+      "sha256": "62a3b195c135df5c",
+      "size": [
+        4.928,
+        0.246,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_floor_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor B.fbx",
+      "triangles": 996,
+      "bytes": 38696,
+      "sha256": "d7820991a60bf4f4",
+      "size": [
+        4.928,
+        0.246,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_floor_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor C.fbx",
+      "triangles": 628,
+      "bytes": 25700,
+      "sha256": "832b56319e5a0b3c",
+      "size": [
+        4.928,
+        0.23,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_floor_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor D.fbx",
+      "triangles": 916,
+      "bytes": 36116,
+      "sha256": "db1b785584519e3c",
+      "size": [
+        4.928,
+        0.246,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_floor_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor E.fbx",
+      "triangles": 640,
+      "bytes": 26172,
+      "sha256": "ef3727eb5c499028",
+      "size": [
+        4.928,
+        0.246,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_foundation_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation A.fbx",
+      "triangles": 632,
+      "bytes": 26500,
+      "sha256": "240ce2d83e13ccdd",
+      "size": [
+        5.28,
+        0.614,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation B.fbx",
+      "triangles": 996,
+      "bytes": 39412,
+      "sha256": "b2ccbf583f2d472f",
+      "size": [
+        5.28,
+        0.614,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation C.fbx",
+      "triangles": 628,
+      "bytes": 27320,
+      "sha256": "3b9fbfcb1f18037f",
+      "size": [
+        5.28,
+        0.598,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation D.fbx",
+      "triangles": 1388,
+      "bytes": 55240,
+      "sha256": "6bf1764eb1da235b",
+      "size": [
+        5.28,
+        0.711,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation E.fbx",
+      "triangles": 1752,
+      "bytes": 68088,
+      "sha256": "3dccfce30d5f3e32",
+      "size": [
+        5.28,
+        0.711,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_f.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation F.fbx",
+      "triangles": 1232,
+      "bytes": 49284,
+      "sha256": "77fa9f62957ea05c",
+      "size": [
+        5.28,
+        0.695,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_roof_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof A.fbx",
+      "triangles": 16,
+      "bytes": 2608,
+      "sha256": "bc93297c063fc17d",
+      "size": [
+        5.28,
+        0.112,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_roof_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof B.fbx",
+      "triangles": 48,
+      "bytes": 4052,
+      "sha256": "10f2719af2180e39",
+      "size": [
+        5.28,
+        0.271,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_roof_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof C.fbx",
+      "triangles": 28,
+      "bytes": 2972,
+      "sha256": "af079e0431b2f38f",
+      "size": [
+        5.28,
+        0.271,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_roof_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof D.fbx",
+      "triangles": 36,
+      "bytes": 3944,
+      "sha256": "bf02535975464936",
+      "size": [
+        5.484,
+        0.271,
+        5.483
+      ]
+    },
+    {
+      "file": "props/ww_roof_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof E.fbx",
+      "triangles": 648,
+      "bytes": 27112,
+      "sha256": "271ab3a0bae0253a",
+      "size": [
+        5.474,
+        5.567,
+        5.48
+      ]
+    },
+    {
+      "file": "props/ww_small_foundation_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation A.fbx",
+      "triangles": 956,
+      "bytes": 38872,
+      "sha256": "b81783cdbe754902",
+      "size": [
+        1.838,
+        0.71,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_small_foundation_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation B.fbx",
+      "triangles": 1212,
+      "bytes": 49564,
+      "sha256": "ee83ea7cdd8d8ca9",
+      "size": [
+        6.489,
+        0.711,
+        6.497
+      ]
+    },
+    {
+      "file": "props/ww_small_foundation_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation C.fbx",
+      "triangles": 1572,
+      "bytes": 67040,
+      "sha256": "6dac0520eb81c14f",
+      "size": [
+        7.044,
+        0.692,
+        7.062
+      ]
+    },
+    {
+      "file": "props/ww_bank_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign A.fbx",
+      "triangles": 972,
+      "bytes": 44228,
+      "sha256": "42bb4a725e0a7ae7",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_bank_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign B.fbx",
+      "triangles": 1292,
+      "bytes": 57404,
+      "sha256": "61b89fd232c278f5",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_bank_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign C.fbx",
+      "triangles": 1198,
+      "bytes": 54100,
+      "sha256": "66213c6e966fe915",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_doctor_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign A.fbx",
+      "triangles": 1792,
+      "bytes": 84436,
+      "sha256": "ccc10c49b9e1413c",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_doctor_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign B.fbx",
+      "triangles": 2112,
+      "bytes": 97548,
+      "sha256": "75d7c49c01cdf128",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_doctor_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign C.fbx",
+      "triangles": 2018,
+      "bytes": 94404,
+      "sha256": "e15019cb116b7b79",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_general_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign A.fbx",
+      "triangles": 1648,
+      "bytes": 73964,
+      "sha256": "00ce47624b9388de",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_general_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign B.fbx",
+      "triangles": 2452,
+      "bytes": 113152,
+      "sha256": "67ef804e353ad63e",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_general_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign C.fbx",
+      "triangles": 2452,
+      "bytes": 113152,
+      "sha256": "67ef804e353ad63e",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_gun_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign A.fbx",
+      "triangles": 1418,
+      "bytes": 66220,
+      "sha256": "9554c634714fd4cf",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_gun_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign B.fbx",
+      "triangles": 1738,
+      "bytes": 79204,
+      "sha256": "fb8e77998019db21",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_gun_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign C.fbx",
+      "triangles": 2214,
+      "bytes": 101816,
+      "sha256": "c495400dd318c618",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_hotel_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign A.fbx",
+      "triangles": 980,
+      "bytes": 44900,
+      "sha256": "78d4337d340ef940",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_hotel_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign B.fbx",
+      "triangles": 1300,
+      "bytes": 58064,
+      "sha256": "b7808d610d021546",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_hotel_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign C.fbx",
+      "triangles": 1206,
+      "bytes": 54964,
+      "sha256": "ea472abde44e1bcb",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_saloon_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign A.fbx",
+      "triangles": 2104,
+      "bytes": 74432,
+      "sha256": "a8fb6e4979483c1f",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_saloon_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign B.fbx",
+      "triangles": 1900,
+      "bytes": 87364,
+      "sha256": "de5b70f58d8a6bd3",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_saloon_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign C.fbx",
+      "triangles": 1328,
+      "bytes": 60964,
+      "sha256": "d1ef8f9aac92eae7",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_sheriff_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign A.fbx",
+      "triangles": 1256,
+      "bytes": 57604,
+      "sha256": "f907fbccc1f4ae39",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_sheriff_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign B.fbx",
+      "triangles": 1576,
+      "bytes": 70652,
+      "sha256": "f3dd92fd19c9ebe4",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_sheriff_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign C.fbx",
+      "triangles": 1482,
+      "bytes": 67412,
+      "sha256": "6de01b29845ca74b",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign A.fbx",
+      "triangles": 524,
+      "bytes": 23304,
+      "sha256": "29337d236d9b1673",
+      "size": [
+        10.56,
+        2.4,
+        2.313
+      ]
+    },
+    {
+      "file": "props/ww_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign B.fbx",
+      "triangles": 844,
+      "bytes": 36444,
+      "sha256": "94f2cb40ec622884",
+      "size": [
+        10.56,
+        3.753,
+        2.315
+      ]
+    },
+    {
+      "file": "props/ww_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign C.fbx",
+      "triangles": 750,
+      "bytes": 33188,
+      "sha256": "5aae73ca7810e0e8",
+      "size": [
+        10.56,
+        3.563,
+        2.315
+      ]
+    },
+    {
+      "file": "props/ww_sign_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign D.fbx",
+      "triangles": 488,
+      "bytes": 22580,
+      "sha256": "363daf1304f0a442",
+      "size": [
+        10.56,
+        2.4,
+        0.41
+      ]
+    },
+    {
+      "file": "props/ww_sign_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign E.fbx",
+      "triangles": 196,
+      "bytes": 9000,
+      "sha256": "b37300dc6adf5a11",
+      "size": [
+        10.56,
+        2.4,
+        0.361
+      ]
+    },
+    {
+      "file": "props/ww_sign_f.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign F.fbx",
+      "triangles": 226,
+      "bytes": 11028,
+      "sha256": "ac13f6a1e429f78f",
+      "size": [
+        5.327,
+        1.795,
+        5.327
+      ]
+    },
+    {
+      "file": "props/ww_small_sign.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Small Sign.fbx",
+      "triangles": 336,
+      "bytes": 15356,
+      "sha256": "9e096813d7fc458f",
+      "size": [
+        1.65,
+        1.262,
+        0.131
+      ]
+    },
+    {
+      "file": "props/ww_welcome_sign.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Welcome Sign.fbx",
+      "triangles": 424,
+      "bytes": 19060,
+      "sha256": "2c718dbd314f2705",
+      "size": [
+        11.297,
+        8.264,
+        0.437
+      ]
+    },
+    {
+      "file": "props/ww_big_staircase_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Big Staircase A.fbx",
+      "triangles": 1952,
+      "bytes": 75820,
+      "sha256": "16b8e32f596fffeb",
+      "size": [
+        4.097,
+        5.214,
+        6.5
+      ]
+    },
+    {
+      "file": "props/ww_corner_staircase_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Staircase A.fbx",
+      "triangles": 660,
+      "bytes": 24276,
+      "sha256": "985762ee34efa2b1",
+      "size": [
+        4.8,
+        3.52,
+        4.8
+      ]
+    },
+    {
+      "file": "props/ww_corner_staircase_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Staircase B.fbx",
+      "triangles": 1182,
+      "bytes": 45660,
+      "sha256": "26163797951d09e4",
+      "size": [
+        4.8,
+        5.199,
+        4.8
+      ]
+    },
+    {
+      "file": "props/ww_corner_stairs.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Stairs.fbx",
+      "triangles": 1364,
+      "bytes": 58340,
+      "sha256": "a56f62e845e09627",
+      "size": [
+        4.57,
+        7.018,
+        4.956
+      ]
+    },
+    {
+      "file": "props/ww_small_stairs.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Small Stairs.fbx",
+      "triangles": 564,
+      "bytes": 23820,
+      "sha256": "ec800e89182e6a63",
+      "size": [
+        1.1,
+        0.502,
+        1.584
+      ]
+    },
+    {
+      "file": "props/ww_staircase_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Staircase A.fbx",
+      "triangles": 628,
+      "bytes": 22396,
+      "sha256": "8b75d5b4cabf2548",
+      "size": [
+        1.6,
+        3.52,
+        4.089
+      ]
+    },
+    {
+      "file": "props/ww_staircase_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Staircase B.fbx",
+      "triangles": 984,
+      "bytes": 37256,
+      "sha256": "ab3ad8398f3ecdaf",
+      "size": [
+        1.6,
+        5.202,
+        4.109
+      ]
+    },
+    {
+      "file": "props/ww_stairs_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs A.fbx",
+      "triangles": 528,
+      "bytes": 23668,
+      "sha256": "e8f2df0702a5b10e",
+      "size": [
+        1.6,
+        3.52,
+        3.36
+      ]
+    },
+    {
+      "file": "props/ww_stairs_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs B.fbx",
+      "triangles": 868,
+      "bytes": 38008,
+      "sha256": "584a1d2f87ed3c9b",
+      "size": [
+        5.203,
+        3.508,
+        1.634
+      ]
+    },
+    {
+      "file": "props/ww_stairs_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs C.fbx",
+      "triangles": 868,
+      "bytes": 38040,
+      "sha256": "c00b8ee62b69477f",
+      "size": [
+        5.203,
+        3.508,
+        1.634
+      ]
+    },
+    {
+      "file": "props/ww_stairs_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs D.fbx",
+      "triangles": 1932,
+      "bytes": 78876,
+      "sha256": "318aa8b64190d3fc",
+      "size": [
+        6.765,
+        7.081,
+        3.268
+      ]
+    },
+    {
+      "file": "props/ww_cell_wall.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Cell Wall.fbx",
+      "triangles": 168,
+      "bytes": 7424,
+      "sha256": "48c3229bf688f342",
+      "size": [
+        3.2,
+        3.52,
+        0.224
+      ]
+    },
+    {
+      "file": "props/ww_corner_post_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Corner Post A.fbx",
+      "triangles": 48,
+      "bytes": 3072,
+      "sha256": "023b20f15c433d05",
+      "size": [
+        0.521,
+        3.52,
+        0.617
+      ]
+    },
+    {
+      "file": "props/ww_corner_post_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Corner Post B.fbx",
+      "triangles": 44,
+      "bytes": 2536,
+      "sha256": "895e9a44d662eceb",
+      "size": [
+        0.4,
+        3.52,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_door_and_window_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Door and Window A.fbx",
+      "triangles": 540,
+      "bytes": 29240,
+      "sha256": "558ddb04e7db8890",
+      "size": [
+        9.6,
+        3.526,
+        0.415
+      ]
+    },
+    {
+      "file": "props/ww_door_and_window_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Door and Window B.fbx",
+      "triangles": 804,
+      "bytes": 45116,
+      "sha256": "3ae127efdc5c7fe9",
+      "size": [
+        9.6,
+        3.52,
+        0.416
+      ]
+    },
+    {
+      "file": "props/ww_interior_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Door A.fbx",
+      "triangles": 376,
+      "bytes": 20164,
+      "sha256": "b0c55f2f82ab57c4",
+      "size": [
+        2.4,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_interior_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Door B.fbx",
+      "triangles": 376,
+      "bytes": 20984,
+      "sha256": "2e378a52200228f3",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_interior_small_wall.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Small Wall.fbx",
+      "triangles": 212,
+      "bytes": 10232,
+      "sha256": "59279bafb52abe4a",
+      "size": [
+        2.4,
+        3.52,
+        0.16
+      ]
+    },
+    {
+      "file": "props/ww_interior_wall.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Wall.fbx",
+      "triangles": 212,
+      "bytes": 10188,
+      "sha256": "993bdebb1fb3dc72",
+      "size": [
+        4.8,
+        3.52,
+        0.16
+      ]
+    },
+    {
+      "file": "props/ww_large_wall_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Large Wall A.fbx",
+      "triangles": 132,
+      "bytes": 6436,
+      "sha256": "a86ee0d53100f2fd",
+      "size": [
+        9.6,
+        3.52,
+        0.264
+      ]
+    },
+    {
+      "file": "props/ww_large_wall_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Large Wall B.fbx",
+      "triangles": 236,
+      "bytes": 11824,
+      "sha256": "bfd8a158b3907e68",
+      "size": [
+        9.6,
+        3.52,
+        0.22
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door A.fbx",
+      "triangles": 282,
+      "bytes": 13096,
+      "sha256": "ddde90f47993a853",
+      "size": [
+        4.8,
+        3.52,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door B.fbx",
+      "triangles": 660,
+      "bytes": 29044,
+      "sha256": "123eb7e7936ea294",
+      "size": [
+        9.6,
+        3.52,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door C.fbx",
+      "triangles": 426,
+      "bytes": 25172,
+      "sha256": "9009747cd05fc148",
+      "size": [
+        4.8,
+        3.52,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door D.fbx",
+      "triangles": 972,
+      "bytes": 55876,
+      "sha256": "bbb77e9c1f069a11",
+      "size": [
+        9.6,
+        3.525,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_small_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Door A.fbx",
+      "triangles": 272,
+      "bytes": 12776,
+      "sha256": "94ab7489bb47a3de",
+      "size": [
+        2.4,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_small_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Door B.fbx",
+      "triangles": 430,
+      "bytes": 24380,
+      "sha256": "e41ca45af70cc013",
+      "size": [
+        2.4,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_small_wall_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Wall A.fbx",
+      "triangles": 132,
+      "bytes": 6412,
+      "sha256": "329a011c58c3f369",
+      "size": [
+        2.4,
+        3.52,
+        0.264
+      ]
+    },
+    {
+      "file": "props/ww_small_wall_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Wall B.fbx",
+      "triangles": 236,
+      "bytes": 11840,
+      "sha256": "9a922737284ad473",
+      "size": [
+        2.4,
+        3.52,
+        0.22
+      ]
+    },
+    {
+      "file": "props/ww_small_window_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Window A.fbx",
+      "triangles": 616,
+      "bytes": 33592,
+      "sha256": "5378879665e6d671",
+      "size": [
+        2.4,
+        3.52,
+        0.312
+      ]
+    },
+    {
+      "file": "props/ww_small_window_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Window B.fbx",
+      "triangles": 832,
+      "bytes": 41936,
+      "sha256": "b0f22efe3c38eb60",
+      "size": [
+        2.4,
+        3.52,
+        0.312
+      ]
+    },
+    {
+      "file": "props/ww_triangle_wall_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Triangle Wall A.fbx",
+      "triangles": 192,
+      "bytes": 8672,
+      "sha256": "054412a41a2b0a70",
+      "size": [
+        5.135,
+        5.135,
+        0.264
+      ]
+    },
+    {
+      "file": "props/ww_triangle_wall_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Triangle Wall B.fbx",
+      "triangles": 294,
+      "bytes": 17192,
+      "sha256": "db50b56e13d5a0e9",
+      "size": [
+        5.135,
+        5.135,
+        0.221
+      ]
+    },
+    {
+      "file": "props/ww_wall_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall A.fbx",
+      "triangles": 132,
+      "bytes": 6432,
+      "sha256": "609f508e69340b37",
+      "size": [
+        4.8,
+        3.52,
+        0.264
+      ]
+    },
+    {
+      "file": "props/ww_wall_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall B.fbx",
+      "triangles": 132,
+      "bytes": 6340,
+      "sha256": "37cc13680c637bd2",
+      "size": [
+        4.712,
+        3.52,
+        4.712
+      ]
+    },
+    {
+      "file": "props/ww_wall_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall C.fbx",
+      "triangles": 236,
+      "bytes": 11796,
+      "sha256": "4d5af1e1d86647b2",
+      "size": [
+        4.8,
+        3.52,
+        0.22
+      ]
+    },
+    {
+      "file": "props/ww_wall_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall D.fbx",
+      "triangles": 236,
+      "bytes": 12560,
+      "sha256": "6b703c24d96b49ec",
+      "size": [
+        4.681,
+        3.52,
+        4.681
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door A.fbx",
+      "triangles": 272,
+      "bytes": 12772,
+      "sha256": "57e539ef3a94c887",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door B.fbx",
+      "triangles": 268,
+      "bytes": 12684,
+      "sha256": "b66485b800e6542f",
+      "size": [
+        4.8,
+        3.526,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door C.fbx",
+      "triangles": 426,
+      "bytes": 23168,
+      "sha256": "59aaf553be66f62e",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door D.fbx",
+      "triangles": 437,
+      "bytes": 26792,
+      "sha256": "51dcd4a31b4a47ad",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door E.fbx",
+      "triangles": 430,
+      "bytes": 24220,
+      "sha256": "957070a16b648538",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_window_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window A.fbx",
+      "triangles": 1170,
+      "bytes": 55716,
+      "sha256": "521a771d91ada3c3",
+      "size": [
+        4.8,
+        3.52,
+        0.312
+      ]
+    },
+    {
+      "file": "props/ww_window_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window B.fbx",
+      "triangles": 1688,
+      "bytes": 77188,
+      "sha256": "e6eee49714a86481",
+      "size": [
+        4.712,
+        3.52,
+        4.712
+      ]
+    },
+    {
+      "file": "props/ww_window_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window C.fbx",
+      "triangles": 1386,
+      "bytes": 70660,
+      "sha256": "eb85c61fb9de543f",
+      "size": [
+        4.8,
+        3.52,
+        0.312
+      ]
+    },
+    {
+      "file": "props/ww_window_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window D.fbx",
+      "triangles": 1972,
+      "bytes": 95540,
+      "sha256": "76ffe75634ce4364",
+      "size": [
+        4.681,
+        3.52,
+        4.681
+      ]
+    },
+    {
+      "file": "props/ww_cactus_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus A.fbx",
+      "triangles": 900,
+      "bytes": 37336,
+      "sha256": "6787f0409418d4af",
+      "size": [
+        0.448,
+        2.045,
+        1.406
+      ]
+    },
+    {
+      "file": "props/ww_cactus_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus B.fbx",
+      "triangles": 1224,
+      "bytes": 50220,
+      "sha256": "46eccfc00a117cfa",
+      "size": [
+        0.772,
+        2.045,
+        0.886
+      ]
+    },
+    {
+      "file": "props/ww_cactus_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus C.fbx",
+      "triangles": 400,
+      "bytes": 22948,
+      "sha256": "81ad8fc5f071d954",
+      "size": [
+        0.245,
+        1.58,
+        1.33
+      ]
+    },
+    {
+      "file": "props/ww_cactus_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus D.fbx",
+      "triangles": 1512,
+      "bytes": 62320,
+      "sha256": "fb3d5ef4e29d6ead",
+      "size": [
+        0.816,
+        2.047,
+        0.903
+      ]
+    },
+    {
+      "file": "props/ww_tumbleweed.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Tumbleweed.fbx",
+      "triangles": 1816,
+      "bytes": 72736,
+      "sha256": "02f1138e9d864109",
+      "size": [
+        0.772,
+        0.75,
+        0.777
+      ]
+    },
+    {
+      "file": "props/ww_cart_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart A.fbx",
+      "triangles": 2072,
+      "bytes": 85840,
+      "sha256": "be5cf490f2190d33",
+      "size": [
+        1.705,
+        1.107,
+        3.66
+      ]
+    },
+    {
+      "file": "props/ww_cart_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart B.fbx",
+      "triangles": 3100,
+      "bytes": 108140,
+      "sha256": "cdad29ef6a65cf4c",
+      "size": [
+        2.084,
+        1.73,
+        6.678
+      ]
+    },
+    {
+      "file": "props/ww_cart_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart C.fbx",
+      "triangles": 3756,
+      "bytes": 133584,
+      "sha256": "0006cc7f9f6dee9f",
+      "size": [
+        2.163,
+        3.45,
+        6.678
+      ]
+    },
+    {
+      "file": "props/ww_stagecoach.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Transportation/Stagecoach.fbx",
+      "triangles": 3026,
+      "bytes": 127828,
+      "sha256": "87815342278cccf7",
+      "size": [
+        3.124,
+        3.284,
+        9.083
+      ]
     }
   ]
 }

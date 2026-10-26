@@ -225,8 +225,9 @@ function shellBoxes(size, tris) {
 /**
  * Collision as several boxes in the prop's own space, [minX, minY, minZ, maxX, maxY, maxZ]:
  * `stairs` climb toward +Z (or +X with `climbs: "+x"`) in steps a player can walk up (ramps too); `frame`
- * keeps a doorway open between its posts and under its lintel; `shell` follows
- * the footprint (see shellBoxes).
+ * keeps a doorway open between its posts and under its lintel; `openings` keeps
+ * every doorway along a wall open (Low Poly Wild West's shop fronts); `shell`
+ * follows the footprint (see shellBoxes).
  */
 function collisionBoxes(p, size, tris) {
   const [w, h, d] = size;
@@ -249,6 +250,36 @@ function collisionBoxes(p, size, tris) {
     // `climbs: "+x"` for models whose steps rise along x instead of z.
     if (climbs === '+x') return Array.from({ length: n }, (_, i) => [-w / 2 + (w * i) / n, 0, -d / 2, w / 2, (h * (i + 1)) / n, d / 2].map(round));
     return Array.from({ length: n }, (_, i) => [-w / 2, 0, -d / 2 + (d * i) / n, w / 2, (h * (i + 1)) / n, d / 2].map(round));
+  }
+  if (p.collide === 'openings') {
+    // A wall piece along x with doorways anywhere in it: 10 cm columns are solid where any face crosses waist
+    // to head height (0.4–1.9 m; window sills count), open elsewhere, each opening under a lintel down to its top.
+    const bin = 0.1;
+    const nb = Math.max(1, Math.ceil(w / bin));
+    const solid = new Uint8Array(nb);
+    const ix = (x) => Math.min(nb - 1, Math.max(0, Math.floor((x + w / 2) / bin)));
+    for (const tri of tris) {
+      const ys = tri.map((q) => q[1]);
+      if (Math.max(...ys) < 0.4 || Math.min(...ys) > 1.9) continue;
+      const xs = tri.map((q) => q[0]);
+      for (let i = ix(Math.min(...xs) + 0.02); i <= ix(Math.max(...xs) - 0.02); i++) solid[i] = 1;
+    }
+    const t = Math.max(d, MIN_THICKNESS) / 2;
+    const out = [];
+    for (let i = 0; i < nb; ) {
+      let j = i;
+      while (j + 1 < nb && solid[j + 1] === solid[i]) j++;
+      const [x0, x1] = [-w / 2 + i * bin, Math.min(w / 2, -w / 2 + (j + 1) * bin)];
+      if (solid[i] || x1 - x0 < 0.6) out.push([x0, 0, -t, x1, h, t]);
+      else {
+        // The lintel: the lowest face over the opening (faces reaching across it, wherever their corners are).
+        const over = tris.filter((tri) => Math.min(...tri.map((q) => q[1])) > 1.9 && Math.max(...tri.map((q) => q[0])) > x0 + 0.05 && Math.min(...tri.map((q) => q[0])) < x1 - 0.05);
+        const top = Math.min(h, ...over.map((tri) => Math.min(...tri.map((q) => q[1]))));
+        if (top < h) out.push([x0, top, -t, x1, h, t]);
+      }
+      i = j + 1;
+    }
+    return out.map((b) => b.map(round));
   }
   if (p.collide === 'frame') {
     // The opening: the widest gap in x round the middle with no geometry below head height.

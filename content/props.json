@@ -402,6 +402,18 @@
       "meshColors": {
         "^(Lock|Handle)_": "#b9bec2"
       }
+    },
+    "lowpolyassets-wild-west": {
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/lowpolyassets-wild-west/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Low Poly Wild West",
+      "models": ".",
+      "convert": true,
+      "scale": 0.01
     }
   },
   "budgets": {
@@ -8830,6 +8842,1419 @@
       "category": "Hospital",
       "collide": "none",
       "scale": 0.01
+    },
+    {
+      "id": "ww_barrel_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Barrel A.fbx",
+      "name": "Barrel A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_barrel_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Barrel B.fbx",
+      "name": "Barrel B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_bottle_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle A.fbx",
+      "name": "Bottle A",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_bottle_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle B.fbx",
+      "name": "Bottle B",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_bottle_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle C.fbx",
+      "name": "Bottle C",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_bottle_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle D.fbx",
+      "name": "Bottle D",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_bucket",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bucket.fbx",
+      "name": "Bucket",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_carpet",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Carpet.fbx",
+      "name": "Carpet",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_chair",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Chair.fbx",
+      "name": "Chair",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_crate",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Crate.fbx",
+      "name": "Crate",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_dynamite_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Dynamite A.fbx",
+      "name": "Dynamite A",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_dynamite_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Dynamite B.fbx",
+      "name": "Dynamite B",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_fence_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Fence A.fbx",
+      "name": "Fence A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_fence_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Fence B.fbx",
+      "name": "Fence B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_glass",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Glass.fbx",
+      "name": "Glass",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_gold_bar",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Gold Bar.fbx",
+      "name": "Gold Bar",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_hat_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat A.fbx",
+      "name": "Hat A",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_hat_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat B.fbx",
+      "name": "Hat B",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_hat_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat C.fbx",
+      "name": "Hat C",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_hitching_post",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Hitching Post.fbx",
+      "name": "Hitching Post",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_horseshoe",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Horseshoe.fbx",
+      "name": "Horseshoe",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_ladder",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Ladder.fbx",
+      "name": "Ladder",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_lantern",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Lantern.fbx",
+      "name": "Lantern",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_pickaxe",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Pickaxe.fbx",
+      "name": "Pickaxe",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_table_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Table A.fbx",
+      "name": "Table A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_table_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Table B.fbx",
+      "name": "Table B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_trough_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Trough A.fbx",
+      "name": "Trough A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_trough_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Trough B.fbx",
+      "name": "Trough B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_wheel_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Wheel A.fbx",
+      "name": "Wheel A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_wheel_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Wheel B.fbx",
+      "name": "Wheel B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_bar",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Bar.fbx",
+      "name": "Bar",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_gallows",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Gallows.fbx",
+      "name": "Gallows",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_rail",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Rail.fbx",
+      "name": "Rail",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_water_tank",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Water Tank.fbx",
+      "name": "Water Tank",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_windmill",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Windmill.fbx",
+      "name": "Windmill",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_balcony_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony A.fbx",
+      "name": "Wild West Balcony A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony B.fbx",
+      "name": "Wild West Balcony B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony C.fbx",
+      "name": "Wild West Balcony C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony D.fbx",
+      "name": "Wild West Balcony D",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony E.fbx",
+      "name": "Wild West Balcony E",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_f",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony F.fbx",
+      "name": "Wild West Balcony F",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_with_railing_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing A.fbx",
+      "name": "Wild West Balcony With Railing A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_with_railing_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing B.fbx",
+      "name": "Wild West Balcony With Railing B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_with_railing_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing C.fbx",
+      "name": "Wild West Balcony With Railing C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_post",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Post.fbx",
+      "name": "Wild West Post",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_railing",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Railing.fbx",
+      "name": "Wild West Railing",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_cell_door",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Cell Door.fbx",
+      "name": "Wild West Cell Door",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Door A.fbx",
+      "name": "Wild West Door A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Door B.fbx",
+      "name": "Wild West Door B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Saloon Door.fbx",
+      "name": "Wild West Saloon Door",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_floor_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor A.fbx",
+      "name": "Wild West Floor A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_floor_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor B.fbx",
+      "name": "Wild West Floor B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_floor_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor C.fbx",
+      "name": "Wild West Floor C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_floor_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor D.fbx",
+      "name": "Wild West Floor D",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_floor_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor E.fbx",
+      "name": "Wild West Floor E",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation A.fbx",
+      "name": "Wild West Foundation A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation B.fbx",
+      "name": "Wild West Foundation B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation C.fbx",
+      "name": "Wild West Foundation C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation D.fbx",
+      "name": "Wild West Foundation D",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation E.fbx",
+      "name": "Wild West Foundation E",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_f",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation F.fbx",
+      "name": "Wild West Foundation F",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof A.fbx",
+      "name": "Wild West Roof A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof B.fbx",
+      "name": "Wild West Roof B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof C.fbx",
+      "name": "Wild West Roof C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof D.fbx",
+      "name": "Wild West Roof D",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof E.fbx",
+      "name": "Wild West Roof E",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_small_foundation_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation A.fbx",
+      "name": "Wild West Small Foundation A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_small_foundation_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation B.fbx",
+      "name": "Wild West Small Foundation B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_small_foundation_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation C.fbx",
+      "name": "Wild West Small Foundation C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_bank_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign A.fbx",
+      "name": "Bank Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_bank_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign B.fbx",
+      "name": "Bank Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_bank_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign C.fbx",
+      "name": "Bank Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_doctor_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign A.fbx",
+      "name": "Doctor Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_doctor_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign B.fbx",
+      "name": "Doctor Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_doctor_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign C.fbx",
+      "name": "Doctor Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_general_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign A.fbx",
+      "name": "General Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_general_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign B.fbx",
+      "name": "General Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_general_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign C.fbx",
+      "name": "General Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_gun_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign A.fbx",
+      "name": "Gun Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_gun_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign B.fbx",
+      "name": "Gun Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_gun_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign C.fbx",
+      "name": "Gun Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_hotel_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign A.fbx",
+      "name": "Hotel Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_hotel_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign B.fbx",
+      "name": "Hotel Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_hotel_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign C.fbx",
+      "name": "Hotel Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign A.fbx",
+      "name": "Saloon Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign B.fbx",
+      "name": "Saloon Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign C.fbx",
+      "name": "Saloon Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sheriff_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign A.fbx",
+      "name": "Sheriff Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sheriff_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign B.fbx",
+      "name": "Sheriff Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sheriff_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign C.fbx",
+      "name": "Sheriff Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign A.fbx",
+      "name": "Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign B.fbx",
+      "name": "Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign C.fbx",
+      "name": "Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign D.fbx",
+      "name": "Sign D",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign E.fbx",
+      "name": "Sign E",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_f",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign F.fbx",
+      "name": "Sign F",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_sign",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Small Sign.fbx",
+      "name": "Small Sign",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_welcome_sign",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Welcome Sign.fbx",
+      "name": "Welcome Sign",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_big_staircase_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Big Staircase A.fbx",
+      "name": "Wild West Big Staircase A",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_corner_staircase_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Staircase A.fbx",
+      "name": "Wild West Corner Staircase A",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_corner_staircase_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Staircase B.fbx",
+      "name": "Wild West Corner Staircase B",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_corner_stairs",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Stairs.fbx",
+      "name": "Wild West Corner Stairs",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_small_stairs",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Small Stairs.fbx",
+      "name": "Wild West Small Stairs",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_staircase_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Staircase A.fbx",
+      "name": "Wild West Staircase A",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_staircase_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Staircase B.fbx",
+      "name": "Wild West Staircase B",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_stairs_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs A.fbx",
+      "name": "Wild West Stairs A",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_stairs_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs B.fbx",
+      "name": "Wild West Stairs B",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_stairs_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs C.fbx",
+      "name": "Wild West Stairs C",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_stairs_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs D.fbx",
+      "name": "Wild West Stairs D",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_cell_wall",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Cell Wall.fbx",
+      "name": "Wild West Cell Wall",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_corner_post_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Corner Post A.fbx",
+      "name": "Wild West Corner Post A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_corner_post_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Corner Post B.fbx",
+      "name": "Wild West Corner Post B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_door_and_window_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Door and Window A.fbx",
+      "name": "Wild West Door and Window A",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_door_and_window_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Door and Window B.fbx",
+      "name": "Wild West Door and Window B",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_interior_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Door A.fbx",
+      "name": "Wild West Interior Doorway",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_interior_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Door B.fbx",
+      "name": "Wild West Interior Doorway (Wide)",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_interior_small_wall",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Small Wall.fbx",
+      "name": "Wild West Interior Wall (Short)",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_interior_wall",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Wall.fbx",
+      "name": "Wild West Interior Wall",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_large_wall_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Large Wall A.fbx",
+      "name": "Wild West Large Wall A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_large_wall_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Large Wall B.fbx",
+      "name": "Wild West Large Wall B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door A.fbx",
+      "name": "Wild West Saloon Door A",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door B.fbx",
+      "name": "Wild West Saloon Door B",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door C.fbx",
+      "name": "Wild West Saloon Door C",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door D.fbx",
+      "name": "Wild West Saloon Door D",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Door A.fbx",
+      "name": "Wild West Small Door A",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Door B.fbx",
+      "name": "Wild West Small Door B",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_wall_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Wall A.fbx",
+      "name": "Wild West Small Wall A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_wall_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Wall B.fbx",
+      "name": "Wild West Small Wall B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_window_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Window A.fbx",
+      "name": "Wild West Small Window A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_window_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Window B.fbx",
+      "name": "Wild West Small Window B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_triangle_wall_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Triangle Wall A.fbx",
+      "name": "Wild West Triangle Wall A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_triangle_wall_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Triangle Wall B.fbx",
+      "name": "Wild West Triangle Wall B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall A.fbx",
+      "name": "Wild West Wall A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall B.fbx",
+      "name": "Wild West Wall B (Corner)",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_wall_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall C.fbx",
+      "name": "Wild West Wall C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall D.fbx",
+      "name": "Wild West Wall D (Corner)",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_wall_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door A.fbx",
+      "name": "Wild West Wall Door A",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door B.fbx",
+      "name": "Wild West Wall Door B",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_door_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door C.fbx",
+      "name": "Wild West Wall Door C",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_door_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door D.fbx",
+      "name": "Wild West Wall Door D",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_door_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door E.fbx",
+      "name": "Wild West Wall Door E",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_window_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window A.fbx",
+      "name": "Wild West Window A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_window_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window B.fbx",
+      "name": "Wild West Window B (Corner)",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_window_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window C.fbx",
+      "name": "Wild West Window C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_window_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window D.fbx",
+      "name": "Wild West Window D (Corner)",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_cactus_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus A.fbx",
+      "name": "Cactus A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cactus_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus B.fbx",
+      "name": "Cactus B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cactus_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus C.fbx",
+      "name": "Cactus C",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cactus_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus D.fbx",
+      "name": "Cactus D",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_tumbleweed",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Tumbleweed.fbx",
+      "name": "Tumbleweed",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_cart_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart A.fbx",
+      "name": "Cart A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cart_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart B.fbx",
+      "name": "Cart B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cart_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart C.fbx",
+      "name": "Cart C",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_stagecoach",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Transportation/Stagecoach.fbx",
+      "name": "Stagecoach",
+      "category": "Wild West",
+      "collide": "box"
     }
   ]
 }
