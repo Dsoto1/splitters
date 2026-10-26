@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
+import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
@@ -77,6 +77,10 @@ export class Hud {
   private lastWeaponBar = '';
   private roster = new Map<number, RosterEntry>();
   private hitTimer?: number;
+  /** Classes: each player's class (CLASS_IDS index), from snapshots; and lines about your own class and power disc. */
+  private classes = new Map<number, number>();
+  private statusLines: { text: string; color: string }[] = [];
+  private lastClassMenu = '';
 
   show(): void {
     applyCrosshair();
@@ -119,6 +123,57 @@ export class Hud {
     this.setTimers([]);
     this.marker.hidden = true;
     this.roster.clear();
+    this.classes.clear();
+    this.statusLines = [];
+    this.setClassMenu(false, null);
+  }
+
+  /** Classes: who plays what (for the scoreboard). */
+  setClasses(players: readonly { s: number; cl?: number }[]): void {
+    this.classes.clear();
+    for (const p of players) if (p.cl !== undefined) this.classes.set(p.s, p.cl);
+  }
+
+  /** Lines over the vitals about your class's ability or a power disc (shown with the powerups). */
+  setStatusLines(lines: { text: string; color: string }[]): void {
+    this.statusLines = lines;
+  }
+
+  /**
+   * The class screen (Classes): every class with its keys, health and what it
+   * does; your class and the one you asked for marked, full ones dimmed.
+   * Clicking one picks it (when the pointer is free); so does its number key.
+   */
+  setClassMenu(open: boolean, menu: { current: number | null; next: number | null; full: readonly boolean[]; pick: (index: number) => void } | null): void {
+    let el = document.getElementById('class-menu');
+    if (!open || !menu) {
+      if (el) el.hidden = true;
+      this.lastClassMenu = '';
+      return;
+    }
+    const key = `${menu.current}|${menu.next}|${menu.full.join()}`;
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'class-menu';
+      this.root.append(el);
+    }
+    el.hidden = false;
+    if (key === this.lastClassMenu) return;
+    this.lastClassMenu = key;
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    CLASS_IDS.forEach((id, i) => {
+      const def = CLASS_DEFS[id];
+      const b = document.createElement('button');
+      b.className = [i === menu.current ? 'on' : '', i === menu.next && menu.next !== menu.current ? 'next' : '', menu.full[i] ? 'full' : ''].filter(Boolean).join(' ');
+      b.innerHTML = `<kbd>${i + 1}</kbd><b>${escapeHtml(def.name)}</b> · ${def.role} · ${def.health} HP${i === menu.current ? ' · <em>playing</em>' : i === menu.next ? ' · <em>next</em>' : menu.full[i] ? ' · full' : ''}<small>${escapeHtml(def.blurb)}</small>`;
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.pick(i);
+      });
+      grid.append(b);
+    });
+    el.replaceChildren(Object.assign(document.createElement('b'), { textContent: 'Choose your class' }), grid, Object.assign(document.createElement('small'), { textContent: 'Number keys or click · L or , opens and closes this · a new class starts at your next spawn (straight away if you have only just spawned)' }));
   }
 
   setRoster(players: RosterEntry[]): void {
@@ -420,6 +475,7 @@ export class Hud {
     }
     if (damageSeconds > 0) parts.push(`<span style="color:#d77bff">DOUBLE DAMAGE ${Math.ceil(damageSeconds)}</span>`);
     if (speedSeconds > 0) parts.push(`<span style="color:#5fe0ff">SPEED ${Math.ceil(speedSeconds)}</span>`);
+    for (const l of this.statusLines) parts.push(`<span style="color:${l.color}">${escapeHtml(l.text)}</span>`);
     const html = parts.join('');
     if (html !== this.powerups.innerHTML) this.powerups.innerHTML = html;
   }
@@ -634,7 +690,9 @@ export class Hud {
     const row = (s: ScoreEntry) => {
       const p = this.roster.get(s.s);
       const color = this.team(s.s)?.color ?? slotColor(s.s);
-      return `<tr class="${s.s === localSlot ? 'me' : ''}"><td><span style="color:${color}">●</span> ${escapeHtml(this.name(s.s))}${p?.bot ? ' <small>(bot)</small>' : ''}</td><td>${s.k}</td><td>${s.d}</td></tr>`;
+      const cls = this.classes.get(s.s);
+      const clsName = cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? '');
+      return `<tr class="${s.s === localSlot ? 'me' : ''}"><td><span style="color:${color}">●</span> ${escapeHtml(this.name(s.s))}${p?.bot ? ' <small>(bot)</small>' : ''}${clsName ? `<small class="sb-class">${escapeHtml(clsName)}</small>` : ''}</td><td>${s.k}</td><td>${s.d}</td></tr>`;
     };
     const sorted = [...scores].sort((a, b) => b.k - a.k || a.d - b.d);
     // Map, mode and time left over the tables.

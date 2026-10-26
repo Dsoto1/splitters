@@ -1,5 +1,11 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
+  BUILT_MOUNT_BASE,
+  CLASS_DEFS,
+  CLASS_IDS,
+  DISC_POWERS,
+  DISC_POWER_LABELS,
+  classesInPlay,
   QUICK_MESSAGES,
   BODY_SIZES,
   bodySizeOf,
@@ -167,6 +173,12 @@ export class GameSession {
   /** Seconds your minimap stays jammed (enemy Counter-UAV), and your kill streak. */
   private jam = 0;
   private streak = 0;
+  /** Classes: whether the match has them, every player's class (CLASS_IDS index), and your own class state (PrivateState.cl). */
+  private classesOn = false;
+  private classOf = new Map<number, number>();
+  private myClass: readonly number[] | null = null;
+  /** Disc Arena: your power disc and throws left (PrivateState.dp). */
+  private myDisc: readonly number[] | null = null;
   /** Team pings on screen: where, who (an enemy when `target` is set), until when. */
   private pings: { id: number; at: Vec3; target?: number; until: number; from: number }[] = [];
   private nextPingId = 1;
@@ -499,6 +511,10 @@ export class GameSession {
         this.hud.setTeams(teams);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
         this.hud.waitLabel = msg.rules.mode === 'core.zombies' ? 'Down: back at the next wave' : 'Respawning…';
+        // Classes: the class screen opens as you join (and whenever you're down).
+        this.classesOn = classesInPlay(msg.rules);
+        this.input.classCount = this.classesOn ? CLASS_IDS.length : 0;
+        this.input.classMenu = this.classesOn;
         this.hud.setMapName(loaded.map.metadata.name);
         this.sfx.myTeam = () => this.hud.team(this.slot)?.id ?? null;
         this.hud.minimap.setMap(loaded.map);
@@ -558,6 +574,12 @@ export class GameSession {
         this.streak = msg.me?.ks ?? 0;
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
+        if (this.classesOn) {
+          this.classOf = new Map(msg.players.filter((p) => p.cl !== undefined).map((p) => [p.s, p.cl!]));
+          this.hud.setClasses(msg.players);
+        }
+        this.myClass = msg.me?.cl ?? null;
+        this.myDisc = msg.me?.dp ?? null;
         this.taken = new Set(msg.pk);
         this.modeHud?.snapshot(msg.md);
         this.zombieHud(msg.md?.zb);
@@ -565,6 +587,7 @@ export class GameSession {
         this.scenario?.apply(msg.sc);
         const me = msg.players.find((p) => p.s === this.slot);
         if (me && this.local) {
+          if (!me.alive && this.local.alive && this.classesOn) this.input.classMenu = true;
           if (me.alive && !this.local.alive) {
             this.input.yaw = me.yaw;
             this.input.pitch = 0;
@@ -634,6 +657,8 @@ export class GameSession {
               this.view.blood.hit(at, dir, 1.4);
               this.view.pushPlayer(ev.hit!, { x: dir.x * 4, y: 1.5, z: dir.z * 4 });
             }
+          } else if (ev.e === 'knock') {
+            if (ev.s === this.slot) this.hud.hit();
           } else if (ev.e === 'arc') {
             this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })));
           } else if (ev.e === 'explode') {
@@ -760,6 +785,37 @@ export class GameSession {
     const [wave, left, wait, best] = zb;
     const record = best > wave ? ` · best ${best}` : '';
     this.hud.setModeLabel(wave === 0 ? `Zombies · first wave in ${wait}s` : wait > 0 ? `Zombies · wave ${wave + 1} in ${wait}s${record}` : `Zombies · wave ${wave} · ${left} left${record}`);
+  }
+
+  /** Classes: which classes are at the limit on your side (the server refuses them). */
+  private classesFull(): boolean[] {
+    const limit = this.rules?.classLimit ?? 0;
+    const mine = this.hud.team(this.slot)?.id;
+    return CLASS_IDS.map((_, i) => {
+      if (!limit || this.myClass?.[0] === i) return false;
+      let n = 0;
+      for (const [slot, cl] of this.classOf) if (slot !== this.slot && cl === i && (!mine || this.hud.team(slot)?.id === mine)) n++;
+      return n >= limit;
+    });
+  }
+
+  /** Your class and its ability (G), and a power disc you hold, for the HUD. */
+  private classStatusLines(): { text: string; color: string }[] {
+    const out: { text: string; color: string }[] = [];
+    const disc = this.myDisc;
+    if (disc) out.push({ text: `${DISC_POWER_LABELS[DISC_POWERS[disc[0]!] ?? 'fast'].toUpperCase()} ×${disc[1]}`, color: '#5ff2ff' });
+    const cl = this.myClass;
+    if (!cl) return out;
+    const def = CLASS_DEFS[CLASS_IDS[cl[0]!] ?? 'rocketeer'];
+    const pct = cl[2]!;
+    const active = cl[3] === 1;
+    let ability = '';
+    if (def.ability === 'sentry') ability = this.mounts?.mounts.get(BUILT_MOUNT_BASE + this.slot)?.alive ? 'SENTRY UP' : pct >= 100 ? 'SENTRY READY (G)' : `SENTRY ${pct}%`;
+    else if (def.ability === 'overcharge') ability = active ? 'OVERCHARGED' : pct >= 100 ? 'OVERCHARGE READY (G)' : `OVERCHARGE ${pct}%`;
+    else if (def.ability === 'cloak') ability = active ? `CLOAKED ${pct}%` : `CLOAK ${pct}% (G)`;
+    const next = cl[1] !== cl[0] ? ` → ${CLASS_DEFS[CLASS_IDS[cl[1]!] ?? 'rocketeer'].name.toUpperCase()} NEXT` : '';
+    out.push({ text: `${def.name.toUpperCase()}${ability ? ` · ${ability}` : ''}${next}`, color: active ? '#ffd24a' : '#cfe8ff' });
+    return out;
   }
 
   private npcLook(id: number): { color: string; scale: number; size: number; label: string; creature?: CreatureKind; zombie?: boolean } | undefined {
@@ -1045,6 +1101,8 @@ export class GameSession {
       } else this.view.throwArc.hide();
       this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
+      this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), pick: (i) => this.input.chooseClass(i) } : null);
+      this.hud.setStatusLines(this.classStatusLines());
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel());
       this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
       this.updateScenarioHud(local, now);

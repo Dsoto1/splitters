@@ -6,7 +6,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { getItem, getWeapon , type AmmoType } from '@tiletrigger/shared';
+import { getItem, getWeapon , type AmmoType, type DiscPower } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 
 /** Height of a pickup's centre above the floor. */
@@ -95,11 +95,29 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       rotor.position.set(x * 0.18, 0.07, z * 0.18);
     }
     part(CreateSphere(`${name}_uaveye`, { diameter: 0.08, segments: 8 }, scene), mat(scene, '#ff3b3b', 0.9)).position.set(0, -0.06, 0.1);
+  } else if (fx.kind === 'disc') {
+    // A power disc (Disc Arena): a glowing disc standing on edge, in its power's colour, over a ring.
+    const color = DISC_COLORS[fx.power];
+    const disc = part(CreateCylinder(`${name}_disc`, { diameter: 0.5, height: 0.06, tessellation: 24 }, scene), mat(scene, color, 0.9));
+    disc.rotation.x = Math.PI / 2;
+    part(CreateCylinder(`${name}_hub`, { diameter: 0.18, height: 0.08, tessellation: 12 }, scene), mat(scene, '#10161f')).rotation.x = Math.PI / 2;
+    // Triple and split show their extra discs either side.
+    if (fx.power === 'triple' || fx.power === 'split') {
+      for (const x of [-0.3, 0.3]) {
+        const d = part(CreateCylinder(`${name}_disc${x}`, { diameter: 0.28, height: 0.04, tessellation: 18 }, scene), mat(scene, color, 0.7));
+        d.rotation.x = Math.PI / 2;
+        d.position.x = x;
+      }
+    }
+    part(CreateCylinder(`${name}_ring`, { diameter: 0.8, height: 0.03, tessellation: 24 }, scene), mat(scene, color, 0.5)).position.y = -0.45;
   } else {
     part(CreateSphere(`${name}_pu`, { diameter: 0.5, segments: 12 }, scene), mat(scene, fx.powerup === 'speed' ? '#36d6ff' : '#c03cff', 0.9));
   }
   return root;
 }
+
+/** Power disc colours (pickups, MapMaker icons and the HUD). */
+export const DISC_COLORS: Record<DiscPower, string> = { fast: '#ffe14a', triple: '#5ff2ff', split: '#ff6ad0', freeze: '#bff0ff' };
 
 /** Grenade colour per kind on pickups. */
 const THROWABLE_COLORS: Partial<Record<string, string>> = { frag: '#5e6a46', sticky: '#5ad24a', incendiary: '#ff7a2a', toxic: '#a8ff3a', vortex: '#b07aff', holy: '#ffd24a', cluster: '#f5d33a', sheep: '#f4f2ea', airstrike: '#ff4a2a', sandbag: '#b39b6b' };
@@ -128,5 +146,7 @@ export function itemColor(itemId: string): string {
       return '#ff9a3d';
     case 'uav':
       return '#9fe8ff';
+    case 'disc':
+      return DISC_COLORS[fx.power];
   }
 }

@@ -145,7 +145,9 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   for (const p of pickups) {
     if (!getItem(p.item)) issues.push({ severity: 'error', code: 'pickup.unknown', message: `pickup ${p.id} uses unknown item "${p.item}"`, targetId: p.id });
   }
-  if (!pickups.some((p) => getItem(p.item)?.effect.kind === 'health')) {
+  // Disc Arena does no damage, so a map only for it needs no health.
+  const discsOnly = map.metadata.supportedModes.length > 0 && map.metadata.supportedModes.every((m) => m === 'core.discs');
+  if (!discsOnly && !pickups.some((p) => getItem(p.item)?.effect.kind === 'health')) {
     issues.push({ severity: 'suggestion', code: 'pickup.no_health', message: 'no health pickups: fights will snowball' });
   }
 

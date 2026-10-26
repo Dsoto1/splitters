@@ -2133,7 +2133,7 @@ export class EditorApp {
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
       const mode = document.createElement('select');
       const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies']] as const) mode.append(new Option(label, id, false, id === current));
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena']] as const) mode.append(new Option(label, id, false, id === current));
       mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value] } }));
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
@@ -2143,6 +2143,7 @@ export class EditorApp {
         'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
         'core.ctf': `Capture the Flag: ${teams.slice(0, 2).map((t) => t.name).join(' against ')}. Place a Flag Base (Entities tab) for each team; bring the enemy flag to yours while yours is home. Other modes ignore flag bases.`,
         'core.hostage': 'Hostage Rescue: place Hostages and at least one Rescue Zone; the first team rescues.',
+        'core.discs': 'Disc Arena: everyone throws bouncing discs that knock players about; knocking someone into the void scores. Build decks over nothing (free blocks), join them with jump pads, add walls to bank discs off, and place power disc pickups.',
         'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
         'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
         'core.elim': 'Elimination: round-based Team Deathmatch. No respawns until the next round; the last team standing wins it.',

@@ -83,6 +83,11 @@ export interface ArcadeSetup {
   friendlyFire?: 'half' | 'on';
   /** Spears only (absent: normal weapons). */
   spears?: boolean;
+  /** Discs only: arena discs that knock players off instead of hurting them (absent: normal weapons). */
+  discs?: boolean;
+  /** Classes: everyone picks a class (absent: off), and at most this many per team in one class (absent: no limit). */
+  classes?: boolean;
+  classLimit?: number;
 }
 
 export interface FrontEndHooks {
@@ -106,6 +111,7 @@ const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: nu
   'core.elim': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
   'core.bomb': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
   'core.hostage': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
+  'core.discs': { label: 'Knock-offs', step: 1, min: 3, max: 50 },
 };
 /** One line on each mode, for its (i). */
 const MODE_TIPS: Partial<Record<GameMode, string>> = {
@@ -118,6 +124,7 @@ const MODE_TIPS: Partial<Record<GameMode, string>> = {
   'core.hostage': 'Rescuers lead hostages (E beside one) to the exit zone; guards hold them. No respawns in a round.',
   'core.coop': 'Work through the mission with bot squadmates against the map\'s enemies.',
   'core.zombies': 'Hold out with your bot squad against endless waves of zombies. Each wave is bigger; the fallen come back when it is beaten.',
+  'core.discs': 'Ricochet-style: everyone throws three bouncing discs that come back. A hit knocks you about without hurting; knock someone into the void to score. Power discs (fast, triple, splitting, freeze) lie about the arena.',
 };
 
 /** A small (i) that explains something when hovered or focused (see the tooltip in FrontEnd). */
@@ -415,7 +422,8 @@ export class FrontEnd {
     const row = (label: string, tip: string | null, control: HTMLElement) => el('div', { class: 'row' }, el('span', { class: 'row-label' }, label, ...(tip ? [infoTip(tip)] : [])), control);
     // Extra rules sit folded away; the fold says how many differ from the defaults.
     const extras: { label: string; tip: string; changed: boolean; value: string; control: HTMLElement }[] = [
-      { label: 'Weapons', tip: 'Spears only: everyone holds one throwing spear. One hit kills; go and fetch it back. No other weapons, ammo or grenades.', changed: !!s.spears, value: 'Spears only', control: tabs([['normal', 'Normal'], ['spears', 'Spears only']], s.spears ? 'spears' : 'normal', (v) => (this.setup.spears = v === 'spears' || undefined)) },
+      { label: 'Weapons', tip: 'Spears only: everyone holds one throwing spear. One hit kills; go and fetch it back. Discs only: everyone throws bouncing arena discs that knock players about without hurting (Disc Arena rules: knock them into the void). No other weapons, ammo or grenades either way.', changed: !!s.spears || !!s.discs, value: s.discs ? 'Discs only' : 'Spears only', control: tabs([['normal', 'Normal'], ['spears', 'Spears only'], ['discs', 'Discs only']], s.spears ? 'spears' : s.discs ? 'discs' : 'normal', (v) => ((this.setup.spears = v === 'spears' || undefined), (this.setup.discs = v === 'discs' || undefined))) },
+      { label: 'Classes', tip: 'Everyone picks one of nine classes (L or , in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (G: sentry that heals and restocks), Medic (medi-beam, G: overcharge), Marksman and Shade (G: cloak, backstabs). Limits cap how many on a team play the same class. Not with spears or discs only.', changed: !!s.classes, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: tabs([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => ((this.setup.classes = v !== 'off' || undefined), (this.setup.classLimit = v === '1' || v === '2' ? Number(v) : undefined))) },
       { label: 'Bot style', tip: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', changed: !!s.botStyle, value: `${s.botStyle === 'arena' ? 'Arena' : 'Tactical'} bots`, control: tabs([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => (this.setup.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical'))) },
       { label: 'Character sizes', tip: 'Matter: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. All equal: everyone plays at standard size.', changed: s.sizes === false, value: 'Equal sizes', control: tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on')) },
       { label: 'Gravity', tip: "Map: whatever the map was built with (normal unless its maker changed it).", changed: s.gravity !== undefined, value: `${s.gravity === 0.4 ? 'Low' : s.gravity === 1.6 ? 'Heavy' : 'Normal'} gravity`, control: tabs([['map', 'Map'], ['0.4', 'Low'], ['1', 'Normal'], ['1.6', 'Heavy']], s.gravity === undefined ? 'map' : String(s.gravity), (v) => (this.setup.gravity = v === 'map' ? undefined : Number(v))) },
@@ -433,7 +441,7 @@ export class FrontEnd {
     reset.hidden = !changed.length;
     reset.addEventListener('click', (e) => {
       e.preventDefault();
-      for (const k of ['spears', 'botStyle', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes'] as const) delete this.setup[k];
+      for (const k of ['spears', 'discs', 'classes', 'classLimit', 'botStyle', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes'] as const) delete this.setup[k];
       this.saveSetup();
       this.go('play');
     });
@@ -489,7 +497,7 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : {}) };
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : this.setup.discs ? { weapons: 'discs' as const } : {}), ...(this.setup.classes ? { classes: true, ...(this.setup.classLimit ? { classLimit: this.setup.classLimit } : {}) } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.

@@ -11,6 +11,9 @@
 export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank'] as const;
 export type MountModel = (typeof MOUNT_MODELS)[number];
 
+/** Snapshot index of a sentry a player built (Classes): this plus the builder's slot. */
+export const BUILT_MOUNT_BASE = 10_000;
+
 export type SeatRole = 'driver' | 'gunner' | 'passenger';
 
 export interface SeatDef {

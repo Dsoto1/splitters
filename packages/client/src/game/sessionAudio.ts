@@ -168,6 +168,12 @@ export class SessionAudio {
         }
         break;
       }
+      case 'knock': {
+        const at = ev.t === me ? undefined : poseOf(ev.t);
+        this.audio.play('impact.thud', at ? { at } : {});
+        if (ev.s === me) this.audio.play('ui.hit');
+        break;
+      }
       case 'explode': {
         const at = tuple(ev.p);
         this.audio.play('explosion', { at });

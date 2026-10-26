@@ -1453,6 +1453,8 @@ export function pickupNeed(e: ItemEffect, me: CombatantView, inventory: readonly
     return low.length ? (low.some((w) => w.mag + w.reserve === 0) ? 0.9 : 0.6) : 0;
   }
   if (e.kind === 'throwable') return throwables === 0 ? 0.5 : throwable === e.throwable && throwables < 2 ? 0.3 : 0;
+  // Power discs (Disc Arena), for disc throwers.
+  if (e.kind === 'disc') return inventory.some((w) => w.def.projectile?.disc) ? 0.8 : 0;
   return 0;
 }
 

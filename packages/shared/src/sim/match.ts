@@ -4,7 +4,7 @@ import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, ty
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
-import { getMountDef, mountToWorld, type MountDef, type SeatDef, type SeatRole } from './mounts.ts';
+import { BUILT_MOUNT_BASE, getMountDef, mountToWorld, MOUNT_DEFS, type MountDef, type SeatDef, type SeatRole } from './mounts.ts';
 import { NavWorld } from '../nav/index.ts';
 import {
   POWERUP_DAMAGE_BIT,
@@ -37,7 +37,9 @@ import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, EMOTE_DANCE, PING, QUICK_MESSAG
   padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
-import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, type MatchRules } from './rules.ts';
+import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
+import { ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
+import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
 import { Encounters } from './encounters.ts';
@@ -110,6 +112,8 @@ interface MountRt {
   /** Who damaged it last (credit for the explosion). */
   lastHitBy: number | null;
   runOver: Map<number, number>;
+  /** A sentry a player built (Classes): their slot. It never comes back by itself. */
+  builtBy?: number;
 }
 
 export interface Combatant {
@@ -200,6 +204,14 @@ export interface Combatant {
   modeSpeed?: number;
   /** Bots: the last shot that hit or passed close (for taking cover). */
   shotAt?: { tick: number; from: Vec3 };
+  /** Classes: the player's class and its ability state, and the class's movement multiplier. */
+  cls?: ClassState;
+  classSpeed?: number;
+  /** Disc Arena: a power disc's throws left, and who last knocked this player about (credit for a fall). */
+  discPower?: { kind: DiscPower; shots: number };
+  knockedBy?: { slot: number; tick: number; weapon: string };
+  /** Tick it last spawned (or the round began): Disc Arena's spawn guard. */
+  spawnedAt?: number;
 }
 
 interface Projectile {
@@ -219,6 +231,8 @@ interface Projectile {
   /** Sticky projectiles riding on a player: whose, and where on them. */
   stuckTo?: number;
   stuckOffset?: Vec3;
+  /** Arena discs: an extra disc (triple throws, splits) that doesn't come back to its thrower. */
+  extra?: boolean;
   /** Walkers (the sheep): on the ground, which way they're heading, and ticks until they may hop again. */
   walking?: boolean;
   heading?: Vec3;
@@ -330,6 +344,8 @@ export class Match {
   readonly mode: ModeLogic | null;
   /** Recent gunfire and explosions, for bots' hearing. */
   private noises: NoiseView[] = [];
+  /** Classes (rules.classes): loadouts, abilities and class bots; null without classes. */
+  readonly classes: ClassPlay | null;
 
   /** Requires initPhysics() and initNavigation() to have resolved. */
   constructor(
@@ -454,6 +470,67 @@ export class Match {
         })
       : null;
     this.zombies = rules.mode === 'core.zombies' ? this.zombieDirector() : null;
+    this.classes = classesInPlay(rules) ? this.classDirector() : null;
+  }
+
+  /** Classes: what the class rules may see and do in the match. */
+  private classDirector(): ClassPlay {
+    const match = this;
+    return new ClassPlay({
+      get tick() {
+        return match.tick;
+      },
+      rules: this.rules,
+      get teams() {
+        return match.teams;
+      },
+      combatants: () => this.combatants(),
+      hostile: (a, b) => this.hostile(a, b),
+      emit: (ev) => this.pendingEvents.push(ev),
+      groundBelow: (p) => {
+        const hit = this.physics.raycastHit(p, { x: 0, y: -1, z: 0 }, 4);
+        return hit ? p.y - hit.dist : null;
+      },
+      lineOfSight: (a, b) => this.physics.lineOfSight(a, b),
+      buildSentry: (c, at, yaw) => this.buildSentry(c, at, yaw),
+      sentryOf: (slot) => {
+        const m = this.mounts.find((x) => x.builtBy === slot && x.alive);
+        return m ? m.pos : null;
+      },
+      removeSentry: (slot) => {
+        const m = this.mounts.find((x) => x.builtBy === slot);
+        if (m?.alive) {
+          m.alive = false;
+          m.health = 0;
+          m.respawnAt = Infinity;
+          this.physics.setBoxEnabled(m.body, false);
+          this.physics.commit();
+        }
+      },
+    });
+  }
+
+  /**
+   * Classes: a Mechanic's sentry, on the floor at `at` facing `yaw`, on their
+   * side (credit for its kills is theirs). Each builder has one: building
+   * again moves it. False when someone or something is in the way.
+   */
+  private buildSentry(c: Combatant, at: Vec3, yaw: number): boolean {
+    const def = MOUNT_DEFS.sentry;
+    const half = { x: def.half[0], y: def.half[1], z: def.half[2] };
+    if (!this.physics.headroom({ x: at.x, y: at.y + 0.05, z: at.z }, half.y * 2, Math.max(half.x, half.z))) return false;
+    if (this.actors().some((o) => o.alive && horizontalDistance(o.move.pos, at) < half.x + PLAYER.radius && Math.abs(o.move.pos.y - at.y) < 1.5)) return false;
+    let m = this.mounts.find((x) => x.builtBy === c.slot);
+    if (!m) {
+      this.addMount(BUILT_MOUNT_BASE + c.slot, def, at, yaw, c.faction, Infinity);
+      m = this.mounts[this.mounts.length - 1]!;
+      m.builtBy = c.slot;
+    }
+    m.faction = c.faction;
+    m.home = { pos: { ...at }, yaw };
+    this.respawnMount(m);
+    this.physics.commit();
+    return true;
   }
 
   /** Zombies: the horde spawner the director raises zombies through, and its link to the match. */
@@ -693,6 +770,8 @@ export class Match {
   private applyBodySize(c: Combatant): void {
     const spec = BODY_SIZES[this.rules.bodySizes === false ? 'standard' : bodySizeOf(c.look)];
     c.size = spec.scale;
+    // Classes set health and speed themselves.
+    if (c.cls) return;
     c.speedMul = spec.speed;
     c.maxHealth = spec.health;
     if (!c.alive) c.health = spec.health;
@@ -711,6 +790,7 @@ export class Match {
     const c = this.slots[slot];
     if (!c) return;
     if (this.phase === 'playing') this.mode?.onLeave(c);
+    this.classes?.onLeave(c);
     this.readySlots.delete(slot);
     this.leaveMount(c, false);
     this.physics.removeCollider(c.collider);
@@ -729,7 +809,12 @@ export class Match {
       seq = input.seq;
       c.queue.push(input);
     }
-    if (c.queue.length > MAX_QUEUED_INPUTS) c.queue.splice(0, c.queue.length - MAX_QUEUED_INPUTS);
+    if (c.queue.length > MAX_QUEUED_INPUTS) {
+      const dropped = c.queue.splice(0, c.queue.length - MAX_QUEUED_INPUTS);
+      // A backlog drops old inputs, but not a class pick (or quick message) one of them carried.
+      const say = dropped.reverse().find((i) => i.say)?.say;
+      if (say && !c.queue[0]!.say) c.queue[0]!.say = say;
+    }
   }
 
   /** Advance the simulation by one fixed tick and return the events it produced. */
@@ -761,6 +846,7 @@ export class Match {
       if (this.phase === 'playing') this.encounters.step();
       if (this.phase === 'playing') this.mode?.step();
       if (this.phase === 'playing') this.zombies?.step();
+      if (this.phase === 'playing') this.classes?.step();
       for (const c of this.combatants()) {
         if (!c.alive && this.tick >= c.respawnTick) this.spawn(c);
       }
@@ -771,6 +857,7 @@ export class Match {
     const events = this.pendingEvents;
     this.pendingEvents = [];
     this.noteCombat(events);
+    this.classes?.events(events);
     return events;
   }
 
@@ -780,6 +867,8 @@ export class Match {
    * firing in the last two seconds. Bots then only spot you up close.
    */
   private concealed(c: Combatant): boolean {
+    // A cloaked Shade (Classes) is as hidden as anyone in a bush.
+    if (c.alive && this.classes?.cloaked(c)) return true;
     if (!this.hides.length || c.mount || !c.alive) return false;
     const fired = this.lastShot.get(c.slot);
     if (fired !== undefined && this.tick - fired < 2 * TICK_RATE) return false;
@@ -794,7 +883,7 @@ export class Match {
     const views = new Map(actors.map((c) => [c.slot, toView(c, this.concealed(c))]));
     const spearItem = getItem('core.weapon_spear');
     const lyingSpears: PickupView[] = spearItem ? this.projectiles.filter((p) => p.stuck && p.spec.retrievable).map((p) => ({ id: `spear_${p.id}`, item: spearItem, pos: p.pos, available: true })) : [];
-    const pickups: PickupView[] = [...lyingSpears, ...this.pickups.filter((p) => this.rules.weapons !== 'spears' || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
+    const pickups: PickupView[] = [...lyingSpears, ...this.pickups.filter((p) => !restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
     const npcPickups: PickupView[] = [];
     const blockers = this.scenario.blockers();
     const hazards = this.scenario.hazards();
@@ -836,7 +925,7 @@ export class Match {
         ? shambler
           ? this.nearestGoal(c, hostiles, 1.5)
           : this.encounters.goalFor(c.slot)
-        : (this.teammateOrder(c) ?? (zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : (this.mode?.botGoal(c, hostiles) ?? null)));
+        : (this.teammateOrder(c) ?? (zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null)));
       const allies = c.faction === null ? undefined : factionViews.get(c.faction);
       const input = c.bot.think({
         tick: this.tick,
@@ -867,6 +956,8 @@ export class Match {
         const target = c.bot.target === null ? null : this.actor(c.bot.target);
         chargeIntoMelee(input, c.move.pos, target?.alive ? target.move.pos : null, getWeapon(NPC_ROLE_SPECS[npc.role].weapon).range);
       }
+      if (!npc) this.classes?.botInput(c, input, orderGoal);
+      if (!npc && c.alive && !c.mount && this.rules.weapons === 'discs') this.dodgeDiscs(c, input);
       c.queue.push(input);
     }
     this.lastAiMs = performance.now() - t0;
@@ -881,7 +972,7 @@ export class Match {
     const out: CombatantView[] = [];
     for (const m of this.mounts) {
       const spec = m.def.sentry;
-      if (!spec || !m.alive) continue;
+      if (!spec || !m.alive || m.builtBy === c.slot) continue;
       if (m.faction !== null && relation(this.factions, m.faction, c.faction) !== 'enemy') continue;
       if (horizontalDistance(m.pos, c.move.pos) > spec.range + 10) continue;
       out.push({ slot: SENTRY_VIEW_BASE + m.index, pos: m.pos, yaw: m.aimYaw, pitch: 0, health: Math.max(0, m.health), armor: 0, alive: true, stance: 2, grounded: true, object: true });
@@ -979,6 +1070,20 @@ export class Match {
     return human ? { pos: human.move.pos, radius: 4 } : null;
   }
 
+  /** Classes: Medics follow patients, Mechanics hold their sentry; others keep the mode's goal. */
+  private classGoal(c: Combatant, goal: { pos: Vec3; radius: number } | null): { pos: Vec3; radius: number } | null {
+    return this.classes ? this.classes.botGoal(c, goal) : goal;
+  }
+
+  /** Disc Arena: a bot sidesteps and hops an enemy disc about to hit it, and never walks off the edge. */
+  private dodgeDiscs(c: Combatant, input: PlayerInput): void {
+    const floorAt = (p: Vec3) => this.physics.raycastHit({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0, y: -1, z: 0 }, 6) !== null;
+    const discs = this.projectiles.filter((p) => p.spec.disc && p.owner !== c.slot && !p.stuck).map((p) => ({ pos: p.pos, vel: p.vel, owner: this.actor(p.owner) }));
+    const threats = discs.filter((d) => !d.owner || this.hostile(d.owner, c));
+    if (threats.length && dodgeDisc(input, { pos: c.move.pos, yaw: input.yaw, grounded: c.move.grounded }, threats, floorAt)) return;
+    keepOnDeck(input, { ...c.move, padFlight: !!c.padFlight }, floorAt);
+  }
+
   /** Where a teammate told this bot to be ("Follow me!" / "Hold here!"), while the order lasts. */
   private teammateOrder(c: Combatant): { pos: Vec3; radius: number } | null {
     const o = c.order;
@@ -999,6 +1104,12 @@ export class Match {
       c.lastSeq = input.seq;
       c.yaw = input.yaw;
       c.pitch = input.pitch;
+      // The class screen (Classes): works while you're down too.
+      const pick = this.classes && !c.npc ? classFromSay(input.say) : null;
+      if (pick) {
+        this.classes!.choose(c, pick);
+        input.say = undefined;
+      }
       if (!c.alive) continue;
       if (input.say === PING && !c.npc && this.tick >= (c.pingAt ?? 0)) {
         c.pingAt = this.tick + Math.round(TICK_RATE * 0.75);
@@ -1043,7 +1154,7 @@ export class Match {
       } else {
         const was = c.move.pos;
         const before = c.move;
-        const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity });
+        const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}) });
         c.move = applyPads(this.pads, stepped);
         this.trackFall(c, before, c.move !== stepped);
         c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / TICK_DT;
@@ -1122,7 +1233,10 @@ export class Match {
         if (w.heat === 0) w.overheated = false;
       }
       if (!fired && c.bloom > 0) c.bloom = Math.max(0, c.bloom - (def.recoil?.recover ?? 0.002));
-      if (input.buttons & BUTTON_THROW && c.throwCooldown === 0 && c.throwable && c.throwable.count > 0 && !frozen && !unarmed && !gun) {
+      // Classes: G is the class's ability (sentry, overcharge, cloak) when it has one.
+      if (input.buttons & BUTTON_THROW && !frozen && !gun && c.cls && this.classes?.useAbility(c)) {
+        // Used.
+      } else if (input.buttons & BUTTON_THROW && c.throwCooldown === 0 && c.throwable && c.throwable.count > 0 && !frozen && !unarmed && !gun) {
         const def = THROWABLE_DEFS[c.throwable.kind];
         c.throwCooldown = def.throwIntervalTicks;
         if (--c.throwable.count === 0) c.throwable = null;
@@ -1135,7 +1249,7 @@ export class Match {
       } else if (!c.npc) this.collectPickups(c);
       // NPCs never run dry: their reserve refills.
       else if (held.reserve < held.def.magazine) held.reserve = held.def.reserveMax;
-      if (c.move.pos.y < this.killY) this.kill(c, null, 'core.fall');
+      if (c.move.pos.y < this.killY) this.fallKill(c);
       if (!c.alive) break;
     }
   }
@@ -1190,6 +1304,10 @@ export class Match {
     // scoped rifle fired from the hip is a guess.
     const spread = aimSpread(shooter, def, def.spread + (def.alt ? 0 : shooter.bloom) + movementSpread(shooter, def)) * STANCE_SPREAD[stanceOf(shooter.move)];
     if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
+    if (def.kind === 'projectile' && def.projectile?.disc && !def.alt) {
+      this.throwDisc(shooter, def.projectile, def.id);
+      return;
+    }
     if (def.kind === 'projectile' && def.projectile) {
       for (let p = 0; p < Math.max(1, def.pellets); p++) this.launch(shooter, def.projectile, def.id, 0, spread);
       if (def.alt) this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to: [], hit: [], alt: 1 });
@@ -1269,6 +1387,40 @@ export class Match {
     }
     for (const b of bodies) if (!this.damageMountBody(b, this.boosted(shooter, def.damage), shooter)) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
     if (def.chain && struck.length) this.chainLightning(shooter, def, struck[0]!.slot, eye);
+  }
+
+  /** Disc Arena: throw a disc (or, with a power disc, a fast, triple, splitting or freezing throw). */
+  private throwDisc(shooter: Combatant, spec: ProjectileSpec, weapon: string): void {
+    const power = shooter.discPower ?? null;
+    const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
+    discThrows(spec, power?.kind ?? null).forEach((t, i) => {
+      const aim = viewDirection(shooter.yaw + t.yaw, shooter.pitch);
+      this.projectiles.push({ id: this.nextProjectileId++, owner: shooter.slot, spec: t.spec, weapon, pos: add(eye, scale(aim, 0.5)), vel: scale(aim, t.spec.speed), ticksLeft: Math.round(t.spec.fuseSeconds * TICK_RATE), age: 0, ...(i > 0 ? { extra: true } : {}) });
+    });
+    if (power && --power.shots <= 0) shooter.discPower = undefined;
+  }
+
+  /** A disc struck a player: shove them along its flight (credit for a fall), maybe freeze them. */
+  private discHit(victim: Combatant, p: Projectile, dir: Vec3): void {
+    const disc = p.spec.disc!;
+    const owner = this.actor(p.owner);
+    // Just spawned: the disc glances off.
+    if (this.tick - (victim.spawnedAt ?? -Infinity) < DISC_SPAWN_GUARD_SECONDS * TICK_RATE) return;
+    if (p.spec.status) this.applyStatus(victim, p.spec.status, owner ?? null, p.weapon);
+    const h = Math.hypot(dir.x, dir.z) || 1;
+    victim.move = { ...victim.move, vx: (victim.move.vx ?? 0) + (dir.x / h) * disc.push, vz: (victim.move.vz ?? 0) + (dir.z / h) * disc.push, velY: Math.max(victim.move.velY, disc.lift), grounded: false };
+    if (owner && owner !== victim) victim.knockedBy = { slot: owner.slot, tick: this.tick, weapon: p.weapon };
+    victim.hurtAt = this.tick;
+    this.pendingEvents.push({ e: 'knock', s: p.owner, t: victim.slot });
+  }
+
+  /** Off the edge: a fall soon after an enemy's disc hit is their kill, otherwise your own. */
+  private fallKill(c: Combatant): void {
+    const k = c.knockedBy;
+    const by = k && this.tick - k.tick <= DISC_KNOCK_CREDIT_SECONDS * TICK_RATE ? this.actor(k.slot) : undefined;
+    c.knockedBy = undefined;
+    if (by && by !== c && this.hostile(by, c)) this.kill(c, by, k!.weapon);
+    else this.kill(c, null, 'core.fall');
   }
 
   /** Lightning jumps from the first target to the nearest enemies in reach (with a clear line), weaker each jump. */
@@ -1422,7 +1574,8 @@ export class Match {
       let hitDist = wall?.dist ?? null;
       let victim: Combatant | null = null;
       for (const c of this.actors()) {
-        if (!c.alive || (c === owner && p.age < OWNER_GRACE_TICKS)) continue;
+        // Your own discs never hit you.
+        if (!c.alive || (c === owner && (p.age < OWNER_GRACE_TICKS || spec.disc))) continue;
         if (owner && c !== owner && !this.hostile(owner, c)) continue;
         const d = rayCapsule(p.pos, dir, c.move.pos, PLAYER.radius * c.size, bodyHeightOf(c.move, c.size));
         if (d !== null && d <= len && (hitDist === null || d < hitDist)) {
@@ -1483,8 +1636,18 @@ export class Match {
           p.vel = scale({ x: p.vel.x - 2 * vn * n.x, y: p.vel.y - 2 * vn * n.y, z: p.vel.z - 2 * vn * n.z }, spec.bounce);
           p.pos = add(at, scale(n, 0.05));
           p.bounces = (p.bounces ?? 0) + 1;
+          if (spec.disc?.split && p.bounces === 1) {
+            // A splitting disc: two more fly off either side of the bounce.
+            const plain = { ...spec, disc: { push: spec.disc.push, lift: spec.disc.lift } };
+            for (const v of splitVelocities(p.vel)) this.projectiles.push({ id: this.nextProjectileId++, owner: p.owner, spec: plain, weapon: p.weapon, pos: { ...p.pos }, vel: v, ticksLeft: p.ticksLeft, age: p.age, bounces: 1, extra: true });
+          }
           if (--p.ticksLeft <= 0 || (spec.maxBounces !== undefined && p.bounces > spec.maxBounces)) this.explode(p, p.pos);
           else keep.push(p);
+          continue;
+        }
+        if (victim && spec.disc) {
+          this.discHit(victim, p, dir);
+          this.explode(p, at);
           continue;
         }
         if (victim && spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
@@ -1521,6 +1684,12 @@ export class Match {
   private explode(p: Projectile, at: Vec3): void {
     const spec = p.spec;
     const owner = this.actor(p.owner) ?? null;
+    if (spec.disc) {
+      // Its flight is over: the disc goes back to its thrower (extras just vanish).
+      const w = !p.extra && owner ? owner.weapons.get(weaponCode(getWeapon(p.weapon))) : undefined;
+      if (w) w.mag = Math.min(w.def.magazine, w.mag + 1);
+      return;
+    }
     if (spec.splashRadius > 0) this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius });
     if (spec.splashRadius > 0) this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.weapon, spec.selfDamageScale, spec.knockback, spec.status);
     // Flames, flares and real explosions set oil alight.
@@ -1980,7 +2149,7 @@ export class Match {
     let target: Combatant | null = null;
     let bestD = spec.range;
     for (const c of this.actors()) {
-      if (!c.alive) continue;
+      if (!c.alive || c.slot === m.builtBy) continue;
       if (m.faction !== null && relation(this.factions, m.faction, c.faction) !== 'enemy') continue;
       const d = distance(muzzle, chest(c.move.pos));
       if (d < bestD && this.physics.lineOfSight(muzzle, chest(c.move.pos))) {
@@ -2001,11 +2170,12 @@ export class Match {
     const dir = this.spreadDir(viewDirection(m.aimYaw, m.aimPitch), def.spread);
     const world = this.physics.raycastHit(muzzle, dir, def.range);
     const targets = this.actors()
-      .filter((c) => c.alive && (m.faction === null || relation(this.factions, m.faction, c.faction) === 'enemy'))
+      .filter((c) => c.alive && c.slot !== m.builtBy && (m.faction === null || relation(this.factions, m.faction, c.faction) === 'enemy'))
       .map((c) => ({ slot: c.slot, feet: c.move.pos }));
     const shot = resolveHitscan(muzzle, dir, def.range, world && world.handle !== m.body.handle ? world.dist : null, targets);
     this.pendingEvents.push({ e: 'shot', s: -1, w: def.id, from: tuple(muzzle), to: [tuple(shot.end)], hit: [shot.hitSlot] });
-    if (shot.hitSlot !== null) this.damage(this.actor(shot.hitSlot)!, def.damage, null, def.id);
+    // A built sentry's kills are its builder's.
+    if (shot.hitSlot !== null) this.damage(this.actor(shot.hitSlot)!, def.damage, m.builtBy === undefined ? null : (this.slots[m.builtBy] ?? null), def.id);
   }
 
   /** Mounts for snapshots (see MountSnapshot). */
@@ -2188,6 +2358,8 @@ export class Match {
   /** Apply damage through armor and the attacker's damage boost. */
   private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string, head = false): void {
     if (!victim.alive || this.phase !== 'playing') return;
+    if (this.classes) amount = this.classes.adjustDamage(victim, attacker, weapon, amount);
+    if (amount <= 0) return;
     // No friendly fire; hazards (no attacker) and your own grenades still hurt.
     if (attacker && attacker !== victim && !this.hostile(attacker, victim)) {
       // Friendly fire (team modes and co-op, when the match turns it on): players hurt teammates, NPCs never do.
@@ -2248,7 +2420,7 @@ export class Match {
     for (const p of this.pickups) {
       if (!p.enabled || this.tick < p.availableAt) continue;
       // Spears only: no other weapons, ammo or grenades to pick up.
-      if (this.rules.weapons === 'spears' && (p.item.effect.kind === 'weapon' || p.item.effect.kind === 'ammo' || p.item.effect.kind === 'throwable')) continue;
+      if (restrictedWeapons(this.rules) && (p.item.effect.kind === 'weapon' || p.item.effect.kind === 'ammo' || p.item.effect.kind === 'throwable')) continue;
       if (horizontalDistance(p.pos, c.move.pos) > PICKUP_RADIUS || Math.abs(p.pos.y - c.move.pos.y) > 1.5) continue;
       if (!this.applyItem(c, p.item)) continue;
       p.availableAt = this.tick + p.respawnTicks;
@@ -2322,6 +2494,11 @@ export class Match {
         this.uavUntil.set(this.uavSide(c), this.tick + e.seconds * TICK_RATE);
         this.pendingEvents.push({ e: 'msg', text: `${c.name}: UAV online`, secs: 3 });
         return true;
+      case 'disc':
+        // Only for disc throwers; a fresh one replaces what's left of the last.
+        if (![...c.weapons.values()].some((w) => w.def.projectile?.disc)) return false;
+        c.discPower = { kind: e.power, shots: DISC_POWER_SHOTS };
+        return true;
       case 'powerup':
         if (e.powerup === 'speed') c.speedTicks = e.seconds * TICK_RATE;
         else c.damageTicks = e.seconds * TICK_RATE;
@@ -2377,19 +2554,24 @@ export class Match {
     c.chill = c.bloom = c.windup = c.burstLeft = 0;
     c.semiLatch = false;
     c.weapons = new Map();
-    for (const id of this.rules.weapons === 'spears' ? ['core.spear'] : this.rules.startingWeapons) {
+    for (const id of this.rules.weapons === 'spears' ? ['core.spear'] : this.rules.weapons === 'discs' ? [ARENA_DISC] : this.rules.startingWeapons) {
       const def = getWeapon(id);
       c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
       c.current = weaponCode(def);
     }
     // Everyone starts with a frag grenade (TimeSplitters-style loadouts are pickups after that).
-    c.throwable = this.rules.startingGrenades > 0 && this.rules.weapons !== 'spears' ? { kind: 'frag', count: this.rules.startingGrenades } : null;
+    c.throwable = this.rules.startingGrenades > 0 && !restrictedWeapons(this.rules) ? { kind: 'frag', count: this.rules.startingGrenades } : null;
+    c.discPower = undefined;
+    c.knockedBy = undefined;
+    c.spawnedAt = this.tick;
     c.fireCooldown = 0;
     c.throwCooldown = 0;
     c.reloadTicks = 0;
     c.raiseTicks = 0;
     c.speedTicks = 0;
     c.damageTicks = 0;
+    // Classes: the class's loadout, health and speed replace all that.
+    this.classes?.onSpawn(c);
     c.bot?.onSpawn(sp.yaw);
     this.pendingEvents.push({ e: 'spawn', s: c.slot });
   }
@@ -2434,6 +2616,7 @@ export class Match {
   /** The countdown is over: the round (and its clock, objectives and waves) starts now. */
   private beginPlay(): void {
     this.phase = 'playing';
+    for (const c of this.combatants()) c.spawnedAt = this.tick;
     this.phaseEndTick = this.roundEndTick();
     this.mode?.reset();
     this.zombies?.reset();
@@ -2458,6 +2641,7 @@ export class Match {
     }
     this.mode?.reset();
     this.zombies?.reset();
+    this.classes?.reset();
     for (const c of this.combatants()) this.spawn(c);
     if (this.opts.startGate) {
       // Every round opens with the countdown (round_start comes when it ends).
@@ -2492,8 +2676,9 @@ export class Match {
         s.vx = c.move.vx ?? 0;
         s.vz = c.move.vz ?? 0;
       }
-      const fx = statusBits(c);
+      const fx = statusBits(c) | (this.classes?.fx(c) ?? 0);
       if (fx) s.fx = fx;
+      if (c.cls) s.cl = classIndex(c.cls.id);
       if (c.bot) s.st = c.bot.state;
       if (c.move.stance) s.sn = c.move.stance;
       if (c.emoteUntil && this.tick < c.emoteUntil) s.em = 1;
@@ -2617,6 +2802,8 @@ export class Match {
       ...(c.streak ? { ks: c.streak } : {}),
       ...((this.uavUntil.get(this.uavSide(c)) ?? 0) > this.tick ? { uv: Math.ceil((this.uavUntil.get(this.uavSide(c))! - this.tick) / TICK_RATE) } : {}),
       ...(c.move.stamina !== undefined || c.move.rest || c.move.winded ? { sta: [Math.round((c.move.stamina ?? 1) * 1000), c.move.rest ?? 0, c.move.winded ? 1 : 0] as [number, number, number] } : {}),
+      ...(this.classes?.privateState(c) ?? {}),
+      ...(c.discPower ? { dp: [DISC_POWERS.indexOf(c.discPower.kind), c.discPower.shots] as [number, number] } : {}),
     };
   }
 
@@ -2800,7 +2987,7 @@ function spendRound(w: WeaponState): boolean {
 /** Movement multiplier from status effects (frozen solid, chilled, slowed) and the mode (carrying a flag). */
 function statusSpeed(c: Combatant): number {
   if (c.frozenTicks > 0) return 0;
-  return (c.slowTicks > 0 ? 0.55 : 1) * (1 - 0.6 * c.chill) * (c.modeSpeed ?? 1);
+  return (c.slowTicks > 0 ? 0.55 : 1) * (1 - 0.6 * c.chill) * (c.modeSpeed ?? 1) * (c.classSpeed ?? 1);
 }
 
 const inZone = (z: Zone, feet: Vec3): boolean => zoneContains(z.kind, z.pos, z.radius, feet);

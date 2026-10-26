@@ -78,6 +78,9 @@ export interface MoveState {
   winded?: boolean;
   /** On a ladder this tick. */
   climb?: boolean;
+  /** Double jumps (MoveEnv.airJumps): jumps made since leaving the ground, and whether jump was held last tick. */
+  airJumps?: number;
+  jumpHeld?: boolean;
 }
 
 /** Current stance of a move state. */
@@ -96,6 +99,8 @@ export interface MoveEnv {
   scale?: number;
   /** Gravity multiple (map / match setting); 1 = normal. */
   gravity?: number;
+  /** Extra jumps in the air (a fresh press of jump each), e.g. 1 for a double jump (Classes). */
+  airJumps?: number;
 }
 
 /** A ladder as movement sees it: its foot against the wall, facing out from the wall, how tall and wide. */
@@ -248,6 +253,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
 
   let velY = state.velY;
   const jump = jumpPressed;
+  let airJumped = 0;
   let jet = false;
   const ladder = !chest && env.ladders?.length ? ladderAt(env.ladders, state.pos) : null;
   if (ladder) {
@@ -283,7 +289,11 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     if (jump) velY = state.pos.y + SWIM_DEPTH + 0.35 > chest.max.y ? Math.max(velY, 4.6) : Math.min(velY + 14 * dt, 3.2);
   } else {
     if (state.grounded && jump) velY = PLAYER.jumpSpeed;
-    else if (jump && env.jet && !state.grounded) {
+    else if (jump && env.airJumps && !state.grounded && !state.jumpHeld && (state.airJumps ?? 0) < env.airJumps) {
+      // Double jump: a fresh press in the air kicks you up again.
+      velY = PLAYER.jumpSpeed * 0.9;
+      airJumped = 1;
+    } else if (jump && env.jet && !state.grounded) {
       // Jetpack: thrust while jump is held in the air.
       velY = Math.min(velY + (JET.accel + PLAYER.gravity * g) * dt, Math.max(velY, JET.maxUp));
       jet = true;
@@ -315,6 +325,8 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     ...(sprint ? { sprint } : {}),
     ...(winded ? { winded } : {}),
     ...(ladder && !jump ? { climb: true } : {}),
+    ...(env.airJumps && !grounded && (state.airJumps ?? 0) + airJumped ? { airJumps: (state.airJumps ?? 0) + airJumped } : {}),
+    ...(env.airJumps && jump ? { jumpHeld: true } : {}),
   };
 }
 

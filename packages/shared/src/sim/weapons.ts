@@ -113,6 +113,13 @@ export interface ProjectileSpec {
   airstrike?: { count: number; spacing: number; height: number; bomb: ProjectileSpec };
   /** Deployable cover: where it lands it becomes a solid wall (half extents, metres) facing the thrower, with its own health. */
   cover?: { half: [number, number, number]; health: number };
+  /**
+   * Arena discs (Disc Arena): no damage. A hit shoves the player `push` m/s
+   * away (and `lift` m/s up) and the disc goes back to its thrower, as it does
+   * when its fuse runs out or it has bounced `maxBounces` times. `split`: the
+   * first bounce splits it in three.
+   */
+  disc?: { push: number; lift: number; split?: boolean };
 }
 
 /**
@@ -512,7 +519,42 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [3, 30],
     view: { model: 'procedural/spear', viewOffset: [0.24, -0.16, 0.3], tracer: '#c8a46a', sound: 'throw', hold: { style: 'pistol', grip: [0, 0, 0] } },
   },
+  ...classWeapons(),
 };
+
+/**
+ * Variants of existing weapons for Disc Arena and Classes (added last so
+ * every older weapon keeps its code): the arena disc (a Disc Launcher that
+ * shoves instead of hurting, three discs that come back), blast rockets (a
+ * Rocket Launcher with a four-rocket drum and the knockback to rocket-jump)
+ * and the medi-beam (a Medkit that heals a little, often, from further away).
+ */
+function classWeapons(): Record<string, WeaponDefinition> {
+  const disc: WeaponPresentation = { model: 'weapons/disc_launcher.glb', viewOffset: [0.21, -0.21, 0.52], tracer: '#7ad6ff', sound: 'fire.disc', hold: { style: 'long', grip: [0, -0.06, -0.06], support: [0, -0.022, 0.142], shoulder: [0, -0.076, -0.43] } };
+  const list: WeaponDefinition[] = [
+    weapon({
+      id: 'core.arena_disc', displayName: 'Arena Disc', kind: 'projectile', slot: 6, fireMode: 'semi',
+      fireIntervalTicks: 20, range: 60, magazine: 3, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 10,
+      projectile: { speed: 24, gravity: 0, fuseSeconds: 2.4, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'disc', bounce: 1, maxBounces: 6, disc: { push: 12, lift: 4.5 } },
+      botDesirability: 0.6, botRange: [3, 28],
+      view: disc,
+    }),
+    weapon({
+      id: 'core.blast_rockets', displayName: 'Blast Rockets', kind: 'projectile', slot: 8,
+      fireIntervalTicks: 48, range: 0, magazine: 4, reserveMax: 20, pickupAmmo: 8, reloadTicks: 110, raiseTicks: 28, ammo: 'explosive',
+      projectile: { speed: 26, gravity: 0, fuseSeconds: 4, splashRadius: 4.2, splashDamage: 95, splashEdgeDamage: 18, selfDamageScale: 0.3, visual: 'rocket', impactDamage: 20, knockback: 11 },
+      botDesirability: 0.78, botRange: [6, 40],
+      view: { model: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ffb347', sound: 'fire.rockets', hold: { style: 'long', grip: [0, -0.1, 0.0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] } },
+    }),
+    weapon({
+      id: 'core.medi_beam', displayName: 'Medi-Beam', kind: 'melee', slot: 1,
+      fireIntervalTicks: 12, range: 9, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 15, heal: 6,
+      botDesirability: 0, botRange: [0, 0],
+      view: { model: 'procedural/medkit', viewOffset: [0.2, -0.2, 0.42], tracer: '#7dff9a', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, -0.02, 0] } },
+    }),
+  ];
+  return Object.fromEntries(list.map((w) => [w.id, w]));
+}
 
 // Helpers are function declarations: CORE_WEAPONS calls arsenal() while the module is still loading.
 

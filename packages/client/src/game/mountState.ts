@@ -1,4 +1,4 @@
-import { TICK_RATE, getMountDef, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import { BUILT_MOUNT_BASE, MOUNT_DEFS, TICK_RATE, getMountDef, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -51,7 +51,7 @@ export class MountState {
     if (!list) return;
     const now = performance.now();
     for (const s of list) {
-      const m = this.mounts.get(s[0]!);
+      const m = this.mounts.get(s[0]!) ?? (s[0]! >= BUILT_MOUNT_BASE ? this.addBuilt(s) : undefined);
       if (!m) continue;
       const pos = { x: s[1]!, y: s[2]!, z: s[3]! };
       // Velocity from the server's own clock (ticks), so network jitter doesn't shake it.
@@ -83,6 +83,17 @@ export class MountState {
       if (alive) this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
     }
     this.physics.commit();
+  }
+
+  /** A sentry someone built (Classes): not on the map, so it first shows up in a snapshot. */
+  private addBuilt(s: MountSnapshot): ClientMount {
+    const def = MOUNT_DEFS.sentry;
+    const pos = { x: s[1]!, y: s[2]!, z: s[3]! };
+    const yaw = s[4]!;
+    const body = this.physics.createBox({ x: pos.x, y: pos.y + def.half[1], z: pos.z }, { x: def.half[0], y: def.half[1], z: def.half[2] }, yaw);
+    const m: ClientMount = { index: s[0]!, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: false, seats: [], shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body };
+    this.mounts.set(m.index, m);
+    return m;
   }
 
   /**

@@ -769,6 +769,12 @@
       "gain": 0.45,
       "range": "near"
     },
+    "pickup.disc": {
+      "synth": "beep",
+      "variants": 1,
+      "gain": 0.45,
+      "range": "near"
+    },
     "pickup.jetpack": {
       "gain": 0.6,
       "range": "mid",
