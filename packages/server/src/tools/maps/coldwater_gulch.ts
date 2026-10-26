@@ -391,6 +391,8 @@ for (let n = 0; n < 2000 && placed.length < 420; n++) {
 
 m.backdrop('sunset', 'mountains', 'grass', 0.45, 0.35);
 m.bounds('invisible', 0, { min: [-78, -156], max: [78, 156] }, 40);
+// The gulch's rock walls rise into mountains past the boundary.
+m.border('cliffs');
 m.teams([8, 8]);
 m.furnish();
 await m.fillTeamSpawns(8);

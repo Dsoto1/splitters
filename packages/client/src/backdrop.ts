@@ -11,7 +11,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { CORE_THEMES, SKIES, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { CORE_THEMES, SKIES, borderStyleAt, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { createPropNode } from './game/propVisuals.ts';
 import type { MapStyler } from './mapMeshes.ts';
@@ -140,6 +140,9 @@ export class BackdropVisuals {
     const indices: number[] = [];
     const water = ground === 'water';
     const scale = water ? 8 : this.styler.groundScale(ground as TerrainMaterial);
+    // A shoreline border: the land past it drops under the border's sea.
+    const shore = per.map(([x, z]) => borderStyleAt(doc, x, z) === 'water');
+    const sea = Math.min(...edgeHeights.filter((_, i) => shore[i])) - 1.1;
     per.forEach(([x, z], i) => {
       const dx = x - area.centre[0];
       const dz = z - area.centre[1];
@@ -150,7 +153,8 @@ export class BackdropVisuals {
         const k = Math.min(1, d / 60);
         const swell = water ? 0 : Math.sin(px * 0.013) * Math.cos(pz * 0.011) * 2.5 * Math.min(1, d / 200);
         // Water sits flat; land leaves the map's edge and settles to the plain.
-        const y = water ? Math.min(area.floor, plain) - 0.4 : edgeHeights[i]! * (1 - k) + plain * k + swell + this.rise(px, pz, d) - (d === 0 ? 0.02 : 0);
+        let y = water ? Math.min(area.floor, plain) - 0.4 : edgeHeights[i]! * (1 - k) + plain * k + swell + this.rise(px, pz, d) - (d === 0 ? 0.02 : 0);
+        if (shore[i] && d > 0) y = Math.min(y, sea - 1.5);
         positions.push(px, y, pz);
         uvs.push(px / scale, pz / scale);
       }
@@ -232,6 +236,9 @@ export class BackdropVisuals {
     let placed = 0;
     const budget = Math.round(900 * p.density);
     g.per.forEach(([x, z], i) => {
+      // Cliffs, city blocks, forest and sea along the border stand where the belt would.
+      const border = borderStyleAt(doc, x, z);
+      if (border !== 'none' && border !== 'fence') return;
       const dx = x - area.centre[0];
       const dz = z - area.centre[1];
       const l = Math.hypot(dx, dz) || 1;
@@ -614,7 +621,7 @@ function starfield(scene: Scene): RawTexture {
 }
 
 /** A block of facade, 8 windows across and 8 storeys up; at night some windows are lit. */
-function windows(scene: Scene, night: boolean): RawTexture {
+export function windows(scene: Scene, night: boolean): RawTexture {
   const n = 256;
   const cell = 32;
   const px = new Uint8Array(n * n * 4);

@@ -1,8 +1,8 @@
 # Scenery: backdrops and vegetation
 
 What surrounds a map and what grows on it. All of it is drawn only: nothing
-here blocks players, bots or shots, except trees and rocks placed as props
-(their trunks are solid, like any prop).
+here blocks players, bots or shots, except a border (see Borders) and trees
+and rocks placed as props (their trunks are solid, like any prop).
 
 ## Backdrop
 
@@ -50,6 +50,57 @@ How it's drawn (`packages/client/src/backdrop.ts`):
   thick at the horizon.
 
 Map format 9 adds `backdrop` (null = the theme's). Older maps load unchanged.
+
+## Borders
+
+A border is what stands just outside the boundary, so the map's edge reads as
+a place instead of an invisible wall in front of distant scenery. Set it in
+MapMaker under **Map properties → Backdrop → Border** (with **Per side** to mix
+styles), or in a map script with `m.border(style, { north, east, south, west })`
+(north is the +Z edge, east the +X edge). It lines the boundary rectangle (the
+Boundary tool's), or the terrain's edge on a map without one.
+
+| Style | What you see | Gameplay |
+|---|---|---|
+| **Cliffs & mountains** | Rock walls that leap up within a few metres of the line to ragged crests 22–80 m high, with spires, buttresses, ledges and banded strata (red sandstone in desert country, grey with snow caps in the cold, moss on top elsewhere) | Solid |
+| **City blocks** | Three rows of blocks, taller further out; the front row dressed in the city kit's facades (brick, shopfront, plaster) on its lower storeys, every block's other faces in a window texture that lights up at night | Solid |
+| **Electric fence** | A park-style fence just inside the line: dark posts every 4 m with insulators, five glowing wires that flicker, yellow high-voltage signs; it hums when you are near | Solid, and touching it zaps (12 damage, at most twice a second) and throws you back into the map |
+| **Forest wall** | Undergrowth along the line, a row of the nature kit's trees (snowy on snow, palms on sand), then dense low-poly conifers in front of a dark canopy band | Solid |
+| **Shoreline & sea** | A beach running down from the line into a sea to the horizon (at the level of the map's own water where that reaches the edge) | The boundary's own barrier |
+
+Unlike the rest of the backdrop a border is **solid**: `borderBoxes`
+(`packages/shared/src/map/border.ts`) adds a barrier band 3 m deep just outside
+the line, 12–24 m high depending on the style, so players, shots and bots
+(through the navmesh) all meet it, on top of the boundary's own barrier. The
+fence's shocks run in the scenario (`Scenario.stepBorderFence`): an `arc` event
+draws the spark and plays the zap.
+
+The **Electric Fence** is also a placeable piece (Scenario palette, a `trap` of
+kind `shock`): a straight run of `length` metres (2–96, default 12) between
+posts, solid along its whole length, that zaps and throws back whoever touches
+it while it is on (always on by default; it can cycle or be switched by logic
+like any trap, and its wires go dark when off).
+
+How it's drawn (`packages/client/src/borderVisuals.ts`): every style is a
+handful of draw calls however long the boundary. Cliffs are one merged mesh,
+the beach and sea one each; city blocks one merged mesh plus GPU thin instances
+of the facade pieces (one draw per piece and material); the forest thin
+instances of each tree and bush model for the front row and one instanced
+~40-triangle conifer for the far rows (their stand-in LOD); the fence instanced
+posts and signs with one mesh of wire. On the largest map (Apex Ring, 1.58 km
+of boundary, skyline and forest) the whole border is 43 meshes, ≈4,700
+instances and ≈0.58 M triangles in view looking straight at it; the backdrop's
+belt of props steps aside where a border stands, and its ground drops under the
+sea along a shoreline.
+
+Borders are set on Rockfall Canyon and Frost Basin (cliffs), Coldwater Gulch
+(cliffs), Downtown and Diamond Park (city blocks, lit at night), Backwoods
+(forest), Shingle Point (sea to the south, cliffs east and west, woods to the
+north) and Apex Ring (city to the north and east, woods to the south and west).
+
+Map format: `backdrop.border` and `backdrop.borderSides` are optional fields
+(absent: no border), and the fence trap's `length` is optional, so maps without
+them load unchanged and the format stays at version 19.
 
 ## Plants on terrain
 
@@ -109,3 +160,8 @@ solid (bots path round them); bushes, flowers and grass can be walked through.
 - **Plants and trees:** Kenney Nature Kit 2.1 (CC0), 55 models added to
   `content/props.json` under Trees, Plants & Flowers, and Rocks & Wood.
 - Scenery shapes, the starfield and the window texture are generated in code.
+- Borders: cliffs, blocks, sea, wires and the far-row conifers are generated in
+  code; the forest's front row is the Quaternius Ultimate Nature pack (CC0,
+  `nt_*` props), the city facades the Quaternius Downtown City kit (CC0), the
+  cliff strata the ambientCG Travertine009 texture (CC0). The fence hum and zap
+  are synthesised (`hum` and `arc` recipes).

@@ -363,6 +363,8 @@ m.furnish();
 // Enough team spawns for a full match.
 await m.fillTeamSpawns(8);
 m.lightRooms();
+// Mountain walls round the basin, past the terrain's edge.
+m.border('cliffs');
 m.meta({
   description:
     'A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler, a skyfighter that flies and a tank below the cliff, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Snow sleds wait on the plateau flanks and a glider on each roof; every round starts in a transport plane looping over the basin, so pick your drop and parachute in. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west.',

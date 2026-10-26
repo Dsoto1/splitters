@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } from './catalog.ts';
 import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
+import { BORDER_STYLES } from './border.ts';
 import { ScenarioLogic } from './logic.ts';
 import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
 
@@ -178,7 +179,7 @@ export const ZoneEntity = EntityBase.extend({
   startEnabled: z.boolean().default(true),
 });
 
-export const TRAP_KINDS = ['spikes', 'flames', 'crusher', 'mine', 'laser'] as const;
+export const TRAP_KINDS = ['spikes', 'flames', 'crusher', 'mine', 'laser', 'shock'] as const;
 export const TRAP_ACTIVATIONS = ['always', 'cycle', 'proximity', 'logic'] as const;
 
 /**
@@ -199,6 +200,8 @@ export const TrapEntity = EntityBase.extend({
   startEnabled: z.boolean().default(true),
   /** Overrides the trap's default damage; null = default. */
   damage: z.number().min(1).max(1000).nullable().default(null),
+  /** Electric fence (`shock`): length of the run in metres along its local X, posts every 4 m (absent: 12). */
+  length: z.number().min(2).max(96).optional(),
 });
 
 /** Faction IDs are short lowercase words; `players` is the built-in faction of every player in co-op. */
@@ -526,6 +529,12 @@ export const BackdropSchema = z.object({
   ground: z.enum(BACKDROP_GROUNDS),
   haze: z.number().min(0).max(1).default(0.5),
   mist: z.number().min(0).max(1).optional(),
+  /** Border just outside the boundary (see border.ts): cliffs, city blocks, an electric fence, forest or shoreline. Absent: none. */
+  border: z.enum(BORDER_STYLES).optional(),
+  /** Per-side overrides of `border` (north = +Z edge, east = +X edge). */
+  borderSides: z
+    .object({ north: z.enum(BORDER_STYLES).optional(), east: z.enum(BORDER_STYLES).optional(), south: z.enum(BORDER_STYLES).optional(), west: z.enum(BORDER_STYLES).optional() })
+    .optional(),
 });
 
 /** Blood on hits and kills: its colour (green for aliens, oil for robots…) and how much. */

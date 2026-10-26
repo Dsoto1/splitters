@@ -4,6 +4,7 @@ import { getItem } from '../sim/items.ts';
 import { getProp } from '../content/props.ts';
 import { buildOccupancy, cellHasFloor, cellKey, yawXZ } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
+import { borderRect, hasBorder } from './border.ts';
 import { floatingProps } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
@@ -76,6 +77,10 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
         issues.push({ severity: e.kind === 'spawn' ? 'error' : 'warning', code: 'bounds.outside', message: `${e.kind} ${e.id} is outside the map boundary`, targetId: e.id });
       }
     }
+  }
+
+  if (hasBorder(map) && !borderRect(map)) {
+    issues.push({ severity: 'warning', code: 'border.noBoundary', message: 'the map has a border but no boundary (or walled terrain edge) to stand it along' });
   }
 
   const { cells, overlaps, unknownTiles } = buildOccupancy(map, catalog);

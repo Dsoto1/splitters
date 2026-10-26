@@ -98184,7 +98184,12 @@
     "sky": "clear",
     "scenery": "city",
     "ground": "grass",
-    "haze": 0.35
+    "haze": 0.35,
+    "border": "skyline",
+    "borderSides": {
+      "south": "forest",
+      "west": "forest"
+    }
   },
   "physics": null,
   "blood": null,

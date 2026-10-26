@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 19,
   "metadata": {
     "id": "downtown",
     "name": "Downtown",
@@ -1358,11 +1358,13 @@
     "style": "invisible",
     "height": 8
   },
+  "track": null,
   "backdrop": {
     "sky": "clear",
     "scenery": "city",
     "ground": "gravel",
-    "haze": 0.4
+    "haze": 0.4,
+    "border": "skyline"
   },
   "physics": null,
   "blood": null,

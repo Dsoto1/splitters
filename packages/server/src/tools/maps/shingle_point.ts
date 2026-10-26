@@ -651,6 +651,8 @@ m.hill(at(26, 60), 7).hill(at(-40, 24), 6).hill(at(72, 26), 6);
 
 m.backdrop('overcast', 'ocean', 'water', 0.5, 0.4);
 m.bounds('invisible', 0, { min: [-112, -150], max: [112, 134] }, 40);
+// The sea off the beach to the south, headland cliffs east and west, woods behind the village.
+m.border('cliffs', { south: 'water', north: 'forest' });
 m.furnish('home', (x, y) => !(x === VILLAGE.cottage1[0] && y === VILLAGE.cottage1[1]) && !(x === VILLAGE.cottage2[0] && y === VILLAGE.cottage2[1]));
 m.furnish('barracks', (x, y) => !(x === 7 && y === 2));
 m.lightRooms();

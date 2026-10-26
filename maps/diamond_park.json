@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 18,
+  "formatVersion": 19,
   "metadata": {
     "id": "diamond_park",
     "name": "Diamond Park",
@@ -82049,7 +82049,8 @@
     "sky": "night",
     "scenery": "city",
     "ground": "grass",
-    "haze": 0.35
+    "haze": 0.35,
+    "border": "skyline"
   },
   "physics": null,
   "blood": null,

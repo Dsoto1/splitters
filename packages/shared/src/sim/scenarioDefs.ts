@@ -4,6 +4,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 import type { DestructibleModel, MapDocument, MapEntity, TrapKind } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
 import { PLAYER, TICK_RATE } from './constants.ts';
+import { ELECTRIC_FENCE } from '../map/border.ts';
 import type { PhysicsWorld } from './physics.ts';
 
 /**
@@ -220,6 +221,8 @@ export interface TrapSpec {
   warnTicks: number;
   /** Mines explode instead of hurting a region. */
   blast?: { radius: number; damage: number; edge: number };
+  /** Throws victims back (m/s) away from the trap's local X axis (the electric fence). */
+  knockback?: number;
   /** Default timing the editor fills in when this trap is placed. */
   defaults: { activation: 'always' | 'cycle' | 'proximity' | 'logic'; onSeconds: number; offSeconds: number };
 }
@@ -268,6 +271,16 @@ export const TRAP_SPECS: Record<TrapKind, TrapSpec> = {
     warnTicks: 0,
     defaults: { activation: 'cycle', onSeconds: 2, offSeconds: 2 },
   },
+  shock: {
+    label: 'Electric Fence',
+    // Half-length is the run's own (see trapHazard); posts and wires stand 3.2 m tall.
+    hazard: { center: [0, ELECTRIC_FENCE.height / 2, 0], half: [ELECTRIC_FENCE.defaultLength / 2, ELECTRIC_FENCE.height / 2, 0.35] },
+    damage: ELECTRIC_FENCE.damage,
+    intervalTicks: Math.round(TICK_RATE * ELECTRIC_FENCE.interval),
+    warnTicks: 0,
+    knockback: ELECTRIC_FENCE.knockback,
+    defaults: { activation: 'always', onSeconds: 2, offSeconds: 2 },
+  },
 };
 
 const region = (e: Extract<MapEntity, { kind: 'trap' }>, r: { center: [number, number, number]; half: [number, number, number] }): OBox => ({
@@ -276,8 +289,13 @@ const region = (e: Extract<MapEntity, { kind: 'trap' }>, r: { center: [number, n
   yaw: e.yaw,
 });
 
-export const trapHazard = (e: Extract<MapEntity, { kind: 'trap' }>): OBox => region(e, TRAP_SPECS[e.trap].hazard);
-export const trapTrigger = (e: Extract<MapEntity, { kind: 'trap' }>): OBox => region(e, TRAP_SPECS[e.trap].trigger ?? TRAP_SPECS[e.trap].hazard);
+export const trapHazard = (e: Extract<MapEntity, { kind: 'trap' }>): OBox => {
+  const h = TRAP_SPECS[e.trap].hazard;
+  // An electric fence's danger runs its whole length.
+  if (e.trap === 'shock') return region(e, { center: h.center, half: [(e.length ?? ELECTRIC_FENCE.defaultLength) / 2 + 0.1, h.half[1], h.half[2]] });
+  return region(e, h);
+};
+export const trapTrigger = (e: Extract<MapEntity, { kind: 'trap' }>): OBox => (TRAP_SPECS[e.trap].trigger ? region(e, TRAP_SPECS[e.trap].trigger!) : trapHazard(e));
 export const trapDamage = (e: Extract<MapEntity, { kind: 'trap' }>): number => e.damage ?? TRAP_SPECS[e.trap].damage;
 
 // ---------------------------------------------------------------- collision bodies

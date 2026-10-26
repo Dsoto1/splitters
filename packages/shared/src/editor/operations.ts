@@ -3,6 +3,7 @@ import { buildOccupancy, cellKey, edgeKey, localSide, rotateXZ } from '../map/ge
 import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
+import { ELECTRIC_FENCE } from '../map/border.ts';
 import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
@@ -294,6 +295,7 @@ export const SCENARIO_PALETTE = [
   { key: 'trap:crusher', label: 'Crusher', search: 'trap crusher ceiling piston hazard' },
   { key: 'trap:mine', label: 'Proximity Mine', search: 'trap mine explosive proximity hazard' },
   { key: 'trap:laser', label: 'Laser Fence', search: 'trap laser beam fence tripwire hazard' },
+  { key: 'trap:shock', label: 'Electric Fence', search: 'trap electric fence park dino zoo shock zap wire posts barrier prop hazard border' },
   { key: 'block:solid', label: 'Sky Block', search: 'block sky platform floating box stepping stone ledge solid' },
   { key: 'block:crumble', label: 'Crumbling Floor', search: 'block crumble crumbling platform give way collapse falling floor' },
   { key: 'block:trapdoor', label: 'Trapdoor', search: 'block trapdoor trap door fall drop pit floor hatch' },
@@ -411,7 +413,7 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     default: {
       const trap = key.slice(5) as TrapKind;
       const d = TRAP_SPECS[trap].defaults;
-      return { id: newId(trap), kind: 'trap', trap, ...base, activation: d.activation, onSeconds: d.onSeconds, offSeconds: d.offSeconds, offsetSeconds: 0, startEnabled: true, damage: null };
+      return { id: newId(trap), kind: 'trap', trap, ...base, activation: d.activation, onSeconds: d.onSeconds, offSeconds: d.offSeconds, offsetSeconds: 0, startEnabled: true, damage: null, ...(trap === 'shock' ? { length: ELECTRIC_FENCE.defaultLength } : {}) };
     }
   }
 }

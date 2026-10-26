@@ -552,6 +552,20 @@
         }
       ]
     },
+    "trap.shock": {
+      "synth": "arc",
+      "variants": 3,
+      "gain": 0.75,
+      "range": "mid",
+      "jitter": 0.1
+    },
+    "fence.hum": {
+      "synth": "hum",
+      "variants": 1,
+      "gain": 0.32,
+      "range": "near",
+      "jitter": 0.03
+    },
     "trap.warn": {
       "synth": "beep",
       "variants": 1,

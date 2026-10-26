@@ -601,6 +601,8 @@ for (let n = 0; n < 2000 && flowers < 40; n++) {
 // ================================================================ map settings
 
 m.bounds('invisible', 4, { min: [-76, -96], max: [68, 80] });
+// The woods close in all round: a dense tree wall past the boundary.
+m.border('forest');
 // Furniture in the bare rooms, for what they are in this theme.
 m.furnish();
 m.lightRooms();

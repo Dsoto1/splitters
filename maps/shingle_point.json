@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 19,
   "metadata": {
     "id": "shingle_point",
     "name": "Shingle Point",
@@ -63700,12 +63700,18 @@
     "style": "invisible",
     "height": 40
   },
+  "track": null,
   "backdrop": {
     "sky": "overcast",
     "scenery": "ocean",
     "ground": "water",
     "haze": 0.5,
-    "mist": 0.4
+    "mist": 0.4,
+    "border": "cliffs",
+    "borderSides": {
+      "north": "forest",
+      "south": "water"
+    }
   },
   "physics": null,
   "blood": null,

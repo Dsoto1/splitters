@@ -30,6 +30,7 @@ import {
   newMapDocument,
   newTerrain,
   paintSlopes,
+  resolveBackdrop,
   placeTileCommand,
   serializeMap,
   applyCommand,
@@ -343,6 +344,12 @@ run('Edit map', {
     supportedModes: ['core.tdm', 'core.deathmatch'],
   },
 });
+
+// Sheer rock walls carry on past the terrain's edge: a cliff border all round.
+{
+  const { border: _b, borderSides: _s, ...backdrop } = resolveBackdrop(history.doc);
+  run('Border', { kind: 'setBackdrop', before: history.doc.backdrop, after: { ...backdrop, border: 'cliffs' } });
+}
 
 // Props on the terrain are bedded into the slope under them (no floating corners).
 const doc = applyCommand(history.doc, settlePropsCommand(history.doc));

@@ -21,6 +21,7 @@ import { applyToneMapping } from '../game/atmosphere.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { buildRoadMeshes, disposeRoadMeshes } from '../roadMeshes.ts';
 import { BackdropVisuals } from '../backdrop.ts';
+import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
@@ -51,6 +52,8 @@ export class EditorView {
   pitch = -0.9;
   private readonly styler: MapStyler;
   private readonly backdrop: BackdropVisuals;
+  /** The border along the boundary (live preview of the Border setting). */
+  readonly border: BorderVisuals;
   private readonly foliage: FoliageVisuals;
   private foliageTerrain: MapDocument['terrain'] = null;
   private foliageKey = '';
@@ -98,6 +101,7 @@ export class EditorView {
     this.backdrop = new BackdropVisuals(this.scene, this.styler);
     this.models = new ModelLibrary(this.scene);
     this.city = new CityVisuals(this.models, 'edcity');
+    this.border = new BorderVisuals(this.scene, this.styler, this.models);
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.scene.onBeforeRenderObservable.add(() => this.foliage.update(this.camera.position));
     this.scenario = new ScenarioVisuals(this.scene, { editor: true });
@@ -229,6 +233,7 @@ export class EditorView {
     for (const m of this.dimMeshes) m.visibility = 0.4;
     this.applyTileLayer();
     this.backdrop.build(doc, boxes);
+    this.border.update(doc, boxes);
     void this.city.setMap(visible);
     // Regrow plants only when the ground or what stands on it changed.
     const foliageKey = doc.terrain ? `${doc.terrain.heights.length}:${boxes.length}` : '';

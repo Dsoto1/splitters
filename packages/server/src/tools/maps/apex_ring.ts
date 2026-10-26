@@ -872,6 +872,8 @@ for (const [x, y, z] of [[-90, DECK, -138], [90, DECK, -138], [-115, FB.y, -122]
 }
 
 m.bounds('invisible', 0, { min: [-197, -197], max: [197, 197] }, 12);
+// The city the Skyline tunnel is named for rises to the north and east; parkland woods west and south.
+m.border('skyline', { west: 'forest', south: 'forest' });
 m.meta({
   description:
     'A Grand Prix circuit, 1.4 km a lap: a long main straight past the pits and the grandstand, a fast east sweeper, a chicane, the Skyline tunnel under hospitality suites, a footbridge over the straight, and a hairpin in the infield. Twelve NPC race cars lap it in every mode and run down anyone on the road. Fight through the ten pit garages, up the stands to the commentary boxes, round the paddock trucks and the podium; or race them in karts.',

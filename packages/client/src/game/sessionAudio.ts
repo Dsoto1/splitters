@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, PLAYER, getItem, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@tiletrigger/shared';
+import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@tiletrigger/shared';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import type { LocalPlayer } from './prediction.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -29,6 +29,8 @@ export class SessionAudio {
   private prevHeld = 0;
   private dryFireAt = 0;
   private recentKills: number[] = [];
+  private fences: ShockLine[] = [];
+  private humAt = 0;
 
   /** Your team in team modes (null otherwise), for objective and round announcements. */
   myTeam: () => string | null = () => null;
@@ -43,6 +45,13 @@ export class SessionAudio {
 
   setMap(doc: MapDocument): void {
     this.entities = doc.entities;
+    // Electric fences hum: the border's, and placed ones that are always on.
+    this.fences = Object.values(borderStyles(doc)).includes('fence') ? borderShockLines(doc, 0) : [];
+    for (const e of doc.entities) {
+      if (e.kind !== 'trap' || e.trap !== 'shock' || e.activation !== 'always' || !e.startEnabled) continue;
+      const run = fenceRun(e);
+      this.fences.push({ a: run.a, b: run.b, y0: e.position[1], height: ELECTRIC_FENCE.height, push: null, entity: null });
+    }
     for (const e of doc.entities) if (e.kind === 'pickup') this.pickupAt.set(e.id, tuple(e.position));
   }
 
@@ -85,6 +94,22 @@ export class SessionAudio {
       this.fallSpeed = -s.velY;
     }
     this.wasGrounded = s.grounded;
+    this.fenceHum(s.pos);
+  }
+
+  /** The hum of a live electric fence nearby, from its nearest point (each buzz is 2 s; they overlap). */
+  private fenceHum(pos: Vec3): void {
+    if (!this.fences.length) return;
+    const now = performance.now();
+    if (now - this.humAt < 1700) return;
+    let best: { x: number; z: number; dist: number } | null = null;
+    for (const l of this.fences) {
+      const n = shockLineNearest(l, pos.x, pos.z);
+      if (!best || n.dist < best.dist) best = n;
+    }
+    if (!best || best.dist > 16) return;
+    this.humAt = now;
+    this.audio.play('fence.hum', { at: { x: best.x, y: pos.y + 1.6, z: best.z } });
   }
 
   /** Per-frame local weapon state: reload and weapon-raise cues. */
@@ -251,6 +276,10 @@ export class SessionAudio {
       case 'use':
         if (ev.s === me) this.audio.play(ev.ok ? 'button.press' : 'use.denied');
         else if (ev.ok) this.audio.play('button.press', { at: this.entityAt(ev.i, 1.2) });
+        break;
+      case 'arc':
+        // An electric fence zapping someone (chain-lightning arcs are heard as the gun's own sound).
+        if (ev.s === -1 && ev.pts[0]) this.audio.play('trap.shock', { at: tuple(ev.pts[0]) });
         break;
       case 'trap': {
         const e = this.entities[ev.i];
