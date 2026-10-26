@@ -1,0 +1,5248 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 20,
+  "metadata": {
+    "id": "after_hours",
+    "name": "After Hours",
+    "author": "Tile Trigger",
+    "description": "Co-op night at the museum. You and two guard bots do the rounds while the exhibits wake one gallery at a time: imps out of the Egyptian sarcophagi in the Hall of Antiquities, puglins bursting out of the suits of armour, zombies from behind the weeping angels as the Gothic gallery's candles gutter, and oculi and cyclopes loose from the Space Hall's cryo pods. Then take the curator's key, start the tank in the Military wing and blast through the wall into the Grand Atrium for the Scolitex. A Skyfighter on a plinth in the atrium flies out through the skylight.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 1,
+      "max": 8
+    },
+    "supportedModes": [
+      "core.coop"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.temple",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.atrium",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": "#d8d0c0"
+          },
+          "walls": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
+          },
+          "solids": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "1,1,0:N": "open",
+          "0,0,0:W": "wide",
+          "1,0,0:E": "wide",
+          "0,0,0:S": "wide"
+        }
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.room_large",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": "#d8d0c0"
+          },
+          "walls": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
+          },
+          "solids": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows",
+          "1,0,0:S": "windows"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.room_large",
+        "x": -2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.checker",
+            "tint": "#d0d0c8"
+          },
+          "walls": {
+            "material": "core.pbr_clapboard",
+            "tint": "#e8e0d0"
+          },
+          "solids": {
+            "material": "core.paint_gloss",
+            "tint": "#c8302a"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.paint_gloss",
+            "tint": "#ffffff"
+          }
+        },
+        "edges": {
+          "0,1,0:N": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.hall",
+        "x": -3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_sandstone_blocks",
+            "tint": "#d8c098"
+          },
+          "walls": {
+            "material": "core.hieroglyphs_painted",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_rough_sandstone",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.lapis",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.gold_leaf",
+            "tint": null
+          }
+        },
+        "options": {
+          "ceiling": "skylight"
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.room_long",
+        "x": -2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": "#8a8478"
+          },
+          "walls": {
+            "material": "core.pbr_castle_stone",
+            "tint": "#8e887e"
+          },
+          "solids": {
+            "material": "core.pbr_castle_stone",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.dark_wood",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,1,0:E": "door"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.room_large",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_floorboards",
+            "tint": "#6a4a30"
+          },
+          "walls": {
+            "material": "core.wallpaper_damask",
+            "tint": "#5a1e2a"
+          },
+          "solids": {
+            "material": "core.pbr_walnut",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_walnut",
+            "tint": "#3a2a1e"
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "wall",
+          "1,1,0:E": "door",
+          "1,0,0:E": "wall"
+        },
+        "options": {
+          "ceiling": "beams"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.room_large",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_bunker_panels",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_olive_corrugated",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": null
+          }
+        },
+        "edges": {
+          "1,0,0:S": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.hall",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_white_panel",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.orbital_panel",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_white_panel",
+            "tint": "#c8ccd0"
+          },
+          "trim": {
+            "material": "core.glow_trim",
+            "tint": "#5ad8ff"
+          }
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.room",
+        "x": 0,
+        "y": -1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a2a2a"
+          },
+          "walls": {
+            "material": "core.pbr_walnut",
+            "tint": "#a07850"
+          },
+          "solids": {
+            "material": "core.pbr_walnut",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.room",
+        "x": 1,
+        "y": -1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_carpet",
+            "tint": "#5a2a2a"
+          },
+          "walls": {
+            "material": "core.pbr_walnut",
+            "tint": "#a07850"
+          },
+          "solids": {
+            "material": "core.pbr_walnut",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.brass",
+            "tint": null
+          }
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "block_011",
+      "position": [
+        1.4,
+        0,
+        6.2
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        0.4,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_marble_black",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mount_012",
+      "position": [
+        1.4,
+        0.4,
+        6.2
+      ],
+      "kind": "mount",
+      "model": "skyfighter",
+      "yaw": 3.141592653589793,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "light_013",
+      "position": [
+        1.4,
+        3.2,
+        6.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#cfe0ff",
+      "intensity": 1.4,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_014",
+      "position": [
+        -3,
+        0,
+        -3
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_015",
+      "position": [
+        11,
+        0,
+        -3
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_016",
+      "position": [
+        -3,
+        0,
+        11
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_017",
+      "position": [
+        -3,
+        4,
+        3
+      ],
+      "kind": "prop",
+      "model": "prop.im_bust",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_018",
+      "position": [
+        11,
+        4,
+        5
+      ],
+      "kind": "prop",
+      "model": "prop.im_bust",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_019",
+      "position": [
+        4,
+        7.5,
+        4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe6b0",
+      "intensity": 1.3,
+      "range": 16,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "block_020",
+      "position": [
+        4,
+        0,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        1.1,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_walnut",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_021",
+      "position": [
+        2.5,
+        1.1,
+        -9
+      ],
+      "kind": "prop",
+      "model": "prop.hh_monitor",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_022",
+      "position": [
+        5.5,
+        1.1,
+        -9
+      ],
+      "kind": "prop",
+      "model": "prop.hh_monitor",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_023",
+      "position": [
+        10.6,
+        0,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.sb_tv_flat",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_024",
+      "position": [
+        4,
+        3.4,
+        -12
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_025",
+      "position": [
+        4,
+        3.4,
+        -18
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 0.8,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "btn_curator",
+      "position": [
+        -3.6,
+        4,
+        -8
+      ],
+      "name": "Curator's key cabinet",
+      "kind": "button",
+      "yaw": 1.5707963267948966,
+      "label": "Take the Military wing key",
+      "once": true,
+      "cooldownSeconds": 1,
+      "startEnabled": false
+    },
+    {
+      "id": "lamp_curator",
+      "position": [
+        -2.6,
+        5.6,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffcc33",
+      "intensity": 1.2,
+      "range": 6,
+      "fixture": "bulb",
+      "off": true
+    },
+    {
+      "id": "light_026",
+      "position": [
+        0,
+        7.4,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe0b0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_027",
+      "position": [
+        8,
+        7.4,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#d0e0ff",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "prop_028",
+      "position": [
+        -18.6,
+        0,
+        -27.2
+      ],
+      "kind": "prop",
+      "model": "prop.mt_vending_machine",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_029",
+      "position": [
+        -17.2,
+        0,
+        -27.2
+      ],
+      "kind": "prop",
+      "model": "prop.mt_vending_machine",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_030",
+      "position": [
+        -15.8,
+        0,
+        -27.2
+      ],
+      "kind": "prop",
+      "model": "prop.mt_vending_machine",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_031",
+      "position": [
+        -10,
+        0,
+        -27.3
+      ],
+      "kind": "prop",
+      "model": "prop.gs_drinks_fridge",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_032",
+      "position": [
+        -8.6,
+        0,
+        -27.3
+      ],
+      "kind": "prop",
+      "model": "prop.gs_drinks_fridge",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_033",
+      "position": [
+        -7.2,
+        0,
+        -27.3
+      ],
+      "kind": "prop",
+      "model": "prop.gs_drinks_fridge",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_034",
+      "position": [
+        -9,
+        0,
+        -24.5
+      ],
+      "kind": "prop",
+      "model": "prop.gs_shop_counter",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_035",
+      "position": [
+        -13,
+        0,
+        -22
+      ],
+      "kind": "prop",
+      "model": "prop.gs_shop_shelving",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_036",
+      "position": [
+        -13,
+        0,
+        -18
+      ],
+      "kind": "prop",
+      "model": "prop.gs_shop_shelving",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_037",
+      "position": [
+        -19.2,
+        0,
+        -13
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fridge",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_038",
+      "position": [
+        -6,
+        1.05,
+        -17.4
+      ],
+      "kind": "prop",
+      "model": "prop.sb_garden_gnome",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_039",
+      "position": [
+        -12,
+        3.4,
+        -20
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#f0f8ff",
+      "intensity": 1,
+      "range": 11,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_040",
+      "position": [
+        -8.6,
+        1.6,
+        -26.6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#a0e0ff",
+      "intensity": 0.9,
+      "range": 5,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_041",
+      "position": [
+        -16,
+        1,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.jg_gold_idol",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "lamp_idol",
+      "position": [
+        -16,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd27a",
+      "intensity": 1.6,
+      "range": 8,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_042",
+      "position": [
+        -25,
+        0,
+        -9
+      ],
+      "kind": "prop",
+      "model": "prop.jg_stone_idol",
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_043",
+      "position": [
+        -25,
+        0,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.jg_stone_idol",
+      "yaw": 2.641592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_044",
+      "position": [
+        -7,
+        0,
+        -9.6
+      ],
+      "kind": "prop",
+      "model": "prop.jg_serpent_statue",
+      "yaw": -0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_045",
+      "position": [
+        -7,
+        0,
+        9.6
+      ],
+      "kind": "prop",
+      "model": "prop.jg_serpent_statue",
+      "yaw": 3.541592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_046",
+      "position": [
+        -26.6,
+        0.4,
+        -3.2
+      ],
+      "kind": "prop",
+      "model": "prop.eg_anubis",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_047",
+      "position": [
+        -26.8,
+        0.4,
+        3.2
+      ],
+      "kind": "prop",
+      "model": "prop.eg_cat_statue",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "block_048",
+      "position": [
+        -26.6,
+        0,
+        -3.2
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        0.4,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_white_marble",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_049",
+      "position": [
+        -26.8,
+        0,
+        3.2
+      ],
+      "kind": "block",
+      "size": [
+        1.2,
+        0.4,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_white_marble",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_050",
+      "position": [
+        -20,
+        0,
+        -11.2
+      ],
+      "kind": "prop",
+      "model": "prop.eg_stele",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_051",
+      "position": [
+        -12,
+        0,
+        -11.2
+      ],
+      "kind": "prop",
+      "model": "prop.eg_stele",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_052",
+      "position": [
+        -20,
+        0,
+        11.2
+      ],
+      "kind": "prop",
+      "model": "prop.jg_stele",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_053",
+      "position": [
+        -12,
+        0,
+        11.2
+      ],
+      "kind": "prop",
+      "model": "prop.jg_carved_pillar",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_054",
+      "position": [
+        -8,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.im_statue_emperor",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_055",
+      "position": [
+        -9.2,
+        0,
+        -3.6
+      ],
+      "kind": "prop",
+      "model": "prop.im_bust",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_056",
+      "position": [
+        -9.2,
+        0,
+        3.6
+      ],
+      "kind": "prop",
+      "model": "prop.im_bust",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "jars_1",
+      "position": [
+        -24,
+        0,
+        -5.4
+      ],
+      "kind": "prop",
+      "model": "prop.eg_canopic_jars",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "jars_2",
+      "position": [
+        -24,
+        0,
+        5.4
+      ],
+      "kind": "prop",
+      "model": "prop.eg_canopic_jars",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_057",
+      "position": [
+        -10.6,
+        0,
+        -9.8
+      ],
+      "kind": "prop",
+      "model": "prop.im_amphorae",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_058",
+      "position": [
+        -10.6,
+        0,
+        9.8
+      ],
+      "kind": "prop",
+      "model": "prop.im_amphorae",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "block_059",
+      "position": [
+        -21.4,
+        0,
+        -2.6
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rough_sandstone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_060",
+      "position": [
+        -21.4,
+        0.3,
+        -2.6
+      ],
+      "kind": "prop",
+      "model": "prop.eg_sarcophagus",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "lid_1",
+      "position": [
+        -21.4,
+        1.42,
+        -2.6
+      ],
+      "kind": "block",
+      "size": [
+        1.2,
+        0.22,
+        2.5
+      ],
+      "yaw": 0,
+      "material": "core.gold_leaf",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 40
+    },
+    {
+      "id": "block_061",
+      "position": [
+        -21.4,
+        0,
+        2.6
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rough_sandstone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_062",
+      "position": [
+        -21.4,
+        0.3,
+        2.6
+      ],
+      "kind": "prop",
+      "model": "prop.eg_sarcophagus",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "lid_2",
+      "position": [
+        -21.4,
+        1.42,
+        2.6
+      ],
+      "kind": "block",
+      "size": [
+        1.2,
+        0.22,
+        2.5
+      ],
+      "yaw": 0,
+      "material": "core.gold_leaf",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 40
+    },
+    {
+      "id": "block_063",
+      "position": [
+        -11,
+        0,
+        7.6
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rough_sandstone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_064",
+      "position": [
+        -11,
+        0.3,
+        7.6
+      ],
+      "kind": "prop",
+      "model": "prop.ge_sarcophagus",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "lid_3",
+      "position": [
+        -11,
+        1.42,
+        7.6
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.22,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.gold_leaf",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 40
+    },
+    {
+      "id": "enc_mummies",
+      "position": [
+        -19,
+        0,
+        0
+      ],
+      "name": "Out of the sarcophagi",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "imp": 3
+      },
+      "activeCap": 4,
+      "reinforcements": 3,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "lamp_antiq_ws",
+      "position": [
+        -22,
+        3.4,
+        -6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb46a",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "lamp_antiq_wn",
+      "position": [
+        -22,
+        3.4,
+        6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb46a",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "lamp_antiq_es",
+      "position": [
+        -10,
+        3.4,
+        -6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb46a",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "lamp_antiq_en",
+      "position": [
+        -10,
+        3.4,
+        6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb46a",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "zone_antiq",
+      "position": [
+        -16,
+        0,
+        0
+      ],
+      "name": "Hall of Antiquities",
+      "kind": "zone",
+      "size": [
+        18,
+        3,
+        18
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true,
+      "team": "players"
+    },
+    {
+      "id": "armour_1",
+      "position": [
+        -18.7,
+        0,
+        15.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_suit_of_armour",
+      "yaw": 1.5707963267948966,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "enc_armour_1",
+      "position": [
+        -17.9,
+        0,
+        15.5
+      ],
+      "name": "The armour 1 wakes",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "puglin": 1
+      },
+      "activeCap": 2,
+      "reinforcements": 1,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "armour_2",
+      "position": [
+        -13.3,
+        0,
+        17.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_suit_of_armour",
+      "yaw": -1.5707963267948966,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "enc_armour_2",
+      "position": [
+        -14.100000000000001,
+        0,
+        17.5
+      ],
+      "name": "The armour 2 wakes",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "puglin": 1
+      },
+      "activeCap": 2,
+      "reinforcements": 1,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "armour_3",
+      "position": [
+        -18.7,
+        0,
+        21.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_suit_of_armour",
+      "yaw": 1.5707963267948966,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "enc_armour_3",
+      "position": [
+        -17.9,
+        0,
+        21.5
+      ],
+      "name": "The armour 3 wakes",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "puglin": 1
+      },
+      "activeCap": 2,
+      "reinforcements": 1,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "armour_4",
+      "position": [
+        -13.3,
+        0,
+        23.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_suit_of_armour",
+      "yaw": -1.5707963267948966,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "enc_armour_4",
+      "position": [
+        -14.100000000000001,
+        0,
+        23.5
+      ],
+      "name": "The armour 4 wakes",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "puglin": 1
+      },
+      "activeCap": 2,
+      "reinforcements": 1,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "prop_065",
+      "position": [
+        -19.6,
+        1.6,
+        19.5
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_066",
+      "position": [
+        -12.4,
+        1.4,
+        20.5
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_067",
+      "position": [
+        -16,
+        0,
+        27.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "lamp_armour_w",
+      "position": [
+        -19.4,
+        2.8,
+        18.5
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffc27a",
+      "intensity": 1,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "lamp_armour_e",
+      "position": [
+        -12.6,
+        2.8,
+        22.5
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffc27a",
+      "intensity": 1,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "zone_armour",
+      "position": [
+        -16,
+        0,
+        19.5
+      ],
+      "name": "Armour Gallery",
+      "kind": "zone",
+      "size": [
+        5,
+        3,
+        5
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true,
+      "team": "players"
+    },
+    {
+      "id": "block_068",
+      "position": [
+        -8.5,
+        0,
+        24.2
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        0.4,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#9a968c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_069",
+      "position": [
+        -8.5,
+        0.4,
+        24.2
+      ],
+      "kind": "prop",
+      "model": "prop.ge_angel_statue",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "enc_angel_1",
+      "position": [
+        -8.5,
+        0,
+        26.4
+      ],
+      "name": "Behind angel 1",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "zombie": 2
+      },
+      "activeCap": 3,
+      "reinforcements": 2,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1.2,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "block_070",
+      "position": [
+        -3,
+        0,
+        24.2
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        0.4,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#9a968c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_071",
+      "position": [
+        -3,
+        0.4,
+        24.2
+      ],
+      "kind": "prop",
+      "model": "prop.ge_angel_statue",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "enc_angel_2",
+      "position": [
+        -3,
+        0,
+        26.4
+      ],
+      "name": "Behind angel 2",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "zombie": 2
+      },
+      "activeCap": 3,
+      "reinforcements": 2,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1.2,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "block_072",
+      "position": [
+        1.5,
+        0,
+        22.6
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        0.4,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#9a968c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        1.5,
+        0.4,
+        22.6
+      ],
+      "kind": "prop",
+      "model": "prop.ge_angel_statue",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "enc_angel_3",
+      "position": [
+        1.5,
+        0,
+        24.8
+      ],
+      "name": "Behind angel 3",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "zombie": 2
+      },
+      "activeCap": 3,
+      "reinforcements": 2,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1.2,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        -11.5,
+        1.4,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.ge_portrait",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        -11.5,
+        1.4,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.ge_portrait",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "position": [
+        3.6,
+        1.4,
+        15.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_portrait",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        -4,
+        1.4,
+        12.4
+      ],
+      "kind": "prop",
+      "model": "prop.ge_portrait",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "position": [
+        -8,
+        0,
+        15.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_grand_piano",
+      "yaw": 0.6,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "position": [
+        3.4,
+        0,
+        26.6
+      ],
+      "kind": "prop",
+      "model": "prop.ge_grandfather_clock",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "position": [
+        -1,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.ge_wingback_chair",
+      "yaw": -0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "position": [
+        -10.6,
+        0,
+        13.4
+      ],
+      "kind": "prop",
+      "model": "prop.ge_candelabra",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "candle_1",
+      "position": [
+        -10.6,
+        1.9,
+        13.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1,
+      "range": 7,
+      "fixture": "candle"
+    },
+    {
+      "id": "prop_082",
+      "position": [
+        -10.6,
+        0,
+        26.4
+      ],
+      "kind": "prop",
+      "model": "prop.ge_candelabra",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "candle_2",
+      "position": [
+        -10.6,
+        1.9,
+        26.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1,
+      "range": 7,
+      "fixture": "candle"
+    },
+    {
+      "id": "prop_083",
+      "position": [
+        2.4,
+        0,
+        13.4
+      ],
+      "kind": "prop",
+      "model": "prop.ge_candelabra",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "candle_3",
+      "position": [
+        2.4,
+        1.9,
+        13.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1,
+      "range": 7,
+      "fixture": "candle"
+    },
+    {
+      "id": "prop_084",
+      "position": [
+        -5.5,
+        0,
+        26.6
+      ],
+      "kind": "prop",
+      "model": "prop.ge_candelabra",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "candle_4",
+      "position": [
+        -5.5,
+        1.9,
+        26.6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1,
+      "range": 7,
+      "fixture": "candle"
+    },
+    {
+      "id": "chandelier_gothic",
+      "position": [
+        -4,
+        3.3,
+        20
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd090",
+      "intensity": 1.2,
+      "range": 12,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "zone_gothic",
+      "position": [
+        -4,
+        0,
+        18
+      ],
+      "name": "Gothic gallery",
+      "kind": "zone",
+      "size": [
+        12,
+        3,
+        8
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true,
+      "team": "players"
+    },
+    {
+      "id": "prop_085",
+      "position": [
+        24,
+        1,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.os_holo_globe",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "zone_086",
+      "position": [
+        24,
+        1,
+        0
+      ],
+      "name": "Zero-G exhibit",
+      "kind": "zone",
+      "size": [
+        6,
+        6,
+        6
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true,
+      "gravity": 0.3
+    },
+    {
+      "id": "prop_087",
+      "position": [
+        33,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.os_satellite_dish",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "position": [
+        15,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.os_comms_dish",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "position": [
+        34.6,
+        0,
+        -10.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_console_corner",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "position": [
+        20,
+        1,
+        -11.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_viewport",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "position": [
+        28,
+        1,
+        -11.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_viewport",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "position": [
+        20,
+        1,
+        11.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_viewport",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "position": [
+        28,
+        1,
+        11.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_viewport",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "position": [
+        16,
+        0,
+        -10.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_cryo_pod",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "pod_glass_1",
+      "position": [
+        16,
+        0,
+        -9.55
+      ],
+      "name": "Cryo pod 1 glass",
+      "kind": "destructible",
+      "model": "glass",
+      "yaw": 0,
+      "health": 1,
+      "explosiveOnly": false
+    },
+    {
+      "id": "enc_pod_1",
+      "position": [
+        16,
+        0,
+        -7.4
+      ],
+      "name": "Specimen 1",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "oculus": 2
+      },
+      "activeCap": 2,
+      "reinforcements": 1,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1.5,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "lamp_pod_1",
+      "position": [
+        16,
+        2.6,
+        -9.7
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#7ae8ff",
+      "intensity": 1,
+      "range": 5,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_095",
+      "position": [
+        32,
+        0,
+        -10.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_cryo_pod",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "pod_glass_2",
+      "position": [
+        32,
+        0,
+        -9.55
+      ],
+      "name": "Cryo pod 2 glass",
+      "kind": "destructible",
+      "model": "glass",
+      "yaw": 0,
+      "health": 1,
+      "explosiveOnly": false
+    },
+    {
+      "id": "enc_pod_2",
+      "position": [
+        32,
+        0,
+        -7.4
+      ],
+      "name": "Specimen 2",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "cyclops": 1,
+        "oculus": 1
+      },
+      "activeCap": 2,
+      "reinforcements": 1,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1.5,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "lamp_pod_2",
+      "position": [
+        32,
+        2.6,
+        -9.7
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#7ae8ff",
+      "intensity": 1,
+      "range": 5,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_096",
+      "position": [
+        16,
+        0,
+        10.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_cryo_pod",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "pod_glass_3",
+      "position": [
+        16,
+        0,
+        9.55
+      ],
+      "name": "Cryo pod 3 glass",
+      "kind": "destructible",
+      "model": "glass",
+      "yaw": 0,
+      "health": 1,
+      "explosiveOnly": false
+    },
+    {
+      "id": "enc_pod_3",
+      "position": [
+        16,
+        0,
+        7.4
+      ],
+      "name": "Specimen 3",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "cyclops": 2
+      },
+      "activeCap": 2,
+      "reinforcements": 1,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1.5,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "lamp_pod_3",
+      "position": [
+        16,
+        2.6,
+        9.7
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#7ae8ff",
+      "intensity": 1,
+      "range": 5,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_097",
+      "position": [
+        32,
+        0,
+        10.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_cryo_pod",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "pod_glass_4",
+      "position": [
+        32,
+        0,
+        9.55
+      ],
+      "name": "Cryo pod 4 glass",
+      "kind": "destructible",
+      "model": "glass",
+      "yaw": 0,
+      "health": 1,
+      "explosiveOnly": false
+    },
+    {
+      "id": "enc_pod_4",
+      "position": [
+        32,
+        0,
+        7.4
+      ],
+      "name": "Specimen 4",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "oculus": 2
+      },
+      "activeCap": 2,
+      "reinforcements": 1,
+      "perPlayer": 1,
+      "respawnSeconds": 4,
+      "radius": 1.5,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "lamp_pod_4",
+      "position": [
+        32,
+        2.6,
+        9.7
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#7ae8ff",
+      "intensity": 1,
+      "range": 5,
+      "fixture": "none"
+    },
+    {
+      "id": "alarm_space_s",
+      "position": [
+        24,
+        3.6,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff2a2a",
+      "intensity": 1.4,
+      "range": 12,
+      "fixture": "bulb",
+      "off": true
+    },
+    {
+      "id": "alarm_space_n",
+      "position": [
+        24,
+        3.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff2a2a",
+      "intensity": 1.4,
+      "range": 12,
+      "fixture": "bulb",
+      "off": true
+    },
+    {
+      "id": "light_098",
+      "position": [
+        24,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#e0f0ff",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "zone_space",
+      "position": [
+        24,
+        0,
+        0
+      ],
+      "name": "Space Hall",
+      "kind": "zone",
+      "size": [
+        16,
+        3,
+        16
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true,
+      "team": "players"
+    },
+    {
+      "id": "mount_099",
+      "position": [
+        8,
+        0,
+        20.5
+      ],
+      "kind": "mount",
+      "model": "tank",
+      "yaw": 3.141592653589793,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_100",
+      "position": [
+        4.8,
+        0,
+        25
+      ],
+      "kind": "prop",
+      "model": "prop.road_barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "position": [
+        11.2,
+        0,
+        25
+      ],
+      "kind": "prop",
+      "model": "prop.road_barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_102",
+      "position": [
+        12,
+        0,
+        20.5
+      ],
+      "kind": "prop",
+      "model": "prop.road_barrier",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "position": [
+        17.5,
+        0,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.sandbag_wall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "position": [
+        18.6,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.ammo_stack",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "position": [
+        18.8,
+        0,
+        22
+      ],
+      "kind": "prop",
+      "model": "prop.flag",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_106",
+      "position": [
+        16.5,
+        0,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.supply_truck",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "door_military",
+      "position": [
+        4,
+        0,
+        24
+      ],
+      "name": "Military wing door",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "style": "blast",
+      "startOpen": false,
+      "locked": true,
+      "auto": false
+    },
+    {
+      "id": "block_107",
+      "position": [
+        8,
+        3,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        1,
+        0.5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#e8e2d4",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "breach_w",
+      "position": [
+        5.5,
+        0,
+        12
+      ],
+      "name": "Reinforced wall",
+      "kind": "destructible",
+      "model": "wall",
+      "yaw": 0,
+      "health": 300,
+      "explosiveOnly": true
+    },
+    {
+      "id": "breach_m",
+      "position": [
+        8,
+        0,
+        12
+      ],
+      "name": "Reinforced wall",
+      "kind": "destructible",
+      "model": "wall",
+      "yaw": 0,
+      "health": 300,
+      "explosiveOnly": true
+    },
+    {
+      "id": "breach_e",
+      "position": [
+        10.5,
+        0,
+        12
+      ],
+      "name": "Reinforced wall",
+      "kind": "destructible",
+      "model": "wall",
+      "yaw": 0,
+      "health": 300,
+      "explosiveOnly": true
+    },
+    {
+      "id": "alarm_mil_1",
+      "position": [
+        6,
+        3.4,
+        27
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff3a20",
+      "intensity": 1.2,
+      "range": 10,
+      "fixture": "bulb",
+      "off": true
+    },
+    {
+      "id": "alarm_mil_2",
+      "position": [
+        18,
+        3.4,
+        13
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff3a20",
+      "intensity": 1.2,
+      "range": 10,
+      "fixture": "bulb",
+      "off": true
+    },
+    {
+      "id": "light_108",
+      "position": [
+        12,
+        3.6,
+        20
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#d8e0c8",
+      "intensity": 0.9,
+      "range": 12,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "zone_military",
+      "position": [
+        12,
+        0,
+        20
+      ],
+      "name": "Military wing",
+      "kind": "zone",
+      "size": [
+        14,
+        3,
+        14
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true,
+      "team": "players"
+    },
+    {
+      "id": "enc_scolitex",
+      "position": [
+        6,
+        0,
+        4
+      ],
+      "name": "The Scolitex",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "scolitex": 1
+      },
+      "activeCap": 1,
+      "reinforcements": 0,
+      "perPlayer": 0,
+      "respawnSeconds": 4,
+      "radius": 2,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "hard",
+      "health": 4,
+      "size": 1.3
+    },
+    {
+      "id": "enc_finale_imps",
+      "position": [
+        4,
+        4,
+        10.8
+      ],
+      "name": "Imps on the balcony",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "exhibits",
+      "roster": {
+        "trooper": 0,
+        "gunner": 0,
+        "heavy": 0,
+        "imp": 3
+      },
+      "activeCap": 5,
+      "reinforcements": 6,
+      "perPlayer": 2,
+      "respawnSeconds": 4,
+      "radius": 3,
+      "order": "attack",
+      "orderTarget": null,
+      "startActive": false,
+      "difficulty": "normal"
+    },
+    {
+      "id": "enc_guards",
+      "position": [
+        6,
+        0,
+        -14
+      ],
+      "name": "Night guards",
+      "kind": "encounter",
+      "yaw": 0,
+      "faction": "guards",
+      "roster": {
+        "trooper": 2,
+        "gunner": 0,
+        "heavy": 0
+      },
+      "activeCap": 2,
+      "reinforcements": 0,
+      "perPlayer": 0,
+      "respawnSeconds": 4,
+      "radius": 2,
+      "order": "follow",
+      "orderTarget": null,
+      "startActive": true,
+      "difficulty": "normal"
+    },
+    {
+      "id": "spawn_109",
+      "position": [
+        0,
+        0,
+        -12
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_110",
+      "position": [
+        2.5,
+        0,
+        -14
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_111",
+      "position": [
+        5.5,
+        0,
+        -14
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_112",
+      "position": [
+        8,
+        0,
+        -12
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_113",
+      "position": [
+        0,
+        0,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_114",
+      "position": [
+        8,
+        0,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_115",
+      "position": [
+        2.5,
+        0,
+        -18
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_116",
+      "position": [
+        5.5,
+        0,
+        -18
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "pickup_117",
+      "position": [
+        10.5,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_118",
+      "position": [
+        -2.5,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_119",
+      "position": [
+        4,
+        0,
+        -19
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_120",
+      "position": [
+        -10,
+        0,
+        -14
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": 30
+    },
+    {
+      "id": "pickup_121",
+      "position": [
+        -17,
+        0,
+        -15
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_122",
+      "position": [
+        -6,
+        0,
+        -26
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": 45
+    },
+    {
+      "id": "pickup_123",
+      "position": [
+        -12,
+        0,
+        -26
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_124",
+      "position": [
+        -16,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": 30
+    },
+    {
+      "id": "pickup_125",
+      "position": [
+        -20,
+        0,
+        -8.6
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_126",
+      "position": [
+        -6,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_127",
+      "position": [
+        -16,
+        0,
+        26
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_128",
+      "position": [
+        -4,
+        0,
+        26.4
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_auto_shotgun",
+      "respawnSeconds": 40
+    },
+    {
+      "id": "pickup_129",
+      "position": [
+        1,
+        0,
+        26.6
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_130",
+      "position": [
+        24,
+        0,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_plasma",
+      "respawnSeconds": 30
+    },
+    {
+      "id": "pickup_131",
+      "position": [
+        24,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_cells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_132",
+      "position": [
+        34,
+        0,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_laser_rifle",
+      "respawnSeconds": 45
+    },
+    {
+      "id": "pickup_133",
+      "position": [
+        14,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_134",
+      "position": [
+        16,
+        0,
+        26
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": 40
+    },
+    {
+      "id": "pickup_135",
+      "position": [
+        18.5,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_136",
+      "position": [
+        14,
+        0,
+        14
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_137",
+      "position": [
+        0,
+        4,
+        -10
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_138",
+      "position": [
+        8,
+        4,
+        -10
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": 45
+    },
+    {
+      "id": "pickup_139",
+      "position": [
+        9,
+        4,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_140",
+      "position": [
+        -2,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        -1.5,
+        4,
+        -8.38
+      ],
+      "kind": "prop",
+      "model": "prop.hh_desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
+        -1.5,
+        4,
+        -7.5
+      ],
+      "kind": "prop",
+      "model": "prop.hh_office_chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        -1.02,
+        4.85,
+        -8.38
+      ],
+      "kind": "prop",
+      "model": "prop.hh_monitor",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        1.76,
+        4,
+        -11.14
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase_wide",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_145",
+      "position": [
+        3.06,
+        4,
+        -4.94
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": -2.532,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        3.06,
+        4,
+        -11.06
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": -0.9714,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        10.76,
+        4,
+        -9.4
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        10.76,
+        4,
+        -6
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_149",
+      "position": [
+        5.95,
+        4,
+        -10.8
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        11.09,
+        4,
+        -11.09
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": -0.6385,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    }
+  ],
+  "factions": [
+    {
+      "id": "exhibits",
+      "name": "The Exhibits",
+      "color": "#b07a2a",
+      "relations": {}
+    },
+    {
+      "id": "guards",
+      "name": "Night Guards",
+      "color": "#4a7ad0",
+      "relations": {
+        "players": "ally",
+        "exhibits": "enemy"
+      }
+    }
+  ],
+  "logic": {
+    "variables": [
+      {
+        "id": "var_cleared",
+        "name": "gallery squads cleared",
+        "initial": 0
+      },
+      {
+        "id": "var_antiq",
+        "name": "sarcophagi open",
+        "initial": 0
+      },
+      {
+        "id": "var_breach",
+        "name": "wall breached",
+        "initial": 0
+      },
+      {
+        "id": "var_lives",
+        "name": "lives",
+        "initial": 20
+      }
+    ],
+    "timers": [
+      {
+        "id": "timer_lids",
+        "name": "The lids are rattling",
+        "seconds": 20,
+        "loop": false,
+        "visible": true
+      },
+      {
+        "id": "timer_pods",
+        "name": "Containment failure",
+        "seconds": 15,
+        "loop": false,
+        "visible": true
+      }
+    ],
+    "objectives": [
+      {
+        "id": "obj_rounds",
+        "text": "Do your rounds: clear all four galleries",
+        "startActive": true,
+        "marker": null
+      },
+      {
+        "id": "obj_key",
+        "text": "Take the Military wing key from the curator's office",
+        "startActive": false,
+        "marker": "btn_curator"
+      },
+      {
+        "id": "obj_tank",
+        "text": "Break through into the atrium with the tank",
+        "startActive": false,
+        "marker": "breach_m"
+      },
+      {
+        "id": "obj_finale",
+        "text": "Bring down the Scolitex",
+        "startActive": false,
+        "marker": "enc_scolitex"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule_intro",
+        "name": "Night shift",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 6,
+            "text": "Night shift at the museum. Do your rounds: the Antiquities, the Armour Gallery, Gothic and the Space Hall.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_antiq_in",
+        "name": "Something moves in the Antiquities",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_antiq"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Did that sarcophagus just move?",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_idol",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_lids",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_lid_1",
+        "name": "Lid 1 breaks",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "destroyed",
+          "target": "lid_1"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_antiq",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "set_var",
+            "target": "var_antiq",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_idol",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "The sarcophagi are open! Imps!",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_mummies",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_lid_2",
+        "name": "Lid 2 breaks",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "destroyed",
+          "target": "lid_2"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_antiq",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "set_var",
+            "target": "var_antiq",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_idol",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "The sarcophagi are open! Imps!",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_mummies",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_lid_3",
+        "name": "Lid 3 breaks",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "destroyed",
+          "target": "lid_3"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_antiq",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "set_var",
+            "target": "var_antiq",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_idol",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "The sarcophagi are open! Imps!",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_mummies",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_lids_burst",
+        "name": "The lids burst",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_lids"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "destroy",
+            "target": "lid_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "lid_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "lid_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_armour",
+        "name": "The suits of armour wake",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_armour"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_flash",
+            "target": "lamp_armour_w",
+            "value": 0.8,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_flash",
+            "target": "lamp_armour_e",
+            "value": 0.8,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 0.7,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "armour_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_armour_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "armour_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_armour_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "armour_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_armour_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "armour_4",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_armour_4",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "The armour was hollow... and full of puglins!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_gothic",
+        "name": "The candles gutter",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_gothic"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_blink",
+            "target": "candle_1",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "candle_2",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "candle_3",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "candle_4",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_off",
+            "target": "chandelier_gothic",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "The candles gutter... Don't blink.",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 1.8,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_angel_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_angel_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_angel_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_gothic_calm",
+        "name": "The candles steady",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_cleared"
+        },
+        "if": [
+          {
+            "type": "encounter_alive",
+            "target": "enc_angel_1",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          },
+          {
+            "type": "encounter_alive",
+            "target": "enc_angel_2",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          },
+          {
+            "type": "encounter_alive",
+            "target": "enc_angel_3",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_rounds",
+            "op": "==",
+            "value": 0,
+            "state": "active"
+          }
+        ],
+        "do": [
+          {
+            "type": "light_blink",
+            "target": "candle_1",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "candle_2",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "candle_3",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "candle_4",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_on",
+            "target": "chandelier_gothic",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_space",
+        "name": "Containment warning",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_space"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_on",
+            "target": "alarm_space_s",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "alarm_space_n",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "alarm_space_s",
+            "value": 2,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "alarm_space_n",
+            "value": 2,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "CONTAINMENT FAILURE IN 15 SECONDS",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_pods",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_pod_1",
+        "name": "Pod 1 opens",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "destroyed",
+          "target": "pod_glass_1"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_color",
+            "target": "lamp_pod_1",
+            "value": 0,
+            "text": "#ff3a3a",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_pod_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_pod_2",
+        "name": "Pod 2 opens",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "destroyed",
+          "target": "pod_glass_2"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_color",
+            "target": "lamp_pod_2",
+            "value": 0,
+            "text": "#ff3a3a",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_pod_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_pod_3",
+        "name": "Pod 3 opens",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "destroyed",
+          "target": "pod_glass_3"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_color",
+            "target": "lamp_pod_3",
+            "value": 0,
+            "text": "#ff3a3a",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_pod_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_pod_4",
+        "name": "Pod 4 opens",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "destroyed",
+          "target": "pod_glass_4"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_color",
+            "target": "lamp_pod_4",
+            "value": 0,
+            "text": "#ff3a3a",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_pod_4",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_pods_open",
+        "name": "Containment fails",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_pods"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "destroy",
+            "target": "pod_glass_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "pod_glass_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "pod_glass_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "pod_glass_4",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "The specimens are loose!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_mummies",
+        "name": "Cleared: enc_mummies",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_mummies"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_armour_1",
+        "name": "Cleared: enc_armour_1",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_armour_1"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_armour_2",
+        "name": "Cleared: enc_armour_2",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_armour_2"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_armour_3",
+        "name": "Cleared: enc_armour_3",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_armour_3"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_armour_4",
+        "name": "Cleared: enc_armour_4",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_armour_4"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_angel_1",
+        "name": "Cleared: enc_angel_1",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_angel_1"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_angel_2",
+        "name": "Cleared: enc_angel_2",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_angel_2"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_angel_3",
+        "name": "Cleared: enc_angel_3",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_angel_3"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_pod_1",
+        "name": "Cleared: enc_pod_1",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_pod_1"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_pod_2",
+        "name": "Cleared: enc_pod_2",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_pod_2"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_pod_3",
+        "name": "Cleared: enc_pod_3",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_pod_3"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cleared_enc_pod_4",
+        "name": "Cleared: enc_pod_4",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_pod_4"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_cleared",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_rounds_done",
+        "name": "Rounds done",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_cleared"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_cleared",
+            "op": ">=",
+            "value": 12,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_rounds",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_key",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "enable",
+            "target": "btn_curator",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "lamp_curator",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 6,
+            "text": "The front doors won't open. The tank in the Military wing is the only way out: the curator keeps the key upstairs.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_key",
+        "name": "The key",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_curator"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "objective",
+            "target": "obj_key",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_tank",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "light_off",
+            "target": "lamp_curator",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_military",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_military",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "alarm_mil_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "alarm_mil_1",
+            "value": 1.5,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_on",
+            "target": "alarm_mil_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "alarm_mil_2",
+            "value": 1.5,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 5,
+            "text": "Military wing open. Start the tank and blast through the wall into the atrium!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_tank_room",
+        "name": "In the Military wing",
+        "enabled": true,
+        "once": true,
+        "when": {
+          "event": "zone_enter",
+          "target": "zone_military"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Shell the reinforced wall (explosives only) to break into the atrium.",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_breach_w",
+        "name": "The wall comes down",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "destroyed",
+          "target": "breach_w"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_breach",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "set_var",
+            "target": "var_breach",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_rounds",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_key",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_tank",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_finale",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "destroy",
+            "target": "breach_w",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "breach_m",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "breach_e",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Something huge is moving in the atrium... THE SCOLITEX!",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_scolitex",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_finale_imps",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_breach_m",
+        "name": "The wall comes down",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "destroyed",
+          "target": "breach_m"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_breach",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "set_var",
+            "target": "var_breach",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_rounds",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_key",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_tank",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_finale",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "destroy",
+            "target": "breach_w",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "breach_m",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "breach_e",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Something huge is moving in the atrium... THE SCOLITEX!",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_scolitex",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_finale_imps",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_breach_e",
+        "name": "The wall comes down",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "destroyed",
+          "target": "breach_e"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_breach",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "set_var",
+            "target": "var_breach",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_rounds",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_key",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_tank",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "objective",
+            "target": "obj_finale",
+            "value": 0,
+            "text": "",
+            "state": "active"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "destroy",
+            "target": "breach_w",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "breach_m",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "destroy",
+            "target": "breach_e",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Something huge is moving in the atrium... THE SCOLITEX!",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_scolitex",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_start",
+            "target": "enc_finale_imps",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_win",
+        "name": "The Scolitex falls",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "encounter_cleared",
+          "target": "enc_scolitex"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "encounter_stop",
+            "target": "enc_mummies",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_armour_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_armour_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_armour_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_armour_4",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_angel_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_angel_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_angel_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_pod_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_pod_2",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_pod_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_pod_4",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_scolitex",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "encounter_stop",
+            "target": "enc_finale_imps",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "objective",
+            "target": "obj_finale",
+            "value": 0,
+            "text": "",
+            "state": "complete"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 5,
+            "text": "The sun is coming up. The exhibits are still. Shift over.",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players win"
+          }
+        ]
+      },
+      {
+        "id": "rule_life",
+        "name": "A guard falls",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "player_killed",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "add_var",
+            "target": "var_lives",
+            "value": -1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_few",
+        "name": "Few lives left",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_lives"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_lives",
+            "op": "==",
+            "value": 5,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Only 5 lives left!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_lose",
+        "name": "The museum wins",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_lives"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_lives",
+            "op": "<=",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "The night shift is over for good.",
+            "state": ""
+          },
+          {
+            "type": "end_round",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "players lose"
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -32,
+      -32
+    ],
+    "max": [
+      40,
+      32
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "track": null,
+  "backdrop": {
+    "sky": "night",
+    "scenery": "city",
+    "ground": "none",
+    "haze": 0.35
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
+  "dependencies": []
+}

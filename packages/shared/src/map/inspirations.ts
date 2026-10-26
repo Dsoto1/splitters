@@ -45,6 +45,7 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   fernwood_moon: 'Endor (Star Wars)',
   glacier_line: 'Hoth (Star Wars)',
   serene_city: 'Demolition Man',
+  after_hours: 'Night at the Museum',
 };
 
 /** "Inspired by …" for a map, if it has one (imported TimeSplitters maps name their game). */
