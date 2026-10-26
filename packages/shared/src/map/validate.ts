@@ -202,6 +202,8 @@ export const MAP_BUDGETS = {
   liquids: 32,
   /** Gameplay pieces that think every tick: doors, traps, zones, squads, mounts, pads, buttons, movers. */
   active: 300,
+  /** Lights (each lamp lights the pixels within its range: clustered, but a crowd of overlapping ones still costs every pixel they reach). */
+  lights: 256,
 } as const;
 
 function budgetIssues(map: MapDocument): ValidationIssue[] {
@@ -219,6 +221,7 @@ function budgetIssues(map: MapDocument): ValidationIssue[] {
   over('blocks', e.filter((x) => x.kind === 'block' && !dynamic.has(x.id)).length, MAP_BUDGETS.blocks, 'solid blocks');
   over('dynamic_blocks', dynamic.size, MAP_BUDGETS.dynamicBlocks, 'breakable, crumbling, trapdoor, logic-driven or moving blocks');
   over('liquids', e.filter((x) => x.kind === 'water').length, MAP_BUDGETS.liquids, 'bodies of water, lava, acid or swamp');
+  over('lights', e.filter((x) => x.kind === 'light').length, MAP_BUDGETS.lights, 'lights');
   over('active', e.filter((x) => ['door', 'trap', 'zone', 'encounter', 'mount', 'pad', 'button', 'mover', 'portal'].includes(x.kind)).length, MAP_BUDGETS.active, 'doors, traps, zones, squads, vehicles, pads, buttons, movers and portals');
   const xs = e.map((x) => x.position[0]);
   const zs = e.map((x) => x.position[2]);

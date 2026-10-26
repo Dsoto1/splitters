@@ -87,10 +87,29 @@ Other settings (environment variables):
 - **Bot think budget** (`Match.botBudget`): past 40 thinking bots, a bot with
   nobody to fight thinks every other tick and repeats its last move in
   between. Who-may-shoot-whom is worked out once per side a tick, not per bot.
+- **Movement detail** (`Match.relaxedMove`): past 40 bots, bots on foot move
+  over terrain with its height function instead of its collision mesh (the
+  dearest thing Rapier's character controller collides with), and ones more
+  than 45 m from every player move every other tick by two ticks' worth
+  (snapshots go out every other tick anyway). Empty vehicles 90 m from
+  everyone drive at half rate, and parked ones settle and stop simulating.
+  Players always get the exact move (it's what their prediction replays).
+- **Physics**: static boxes with the same cross-section are merged into fewer
+  colliders; player capsules are kept out of the broad phase; a physics
+  update after something moved runs Rapier's pipeline directly (World.step
+  also walked every collider through a JS callback, ~0.1 µs each, every tick).
+- **Long routes** (`NavWorld.findPath`): Detour's default 2,048 search nodes
+  ran out on long routes (round the lake on Norman Shores) and the partial
+  path counted as no way there: 70% of path queries failed there and bots
+  stood about. Searches now have 65,535 nodes, routes that don't exist are
+  remembered, and a bot that finds no way backs off (0.2 s doubling to 4 s)
+  instead of asking again every few ticks.
 - **Client**: past 24 characters on screen, ones over 45 m animate every other
   frame and over 120 m every fourth (meshes already drop to low detail past
-  18 m); at most 12 ragdolls tumble at once (a death past that plays the death
-  animation).
+  18 m), and ones outside the view aren't drawn (or drawn into the shadow
+  map) and animate every eighth frame; at most 12 ragdolls tumble at once (a
+  death past that plays the death animation). The shadow map only draws
+  casters within its reach of the camera.
 - **Bench**: `pnpm bench:96` (96 bots, Frost Basin, Team Deathmatch, 60 s).
   Before this work, on a shared 4-core box: avg 9.3 ms (Frost Basin) and 11.6 ms
   (Shingle Point) a tick. After: 7.7–8.1 ms and 8.8–9.7 ms, with bot AI down from
@@ -98,6 +117,14 @@ Other settings (environment variables):
   controller (~50% of the tick, ~40–60 µs a move with autostep and snap to
   ground on big terrain maps). A test (`shared/test/bigMatch.test.ts`) runs
   96 bots for 15 s with a generous 30 ms ceiling.
+  `pnpm bench:96:maps` runs the eight big maps (Norman Shores, Apex Ring,
+  Capitol Mall, Riot Junction, Eagle Spires, Shingle Point, Frost Basin,
+  Primeval Park) and breaks each tick down: bot thinking, path queries
+  (count, failures, time), character moves (full and coarse), vehicles and
+  traffic, scenario logic, snapshots, process CPU, stuck and idle bots, with
+  the load average. After the movement-detail, physics and long-route work
+  (October 2026) the process CPU per tick went from 11–16 ms to 7.4–10 ms on
+  those maps; see MAP_BUDGETS.md for the table.
 
 ## 3. LAN games
 

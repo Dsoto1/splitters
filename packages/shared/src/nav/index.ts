@@ -7,6 +7,7 @@ import type { Vec3 } from '../math.ts';
 import { PLAYER } from '../sim/constants.ts';
 import { trackGeometry } from '../map/track.ts';
 import { mapPortals, portalEntry, PORTAL_EXIT } from '../sim/portals.ts';
+import { simProfile } from '../sim/profile.ts';
 
 let initPromise: Promise<void> | undefined;
 
@@ -20,6 +21,16 @@ const CELL = 0.2;
 const CELL_HEIGHT = 0.05;
 /** Spacing of NavWorld.places(). */
 const PLACE_CELL = 7;
+/**
+ * Search nodes per path query. Detour's default (2048) runs out on long routes
+ * over big maps (round the lake and over the bridge on Norman Shores), and an
+ * exhausted search returns a partial path, which bots took as "no way there".
+ * 65535 is Detour's limit (16-bit node indices).
+ */
+const MAX_NODES = 65535;
+/** Polygons a route may cross, and corners its straight path may have. */
+const MAX_PATH_POLYS = 8192;
+const MAX_CORNERS = 1024;
 
 /**
  * Navigation mesh generated from map geometry, so bots work on any Classic
@@ -65,7 +76,7 @@ export class NavWorld {
       offMeshConnections: (snapped ? links : []).map((l) => ({ startPosition: l.start, endPosition: l.end, radius: 0.8, bidirectional: false })),
     });
     if (!result.success) throw new Error(`navmesh generation failed: ${result.error}`);
-    const world = new NavWorld(result.navMesh, new NavMeshQuery(result.navMesh));
+    const world = new NavWorld(result.navMesh, new NavMeshQuery(result.navMesh, { maxNodes: MAX_NODES }));
     if (!links.length || snapped) return world;
     // Jump links must start and end on the mesh: snap them to it, then build again with the links in.
     const onMesh = links.flatMap((l) => {
@@ -86,16 +97,58 @@ export class NavWorld {
 
   /** Straight-path corners from a to b, or null if b is unreachable from a. */
   findPath(a: Vec3, b: Vec3): Vec3[] | null {
-    const start = this.closestPoint(a);
-    const end = this.closestPoint(b);
-    if (!start || !end) return null;
-    // Big maps (a whole campus, many stairs) need long corridors: 512 polygons cut routes short.
-    const r = this.query.computePath(start, end, { halfExtents: { x: 0.5, y: 1, z: 0.5 }, maxPathPolys: 4096 });
-    if (!r.success || r.path.length === 0) return null;
-    const last = r.path[r.path.length - 1]!;
-    // A partial path (destination polygon unreachable) ends short of the goal.
-    if (Math.hypot(last.x - end.x, last.z - end.z) > 0.5 || Math.abs(last.y - end.y) > 1) return null;
-    return r.path.map((p) => ({ x: p.x, y: p.y, z: p.z }));
+    if (!simProfile.on) return this.findPathNow(a, b);
+    const t0 = performance.now();
+    const r = this.findPathNow(a, b);
+    simProfile.add('nav', performance.now() - t0);
+    simProfile.count('nav');
+    if (!r) simProfile.count('navFail');
+    return r;
+  }
+
+  /**
+   * Routes that don't exist, by start and end polygon: asked again, the answer
+   * is a lookup instead of a search of everything reachable. (The navmesh
+   * never changes under a NavWorld.) Found routes aren't shared: the tail of
+   * another bot's corridor is shortest from where that bot entered a polygon,
+   * not from where this one stands, and on open ground the difference showed
+   * (Fort Wars bots stopped reaching the flag).
+   */
+  private readonly noRoute = new Set<string>();
+
+  private findPathNow(a: Vec3, b: Vec3): Vec3[] | null {
+    const ext = { x: 2, y: 3, z: 2 };
+    const s = this.query.findNearestPoly(a, { halfExtents: ext });
+    const e = this.query.findNearestPoly(b, { halfExtents: ext });
+    if (!s.success || !e.success || !s.nearestRef || !e.nearestRef) return null;
+    const start = s.nearestPoint;
+    const end = e.nearestPoint;
+    const failKey = `${s.nearestRef}:${e.nearestRef}`;
+    if (this.noRoute.has(failKey)) return null;
+    const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, { maxPathPolys: MAX_PATH_POLYS });
+    const n = r.polys.size;
+    // A partial path (destination unreachable, or the search ran out of nodes) ends short of the goal.
+    const whole = r.success && n > 0 && r.polys.get(n - 1) === e.nearestRef;
+    if (simProfile.on) simProfile.count(whole ? 'navSearch' : 'navSearchFail');
+    if (!whole) {
+      r.polys.destroy();
+      if (this.noRoute.size >= 4096) this.noRoute.clear();
+      this.noRoute.add(failKey);
+      return null;
+    }
+    const sp = this.query.findStraightPath(start, end, r.polys, { maxStraightPathPoints: MAX_CORNERS });
+    r.polys.destroy();
+    const out: Vec3[] = [];
+    if (sp.success) {
+      const v = sp.straightPath;
+      for (let i = 0; i < sp.straightPathCount; i++) out.push({ x: v.get(i * 3), y: v.get(i * 3 + 1), z: v.get(i * 3 + 2) });
+    }
+    sp.straightPath.destroy();
+    sp.straightPathFlags.destroy();
+    sp.straightPathRefs.destroy();
+    const last = out[out.length - 1];
+    if (!last || Math.hypot(last.x - end.x, last.z - end.z) > 0.5 || Math.abs(last.y - end.y) > 1) return null;
+    return out;
   }
 
   private placeCache: Vec3[] | null = null;
