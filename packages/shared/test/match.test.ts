@@ -27,13 +27,14 @@ describe('Match', () => {
     let seq = 0;
     const events = runTicks(match, 120, () => {
       const aim = lookAngles(eye(a.move.pos), chest(b.move.pos));
-      match.queueInputs(a.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: aim.yaw, pitch: aim.pitch, buttons: BUTTON_FIRE }]);
+      // The pistol is semi-automatic: a click every other tick, as fast as anyone could tap.
+      match.queueInputs(a.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: aim.yaw, pitch: aim.pitch, buttons: seq % 2 ? BUTTON_FIRE : 0 }]);
     });
     const pistol = getWeapon('core.pistol');
     const shots = events.filter((e) => e.e === 'shot');
     const hits = shots.filter((e) => e.e === 'shot' && e.hit[0] === b.slot);
     expect(hits.length).toBe(Math.ceil(PLAYER.maxHealth / pistol.damage));
-    // Fire rate is limited by the weapon's interval, not by how often the button is held.
+    // Fire rate is limited by the weapon's interval, not by how fast the trigger is tapped.
     expect(shots.length).toBeLessThanOrEqual(Math.ceil(120 / pistol.fireIntervalTicks));
     expect(events).toContainEqual({ e: 'kill', killer: a.slot, victim: b.slot, weapon: 'core.pistol' });
     expect(a.kills).toBe(1);

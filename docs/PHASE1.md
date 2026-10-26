@@ -84,7 +84,7 @@ Verification: the cloud container's software WebGPU adapter loses its device on 
 | 5 | Sniper Rifle | Quaternius SniperRifle_1 | 75 dmg, scope zoom (RMB) |
 | 6 | Grenade Launcher | Kenney blaster-h (recoloured) + grenade | Lobbed projectile, 4.5 m splash, 60 % self-damage, no splash through walls |
 
-- **Inventory:** each weapon has a magazine, reserve, reload and raise time. Players spawn with knife + pistol. Empty magazines reload on fire or with R. Switching uses 1–6, the mouse wheel or Q (last weapon). New guns auto-switch when picked up.
+- **Inventory:** each weapon has a magazine, reserve, reload and raise time. Players spawn with knife + pistol (semi-automatic: one shot per click). Empty magazines reload on fire or with R. Switching uses 1–6, the mouse wheel or Q (last weapon). New guns auto-switch when picked up.
 - **Items** (`sim/items.ts`): small/large health, small/large armor (absorbs ⅔ of damage), ammo box, the four weapon pickups, Speed Boost (×1.35 for 15 s) and Double Damage (15 s), each with a default respawn time.
 - **Map format v3:** a `pickup` entity (item + optional respawn override). v2 maps migrate (fixture tested). The validator flags unknown items and suggests adding health. The Phase 0 arena now has 13 pickups.
 - **Lag compensation:** inputs carry the server tick the player was looking at. Hitscan and melee from humans are resolved against recorded positions at that tick, rewinding at most 18 ticks (300 ms). Bots and projectiles use the present.

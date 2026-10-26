@@ -297,6 +297,8 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     displayName: 'Pistol',
     kind: 'hitscan',
     slot: 2,
+    // One shot per click; holding the trigger doesn't keep firing (the Machine Pistol is the automatic one).
+    fireMode: 'semi',
     // Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.
     family: 'pistol',
     damage: 24,

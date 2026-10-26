@@ -121,7 +121,8 @@ describe('dedicated server', () => {
         const me = snap.players.find((p) => p.s === wa.slot)!;
         const them = snap.players.find((p) => p.s === wb.slot)!;
         const aim = lookAngles({ x: me.p[0], y: me.p[1] + PLAYER.eyeHeight, z: me.p[2] }, { x: them.p[0], y: them.p[1] + 1.1, z: them.p[2] });
-        a.input(aim.yaw, aim.pitch, BUTTON_FIRE);
+        // The pistol is semi-automatic: tap the trigger, press then release.
+        a.input(aim.yaw, aim.pitch, a.seq % 2 ? 0 : BUTTON_FIRE);
         b.input(0, 0, 0);
         if (a.messages.some((m) => m.t === 'snapshot' && m.ev.some((e) => e.e === 'kill' && e.killer === wa.slot && e.victim === wb.slot))) {
           clearInterval(iv);

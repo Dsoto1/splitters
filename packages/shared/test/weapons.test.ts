@@ -75,7 +75,9 @@ describe('weapons', () => {
     const pistol = heldWeapon(a);
     const startReserve = pistol.reserve;
     let shots = 0;
-    d.run(12 * pistol.def.fireIntervalTicks + 5, () => d.input(a, { buttons: BUTTON_FIRE }));
+    // The pistol is semi-automatic: tap the trigger (press, release) rather than hold it.
+    let pull = 0;
+    d.run(12 * (pistol.def.fireIntervalTicks + 1) + 5, () => d.input(a, { buttons: pull++ % 2 ? 0 : BUTTON_FIRE }));
     shots = d.events.filter((e) => e.e === 'shot').length;
     expect(shots).toBe(pistol.def.magazine);
     // The next pull starts a reload; after reloadTicks the magazine is refilled from reserve.
