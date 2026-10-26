@@ -1,7 +1,9 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { simProfile } from './profile.ts';
-import { BotBrain, type CombatantView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
+import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
+import { SightCache } from '../bots/sight.ts';
+import { ViewGrid } from '../bots/grid.ts';
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
@@ -324,7 +326,8 @@ interface BulletEnd {
   gone?: boolean;
 }
 
-type ShotTargets = readonly { slot: number; feet: Vec3; height: number; radius: number }[];
+/** Bodies a shot can hit; `who` is the actor (lists kept for a whole bullet pass skip anyone killed during it). */
+type ShotTargets = readonly { slot: number; feet: Vec3; height: number; radius: number; who?: Combatant }[];
 
 /** A ground hazard or field (see ZONE_KINDS). */
 interface Zone {
@@ -386,6 +389,8 @@ export class Match {
   /** Gravity multiple and fall damage in force (match rules over the map's own). */
   readonly phys: { gravity: number; fallDamage: boolean };
   readonly physics: PhysicsWorld;
+  /** Bots' shared, briefly cached sight lines between actors (see SightCache). */
+  readonly sight: SightCache;
   /** Rebuilt mid-match only by Fort Wars (when the forts are done). */
   nav: NavWorld;
   readonly slots: (Combatant | null)[] = new Array(MAX_PLAYER_SLOTS).fill(null);
@@ -483,6 +488,7 @@ export class Match {
     this.killY = mapKillY(this.geometry, map);
     this.phys = matchPhysics(rules, map);
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map));
+    this.sight = new SightCache(this.physics);
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
     this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), [...navLinks(map.entities, this.physics, this.phys.gravity), ...liftLinks(map)]);
     this.rng = createRng(seed);
@@ -863,6 +869,7 @@ export class Match {
     this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], mapTerrainMesh(this.map), [...navLinks(this.map.entities, this.physics, this.phys.gravity), ...liftLinks(this.map)]);
     old.destroy();
     this.nav.places();
+    this.sight.clear();
     return true;
   }
 
@@ -1402,15 +1409,42 @@ export class Match {
       return list;
     };
     const anySentries = this.mounts.some((m) => m.def.sentry && m.alive);
-    const budget = this.botBudget(actors);
-    for (const c of actors) {
+    const every = this.botBudget(actors);
+    // Big matches: each side's living members and enemies on a grid over the ground, for perception and keeping apart.
+    const alliesGrids = new Map<string, ViewGrid>();
+    const othersGrids = new Map<string | null, ViewGrid>();
+    if (every > 1) {
+      let i = 0;
+      for (const [side, list] of factionViews) alliesGrids.set(side, this.gridFor(i++, list));
+      this.gridsUsed = i;
+    }
+    const othersGridFor = (c: Combatant, list: readonly CombatantView[]): ViewGrid | undefined => {
+      if (every === 1 || list !== hostileViewsBySide.get(c.faction)) return undefined;
+      let g = othersGrids.get(c.faction);
+      if (!g) othersGrids.set(c.faction, (g = this.gridFor(this.gridsUsed++, list)));
+      return g;
+    };
+    // Think budget (big matches): at most this many full thinks a tick; the rest of those due wait a tick,
+    // steering or coasting meanwhile, and go first on the next (round robin: the loop starts at a different
+    // bot every tick, and a bot never waits two ticks running).
+    let thinkers = 0;
+    for (const c of actors) if (c.bot && c.alive) thinkers++;
+    const cap = every > 1 ? Math.ceil(thinkers / every) + BOT_THINK_SLACK : Infinity;
+    let thoughts = 0;
+    const deferredBefore = this.botDeferred;
+    const deferred = new Set<number>();
+    const n = actors.length;
+    const from = every > 1 && n ? (this.tick * 7) % n : 0;
+    for (let k = 0; k < n; k++) {
+      const c = actors[(k + from) % n]!;
       if (!c.bot) continue;
       if (this.race && !c.npc) {
         c.queue.push(this.raceBotInput(c, this.race));
         continue;
       }
-      // Big matches: a bot with nobody to fight thinks every other tick and keeps its last move in between.
-      if (budget > 1 && this.coastBot(c, budget)) continue;
+      const due = every === 1 || (this.tick + c.slot) % every === 0 || deferredBefore.has(c.slot);
+      // Big matches: a bot with nobody to fight thinks on its own ticks and keeps its last move in between.
+      if (!due && this.coastBot(c, every)) continue;
       const hostiles = hostilesOf(c);
       // Objective modes can narrow what a bot notices (flag carriers keep running).
       const aware = this.mode && !c.npc ? this.mode.botAwareness(c) : Infinity;
@@ -1422,22 +1456,30 @@ export class Match {
         c.queue.push({ seq: c.lastSeq + 1, forward: 0, right: 0, yaw: c.yaw, pitch: c.pitch, buttons: 0 });
         continue;
       }
-      const orderGoal = npc
-        ? shambler
-          ? this.nearestGoal(c, hostiles, 1.5)
-          : this.encounters.goalFor(c.slot)
-        : (this.teammateOrder(c) ?? (zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null)));
+      const others = aware < Infinity || anySentries ? [...(aware < Infinity ? hostiles.filter((o) => horizontalDistance(o.move.pos, c.move.pos) <= aware) : hostiles).map((o) => views.get(o.slot)!), ...this.hostileSentries(c)] : hostileViews(c, hostiles);
       const allies = c.faction === null ? undefined : factionViews.get(c.faction);
       const tt = simProfile.on ? performance.now() : 0;
-      const input = c.bot.think({
+      // Over the think budget, a bot due to think steers (or coasts) this tick and thinks first on the next.
+      const over = due && every > 1 && thoughts >= cap && !deferredBefore.has(c.slot);
+      const mayWait = every > 1 && (!due || over) && c.alive && !c.mount;
+      const goalOf = () =>
+        npc
+          ? shambler
+            ? this.nearestGoal(c, hostiles, 1.5)
+            : this.encounters.goalFor(c.slot)
+          : (this.teammateOrder(c) ?? (zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null)));
+      // (A steering bot has no use for its goal, except a class's own input below.)
+      let orderGoal = mayWait && !this.classes ? undefined : goalOf();
+      const view: BotWorldView = {
         tick: this.tick,
         self: views.get(c.slot)!,
-        others: aware < Infinity || anySentries ? [...(aware < Infinity ? hostiles.filter((o) => horizontalDistance(o.move.pos, c.move.pos) <= aware) : hostiles).map((o) => views.get(o.slot)!), ...this.hostileSentries(c)] : hostileViews(c, hostiles),
+        others,
         physics: this.physics,
+        sight: this.sight,
         nav: this.nav,
-        spawnPoints: npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
+        spawnPoints: orderGoal === undefined ? spawnPoints : npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
         pickups: npc ? npcPickups : pickups,
-        inventory: [...c.weapons.values()].map((w) => ({ def: w.def, mag: w.mag, reserve: w.reserve })),
+        inventory: this.inventoryOf(c),
         throwables: c.throwable?.count ?? 0,
         throwable: c.throwable?.kind ?? null,
         held: c.current,
@@ -1447,7 +1489,7 @@ export class Match {
         ...(lifts.length ? { lifts } : {}),
         ...(portals.length ? { portals } : {}),
         hazards,
-        orderGoal,
+        orderGoal: orderGoal ?? null,
         allies,
         // Focused bots (flag carriers) also ignore distant gunfire and near misses: they keep running.
         noises: aware < Infinity ? undefined : noises,
@@ -1456,10 +1498,44 @@ export class Match {
         mounts: aware < Infinity ? undefined : mounts && !c.mount && this.mode?.blocksVehicle(c) ? mounts.filter((m) => m.kind !== 'vehicle') : mounts,
         seat: c.mount ? this.seatView(c) : null,
         squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
-      });
-      if (simProfile.on) {
-        simProfile.add('botThink', performance.now() - tt);
-        simProfile.count('botThink');
+      };
+      if (every > 1) {
+        const og = othersGridFor(c, others);
+        if (og) view.othersGrid = og;
+        const ag = c.faction === null ? undefined : alliesGrids.get(c.faction);
+        if (ag) view.alliesGrid = ag;
+      }
+      // Big matches: between its full thinks a fighting bot steers: perception runs when due, its aim
+      // follows the target and the trigger discipline runs, its move carries on (see BotBrain.steer).
+      let input: PlayerInput | null = null;
+      if (mayWait) {
+        const last = this.botThought.get(c.slot);
+        const s = last && this.tick - last.tick < every ? c.bot.steer(view) : null;
+        if (s && last) {
+          input = { seq: c.lastSeq + 1, forward: s.forward, right: s.right, yaw: s.yaw, pitch: s.pitch, buttons: (last.input.buttons & COAST_BUTTONS) | (s.fire ? BUTTON_FIRE : 0) | (s.zoom ? BUTTON_ZOOM : 0) };
+          if (simProfile.on) simProfile.count('botSteer');
+        } else if (over && this.coastBot(c, every, true)) {
+          deferred.add(c.slot);
+          if (simProfile.on) simProfile.count('botDeferred');
+          continue;
+        }
+        if (input && over) {
+          deferred.add(c.slot);
+          if (simProfile.on) simProfile.count('botDeferred');
+        }
+      }
+      if (!input) {
+        if (orderGoal === undefined) {
+          orderGoal = goalOf();
+          view.orderGoal = orderGoal;
+          view.spawnPoints = npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints;
+        }
+        input = c.bot.think(view);
+        thoughts++;
+        if (simProfile.on) {
+          simProfile.add('botThink', performance.now() - tt);
+          simProfile.count('botThink');
+        }
       }
       // Melee creatures rush the target they can see instead of keeping their distance.
       if (npc && NPC_ROLE_SPECS[npc.role].melee && c.alive) {
@@ -1467,7 +1543,7 @@ export class Match {
         chargeIntoMelee(input, c.move.pos, target?.alive ? target.move.pos : null, getWeapon(NPC_ROLE_SPECS[npc.role].weapon).range);
       }
       if (!npc) this.mode?.botInput?.(c, input);
-      if (!npc) this.classes?.botInput(c, input, orderGoal);
+      if (!npc) this.classes?.botInput(c, input, orderGoal ?? null);
       if (!npc && c.alive && !c.mount && this.rules.weapons === 'discs') this.dodgeDiscs(c, input);
       this.planeBot(c, input);
       // Bots fight recoil like players do, as well as their skill allows (spec §40).
@@ -1476,35 +1552,67 @@ export class Match {
         input.rc = [c.gun.rp * k, c.gun.ry * k];
       }
       c.queue.push(input);
-      if (budget > 1) this.botThought.set(c.slot, { input, tick: this.tick });
+      if (every > 1) this.botThought.set(c.slot, { input, tick: this.tick });
     }
+    this.botDeferred = deferred;
     this.lastAiMs = performance.now() - t0;
   }
 
-  /** Each bot's last thought-out input and its tick (only kept in big matches, see coastBot). */
+  /** Each bot's last thought-out (or steered) input and its tick (only kept in big matches, see coastBot). */
   private readonly botThought = new Map<number, { input: PlayerInput; tick: number }>();
+  /** Bots whose think the budget put off last tick: they think first this tick. */
+  private botDeferred = new Set<number>();
+  /** Grids reused tick to tick (runBots), and how many this tick has handed out. */
+  private readonly grids: ViewGrid[] = [];
+  private gridsUsed = 0;
+
+  private gridFor(i: number, list: readonly CombatantView[]): ViewGrid {
+    const g = this.grids[i] ?? (this.grids[i] = new ViewGrid());
+    return g.reset(list);
+  }
+
+  /** The bot's weapons as it sees them: the same objects tick to tick, refreshed (no allocation per bot a tick). */
+  private inventoryOf(c: Combatant): InventoryView[] {
+    let list = this.botInventory.get(c.slot);
+    if (!list) this.botInventory.set(c.slot, (list = []));
+    let i = 0;
+    for (const w of c.weapons.values()) {
+      const v = list[i];
+      if (v) {
+        v.def = w.def;
+        v.mag = w.mag;
+        v.reserve = w.reserve;
+      } else list[i] = { def: w.def, mag: w.mag, reserve: w.reserve };
+      i++;
+    }
+    list.length = i;
+    return list;
+  }
+
+  private readonly botInventory = new Map<number, InventoryView[]>();
 
   /**
    * Think budget: up to BOT_FULL_RATE thinking bots (Player Bots and awake
-   * NPCs) all think every tick; past that, bots with nobody to fight think
-   * every other tick (96-player matches).
+   * NPCs) all think every tick; past that, bots think in full on one tick in
+   * BOT_THINK_EVERY (20 Hz), steering (fighting) or coasting (not) in between.
    */
   private botBudget(actors: readonly Combatant[]): number {
     let n = 0;
     for (const c of actors) if (c.bot && c.alive) n++;
-    return n > BOT_FULL_RATE ? 2 : 1;
+    return n > BOT_FULL_RATE ? BOT_THINK_EVERY : 1;
   }
 
   /**
-   * On its off tick, a bot that is alive, on foot, not fighting and not under
-   * fire repeats the move it thought out last tick (without one-shot buttons).
-   * Returns false when it should think now.
+   * Between its thinks, a bot that is alive, on foot, not fighting and not
+   * under fire repeats the move it thought out last (without one-shot buttons).
+   * `force` (over the think budget): a fighting bot too. Returns false when it
+   * should think now.
    */
-  private coastBot(c: Combatant, every: number): boolean {
-    if ((this.tick + c.slot) % every === 0 || !c.alive || c.mount || c.bot!.target !== null) return false;
-    if (c.shotAt && this.tick - c.shotAt.tick <= 2) return false;
+  private coastBot(c: Combatant, every: number, force = false): boolean {
+    if (!c.alive || c.mount) return false;
+    if (!force && (c.bot!.target !== null || (c.shotAt && this.tick - c.shotAt.tick <= every))) return false;
     const last = this.botThought.get(c.slot);
-    if (!last || last.tick !== this.tick - 1) return false;
+    if (!last || this.tick - last.tick >= every) return false;
     const { seq: _seq, say: _say, build: _build, weapon: _weapon, ...keep } = last.input;
     c.queue.push({ ...keep, seq: c.lastSeq + 1, buttons: keep.buttons & COAST_BUTTONS });
     return true;
@@ -2207,7 +2315,7 @@ export class Match {
       .filter((o) => o.alive && this.hostile(shooter, o))
       .map((o) => {
         const then = past?.get(o.slot);
-        return { slot: o.slot, feet: then ?? o.move.pos, height: then?.h ?? bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size };
+        return { slot: o.slot, feet: then ?? o.move.pos, height: then?.h ?? bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size, who: o };
       });
   }
 
@@ -2443,14 +2551,18 @@ export class Match {
   private stepBullets(): void {
     if (!this.bullets.length) return;
     const keep: Bullet[] = [];
-    const targets = new Map<number, ShotTargets>();
+    // Who each bullet can hit, built once per side for the pass (nobody moves during it): in a
+    // big fight hundreds of rounds are in the air from dozens of shooters on two sides.
+    const targets = new Map<number | string, ShotTargets>();
     for (const b of this.bullets) {
       if (b.born === this.tick) {
         keep.push(b);
         continue;
       }
-      let list = targets.get(b.owner);
-      if (!list) targets.set(b.owner, (list = this.liveTargets(b.owner)));
+      const side = this.actor(b.owner)?.faction;
+      const key = side === null || side === undefined ? b.owner : side;
+      let list = targets.get(key);
+      if (!list) targets.set(key, (list = this.liveTargets(b.owner)));
       const end = this.flyTick(b, list);
       if (!end) {
         keep.push(b);
@@ -2475,7 +2587,7 @@ export class Match {
     if (shooter) return this.targetsFor(shooter, 0);
     return this.actors()
       .filter((o) => o.alive && o.slot !== owner)
-      .map((o) => ({ slot: o.slot, feet: o.move.pos, height: bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size }));
+      .map((o) => ({ slot: o.slot, feet: o.move.pos, height: bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size, who: o }));
   }
 
   /** One tick of flight (BULLET_SUBSTEPS segments). Returns where it ended, or null while it flies on. */
@@ -2513,7 +2625,7 @@ export class Match {
     const mz = (a.z + c.z) / 2;
     const reach = len / 2 + 2;
     for (const t of targets) {
-      if (Math.abs(t.feet.x - mx) > reach || Math.abs(t.feet.z - mz) > reach) continue;
+      if (Math.abs(t.feet.x - mx) > reach || Math.abs(t.feet.z - mz) > reach || (t.who && !t.who.alive)) continue;
       const d = rayCapsule(a, u, t.feet, t.radius, t.height);
       if (d !== null && d <= len && d < best) {
         best = d;
@@ -4214,8 +4326,12 @@ interface Trigger {
 /** Leader variant (rules.leaders 'vip'): extra points for downing an enemy team's leader. */
 export const LEADER_BOUNTY = 3;
 
-/** Past this many thinking bots, idle ones think every other tick (Match.botBudget). */
+/** Past this many thinking bots, bots think in full on one tick in BOT_THINK_EVERY (Match.botBudget). */
 export const BOT_FULL_RATE = 40;
+/** Big matches: a full think every this many ticks (20 Hz); steering or coasting in between. */
+export const BOT_THINK_EVERY = 3;
+/** Think budget: full thinks a tick past an even share (thinking bots / BOT_THINK_EVERY) before the rest wait a tick. */
+const BOT_THINK_SLACK = 6;
 /** In those matches, bots this far (m) from every player move at half rate (Match.relaxedMove). */
 export const RELAXED_RANGE = 45;
 /** Bots this close (m) to a portal's edge always make the exact move (Match.relaxedMove). */

@@ -6,8 +6,10 @@ import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, B
 import { THROWABLE_DEFS, getWeapon, weaponCode, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
-import { AimModel, type AimContext, type AimSolution } from './aim.ts';
+import { AimModel, type AimContext, type AimSolution, type AimTarget } from './aim.ts';
 import { findCover, stillCovered, type CoverSpot } from './cover.ts';
+import type { SightCache } from './sight.ts';
+import type { ViewGrid } from './grid.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
@@ -114,7 +116,16 @@ export interface BotWorldView {
   seat?: SeatView | null;
   /** Squad tactics (NPCs): advance now (bounding) or hold and cover the one that is. */
   squad?: { advance: boolean } | null;
+  /** Line of sight between actors shared by all bots in the match (perception uses it when given). */
+  sight?: SightCache;
+  /** `others` on a grid over the ground (big matches): perception reads the cells in sight range. */
+  othersGrid?: ViewGrid;
+  /** `allies` on a grid: keeping apart reads the cells around the bot. */
+  alliesGrid?: ViewGrid;
 }
+
+/** What aiming reads (BotBrain.steer reads the whole view, like think). */
+type SteerView = Pick<BotWorldView, 'tick' | 'self' | 'others' | 'inventory' | 'held'>;
 
 export type BotState = 'roam' | 'advance' | 'engage' | 'cover' | 'chase' | 'investigate' | 'retreat' | 'hold' | 'mount' | 'mounted' | 'dead';
 
@@ -142,6 +153,33 @@ const PASS_RADIUS = 1.4;
 const DECIDE_TICKS = 6;
 /** Visibility of crouched and prone targets at range (they are harder to spot). */
 const STANCE_SIGHT = [1, 0.8, 0.55] as const;
+/**
+ * Perception's sight lines: up to SIGHT_SEARCH (nearest first) while looking
+ * for a target, SIGHT_TRACK in all once one is found (the rest keep tracking
+ * other enemies' reaction times). A clump of 40 enemies in view costs a
+ * handful of rays instead of 40.
+ */
+const SIGHT_SEARCH = 16;
+const SIGHT_TRACK = 6;
+/** A tracked enemy perception had no ray to spare for stays tracked this long after it was last confirmed. */
+const TRACK_UNCHECKED_TICKS = TICK_RATE / 2;
+
+interface Candidate {
+  o: CombatantView;
+  dx: number;
+  dz: number;
+  score: number;
+  checked: boolean;
+}
+const byScore = (a: Candidate, b: Candidate): number => a.score - b.score || a.o.slot - b.o.slot;
+
+/** The actor IDs in a list of views, worked out once per list (a side's enemies are one list a tick, shared by its bots). */
+const slotSets = new WeakMap<readonly CombatantView[], Set<number>>();
+function slotsOf(list: readonly CombatantView[]): Set<number> {
+  let set = slotSets.get(list);
+  if (!set) slotSets.set(list, (set = new Set(list.map((o) => o.slot))));
+  return set;
+}
 
 interface CornerCheck {
   start: number;
@@ -179,6 +217,19 @@ export class BotBrain {
   private readonly memory = new MapMemory();
   private targetSlot: number | null = null;
   private visibleSince = new Map<number, number>();
+  /** Last tick each enemy in visibleSince was confirmed in sight. */
+  private readonly confirmed = new Map<number, number>();
+  /** Last tick each enemy was a candidate that perception did not cast a ray to. */
+  private readonly unchecked = new Map<number, number>();
+  /** Scratch for perception (no allocations per look). */
+  private readonly pool: Candidate[] = [];
+  private readonly live: Candidate[] = [];
+  private readonly eyeAt = { x: 0, y: 0, z: 0 };
+  private readonly eyeTo = { x: 0, y: 0, z: 0 };
+  /** Scratch for grid queries (perception, keeping apart). */
+  private readonly nearScratch: CombatantView[] = [];
+  /** Last tick perception ran (a steering tick may have run it before a full think). */
+  private lastPerceiveTick = -1;
   private lastKnown: { pos: Vec3; tick: number } | null = null;
   /** A noise worth checking out. */
   private heard: { pos: Vec3; tick: number } | null = null;
@@ -256,6 +307,8 @@ export class BotBrain {
   private pressedAt = -Infinity;
   /** Waiting for or riding a lift: stand still this tick. */
   private holdStill = false;
+  /** Last tick's act was aiming and shooting at the target (nothing else on): steer() can stand in for a think. */
+  private steerable = false;
 
   constructor(
     readonly slot: number,
@@ -295,6 +348,8 @@ export class BotBrain {
     this.pitch = 0;
     this.targetSlot = null;
     this.visibleSince.clear();
+    this.confirmed.clear();
+    this.unchecked.clear();
     this.lastKnown = null;
     this.heard = null;
     this.unreachable = null;
@@ -322,6 +377,7 @@ export class BotBrain {
     this.spacing = 'hold';
     this.strafing = false;
     this.moveX = this.moveZ = 0;
+    this.steerable = false;
   }
 
   // ------------------------------------------------------------------ main loop
@@ -329,6 +385,7 @@ export class BotBrain {
   think(view: BotWorldView): PlayerInput {
     const seq = ++this.seq;
     const me = view.self;
+    this.steerable = false;
     if (!me.alive) {
       this.state = 'dead';
       return { seq, forward: 0, right: 0, yaw: this.yaw, pitch: this.pitch, buttons: 0 };
@@ -346,7 +403,7 @@ export class BotBrain {
     }
 
     const interval = this.difficulty.perceptionIntervalTicks;
-    if ((view.tick + this.slot) % interval === 0) this.perceive(view);
+    if ((view.tick + this.slot) % interval === 0 && this.lastPerceiveTick !== view.tick) this.perceive(view);
 
     const target = this.targetSlot === null ? undefined : view.others.find((o) => o.slot === this.targetSlot && o.alive);
     if (this.targetSlot !== null && !target) this.targetSlot = null;
@@ -369,7 +426,7 @@ export class BotBrain {
     return this.act(view, seq, target, ctx);
   }
 
-  private aimContext(view: BotWorldView): AimContext {
+  private aimContext(view: SteerView): AimContext {
     const me = view.self;
     const stance = me.stance ?? 0;
     const def = this.heldDef(view);
@@ -384,7 +441,7 @@ export class BotBrain {
     };
   }
 
-  private heldDef(view: BotWorldView): WeaponDefinition | undefined {
+  private heldDef(view: SteerView): WeaponDefinition | undefined {
     return this.heldWeapon(view)?.def;
   }
 
@@ -535,7 +592,9 @@ export class BotBrain {
       this.retreatMode = null;
     }
 
+    let aimedTarget = false;
     const aimAtTarget = (t: CombatantView) => {
+      aimedTarget = true;
       const ta = simProfile.on ? performance.now() : 0;
       sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: t.stance });
       if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
@@ -890,8 +949,60 @@ export class BotBrain {
         this.lastUseTick = tick;
       }
     }
+    this.steerable = aimedTarget && wantFire && !sprint && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount';
     return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon: this.chooseWeapon(view, target) };
   }
+
+  /**
+   * A steering tick (big matches, a fighting bot between its full thinks:
+   * Match.runBots): no new decisions or route, but perception runs when it is
+   * due (so a bot notices as fast as when it thinks every tick), the aim keeps
+   * tracking the target, the trigger discipline runs, and the move carries on
+   * in the same direction over the ground. Null when the bot should think in
+   * full: it wasn't simply aiming at its target, perception picked another
+   * target or lost it, or a decision is due.
+   */
+  steer(view: BotWorldView): { forward: number; right: number; yaw: number; pitch: number; fire: boolean; zoom: boolean } | null {
+    const me = view.self;
+    if (!this.steerable || !me.alive || this.targetSlot === null) return null;
+    const tick = view.tick;
+    if ((tick + this.slot) % DECIDE_TICKS === 0) return null;
+    // Under fire or hurt: think it over (take cover, turn to the shooter).
+    if (me.health < this.lastHealth || (view.shotAt && tick - view.shotAt.tick <= 1)) return null;
+    if ((tick + this.slot) % this.difficulty.perceptionIntervalTicks === 0) {
+      const was = this.targetSlot;
+      this.perceive(view);
+      if (this.targetSlot !== was) return null;
+    }
+    let target: CombatantView | undefined;
+    for (const o of view.others) {
+      if (o.slot === this.targetSlot) {
+        target = o;
+        break;
+      }
+    }
+    if (!target?.alive) return null;
+    const ctx = this.aimContext(view);
+    const ta = simProfile.on ? performance.now() : 0;
+    const aimed = this.aimed;
+    aimed.slot = target.slot;
+    aimed.pos = target.pos;
+    aimed.stance = target.stance ?? 0;
+    this.aim.track(ctx, aimed);
+    const sol = this.aim.solve(ctx, aimed);
+    this.turnToward(sol.yaw, sol.pitch);
+    const fire = this.aim.trigger(ctx, sol, this.yaw, this.pitch, this.reacted(view, target));
+    if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
+    this.lastTargetTick = tick;
+    // The same smoothed movement over the ground, seen from the new facing.
+    const sin = Math.sin(this.yaw);
+    const cos = Math.cos(this.yaw);
+    const def = ctx.weapon;
+    return { forward: sin * this.moveX + cos * this.moveZ, right: cos * this.moveX - sin * this.moveZ, yaw: this.yaw, pitch: this.pitch, fire, zoom: !!(def?.view.zoomFov && !def.alt && sol.dist > 7) };
+  }
+
+  /** Scratch for steer()'s aim target. */
+  private readonly aimed: AimTarget = { slot: -1, pos: { x: 0, y: 0, z: 0 }, stance: 0 };
 
   private sightCache = { tick: -Infinity, ok: false };
 
@@ -966,7 +1077,7 @@ export class BotBrain {
     return [sin * this.moveX + cos * this.moveZ, cos * this.moveX - sin * this.moveZ];
   }
 
-  private reacted(view: BotWorldView, target: CombatantView): boolean {
+  private reacted(view: Pick<BotWorldView, 'tick'>, target: CombatantView): boolean {
     const since = this.visibleSince.get(target.slot);
     const reactionTicks = (this.difficulty.reactionMs / 1000) * TICK_RATE * (1.5 - this.profile.reactionSpeed / 100);
     return since !== undefined && view.tick - since >= reactionTicks;
@@ -1331,9 +1442,9 @@ export class BotBrain {
 
   // ------------------------------------------------------------------ weapons and items
 
-  private heldCache: { view: BotWorldView | null; w: InventoryView | undefined } = { view: null, w: undefined };
+  private heldCache: { view: SteerView | null; w: InventoryView | undefined } = { view: null, w: undefined };
 
-  private heldWeapon(view: BotWorldView): InventoryView | undefined {
+  private heldWeapon(view: SteerView): InventoryView | undefined {
     if (this.heldCache.view !== view) this.heldCache = { view, w: view.inventory.find((w) => weaponCode(w.def) === view.held) };
     return this.heldCache.w;
   }
@@ -1412,6 +1523,7 @@ export class BotBrain {
   // ------------------------------------------------------------------ perception
 
   private perceive(view: BotWorldView): void {
+    this.lastPerceiveTick = view.tick;
     if (!simProfile.on) return this.perceiveNow(view);
     const t0 = performance.now();
     this.perceiveNow(view);
@@ -1421,47 +1533,90 @@ export class BotBrain {
 
   private perceiveNow(view: BotWorldView): void {
     const me = view.self;
-    const myEye = { x: me.pos.x, y: me.pos.y + STANCES[me.stance ?? 0].eye, z: me.pos.z };
-    const facing = { x: Math.sin(this.yaw), z: Math.cos(this.yaw) };
-    let best: { slot: number; score: number } | null = null;
-    const seen = new Set<number>();
-    this.memory.mark(me.pos, view.tick);
-    for (const o of view.others) {
+    const tick = view.tick;
+    const myEye = this.eyeAt;
+    myEye.x = me.pos.x;
+    myEye.y = me.pos.y + STANCES[me.stance ?? 0].eye;
+    myEye.z = me.pos.z;
+    const fx = Math.sin(this.yaw);
+    const fz = Math.cos(this.yaw);
+    this.memory.mark(me.pos, tick);
+    // Who could be seen (in range, in view or close enough to hear, not hidden in a bush), nearest first.
+    const live = this.live;
+    live.length = 0;
+    const others = view.othersGrid ? view.othersGrid.near(me.pos.x, me.pos.z, SIGHT_RANGE, this.nearScratch) : view.others;
+    for (const o of others) {
       if (!o.alive) continue;
-      const d = Math.hypot(o.pos.x - me.pos.x, o.pos.y - me.pos.y, o.pos.z - me.pos.z);
+      const ox = o.pos.x - me.pos.x;
+      const oy = o.pos.y - me.pos.y;
+      const oz = o.pos.z - me.pos.z;
+      const d2 = ox * ox + oy * oy + oz * oz;
+      if (d2 >= SIGHT_RANGE * SIGHT_RANGE) continue;
+      const d = Math.sqrt(d2);
       const range = SIGHT_RANGE * STANCE_SIGHT[o.stance ?? 0];
-      if (d > range && !(this.visibleSince.has(o.slot) && d < SIGHT_RANGE)) continue;
-      const dx = (o.pos.x - me.pos.x) / (d || 1);
-      const dz = (o.pos.z - me.pos.z) / (d || 1);
-      const inFov = dx * facing.x + dz * facing.z >= FOV_COS * Math.hypot(dx, dz);
+      if (d > range && !this.visibleSince.has(o.slot)) continue;
+      const dx = ox / (d || 1);
+      const dz = oz / (d || 1);
+      const inFov = dx * fx + dz * fz >= FOV_COS * Math.sqrt(dx * dx + dz * dz);
       if (!inFov && d > HEARING_RANGE) continue;
       // Someone hiding in a bush is only spotted close by (a little further once already being tracked).
       if (o.concealed && d > (this.visibleSince.has(o.slot) ? CONCEAL_TRACK : CONCEAL_SPOT)) continue;
-      const theirEye = { x: o.pos.x, y: o.pos.y + STANCES[o.stance ?? 0].eye, z: o.pos.z };
+      const c = this.pool[live.length] ?? (this.pool[live.length] = { o, dx: 0, dz: 0, score: 0, checked: false });
+      c.o = o;
+      c.dx = dx;
+      c.dz = dz;
+      // Stick with the current target unless another is much closer.
+      c.score = d * (o.slot === this.targetSlot ? 0.7 : 1);
+      c.checked = false;
+      live.push(c);
+    }
+    if (live.length > 1) live.sort(byScore);
+    // Sight lines, nearest first: the first one clear is the target. A crowd costs a ray each, so
+    // after the target only a few more (enemies already tracked keep their reaction time),
+    // and without one at most SIGHT_SEARCH.
+    let best: Candidate | null = null;
+    let rays = 0;
+    const theirEye = this.eyeTo;
+    for (const c of live) {
+      if (rays >= (best ? SIGHT_TRACK : SIGHT_SEARCH)) break;
+      const o = c.o;
+      theirEye.x = o.pos.x;
+      theirEye.y = o.pos.y + STANCES[o.stance ?? 0].eye;
+      theirEye.z = o.pos.z;
+      rays++;
+      c.checked = true;
+      let clear: boolean;
       if (o.object) {
         // Check the sight line to just in front of it, not to a point inside its own body.
-        theirEye.x -= dx * 0.8;
-        theirEye.z -= dz * 0.8;
-      }
-      if (!view.physics.lineOfSight(myEye, theirEye)) continue;
-      seen.add(o.slot);
-      if (!this.visibleSince.has(o.slot)) this.visibleSince.set(o.slot, view.tick);
-      // Stick with the current target unless another is much closer.
-      const score = d * (o.slot === this.targetSlot ? 0.7 : 1);
-      if (!best || score < best.score) best = { slot: o.slot, score };
+        theirEye.x -= c.dx * 0.8;
+        theirEye.z -= c.dz * 0.8;
+        clear = view.physics.lineOfSight(myEye, theirEye);
+      } else clear = view.sight ? view.sight.lineOfSight(tick, me.slot, myEye, o.slot, theirEye) : view.physics.lineOfSight(myEye, theirEye);
+      if (!clear) continue;
+      if (!this.visibleSince.has(o.slot)) this.visibleSince.set(o.slot, tick);
+      this.confirmed.set(o.slot, tick);
+      if (!best) best = c;
     }
-    for (const slot of [...this.visibleSince.keys()]) if (!seen.has(slot)) this.visibleSince.delete(slot);
+    // Lost from sight: checked and blocked, or gone from view. Tracked enemies not checked this
+    // time (further off than the ones that were) stay tracked while seen in the last half second.
+    for (const c of live) if (!c.checked) this.unchecked.set(c.o.slot, tick);
+    for (const [slot] of this.visibleSince) {
+      const at = this.confirmed.get(slot) ?? -Infinity;
+      if (at === tick || (this.unchecked.get(slot) === tick && tick - at <= TRACK_UNCHECKED_TICKS)) continue;
+      this.visibleSince.delete(slot);
+      this.confirmed.delete(slot);
+    }
 
     if (best) {
-      this.targetSlot = best.slot;
-      const t = view.others.find((o) => o.slot === best.slot)!;
-      this.lastKnown = { pos: { ...t.pos }, tick: view.tick };
+      this.targetSlot = best.o.slot;
+      const t = best.o;
+      this.lastKnown = { pos: { ...t.pos }, tick };
     } else {
       this.targetSlot = null;
     }
     // Hearing: gunfire and explosions from enemies we can't see.
     if (view.noises?.length && !best) {
-      const hostile = new Set(view.others.map((o) => o.slot));
+      const hostile = slotsOf(view.others);
       let loud: { pos: Vec3; tick: number; d: number } | null = null;
       for (const n of view.noises) {
         if (n.by >= 0 && !hostile.has(n.by)) continue;
@@ -1511,12 +1666,14 @@ export class BotBrain {
     const me = view.self.pos;
     let px = 0;
     let pz = 0;
-    for (const a of view.allies) {
+    const near = view.alliesGrid ? view.alliesGrid.near(me.x, me.z, 2.2, this.nearScratch) : view.allies;
+    for (const a of near) {
       if (a.slot === view.self.slot) continue;
       const dx = me.x - a.pos.x;
       const dz = me.z - a.pos.z;
-      const d = Math.hypot(dx, dz);
-      if (d > 2.2 || Math.abs(a.pos.y - me.y) > 1.5) continue;
+      const d2 = dx * dx + dz * dz;
+      if (d2 > 2.2 * 2.2 || Math.abs(a.pos.y - me.y) > 1.5) continue;
+      const d = Math.sqrt(d2);
       // Exactly on top of each other: split by slot so the two go opposite ways.
       const ux = d < 1e-3 ? (view.self.slot < a.slot ? 1 : -1) : dx / d;
       const uz = d < 1e-3 ? 0 : dz / d;

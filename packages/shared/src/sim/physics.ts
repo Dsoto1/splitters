@@ -97,6 +97,13 @@ export class PhysicsWorld {
   private dirty = false;
   /** The level box behind each static collider (bullets read what it is made of). */
   private readonly staticBoxes = new Map<number, WorldBox>();
+  /**
+   * Bumped when a world collider appears, goes, or is switched on or off (a door, a
+   * breakable, a built piece): caches of sight lines start over (see SightCache).
+   */
+  structureVersion = 0;
+  /** One ray for every cast (queries are synchronous): no allocation per sight line or shot. */
+  private readonly ray = new RAPIER.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 });
 
   constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null) {
     this.world = new RAPIER.World({ x: 0, y: 0, z: 0 });
@@ -142,6 +149,7 @@ export class PhysicsWorld {
       .setRotation(rotation ?? { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) })
       .setCollisionGroups(field ? FIELD_COLLIDER_GROUPS : WORLD_COLLIDER_GROUPS);
     this.dirty = true;
+    this.structureVersion++;
     return this.world.createCollider(desc);
   }
 
@@ -197,6 +205,7 @@ export class PhysicsWorld {
     if (collider.isEnabled() === enabled) return;
     collider.setEnabled(enabled);
     this.dirty = true;
+    this.structureVersion++;
   }
 
   /** Bring scene queries up to date after boxes moved. Cheap when nothing changed. */
@@ -217,6 +226,7 @@ export class PhysicsWorld {
 
   removeCollider(collider: RAPIER.Collider): void {
     this.world.removeCollider(collider, false);
+    this.structureVersion++;
   }
 
   /**
@@ -297,20 +307,32 @@ export class PhysicsWorld {
 
   /** Like raycastWorld, but also returns the collider handle that was hit. */
   raycastHit(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number } | null {
-    const hit = this.world.castRay(new RAPIER.Ray(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
+    const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
     return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle } : null;
   }
 
   /** Like raycastHit, plus the surface normal (for bouncing grenades and sticking mines). */
   raycastNormal(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number; normal: Vec3 } | null {
-    const hit = this.world.castRayAndGetNormal(new RAPIER.Ray(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
+    const hit = this.world.castRayAndGetNormal(this.rayFrom(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
     return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z } } : null;
   }
 
   /** Distance along a normalised ray to the first static surface, or null within maxDist. */
   raycastWorld(origin: Vec3, dir: Vec3, maxDist: number): number | null {
-    const hit = this.world.castRay(new RAPIER.Ray(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
+    const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
     return hit ? hit.timeOfImpact : null;
+  }
+
+  /** The shared ray, set to `origin` and `dir`. */
+  private rayFrom(origin: Vec3, dir: Vec3): RAPIER.Ray {
+    const r = this.ray;
+    r.origin.x = origin.x;
+    r.origin.y = origin.y;
+    r.origin.z = origin.z;
+    r.dir.x = dir.x;
+    r.dir.y = dir.y;
+    r.dir.z = dir.z;
+    return r;
   }
 
   /** True when no world collider (level, door, crate, built piece) overlaps the upright box. */
@@ -331,11 +353,20 @@ export class PhysicsWorld {
   }
 
   private lineOfSightNow(a: Vec3, b: Vec3): boolean {
-    const d = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
-    const len = Math.hypot(d.x, d.y, d.z);
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dz = b.z - a.z;
+    const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
     if (len < 1e-6) return true;
-    const dir = { x: d.x / len, y: d.y / len, z: d.z / len };
-    return this.raycastWorld(a, dir, len) === null;
+    // Straight into the shared ray (no vectors made): a third cheaper than a fresh Ray per sight line.
+    const r = this.ray;
+    r.origin.x = a.x;
+    r.origin.y = a.y;
+    r.origin.z = a.z;
+    r.dir.x = dx / len;
+    r.dir.y = dy / len;
+    r.dir.z = dz / len;
+    return !this.world.castRay(r, len, true, undefined, WORLD_ONLY_QUERY);
   }
 
   free(): void {

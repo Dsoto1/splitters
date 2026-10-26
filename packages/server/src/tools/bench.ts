@@ -50,6 +50,9 @@ const viewers = Number(flags.find((f) => f.startsWith('--viewers='))?.slice(10) 
 const warmup = Number(flags.find((f) => f.startsWith('--warmup='))?.slice(9) ?? 0);
 const clumpFlag = flags.find((f) => f === '--clump' || f.startsWith('--clump='));
 const clumpSize = clumpFlag?.includes('=') ? Number(clumpFlag.slice(8)) : 40;
+/** --skills=mixed: bots are easy, normal and hard in turn (accuracy is then reported per skill); default all normal. */
+const mixedSkills = flags.includes('--skills=mixed');
+const SKILLS = ['easy', 'normal', 'hard'] as const;
 const variants = (flags.find((f) => f.startsWith('--variants='))?.slice(11).split(',') ?? [clumpFlag ? 'clump' : 'spread']) as ('spread' | 'clump')[];
 const here = (p: string) => resolve(process.env.INIT_CWD ?? process.cwd(), p);
 const mapPaths = args.length > 2 ? args.slice(2).map(here) : [fileURLToPath(new URL('../../../../maps/phase0_arena.json', import.meta.url))];
@@ -93,7 +96,7 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   // Two-team modes: an even split of the bots (48 v 48 for 96).
   if (rules?.teamSizes?.length === 2) rules.teamSizes = [Math.ceil(bots / 2), Math.floor(bots / 2)];
   const match = new Match(map, rules, 42);
-  for (let i = 0; i < bots; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
+  for (let i = 0; i < bots; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES[mixedSkills ? SKILLS[i % 3]! : 'normal']);
   // The first --viewers bots stand in for players: snapshots are encoded for them, and bots near them move at full detail.
   for (const c of match.combatants().slice(0, viewers)) match.watchers.add(c.slot);
   for (let i = 0; i < warmup * TICK_RATE; i++) match.step();
@@ -102,6 +105,7 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   if (area) clumpInto(match, area, undefined, 7);
 
   const tickMs: number[] = [];
+  const aim = new Map<string, { rounds: number; hits: number }>();
   const aiMs: number[] = [];
   let kills = 0;
   let snapMs = 0;
@@ -142,6 +146,17 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
       t1 = t2;
     }
     kills += events.filter((e) => e.e === 'kill').length;
+    // Accuracy per bot skill: rounds fired, and rounds that hit someone (at once, or after flying).
+    for (const e of events) {
+      if (e.e !== 'shot' && e.e !== 'impact') continue;
+      const skill = match.actor(e.s)?.bot?.difficulty.id;
+      if (!skill) continue;
+      const a = aim.get(skill) ?? aim.set(skill, { rounds: 0, hits: 0 }).get(skill)!;
+      if (e.e === 'shot') {
+        a.rounds += e.hit.length;
+        for (const h of e.hit) if (h !== null) a.hits++;
+      } else if (e.hit !== null) a.hits++;
+    }
     if (mode) events.forEach(count);
     tickMs.push(t1 - t0);
     const nowCpu = process.cpuUsage();
@@ -192,8 +207,9 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   console.log(`\n== ${map.metadata.id} ${mode ?? ''} ${clump ? `CLUMPED (${clumpSize} m, ${area!.sides.size} sides, ${[...area!.sides.values()].map((s) => s.length).join('/')} spots)` : 'spread'} | warm-up ${warmup}s | bots ${bots} | npcs ${npcs} (alive at end ${[...match.npcs.values()].filter((c) => c.alive).length}) | simulated ${seconds}s in ${wall.toFixed(2)}s (${(seconds / wall).toFixed(1)}x realtime) | load ${load.toFixed(2)}`);
   console.log(`tick ms  avg ${avg(tickMs).toFixed(3)}  p50 ${pct(0.5).toFixed(3)}  p95 ${pct(0.95).toFixed(3)}  p99 ${pct(0.99).toFixed(3)}  max ${sorted[sorted.length - 1]!.toFixed(3)}  (budget ${budget.toFixed(2)}) | process CPU ${(cpuMs / ticks).toFixed(3)} ms a tick`);
   console.log(`per tick ms: bots ${per('bots').toFixed(2)} (nav ${per('nav').toFixed(2)}) | players ${per('players').toFixed(2)} (character moves ${per('move').toFixed(2)}: ${(n('move') / ticks).toFixed(0)} full + ${(n('moveCoarse') / ticks).toFixed(0)} coarse a tick) | mounts+ambient ${per('mounts').toFixed(2)} (physics broad-phase updates ${per('commit').toFixed(2)}) | projectiles ${per('projectiles').toFixed(2)} | scenario/logic ${per('scenario').toFixed(2)} | snapshots ${(snapMs / ticks).toFixed(2)} (${viewers} viewers)`);
-  console.log(`CPU per tick avg ${(cpuMs / ticks).toFixed(3)} p95 ${cpuP95.toFixed(3)} | breakdown (CPU-scaled, x${k.toFixed(2)}): bot think ${c2(think)} [setup ${c2(think - per('botThink'))}, perception ${c2(per('botPerceive'))} (${(n('botPerceive') / ticks).toFixed(1)}/tick), decisions ${c2(per('botDecide'))}, paths ${c2(per('botPath'))} (nav ${c2(per('nav'))}), aim ${c2(per('botAim'))}; LOS rays ${c2(per('los'))}] | movement ${c2(movement)} | combat ${c2(combat)} (firing ${c2(fire)}, ${(n('fire') / ticks).toFixed(1)} shots/tick) | rest ${c2(rest)}`);
-  console.log(`nav: ${n('nav')} path queries (${(n('nav') / seconds).toFixed(0)}/s), ${n('navFail')} failed | line-of-sight rays ${(n('los') / ticks).toFixed(0)}/tick`);
+  console.log(`CPU per tick avg ${(cpuMs / ticks).toFixed(3)} p95 ${cpuP95.toFixed(3)} | breakdown (CPU-scaled, x${k.toFixed(2)}): bot think ${c2(think)} [setup ${c2(think - per('botThink'))}, perception ${c2(per('botPerceive'))} (${(n('botPerceive') / ticks).toFixed(1)}/tick), ${(n('botThink') / ticks).toFixed(0)} bots a tick (${(n('botSteer') / ticks).toFixed(0)} only steering), decisions ${c2(per('botDecide'))}, paths ${c2(per('botPath'))} (nav ${c2(per('nav'))}), aim ${c2(per('botAim'))}; LOS rays ${c2(per('los'))}] | movement ${c2(movement)} | combat ${c2(combat)} (firing ${c2(fire)}, ${(n('fire') / ticks).toFixed(1)} shots/tick) | rest ${c2(rest)}`);
+  console.log(`nav: ${n('nav')} path queries (${(n('nav') / seconds).toFixed(0)}/s), ${n('navFail')} failed | line-of-sight rays ${(n('los') / ticks).toFixed(0)}/tick (+ ${(n('losShared') / ticks).toFixed(0)}/tick answered from the shared sight cache)`);
+  console.log(`accuracy (rounds that hit / fired): ${[...aim].sort(([a], [b]) => SKILLS.indexOf(a as never) - SKILLS.indexOf(b as never)).map(([k, a]) => `${k} ${((a.hits / Math.max(1, a.rounds)) * 100).toFixed(1)}% of ${a.rounds}`).join(' | ')}`);
   console.log(`kills ${kills} | bot stuck recoveries ${stuck} | idle (moved < 2 m in 5 s) ${idlePct.toFixed(1)}% of samples, ${idleNow} at the end`);
   if (mode) {
     const scores = [...match.teamScores()].map(([t, s]) => `${t} ${s}`).join(', ');
