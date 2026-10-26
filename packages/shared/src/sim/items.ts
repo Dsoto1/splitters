@@ -17,6 +17,8 @@ export type ItemEffect =
   | { kind: 'powerup'; powerup: 'speed' | 'damage'; seconds: number }
   /** A jetpack: hold jump in the air to fly; fuel recharges while you don't. Lost when you die. */
   | { kind: 'jetpack' }
+  /** A glider pack: your canopy opens as a fast glider instead of a parachute (see parachute.ts). Lost when you die. */
+  | { kind: 'glider' }
   /** A UAV sweep: every enemy shows on your team's minimaps (yours alone in free-for-all) for a while. */
   | { kind: 'uav'; seconds: number }
   /** A power disc (Disc Arena): the next few throws are fast, triple, splitting or freezing discs. */
@@ -80,6 +82,7 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   item('powerup_speed', 'Speed Boost', { kind: 'powerup', powerup: 'speed', seconds: 15 }, 60, 0.6),
   item('powerup_damage', 'Double Damage', { kind: 'powerup', powerup: 'damage', seconds: 15 }, 60, 0.85),
   item('jetpack', 'Jetpack', { kind: 'jetpack' }, 45, 0.6),
+  item('glider', 'Glider', { kind: 'glider' }, 40, 0.35),
   item('uav', 'UAV Uplink', { kind: 'uav', seconds: 20 }, 75, 0.5),
   item('weapon_arena_disc', 'Arena Disc', { kind: 'weapon', weapon: 'core.arena_disc' }, 20, 0.5),
   item('weapon_blast_rockets', 'Blast Rockets', { kind: 'weapon', weapon: 'core.blast_rockets' }, 30, 0.8),

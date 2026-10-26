@@ -32,8 +32,8 @@ export interface MountView {
   health: number;
   alive: boolean;
   enterRadius: number;
-  /** `by`: who sits there (actor ID), when taken. */
-  seats: readonly { role: SeatRole; free: boolean; by?: number; weapon?: WeaponDefinition; arc?: number }[];
+  /** `by`: who sits there (actor ID), when taken; `facing`: where a side gun's arc is centred. */
+  seats: readonly { role: SeatRole; free: boolean; by?: number; weapon?: WeaponDefinition; arc?: number; facing?: number }[];
   /** Vehicles: top speed (m/s). */
   maxSpeed?: number;
   /** Vehicles: how fast it is going right now (m/s). */
@@ -51,17 +51,19 @@ export interface SeatView {
   role: SeatRole;
   weapon?: WeaponDefinition;
   arc?: number;
+  /** Where the arc is centred, from the mount's forward (side door guns). */
+  facing?: number;
   heat: number;
   overheated: boolean;
 }
 
 /** Is `p` inside a seat's firing arc and range from the mount? */
-export function inArc(m: MountView, seat: { arc?: number; weapon?: WeaponDefinition }, p: Vec3): boolean {
+export function inArc(m: MountView, seat: { arc?: number; facing?: number; weapon?: WeaponDefinition }, p: Vec3): boolean {
   const d = horizontalDistance(m.pos, p);
   if (!seat.weapon || d > Math.min(seat.weapon.range, 70)) return false;
   if (seat.arc === undefined) return true;
   const a = Math.atan2(p.x - m.pos.x, p.z - m.pos.z);
-  return Math.abs(angleDelta(m.yaw, a)) <= seat.arc * 0.92;
+  return Math.abs(angleDelta(m.yaw + (seat.facing ?? 0), a)) <= seat.arc * 0.92;
 }
 
 /** A free turret worth manning against an enemy at `enemy`, within walking reach of `from`. */

@@ -1247,7 +1247,7 @@ export class BotBrain {
       const idle = tick - Math.max(this.lastTargetTick, this.mountedSince) > TICK_RATE * 7;
       const flanked = target && !inSeatArc(target.pos) && horizontalDistance(m.pos, target.pos) < 12;
       if (idle || m.health < 0.3 || flanked) leave = true;
-      if (!fireAt) this.turnToward(m.yaw, 0);
+      if (!fireAt) this.turnToward(m.yaw + (seat.facing ?? 0), 0);
     }
     if (fireAt) {
       const sol = this.aim.solve(gunCtx, { slot: fireAt.slot, pos: fireAt.pos, stance: fireAt.stance });

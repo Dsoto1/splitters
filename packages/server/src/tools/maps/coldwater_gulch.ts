@@ -200,6 +200,7 @@ function buildBase(s: 1 | -1, team: string): void {
 
   // Vehicles out on the apron, nosed toward mid with room to drive out.
   m.mount('buggy', [fx(-22), ground(fx(-22), fz(84)), fz(84)], facing, team);
+  m.mount('gun_jeep', [fx(-15), ground(fx(-15), fz(80)), fz(80)], facing, team);
   m.mount('speeder', [fx(18), ground(fx(18), fz(84)), fz(84)], facing, team);
   m.mount('speeder', [fx(24), ground(fx(24), fz(84)), fz(84)], facing, team);
   m.mount('tank', [fx(-26), ground(fx(-26), fz(106)), fz(106)], facing, team);
@@ -396,7 +397,7 @@ await m.fillTeamSpawns(8);
 m.lightRooms();
 m.meta({
   description:
-    'A long grassy box canyon walled in by sheer rock, with two squat concrete bunkers facing each other from the far ends: Red holds the north, Blue the south. Each bunker keeps its flag behind the dais on the ground floor, a sniper rifle on its roof deck (open stairs at the front corners, a long ramp up the back) and a buggy, two speeders, a tank and a skyfighter on the apron. A jump pad beside each base throws you onto the 10 m sniper ledge along the far side cliff; each ledge also has a ramp at one end. Rolling grass, boulders, rock outcrops by the cliffs and bushes to hide in fill the floor; rockets wait on the knoll in the middle. A layout homage to the classic two-base canyon of 2001.',
+    'A long grassy box canyon walled in by sheer rock, with two squat concrete bunkers facing each other from the far ends: Red holds the north, Blue the south. Each bunker keeps its flag behind the dais on the ground floor, a sniper rifle on its roof deck (open stairs at the front corners, a long ramp up the back) and a buggy, a gun jeep, two speeders, a tank and a skyfighter on the apron. A jump pad beside each base throws you onto the 10 m sniper ledge along the far side cliff; each ledge also has a ramp at one end. Rolling grass, boulders, rock outcrops by the cliffs and bushes to hide in fill the floor; rockets wait on the knoll in the middle. A layout homage to the classic two-base canyon of 2001.',
   modes: ['core.ctf', 'core.tdm', 'core.deathmatch', 'core.koth'],
   players: [4, 16],
 });

@@ -6,8 +6,10 @@ import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type En
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
-  BUILT_MOUNT_BASE, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
+  AIRPLANE_DEF, BUILT_MOUNT_BASE, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
 } from './mounts.ts';
+import { airRoute, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute } from './airplane.ts';
+import { CHUTE, heightAboveGround } from './parachute.ts';
 import { NavWorld } from '../nav/index.ts';
 import {
   POWERUP_DAMAGE_BIT,
@@ -132,6 +134,9 @@ interface MountRt {
   rammed: Map<number, number>;
   /** A sentry a player built (Classes): their slot. It never comes back by itself. */
   builtBy?: number;
+  /** The transport plane: the route it flies and how players board it (see airplane.ts). */
+  route?: AirRoute;
+  airdrop?: 'off' | 'start' | 'always';
 }
 
 export interface Combatant {
@@ -218,6 +223,8 @@ export interface Combatant {
   bot?: BotBrain;
   /** Seat in a turret or vehicle: mount index (into Match.mounts) and seat. */
   mount?: { index: number; seat: number };
+  /** Carrying a glider (an item): canopies open as gliders. Lost on death. */
+  glider?: boolean;
   /** Movement multiplier set by an objective mode (flag carriers are slower); absent = 1. */
   modeSpeed?: number;
   /** Bots: the last shot that hit or passed close (for taking cover). */
@@ -350,6 +357,9 @@ export class Match {
   private readonly mounts: MountRt[] = [];
   /** Collider handle -> mount, so shots and blasts can hurt vehicles. */
   private readonly mountBodies = new Map<number, MountRt>();
+  /** Air drop: who has had this round's start in the plane, and where each bot aboard means to jump (target, last distance). */
+  private readonly airdropped = new Set<number>();
+  private readonly planeDrops = new Map<number, { target: Vec3; prev?: number }>();
   private nextProjectileId = 1;
   private covers: Cover[] = [];
   /** UAV sweeps running: side (team, or one player in free-for-all) -> tick it ends. */
@@ -440,6 +450,17 @@ export class Match {
         this.ambient.push({ mount: index, driver: new TrackDriver(((i % 3) - 1) * 0.4, 0.86 + (i % 4) * 0.04), stuck: 0 });
       }
     }
+    // Transport planes: mounts that fly their route, can't be hurt and don't block anything.
+    map.entities.forEach((e, index) => {
+      if (e.kind !== 'airplane') return;
+      const route = airRoute(e);
+      const pose = routePose(route, 0);
+      this.addMount(index, AIRPLANE_DEF, { x: pose.pos.x, y: pose.pos.y, z: pose.pos.z }, pose.yaw, null, null);
+      const m = this.mounts[this.mounts.length - 1]!;
+      m.route = route;
+      m.airdrop = e.airdrop;
+      this.physics.setBoxEnabled(m.body, false);
+    });
     this.pads = mapPads(map.entities);
     this.ladders = mapLadders(map.entities);
     this.liquids = mapLiquids(map.entities);
@@ -1194,6 +1215,7 @@ export class Match {
       if (!npc) this.mode?.botInput?.(c, input);
       if (!npc) this.classes?.botInput(c, input, orderGoal);
       if (!npc && c.alive && !c.mount && this.rules.weapons === 'discs') this.dodgeDiscs(c, input);
+      this.planeBot(c, input);
       c.queue.push(input);
     }
     this.lastAiMs = performance.now() - t0;
@@ -1227,7 +1249,7 @@ export class Match {
       health: Math.max(0, m.health) / m.def.health,
       alive: m.alive,
       enterRadius: m.def.enterRadius,
-      seats: m.def.seats.map((s, i) => ({ role: s.role, free: m.seats[i] === null, ...(m.seats[i] !== null ? { by: m.seats[i]! } : {}), ...(s.weapon ? { weapon: getWeapon(s.weapon) } : {}), ...(s.arc !== undefined ? { arc: s.arc } : {}) })),
+      seats: m.def.seats.map((s, i) => ({ role: s.role, free: m.seats[i] === null, ...(m.seats[i] !== null ? { by: m.seats[i]! } : {}), ...(s.weapon ? { weapon: getWeapon(s.weapon) } : {}), ...(s.arc !== undefined ? { arc: s.arc } : {}), ...(s.facing ? { facing: s.facing } : {}) })),
       ...(m.def.vehicle ? { maxSpeed: m.def.vehicle.maxSpeed, speed: Math.abs(m.speed) } : {}),
       humanNear: humans.some((h) => horizontalDistance(h.move.pos, m.pos) < 35),
     }));
@@ -1238,7 +1260,7 @@ export class Match {
     const seat = m?.def.seats[c.mount!.seat];
     if (!m || !seat) return null;
     const gun = m.guns[c.mount!.seat];
-    return { mount: m.index, seat: c.mount!.seat, role: seat.role, ...(gun ? { weapon: gun.def } : {}), ...(seat.arc !== undefined ? { arc: seat.arc } : {}), heat: gun?.heat ?? 0, overheated: gun?.overheated ?? false };
+    return { mount: m.index, seat: c.mount!.seat, role: seat.role, ...(gun ? { weapon: gun.def } : {}), ...(seat.arc !== undefined ? { arc: seat.arc } : {}), ...(seat.facing ? { facing: seat.facing } : {}), heat: gun?.heat ?? 0, overheated: gun?.overheated ?? false };
   }
 
   /**
@@ -1373,14 +1395,20 @@ export class Match {
       if (seat) {
         // In a turret or vehicle: no walking. Drivers steer; gunners' aim stays within the gun's arc.
         const m = this.mounts[c.mount!.index]!;
+        // The plane: jump (or E, below) jumps out.
+        if (m.def.airplane && input.buttons & BUTTON_JUMP && !(input.buttons & BUTTON_USE)) {
+          this.leaveMount(c, true);
+          continue;
+        }
         if (seat.role === 'driver') {
           const up = !!(input.buttons & BUTTON_JUMP);
           const down = !!(input.buttons & BUTTON_CROUCH);
           m.drive = m.def.vehicle?.fly ? { forward: input.forward, right: input.right, lift: (up ? 1 : 0) - (down ? 1 : 0) } : { forward: input.forward, right: input.right, brake: up };
         }
         if (seat.arc !== undefined) {
-          const d = Math.atan2(Math.sin(c.yaw - m.yaw), Math.cos(c.yaw - m.yaw));
-          c.yaw = m.yaw + Math.max(-seat.arc, Math.min(seat.arc, d));
+          const centre = m.yaw + (seat.facing ?? 0);
+          const d = Math.atan2(Math.sin(c.yaw - centre), Math.cos(c.yaw - centre));
+          c.yaw = centre + Math.max(-seat.arc, Math.min(seat.arc, d));
         }
         c.pitch = Math.max(-0.5, Math.min(0.75, c.pitch));
         if (seat.weapon) {
@@ -1390,7 +1418,7 @@ export class Match {
       } else {
         const was = c.move.pos;
         const before = c.move;
-        const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}) });
+        const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}), ...(c.jetFuel !== null ? { jetpack: true } : {}), ...(c.glider ? { glider: true } : {}), ...(c.kind !== 'human' ? { autoChute: true } : {}) });
         c.move = applyPads(this.pads, stepped);
         this.trackFall(c, before, c.move !== stepped);
         c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / TICK_DT;
@@ -1415,7 +1443,8 @@ export class Match {
       // Seated: the seat's gun if it has one; drivers without one can't shoot; passengers use their own.
       const seatNow = c.mount ? this.seatOf(c) : null;
       const gun = seatNow?.weapon ? this.mounts[c.mount!.index]!.guns[c.mount!.seat]! : null;
-      const unarmed = seatNow?.role === 'driver' && !gun;
+      // Nobody shoots from the plane's benches (everyone shares the hold before the drop).
+      const unarmed = (seatNow?.role === 'driver' && !gun) || (!!c.mount && !!this.mounts[c.mount.index]!.def.airplane);
       const held = gun ?? heldWeapon(c);
       const def = held.def;
       const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
@@ -2218,16 +2247,66 @@ export class Match {
     m.seats[seat] = null;
     if (m.def.seats[seat]?.role === 'driver') m.drive = { forward: 0, right: 0 };
     this.pendingEvents.push({ e: 'mount', s: c.slot, m: m.index, seat: -1 });
+    this.planeDrops.delete(c.slot);
     if (!step) return;
+    if (m.route) {
+      // Out of the plane's tail ramp, carried along by its speed; the automatic opener is armed.
+      const pose = routePose(m.route, this.tick);
+      const at = mountToWorld(m.pos, m.yaw, [0, -1.5, -m.def.half[2] - 1]);
+      c.move = { pos: at, velY: 0, grounded: false, vx: pose.vel.x * 0.5, vz: pose.vel.z * 0.5, drop: true };
+      return;
+    }
     const [hx, , hz] = m.def.half;
     for (const o of [[-(hx + 0.9), 0, 0], [hx + 0.9, 0, 0], [0, 0, -(hz + 0.9)], [0, 0, hz + 0.9]] as const) {
       const spot = mountToWorld(m.pos, m.yaw, o);
       // Room to stand: nothing solid from the knees to above the head (a ray starting inside a wall hits at once).
       if (this.physics.raycastHit({ x: spot.x, y: spot.y + 0.4, z: spot.z }, { x: 0, y: 1, z: 0 }, PLAYER.height)) continue;
-      c.move = { pos: { x: spot.x, y: spot.y + 0.3, z: spot.z }, velY: 0, grounded: false };
+      c.move = this.bailOut({ x: spot.x, y: spot.y + 0.3, z: spot.z });
       return;
     }
-    c.move = { pos: { x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z }, velY: 0, grounded: false };
+    c.move = this.bailOut({ x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z });
+  }
+
+  /** Stepping out at `at`: high up (a flyer in the air), the parachute's automatic opener is armed. */
+  private bailOut(at: Vec3): MoveState {
+    const high = heightAboveGround(this.physics, at, CHUTE.minHeight + 1) === null;
+    return { pos: at, velY: 0, grounded: false, ...(high ? { drop: true } : {}) };
+  }
+
+  /**
+   * A bot riding the plane: it picks where to come down (its side's
+   * objective or base) and jumps when the plane passes over it, then
+   * parachutes in. It never presses E or jump aboard otherwise.
+   */
+  private planeBot(c: Combatant, input: PlayerInput): void {
+    const m = c.mount ? this.mounts[c.mount.index] : undefined;
+    if (!m?.route) return;
+    input.buttons &= ~(BUTTON_USE | BUTTON_JUMP);
+    let plan = this.planeDrops.get(c.slot);
+    if (!plan) this.planeDrops.set(c.slot, (plan = { target: dropTarget(this.map, c.faction, this.rng(), this.rules.mode) }));
+    // Stay aboard through the countdown.
+    if (this.phase !== 'playing') return;
+    const { jump, dist } = shouldJump(m.pos, plan.target, plan.prev, ticksToRouteEnd(m.route, this.tick));
+    plan.prev = dist;
+    if (jump) input.buttons |= BUTTON_USE;
+  }
+
+  /** Air drop: seat a spawning player in a transport plane with a free bench; false when there is none. */
+  private boardPlane(c: Combatant): boolean {
+    for (const m of this.mounts) {
+      if (!m.route || m.airdrop === 'off' || m.airdrop === undefined) continue;
+      if (m.airdrop === 'start' && this.airdropped.has(c.slot)) continue;
+      const seat = m.seats.indexOf(null);
+      if (seat < 0) continue;
+      this.airdropped.add(c.slot);
+      m.seats[seat] = c.slot;
+      c.mount = { index: this.mounts.indexOf(m), seat };
+      c.move = { pos: this.seatFeet(m, seat), velY: 0, grounded: true };
+      c.yaw = m.yaw;
+      this.pendingEvents.push({ e: 'mount', s: c.slot, m: m.index, seat });
+      return true;
+    }
+    return false;
   }
 
   /** Damage whatever mount owns this collider; false when it isn't one. */
@@ -2249,9 +2328,10 @@ export class Match {
    * half, off: none); `raw` skips that (fire, lava and water run on their
    * own clock). The attacker gets the credit when it blows; damage from
    * nobody (fire, crashes, water) leaves the last attacker's credit standing.
+   * The transport plane can't be hurt.
    */
   private damageMount(m: MountRt, amount: number, attacker: Combatant | null, raw = false): void {
-    if (!m.alive || this.phase !== 'playing' || amount <= 0) return;
+    if (!m.alive || this.phase !== 'playing' || amount <= 0 || m.route) return;
     if (m.def.kind === 'vehicle' && !raw) amount *= VEHICLE_DAMAGE_SCALE[this.rules.vehicleDamage ?? 'normal'];
     if (amount <= 0) return;
     m.health -= amount;
@@ -2328,6 +2408,7 @@ export class Match {
         g.heat = Math.max(0, (g.heat ?? 0) - g.def.heat.coolPerTick);
         if (g.heat === 0) g.overheated = false;
       }
+      if (m.route) this.flyPlane(m);
       if (m.def.vehicle) this.driveVehicle(m);
       if (m.def.sentry && this.race?.combat !== false) this.runSentry(m);
       if (m.alive && m.def.vehicle) this.vehicleHazards(m);
@@ -2340,6 +2421,20 @@ export class Match {
     }
     // Moved bodies must be in place before this tick's shots and sight checks.
     if (this.mounts.length) this.physics.commit();
+  }
+
+  /** The plane follows its route by the clock; at the end of an open route it starts over, throwing out anyone still aboard. */
+  private flyPlane(m: MountRt): void {
+    const route = m.route!;
+    const pose = routePose(route, this.tick);
+    if (ticksToRouteEnd(route, this.tick) <= 1) {
+      for (const slot of m.seats) {
+        const c = slot === null ? undefined : this.actor(slot);
+        if (c) this.leaveMount(c, true);
+      }
+    }
+    m.pos = pose.pos;
+    m.yaw = m.aimYaw = pose.yaw;
   }
 
   /**
@@ -2400,7 +2495,7 @@ export class Match {
   private ramMounts(m: MountRt, vx: number, vz: number, driver: Combatant | null): void {
     if (Math.hypot(vx, vz) < RAM_MIN_SPEED) return;
     for (const o of this.mounts) {
-      if (o === m || (!o.alive && this.tick >= o.wreckUntil) || (m.rammed.get(o.index) ?? 0) > this.tick) continue;
+      if (o === m || o.route || (!o.alive && this.tick >= o.wreckUntil) || (m.rammed.get(o.index) ?? 0) > this.tick) continue;
       const c = footprintGap({ pos: m.pos, yaw: m.yaw, half: m.def.half }, { pos: o.pos, yaw: o.yaw, half: o.def.half });
       if (!c || c.gap > 0.3) continue;
       const closing = (vx - o.vel.x) * c.nx + (vz - o.vel.z) * c.nz;
@@ -2706,6 +2801,12 @@ export class Match {
    */
   private trackFall(c: Combatant, before: MoveState, padded: boolean): void {
     const m = c.move;
+    if (m.chute) {
+      // Under a canopy the fall starts over every tick: you land at its gentle sink rate.
+      c.fallPeak = m.pos.y;
+      c.padFlight = false;
+      return;
+    }
     if (padded || m.climb || m.swim) {
       c.fallPeak = undefined;
       c.padFlight = padded || c.padFlight;
@@ -2860,6 +2961,10 @@ export class Match {
         if (c.jetFuel === JET.max) return false;
         c.jetFuel = JET.max;
         return true;
+      case 'glider':
+        if (c.glider) return false;
+        c.glider = true;
+        return true;
       case 'uav':
         this.uavUntil.set(this.uavSide(c), this.tick + e.seconds * TICK_RATE);
         this.pendingEvents.push({ e: 'msg', text: `${c.name}: UAV online`, secs: 3 });
@@ -2920,6 +3025,10 @@ export class Match {
     c.alive = true;
     c.burnTicks = c.poisonTicks = c.slowTicks = c.frozenTicks = 0;
     c.jetFuel = null;
+    c.glider = undefined;
+    // A fall cut short by death (shot under a parachute, say) doesn't carry over to the new life.
+    c.fallPeak = undefined;
+    c.padFlight = false;
     c.breath = 0;
     c.chill = c.bloom = c.windup = c.burstLeft = 0;
     c.semiLatch = false;
@@ -2947,6 +3056,8 @@ export class Match {
     this.pendingEvents.push({ e: 'spawn', s: c.slot });
     // Race: straight into your vehicle, on the grid or at your last checkpoint.
     this.race?.onSpawn(c.slot);
+    // Air drop maps start you (or always spawn you) in the transport plane.
+    if (this.mounts.some((m) => m.route && m.airdrop && m.airdrop !== 'off')) this.boardPlane(c);
   }
 
   /**
@@ -3012,7 +3123,9 @@ export class Match {
       c.selfKills = 0;
       c.deaths = 0;
       c.alive = false;
+      this.leaveMount(c, false);
     }
+    this.airdropped.clear();
     this.mode?.reset();
     this.zombies?.reset();
     this.classes?.reset();
@@ -3058,6 +3171,8 @@ export class Match {
       if (c.move.stance) s.sn = c.move.stance;
       if (c.emoteUntil && this.tick < c.emoteUntil) s.em = 1;
       if (c.move.sprint) s.sr = 1;
+      if (c.move.chute) s.ch = c.move.chute;
+      if (c.move.drop) s.dr = 1;
       return s;
     });
   }
@@ -3173,6 +3288,7 @@ export class Match {
       sp: c.speedTicks,
       dm: c.damageTicks,
       ...(c.jetFuel !== null ? { jp: c.jetFuel } : {}),
+      ...(c.glider ? { gl: 1 as const } : {}),
       ...(this.jammed(c) ? { jm: Math.ceil((this.jammed(c) - this.tick) / TICK_RATE) } : {}),
       ...(c.streak ? { ks: c.streak } : {}),
       ...((this.uavUntil.get(this.uavSide(c)) ?? 0) > this.tick ? { uv: Math.ceil((this.uavUntil.get(this.uavSide(c))! - this.tick) / TICK_RATE) } : {}),

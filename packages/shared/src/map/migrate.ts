@@ -42,6 +42,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [16, (doc) => ({ ...doc })],
   // v17 -> v18: optional race `track` (absent = none).
   [17, (doc) => ({ ...doc })],
+  // v18 -> v19: `airplane` entity kind (transport plane, air drop) and an optional `skin` on mounts (absent = automatic).
+  [18, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

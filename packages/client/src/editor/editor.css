@@ -318,3 +318,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 }
 /* File actions are icons (names in their tooltips) so the top bar fits from 1280 px up. */
 #ed-top .ed-file .wide { display: none; }
+
+/* Transport plane route points: X and Z side by side, with a remove button. */
+.route-point { display: flex; gap: 4px; align-items: center; }
+.route-point input { width: 4.5em; min-width: 0; }

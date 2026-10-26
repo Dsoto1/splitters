@@ -16,7 +16,7 @@
  *
  * Rock walls 20 m and more close the canyon on all sides; steep faces are
  * painted stone, trails dirt, the floor grass with gravel round the bases.
- * Each base has a buggy (four seats) and a speeder parked out front and a
+ * Each base has a buggy (four seats), a speeder and a hover bike parked out front and a
  * machine-gun turret on its roof; a six-seat hauler waits on the west ledge and a flying dropship on the east.
  */
 import { writeFileSync } from 'node:fs';
@@ -238,12 +238,13 @@ for (const s of [-1, 1]) {
   prop('metal_panel', 0, s * 64, 0, 1, 0);
   entities.push({ id: id('barrel'), kind: 'destructible', model: 'barrel', position: [6, 0, s * 70], yaw: 0, health: null, explosiveOnly: false });
 }
-// Vehicles and turrets: a buggy and a speeder parked in front of each base, an MG turret on each roof, a hauler and two sentries in the middle.
+// Vehicles and turrets: a buggy, a speeder and a hover bike parked in front of each base, an MG turret on each roof, a hauler and two sentries in the middle.
 for (const side of [-1, 1]) {
   const z = side * 60;
   const facing = side < 0 ? 0 : Math.PI;
   entities.push({ id: id('mount'), kind: 'mount', model: 'buggy', position: [-14, +ground(-14, z).toFixed(2), z], yaw: facing, faction: null, respawnSeconds: null });
   entities.push({ id: id('mount'), kind: 'mount', model: 'speeder', position: [14, +ground(14, z).toFixed(2), z], yaw: facing, faction: null, respawnSeconds: null });
+  entities.push({ id: id('mount'), kind: 'mount', model: 'hover_bike', position: [20, +ground(20, z).toFixed(2), z], yaw: facing, faction: null, respawnSeconds: null });
   entities.push({ id: id('mount'), kind: 'mount', model: 'turret_mg', position: [0, 4, side * 77], yaw: facing, faction: null, respawnSeconds: null });
 }
 entities.push({ id: id('mount'), kind: 'mount', model: 'hauler', position: [-30, +ground(-30, 0).toFixed(2), 0], yaw: 0, faction: null, respawnSeconds: null });
