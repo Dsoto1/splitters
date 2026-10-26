@@ -127,7 +127,7 @@ describe('team setup', () => {
 });
 
 describe('team score', () => {
-  it('suicides cost the player a point but not the team, and a team never drops below zero', () => {
+  it('suicides only add a death: kills never drop, for the player or the team', () => {
     const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [1, 1], respawnDelayTicks: 1 });
     const me = match.addHuman('me')!;
     const foe = match.addHuman('foe')!;
@@ -137,8 +137,10 @@ describe('team score', () => {
     suicide(me);
     suicide(foe);
     suicide(foe);
-    expect(me.kills).toBe(0);
-    expect(foe.kills).toBe(-2);
+    expect(me.kills).toBe(1);
+    expect(foe.kills).toBe(0);
+    expect(me.deaths).toBe(1);
+    expect(foe.deaths).toBe(3);
     const scores = match.teamScores();
     expect(scores.get(me.faction!)).toBe(1);
     expect(scores.get(foe.faction!)).toBe(0);

@@ -133,12 +133,13 @@ describe('Disc Arena', () => {
     expect(b.alive).toBe(true);
   });
 
-  it('jumping off on your own costs you a point', () => {
+  it('jumping off on your own is a death, never a lost kill', () => {
     const { a, put, step, events } = setup(gridRings());
     put(a, 0, 0, 30);
     step(60 * 6);
     expect(events.find((e) => e.e === 'kill')).toMatchObject({ killer: null, victim: a.slot });
-    expect(a.kills).toBe(-1);
+    expect(a.kills).toBe(0);
+    expect(a.deaths).toBe(1);
   });
 
   it('power discs: pickups for each, triple throws three, freeze freezes, split splits at the first bounce', () => {

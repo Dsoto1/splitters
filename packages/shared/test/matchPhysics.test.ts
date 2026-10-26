@@ -53,7 +53,7 @@ describe('match physics settings', () => {
     expect(drop(true, 20)).toBe(0);
   });
 
-  it('friendly fire: off by default; half and full hurt teammates; a team kill costs a point', () => {
+  it('friendly fire: off by default; half and full hurt teammates; a team kill earns nothing and never costs a kill', () => {
     for (const ff of [undefined, 'half', 'on'] as const) {
       const match = new Match(room(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2], ...(ff ? { friendlyFire: ff } : {}) });
       const a = match.addHuman('a')!;
@@ -66,7 +66,7 @@ describe('match physics settings', () => {
       if (ff === 'on') {
         hurt(mate, 100, a, 'core.rifle');
         expect(mate.alive).toBe(false);
-        expect(a.kills).toBe(-1);
+        expect(a.kills).toBe(0);
       }
     }
   });

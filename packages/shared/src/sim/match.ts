@@ -950,14 +950,12 @@ export class Match {
     return this.rules.mode === 'core.coop' || this.rules.mode === 'core.zombies' ? PLAYERS_FACTION : null;
   }
 
-  /** Kills per team in Team Deathmatch (suicides count against the team); objective modes keep their own score. */
+  /** Kills per team in Team Deathmatch; objective modes keep their own score. */
   teamScores(): Map<string, number> {
     if (this.mode) return this.mode.teamScores();
     const out = new Map<string, number>((this.teams ?? []).map((t) => [t.id, 0]));
-    for (const c of this.combatants()) if (c.faction && out.has(c.faction)) out.set(c.faction, out.get(c.faction)! + c.kills + c.selfKills);
+    for (const c of this.combatants()) if (c.faction && out.has(c.faction)) out.set(c.faction, out.get(c.faction)! + c.kills);
     for (const [team, n] of this.leaderBounty) if (out.has(team)) out.set(team, out.get(team)! + n);
-    // Team kills still cost the team, but a team's score never drops below zero.
-    for (const [id, v] of out) out.set(id, Math.max(0, v));
     return out;
   }
 
@@ -3522,9 +3520,9 @@ export class Match {
     victim.health = 0;
     this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon, ...(head ? { hs: 1 as const } : {}) });
     // Only players score; NPC kills of players count as the player's death.
-    // Team kills cost a point and earn no streak.
+    // Kills never go down: a team kill just earns nothing (no kill, no streak).
     const teamKill = !!killer && killer !== victim && !this.hostile(killer, victim);
-    if (killer && !killer.npc) killer.kills += teamKill ? -1 : 1;
+    if (killer && !killer.npc && !teamKill) killer.kills++;
     victim.streak = 0;
     if (killer && killer !== victim && !killer.npc && killer.alive && !teamKill) {
       killer.streak = (killer.streak ?? 0) + 1;
@@ -3538,11 +3536,8 @@ export class Match {
     victim.deaths++;
     // Zombies: the fallen sit out the rest of the wave.
     victim.respawnTick = this.zombies ? Infinity : this.tick + this.rules.respawnDelayTicks;
-    // Suicides (falls, own grenades, traps) cost the player a point, not their team.
-    if (!killer) {
-      victim.kills--;
-      victim.selfKills++;
-    }
+    // Suicides (falls, own grenades, traps) are just a death, counted for stats.
+    if (!killer) victim.selfKills++;
     this.scenario.playerKilled(victim.slot, killer?.slot ?? null);
     if (this.isLeader(victim)) this.leaderDown(victim, killer);
     this.mode?.onKill(victim, killer);
