@@ -53,6 +53,16 @@ export interface AimSkill {
   burst: readonly [number, number];
   /** Shortest time between semi-automatic taps. */
   tapSeconds: number;
+  /**
+   * Gunplay (GUNPLAY_SPEC §40), all 0..1: share of a bullet's real flight-time
+   * lead the bot applies, share of its drop it holds over for, share of the
+   * recoil climb it pulls down against, and burst discipline (1: bursts end
+   * when the spread starts to grow; 0: holds the trigger well past it).
+   */
+  leadSkill?: number;
+  dropComp?: number;
+  recoilComp?: number;
+  discipline?: number;
 }
 
 export interface BotDifficulty {
@@ -72,7 +82,7 @@ export const BOT_DIFFICULTIES: Readonly<Record<BotDifficulty['id'], BotDifficult
   easy: {
     id: 'easy',
     reactionMs: 650,
-    aim: { settledRad: 0.085, acquireRad: 0.18, settleSeconds: 0.9, lagSeconds: 0.24, prediction: 0.2, headChance: 0.02, burst: [2, 4], tapSeconds: 0.45 },
+    aim: { settledRad: 0.085, acquireRad: 0.18, settleSeconds: 0.9, lagSeconds: 0.24, prediction: 0.2, headChance: 0.02, burst: [2, 4], tapSeconds: 0.45, leadSkill: 0.3, dropComp: 0.2, recoilComp: 0.2, discipline: 0.2 },
     turnRateRadPerSec: 3,
     perceptionIntervalTicks: 12,
     tactics: 0.35,
@@ -80,7 +90,7 @@ export const BOT_DIFFICULTIES: Readonly<Record<BotDifficulty['id'], BotDifficult
   normal: {
     id: 'normal',
     reactionMs: 380,
-    aim: { settledRad: 0.044, acquireRad: 0.13, settleSeconds: 0.6, lagSeconds: 0.15, prediction: 0.5, headChance: 0.08, burst: [3, 5], tapSeconds: 0.3 },
+    aim: { settledRad: 0.044, acquireRad: 0.13, settleSeconds: 0.6, lagSeconds: 0.15, prediction: 0.5, headChance: 0.08, burst: [3, 5], tapSeconds: 0.3, leadSkill: 0.7, dropComp: 0.6, recoilComp: 0.55, discipline: 0.6 },
     turnRateRadPerSec: 6,
     perceptionIntervalTicks: 8,
     tactics: 0.7,
@@ -88,7 +98,7 @@ export const BOT_DIFFICULTIES: Readonly<Record<BotDifficulty['id'], BotDifficult
   hard: {
     id: 'hard',
     reactionMs: 220,
-    aim: { settledRad: 0.028, acquireRad: 0.09, settleSeconds: 0.4, lagSeconds: 0.09, prediction: 0.8, headChance: 0.2, burst: [4, 6], tapSeconds: 0.2 },
+    aim: { settledRad: 0.028, acquireRad: 0.09, settleSeconds: 0.4, lagSeconds: 0.09, prediction: 0.8, headChance: 0.2, burst: [4, 6], tapSeconds: 0.2, leadSkill: 0.95, dropComp: 0.9, recoilComp: 0.85, discipline: 0.9 },
     turnRateRadPerSec: 9,
     perceptionIntervalTicks: 5,
     tactics: 1,

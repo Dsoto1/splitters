@@ -231,6 +231,18 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #hitmarker[data-style='ticks'].head::before, #hitmarker[data-style='ticks'].head::after { background: linear-gradient(#ff3030 0 10px, transparent 10px 20px, #ff3030 20px); }
 @keyframes hit-pop { 0% { transform: scale(1.45); } 100% { transform: scale(1); } }
 #hitmarker[data-style='off'] { display: none; }
+/* Armor soaked the hit: a blue square instead of a diamond (shape, not just colour, tells it apart). */
+#hitmarker.armor { transform: none; border-color: #6fc8ff; border-style: dashed; }
+#hitmarker[data-style='ticks'].armor { transform: rotate(45deg); }
+#hitmarker[data-style='ticks'].armor::before, #hitmarker[data-style='ticks'].armor::after { background: linear-gradient(#6fc8ff 0 9px, transparent 9px 21px, #6fc8ff 21px); }
+/* Kill confirmation: a sharp, bigger X that punches in; kills in a row make it bigger and hotter. */
+#hitmarker.kill, #hitmarker[data-style='ticks'].kill { border: none; transform: none; width: 44px; height: 44px; margin: -22px 0 0 -22px; animation: kill-punch 0.3s ease-out; }
+#hitmarker.kill::before, #hitmarker.kill::after, #hitmarker[data-style='ticks'].kill::before, #hitmarker[data-style='ticks'].kill::after { content: ''; position: absolute; left: 20px; top: 0; width: 4px; height: 44px; background: linear-gradient(#ff2a2a 0 15px, transparent 15px 29px, #ff2a2a 29px); filter: drop-shadow(0 0 2px #000); transform: rotate(45deg); }
+#hitmarker.kill::after, #hitmarker[data-style='ticks'].kill::after { transform: rotate(-45deg); }
+#hitmarker.kill[data-multi='2'] { scale: 1.15; }
+#hitmarker.kill[data-multi='3'] { scale: 1.3; filter: drop-shadow(0 0 4px #ffb02e); }
+#hitmarker.kill[data-multi='4'] { scale: 1.45; filter: drop-shadow(0 0 6px #ffd23e); }
+@keyframes kill-punch { 0% { transform: scale(1.9); opacity: 0.3; } 45% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1); } }
 /* Taking damage: the screen edge flashes red, and an arc on a ring shows where it came from. */
 #hurt { position: absolute; inset: 0; opacity: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(200, 0, 0, 0.55) 100%); transition: opacity 0.6s ease-out; }
 #hurt.on { opacity: 1; transition: none; }

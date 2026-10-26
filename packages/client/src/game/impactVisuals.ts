@@ -17,13 +17,21 @@ const MAX_HOLES = 700;
 const STREAK_LENGTH = 2.2;
 
 interface Bullet {
-  mesh: InstancedMesh;
+  /** Null for rounds that fly without a tracer (they still land). */
+  mesh: InstancedMesh | null;
   from: Vector3;
   dir: Vector3;
   dist: number;
   travelled: number;
+  /** m/s: real muzzle velocity for bullets (GUNPLAY_SPEC §4), BULLET_SPEED for everything else. */
+  speed: number;
+  /** Streak length (m): faster rounds draw longer streaks so they still read. */
+  length: number;
   onArrive?: () => void;
 }
+
+/** Streak instances kept for reuse (pooled: automatic fire would otherwise create and dispose one per round). */
+const MAX_POOLED_STREAKS = 96;
 
 interface Spark {
   mesh: InstancedMesh;
@@ -50,6 +58,7 @@ interface Puff {
  */
 export class ImpactVisuals {
   private bullets: Bullet[] = [];
+  private readonly streakPool: InstancedMesh[] = [];
   private sparks: Spark[] = [];
   private puffs: Puff[] = [];
   private readonly streak: Mesh;
@@ -110,8 +119,12 @@ export class ImpactVisuals {
     m.scaling.setAll(0);
   }
 
-  /** A round flying from `from` to `to`; `onArrive` runs when it gets there. */
-  fire(from: Vec3, to: Vec3, color: string, onArrive?: () => void, startAt = 0): void {
+  /**
+   * A round flying from `from` to `to`; `onArrive` runs when it gets there.
+   * `speed` is its real velocity (bullets) and `tracer: false` flies it
+   * without a streak (tracer intervals, GUNPLAY_SPEC §31): it still lands.
+   */
+  fire(from: Vec3, to: Vec3, color: string, onArrive?: () => void, startAt = 0, opts: { speed?: number; tracer?: boolean } = {}): void {
     const a = new Vector3(from.x, from.y, from.z);
     const d = new Vector3(to.x - from.x, to.y - from.y, to.z - from.z);
     const dist = d.length();
@@ -120,7 +133,14 @@ export class ImpactVisuals {
       return;
     }
     d.scaleInPlace(1 / dist);
-    const mesh = this.streak.createInstance('bullet');
+    const speed = opts.speed ?? BULLET_SPEED;
+    const length = Math.min(12, STREAK_LENGTH * Math.max(1, speed / BULLET_SPEED));
+    if (opts.tracer === false) {
+      this.bullets.push({ mesh: null, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), speed, length, onArrive });
+      return;
+    }
+    const mesh = this.streakPool.pop() ?? this.streak.createInstance('bullet');
+    mesh.setEnabled(true);
     mesh.scaling.set(1, 1, 0.01);
     const c = Color3.FromHexString(color);
     // Brighter than the team colour, so rounds read against any background.
@@ -132,7 +152,17 @@ export class ImpactVisuals {
     Quaternion.FromUnitVectorsToRef(Vector3.Forward(), d, mesh.rotationQuaternion);
     mesh.position.copyFrom(a);
     // Your own rounds start a little out from the muzzle: right at the gun they'd smear across the view.
-    this.bullets.push({ mesh, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), onArrive });
+    this.bullets.push({ mesh, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), speed, length, onArrive });
+  }
+
+  /** Done with a streak: back to the pool (hidden), or disposed past the pool's size. */
+  private release(mesh: InstancedMesh): void {
+    if (this.streakPool.length >= MAX_POOLED_STREAKS) {
+      mesh.dispose();
+      return;
+    }
+    mesh.setEnabled(false);
+    this.streakPool.push(mesh);
   }
 
   /** Where a shot ending at `to` (coming from `from`) hits the level, if it does: point and surface normal. */
@@ -220,13 +250,15 @@ export class ImpactVisuals {
 
   update(dt: number): void {
     this.bullets = this.bullets.filter((b) => {
-      b.travelled += BULLET_SPEED * dt;
+      b.travelled += b.speed * dt;
       const head = Math.min(b.travelled, b.dist);
-      const tail = Math.max(0, head - STREAK_LENGTH);
-      b.mesh.position.copyFrom(b.from.add(b.dir.scale(head)));
-      b.mesh.scaling.z = Math.max(0.01, head - tail);
+      const tail = Math.max(0, head - b.length);
+      if (b.mesh) {
+        b.mesh.position.copyFrom(b.from.add(b.dir.scale(head)));
+        b.mesh.scaling.z = Math.max(0.01, head - tail);
+      }
       if (b.travelled < b.dist) return true;
-      b.mesh.dispose();
+      if (b.mesh) this.release(b.mesh);
       b.onArrive?.();
       return false;
     });
@@ -252,7 +284,8 @@ export class ImpactVisuals {
   }
 
   dispose(): void {
-    for (const b of this.bullets) b.mesh.dispose();
+    for (const b of this.bullets) b.mesh?.dispose();
+    for (const m of this.streakPool) m.dispose();
     for (const s of this.sparks) s.mesh.dispose();
     for (const p of this.puffs) p.mesh.dispose();
     this.streak.dispose();

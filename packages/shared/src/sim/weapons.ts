@@ -1,5 +1,6 @@
 import { add, dot, scale, type Vec3 } from '../math.ts';
 import { PLAYER } from './constants.ts';
+import type { AccuracySpec, BallisticSpec, FalloffSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
 
 export type WeaponKind = 'hitscan' | 'projectile' | 'melee';
 
@@ -243,7 +244,26 @@ export interface WeaponDefinition {
   knockback?: number;
   /** Damage multiplier for a head hit (default HEAD_MULTIPLIER; 1 for weapons that don't care where they land). */
   headshot?: number;
+  /** Damage multiplier for a leg hit (default: the family's, else LEG_MULTIPLIER). */
+  legshot?: number;
+  /**
+   * Legacy camera kick and spread bloom, for weapons without a gunplay family
+   * (the exotic arsenal). Family weapons use `kick` and `accuracy` instead.
+   */
   recoil?: Recoil;
+  // ---- Gunplay (docs/GUNPLAY_SPEC.md §35; see sim/gunplay.ts). Each field overrides the family's default.
+  /** Weapon family: velocity, spread, recoil, falloff and body-zone defaults. */
+  family?: WeaponFamily;
+  /** Ballistic bullets (hitscan weapons with a bullet family fly by default); null forces hitscan. */
+  ballistic?: Partial<BallisticSpec> | null;
+  /** Spread model: base / movement / air / sustained growth / max / recovery / ADS. */
+  accuracy?: Partial<AccuracySpec>;
+  /** Mechanical recoil pattern and recovery, plus visual kick strength. */
+  kick?: Partial<KickSpec>;
+  /** Staged magazine or round-by-round reloads (default: one magazine swap of `reloadTicks`). */
+  reload?: ReloadSpec;
+  /** Damage falloff over distance. */
+  falloff?: FalloffSpec;
   /** AI: 0..1 general preference and the distance band (m) it is best at. */
   botDesirability: number;
   botRange: [number, number];
@@ -275,16 +295,19 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     displayName: 'Pistol',
     kind: 'hitscan',
     slot: 2,
-    damage: 22,
+    // Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.
+    family: 'pistol',
+    damage: 24,
     pellets: 1,
-    spread: 0.008,
-    fireIntervalTicks: 12,
-    range: 120,
+    spread: 0.002,
+    fireIntervalTicks: 10,
+    range: 250,
     magazine: 12,
     reserveMax: 96,
     pickupAmmo: 24,
-    reloadTicks: 60,
-    raiseTicks: 15,
+    reloadTicks: 66,
+    reload: { type: 'magazine', tactical: 50, empty: 66, out: 0.3, in: 0.65 },
+    raiseTicks: 9,
     ammo: 'light',
     botDesirability: 0.35,
     botRange: [2, 25],
@@ -295,16 +318,19 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     displayName: 'Assault Rifle',
     kind: 'hitscan',
     slot: 3,
-    damage: 14,
+    // Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse.
+    family: 'rifle',
+    damage: 18,
     pellets: 1,
-    spread: 0.02,
+    spread: 0.0015,
     fireIntervalTicks: 6,
-    range: 150,
+    range: 500,
     magazine: 30,
     reserveMax: 180,
     pickupAmmo: 60,
-    reloadTicks: 80,
-    raiseTicks: 20,
+    reloadTicks: 108,
+    reload: { type: 'magazine', tactical: 84, empty: 108, out: 0.3, in: 0.7 },
+    raiseTicks: 22,
     ammo: 'rifle',
     alt: {
       label: 'Underbarrel grenade',
@@ -325,6 +351,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     displayName: 'Shotgun',
     kind: 'hitscan',
     slot: 4,
+    family: 'shotgun',
     damage: 9,
     pellets: 8,
     spread: 0.085,
@@ -333,7 +360,9 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     magazine: 6,
     reserveMax: 36,
     pickupAmmo: 12,
-    reloadTicks: 90,
+    // Shell by shell: each one loaded can be fired straight away.
+    reloadTicks: 134,
+    reload: { type: 'shell', start: 14, each: 18, end: 12 },
     raiseTicks: 20,
     ammo: 'shells',
     alt: { label: 'Both barrels', ammo: 'shared', cost: 2, fireIntervalTicks: 70, kind: 'hitscan', damage: 9, pellets: 16, spread: 0.11 },
@@ -346,16 +375,18 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     displayName: 'Sniper Rifle',
     kind: 'hitscan',
     slot: 5,
+    family: 'precision',
     damage: 75,
     pellets: 1,
     spread: 0,
     fireIntervalTicks: 75,
-    range: 300,
+    range: 1000,
     magazine: 5,
     reserveMax: 25,
     pickupAmmo: 10,
     reloadTicks: 110,
-    raiseTicks: 25,
+    reload: { type: 'magazine', tactical: 90, empty: 110, out: 0.3, in: 0.65 },
+    raiseTicks: 30,
     ammo: 'sniper',
     headshot: 3,
     botDesirability: 0.6,
@@ -376,7 +407,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     reserveMax: 16,
     pickupAmmo: 6,
     reloadTicks: 100,
-    raiseTicks: 25,
+    raiseTicks: 38,
     projectile: { speed: 26, gravity: 12, fuseSeconds: 3, splashRadius: 4.5, splashDamage: 100, splashEdgeDamage: 15, selfDamageScale: 0.6, visual: 'grenade' },
     ammo: 'explosive',
     botDesirability: 0.75,
@@ -388,16 +419,19 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     displayName: 'Submachine Gun',
     kind: 'hitscan',
     slot: 7,
-    damage: 9,
+    // Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.
+    family: 'smg',
+    damage: 11,
     pellets: 1,
-    spread: 0.035,
+    spread: 0.006,
     fireIntervalTicks: 4,
-    range: 80,
-    magazine: 40,
-    reserveMax: 240,
-    pickupAmmo: 80,
-    reloadTicks: 75,
-    raiseTicks: 15,
+    range: 200,
+    magazine: 32,
+    reserveMax: 192,
+    pickupAmmo: 64,
+    reloadTicks: 72,
+    reload: { type: 'magazine', tactical: 54, empty: 72, out: 0.3, in: 0.65 },
+    raiseTicks: 12,
     ammo: 'light',
     botDesirability: 0.6,
     botRange: [0, 18],
@@ -417,7 +451,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     reserveMax: 8,
     pickupAmmo: 4,
     reloadTicks: 85,
-    raiseTicks: 30,
+    raiseTicks: 42,
     projectile: { speed: 30, gravity: 0, fuseSeconds: 4, splashRadius: 5, splashDamage: 120, splashEdgeDamage: 20, selfDamageScale: 0.6, visual: 'rocket', impactDamage: 30 },
     ammo: 'explosive',
     botDesirability: 0.8,
@@ -541,7 +575,28 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     view: { model: 'procedural/builder', viewOffset: [0.22, -0.2, 0.4], tracer: '#ffffff', sound: 'fire.knife', hold: { style: 'melee', grip: [0, 0, -0.1] } },
   },
   ...classWeapons(),
+  // Added after the rest so existing weapon codes stay the same.
+  ...gunplayWeapons(),
 };
+
+/**
+ * Weapons of the gunplay pass (docs/GUNPLAY_SPEC.md). The Heavy Revolver is
+ * benchmark B: every trigger pull is an event. Huge damage and kick, six
+ * rounds, a true first shot and a slow, rhythmic round-by-round reload (each
+ * cartridge can be fired as soon as it is in).
+ */
+function gunplayWeapons(): Record<string, WeaponDefinition> {
+  const list: WeaponDefinition[] = [
+    weapon({
+      id: 'core.revolver', displayName: 'Heavy Revolver', kind: 'hitscan', slot: 2, fireMode: 'semi', family: 'revolver',
+      damage: 70, spread: 0.0005, fireIntervalTicks: 34, range: 300, magazine: 6, reserveMax: 36, pickupAmmo: 12,
+      reloadTicks: 124, reload: { type: 'shell', start: 18, each: 16, end: 10 }, raiseTicks: 16,
+      ammo: 'light', knockback: 2.5, botDesirability: 0.6, botRange: [3, 40],
+      view: sidearm('revolver', 0.28, '#ffcf7a', { sound: 'fire.revolver' }),
+    }),
+  ];
+  return Object.fromEntries(list.map((w) => [w.id, w]));
+}
 
 /**
  * Variants of existing weapons for Disc Arena and Classes (added last so
@@ -656,7 +711,7 @@ function arsenal(): Record<string, WeaponDefinition> {
       view: sidearm('pulse_pistol', 0.3, '#c69bff', { hold: { style: 'pistol', grip: [0, -0.035, -0.157], support: [-0.02, -0.045, -0.147] }, sound: 'fire.pulse', beam: true }),
     }),
     weapon({
-      id: 'core.hand_cannon', displayName: 'Hand Cannon', kind: 'hitscan', slot: 2, fireMode: 'semi',
+      id: 'core.hand_cannon', displayName: 'Hand Cannon', kind: 'hitscan', slot: 2, fireMode: 'semi', family: 'revolver',
       damage: 58, spread: 0.002, fireIntervalTicks: 30, range: 140, magazine: 6, reserveMax: 36, pickupAmmo: 12, reloadTicks: 100, raiseTicks: 22,
       ammo: 'light', knockback: 3, recoil: { kick: 0.09, bloom: 0.03, maxBloom: 0.05, recover: 0.0012 }, botDesirability: 0.55, botRange: [3, 35],
       view: sidearm('hand_cannon', 0.34, '#ffd08a', { sound: 'fire.heavy' }),
@@ -675,14 +730,14 @@ function arsenal(): Record<string, WeaponDefinition> {
       view: sidearm('flare_gun', 0.32, '#ff7a3a', { hold: { style: 'pistol', grip: [0, -0.045, -0.106], support: [-0.02, -0.055, -0.096] }, sound: 'fire.flare' }),
     }),
     weapon({
-      id: 'core.machine_pistol', displayName: 'Machine Pistol', kind: 'hitscan', slot: 2,
+      id: 'core.machine_pistol', displayName: 'Machine Pistol', kind: 'hitscan', slot: 2, family: 'machine_pistol',
       damage: 7, spread: 0.03, fireIntervalTicks: 3, range: 60, magazine: 24, reserveMax: 144, pickupAmmo: 48, reloadTicks: 60, raiseTicks: 12,
       ammo: 'light', recoil: { kick: 0.008, bloom: 0.006, maxBloom: 0.07, recover: 0.002 }, botDesirability: 0.5, botRange: [0, 14],
       view: sidearm('machine_pistol', 0.38, '#ffe9a8', { sound: 'fire.smg' }),
     }),
     // ---------------------------------------------------------------- 3: rifles
     weapon({
-      id: 'core.burst_rifle', displayName: 'Burst Rifle', kind: 'hitscan', slot: 3, fireMode: 'burst', burst: { count: 3, intervalTicks: 4 },
+      id: 'core.burst_rifle', displayName: 'Burst Rifle', kind: 'hitscan', slot: 3, family: 'rifle', fireMode: 'burst', burst: { count: 3, intervalTicks: 4 },
       damage: 17, spread: 0.008, fireIntervalTicks: 24, range: 160, magazine: 24, reserveMax: 144, pickupAmmo: 48, reloadTicks: 85, raiseTicks: 20,
       ammo: 'rifle', recoil: { kick: 0.018, bloom: 0.006, maxBloom: 0.03, recover: 0.002 }, botDesirability: 0.68, botRange: [5, 45],
       view: longarm('burst_rifle', 0.75, '#ffd36b', { sound: 'fire.rifle' }),
@@ -694,20 +749,20 @@ function arsenal(): Record<string, WeaponDefinition> {
       view: longarm('laser_rifle', 0.95, '#ff3b4a', { hold: { style: 'long', grip: [0, -0.06, -0.08], support: [0, -0.012, 0.328], shoulder: [0, 0.078, -0.455] }, sound: 'fire.laser', beam: true }),
     }),
     weapon({
-      id: 'core.marksman', displayName: 'Marksman Rifle', kind: 'hitscan', slot: 3, fireMode: 'semi',
+      id: 'core.marksman', displayName: 'Marksman Rifle', kind: 'hitscan', slot: 3, family: 'marksman', fireMode: 'semi',
       damage: 38, spread: 0.001, fireIntervalTicks: 14, range: 220, magazine: 10, reserveMax: 40, pickupAmmo: 20, reloadTicks: 90, raiseTicks: 22,
       ammo: 'sniper', recoil: { kick: 0.035, bloom: 0.01, maxBloom: 0.03, recover: 0.0015 }, botDesirability: 0.6, botRange: [12, 90],
       view: longarm('marksman', 1.05, '#bfe4ff', { zoomFov: 0.7, sound: 'fire.sniper' }),
     }),
     // ---------------------------------------------------------------- 4: shotguns
     weapon({
-      id: 'core.sawed_off', displayName: 'Sawed-Off', kind: 'hitscan', slot: 4, fireMode: 'semi',
+      id: 'core.sawed_off', displayName: 'Sawed-Off', kind: 'hitscan', slot: 4, family: 'shotgun', fireMode: 'semi',
       damage: 8, pellets: 14, spread: 0.15, fireIntervalTicks: 14, range: 25, magazine: 2, reserveMax: 30, pickupAmmo: 10, reloadTicks: 70, raiseTicks: 14,
       ammo: 'shells', knockback: 1.2, recoil: { kick: 0.08, bloom: 0, maxBloom: 0, recover: 0 }, botDesirability: 0.62, botRange: [0, 6],
       view: longarm('sawed_off', 0.55, '#ffb38a', { sound: 'fire.shotgun' }),
     }),
     weapon({
-      id: 'core.auto_shotgun', displayName: 'Auto Shotgun', kind: 'hitscan', slot: 4,
+      id: 'core.auto_shotgun', displayName: 'Auto Shotgun', kind: 'hitscan', slot: 4, family: 'shotgun',
       damage: 7, pellets: 7, spread: 0.09, fireIntervalTicks: 18, range: 40, magazine: 8, reserveMax: 40, pickupAmmo: 16, reloadTicks: 100, raiseTicks: 22,
       ammo: 'shells', recoil: { kick: 0.045, bloom: 0.012, maxBloom: 0.04, recover: 0.0015 }, botDesirability: 0.64, botRange: [0, 10],
       view: longarm('auto_shotgun', 0.9, '#ffb38a', { sound: 'fire.shotgun' }),
@@ -762,8 +817,9 @@ function arsenal(): Record<string, WeaponDefinition> {
     }),
     // ---------------------------------------------------------------- 7: automatics
     weapon({
-      id: 'core.lmg', displayName: 'Spin Gun', kind: 'hitscan', slot: 7, windupTicks: 28,
-      damage: 9, spread: 0.035, fireIntervalTicks: 3, range: 110, magazine: 120, reserveMax: 240, pickupAmmo: 120, reloadTicks: 150, raiseTicks: 40,
+      id: 'core.lmg', displayName: 'Spin Gun', kind: 'hitscan', slot: 7, windupTicks: 28, family: 'lmg',
+      // Huge belt, poor handling: slow to draw and a long, dangerous reload.
+      damage: 9, spread: 0.035, fireIntervalTicks: 3, range: 300, magazine: 120, reserveMax: 240, pickupAmmo: 120, reloadTicks: 210, raiseTicks: 48,
       ammo: 'rifle', recoil: { kick: 0.006, bloom: 0.002, maxBloom: 0.04, recover: 0.001 }, botDesirability: 0.72, botRange: [3, 40],
       view: longarm('lmg', 1.0, '#ffd36b', { sound: 'fire.smg' }),
     }),

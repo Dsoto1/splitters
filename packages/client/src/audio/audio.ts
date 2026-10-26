@@ -41,6 +41,8 @@ export interface PlayOptions {
   at?: Vec3;
   /** Extra volume multiplier. */
   gain?: number;
+  /** Extra playback-rate multiplier (pitch and speed: the kill sound climbs with multi-kills). */
+  rate?: number;
 }
 
 /**
@@ -182,7 +184,7 @@ export class AudioSystem {
 
     const src = ctx.createBufferSource();
     src.buffer = list[Math.floor(Math.random() * list.length)]!;
-    src.playbackRate.value = (def.rate ?? 1) * (1 + (Math.random() * 2 - 1) * (def.jitter ?? 0));
+    src.playbackRate.value = (def.rate ?? 1) * (opts.rate ?? 1) * (1 + (Math.random() * 2 - 1) * (def.jitter ?? 0));
     const gain = ctx.createGain();
     gain.gain.value = (def.gain ?? 1) * (opts.gain ?? 1);
     let tail: AudioNode = gain;

@@ -45,6 +45,8 @@ export class PhysicsWorld {
   readonly controller: RAPIER.KinematicCharacterController;
   /** Set when a movable world collider changed; queries need a broad-phase update first. */
   private dirty = false;
+  /** The level box behind each static collider (bullets read what it is made of). */
+  private readonly staticBoxes = new Map<number, WorldBox>();
 
   constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null) {
     this.world = new RAPIER.World({ x: 0, y: 0, z: 0 });
@@ -58,7 +60,7 @@ export class PhysicsWorld {
         .setCollisionGroups(WORLD_COLLIDER_GROUPS);
       if (b.pitch || b.roll) desc.setRotation(boxQuat(b.yaw, b.pitch, b.roll));
       else if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
-      this.world.createCollider(desc);
+      this.staticBoxes.set(this.world.createCollider(desc).handle, b);
     }
     this.controller = this.world.createCharacterController(CONTROLLER_OFFSET);
     this.controller.enableAutostep(PLAYER.maxStepHeight, 0.15, false);
@@ -188,6 +190,11 @@ export class PhysicsWorld {
     const half = Math.max(0.01, height / 2 - r);
     const hit = this.world.intersectionWithShape({ x: feet.x, y: feet.y + height / 2 + 0.03, z: feet.z }, { x: 0, y: 0, z: 0, w: 1 }, new RAPIER.Capsule(half, r), undefined, MOVE_QUERY);
     return !hit;
+  }
+
+  /** The level box a static collider was built from (undefined for terrain and scenario bodies). */
+  boxAt(handle: number): WorldBox | undefined {
+    return this.staticBoxes.get(handle);
   }
 
   /** Like raycastWorld, but also returns the collider handle that was hit. */

@@ -118,10 +118,10 @@ describe('deployable cover', () => {
     me.health = me.maxHealth = 10_000;
     const pitch = Math.atan2(0.5 - (me.move.pos.y + 1.6), x - me.move.pos.x);
     const before = foe.health;
-    // Aim low at the bags, then hold fire until they break.
+    // Aim low at the bags, then fire short bursts until they break (a long spray climbs off them).
     let broke = -1;
     for (let t = 0; t < 600 && broke < 0; t++) {
-      input(me, Math.PI / 2, pitch, BUTTON_FIRE);
+      input(me, Math.PI / 2, pitch, t % 30 < 6 ? BUTTON_FIRE : 0);
       foe.move = { pos: { x: x + 1.5, y: 0, z: 4 }, velY: 0, grounded: true };
       match.step();
       if (t === 20) expect(foe.health).toBe(before);
