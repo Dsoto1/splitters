@@ -32,6 +32,10 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   razor_edge: 'The Edge (Quake II)',
   stonewatch_keep: "Helm's Deep (The Lord of the Rings: The Two Towers)",
   serpent_gorge: 'the Indiana Jones films',
+  undergate_transit: 'the transit system (Half-Life)',
+  iron_tide: 'Assault Ship (Counter-Strike: Condition Zero)',
+  capitol_mall: 'the National Mall, Washington, D.C.',
+  executive_grounds: 'the White House, Washington, D.C.',
 };
 
 /** "Inspired by …" for a map, if it has one (imported TimeSplitters maps name their game). */
