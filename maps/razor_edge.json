@@ -1,0 +1,4531 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 19,
+  "metadata": {
+    "id": "razor_edge",
+    "name": "Razor Edge",
+    "author": "Tile Trigger",
+    "description": "An industrial base round an open atrium under a storm. A raised platform in the middle, a bridge across the north side, galleries all round a storey up, and the railgun ledge high on the south wall: ride the pad on the south gallery to reach it, or the lift pad from the atrium floor to the west gallery. Side corridors loop round the atrium; a water channel runs below the south hall with the rocket launcher, and the heavy armour stands on a pillar over the slime pit in the east wing.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 4,
+      "max": 10
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.factory",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.room",
+        "x": -2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:W": "door",
+          "0,0,0:S": "wall"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.room",
+        "x": -2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "slit",
+          "0,0,0:N": "open",
+          "0,0,0:W": "door"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.room",
+        "x": -2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wide",
+          "0,0,0:N": "open",
+          "0,0,0:W": "door"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.room",
+        "x": -2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "slit",
+          "0,0,0:N": "open",
+          "0,0,0:W": "wall"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.room",
+        "x": -2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "wall",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.room",
+        "x": -1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "slit",
+          "0,0,0:S": "door"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.room",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#7a7064"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#8a6a4a"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.room",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#7a7064"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#8a6a4a"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.room",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#7a7064"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#8a6a4a"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "slit"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.room",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.room",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wide",
+          "0,0,0:S": "wide"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.room",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#7a7064"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#8a6a4a"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.room",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#7a7064"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#8a6a4a"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "layout": "platform",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.room",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#7a7064"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#8a6a4a"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wide"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.room",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.room",
+        "x": 1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "slit",
+          "0,0,0:S": "door"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.room",
+        "x": 1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#7a7064"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#8a6a4a"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "slit",
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.room",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#7a7064"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#8a6a4a"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wide",
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.room",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#7a7064"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#8a6a4a"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "slit",
+          "0,0,0:N": "slit"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.room",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "door"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_021",
+        "tile": "core.room",
+        "x": 2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "door",
+          "0,0,0:S": "wall"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.room",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "wall"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.room",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "door"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.room",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "door"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.room",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#8a8278"
+          },
+          "walls": {
+            "material": "core.pbr_corrugated",
+            "tint": "#7a7268"
+          },
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": "#5e5850"
+          },
+          "underside": {
+            "material": "core.pbr_steel",
+            "tint": "#4a4640"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.room",
+        "x": -3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.room",
+        "x": -2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.room",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.room",
+        "x": 3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.room",
+        "x": -2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "wall"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.room",
+        "x": -1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.room",
+        "x": -3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.room",
+        "x": -1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "window"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.room",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.room",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.pit",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        }
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.room",
+        "x": 0,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "railing"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.room",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.room",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.room",
+        "x": 1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "window"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.room",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.room",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.room",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.room",
+        "x": 2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "wall"
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.room",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        },
+        "options": {
+          "ceiling": "beams",
+          "corners": "chamfered"
+        }
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.stairs",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        }
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.stairs",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#6e665c"
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": "#7a6a5c"
+          },
+          "solids": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.pbr_corrugated",
+            "tint": "#4e4a44"
+          },
+          "trim": {
+            "material": "core.pbr_steel",
+            "tint": "#3a3632"
+          }
+        }
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.stairs",
+        "x": -3,
+        "y": -3,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#5a564e"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.stairs",
+        "x": 3,
+        "y": -3,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#5a564e"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.room",
+        "x": -3,
+        "y": -4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#5a564e"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "high",
+          "0,0,0:W": "high"
+        },
+        "options": {
+          "corners": "square"
+        }
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.room",
+        "x": -2,
+        "y": -4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#5a564e"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "high",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "corners": "square"
+        }
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.room",
+        "x": -1,
+        "y": -4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#5a564e"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "high",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "corners": "square"
+        }
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.room",
+        "x": 0,
+        "y": -4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#5a564e"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "high",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "corners": "square"
+        }
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.room",
+        "x": 1,
+        "y": -4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#5a564e"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "high",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "corners": "square"
+        }
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.room",
+        "x": 2,
+        "y": -4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#5a564e"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "high",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "corners": "square"
+        }
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.room",
+        "x": 3,
+        "y": -4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": "#5a564e"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "high",
+          "0,0,0:E": "high"
+        },
+        "options": {
+          "corners": "square"
+        }
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.room",
+        "x": 3,
+        "y": 0,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_rusted_plate",
+            "tint": "#5a6a3a"
+          },
+          "walls": {
+            "material": "core.pbr_concrete",
+            "tint": "#6e6a62"
+          },
+          "solids": {
+            "material": "core.pbr_concrete",
+            "tint": "#5e5a52"
+          },
+          "trim": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.platform_rail",
+        "x": -2,
+        "y": -2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "high",
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_064",
+        "tile": "core.platform_rail",
+        "x": -2,
+        "y": -1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:E": "railing",
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_065",
+        "tile": "core.platform_rail",
+        "x": -2,
+        "y": 0,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:E": "railing",
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_066",
+        "tile": "core.platform_rail",
+        "x": -2,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:E": "open",
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_067",
+        "tile": "core.platform_rail",
+        "x": -2,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high",
+          "0,0,0:S": "open"
+        }
+      },
+      {
+        "id": "tile_068",
+        "tile": "core.platform_rail",
+        "x": -1,
+        "y": -2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "railing",
+          "0,0,0:S": "high",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_069",
+        "tile": "core.platform_rail",
+        "x": -1,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high",
+          "0,0,0:S": "railing",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_070",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": -2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "railing",
+          "0,0,0:S": "high",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_071",
+        "tile": "core.platform_rail",
+        "x": 0,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high",
+          "0,0,0:S": "railing",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_072",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": -2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "railing",
+          "0,0,0:S": "high",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_073",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high",
+          "0,0,0:S": "railing",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_074",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": -2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "high",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_075",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": -1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:E": "high",
+          "0,0,0:W": "railing"
+        }
+      },
+      {
+        "id": "tile_076",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": 0,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:E": "high",
+          "0,0,0:W": "railing"
+        }
+      },
+      {
+        "id": "tile_077",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": 1,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:E": "high",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_078",
+        "tile": "core.platform_rail",
+        "x": 2,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:N": "high",
+          "0,0,0:S": "open",
+          "0,0,0:E": "high",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_079",
+        "tile": "core.bridge",
+        "x": -1,
+        "y": 1,
+        "z": 1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_080",
+        "tile": "core.bridge",
+        "x": 0,
+        "y": 1,
+        "z": 1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_081",
+        "tile": "core.bridge",
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_082",
+        "tile": "core.platform_rail",
+        "x": -3,
+        "y": 2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "open",
+          "0,0,0:N": "high",
+          "0,0,0:W": "high"
+        }
+      },
+      {
+        "id": "tile_083",
+        "tile": "core.platform_rail",
+        "x": 3,
+        "y": -2,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": "#9a8e80"
+          },
+          "walls": {
+            "material": "core.pbr_space_metal",
+            "tint": "#8e8478"
+          },
+          "trim": {
+            "material": "core.hazard",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:W": "open",
+          "0,0,0:N": "open",
+          "0,0,0:S": "high",
+          "0,0,0:E": "high"
+        }
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "water_057",
+      "position": [
+        0,
+        -4,
+        -32
+      ],
+      "kind": "water",
+      "size": [
+        55,
+        1,
+        7
+      ],
+      "liquid": "water"
+    },
+    {
+      "id": "water_059",
+      "position": [
+        24,
+        -4,
+        0
+      ],
+      "kind": "water",
+      "size": [
+        7,
+        1.2,
+        7
+      ],
+      "liquid": "acid"
+    },
+    {
+      "id": "block_060",
+      "position": [
+        24,
+        -4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        4,
+        2.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rusted_plate",
+      "tint": "#7a6a5a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_061",
+      "position": [
+        24,
+        -0.3,
+        1.6
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.3,
+        0.9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_walkway",
+      "tint": "#9a8e80",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_062",
+      "position": [
+        24,
+        -4,
+        -1.25
+      ],
+      "kind": "ladder",
+      "yaw": 3.141592653589793,
+      "height": 4.2,
+      "width": 0.9
+    },
+    {
+      "id": "block_084",
+      "position": [
+        0,
+        7.6,
+        -10
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.4,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#8a8076",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_085",
+      "position": [
+        -2.6,
+        0,
+        -10
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        7.6,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#5a544c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_086",
+      "position": [
+        2.6,
+        0,
+        -10
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        7.6,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#5a544c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_087",
+      "position": [
+        0,
+        8,
+        -11.5
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_088",
+      "position": [
+        0,
+        4,
+        -17.5
+      ],
+      "kind": "pad",
+      "yaw": 0,
+      "power": 16,
+      "push": 8.65
+    },
+    {
+      "id": "pad_089",
+      "position": [
+        -6,
+        0,
+        -4
+      ],
+      "kind": "pad",
+      "yaw": -1.5708,
+      "power": 17,
+      "push": 10.81
+    },
+    {
+      "id": "spawn_090",
+      "position": [
+        -24,
+        0,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_091",
+      "position": [
+        -24,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_092",
+      "position": [
+        -24,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_093",
+      "position": [
+        -16,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_094",
+      "position": [
+        -16,
+        4,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_095",
+      "position": [
+        24,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_096",
+      "position": [
+        24,
+        0,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_097",
+      "position": [
+        24,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_098",
+      "position": [
+        16,
+        0,
+        -24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_099",
+      "position": [
+        16,
+        4,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_100",
+      "position": [
+        -8,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 2.4,
+      "faction": null
+    },
+    {
+      "id": "spawn_101",
+      "position": [
+        8,
+        0,
+        -8
+      ],
+      "kind": "spawn",
+      "yaw": -0.8,
+      "faction": null
+    },
+    {
+      "id": "spawn_102",
+      "position": [
+        0,
+        0,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_103",
+      "position": [
+        0,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_104",
+      "position": [
+        -8,
+        -4,
+        -32
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_105",
+      "position": [
+        8,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_106",
+      "position": [
+        16,
+        4,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_107",
+      "position": [
+        -16,
+        4,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "pickup_108",
+      "position": [
+        0,
+        8,
+        -10
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_109",
+      "position": [
+        16,
+        4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_cells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_110",
+      "position": [
+        24,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_111",
+      "position": [
+        0,
+        -4,
+        -32
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_112",
+      "position": [
+        -24,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_113",
+      "position": [
+        -24,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_114",
+      "position": [
+        24,
+        0,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_115",
+      "position": [
+        0,
+        4,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.powerup_damage",
+      "respawnSeconds": 90
+    },
+    {
+      "id": "pickup_116",
+      "position": [
+        0,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_117",
+      "position": [
+        0,
+        0,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_118",
+      "position": [
+        -16,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_119",
+      "position": [
+        16,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_120",
+      "position": [
+        0,
+        1.5,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_plasma",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_121",
+      "position": [
+        24,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_122",
+      "position": [
+        -16,
+        0,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_auto_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_123",
+      "position": [
+        0,
+        4,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_124",
+      "position": [
+        -16,
+        4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_125",
+      "position": [
+        16,
+        4,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_126",
+      "position": [
+        16,
+        -4,
+        -32
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_127",
+      "position": [
+        -8,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_128",
+      "position": [
+        8,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_129",
+      "position": [
+        -24,
+        0,
+        -4
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_130",
+      "position": [
+        24,
+        0,
+        3
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_131",
+      "position": [
+        -16,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_132",
+      "position": [
+        16,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_133",
+      "position": [
+        -8,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_134",
+      "position": [
+        8,
+        0,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_135",
+      "position": [
+        -24,
+        4,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_136",
+      "position": [
+        24,
+        4,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_137",
+      "position": [
+        -16,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_cells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_138",
+      "position": [
+        -9.5,
+        0,
+        9.5
+      ],
+      "kind": "prop",
+      "model": "prop.big_pipe",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        9.5,
+        0,
+        -9.5
+      ],
+      "kind": "prop",
+      "model": "prop.big_pipe",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        9.8,
+        0,
+        9.8
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate_large",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        9.4,
+        1.12,
+        9.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate_large",
+      "yaw": 0.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
+        -10,
+        0,
+        -10
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        -9.2,
+        0,
+        -10.4
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        -16,
+        0,
+        19.2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_pipe_rack",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_145",
+      "position": [
+        16,
+        0,
+        -19.2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_pipe_rack",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        -19,
+        0,
+        -19
+      ],
+      "kind": "prop",
+      "model": "prop.sf_column_pipes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        19,
+        0,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.sf_column_pipes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        0,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.sf_vent",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_149",
+      "position": [
+        0,
+        0,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.sf_vent",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        -26.5,
+        0,
+        -1
+      ],
+      "kind": "prop",
+      "model": "prop.machine",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_151",
+      "position": [
+        26.5,
+        0,
+        17
+      ],
+      "kind": "prop",
+      "model": "prop.machine",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        -26.8,
+        0,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.screen_panel",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_153",
+      "position": [
+        27,
+        0,
+        -14
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        -26.5,
+        0,
+        26.5
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        26.5,
+        0,
+        26.5
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        -12,
+        0,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.hopper",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        12,
+        0,
+        -26
+      ],
+      "kind": "prop",
+      "model": "prop.hopper",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_158",
+      "position": [
+        12,
+        0,
+        26.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_159",
+      "position": [
+        -12,
+        0,
+        -26.6
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        5,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        -5,
+        0,
+        -27
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        -26.5,
+        0,
+        -19
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        26.5,
+        0,
+        9.5
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_164",
+      "position": [
+        -6,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.pipe_valve",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_165",
+      "position": [
+        6,
+        0,
+        -27
+      ],
+      "kind": "prop",
+      "model": "prop.pipe_valve",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_166",
+      "position": [
+        -10,
+        -4,
+        -35.2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_pipe_rack",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_167",
+      "position": [
+        10,
+        -4,
+        -35.2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_pipe_rack",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_168",
+      "position": [
+        20,
+        -4,
+        -35
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_169",
+      "position": [
+        -20,
+        -4,
+        -35
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_170",
+      "position": [
+        -18.5,
+        4,
+        -18.5
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_171",
+      "position": [
+        18.5,
+        4,
+        18.5
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_172",
+      "position": [
+        19,
+        4,
+        -19
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_173",
+      "position": [
+        -19,
+        4,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_174",
+      "position": [
+        -24,
+        3.3,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_175",
+      "position": [
+        -24,
+        3.3,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_176",
+      "position": [
+        -24,
+        3.3,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_177",
+      "position": [
+        -24,
+        3.3,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_178",
+      "position": [
+        -24,
+        3.3,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_179",
+      "position": [
+        -16,
+        3.3,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_180",
+      "position": [
+        -16,
+        3.3,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_181",
+      "position": [
+        -16,
+        3.3,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_182",
+      "position": [
+        -16,
+        3.3,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_183",
+      "position": [
+        -16,
+        3.3,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_184",
+      "position": [
+        -16,
+        3.3,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_185",
+      "position": [
+        -16,
+        3.3,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_186",
+      "position": [
+        -8,
+        3.3,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_187",
+      "position": [
+        -8,
+        3.3,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_188",
+      "position": [
+        -8,
+        3.3,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_189",
+      "position": [
+        -8,
+        3.3,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_190",
+      "position": [
+        0,
+        3.3,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_191",
+      "position": [
+        0,
+        3.3,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_192",
+      "position": [
+        0,
+        3.3,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_193",
+      "position": [
+        0,
+        3.3,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_194",
+      "position": [
+        8,
+        3.3,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_195",
+      "position": [
+        8,
+        3.3,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_196",
+      "position": [
+        8,
+        3.3,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_197",
+      "position": [
+        8,
+        3.3,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_198",
+      "position": [
+        16,
+        3.3,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_199",
+      "position": [
+        16,
+        3.3,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_200",
+      "position": [
+        16,
+        3.3,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_201",
+      "position": [
+        16,
+        3.3,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_202",
+      "position": [
+        16,
+        3.3,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_203",
+      "position": [
+        16,
+        3.3,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_204",
+      "position": [
+        16,
+        3.3,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_205",
+      "position": [
+        24,
+        3.3,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_206",
+      "position": [
+        24,
+        3.3,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_207",
+      "position": [
+        24,
+        3.3,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_208",
+      "position": [
+        24,
+        3.3,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_209",
+      "position": [
+        24,
+        3.3,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_210",
+      "position": [
+        -8,
+        6,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.3,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "light_211",
+      "position": [
+        8,
+        6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.3,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "light_212",
+      "position": [
+        -8,
+        6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.3,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "light_213",
+      "position": [
+        8,
+        6,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.3,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "light_214",
+      "position": [
+        0,
+        10,
+        -10
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd08a",
+      "intensity": 1.2,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "light_215",
+      "position": [
+        -24,
+        -1,
+        -35
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_216",
+      "position": [
+        -8,
+        -1,
+        -35
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_217",
+      "position": [
+        8,
+        -1,
+        -35
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_218",
+      "position": [
+        24,
+        -1,
+        -35
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_219",
+      "position": [
+        24,
+        -1.5,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#a6ff5a",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -32,
+      -40
+    ],
+    "max": [
+      32,
+      32
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "track": null,
+  "backdrop": {
+    "sky": "storm",
+    "scenery": "mountains",
+    "ground": "dirt",
+    "haze": 0.45
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      5,
+      5
+    ]
+  },
+  "dependencies": []
+}

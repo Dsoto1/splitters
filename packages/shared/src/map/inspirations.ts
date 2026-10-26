@@ -28,6 +28,8 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   shingle_point: 'the D-Day beach landings (1944)',
   atomic_court: 'Nuketown (Call of Duty: Black Ops)',
   fallout_lane: 'Nuketown (Call of Duty: Black Ops)',
+  glasswork_office: 'Office (Counter-Strike)',
+  razor_edge: 'The Edge (Quake II)',
 };
 
 /** "Inspired by …" for a map, if it has one (imported TimeSplitters maps name their game). */
