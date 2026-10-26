@@ -2,14 +2,14 @@ import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
-import { DEFAULT_DEATHMATCH_RULES, PROTOCOL_VERSION, parseServerInfo, type MapDocument, type ServerInfo, type ServerMessage } from '@tiletrigger/shared';
+import { DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, PROTOCOL_VERSION, parseServerInfo, type MapDocument, type ServerInfo, type ServerMessage } from '@tiletrigger/shared';
 import { answerDiscovery, discoverLan, lanAddresses } from '../src/lan.ts';
 import { LobbyStore, lobbyHandler } from '../src/lobby.ts';
 import { startServer, type RunningServer } from '../src/server.ts';
 
 const room: MapDocument = {
   format: 'tiletrigger.map',
-  formatVersion: 18,
+  formatVersion: MAP_FORMAT_VERSION,
   metadata: { id: 'lan_room', name: 'LAN Room', author: '', description: '', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z', parentId: null, recommendedPlayers: { min: 2, max: 4 }, supportedModes: ['core.deathmatch'] },
   classicStructure: { cellSize: 8, levelHeight: 4, theme: 'core.prototype', tiles: [{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }] },
   entities: [

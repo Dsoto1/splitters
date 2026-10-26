@@ -1153,7 +1153,7 @@ async function raceFlow(browser) {
 async function mapsFlow(browser) {
   const { readdirSync } = await import('node:fs');
   const covered = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
-  const ids = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !covered.has(id));
+  const ids = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !covered.has(id) && (!process.env.E2E_MAPS || process.env.E2E_MAPS.split(',').includes(id)));
   // Imported maps (maps/imported/, converted from TimeSplitters MapMaker saves) are many: spot-check 5 at random
   // (E2E_IMPORTED=all checks every one, E2E_IMPORTED=id1,id2 checks those).
   let imported = [];
@@ -1177,7 +1177,12 @@ async function mapsFlow(browser) {
     await page.waitForTimeout(1500);
     // Imported maps can have floors below level 0: "solid ground" there means not below the lowest floor.
     let floor = -5;
-    if (chosen.includes(id)) {
+    if (!chosen.includes(id)) {
+      // Maps with basements (sewers, cisterns) spawn players below 0: below the lowest spawn is falling.
+      const { readFileSync } = await import('node:fs');
+      const m = JSON.parse(readFileSync(new URL(`../maps/${id}.json`, import.meta.url), 'utf8'));
+      floor = Math.min(floor, ...m.entities.filter((e) => e.kind === 'spawn').map((e) => e.position[1] - 2));
+    } else {
       const { readFileSync } = await import('node:fs');
       const m = JSON.parse(readFileSync(new URL(`../maps/imported/${id}.json`, import.meta.url), 'utf8'));
       floor = Math.min(0, ...m.classicStructure.tiles.map((t) => t.z)) * m.classicStructure.levelHeight - 1;

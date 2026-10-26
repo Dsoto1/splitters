@@ -3,12 +3,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
-import { DEFAULT_DEATHMATCH_RULES, PROTOCOL_VERSION, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
+import { DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, PROTOCOL_VERSION, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
 import { startServer, type RunningServer } from '../src/server.ts';
 
 const room = (id: string, next?: string): MapDocument => ({
   format: 'tiletrigger.map',
-  formatVersion: 18,
+  formatVersion: MAP_FORMAT_VERSION,
   metadata: { id, name: id.replace('_', ' '), author: '', description: '', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z', parentId: null, recommendedPlayers: { min: 1, max: 4 }, supportedModes: ['core.deathmatch'] },
   classicStructure: { cellSize: 8, levelHeight: 4, theme: 'core.prototype', tiles: [{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }] },
   entities: [
