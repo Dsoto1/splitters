@@ -15,7 +15,8 @@ export type ClientMessage =
   /** `admin`: a dedicated server's ADMIN_TOKEN (?admin=… in the page address): this player may run the match (HostCommand). */
   | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string }
   | { t: 'input'; inputs: PlayerInput[] }
-  | { t: 'ping'; id: number; ct: number }
+  /** `rtt`: the sender's measured round trip (ms), shown on everyone's scoreboard. */
+  | { t: 'ping'; id: number; ct: number; rtt?: number }
   /** The client has loaded the map, everyone's characters and the weapons: it can start. */
   | { t: 'ready' }
   /** Log in as the dedicated server's admin mid-match (pause menu → Server admin). */
@@ -268,6 +269,8 @@ export interface ScoreEntry {
   d: number;
   /** Suicides (already taken off `k`); they don't count against the team. */
   x?: number;
+  /** Objective plays: flag captures, bomb plants and defuses, hostage rescues (only when > 0). */
+  o?: number;
 }
 
 export interface RosterEntry {
@@ -427,6 +430,8 @@ export type ServerMessage =
       ld?: number[];
     }
   | { t: 'pong'; id: number; ct: number }
+  /** Online: each human's round trip for the scoreboard, as flat [slot, ms, slot, ms, …] (every couple of seconds). */
+  | { t: 'pings'; p: number[] }
   /** The server is changing map (a scenario chain, or its host changed it): reconnect in a moment to play `map` (its display name). */
   | { t: 'travel'; map: string }
   /** You run this match (HostCommand): its settings now (`state`), or why a command was refused (`error`; `state` null when you may not run it). */

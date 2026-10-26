@@ -53,7 +53,10 @@ export class RaceHud {
   }
 
   snapshot(rc: RaceSnapshot | undefined): void {
-    if (rc) this.rc = rc;
+    if (!rc) return;
+    this.rc = rc;
+    // The scoreboard lists racers in running order, with their lap (or finish time).
+    this.hud.setRaceOrder(rc.r.map((r) => [r[0], r[3] >= 0 ? raceTime(r[3]) : `L${r[1]}`] as const));
   }
 
   event(ev: GameEvent): void {

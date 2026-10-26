@@ -137,6 +137,13 @@ const STUCK_WINDOW_TICKS = TICK_RATE;
 const PATH_REFRESH_TICKS = TICK_RATE / 2;
 /** Desirability of a pistol: a bot carrying nothing better goes for a gun first. */
 const SIDEARM = 0.4;
+/** Length of a route over the ground (m). */
+function pathLength(route: readonly Vec3[]): number {
+  let len = 0;
+  for (let i = 1; i < route.length; i++) len += horizontalDistance(route[i - 1]!, route[i]!);
+  return len;
+}
+
 /** Shortest trip (m) worth taking a vehicle for (vehicles.ts uses the same). */
 const VEHICLE_TRIP = 55;
 /** How far (m, plus height) a bot with only a sidearm detours for a gun. */
@@ -1340,11 +1347,10 @@ export class BotBrain {
     const v = vehicleFor(mounts, me.pos, goal, 22);
     if (v && this.rng() < 0.5) {
       // Drive only along an open route (no long detours).
+      // A boat (a vehicle that rides on water) may head straight across instead (see thinkMounted).
       const route = view.nav.findPath(v.pos, goal);
-      if (!route) return;
-      let len = 0;
-      for (let i = 1; i < route.length; i++) len += horizontalDistance(route[i - 1]!, route[i]!);
-      if (len > horizontalDistance(v.pos, goal) * 1.5) return;
+      if (!route && !v.floats) return;
+      if (route && pathLength(route) > horizontalDistance(v.pos, goal) * 1.5 && !v.floats) return;
       this.roamGoal = { ...goal };
       this.via = null;
       this.mountPlan = { index: v.index, until: view.tick + TICK_RATE * 8, drive: true };
@@ -1383,6 +1389,8 @@ export class BotBrain {
       if (!this.goal || horizontalDistance(this.goal, goal) > 3 || tick - this.lastPathTick > TICK_RATE * 2) {
         this.goal = { ...goal };
         this.path = view.nav.findPath(m.pos, goal) ?? [];
+        // On water the navmesh has no route (or only the long way round the shore): straight across, then up the bank.
+        if (m.floats && (this.path.length < 2 || pathLength(this.path) > left * 1.5)) this.path = [];
         this.pathIndex = 1;
         this.lastPathTick = tick;
       }

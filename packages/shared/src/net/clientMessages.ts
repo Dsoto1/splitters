@@ -39,7 +39,8 @@ export function parseClientMessage(text: string): ClientMessage | null {
     case 'ready':
       return { t: 'ready' };
     case 'ping':
-      return typeof o.id === 'number' && typeof o.ct === 'number' ? { t: 'ping', id: o.id, ct: o.ct } : null;
+      if (typeof o.id !== 'number' || typeof o.ct !== 'number') return null;
+      return { t: 'ping', id: o.id, ct: o.ct, ...(typeof o.rtt === 'number' && Number.isFinite(o.rtt) && o.rtt >= 0 ? { rtt: Math.min(9999, Math.round(o.rtt)) } : {}) };
     case 'input': {
       if (!Array.isArray(o.inputs) || o.inputs.length > MAX_INPUTS_PER_MESSAGE) return null;
       const inputs: PlayerInput[] = [];

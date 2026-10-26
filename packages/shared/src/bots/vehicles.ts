@@ -38,6 +38,8 @@ export interface MountView {
   maxSpeed?: number;
   /** Vehicles: how fast it is going right now (m/s). */
   speed?: number;
+  /** Vehicles placed to ride on water: with no road route (or only a long way round) they head straight across. */
+  floats?: boolean;
   /** A human (or anyone friendly) has a claim: a human ally close by. */
   humanNear?: boolean;
   /** Hostile to us (an enemy is in it). */

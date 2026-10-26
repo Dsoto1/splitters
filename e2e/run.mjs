@@ -771,6 +771,32 @@ async function physicsfxFlow(browser) {
   await page.context().close();
 }
 
+/**
+ * Scoreboard open: is the local player's row on screen, inside its list's
+ * visible area (sticky when the list scrolls) and inside the window?
+ */
+async function scoreboardMeVisible(page) {
+  return page.evaluate(() => {
+    const me = document.querySelector('#scoreboard .sb-row.me');
+    if (!me) return { ok: false, why: 'no row marked as you' };
+    const r = me.getBoundingClientRect();
+    const list = me.closest('.sb-list');
+    const box = (list && list.scrollHeight > list.clientHeight ? list : me.closest('.sb-body')).getBoundingClientRect();
+    const inList = r.top >= box.top - 1 && r.bottom <= box.bottom + 1;
+    const inWindow = r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth;
+    const sideways = document.documentElement.scrollWidth > innerWidth;
+    return { ok: inList && inWindow && !sideways && r.height > 0, why: `row ${Math.round(r.top)}–${Math.round(r.bottom)}, list ${Math.round(box.top)}–${Math.round(box.bottom)}, window ${innerWidth}×${innerHeight}` };
+  });
+}
+
+/** The scoreboard's team columns: their rectangles, left to right. */
+async function scoreboardColumns(page) {
+  return page.evaluate(() => [...document.querySelectorAll('#scoreboard .sb-group')].map((g) => {
+    const r = g.getBoundingClientRect();
+    return { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top) };
+  }));
+}
+
 async function teamsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
@@ -785,10 +811,17 @@ async function teamsFlow(browser) {
   // Every team's table fills in once the roster for all 24 has arrived.
   await page.waitForTimeout(T(2500));
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard table').length >= 7, null, { timeout: T(8000) }).catch(() => {});
-  const board = await page.evaluate(() => ({ many: document.getElementById('scoreboard').classList.contains('many'), tables: [...document.querySelectorAll('#scoreboard table')].map((t) => t.querySelectorAll('tr').length - 1) }));
+  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length >= 7 && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 24, null, { timeout: T(8000) }).catch(() => {});
+  const board = await page.evaluate(() => ({
+    many: document.getElementById('scoreboard').classList.contains('sb-tn'),
+    tables: [...document.querySelectorAll('#scoreboard .sb-group')].map((t) => t.querySelectorAll('.sb-row[data-slot]').length),
+    cols: getComputedStyle(document.querySelector('#scoreboard .sb-body')).gridTemplateColumns.split(' ').length,
+  }));
+  const meSeen = await scoreboardMeVisible(page);
   await page.keyboard.up('Tab');
   check(board.many && board.tables.length === 7, `the scoreboard shows seven teams (${board.tables.length})`);
+  check(board.cols >= 3, `seven teams sit in a grid of columns (${board.cols} across)`);
+  check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
   check([...board.tables].sort((a, b) => a - b).join(',') === '2,2,2,2,2,2,12', `teams are filled to 2v2v2v2v2v2v12 (${board.tables.join(',')})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -869,6 +902,20 @@ async function ctfFlow(browser) {
   const after = await page.evaluate(() => ({ ts: window.__cs.mode.state.ts, left: document.querySelector('#sb-left b')?.textContent, msg: document.getElementById('message').textContent }));
   check(after.ts.some((n) => n === 1) && after.left === '1', `bringing it home scores a capture (${JSON.stringify(after)})`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-captured.png`, timeout: T(60000) }).catch(() => {});
+  // Tab: the two teams side by side, each its own column, your capture on your row.
+  await page.keyboard.down('Tab');
+  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length === 2 && document.querySelector('#scoreboard .sb-row.me'), null, { timeout: T(5000) }).catch(() => {});
+  const cols = await scoreboardColumns(page);
+  const meSeen = await scoreboardMeVisible(page);
+  const caps = await page.evaluate(() => {
+    const hd = [...document.querySelectorAll('#scoreboard .sb-hd')][0];
+    const at = [...(hd?.children ?? [])].findIndex((c) => c.textContent === 'Caps');
+    return at < 0 ? null : document.querySelector('#scoreboard .sb-row.me')?.children[at]?.textContent;
+  });
+  await page.keyboard.up('Tab');
+  check(cols.length === 2 && cols[0].top === cols[1].top && cols[1].left >= cols[0].right, `two teams show as two side-by-side columns (${JSON.stringify(cols)})`);
+  check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
+  check(caps === '1', `the scoreboard's Caps column counts your capture (${caps})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -987,6 +1034,14 @@ async function zombiesFlow(browser) {
   await page.waitForFunction(() => window.__cs.view.characterCount() > 3, null, { timeout: T(15000) }).catch(() => {});
   const drawn = await page.evaluate(() => window.__cs.view.characterCount());
   check(drawn > 3, `zombies are drawn as characters (${drawn})`);
+  // Co-op: the scoreboard is one list of the squad.
+  await page.keyboard.down('Tab');
+  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length === 4, null, { timeout: T(5000) }).catch(() => {});
+  const coop = await page.evaluate(() => ({ coop: document.getElementById('scoreboard').classList.contains('sb-coop'), lists: document.querySelectorAll('#scoreboard .sb-group').length, rows: document.querySelectorAll('#scoreboard .sb-row[data-slot]').length }));
+  const meSeen = await scoreboardMeVisible(page);
+  await page.keyboard.up('Tab');
+  check(coop.coop && coop.lists === 1 && coop.rows === 4, `co-op shows the squad as one list (${JSON.stringify(coop)})`);
+  check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -1026,7 +1081,8 @@ async function classesFlow(browser) {
   await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name)), null, { timeout: T(10000) }).catch(() => {});
   check(await page.evaluate(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name))), 'a Mechanic bot builds a sentry and it is drawn');
   await page.keyboard.down('Tab');
-  await page.waitForTimeout(400);
+  // CI's software renderer can take a moment to fill the board.
+  await page.waitForFunction(() => /Bulwark/i.test(document.getElementById('scoreboard')?.textContent ?? ''), null, { timeout: T(3000) }).catch(() => {});
   const board = await page.evaluate(() => document.getElementById('scoreboard')?.textContent ?? '');
   await page.keyboard.up('Tab');
   check(/Bulwark/i.test(board), 'the scoreboard shows classes');
@@ -1155,7 +1211,8 @@ async function vehiclesFlow(browser) {
     const e = cs.local.eye;
     return { view: cs.rideView(), off: Math.hypot(c.x - e.x, c.y - e.y, c.z - e.z), roll: cs.view.camera.rotation.z };
   });
-  check(foot.view === null && foot.off < 0.4 && Math.abs(foot.roll) < 1e-6, `after getting out the camera is at your eye and level (${foot.view}, ${foot.off.toFixed(2)} m off, roll ${foot.roll})`);
+  // A blast nearby can still be shaking the view a little: level means within a fraction of a degree.
+  check(foot.view === null && foot.off < 0.4 && Math.abs(foot.roll) < 0.01, `after getting out the camera is at your eye and level (${foot.view}, ${foot.off.toFixed(2)} m off, roll ${foot.roll})`);
   // A blast next to you while looking up shakes the view; once it settles, turning and looking around stay level
   // (Babylon kept the up vector from the shake's last frame, which rolled the view and gun with every turn).
   await page.evaluate(() => {

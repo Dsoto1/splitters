@@ -11,7 +11,7 @@ import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
  * entities, v4 scenario entities and logic, v5 factions and NPC encounters, v6 per-side
  * wall styles, trim and props, v7 terrain, v8 map boundary and team setup, v11 flag bases
  * and hills for Capture the Flag and King of the Hill, v18 the race `track`, v19 the transport plane and mount skins, v20 movers, logic-driven
- * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids).
+ * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids, v21 vehicles that ride on water).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -22,7 +22,7 @@ import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 20;
+export const MAP_FORMAT_VERSION = 21;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -341,6 +341,12 @@ export const MountEntity = EntityBase.extend({
   respawnSeconds: z.number().min(5).max(600).nullable().default(null),
   /** Paint (see MOUNT_SKINS): automatic, factory, desert, forest, snow, urban or team colour. */
   skin: z.enum(MOUNT_SKINS).optional(),
+  /**
+   * Vehicles (v21): rides on water. Over water or swamp it floats at the surface, sitting its
+   * `draft` in it (see MountDef.vehicle.draft), drives a little slower and slides more, and runs up
+   * the shore onto land; without it a vehicle sinks to the bed. Lava and acid still take it.
+   */
+  onWater: z.boolean().optional(),
 });
 
 /**
