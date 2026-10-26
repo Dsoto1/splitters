@@ -295,12 +295,21 @@ for (let x = 1; x <= 9; x++) {
 m.edge(1, 12, -1, 'W', 'wall').edge(1, 13, -1, 'W', 'wall').edge(9, 12, -1, 'E', 'wall').edge(9, 13, -1, 'E', 'wall');
 // The platform edge (a step down to the track bed) and the train standing at it.
 for (const x of [22, 58]) m.block([x, -4, 101.2], [36, 0.2, 1], 'solid', { material: 'paint_matte', tint: '#e8c832' });
-for (const x of [20, 30, 46, 56]) m.prop('subway_car', [x, -4, 106], P, 0.9);
+// Two metro cars (Elbolillo's Metro set, CC0, flat-coloured), scaled to clear the ceiling.
+for (const x of [22, 52]) m.prop('mt_subway_car', [x, -4, 106], P, 0.85);
+// Platform furniture against the back wall, clear of the stairs (x 12..20 and 60..68): seats, bins, machines.
+for (const x of [28, 40, 52]) m.prop('mt_bench', [x, -4, 92.6], 0);
+for (const x of [34, 46]) m.prop('mt_bin', [x, -4, 92.8], 0);
+m.prop('mt_vending_machine', [23.5, -4, 92.7], 0).prop('mt_ticket_machine', [57, -4, 92.6], 0);
 for (let x = 6; x <= 74; x += 3.4) m.prop('rail_track', [r2(x), -4, 106], P, 1, false);
 
 // ---------------------------------------------------------------- north-west: the gas station
 
 m.tile('gas_station', 9, 15, 0, 0);
+// Elbolillo's fuel pumps (CC0, flat-coloured) over the tile's pump blocks, hoses to the bays; the tile keeps the collision.
+for (const [x, z] of [[73.9, 121.1], [78.1, 121.1], [73.9, 123.9], [78.1, 123.9]] as const) m.prop('gs_fuel_pump', [x, 0.2, z], P, 1, false);
+// The kiosk: shop shelving on the back wall and a slush machine by the side door; a dumpster out on the forecourt's north side.
+m.prop('gs_shop_shelving', [83.1, 0, 124.6], -P).prop('gs_slush_machine', [80.2, 0, 122.6], P).prop('gs_dumpster', [75, 0, 131], 0);
 paint(9, 15, 0, S(mat('pbr_concrete', '#b0aca4'), mat('pbr_white_panel', '#e8e4dc'), { solids: mat('paint_gloss', '#c8322a') }));
 // Gas cylinders by the pumps and fuel drums by the kiosk: shoot them and the forecourt goes up.
 for (const [x, z] of [[73, 121.1], [79, 121.1], [73, 123.9], [79, 123.9]] as const) m.add({ kind: 'destructible', name: 'Gas cylinder', model: 'gas', position: [x, 0.2, z], yaw: 0, health: null, explosiveOnly: false });
@@ -359,9 +368,7 @@ for (let i = 0; i <= 25; i++) {
 
 // ---------------------------------------------------------------- cars, wrecks and barricades (free blocks)
 
-const PAINT = (tint: string) => ({ material: 'paint_gloss', tint });
 const TYRE = { material: 'pbr_steel', tint: '#1e1e1e' };
-const GLASS = { material: 'paint_gloss', tint: '#1a2028' };
 const CHAR = { material: 'pbr_charred_wood', tint: '#2a2624' };
 const RUST = { material: 'pbr_rusted_plate', tint: '#5a3a2a' };
 const turn = (x: number, z: number, yaw: number): [number, number] => [x * Math.cos(yaw) + z * Math.sin(yaw), -x * Math.sin(yaw) + z * Math.cos(yaw)];
@@ -369,12 +376,12 @@ function part(cx: number, cz: number, yaw: number, lx: number, lz: number, y: nu
   const [ox, oz] = turn(lx, lz, yaw);
   m.block([r2(cx + ox), r2(y), r2(cz + oz)], size, 'solid', { ...look, yaw: r2(yaw) });
 }
-/** A parked saloon car along local x. */
-function car(cx: number, cz: number, yaw: number, tint: string, y = 0): void {
-  for (const lx of [-1.4, 1.4]) for (const lz of [-0.8, 0.8]) part(cx, cz, yaw, lx, lz, y, [0.7, 0.6, 0.3], TYRE);
-  part(cx, cz, yaw, 0, 0, y + 0.3, [4.4, 0.7, 1.9], PAINT(tint));
-  part(cx, cz, yaw, -0.2, 0, y + 1, [2.3, 0.55, 1.75], GLASS);
-  part(cx, cz, yaw, -0.2, 0, y + 1.55, [2.2, 0.1, 1.7], PAINT(tint));
+/** Designersoup's low-poly cars (CC0), taken in turn. */
+const CAR_MODELS = ['car_beetle', 'car_racer', 'car_offroader', 'car_pickup'] as const;
+let carN = 0;
+/** A parked car along local x (a car prop; they face +Z, so a quarter turn more). */
+function car(cx: number, cz: number, yaw: number, y = 0): void {
+  m.prop(CAR_MODELS[carN++ % CAR_MODELS.length]!, [r2(cx), r2(y), r2(cz)], r2(yaw + P));
 }
 /** A burnt-out car on its roof: roof down, body up, wheels in the air. */
 function wreck(cx: number, cz: number, yaw: number): void {
@@ -397,37 +404,37 @@ function brazier(x: number, z: number): void {
   FIRES.push([x, 1.4, z]);
 }
 // Parked cars along the kerbs (the avenues' roads run 4 m in from the cell edges).
-car(30, 93.4, 0, '#8a2a24');
-car(62, 106.6, PI, '#2a3a5a');
-car(150, 93.4, 0.05, '#c8c4b8');
-car(168, 106.6, PI, '#2a5a3a');
-car(93.4, 64, P, '#3a3a40');
-car(106.6, 70, -P, '#a87a2a');
-car(93.4, 164, P, '#6a2a5a');
-car(106.6, 170, -P, '#d8d4c8');
+car(30, 93.4, 0);
+car(62, 106.6, PI);
+car(150, 93.4, 0.05);
+car(168, 106.6, PI);
+car(93.4, 64, P);
+car(106.6, 70, -P);
+car(93.4, 164, P);
+car(106.6, 170, -P);
 // The diner lot and the police lot.
-car(176, 122, P, '#b03a2a');
-car(186, 126, P + 0.1, '#3a6aa0');
-car(196, 122, P, '#e0c070');
-car(188, 42, 0, '#1e2a4a');
-car(188, 56, 0, '#1e2a4a');
+car(176, 122, P);
+car(186, 126, P + 0.1);
+car(196, 122, P);
+car(188, 42, 0);
+car(188, 56, 0);
 // Up on the mechanic's lifts.
 for (const [x, z] of [[156, 78], [172, 78]] as const) {
   for (const dx of [-1.4, 1.4]) m.block([x + dx, 0, z], [0.3, 2.1, 0.3], 'solid', { material: 'pbr_steel', tint: '#c8a832' });
   m.block([x, 1.9, z], [2.4, 0.2, 4.8], 'solid', { material: 'pbr_steel', tint: '#c8a832' });
-  car(x, z, P, x === 156 ? '#4a6a8a' : '#8a3a2a', 2.1);
+  car(x, z, P, 2.1);
 }
-car(164, 76, P, '#6a6a60'); // on the floor between them, bonnet up
+car(164, 76, P); // on the floor between them, bonnet up
 // Junkyard: wrecks, rust and tyre stacks.
 wreck(190, 76, 0.3);
 wreck(198, 82, -0.6);
 for (const [x, z] of [[184, 84], [186, 84.2], [196, 72]] as const) m.block([x, 0, z], [0.9, 1.2, 0.9], 'solid', TYRE);
 // Garage cars, both decks.
-car(68, 70, 0, '#4a4a50');
-car(72, 62, 0, '#9a2a2a');
-car(52, 72, P, '#2a4a7a', 4);
-car(68, 72, P, '#c8c8c0', 4);
-car(72, 56, 0, '#3a5a3a', 4);
+car(68, 70, 0);
+car(72, 62, 0);
+car(52, 72, P, 4);
+car(68, 72, P, 4);
+car(72, 56, 0, 4);
 
 // The burning barricade across the north avenue (y 18, z ≈ 146): wrecks, braziers, tyres, a vehicle-wide gap.
 wreck(91, 146, 0.2);

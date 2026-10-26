@@ -1151,7 +1151,7 @@ export class GameView {
   private createProjectile(id: number, look: (typeof PROJECTILE_VISUALS)[number]): TransformNode {
     if (ARSENAL_LOOKS.has(look)) return createArsenalProjectile(this.scene, id, look);
     const node = new TransformNode(`proj_${id}`, this.scene);
-    const model = look === 'grenade' ? 'projectiles/grenade.glb' : look === 'frag' ? 'projectiles/frag.glb' : null;
+    const model = look === 'grenade' ? 'projectiles/grenade.glb' : look === 'frag' ? 'guns/frag.glb' : null;
     if (model) {
       void this.models.instantiate(model, `${look}_${id}`).then((m) => {
         if (node.isDisposed()) return m.dispose();
@@ -1175,8 +1175,14 @@ export class GameView {
       const disc = CreateCylinder(`mine_${id}`, { diameter: 0.34, height: 0.09, tessellation: 16 }, this.scene);
       disc.material = solid(this.scene, 'mineMat', '#3c4038');
       disc.parent = node;
+      // The anti-tank mine model (Guns & Explosives pack, CC0) replaces the plain disc once it loads.
+      void this.models.instantiate('guns/at_mine.glb', `mineModel_${id}`).then((model) => {
+        if (node.isDisposed()) return model.dispose();
+        model.parent = node;
+        disc.setEnabled(false);
+      }, () => undefined);
       const light = CreateSphere(`mine_${id}_light`, { diameter: 0.07, segments: 6 }, this.scene);
-      light.position.y = 0.06;
+      light.position.y = 0.1;
       light.material = glow(this.scene, 'mineLightMat', '#ff3b3b', 1);
       light.parent = node;
       light.setEnabled(false);

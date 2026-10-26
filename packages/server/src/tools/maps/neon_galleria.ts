@@ -464,14 +464,11 @@ for (const s of [-1, 1]) {
   m.block([x, 0, 43], [2.8, 2.9, 2.6], 'solid', { material: 'paint_gloss', tint: s < 0 ? '#2a6ad8' : '#d84a2a' });
   for (const dz of [-3, 3]) m.block([x, 0, 37 + dz], [3.1, 1.1, 1.2], 'solid', { material: 'pbr_steel', tint: '#2a2a2a' });
 }
-// Parked cars in the garage (both decks): body, cabin, wheels.
-const CAR_COLOURS = ['#c83a3a', '#e8e0d0', '#2a4a8a', '#1a1a1a', '#d8b84a', '#4a8a5a', '#8a4ac8'];
+// Parked cars in the garage (both decks): Designersoup's low-poly cars (CC0) in turn.
+const CAR_MODELS = ['car_beetle', 'car_racer', 'car_offroader', 'car_pickup'] as const;
 let carN = 0;
 const car = (x: number, z: number, y: number, yaw: number) => {
-  const col = CAR_COLOURS[carN++ % CAR_COLOURS.length]!;
-  m.block([x, y + 0.3, z], [1.9, 0.75, 4.4], 'solid', { material: 'paint_gloss', tint: col, yaw });
-  m.block([x, y + 1.05, z], [1.7, 0.6, 2.2], 'solid', { material: 'paint_gloss', tint: '#2a3038', yaw });
-  m.block([x, y, z], [1.7, 0.3, 3.6], 'solid', { material: 'pbr_steel', tint: '#1a1a1a', yaw });
+  m.prop(CAR_MODELS[carN++ % CAR_MODELS.length]!, [x, y, z], yaw);
 };
 for (const y of [0, 4]) {
   for (const x of [-22, -14, -6, 6, 14, 22]) {

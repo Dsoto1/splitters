@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 20,
   "metadata": {
     "id": "glasswork_office",
     "name": "Glasswork Office",
@@ -4269,579 +4269,105 @@
       "explosiveOnly": false
     },
     {
-      "id": "block_137",
+      "id": "prop_137",
       "position": [
         14,
-        0.25,
+        0,
         2
       ],
-      "kind": "block",
-      "size": [
+      "kind": "prop",
+      "model": "prop.car_beetle",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_138",
+      "position": [
+        26,
+        0,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.car_racer",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        50,
+        0,
+        3
+      ],
+      "kind": "prop",
+      "model": "prop.car_offroader",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        62,
+        0,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.car_pickup",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        76,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.car_beetle",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
         2,
-        0.85,
-        4.4
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#3a6fb0",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_138",
-      "position": [
-        14,
-        1.1,
-        2
-      ],
-      "kind": "block",
-      "size": [
-        1.8,
-        0.6,
-        2.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_139",
-      "position": [
-        14,
         0,
-        2
+        22
       ],
-      "kind": "block",
-      "size": [
-        1.9,
-        0.25,
-        3.6
-      ],
+      "kind": "prop",
+      "model": "prop.car_racer",
       "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "block_140",
+      "id": "prop_143",
       "position": [
-        14,
-        1.7,
-        2
-      ],
-      "kind": "block",
-      "size": [
-        1.7,
-        0.12,
-        2.1
-      ],
-      "yaw": 0,
-      "material": "core.pbr_snow",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_141",
-      "position": [
-        26,
-        0.25,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4.4,
-        0.85,
-        2
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#c8c8c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_142",
-      "position": [
-        26,
-        1.1,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        2.2,
-        0.6,
-        1.8
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_143",
-      "position": [
-        26,
+        10,
         0,
-        8
+        30
       ],
-      "kind": "block",
-      "size": [
-        3.6,
-        0.25,
-        1.9
-      ],
+      "kind": "prop",
+      "model": "prop.car_offroader",
       "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
       "id": "block_144",
-      "position": [
-        26,
-        1.7,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        2.1,
-        0.12,
-        1.7
-      ],
-      "yaw": 0,
-      "material": "core.pbr_snow",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_145",
-      "position": [
-        50,
-        0.25,
-        3
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        0.85,
-        4.4
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#7a2a24",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_146",
-      "position": [
-        50,
-        1.1,
-        3
-      ],
-      "kind": "block",
-      "size": [
-        1.8,
-        0.6,
-        2.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_147",
-      "position": [
-        50,
-        0,
-        3
-      ],
-      "kind": "block",
-      "size": [
-        1.9,
-        0.25,
-        3.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_148",
-      "position": [
-        50,
-        1.7,
-        3
-      ],
-      "kind": "block",
-      "size": [
-        1.7,
-        0.12,
-        2.1
-      ],
-      "yaw": 0,
-      "material": "core.pbr_snow",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_149",
-      "position": [
-        62,
-        0.25,
-        9
-      ],
-      "kind": "block",
-      "size": [
-        4.4,
-        0.85,
-        2
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#2a2a2e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_150",
-      "position": [
-        62,
-        1.1,
-        9
-      ],
-      "kind": "block",
-      "size": [
-        2.2,
-        0.6,
-        1.8
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_151",
-      "position": [
-        62,
-        0,
-        9
-      ],
-      "kind": "block",
-      "size": [
-        3.6,
-        0.25,
-        1.9
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_152",
-      "position": [
-        62,
-        1.7,
-        9
-      ],
-      "kind": "block",
-      "size": [
-        2.1,
-        0.12,
-        1.7
-      ],
-      "yaw": 0,
-      "material": "core.pbr_snow",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_153",
-      "position": [
-        76,
-        0.25,
-        2
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        0.85,
-        4.4
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#3e6b3a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_154",
-      "position": [
-        76,
-        1.1,
-        2
-      ],
-      "kind": "block",
-      "size": [
-        1.8,
-        0.6,
-        2.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_155",
-      "position": [
-        76,
-        0,
-        2
-      ],
-      "kind": "block",
-      "size": [
-        1.9,
-        0.25,
-        3.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_156",
-      "position": [
-        76,
-        1.7,
-        2
-      ],
-      "kind": "block",
-      "size": [
-        1.7,
-        0.12,
-        2.1
-      ],
-      "yaw": 0,
-      "material": "core.pbr_snow",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_157",
-      "position": [
-        2,
-        0.25,
-        22
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        0.85,
-        4.4
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#c9a227",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_158",
-      "position": [
-        2,
-        1.1,
-        22
-      ],
-      "kind": "block",
-      "size": [
-        1.8,
-        0.6,
-        2.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_159",
-      "position": [
-        2,
-        0,
-        22
-      ],
-      "kind": "block",
-      "size": [
-        1.9,
-        0.25,
-        3.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_160",
-      "position": [
-        10,
-        0.25,
-        30
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        0.85,
-        4.4
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#5a5e66",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_161",
-      "position": [
-        10,
-        1.1,
-        30
-      ],
-      "kind": "block",
-      "size": [
-        1.8,
-        0.6,
-        2.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_162",
-      "position": [
-        10,
-        0,
-        30
-      ],
-      "kind": "block",
-      "size": [
-        1.9,
-        0.25,
-        3.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_163",
       "position": [
         60,
         0.3,
@@ -4863,7 +4389,7 @@
       "health": 120
     },
     {
-      "id": "block_164",
+      "id": "block_145",
       "position": [
         60,
         0,
@@ -4885,7 +4411,7 @@
       "health": 120
     },
     {
-      "id": "block_165",
+      "id": "block_146",
       "position": [
         60,
         2.7,
@@ -4907,7 +4433,7 @@
       "health": 120
     },
     {
-      "id": "spawn_166",
+      "id": "spawn_147",
       "position": [
         20,
         0,
@@ -4918,7 +4444,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_167",
+      "id": "spawn_148",
       "position": [
         30,
         0,
@@ -4929,7 +4455,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_168",
+      "id": "spawn_149",
       "position": [
         40,
         0,
@@ -4940,7 +4466,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_169",
+      "id": "spawn_150",
       "position": [
         56,
         0,
@@ -4951,7 +4477,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_170",
+      "id": "spawn_151",
       "position": [
         36,
         0,
@@ -4962,7 +4488,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_171",
+      "id": "spawn_152",
       "position": [
         44,
         0,
@@ -4973,7 +4499,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_172",
+      "id": "spawn_153",
       "position": [
         68,
         0,
@@ -4984,7 +4510,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_173",
+      "id": "spawn_154",
       "position": [
         6,
         0,
@@ -4995,7 +4521,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_174",
+      "id": "spawn_155",
       "position": [
         40,
         0,
@@ -5006,7 +4532,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_175",
+      "id": "spawn_156",
       "position": [
         56,
         0,
@@ -5017,7 +4543,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_176",
+      "id": "spawn_157",
       "position": [
         46,
         0,
@@ -5028,7 +4554,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_177",
+      "id": "spawn_158",
       "position": [
         32,
         0,
@@ -5039,7 +4565,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_178",
+      "id": "spawn_159",
       "position": [
         64,
         0,
@@ -5050,7 +4576,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_179",
+      "id": "spawn_160",
       "position": [
         24,
         0,
@@ -5061,7 +4587,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_180",
+      "id": "spawn_161",
       "position": [
         64,
         0,
@@ -5072,7 +4598,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_181",
+      "id": "spawn_162",
       "position": [
         80,
         0,
@@ -5083,7 +4609,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_182",
+      "id": "spawn_163",
       "position": [
         8,
         0,
@@ -5094,7 +4620,7 @@
       "faction": null
     },
     {
-      "id": "spawn_183",
+      "id": "spawn_164",
       "position": [
         88,
         0,
@@ -5105,7 +4631,7 @@
       "faction": null
     },
     {
-      "id": "spawn_184",
+      "id": "spawn_165",
       "position": [
         32,
         0,
@@ -5116,7 +4642,7 @@
       "faction": null
     },
     {
-      "id": "spawn_185",
+      "id": "spawn_166",
       "position": [
         72,
         4,
@@ -5127,7 +4653,7 @@
       "faction": null
     },
     {
-      "id": "spawn_186",
+      "id": "spawn_167",
       "position": [
         10,
         0,
@@ -5138,7 +4664,7 @@
       "faction": null
     },
     {
-      "id": "spawn_187",
+      "id": "spawn_168",
       "position": [
         48,
         0,
@@ -5149,7 +4675,7 @@
       "faction": null
     },
     {
-      "id": "hostage_188",
+      "id": "hostage_169",
       "position": [
         73,
         0,
@@ -5159,7 +4685,7 @@
       "yaw": 0
     },
     {
-      "id": "hostage_189",
+      "id": "hostage_170",
       "position": [
         79,
         0,
@@ -5169,7 +4695,7 @@
       "yaw": 1.5707963267948966
     },
     {
-      "id": "hostage_190",
+      "id": "hostage_171",
       "position": [
         64,
         0,
@@ -5179,7 +4705,7 @@
       "yaw": 3.141592653589793
     },
     {
-      "id": "hostage_191",
+      "id": "hostage_172",
       "position": [
         64,
         0,
@@ -5189,7 +4715,7 @@
       "yaw": 0
     },
     {
-      "id": "rescue_192",
+      "id": "rescue_173",
       "position": [
         40,
         0,
@@ -5199,7 +4725,7 @@
       "radius": 6
     },
     {
-      "id": "rescue_193",
+      "id": "rescue_174",
       "position": [
         8,
         0,
@@ -5209,7 +4735,7 @@
       "radius": 4
     },
     {
-      "id": "pickup_194",
+      "id": "pickup_175",
       "position": [
         74,
         4,
@@ -5220,7 +4746,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_195",
+      "id": "pickup_176",
       "position": [
         79,
         4,
@@ -5231,7 +4757,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_196",
+      "id": "pickup_177",
       "position": [
         8,
         0,
@@ -5242,7 +4768,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_197",
+      "id": "pickup_178",
       "position": [
         88,
         0,
@@ -5253,7 +4779,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_198",
+      "id": "pickup_179",
       "position": [
         48,
         0,
@@ -5264,7 +4790,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_199",
+      "id": "pickup_180",
       "position": [
         24,
         0,
@@ -5275,7 +4801,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_200",
+      "id": "pickup_181",
       "position": [
         48,
         0,
@@ -5286,7 +4812,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_201",
+      "id": "pickup_182",
       "position": [
         16,
         0,
@@ -5297,7 +4823,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_202",
+      "id": "pickup_183",
       "position": [
         48,
         0,
@@ -5308,7 +4834,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_203",
+      "id": "pickup_184",
       "position": [
         72,
         0,
@@ -5319,7 +4845,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_204",
+      "id": "pickup_185",
       "position": [
         40,
         0,
@@ -5330,7 +4856,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_205",
+      "id": "pickup_186",
       "position": [
         32,
         0,
@@ -5341,7 +4867,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_206",
+      "id": "pickup_187",
       "position": [
         2,
         0,
@@ -5352,7 +4878,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_207",
+      "id": "pickup_188",
       "position": [
         72,
         0,
@@ -5363,7 +4889,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_208",
+      "id": "pickup_189",
       "position": [
         32,
         0,
@@ -5374,7 +4900,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_209",
+      "id": "pickup_190",
       "position": [
         88,
         0,
@@ -5385,7 +4911,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_210",
+      "id": "pickup_191",
       "position": [
         0,
         0,
@@ -5396,7 +4922,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_211",
+      "id": "pickup_192",
       "position": [
         24,
         0,
@@ -5407,7 +4933,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_212",
+      "id": "pickup_193",
       "position": [
         80,
         0,
@@ -5418,7 +4944,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_213",
+      "id": "pickup_194",
       "position": [
         64,
         4,
@@ -5429,7 +4955,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_214",
+      "id": "pickup_195",
       "position": [
         56,
         0,
@@ -5440,7 +4966,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_215",
+      "id": "pickup_196",
       "position": [
         40,
         0,
@@ -5451,7 +4977,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_216",
+      "id": "pickup_197",
       "position": [
         24,
         0,
@@ -5462,7 +4988,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_217",
+      "id": "pickup_198",
       "position": [
         72,
         0,
@@ -5473,7 +4999,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_218",
+      "id": "pickup_199",
       "position": [
         8,
         0,
@@ -5484,7 +5010,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_219",
+      "id": "pickup_200",
       "position": [
         80,
         0,
@@ -5495,7 +5021,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_220",
+      "id": "pickup_201",
       "position": [
         32,
         0,
@@ -5506,7 +5032,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "prop_221",
+      "id": "prop_202",
       "position": [
         40,
         0,
@@ -5520,7 +5046,7 @@
       "tint": null
     },
     {
-      "id": "prop_222",
+      "id": "prop_203",
       "position": [
         56,
         0,
@@ -5534,7 +5060,7 @@
       "tint": null
     },
     {
-      "id": "prop_223",
+      "id": "prop_204",
       "position": [
         67,
         0,
@@ -5548,7 +5074,7 @@
       "tint": null
     },
     {
-      "id": "prop_224",
+      "id": "prop_205",
       "position": [
         29.4,
         0,
@@ -5562,7 +5088,7 @@
       "tint": null
     },
     {
-      "id": "prop_225",
+      "id": "prop_206",
       "position": [
         21,
         0,
@@ -5576,7 +5102,7 @@
       "tint": null
     },
     {
-      "id": "prop_226",
+      "id": "prop_207",
       "position": [
         83,
         0,
@@ -5590,7 +5116,7 @@
       "tint": null
     },
     {
-      "id": "prop_227",
+      "id": "prop_208",
       "position": [
         72,
         0,
@@ -5604,7 +5130,7 @@
       "tint": null
     },
     {
-      "id": "prop_228",
+      "id": "prop_209",
       "position": [
         21,
         0,
@@ -5618,7 +5144,7 @@
       "tint": null
     },
     {
-      "id": "prop_229",
+      "id": "prop_210",
       "position": [
         83,
         0,
@@ -5632,7 +5158,7 @@
       "tint": null
     },
     {
-      "id": "prop_230",
+      "id": "prop_211",
       "position": [
         56,
         0,
@@ -5646,7 +5172,7 @@
       "tint": null
     },
     {
-      "id": "prop_231",
+      "id": "prop_212",
       "position": [
         38.4,
         0,
@@ -5660,7 +5186,7 @@
       "tint": null
     },
     {
-      "id": "prop_232",
+      "id": "prop_213",
       "position": [
         41.6,
         0,
@@ -5674,7 +5200,7 @@
       "tint": null
     },
     {
-      "id": "prop_233",
+      "id": "prop_214",
       "position": [
         38.4,
         0.8,
@@ -5688,7 +5214,7 @@
       "tint": null
     },
     {
-      "id": "prop_234",
+      "id": "prop_215",
       "position": [
         41.6,
         0,
@@ -5702,7 +5228,7 @@
       "tint": null
     },
     {
-      "id": "prop_235",
+      "id": "prop_216",
       "position": [
         38.4,
         0,
@@ -5716,7 +5242,7 @@
       "tint": null
     },
     {
-      "id": "prop_236",
+      "id": "prop_217",
       "position": [
         41.6,
         0,
@@ -5730,7 +5256,7 @@
       "tint": null
     },
     {
-      "id": "prop_237",
+      "id": "prop_218",
       "position": [
         38.4,
         0.8,
@@ -5744,7 +5270,7 @@
       "tint": null
     },
     {
-      "id": "prop_238",
+      "id": "prop_219",
       "position": [
         41.6,
         0,
@@ -5758,7 +5284,7 @@
       "tint": null
     },
     {
-      "id": "prop_239",
+      "id": "prop_220",
       "position": [
         54.4,
         0,
@@ -5772,7 +5298,7 @@
       "tint": null
     },
     {
-      "id": "prop_240",
+      "id": "prop_221",
       "position": [
         57.6,
         0,
@@ -5786,7 +5312,7 @@
       "tint": null
     },
     {
-      "id": "prop_241",
+      "id": "prop_222",
       "position": [
         54.4,
         0.8,
@@ -5800,7 +5326,7 @@
       "tint": null
     },
     {
-      "id": "prop_242",
+      "id": "prop_223",
       "position": [
         57.6,
         0,
@@ -5814,7 +5340,7 @@
       "tint": null
     },
     {
-      "id": "prop_243",
+      "id": "prop_224",
       "position": [
         54.4,
         0,
@@ -5828,7 +5354,7 @@
       "tint": null
     },
     {
-      "id": "prop_244",
+      "id": "prop_225",
       "position": [
         57.6,
         0,
@@ -5842,7 +5368,7 @@
       "tint": null
     },
     {
-      "id": "prop_245",
+      "id": "prop_226",
       "position": [
         54.4,
         0.8,
@@ -5856,7 +5382,7 @@
       "tint": null
     },
     {
-      "id": "prop_246",
+      "id": "prop_227",
       "position": [
         57.6,
         0,
@@ -5870,7 +5396,7 @@
       "tint": null
     },
     {
-      "id": "prop_247",
+      "id": "prop_228",
       "position": [
         -2.5,
         0,
@@ -5884,7 +5410,7 @@
       "tint": null
     },
     {
-      "id": "prop_248",
+      "id": "prop_229",
       "position": [
         18,
         0,
@@ -5898,7 +5424,7 @@
       "tint": null
     },
     {
-      "id": "prop_249",
+      "id": "prop_230",
       "position": [
         6,
         0,
@@ -5912,7 +5438,7 @@
       "tint": null
     },
     {
-      "id": "prop_250",
+      "id": "prop_231",
       "position": [
         6.8,
         0,
@@ -5926,7 +5452,7 @@
       "tint": null
     },
     {
-      "id": "prop_251",
+      "id": "prop_232",
       "position": [
         18.6,
         0,
@@ -5940,7 +5466,7 @@
       "tint": null
     },
     {
-      "id": "prop_252",
+      "id": "prop_233",
       "position": [
         18.5,
         0,
@@ -5954,7 +5480,7 @@
       "tint": null
     },
     {
-      "id": "prop_253",
+      "id": "prop_234",
       "position": [
         -2.6,
         0,
@@ -5968,7 +5494,7 @@
       "tint": null
     },
     {
-      "id": "prop_254",
+      "id": "prop_235",
       "position": [
         92,
         0,
@@ -5982,7 +5508,7 @@
       "tint": null
     },
     {
-      "id": "prop_255",
+      "id": "prop_236",
       "position": [
         26,
         0,
@@ -5996,7 +5522,7 @@
       "tint": null
     },
     {
-      "id": "prop_256",
+      "id": "prop_237",
       "position": [
         58,
         0,
@@ -6010,7 +5536,7 @@
       "tint": null
     },
     {
-      "id": "prop_257",
+      "id": "prop_238",
       "position": [
         -2.6,
         0,
@@ -6024,7 +5550,7 @@
       "tint": null
     },
     {
-      "id": "prop_258",
+      "id": "prop_239",
       "position": [
         92,
         0,
@@ -6038,7 +5564,7 @@
       "tint": null
     },
     {
-      "id": "prop_259",
+      "id": "prop_240",
       "position": [
         -1,
         0,
@@ -6052,7 +5578,7 @@
       "tint": null
     },
     {
-      "id": "prop_260",
+      "id": "prop_241",
       "position": [
         12,
         0,
@@ -6066,7 +5592,7 @@
       "tint": null
     },
     {
-      "id": "prop_261",
+      "id": "prop_242",
       "position": [
         86,
         0,
@@ -6080,7 +5606,7 @@
       "tint": null
     },
     {
-      "id": "prop_262",
+      "id": "prop_243",
       "position": [
         -1,
         0,
@@ -6094,7 +5620,7 @@
       "tint": null
     },
     {
-      "id": "prop_263",
+      "id": "prop_244",
       "position": [
         14,
         0,
@@ -6108,7 +5634,7 @@
       "tint": null
     },
     {
-      "id": "prop_264",
+      "id": "prop_245",
       "position": [
         36,
         0,
@@ -6122,7 +5648,7 @@
       "tint": null
     },
     {
-      "id": "prop_265",
+      "id": "prop_246",
       "position": [
         52,
         0,
@@ -6136,7 +5662,7 @@
       "tint": null
     },
     {
-      "id": "prop_266",
+      "id": "prop_247",
       "position": [
         6,
         0,
@@ -6150,7 +5676,7 @@
       "tint": null
     },
     {
-      "id": "prop_267",
+      "id": "prop_248",
       "position": [
         90,
         0,
@@ -6164,7 +5690,7 @@
       "tint": null
     },
     {
-      "id": "prop_268",
+      "id": "prop_249",
       "position": [
         90,
         0,
@@ -6178,7 +5704,7 @@
       "tint": null
     },
     {
-      "id": "prop_269",
+      "id": "prop_250",
       "position": [
         20,
         0,
@@ -6192,7 +5718,7 @@
       "tint": null
     },
     {
-      "id": "prop_270",
+      "id": "prop_251",
       "position": [
         12,
         0,
@@ -6206,7 +5732,7 @@
       "tint": null
     },
     {
-      "id": "prop_271",
+      "id": "prop_252",
       "position": [
         74,
         0,
@@ -6220,7 +5746,7 @@
       "tint": null
     },
     {
-      "id": "prop_272",
+      "id": "prop_253",
       "position": [
         90,
         0,
@@ -6234,7 +5760,7 @@
       "tint": null
     },
     {
-      "id": "prop_273",
+      "id": "prop_254",
       "position": [
         24,
         0,
@@ -6248,7 +5774,7 @@
       "tint": null
     },
     {
-      "id": "prop_274",
+      "id": "prop_255",
       "position": [
         56,
         0,
@@ -6262,7 +5788,7 @@
       "tint": null
     },
     {
-      "id": "prop_275",
+      "id": "prop_256",
       "position": [
         84,
         0,
@@ -6276,7 +5802,7 @@
       "tint": null
     },
     {
-      "id": "destructible_276",
+      "id": "destructible_257",
       "position": [
         90,
         0,
@@ -6289,7 +5815,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "prop_277",
+      "id": "prop_258",
       "position": [
         76,
         0,
@@ -6303,7 +5829,7 @@
       "tint": null
     },
     {
-      "id": "prop_278",
+      "id": "prop_259",
       "position": [
         77,
         0,
@@ -6317,7 +5843,7 @@
       "tint": null
     },
     {
-      "id": "prop_279",
+      "id": "prop_260",
       "position": [
         75,
         0,
@@ -6331,7 +5857,7 @@
       "tint": null
     },
     {
-      "id": "prop_280",
+      "id": "prop_261",
       "position": [
         77,
         0,
@@ -6345,7 +5871,7 @@
       "tint": null
     },
     {
-      "id": "prop_281",
+      "id": "prop_262",
       "position": [
         75,
         0,
@@ -6359,7 +5885,7 @@
       "tint": null
     },
     {
-      "id": "prop_282",
+      "id": "prop_263",
       "position": [
         72.87,
         0,
@@ -6373,7 +5899,7 @@
       "tint": null
     },
     {
-      "id": "prop_283",
+      "id": "prop_264",
       "position": [
         73.73,
         0,
@@ -6387,7 +5913,7 @@
       "tint": null
     },
     {
-      "id": "prop_284",
+      "id": "prop_265",
       "position": [
         72.02,
         0,
@@ -6401,7 +5927,7 @@
       "tint": null
     },
     {
-      "id": "prop_285",
+      "id": "prop_266",
       "position": [
         73.73,
         0,
@@ -6415,7 +5941,7 @@
       "tint": null
     },
     {
-      "id": "prop_286",
+      "id": "prop_267",
       "position": [
         72.02,
         0,
@@ -6429,7 +5955,7 @@
       "tint": null
     },
     {
-      "id": "prop_287",
+      "id": "prop_268",
       "position": [
         72.87,
         0,
@@ -6443,7 +5969,7 @@
       "tint": null
     },
     {
-      "id": "prop_288",
+      "id": "prop_269",
       "position": [
         72.87,
         0,
@@ -6457,7 +5983,7 @@
       "tint": null
     },
     {
-      "id": "prop_289",
+      "id": "prop_270",
       "position": [
         69.52,
         0,
@@ -6471,7 +5997,7 @@
       "tint": null
     },
     {
-      "id": "prop_290",
+      "id": "prop_271",
       "position": [
         69.52,
         0.6,
@@ -6485,7 +6011,7 @@
       "tint": null
     },
     {
-      "id": "prop_291",
+      "id": "prop_272",
       "position": [
         82.67,
         0,
@@ -6499,7 +6025,7 @@
       "tint": null
     },
     {
-      "id": "prop_292",
+      "id": "prop_273",
       "position": [
         82.67,
         0.6,
@@ -6513,7 +6039,7 @@
       "tint": null
     },
     {
-      "id": "prop_293",
+      "id": "prop_274",
       "position": [
         83.18,
         0,
@@ -6527,7 +6053,7 @@
       "tint": null
     },
     {
-      "id": "prop_294",
+      "id": "prop_275",
       "position": [
         68.82,
         0,
@@ -6541,7 +6067,7 @@
       "tint": null
     },
     {
-      "id": "prop_295",
+      "id": "prop_276",
       "position": [
         76.95,
         0,
@@ -6555,7 +6081,7 @@
       "tint": null
     },
     {
-      "id": "prop_296",
+      "id": "prop_277",
       "position": [
         68.94,
         0,
@@ -6569,7 +6095,7 @@
       "tint": null
     },
     {
-      "id": "prop_297",
+      "id": "prop_278",
       "position": [
         83.06,
         0,
@@ -6583,7 +6109,7 @@
       "tint": null
     },
     {
-      "id": "prop_298",
+      "id": "prop_279",
       "position": [
         38.15,
         0,
@@ -6597,7 +6123,7 @@
       "tint": null
     },
     {
-      "id": "prop_299",
+      "id": "prop_280",
       "position": [
         36.79,
         0,
@@ -6611,7 +6137,7 @@
       "tint": null
     },
     {
-      "id": "prop_300",
+      "id": "prop_281",
       "position": [
         37.54,
         0,
@@ -6625,7 +6151,7 @@
       "tint": null
     },
     {
-      "id": "prop_301",
+      "id": "prop_282",
       "position": [
         36.79,
         0,
@@ -6639,7 +6165,7 @@
       "tint": null
     },
     {
-      "id": "prop_302",
+      "id": "prop_283",
       "position": [
         37.54,
         0.8,
@@ -6653,7 +6179,7 @@
       "tint": null
     },
     {
-      "id": "prop_303",
+      "id": "prop_284",
       "position": [
         37.46,
         0,
@@ -6667,7 +6193,7 @@
       "tint": null
     },
     {
-      "id": "prop_304",
+      "id": "prop_285",
       "position": [
         36.92,
         0,
@@ -6681,7 +6207,7 @@
       "tint": null
     },
     {
-      "id": "prop_305",
+      "id": "prop_286",
       "position": [
         58.46,
         0,
@@ -6695,7 +6221,7 @@
       "tint": null
     },
     {
-      "id": "prop_306",
+      "id": "prop_287",
       "position": [
         59.21,
         0,
@@ -6709,7 +6235,7 @@
       "tint": null
     },
     {
-      "id": "prop_307",
+      "id": "prop_288",
       "position": [
         58.46,
         0.8,
@@ -6723,7 +6249,7 @@
       "tint": null
     },
     {
-      "id": "prop_308",
+      "id": "prop_289",
       "position": [
         58.7,
         0,
@@ -6737,7 +6263,7 @@
       "tint": null
     },
     {
-      "id": "prop_309",
+      "id": "prop_290",
       "position": [
         59.08,
         0,
@@ -6751,7 +6277,7 @@
       "tint": null
     },
     {
-      "id": "prop_310",
+      "id": "prop_291",
       "position": [
         35.13,
         0,
@@ -6765,7 +6291,7 @@
       "tint": null
     },
     {
-      "id": "prop_311",
+      "id": "prop_292",
       "position": [
         35.13,
         0,
@@ -6779,7 +6305,7 @@
       "tint": null
     },
     {
-      "id": "prop_312",
+      "id": "prop_293",
       "position": [
         35.18,
         0,
@@ -6793,7 +6319,7 @@
       "tint": null
     },
     {
-      "id": "prop_313",
+      "id": "prop_294",
       "position": [
         35.13,
         0,
@@ -6807,7 +6333,7 @@
       "tint": null
     },
     {
-      "id": "prop_314",
+      "id": "prop_295",
       "position": [
         35.13,
         0,
@@ -6821,7 +6347,7 @@
       "tint": null
     },
     {
-      "id": "prop_315",
+      "id": "prop_296",
       "position": [
         30.45,
         0,
@@ -6835,7 +6361,7 @@
       "tint": null
     },
     {
-      "id": "prop_316",
+      "id": "prop_297",
       "position": [
         31.04,
         0,
@@ -6849,7 +6375,7 @@
       "tint": null
     },
     {
-      "id": "prop_317",
+      "id": "prop_298",
       "position": [
         31.58,
         0,
@@ -6863,7 +6389,7 @@
       "tint": null
     },
     {
-      "id": "prop_318",
+      "id": "prop_299",
       "position": [
         32.13,
         0,
@@ -6877,7 +6403,7 @@
       "tint": null
     },
     {
-      "id": "prop_319",
+      "id": "prop_300",
       "position": [
         32.72,
         0,
@@ -6891,63 +6417,63 @@
       "tint": null
     },
     {
-      "id": "prop_320",
+      "id": "prop_301",
       "position": [
-        35.02,
+        29.55,
         0,
-        50.72
+        51.17
       ],
       "kind": "prop",
-      "model": "prop.fridge",
-      "yaw": -1.5708,
+      "model": "prop.hh_fridge_freezer",
+      "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_321",
+      "id": "prop_302",
       "position": [
-        34.78,
+        34.74,
         0,
-        45.99
+        50.78
       ],
       "kind": "prop",
       "model": "prop.hm_kitchen_cabinet",
-      "yaw": -1.5708,
+      "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_322",
+      "id": "prop_303",
       "position": [
-        35.23,
+        28.82,
         0,
-        44.77
+        44.82
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": -0.7562,
+      "model": "prop.hh_bin",
+      "yaw": 0.9824,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_323",
+      "id": "prop_304",
       "position": [
-        32.19,
+        28.57,
         1.6,
-        44.57
+        49.74
       ],
       "kind": "prop",
       "model": "prop.hm_wall_shelf",
-      "yaw": 0,
+      "yaw": 1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_324",
+      "id": "prop_305",
       "position": [
         29.6,
         0,
@@ -6961,7 +6487,7 @@
       "tint": null
     },
     {
-      "id": "prop_325",
+      "id": "prop_306",
       "position": [
         33.85,
         0,
@@ -6975,7 +6501,7 @@
       "tint": null
     },
     {
-      "id": "prop_326",
+      "id": "prop_307",
       "position": [
         34.3,
         0,
@@ -6989,7 +6515,7 @@
       "tint": null
     },
     {
-      "id": "prop_327",
+      "id": "prop_308",
       "position": [
         34.67,
         0,
@@ -7003,7 +6529,7 @@
       "tint": null
     },
     {
-      "id": "prop_328",
+      "id": "prop_309",
       "position": [
         61.31,
         0,
@@ -7017,7 +6543,7 @@
       "tint": null
     },
     {
-      "id": "prop_329",
+      "id": "prop_310",
       "position": [
         61.31,
         0,
@@ -7031,7 +6557,7 @@
       "tint": null
     },
     {
-      "id": "prop_330",
+      "id": "prop_311",
       "position": [
         61.7,
         0.8,
@@ -7045,7 +6571,7 @@
       "tint": null
     },
     {
-      "id": "prop_331",
+      "id": "prop_312",
       "position": [
         65.16,
         0,
@@ -7059,7 +6585,7 @@
       "tint": null
     },
     {
-      "id": "prop_332",
+      "id": "prop_313",
       "position": [
         65.55,
         0,
@@ -7073,7 +6599,7 @@
       "tint": null
     },
     {
-      "id": "prop_333",
+      "id": "prop_314",
       "position": [
         64.78,
         0,
@@ -7087,7 +6613,7 @@
       "tint": null
     },
     {
-      "id": "prop_334",
+      "id": "prop_315",
       "position": [
         61.26,
         0,
@@ -7101,7 +6627,7 @@
       "tint": null
     },
     {
-      "id": "prop_335",
+      "id": "prop_316",
       "position": [
         61.65,
         0,
@@ -7115,7 +6641,7 @@
       "tint": null
     },
     {
-      "id": "prop_336",
+      "id": "prop_317",
       "position": [
         60.88,
         0,
@@ -7129,7 +6655,7 @@
       "tint": null
     },
     {
-      "id": "prop_337",
+      "id": "prop_318",
       "position": [
         66.46,
         0,
@@ -7143,7 +6669,7 @@
       "tint": null
     },
     {
-      "id": "prop_338",
+      "id": "prop_319",
       "position": [
         66.85,
         0,
@@ -7157,7 +6683,7 @@
       "tint": null
     },
     {
-      "id": "prop_339",
+      "id": "prop_320",
       "position": [
         66.08,
         0,
@@ -7171,7 +6697,7 @@
       "tint": null
     },
     {
-      "id": "prop_340",
+      "id": "prop_321",
       "position": [
         67.18,
         0,
@@ -7185,7 +6711,7 @@
       "tint": null
     },
     {
-      "id": "prop_341",
+      "id": "prop_322",
       "position": [
         60.77,
         0,
@@ -7199,11 +6725,53 @@
       "tint": null
     },
     {
-      "id": "prop_342",
+      "id": "prop_323",
       "position": [
-        65.31,
+        65.05,
         0,
-        41.58
+        41.31
+      ],
+      "kind": "prop",
+      "model": "prop.hh_desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_324",
+      "position": [
+        65.05,
+        0,
+        40.43
+      ],
+      "kind": "prop",
+      "model": "prop.hh_office_chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_325",
+      "position": [
+        64.57,
+        0.85,
+        41.31
+      ],
+      "kind": "prop",
+      "model": "prop.hh_monitor",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_326",
+      "position": [
+        66.06,
+        0,
+        38.7
       ],
       "kind": "prop",
       "model": "prop.desk",
@@ -7213,14 +6781,238 @@
       "tint": null
     },
     {
-      "id": "prop_343",
+      "id": "prop_327",
       "position": [
-        65.31,
+        66.06,
         0,
-        40.81
+        37.95
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "prop.hm_chair_office",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_328",
+      "position": [
+        65.68,
+        0.8,
+        38.7
+      ],
+      "kind": "prop",
+      "model": "prop.hm_desk_lamp",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_329",
+      "position": [
+        67.29,
+        0,
+        38.47
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bookshelf",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_330",
+      "position": [
+        61.07,
+        0,
+        36.71
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bookshelf",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_331",
+      "position": [
+        67.05,
+        0,
+        39.91
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_332",
+      "position": [
+        66.3,
+        0,
+        39.91
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_office",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_333",
+      "position": [
+        60.82,
+        0,
+        37.52
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_334",
+      "position": [
+        67.05,
+        0,
+        43.05
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": -2.3252,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_335",
+      "position": [
+        60.95,
+        0,
+        43.05
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": 2.3826,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_336",
+      "position": [
+        67.05,
+        0,
+        36.95
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": -0.7567,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_337",
+      "position": [
+        60.57,
+        1.6,
+        41.74
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_338",
+      "position": [
+        24.25,
+        0,
+        63.31
+      ],
+      "kind": "prop",
+      "model": "prop.hh_desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_339",
+      "position": [
+        24.25,
+        0,
+        62.43
+      ],
+      "kind": "prop",
+      "model": "prop.hh_office_chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_340",
+      "position": [
+        23.77,
+        0.85,
+        63.31
+      ],
+      "kind": "prop",
+      "model": "prop.hh_monitor",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_341",
+      "position": [
+        22.25,
+        0,
+        66.11
+      ],
+      "kind": "prop",
+      "model": "prop.hh_desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_342",
+      "position": [
+        22.25,
+        0,
+        65.23
+      ],
+      "kind": "prop",
+      "model": "prop.hh_office_chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_343",
+      "position": [
+        21.77,
+        0.85,
+        66.11
+      ],
+      "kind": "prop",
+      "model": "prop.hh_monitor",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -7229,13 +7021,13 @@
     {
       "id": "prop_344",
       "position": [
-        66.06,
+        27.29,
         0,
-        38.72
+        66.66
       ],
       "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 0,
+      "model": "prop.hm_shelf_large",
+      "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -7243,41 +7035,41 @@
     {
       "id": "prop_345",
       "position": [
-        66.06,
+        20.95,
         0,
-        37.96
+        61.51
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_346",
-      "position": [
-        66.46,
-        0,
-        43.29
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 3.1416,
+      "model": "prop.desk",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_347",
+      "id": "prop_346",
       "position": [
-        67.29,
+        21.7,
         0,
-        41.31
+        61.51
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.hm_chair_office",
       "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_347",
+      "position": [
+        20.82,
+        0,
+        67.19
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 2.1945,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -7285,13 +7077,13 @@
     {
       "id": "prop_348",
       "position": [
-        61.51,
+        27.18,
         0,
-        36.95
+        60.82
       ],
       "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 0,
+      "model": "prop.potted_plant",
+      "yaw": -0.8964,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -7299,187 +7091,19 @@
     {
       "id": "prop_349",
       "position": [
-        61.51,
-        0,
-        37.7
+        20.57,
+        1.6,
+        65.94
       ],
       "kind": "prop",
-      "model": "prop.hm_chair_office",
-      "yaw": 3.1416,
+      "model": "prop.hm_wall_shelf",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
       "id": "prop_350",
-      "position": [
-        67.06,
-        0,
-        36.94
-      ],
-      "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
-      "yaw": -0.9434,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_351",
-      "position": [
-        60.95,
-        0,
-        43.05
-      ],
-      "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
-      "yaw": 2.2512,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_352",
-      "position": [
-        24,
-        0,
-        63.04
-      ],
-      "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_353",
-      "position": [
-        24,
-        0,
-        62.28
-      ],
-      "kind": "prop",
-      "model": "prop.office_chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_354",
-      "position": [
-        22.06,
-        0,
-        65.13
-      ],
-      "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_355",
-      "position": [
-        22.06,
-        0,
-        64.36
-      ],
-      "kind": "prop",
-      "model": "prop.office_chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_356",
-      "position": [
-        27.29,
-        0,
-        66.82
-      ],
-      "kind": "prop",
-      "model": "prop.hm_bookshelf",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_357",
-      "position": [
-        20.71,
-        0,
-        66.42
-      ],
-      "kind": "prop",
-      "model": "prop.hm_bookshelf",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_358",
-      "position": [
-        20.75,
-        0,
-        60.75
-      ],
-      "kind": "prop",
-      "model": "prop.hm_floor_lamp",
-      "yaw": 0.6549,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_359",
-      "position": [
-        20.75,
-        0,
-        67.25
-      ],
-      "kind": "prop",
-      "model": "prop.hm_floor_lamp",
-      "yaw": 2.4341,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_360",
-      "position": [
-        27.25,
-        0,
-        60.75
-      ],
-      "kind": "prop",
-      "model": "prop.hm_floor_lamp",
-      "yaw": -0.9619,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_361",
-      "position": [
-        25.54,
-        1.6,
-        67.43
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_362",
       "position": [
         32,
         0,
@@ -7493,7 +7117,7 @@
       "tint": null
     },
     {
-      "id": "prop_363",
+      "id": "prop_351",
       "position": [
         32,
         0,
@@ -7507,7 +7131,7 @@
       "tint": null
     },
     {
-      "id": "prop_364",
+      "id": "prop_352",
       "position": [
         32.38,
         0.8,
@@ -7521,65 +7145,79 @@
       "tint": null
     },
     {
-      "id": "prop_365",
+      "id": "prop_353",
       "position": [
-        34.63,
+        34.25,
         0,
-        63.69
+        65.35
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "prop.hh_desk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_366",
+      "id": "prop_354",
       "position": [
-        34.63,
+        34.25,
         0,
-        64.46
+        66.23
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "prop.hh_office_chair",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_367",
+      "id": "prop_355",
       "position": [
-        28.82,
-        0,
-        66.15
+        34.72,
+        0.85,
+        65.35
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
-      "yaw": 1.5708,
+      "model": "prop.hh_monitor",
+      "yaw": 3.1416,
       "scale": 1,
-      "solid": true,
+      "solid": false,
       "tint": null
     },
     {
-      "id": "prop_368",
+      "id": "prop_356",
       "position": [
-        35.29,
+        35.21,
         0,
-        65.31
+        61.36
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.hh_bookcase_wide",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_369",
+      "id": "prop_357",
       "position": [
-        34.46,
+        35.14,
+        0,
+        63.56
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase_wide",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_358",
+      "position": [
+        29.51,
         0,
         67.05
       ],
@@ -7591,9 +7229,9 @@
       "tint": null
     },
     {
-      "id": "prop_370",
+      "id": "prop_359",
       "position": [
-        34.46,
+        29.51,
         0,
         66.3
       ],
@@ -7605,63 +7243,35 @@
       "tint": null
     },
     {
-      "id": "prop_371",
+      "id": "prop_360",
       "position": [
-        28.94,
+        28.82,
         0,
-        60.95
+        60.92
       ],
       "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
-      "yaw": 0.9294,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_372",
-      "position": [
-        35.05,
-        0,
-        60.95
-      ],
-      "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
-      "yaw": -0.7046,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_373",
-      "position": [
-        28.95,
-        0,
-        67.05
-      ],
-      "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
-      "yaw": 2.2939,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_374",
-      "position": [
-        28.57,
-        1.6,
-        66.94
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
+      "model": "prop.sf_computer",
       "yaw": 1.5708,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_375",
+      "id": "prop_361",
+      "position": [
+        35.18,
+        0,
+        67.18
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": -2.3191,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_362",
       "position": [
         64,
         0,
@@ -7675,35 +7285,21 @@
       "tint": null
     },
     {
-      "id": "prop_376",
+      "id": "prop_363",
       "position": [
         64,
         0,
-        62.29
+        62.28
       ],
       "kind": "prop",
-      "model": "prop.hm_chair_office",
+      "model": "prop.office_chair",
       "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_377",
-      "position": [
-        63.62,
-        0.8,
-        63.04
-      ],
-      "kind": "prop",
-      "model": "prop.hm_desk_lamp",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_378",
+      "id": "prop_364",
       "position": [
         61.37,
         0,
@@ -7717,77 +7313,49 @@
       "tint": null
     },
     {
-      "id": "prop_379",
+      "id": "prop_365",
       "position": [
         61.37,
         0,
-        62.29
+        62.28
       ],
       "kind": "prop",
-      "model": "prop.hm_chair_office",
+      "model": "prop.office_chair",
       "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_380",
+      "id": "prop_366",
       "position": [
-        60.99,
-        0.8,
-        63.04
+        60.86,
+        0,
+        65.56
       ],
       "kind": "prop",
-      "model": "prop.hm_desk_lamp",
-      "yaw": 0,
+      "model": "prop.bookcase_wide",
+      "yaw": 1.5708,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_381",
+      "id": "prop_367",
       "position": [
         67.18,
         0,
-        66.75
+        66.67
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "prop.sf_computer",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_382",
-      "position": [
-        66.42,
-        0,
-        60.71
-      ],
-      "kind": "prop",
-      "model": "prop.hm_bookshelf",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_383",
-      "position": [
-        62.12,
-        0,
-        67.18
-      ],
-      "kind": "prop",
-      "model": "prop.sf_computer",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_384",
+      "id": "prop_368",
       "position": [
         60.95,
         0,
@@ -7795,41 +7363,41 @@
       ],
       "kind": "prop",
       "model": "prop.hm_houseplant_tall",
-      "yaw": 0.8932,
+      "yaw": 0.7861,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_385",
+      "id": "prop_369",
       "position": [
-        60.94,
+        67.05,
         0,
-        67.06
+        60.95
       ],
       "kind": "prop",
       "model": "prop.hm_houseplant_tall",
-      "yaw": 2.5536,
+      "yaw": -0.8011,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_386",
+      "id": "prop_370",
       "position": [
-        67.43,
-        1.6,
-        65.94
+        60.75,
+        0,
+        67.25
       ],
       "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
+      "model": "prop.hm_floor_lamp",
+      "yaw": 2.3928,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_387",
+      "id": "prop_371",
       "position": [
         32,
         0,
@@ -7843,7 +7411,7 @@
       "tint": null
     },
     {
-      "id": "prop_388",
+      "id": "prop_372",
       "position": [
         32,
         0,
@@ -7857,7 +7425,7 @@
       "tint": null
     },
     {
-      "id": "prop_389",
+      "id": "prop_373",
       "position": [
         29.37,
         0,
@@ -7871,7 +7439,7 @@
       "tint": null
     },
     {
-      "id": "prop_390",
+      "id": "prop_374",
       "position": [
         29.37,
         0,
@@ -7885,235 +7453,81 @@
       "tint": null
     },
     {
-      "id": "prop_391",
+      "id": "prop_375",
       "position": [
-        34.66,
-        0,
-        27.29
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_392",
-      "position": [
-        34.26,
+        34.02,
         0,
         20.71
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.hm_bookshelf",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_393",
+      "id": "prop_376",
       "position": [
-        28.95,
+        35.29,
         0,
-        21.31
+        21.07
       ],
       "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_394",
-      "position": [
-        29.7,
-        0,
-        21.31
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_office",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_395",
-      "position": [
-        35.18,
-        0,
-        21.32
-      ],
-      "kind": "prop",
-      "model": "prop.sf_computer",
+      "model": "prop.hm_bookshelf",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_396",
+      "id": "prop_377",
       "position": [
-        64,
-        0,
-        23.7
-      ],
-      "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_397",
-      "position": [
-        64,
-        0,
-        24.46
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_office",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_398",
-      "position": [
-        64.38,
-        0.8,
-        23.7
-      ],
-      "kind": "prop",
-      "model": "prop.hm_desk_lamp",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_399",
-      "position": [
-        61.37,
-        0,
-        23.69
-      ],
-      "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_400",
-      "position": [
-        61.37,
-        0,
-        24.46
-      ],
-      "kind": "prop",
-      "model": "prop.office_chair",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_401",
-      "position": [
-        60.71,
-        0,
-        22.31
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_402",
-      "position": [
-        60.95,
-        0,
-        26.31
-      ],
-      "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_403",
-      "position": [
-        61.7,
-        0,
-        26.31
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_office",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_404",
-      "position": [
-        60.77,
-        0,
-        20.77
-      ],
-      "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": 0.758,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_405",
-      "position": [
-        67.23,
-        0,
-        20.77
-      ],
-      "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": -0.7548,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_406",
-      "position": [
-        67.05,
+        34.66,
         0,
         27.05
       ],
       "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
-      "yaw": -2.2322,
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_378",
+      "position": [
+        34.66,
+        0,
+        26.3
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_office",
+      "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_407",
+      "id": "prop_379",
       "position": [
-        60.57,
+        28.81,
+        0,
+        20.82
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0.6327,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_380",
+      "position": [
+        28.57,
         1.6,
-        25.19
+        26.54
       ],
       "kind": "prop",
       "model": "prop.hm_wall_shelf",
@@ -8123,7 +7537,175 @@
       "tint": null
     },
     {
-      "id": "prop_408",
+      "id": "prop_381",
+      "position": [
+        64,
+        0,
+        23.69
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_382",
+      "position": [
+        64,
+        0,
+        24.46
+      ],
+      "kind": "prop",
+      "model": "prop.office_chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_383",
+      "position": [
+        61.37,
+        0,
+        23.69
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_384",
+      "position": [
+        61.37,
+        0,
+        24.46
+      ],
+      "kind": "prop",
+      "model": "prop.office_chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_385",
+      "position": [
+        61.67,
+        0,
+        20.71
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bookshelf",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_386",
+      "position": [
+        61.51,
+        0,
+        27.05
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_387",
+      "position": [
+        61.51,
+        0,
+        26.3
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_office",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_388",
+      "position": [
+        61.36,
+        0,
+        22.09
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_389",
+      "position": [
+        67.25,
+        0,
+        20.75
+      ],
+      "kind": "prop",
+      "model": "prop.hm_floor_lamp",
+      "yaw": -0.9454,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_390",
+      "position": [
+        60.75,
+        0,
+        20.75
+      ],
+      "kind": "prop",
+      "model": "prop.hm_floor_lamp",
+      "yaw": 0.6674,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_391",
+      "position": [
+        67,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": -2.4701,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_392",
+      "position": [
+        66.34,
+        1.6,
+        20.57
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_393",
       "position": [
         72,
         0,
@@ -8137,7 +7719,7 @@
       "tint": null
     },
     {
-      "id": "prop_409",
+      "id": "prop_394",
       "position": [
         72,
         0,
@@ -8151,11 +7733,11 @@
       "tint": null
     },
     {
-      "id": "prop_410",
+      "id": "prop_395",
       "position": [
         72,
         0,
-        21.19
+        21.16
       ],
       "kind": "prop",
       "model": "prop.desk",
@@ -8165,35 +7747,21 @@
       "tint": null
     },
     {
-      "id": "prop_411",
+      "id": "prop_396",
       "position": [
         72,
         0,
-        21.95
+        21.92
       ],
       "kind": "prop",
-      "model": "prop.hm_chair_office",
+      "model": "prop.office_chair",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_412",
-      "position": [
-        72.38,
-        0.8,
-        21.19
-      ],
-      "kind": "prop",
-      "model": "prop.hm_desk_lamp",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_413",
+      "id": "prop_397",
       "position": [
         73.31,
         0,
@@ -8207,63 +7775,63 @@
       "tint": null
     },
     {
-      "id": "prop_414",
+      "id": "prop_398",
       "position": [
-        69.71,
+        75.29,
         0,
-        20.71
+        21.67
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 0,
+      "model": "prop.hm_bookshelf",
+      "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_415",
+      "id": "prop_399",
       "position": [
-        70.91,
+        73.91,
         0,
-        27.05
+        20.95
       ],
       "kind": "prop",
       "model": "prop.desk",
-      "yaw": 3.1416,
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_416",
+      "id": "prop_400",
       "position": [
-        70.91,
+        73.91,
         0,
-        26.3
+        21.7
       ],
       "kind": "prop",
       "model": "prop.hm_chair_office",
-      "yaw": 0,
+      "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_417",
+      "id": "prop_401",
       "position": [
-        74.29,
+        68.95,
         0,
-        21.36
+        20.95
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
-      "yaw": 0,
+      "model": "prop.hm_houseplant_tall",
+      "yaw": 0.7897,
       "scale": 1,
-      "solid": true,
+      "solid": false,
       "tint": null
     },
     {
-      "id": "prop_418",
+      "id": "prop_402",
       "position": [
         75.25,
         0,
@@ -8271,41 +7839,41 @@
       ],
       "kind": "prop",
       "model": "prop.hm_floor_lamp",
-      "yaw": -2.2922,
+      "yaw": -2.2181,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_419",
+      "id": "prop_403",
       "position": [
-        68.76,
+        68.75,
         0,
-        27.23
+        27.25
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": 2.5337,
+      "model": "prop.hm_floor_lamp",
+      "yaw": 2.4427,
       "scale": 1,
-      "solid": true,
+      "solid": false,
       "tint": null
     },
     {
-      "id": "prop_420",
+      "id": "prop_404",
       "position": [
-        68.59,
+        70.19,
         1.6,
-        27.43
+        20.57
       ],
       "kind": "prop",
       "model": "prop.hm_wall_shelf",
-      "yaw": 3.1416,
+      "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_421",
+      "id": "prop_405",
       "position": [
         80,
         0,
@@ -8319,7 +7887,7 @@
       "tint": null
     },
     {
-      "id": "prop_422",
+      "id": "prop_406",
       "position": [
         80,
         0,
@@ -8333,7 +7901,7 @@
       "tint": null
     },
     {
-      "id": "prop_423",
+      "id": "prop_407",
       "position": [
         79.62,
         0.8,
@@ -8347,7 +7915,7 @@
       "tint": null
     },
     {
-      "id": "prop_424",
+      "id": "prop_408",
       "position": [
         82.63,
         0,
@@ -8361,7 +7929,7 @@
       "tint": null
     },
     {
-      "id": "prop_425",
+      "id": "prop_409",
       "position": [
         82.63,
         0,
@@ -8375,7 +7943,7 @@
       "tint": null
     },
     {
-      "id": "prop_426",
+      "id": "prop_410",
       "position": [
         82.25,
         0.8,
@@ -8389,49 +7957,21 @@
       "tint": null
     },
     {
-      "id": "prop_427",
+      "id": "prop_411",
       "position": [
-        76.71,
+        83.21,
         0,
-        21.07
+        21.16
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
-      "yaw": 1.5708,
+      "model": "prop.hh_bookcase_wide",
+      "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_428",
-      "position": [
-        82.46,
-        0,
-        20.95
-      ],
-      "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_429",
-      "position": [
-        82.46,
-        0,
-        21.7
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_office",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_430",
+      "id": "prop_412",
       "position": [
         76.75,
         0,
@@ -8439,27 +7979,27 @@
       ],
       "kind": "prop",
       "model": "prop.hm_floor_lamp",
-      "yaw": 2.5497,
+      "yaw": 2.248,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_431",
+      "id": "prop_413",
       "position": [
-        81.94,
-        1.6,
-        20.57
+        76.75,
+        0,
+        20.75
       ],
       "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": 0,
+      "model": "prop.hm_floor_lamp",
+      "yaw": 0.8958,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_432",
+      "id": "prop_414",
       "position": [
         76,
         0,
@@ -8473,7 +8013,7 @@
       "tint": null
     },
     {
-      "id": "prop_433",
+      "id": "prop_415",
       "position": [
         76,
         0,
@@ -8487,7 +8027,7 @@
       "tint": null
     },
     {
-      "id": "prop_434",
+      "id": "prop_416",
       "position": [
         76.38,
         0.8,
@@ -8501,7 +8041,7 @@
       "tint": null
     },
     {
-      "id": "prop_435",
+      "id": "prop_417",
       "position": [
         76,
         0,
@@ -8515,7 +8055,7 @@
       "tint": null
     },
     {
-      "id": "prop_436",
+      "id": "prop_418",
       "position": [
         76,
         0,
@@ -8529,7 +8069,7 @@
       "tint": null
     },
     {
-      "id": "prop_437",
+      "id": "prop_419",
       "position": [
         76.38,
         0.8,
@@ -8543,7 +8083,7 @@
       "tint": null
     },
     {
-      "id": "prop_438",
+      "id": "prop_420",
       "position": [
         78.63,
         0,
@@ -8557,7 +8097,7 @@
       "tint": null
     },
     {
-      "id": "prop_439",
+      "id": "prop_421",
       "position": [
         78.63,
         0,
@@ -8571,7 +8111,7 @@
       "tint": null
     },
     {
-      "id": "prop_440",
+      "id": "prop_422",
       "position": [
         79.01,
         0.8,
@@ -8585,7 +8125,7 @@
       "tint": null
     },
     {
-      "id": "prop_441",
+      "id": "prop_423",
       "position": [
         73.66,
         0,
@@ -8599,7 +8139,7 @@
       "tint": null
     },
     {
-      "id": "prop_442",
+      "id": "prop_424",
       "position": [
         73.66,
         0,
@@ -8613,7 +8153,7 @@
       "tint": null
     },
     {
-      "id": "prop_443",
+      "id": "prop_425",
       "position": [
         74.05,
         0.8,
@@ -8627,37 +8167,37 @@
       "tint": null
     },
     {
-      "id": "prop_444",
+      "id": "prop_426",
       "position": [
-        81.26,
+        68.71,
         0,
-        61.16
+        66.62
       ],
       "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 3.1416,
+      "model": "prop.hm_bookshelf",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_445",
+      "id": "prop_427",
       "position": [
-        81.26,
+        78.57,
         0,
-        61.92
+        60.71
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
-      "yaw": 3.1416,
+      "model": "prop.hm_bookshelf",
+      "yaw": 0,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_446",
+      "id": "prop_428",
       "position": [
-        76.61,
+        82.01,
         0,
         60.71
       ],
@@ -8669,53 +8209,53 @@
       "tint": null
     },
     {
-      "id": "prop_447",
+      "id": "prop_429",
       "position": [
-        69.71,
+        69.07,
         0,
         67.29
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.hm_bookshelf",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_448",
+      "id": "prop_430",
       "position": [
-        83.29,
+        74.46,
         0,
-        61.71
+        67.05
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_449",
-      "position": [
-        74.26,
-        0,
-        67.29
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.desk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_450",
+      "id": "prop_431",
+      "position": [
+        74.46,
+        0,
+        66.3
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_office",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_432",
       "position": [
         83.05,
         0,
-        66.46
+        66.66
       ],
       "kind": "prop",
       "model": "prop.desk",
@@ -8725,11 +8265,11 @@
       "tint": null
     },
     {
-      "id": "prop_451",
+      "id": "prop_433",
       "position": [
         82.3,
         0,
-        66.46
+        66.66
       ],
       "kind": "prop",
       "model": "prop.hm_chair_office",
@@ -8739,35 +8279,63 @@
       "tint": null
     },
     {
-      "id": "prop_452",
+      "id": "prop_434",
       "position": [
-        83.29,
-        1.6,
-        60.57
+        76.62,
+        0,
+        60.82
       ],
       "kind": "prop",
-      "model": "prop.hm_wall_shelf",
+      "model": "prop.sf_computer",
       "yaw": 0,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_453",
+      "id": "prop_435",
       "position": [
-        83.43,
+        83.23,
+        0,
+        60.77
+      ],
+      "kind": "prop",
+      "model": "prop.trashcan",
+      "yaw": -0.6807,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_436",
+      "position": [
+        76.94,
         1.6,
-        66.54
+        67.43
       ],
       "kind": "prop",
       "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
+      "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_454",
+      "id": "prop_437",
+      "position": [
+        82.74,
+        1.6,
+        67.43
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_438",
       "position": [
         22.68,
         0,
@@ -8781,7 +8349,7 @@
       "tint": null
     },
     {
-      "id": "prop_455",
+      "id": "prop_439",
       "position": [
         25.08,
         0,
@@ -8795,7 +8363,7 @@
       "tint": null
     },
     {
-      "id": "prop_456",
+      "id": "prop_440",
       "position": [
         21.08,
         0,
@@ -8809,7 +8377,7 @@
       "tint": null
     },
     {
-      "id": "prop_457",
+      "id": "prop_441",
       "position": [
         26.92,
         0,
@@ -8823,7 +8391,7 @@
       "tint": null
     },
     {
-      "id": "prop_458",
+      "id": "prop_442",
       "position": [
         21.08,
         0,
@@ -8837,7 +8405,7 @@
       "tint": null
     },
     {
-      "id": "prop_459",
+      "id": "prop_443",
       "position": [
         65.31,
         4,
@@ -8851,7 +8419,7 @@
       "tint": null
     },
     {
-      "id": "prop_460",
+      "id": "prop_444",
       "position": [
         65.31,
         4,
@@ -8865,7 +8433,7 @@
       "tint": null
     },
     {
-      "id": "prop_461",
+      "id": "prop_445",
       "position": [
         64.93,
         4.8,
@@ -8879,7 +8447,7 @@
       "tint": null
     },
     {
-      "id": "prop_462",
+      "id": "prop_446",
       "position": [
         62.69,
         4,
@@ -8893,7 +8461,7 @@
       "tint": null
     },
     {
-      "id": "prop_463",
+      "id": "prop_447",
       "position": [
         62.69,
         4,
@@ -8907,63 +8475,77 @@
       "tint": null
     },
     {
-      "id": "prop_464",
+      "id": "prop_448",
       "position": [
-        61.71,
+        60.71,
         4,
-        20.71
+        26.62
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.hm_bookshelf",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_449",
+      "position": [
+        61.51,
+        4,
+        20.95
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_465",
+      "id": "prop_450",
       "position": [
-        67.23,
+        61.51,
         4,
-        27.23
+        21.7
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": -2.459,
+      "model": "prop.hm_chair_office",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_451",
+      "position": [
+        67.18,
+        4,
+        20.82
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": -0.8066,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_466",
+      "id": "prop_452",
       "position": [
-        67,
+        67.18,
         4,
-        21
+        27.19
       ],
       "kind": "prop",
-      "model": "prop.coat_rack",
-      "yaw": -0.7011,
+      "model": "prop.potted_plant",
+      "yaw": -2.1656,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_467",
-      "position": [
-        67.43,
-        5.6,
-        21.79
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_468",
+      "id": "prop_453",
       "position": [
         70.94,
         4,
@@ -8977,35 +8559,21 @@
       "tint": null
     },
     {
-      "id": "prop_469",
+      "id": "prop_454",
       "position": [
         70.94,
         4,
-        25.71
+        25.72
       ],
       "kind": "prop",
-      "model": "prop.hm_chair_office",
+      "model": "prop.office_chair",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_470",
-      "position": [
-        71.32,
-        4.8,
-        24.96
-      ],
-      "kind": "prop",
-      "model": "prop.hm_desk_lamp",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_471",
+      "id": "prop_455",
       "position": [
         73.66,
         4,
@@ -9019,35 +8587,21 @@
       "tint": null
     },
     {
-      "id": "prop_472",
+      "id": "prop_456",
       "position": [
         73.66,
         4,
-        22.46
+        22.47
       ],
       "kind": "prop",
-      "model": "prop.hm_chair_office",
+      "model": "prop.office_chair",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_473",
-      "position": [
-        74.05,
-        4.8,
-        21.71
-      ],
-      "kind": "prop",
-      "model": "prop.hm_desk_lamp",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_474",
+      "id": "prop_457",
       "position": [
         71.16,
         4,
@@ -9061,7 +8615,7 @@
       "tint": null
     },
     {
-      "id": "prop_475",
+      "id": "prop_458",
       "position": [
         68.95,
         4,
@@ -9075,7 +8629,7 @@
       "tint": null
     },
     {
-      "id": "prop_476",
+      "id": "prop_459",
       "position": [
         68.77,
         4,
@@ -9089,7 +8643,7 @@
       "tint": null
     },
     {
-      "id": "prop_477",
+      "id": "prop_460",
       "position": [
         79.75,
         4,
@@ -9103,7 +8657,7 @@
       "tint": null
     },
     {
-      "id": "prop_478",
+      "id": "prop_461",
       "position": [
         79.75,
         4,
@@ -9117,7 +8671,7 @@
       "tint": null
     },
     {
-      "id": "prop_479",
+      "id": "prop_462",
       "position": [
         79.37,
         4.8,
@@ -9131,7 +8685,7 @@
       "tint": null
     },
     {
-      "id": "prop_480",
+      "id": "prop_463",
       "position": [
         79.96,
         4,
@@ -9145,7 +8699,7 @@
       "tint": null
     },
     {
-      "id": "prop_481",
+      "id": "prop_464",
       "position": [
         79.96,
         4,
@@ -9159,7 +8713,7 @@
       "tint": null
     },
     {
-      "id": "prop_482",
+      "id": "prop_465",
       "position": [
         79.58,
         4.8,
@@ -9173,7 +8727,7 @@
       "tint": null
     },
     {
-      "id": "prop_483",
+      "id": "prop_466",
       "position": [
         82.06,
         4,
@@ -9187,7 +8741,7 @@
       "tint": null
     },
     {
-      "id": "prop_484",
+      "id": "prop_467",
       "position": [
         78.41,
         4,
@@ -9201,7 +8755,7 @@
       "tint": null
     },
     {
-      "id": "prop_485",
+      "id": "prop_468",
       "position": [
         78.41,
         4,
@@ -9215,7 +8769,7 @@
       "tint": null
     },
     {
-      "id": "prop_486",
+      "id": "prop_469",
       "position": [
         83,
         4,
@@ -9229,7 +8783,7 @@
       "tint": null
     },
     {
-      "id": "prop_487",
+      "id": "prop_470",
       "position": [
         83.43,
         5.6,
@@ -9243,7 +8797,7 @@
       "tint": null
     },
     {
-      "id": "prop_488",
+      "id": "prop_471",
       "position": [
         18.65,
         0,
@@ -9257,7 +8811,7 @@
       "tint": null
     },
     {
-      "id": "prop_489",
+      "id": "prop_472",
       "position": [
         15.3,
         0,
@@ -9271,7 +8825,7 @@
       "tint": null
     },
     {
-      "id": "prop_490",
+      "id": "prop_473",
       "position": [
         -2.65,
         0,
@@ -9285,7 +8839,7 @@
       "tint": null
     },
     {
-      "id": "prop_491",
+      "id": "prop_474",
       "position": [
         -2.65,
         0,
@@ -9299,7 +8853,7 @@
       "tint": null
     },
     {
-      "id": "prop_492",
+      "id": "prop_475",
       "position": [
         3.5,
         0,
@@ -9313,7 +8867,7 @@
       "tint": null
     },
     {
-      "id": "prop_493",
+      "id": "prop_476",
       "position": [
         12.84,
         0,
@@ -9327,7 +8881,7 @@
       "tint": null
     },
     {
-      "id": "prop_494",
+      "id": "prop_477",
       "position": [
         7.48,
         0,
@@ -9341,7 +8895,7 @@
       "tint": null
     },
     {
-      "id": "prop_495",
+      "id": "prop_478",
       "position": [
         8.43,
         0,
@@ -9355,7 +8909,7 @@
       "tint": null
     },
     {
-      "id": "prop_496",
+      "id": "prop_479",
       "position": [
         10.94,
         0,
@@ -9369,7 +8923,7 @@
       "tint": null
     },
     {
-      "id": "prop_497",
+      "id": "prop_480",
       "position": [
         12.14,
         0,
@@ -9383,7 +8937,7 @@
       "tint": null
     },
     {
-      "id": "light_498",
+      "id": "light_481",
       "position": [
         24,
         3.45,
@@ -9397,7 +8951,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_499",
+      "id": "light_482",
       "position": [
         24,
         3.45,
@@ -9411,7 +8965,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_500",
+      "id": "light_483",
       "position": [
         24,
         3.45,
@@ -9425,7 +8979,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_501",
+      "id": "light_484",
       "position": [
         24,
         3.45,
@@ -9439,7 +8993,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_502",
+      "id": "light_485",
       "position": [
         24,
         3.45,
@@ -9453,7 +9007,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_503",
+      "id": "light_486",
       "position": [
         24,
         3.45,
@@ -9467,7 +9021,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_504",
+      "id": "light_487",
       "position": [
         32,
         3.45,
@@ -9481,9 +9035,247 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_505",
+      "id": "light_488",
       "position": [
         32,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_489",
+      "position": [
+        32,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_490",
+      "position": [
+        32,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_491",
+      "position": [
+        32,
+        3.45,
+        56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_492",
+      "position": [
+        32,
+        3.45,
+        64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_493",
+      "position": [
+        40,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_494",
+      "position": [
+        40,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_495",
+      "position": [
+        40,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_496",
+      "position": [
+        40,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_497",
+      "position": [
+        40,
+        3.45,
+        56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_498",
+      "position": [
+        40,
+        3.45,
+        64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_499",
+      "position": [
+        48,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_500",
+      "position": [
+        48,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_501",
+      "position": [
+        48,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_502",
+      "position": [
+        48,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_503",
+      "position": [
+        48,
+        3.45,
+        56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_504",
+      "position": [
+        48,
+        3.45,
+        64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a8",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_505",
+      "position": [
+        56,
         3.45,
         32
       ],
@@ -9497,7 +9289,7 @@
     {
       "id": "light_506",
       "position": [
-        32,
+        56,
         3.45,
         40
       ],
@@ -9511,7 +9303,7 @@
     {
       "id": "light_507",
       "position": [
-        32,
+        56,
         3.45,
         48
       ],
@@ -9525,7 +9317,7 @@
     {
       "id": "light_508",
       "position": [
-        32,
+        56,
         3.45,
         56
       ],
@@ -9539,7 +9331,7 @@
     {
       "id": "light_509",
       "position": [
-        32,
+        56,
         3.45,
         64
       ],
@@ -9553,7 +9345,7 @@
     {
       "id": "light_510",
       "position": [
-        40,
+        64,
         3.45,
         24
       ],
@@ -9567,7 +9359,7 @@
     {
       "id": "light_511",
       "position": [
-        40,
+        64,
         3.45,
         32
       ],
@@ -9581,7 +9373,7 @@
     {
       "id": "light_512",
       "position": [
-        40,
+        64,
         3.45,
         40
       ],
@@ -9595,7 +9387,7 @@
     {
       "id": "light_513",
       "position": [
-        40,
+        64,
         3.45,
         48
       ],
@@ -9609,7 +9401,7 @@
     {
       "id": "light_514",
       "position": [
-        40,
+        64,
         3.45,
         56
       ],
@@ -9623,7 +9415,7 @@
     {
       "id": "light_515",
       "position": [
-        40,
+        64,
         3.45,
         64
       ],
@@ -9637,7 +9429,7 @@
     {
       "id": "light_516",
       "position": [
-        48,
+        72,
         3.45,
         24
       ],
@@ -9651,7 +9443,7 @@
     {
       "id": "light_517",
       "position": [
-        48,
+        72,
         3.45,
         32
       ],
@@ -9665,7 +9457,7 @@
     {
       "id": "light_518",
       "position": [
-        48,
+        72,
         3.45,
         40
       ],
@@ -9679,7 +9471,7 @@
     {
       "id": "light_519",
       "position": [
-        48,
+        72,
         3.45,
         48
       ],
@@ -9693,7 +9485,7 @@
     {
       "id": "light_520",
       "position": [
-        48,
+        72,
         3.45,
         56
       ],
@@ -9707,7 +9499,7 @@
     {
       "id": "light_521",
       "position": [
-        48,
+        72,
         3.45,
         64
       ],
@@ -9721,9 +9513,9 @@
     {
       "id": "light_522",
       "position": [
-        56,
+        80,
         3.45,
-        32
+        24
       ],
       "kind": "light",
       "yaw": 0,
@@ -9735,9 +9527,9 @@
     {
       "id": "light_523",
       "position": [
-        56,
+        80,
         3.45,
-        40
+        32
       ],
       "kind": "light",
       "yaw": 0,
@@ -9749,9 +9541,9 @@
     {
       "id": "light_524",
       "position": [
-        56,
+        80,
         3.45,
-        48
+        40
       ],
       "kind": "light",
       "yaw": 0,
@@ -9763,9 +9555,9 @@
     {
       "id": "light_525",
       "position": [
-        56,
+        80,
         3.45,
-        56
+        48
       ],
       "kind": "light",
       "yaw": 0,
@@ -9777,9 +9569,9 @@
     {
       "id": "light_526",
       "position": [
-        56,
+        80,
         3.45,
-        64
+        56
       ],
       "kind": "light",
       "yaw": 0,
@@ -9791,9 +9583,9 @@
     {
       "id": "light_527",
       "position": [
-        64,
+        80,
         3.45,
-        24
+        64
       ],
       "kind": "light",
       "yaw": 0,
@@ -9806,410 +9598,172 @@
       "id": "light_528",
       "position": [
         64,
-        3.45,
-        32
+        7.45,
+        24
       ],
       "kind": "light",
       "yaw": 0,
       "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
+      "intensity": 1,
+      "range": 9,
       "fixture": "ceiling"
     },
     {
       "id": "light_529",
       "position": [
-        64,
-        3.45,
-        40
+        72,
+        7.45,
+        24
       ],
       "kind": "light",
       "yaw": 0,
       "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
+      "intensity": 1,
+      "range": 9,
       "fixture": "ceiling"
     },
     {
       "id": "light_530",
       "position": [
-        64,
-        3.45,
-        48
+        80,
+        7.45,
+        24
       ],
       "kind": "light",
       "yaw": 0,
       "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
+      "intensity": 1,
+      "range": 9,
       "fixture": "ceiling"
     },
     {
       "id": "light_531",
       "position": [
-        64,
+        0,
         3.45,
-        56
+        16
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
+      "color": "#e8f0ff",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "strip"
     },
     {
       "id": "light_532",
       "position": [
-        64,
+        0,
         3.45,
-        64
+        24
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
+      "color": "#e8f0ff",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "strip"
     },
     {
       "id": "light_533",
       "position": [
-        72,
+        0,
         3.45,
-        24
+        32
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
+      "color": "#e8f0ff",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "strip"
     },
     {
       "id": "light_534",
       "position": [
-        72,
+        8,
         3.45,
-        32
+        16
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
+      "color": "#e8f0ff",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "strip"
     },
     {
       "id": "light_535",
       "position": [
-        72,
+        8,
         3.45,
-        40
+        24
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
+      "color": "#e8f0ff",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "strip"
     },
     {
       "id": "light_536",
       "position": [
-        72,
+        8,
         3.45,
-        48
+        32
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
+      "color": "#e8f0ff",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "strip"
     },
     {
       "id": "light_537",
       "position": [
-        72,
+        16,
         3.45,
-        56
+        16
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
+      "color": "#e8f0ff",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "strip"
     },
     {
       "id": "light_538",
       "position": [
-        72,
+        16,
         3.45,
-        64
+        24
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
+      "color": "#e8f0ff",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "strip"
     },
     {
       "id": "light_539",
       "position": [
-        80,
+        16,
         3.45,
-        24
+        32
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
+      "color": "#e8f0ff",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "strip"
     },
     {
       "id": "light_540",
-      "position": [
-        80,
-        3.45,
-        32
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_541",
-      "position": [
-        80,
-        3.45,
-        40
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_542",
-      "position": [
-        80,
-        3.45,
-        48
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_543",
-      "position": [
-        80,
-        3.45,
-        56
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_544",
-      "position": [
-        80,
-        3.45,
-        64
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1.1,
-      "range": 10,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_545",
-      "position": [
-        64,
-        7.45,
-        24
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_546",
-      "position": [
-        72,
-        7.45,
-        24
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_547",
-      "position": [
-        80,
-        7.45,
-        24
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffd9a8",
-      "intensity": 1,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_548",
-      "position": [
-        0,
-        3.45,
-        16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#e8f0ff",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "strip"
-    },
-    {
-      "id": "light_549",
-      "position": [
-        0,
-        3.45,
-        24
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#e8f0ff",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "strip"
-    },
-    {
-      "id": "light_550",
-      "position": [
-        0,
-        3.45,
-        32
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#e8f0ff",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "strip"
-    },
-    {
-      "id": "light_551",
-      "position": [
-        8,
-        3.45,
-        16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#e8f0ff",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "strip"
-    },
-    {
-      "id": "light_552",
-      "position": [
-        8,
-        3.45,
-        24
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#e8f0ff",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "strip"
-    },
-    {
-      "id": "light_553",
-      "position": [
-        8,
-        3.45,
-        32
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#e8f0ff",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "strip"
-    },
-    {
-      "id": "light_554",
-      "position": [
-        16,
-        3.45,
-        16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#e8f0ff",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "strip"
-    },
-    {
-      "id": "light_555",
-      "position": [
-        16,
-        3.45,
-        24
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#e8f0ff",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "strip"
-    },
-    {
-      "id": "light_556",
-      "position": [
-        16,
-        3.45,
-        32
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#e8f0ff",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "strip"
-    },
-    {
-      "id": "light_557",
       "position": [
         -1.6,
         3.2,
@@ -10223,7 +9777,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_558",
+      "id": "light_541",
       "position": [
         91,
         3.2,
@@ -10237,7 +9791,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_559",
+      "id": "light_542",
       "position": [
         26,
         3.2,
@@ -10251,7 +9805,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_560",
+      "id": "light_543",
       "position": [
         58,
         3.2,
@@ -10265,7 +9819,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_561",
+      "id": "light_544",
       "position": [
         -1.6,
         3.2,
@@ -10279,7 +9833,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_562",
+      "id": "light_545",
       "position": [
         91,
         3.2,
@@ -10293,7 +9847,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_563",
+      "id": "light_546",
       "position": [
         40,
         4,

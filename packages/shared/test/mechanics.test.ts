@@ -153,9 +153,13 @@ describe('throw arc', () => {
 describe('extended arsenal', () => {
   it('has 30+ weapons, every one with a model, a pickup and sane numbers; slots hold several', () => {
     expect(WEAPONS_BY_SLOT.length).toBeGreaterThanOrEqual(30);
-    const models = new Set((JSON.parse(readFileSync(new URL('../../../content/models.json', import.meta.url), 'utf8')) as { models: { out: string }[] }).models.map((m) => m.out));
+    const read = (file: string) => (JSON.parse(readFileSync(new URL(`../../../content/${file}`, import.meta.url), 'utf8')) as { models: { out: string }[] }).models.map((m) => m.out);
+    const repoModels = new Set(read('models.json'));
+    // Models built from pack downloads (content/guns.json) keep a fallback built from the repo.
+    const models = new Set([...repoModels, ...read('guns.json')]);
     for (const w of WEAPONS_BY_SLOT) {
       expect(models.has(w.view.model) || w.view.model.startsWith('procedural/'), `${w.id} model`).toBe(true);
+      if (!repoModels.has(w.view.model) && !w.view.model.startsWith('procedural/')) expect(repoModels.has(w.view.fallback ?? ''), `${w.id} fallback`).toBe(true);
       expect(weaponByCode(weaponCode(w))).toBe(w);
       // The Fort Wars Builder is handed out by the mode, never picked up.
       if (w.id !== 'core.knife' && w.id !== 'core.pistol' && w.id !== 'core.builder') expect(CORE_ITEMS.some((i) => i.effect.kind === 'weapon' && i.effect.weapon === w.id), `${w.id} pickup`).toBe(true);

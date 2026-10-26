@@ -144,8 +144,10 @@ export interface AltFire {
 
 /** First-person and third-person presentation (client only; the server ignores it). */
 export interface WeaponPresentation {
-  /** Built model path under /models (see content/models.json). */
+  /** Built model path under /models (see content/models.json, content/guns.json). */
   model: string;
+  /** The model drawn instead when `model` fails to load (the one it replaced: built from the repo, always there). */
+  fallback?: string;
   /** Viewmodel offset from the camera (right, up, forward) in metres. */
   viewOffset: [number, number, number];
   /** Tracer colour. */
@@ -318,7 +320,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
     botDesirability: 0.7,
     botRange: [4, 35],
-    view: { model: 'weapons/rifle.glb', viewOffset: [0.2, -0.2, 0.55], tracer: '#ffd36b', hold: { style: 'long', grip: [0, -0.05, -0.375], support: [0, 0.03, 0], shoulder: [0, 0.08, -0.58] } },
+    view: { model: 'guns/ak47.glb', fallback: 'weapons/rifle.glb', viewOffset: [0.2, -0.2, 0.55], tracer: '#ffd36b', hold: { style: 'long', grip: [0, -0.01, -0.165], support: [0, 0.05, 0.14], shoulder: [0, 0.02, -0.41] } },
   },
   'core.shotgun': {
     id: 'core.shotgun',
@@ -339,7 +341,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     alt: { label: 'Both barrels', ammo: 'shared', cost: 2, fireIntervalTicks: 70, kind: 'hitscan', damage: 9, pellets: 16, spread: 0.11 },
     botDesirability: 0.65,
     botRange: [0, 9],
-    view: { model: 'weapons/shotgun.glb', viewOffset: [0.2, -0.2, 0.6], tracer: '#ffb38a', hold: { style: 'long', grip: [0, -0.01, -0.21], support: [0, 0, 0.1], shoulder: [0, -0.03, -0.47] } },
+    view: { model: 'guns/shotgun.glb', fallback: 'weapons/shotgun.glb', viewOffset: [0.2, -0.2, 0.6], tracer: '#ffb38a', hold: { style: 'long', grip: [0, 0, -0.18], support: [0, 0.045, 0.22], shoulder: [0, -0.03, -0.46] } },
   },
   'core.sniper': {
     id: 'core.sniper',
@@ -360,7 +362,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     headshot: 3,
     botDesirability: 0.6,
     botRange: [18, 120],
-    view: { model: 'weapons/sniper.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4, hold: { style: 'long', grip: [0, -0.04, -0.29], support: [0, -0.005, 0.02], shoulder: [0, -0.05, -0.57] } },
+    view: { model: 'guns/awp.glb', fallback: 'weapons/sniper.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4, hold: { style: 'long', grip: [0, -0.06, -0.32], support: [0, -0.02, 0.03], shoulder: [0, -0.04, -0.56] } },
   },
   'core.launcher': {
     id: 'core.launcher',
@@ -401,7 +403,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'light',
     botDesirability: 0.6,
     botRange: [0, 18],
-    view: { model: 'weapons/smg.glb', viewOffset: [0.19, -0.19, 0.45], tracer: '#ffe9a8', hold: { style: 'long', grip: [0, -0.05, -0.1], support: [0, -0.03, 0.12], shoulder: [0, 0.02, -0.25] } },
+    view: { model: 'guns/mac10.glb', fallback: 'weapons/smg.glb', viewOffset: [0.19, -0.19, 0.45], tracer: '#ffe9a8', hold: { style: 'long', grip: [0, 0.02, -0.04], support: [0, 0.06, 0.09], shoulder: [0, 0.06, -0.17] } },
   },
   'core.rockets': {
     id: 'core.rockets',
@@ -422,7 +424,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'explosive',
     botDesirability: 0.8,
     botRange: [7, 40],
-    view: { model: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ffb347', hold: { style: 'long', grip: [0, -0.1, 0.0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] } },
+    view: { model: 'guns/rocket_launcher.glb', fallback: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ffb347', hold: { style: 'long', grip: [0, -0.09, -0.115], support: [0, -0.09, 0.095], shoulder: [0, -0.03, -0.25] } },
   },
   'core.plasma': {
     id: 'core.plasma',
@@ -1044,3 +1046,9 @@ export function resolveHitscan(origin: Vec3, dir: Vec3, range: number, worldDist
   }
   return { hitSlot, distance, end: add(origin, scale(dir, distance)) };
 }
+
+/** Models a weapon or projectile falls back to when its own fails to load (see WeaponPresentation.fallback). */
+export const MODEL_FALLBACKS: Readonly<Record<string, string>> = {
+  ...Object.fromEntries(Object.values(CORE_WEAPONS).flatMap((w) => (w.view.fallback ? [[w.view.model, w.view.fallback]] : []))),
+  'guns/frag.glb': 'projectiles/frag.glb',
+};

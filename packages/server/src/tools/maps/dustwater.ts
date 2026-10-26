@@ -167,6 +167,9 @@ m.mover('mine_cart', [CART_X, 4, 58], ['cart_ore'], [[0, 0, 0], [0, 0, 24]], { m
 for (const z of [55, 63.6]) m.prop('mine_rails', [CART_X, 4, z], 0, 1.43, false);
 m.prop('ore_cart', [CART_X - 4, 4, 57], 0.2).prop('mine_cart', [CART_X + 4.5, 4, 58], -0.3);
 m.prop('mine_frame', [CART_X, 4, 88.2], 0, 1, true);
+// The yard's corners (loafbrr's Mines and Caves set, CC0): spoil and rock heaps, a tipper cart, a rail stop.
+m.prop('mc_mound', [16.2, 4, 54.8], 0).prop('mc_cave_rocks_b', [34, 4, 53.5], 1.1).prop('mc_cave_rocks_d', [13.8, 4, 58.8], 2.2);
+m.prop('mc_cart_tipper', [33.5, 4, 57.5], 1.4).prop('mc_rail_end', [CART_X, 4, 53.4], 0);
 
 // Breakable wood: planks boarding up the tunnel's far end and the livery's back door.
 m.block([CART_X, 4, 83.7], [3.4, 3.4, 0.25], 'breakable', { material: 'pbr_weathered_planks', health: 80, respawn: 25 });

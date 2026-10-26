@@ -1,0 +1,14 @@
+Guns Asset Pack (Styloo Guns Asset Pack GLTF FBX V1.1)
+Models by Styloo - https://styloo.itch.io/
+Source page: https://styloo.itch.io/guns-asset-pack
+
+License (as stated on the source page, "More information" > License, and
+confirmed by the author in its comments):
+Creative Commons Zero v1.0 Universal (CC0 1.0)
+https://creativecommons.org/publicdomain/zero/1.0/
+The pack's "Read Me .txt" asks for nothing but suggests a donation on itch.io.
+
+Raw pack files are not kept in this repository. tools/content/prepare-guns.mjs
+builds the game-ready weapon models in packages/client/public/models/guns from
+the extracted download (see docs/CONTENT_PIPELINE.md), and
+content/guns.lock.json records what it wrote.
