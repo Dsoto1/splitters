@@ -414,6 +414,18 @@
       "models": ".",
       "convert": true,
       "scale": 0.01
+    },
+    "sigilsvault-modular-dungeon": {
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/sigilsvault-modular-dungeon/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "modular dungeon kit",
+      "models": ".",
+      "convert": true,
+      "textureSize": 256
     }
   },
   "budgets": {
@@ -10254,6 +10266,785 @@
       "src": "Transportation/Stagecoach.fbx",
       "name": "Stagecoach",
       "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_01.glb",
+      "name": "Dungeon Barrel Ceiling Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_02.glb",
+      "name": "Dungeon Barrel Ceiling Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_large_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_03.glb",
+      "name": "Dungeon Barrel Ceiling Large 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_01.glb",
+      "name": "Dungeon Barrel Ceiling Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_small_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_02.glb",
+      "name": "Dungeon Barrel Ceiling Small 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_small_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_03.glb",
+      "name": "Dungeon Barrel Ceiling Small 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_block_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_large_01.glb",
+      "name": "Dungeon Block Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_block_short_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_short_small_01.glb",
+      "name": "Dungeon Block Short Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_block_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_small_01.glb",
+      "name": "Dungeon Block Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_door_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/door_01.glb",
+      "name": "Dungeon Door 01",
+      "category": "Dark Dungeon",
+      "collide": "openings"
+    },
+    {
+      "id": "sd_door_arched_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/door_arched_01_001.glb",
+      "name": "Dungeon Door Arched 01",
+      "category": "Dark Dungeon",
+      "collide": "openings"
+    },
+    {
+      "id": "sd_flat_ceiling_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_01.glb",
+      "name": "Dungeon Flat Ceiling Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_02.glb",
+      "name": "Dungeon Flat Ceiling Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_large_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_03.glb",
+      "name": "Dungeon Flat Ceiling Large 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_01.glb",
+      "name": "Dungeon Flat Ceiling Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_small_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_02.glb",
+      "name": "Dungeon Flat Ceiling Small 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_small_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_03.glb",
+      "name": "Dungeon Flat Ceiling Small 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_01.glb",
+      "name": "Dungeon Floor Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_bl_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_01.glb",
+      "name": "Dungeon Floor Large Cornertrim BL 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_bl_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_02.glb",
+      "name": "Dungeon Floor Large Cornertrim BL 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_br_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_01.glb",
+      "name": "Dungeon Floor Large Cornertrim BR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_br_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_02.glb",
+      "name": "Dungeon Floor Large Cornertrim BR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_tl_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_01.glb",
+      "name": "Dungeon Floor Large Cornertrim TL 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_tl_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_02.glb",
+      "name": "Dungeon Floor Large Cornertrim TL 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_tr_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_01.glb",
+      "name": "Dungeon Floor Large Cornertrim TR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_tr_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_02.glb",
+      "name": "Dungeon Floor Large Cornertrim TR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_01.glb",
+      "name": "Dungeon Floor Large Trim 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_02.glb",
+      "name": "Dungeon Floor Large Trim 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_b_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_B_01.glb",
+      "name": "Dungeon Floor Large Trim B 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_b_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_B_02.glb",
+      "name": "Dungeon Floor Large Trim B 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_lr_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_LR_01.glb",
+      "name": "Dungeon Floor Large Trim LR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_lr_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_LR_02.glb",
+      "name": "Dungeon Floor Large Trim LR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_l_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_L_01.glb",
+      "name": "Dungeon Floor Large Trim L 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_l_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_L_02.glb",
+      "name": "Dungeon Floor Large Trim L 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_r_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_R_01.glb",
+      "name": "Dungeon Floor Large Trim R 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_r_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_R_02.glb",
+      "name": "Dungeon Floor Large Trim R 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_t_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_T_01.glb",
+      "name": "Dungeon Floor Large Trim T 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_t_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_T_02.glb",
+      "name": "Dungeon Floor Large Trim T 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_01.glb",
+      "name": "Dungeon Floor Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_bl_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_01.glb",
+      "name": "Dungeon Floor Small Cornertrim BL 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_bl_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_02.glb",
+      "name": "Dungeon Floor Small Cornertrim BL 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_br_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_01.glb",
+      "name": "Dungeon Floor Small Cornertrim BR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_br_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_02.glb",
+      "name": "Dungeon Floor Small Cornertrim BR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_tl_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01.glb",
+      "name": "Dungeon Floor Small Cornertrim TL 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_tl_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01_001.glb",
+      "name": "Dungeon Floor Small Cornertrim TL 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_tr_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_01.glb",
+      "name": "Dungeon Floor Small Cornertrim TR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_tr_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_02.glb",
+      "name": "Dungeon Floor Small Cornertrim TR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_01.glb",
+      "name": "Dungeon Floor Small Trim 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_02.glb",
+      "name": "Dungeon Floor Small Trim 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_b_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_B_01.glb",
+      "name": "Dungeon Floor Small Trim B 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_b_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_B_02.glb",
+      "name": "Dungeon Floor Small Trim B 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_lr_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_LR_01.glb",
+      "name": "Dungeon Floor Small Trim LR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_lr_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_LR_02.glb",
+      "name": "Dungeon Floor Small Trim LR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_l_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_L_01.glb",
+      "name": "Dungeon Floor Small Trim L 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_l_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_L_02.glb",
+      "name": "Dungeon Floor Small Trim L 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_r_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_R_01.glb",
+      "name": "Dungeon Floor Small Trim R 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_r_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_R_02.glb",
+      "name": "Dungeon Floor Small Trim R 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_t_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_T_01.glb",
+      "name": "Dungeon Floor Small Trim T 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_t_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_T_02.glb",
+      "name": "Dungeon Floor Small Trim T 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pillar_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_01.glb",
+      "name": "Dungeon Pillar 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pillar_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_02.glb",
+      "name": "Dungeon Pillar 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pillar_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_large_01.glb",
+      "name": "Dungeon Pillar Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pillar_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_large_02.glb",
+      "name": "Dungeon Pillar Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_stairs_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_large_01.glb",
+      "name": "Dungeon Stairs Large 01",
+      "category": "Dark Dungeon",
+      "collide": "stairs",
+      "climbs": "auto"
+    },
+    {
+      "id": "sd_stairs_short_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_short_small_01.glb",
+      "name": "Dungeon Stairs Short Small 01",
+      "category": "Dark Dungeon",
+      "collide": "stairs",
+      "climbs": "auto"
+    },
+    {
+      "id": "sd_stairs_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_small_01.glb",
+      "name": "Dungeon Stairs Small 01",
+      "category": "Dark Dungeon",
+      "collide": "stairs",
+      "climbs": "auto"
+    },
+    {
+      "id": "sd_vault_ceiling_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_01.glb",
+      "name": "Dungeon Vault Ceiling Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_02.glb",
+      "name": "Dungeon Vault Ceiling Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_03.glb",
+      "name": "Dungeon Vault Ceiling Large 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_04",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_04.glb",
+      "name": "Dungeon Vault Ceiling Large 04",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_05",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_05.glb",
+      "name": "Dungeon Vault Ceiling Large 05",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_06",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_06.glb",
+      "name": "Dungeon Vault Ceiling Large 06",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_01.glb",
+      "name": "Dungeon Vault Ceiling Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_02.glb",
+      "name": "Dungeon Vault Ceiling Small 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_03.glb",
+      "name": "Dungeon Vault Ceiling Small 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_04",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_04.glb",
+      "name": "Dungeon Vault Ceiling Small 04",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_05",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_05.glb",
+      "name": "Dungeon Vault Ceiling Small 05",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_06",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_06.glb",
+      "name": "Dungeon Vault Ceiling Small 06",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_01.glb",
+      "name": "Dungeon Wall Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_02.glb",
+      "name": "Dungeon Wall Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_03.glb",
+      "name": "Dungeon Wall Large 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_corner_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_01.glb",
+      "name": "Dungeon Wall Large Corner 01",
+      "category": "Dark Dungeon",
+      "collide": "shell"
+    },
+    {
+      "id": "sd_wall_large_corner_l_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_L_01.glb",
+      "name": "Dungeon Wall Large Corner L 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_corner_r_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_R_01.glb",
+      "name": "Dungeon Wall Large Corner R 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_half_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_half_01.glb",
+      "name": "Dungeon Wall Large Half 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_01.glb",
+      "name": "Dungeon Wall Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_02.glb",
+      "name": "Dungeon Wall Small 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_corner_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_01.glb",
+      "name": "Dungeon Wall Small Corner 01",
+      "category": "Dark Dungeon",
+      "collide": "shell"
+    },
+    {
+      "id": "sd_wall_small_corner_l_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_L_01.glb",
+      "name": "Dungeon Wall Small Corner L 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_corner_r_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_R_01.glb",
+      "name": "Dungeon Wall Small Corner R 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_half_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_half_01.glb",
+      "name": "Dungeon Wall Small Half 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_brazier",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/Brazier.glb",
+      "name": "Brazier",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_coffin",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/coffin.glb",
+      "name": "Stone Coffin",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_coffin_lid",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/coffin_lid.glb",
+      "name": "Coffin Lid",
+      "category": "Dark Dungeon",
+      "collide": "none"
+    },
+    {
+      "id": "sd_crate",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/crate.glb",
+      "name": "Dungeon Crate",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_door",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/door.glb",
+      "name": "Dungeon Door",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pot",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/pot.glb",
+      "name": "Clay Pot",
+      "category": "Dark Dungeon",
       "collide": "box"
     }
   ]

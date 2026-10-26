@@ -19703,6 +19703,1558 @@
       ]
     },
     {
+      "file": "props/sd_barrel_ceiling_large_01.glb",
+      "sha256": "a0032bb0fe35de79",
+      "triangles": 80,
+      "bytes": 14144,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/barrel_ceiling_large_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_large_02.glb",
+      "sha256": "d6de75e3bf23287c",
+      "triangles": 210,
+      "bytes": 17424,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/barrel_ceiling_large_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_large_03.glb",
+      "sha256": "0ebfe85299420233",
+      "triangles": 256,
+      "bytes": 18800,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/barrel_ceiling_large_03.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_small_01.glb",
+      "sha256": "5548a6f2fccc199d",
+      "triangles": 80,
+      "bytes": 13736,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/barrel_ceiling_small_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_small_02.glb",
+      "sha256": "8b85609f4225c512",
+      "triangles": 210,
+      "bytes": 16604,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/barrel_ceiling_small_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_small_03.glb",
+      "sha256": "fa11cc8a33ee5871",
+      "triangles": 256,
+      "bytes": 18800,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/barrel_ceiling_small_03.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_block_large_01.glb",
+      "sha256": "5febebea0a04763d",
+      "triangles": 48,
+      "bytes": 13256,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/block_large_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_block_short_small_01.glb",
+      "sha256": "fd70e4635c632d1f",
+      "triangles": 12,
+      "bytes": 11572,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/block_short_small_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_block_small_01.glb",
+      "sha256": "1d47cae3ecc831db",
+      "triangles": 20,
+      "bytes": 11952,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/block_small_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_door_01.glb",
+      "sha256": "bcc64508ef66a330",
+      "triangles": 100,
+      "bytes": 15220,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/door_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_door_arched_01.glb",
+      "sha256": "5e68c940990a0606",
+      "triangles": 584,
+      "bytes": 32340,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/door_arched_01_001.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_large_01.glb",
+      "sha256": "15d18a6788f87ef3",
+      "triangles": 68,
+      "bytes": 14140,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/flat_ceiling_large_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_large_02.glb",
+      "sha256": "0f9299557b060150",
+      "triangles": 68,
+      "bytes": 14044,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/flat_ceiling_large_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_large_03.glb",
+      "sha256": "cb933b9799febf55",
+      "triangles": 20,
+      "bytes": 12120,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/flat_ceiling_large_03.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_small_01.glb",
+      "sha256": "aa1cda235dc3fa92",
+      "triangles": 44,
+      "bytes": 13036,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/flat_ceiling_small_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_small_02.glb",
+      "sha256": "e20c2fc8dd7bb74f",
+      "triangles": 44,
+      "bytes": 13036,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/flat_ceiling_small_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_small_03.glb",
+      "sha256": "154a9e8239a7ec4d",
+      "triangles": 12,
+      "bytes": 11688,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/flat_ceiling_small_03.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_01.glb",
+      "sha256": "110bdc5657f48263",
+      "triangles": 20,
+      "bytes": 12144,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_bl_01.glb",
+      "sha256": "9639c8d6aeb70f00",
+      "triangles": 96,
+      "bytes": 15036,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_bl_02.glb",
+      "sha256": "cb4bfc7e1b445799",
+      "triangles": 96,
+      "bytes": 15036,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_br_01.glb",
+      "sha256": "c2ecc64dcc9a7919",
+      "triangles": 96,
+      "bytes": 15036,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_br_02.glb",
+      "sha256": "6d6d5e33c1ba61fe",
+      "triangles": 96,
+      "bytes": 15036,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tl_01.glb",
+      "sha256": "9b4ea37c229c3149",
+      "triangles": 96,
+      "bytes": 15028,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tl_02.glb",
+      "sha256": "bcf805e6f5630d7d",
+      "triangles": 96,
+      "bytes": 15032,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tr_01.glb",
+      "sha256": "0b9f3e0664e232d6",
+      "triangles": 96,
+      "bytes": 15036,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tr_02.glb",
+      "sha256": "02c7cbc7937c3bf9",
+      "triangles": 96,
+      "bytes": 15036,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_01.glb",
+      "sha256": "6534fa6eafd26b79",
+      "triangles": 96,
+      "bytes": 15448,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_02.glb",
+      "sha256": "ee592e96ef918895",
+      "triangles": 96,
+      "bytes": 15448,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_b_01.glb",
+      "sha256": "75195b627f889cd0",
+      "triangles": 96,
+      "bytes": 14736,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_B_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_b_02.glb",
+      "sha256": "f686e1f90b2f5f62",
+      "triangles": 96,
+      "bytes": 14688,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_B_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_lr_01.glb",
+      "sha256": "f1e0a263b44d4546",
+      "triangles": 96,
+      "bytes": 15120,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_LR_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_lr_02.glb",
+      "sha256": "21c452afa6ab746c",
+      "triangles": 96,
+      "bytes": 15120,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_LR_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_l_01.glb",
+      "sha256": "026fd51998e4a414",
+      "triangles": 96,
+      "bytes": 14636,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_L_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_l_02.glb",
+      "sha256": "6d2b420251f9d12a",
+      "triangles": 96,
+      "bytes": 14636,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_L_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_r_01.glb",
+      "sha256": "1b69907714a4220b",
+      "triangles": 96,
+      "bytes": 14636,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_R_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_r_02.glb",
+      "sha256": "8babcaa74c77fd81",
+      "triangles": 96,
+      "bytes": 14636,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_R_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_t_01.glb",
+      "sha256": "6e7490044950e1cf",
+      "triangles": 96,
+      "bytes": 14684,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_T_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_t_02.glb",
+      "sha256": "b2a231a3a39bcde7",
+      "triangles": 96,
+      "bytes": 14684,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_large_trim_T_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_01.glb",
+      "sha256": "6ade7a44187501ba",
+      "triangles": 20,
+      "bytes": 11976,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_bl_01.glb",
+      "sha256": "627b8175d47c5048",
+      "triangles": 60,
+      "bytes": 13636,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_bl_02.glb",
+      "sha256": "e206230bb6d69c3a",
+      "triangles": 60,
+      "bytes": 13636,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_br_01.glb",
+      "sha256": "e75db55b1da8018a",
+      "triangles": 60,
+      "bytes": 13636,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_br_02.glb",
+      "sha256": "74683fe00073cbbf",
+      "triangles": 60,
+      "bytes": 13636,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tl_01.glb",
+      "sha256": "1d3456557f67d6f8",
+      "triangles": 60,
+      "bytes": 13636,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tl_03.glb",
+      "sha256": "596396fe9d7f8bd8",
+      "triangles": 60,
+      "bytes": 13644,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01_001.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tr_01.glb",
+      "sha256": "6cda069b43647b95",
+      "triangles": 60,
+      "bytes": 13640,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tr_02.glb",
+      "sha256": "d95dd6d935eb89a4",
+      "triangles": 60,
+      "bytes": 13640,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_01.glb",
+      "sha256": "d83aa2c4c9dc0410",
+      "triangles": 60,
+      "bytes": 13960,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_02.glb",
+      "sha256": "9830b3fb46f98252",
+      "triangles": 60,
+      "bytes": 13960,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_b_01.glb",
+      "sha256": "9bcddf91f771f103",
+      "triangles": 44,
+      "bytes": 13000,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_B_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_b_02.glb",
+      "sha256": "605c7986089a48f7",
+      "triangles": 44,
+      "bytes": 13000,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_B_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_lr_01.glb",
+      "sha256": "037eb552429f9c82",
+      "triangles": 60,
+      "bytes": 13768,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_LR_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_lr_02.glb",
+      "sha256": "3c632de83bfd1801",
+      "triangles": 60,
+      "bytes": 13768,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_LR_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_l_01.glb",
+      "sha256": "3cb56bcb3f7e144f",
+      "triangles": 44,
+      "bytes": 13000,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_L_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_l_02.glb",
+      "sha256": "66122f25a5769b58",
+      "triangles": 44,
+      "bytes": 13000,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_L_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_r_01.glb",
+      "sha256": "083c0277cf4efc68",
+      "triangles": 44,
+      "bytes": 13000,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_R_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_r_02.glb",
+      "sha256": "f9888ebeeb852e85",
+      "triangles": 44,
+      "bytes": 13000,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_R_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_t_01.glb",
+      "sha256": "801ff930e62ecfe6",
+      "triangles": 44,
+      "bytes": 13000,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_T_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_t_02.glb",
+      "sha256": "c2e98b3e68167775",
+      "triangles": 44,
+      "bytes": 13000,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/floor_small_trim_T_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_pillar_01.glb",
+      "sha256": "1f248e13eec24c93",
+      "triangles": 128,
+      "bytes": 15544,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/pillar_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_pillar_02.glb",
+      "sha256": "bcefa54b5307f9e0",
+      "triangles": 60,
+      "bytes": 13960,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/pillar_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_pillar_large_01.glb",
+      "sha256": "e58c8188a2362976",
+      "triangles": 144,
+      "bytes": 16072,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/pillar_large_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_pillar_large_02.glb",
+      "sha256": "6cf41e674c4306b2",
+      "triangles": 76,
+      "bytes": 14828,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/pillar_large_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_stairs_large_01.glb",
+      "sha256": "e295bd39ff93c6cd",
+      "triangles": 140,
+      "bytes": 16884,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/stairs_large_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_stairs_short_small_01.glb",
+      "sha256": "4c6e9738d54fd602",
+      "triangles": 44,
+      "bytes": 12732,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/stairs_short_small_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_stairs_small_01.glb",
+      "sha256": "a9e3b2ce848ac078",
+      "triangles": 92,
+      "bytes": 14676,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/stairs_small_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_01.glb",
+      "sha256": "751ee2998a67d180",
+      "triangles": 302,
+      "bytes": 19220,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_large_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_02.glb",
+      "sha256": "6cbf76e54f3dbed9",
+      "triangles": 340,
+      "bytes": 20332,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_large_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_03.glb",
+      "sha256": "0be1644ff0b06131",
+      "triangles": 383,
+      "bytes": 21452,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_large_03.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_04.glb",
+      "sha256": "3763d60d967943a2",
+      "triangles": 380,
+      "bytes": 23076,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_large_04.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_05.glb",
+      "sha256": "4ab29d2c68e581c8",
+      "triangles": 420,
+      "bytes": 24300,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_large_05.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_06.glb",
+      "sha256": "bdbb9aefa123c300",
+      "triangles": 458,
+      "bytes": 25804,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_large_06.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_01.glb",
+      "sha256": "89c47484077f3986",
+      "triangles": 302,
+      "bytes": 20264,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_small_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_02.glb",
+      "sha256": "66b7dc41d50870f3",
+      "triangles": 370,
+      "bytes": 22356,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_small_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_03.glb",
+      "sha256": "d684fc84f2281890",
+      "triangles": 398,
+      "bytes": 23412,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_small_03.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_04.glb",
+      "sha256": "23cbf1f67ea14dfd",
+      "triangles": 398,
+      "bytes": 23412,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_small_04.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_05.glb",
+      "sha256": "384f510ddb6f6f42",
+      "triangles": 426,
+      "bytes": 24468,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_small_05.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_06.glb",
+      "sha256": "31a5d92684a66ed8",
+      "triangles": 454,
+      "bytes": 25740,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/vault_ceiling_small_06.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_01.glb",
+      "sha256": "4c36fac581705cd8",
+      "triangles": 92,
+      "bytes": 15084,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_large_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_02.glb",
+      "sha256": "eb5d4b44d4e1f5d4",
+      "triangles": 200,
+      "bytes": 20432,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_large_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_03.glb",
+      "sha256": "8019fa84a7949423",
+      "triangles": 488,
+      "bytes": 27640,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_large_03.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_corner_01.glb",
+      "sha256": "1a73d66adf2370f0",
+      "triangles": 184,
+      "bytes": 19188,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_large_corner_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_corner_l_01.glb",
+      "sha256": "f24b7ea2b783f1d0",
+      "triangles": 92,
+      "bytes": 15120,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_large_corner_L_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_corner_r_01.glb",
+      "sha256": "714c01b5c865d022",
+      "triangles": 92,
+      "bytes": 15180,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_large_corner_R_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_half_01.glb",
+      "sha256": "8a7100d2a56ff0ea",
+      "triangles": 64,
+      "bytes": 13812,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_large_half_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_01.glb",
+      "sha256": "bce931d4b8c5b0c4",
+      "triangles": 60,
+      "bytes": 13552,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_small_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_02.glb",
+      "sha256": "af8b878214de904d",
+      "triangles": 260,
+      "bytes": 19892,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_small_02.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_corner_01.glb",
+      "sha256": "acf75a4dc8b2918e",
+      "triangles": 120,
+      "bytes": 16068,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_small_corner_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_corner_l_01.glb",
+      "sha256": "f032c3704cea6e5e",
+      "triangles": 60,
+      "bytes": 13576,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_small_corner_L_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_corner_r_01.glb",
+      "sha256": "94528afdc1ba76f7",
+      "triangles": 60,
+      "bytes": 13600,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_small_corner_R_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_half_01.glb",
+      "sha256": "76736d62a40c6a46",
+      "triangles": 44,
+      "bytes": 12884,
+      "source": "sigilsvault-modular-dungeon/Modular Dungeon Pieces/GLB format/wall_small_half_01.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_brazier.glb",
+      "sha256": "5f99e63f949cfc3b",
+      "triangles": 286,
+      "bytes": 16948,
+      "source": "sigilsvault-modular-dungeon/Props/GLB format/Brazier.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_coffin.glb",
+      "sha256": "37afc85bbd2bbea7",
+      "triangles": 28,
+      "bytes": 10292,
+      "source": "sigilsvault-modular-dungeon/Props/GLB format/coffin.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_coffin_lid.glb",
+      "sha256": "70ba805a05584b12",
+      "triangles": 44,
+      "bytes": 10760,
+      "source": "sigilsvault-modular-dungeon/Props/GLB format/coffin_lid.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_crate.glb",
+      "sha256": "448be255f6ab310c",
+      "triangles": 108,
+      "bytes": 15496,
+      "source": "sigilsvault-modular-dungeon/Props/GLB format/crate.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_door.glb",
+      "sha256": "4744235b4226c572",
+      "triangles": 56,
+      "bytes": 8372,
+      "source": "sigilsvault-modular-dungeon/Props/GLB format/door.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/sd_pot.glb",
+      "sha256": "6595b30ec4c57162",
+      "triangles": 124,
+      "bytes": 9204,
+      "source": "sigilsvault-modular-dungeon/Props/GLB format/pot.glb",
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
       "file": "skies/clear.jpg",
       "sha256": "4ba9d3b02f1b3acf",
       "bytes": 37359,

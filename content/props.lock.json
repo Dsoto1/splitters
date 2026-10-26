@@ -9681,6 +9681,1267 @@
         3.284,
         9.083
       ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_01.glb",
+      "triangles": 80,
+      "bytes": 14144,
+      "sha256": "a0032bb0fe35de79",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_02.glb",
+      "triangles": 210,
+      "bytes": 17424,
+      "sha256": "d6de75e3bf23287c",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_large_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_03.glb",
+      "triangles": 256,
+      "bytes": 18800,
+      "sha256": "0ebfe85299420233",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_01.glb",
+      "triangles": 80,
+      "bytes": 13736,
+      "sha256": "5548a6f2fccc199d",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_small_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_02.glb",
+      "triangles": 210,
+      "bytes": 16604,
+      "sha256": "8b85609f4225c512",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_small_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_03.glb",
+      "triangles": 256,
+      "bytes": 18800,
+      "sha256": "fa11cc8a33ee5871",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_block_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_large_01.glb",
+      "triangles": 48,
+      "bytes": 13256,
+      "sha256": "5febebea0a04763d",
+      "size": [
+        4,
+        3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_block_short_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_short_small_01.glb",
+      "triangles": 12,
+      "bytes": 11572,
+      "sha256": "fd70e4635c632d1f",
+      "size": [
+        2,
+        1.5,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_block_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_small_01.glb",
+      "triangles": 20,
+      "bytes": 11952,
+      "sha256": "1d47cae3ecc831db",
+      "size": [
+        2,
+        3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_door_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/door_01.glb",
+      "triangles": 100,
+      "bytes": 15220,
+      "sha256": "bcc64508ef66a330",
+      "size": [
+        2,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_door_arched_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/door_arched_01_001.glb",
+      "triangles": 584,
+      "bytes": 32340,
+      "sha256": "5e68c940990a0606",
+      "size": [
+        4,
+        3.001,
+        0.682
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_01.glb",
+      "triangles": 68,
+      "bytes": 14140,
+      "sha256": "15d18a6788f87ef3",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_02.glb",
+      "triangles": 68,
+      "bytes": 14044,
+      "sha256": "0f9299557b060150",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_large_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_03.glb",
+      "triangles": 20,
+      "bytes": 12120,
+      "sha256": "cb933b9799febf55",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_01.glb",
+      "triangles": 44,
+      "bytes": 13036,
+      "sha256": "aa1cda235dc3fa92",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_small_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_02.glb",
+      "triangles": 44,
+      "bytes": 13036,
+      "sha256": "e20c2fc8dd7bb74f",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_small_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_03.glb",
+      "triangles": 12,
+      "bytes": 11688,
+      "sha256": "154a9e8239a7ec4d",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_01.glb",
+      "triangles": 20,
+      "bytes": 12144,
+      "sha256": "110bdc5657f48263",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_bl_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_01.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "9639c8d6aeb70f00",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_bl_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_02.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "cb4bfc7e1b445799",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_br_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_01.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "c2ecc64dcc9a7919",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_br_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_02.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "6d6d5e33c1ba61fe",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tl_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_01.glb",
+      "triangles": 96,
+      "bytes": 15028,
+      "sha256": "9b4ea37c229c3149",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tl_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_02.glb",
+      "triangles": 96,
+      "bytes": 15032,
+      "sha256": "bcf805e6f5630d7d",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tr_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_01.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "0b9f3e0664e232d6",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tr_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_02.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "02c7cbc7937c3bf9",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_01.glb",
+      "triangles": 96,
+      "bytes": 15448,
+      "sha256": "6534fa6eafd26b79",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_02.glb",
+      "triangles": 96,
+      "bytes": 15448,
+      "sha256": "ee592e96ef918895",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_b_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_B_01.glb",
+      "triangles": 96,
+      "bytes": 14736,
+      "sha256": "75195b627f889cd0",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_b_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_B_02.glb",
+      "triangles": 96,
+      "bytes": 14688,
+      "sha256": "f686e1f90b2f5f62",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_lr_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_LR_01.glb",
+      "triangles": 96,
+      "bytes": 15120,
+      "sha256": "f1e0a263b44d4546",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_lr_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_LR_02.glb",
+      "triangles": 96,
+      "bytes": 15120,
+      "sha256": "21c452afa6ab746c",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_l_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_L_01.glb",
+      "triangles": 96,
+      "bytes": 14636,
+      "sha256": "026fd51998e4a414",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_l_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_L_02.glb",
+      "triangles": 96,
+      "bytes": 14636,
+      "sha256": "6d2b420251f9d12a",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_r_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_R_01.glb",
+      "triangles": 96,
+      "bytes": 14636,
+      "sha256": "1b69907714a4220b",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_r_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_R_02.glb",
+      "triangles": 96,
+      "bytes": 14636,
+      "sha256": "8babcaa74c77fd81",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_t_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_T_01.glb",
+      "triangles": 96,
+      "bytes": 14684,
+      "sha256": "6e7490044950e1cf",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_t_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_T_02.glb",
+      "triangles": 96,
+      "bytes": 14684,
+      "sha256": "b2a231a3a39bcde7",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_01.glb",
+      "triangles": 20,
+      "bytes": 11976,
+      "sha256": "6ade7a44187501ba",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_bl_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_01.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "627b8175d47c5048",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_bl_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_02.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "e206230bb6d69c3a",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_br_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_01.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "e75db55b1da8018a",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_br_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_02.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "74683fe00073cbbf",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tl_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "1d3456557f67d6f8",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tl_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01_001.glb",
+      "triangles": 60,
+      "bytes": 13644,
+      "sha256": "596396fe9d7f8bd8",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tr_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_01.glb",
+      "triangles": 60,
+      "bytes": 13640,
+      "sha256": "6cda069b43647b95",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tr_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_02.glb",
+      "triangles": 60,
+      "bytes": 13640,
+      "sha256": "d95dd6d935eb89a4",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_01.glb",
+      "triangles": 60,
+      "bytes": 13960,
+      "sha256": "d83aa2c4c9dc0410",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_02.glb",
+      "triangles": 60,
+      "bytes": 13960,
+      "sha256": "9830b3fb46f98252",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_b_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_B_01.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "9bcddf91f771f103",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_b_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_B_02.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "605c7986089a48f7",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_lr_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_LR_01.glb",
+      "triangles": 60,
+      "bytes": 13768,
+      "sha256": "037eb552429f9c82",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_lr_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_LR_02.glb",
+      "triangles": 60,
+      "bytes": 13768,
+      "sha256": "3c632de83bfd1801",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_l_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_L_01.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "3cb56bcb3f7e144f",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_l_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_L_02.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "66122f25a5769b58",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_r_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_R_01.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "083c0277cf4efc68",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_r_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_R_02.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "f9888ebeeb852e85",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_t_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_T_01.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "801ff930e62ecfe6",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_t_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_T_02.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "c2e98b3e68167775",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_pillar_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_01.glb",
+      "triangles": 128,
+      "bytes": 15544,
+      "sha256": "1f248e13eec24c93",
+      "size": [
+        1,
+        3,
+        1
+      ]
+    },
+    {
+      "file": "props/sd_pillar_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_02.glb",
+      "triangles": 60,
+      "bytes": 13960,
+      "sha256": "bcefa54b5307f9e0",
+      "size": [
+        0.886,
+        3,
+        0.886
+      ]
+    },
+    {
+      "file": "props/sd_pillar_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_large_01.glb",
+      "triangles": 144,
+      "bytes": 16072,
+      "sha256": "e58c8188a2362976",
+      "size": [
+        1,
+        6,
+        1
+      ]
+    },
+    {
+      "file": "props/sd_pillar_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_large_02.glb",
+      "triangles": 76,
+      "bytes": 14828,
+      "sha256": "6cf41e674c4306b2",
+      "size": [
+        0.886,
+        6,
+        0.886
+      ]
+    },
+    {
+      "file": "props/sd_stairs_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_large_01.glb",
+      "triangles": 140,
+      "bytes": 16884,
+      "sha256": "e295bd39ff93c6cd",
+      "size": [
+        4,
+        3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_stairs_short_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_short_small_01.glb",
+      "triangles": 44,
+      "bytes": 12732,
+      "sha256": "4c6e9738d54fd602",
+      "size": [
+        2,
+        1.5,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_stairs_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_small_01.glb",
+      "triangles": 92,
+      "bytes": 14676,
+      "sha256": "a9e3b2ce848ac078",
+      "size": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_01.glb",
+      "triangles": 302,
+      "bytes": 19220,
+      "sha256": "751ee2998a67d180",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_02.glb",
+      "triangles": 340,
+      "bytes": 20332,
+      "sha256": "6cbf76e54f3dbed9",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_03.glb",
+      "triangles": 383,
+      "bytes": 21452,
+      "sha256": "0be1644ff0b06131",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_04.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_04.glb",
+      "triangles": 380,
+      "bytes": 23076,
+      "sha256": "3763d60d967943a2",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_05.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_05.glb",
+      "triangles": 420,
+      "bytes": 24300,
+      "sha256": "4ab29d2c68e581c8",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_06.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_06.glb",
+      "triangles": 458,
+      "bytes": 25804,
+      "sha256": "bdbb9aefa123c300",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_01.glb",
+      "triangles": 302,
+      "bytes": 20264,
+      "sha256": "89c47484077f3986",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_02.glb",
+      "triangles": 370,
+      "bytes": 22356,
+      "sha256": "66b7dc41d50870f3",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_03.glb",
+      "triangles": 398,
+      "bytes": 23412,
+      "sha256": "d684fc84f2281890",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_04.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_04.glb",
+      "triangles": 398,
+      "bytes": 23412,
+      "sha256": "23cbf1f67ea14dfd",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_05.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_05.glb",
+      "triangles": 426,
+      "bytes": 24468,
+      "sha256": "384f510ddb6f6f42",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_06.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_06.glb",
+      "triangles": 454,
+      "bytes": 25740,
+      "sha256": "31a5d92684a66ed8",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_01.glb",
+      "triangles": 92,
+      "bytes": 15084,
+      "sha256": "4c36fac581705cd8",
+      "size": [
+        4,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_02.glb",
+      "triangles": 200,
+      "bytes": 20432,
+      "sha256": "eb5d4b44d4e1f5d4",
+      "size": [
+        4,
+        3,
+        1.316
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_03.glb",
+      "triangles": 488,
+      "bytes": 27640,
+      "sha256": "8019fa84a7949423",
+      "size": [
+        4,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_corner_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_01.glb",
+      "triangles": 184,
+      "bytes": 19188,
+      "sha256": "1a73d66adf2370f0",
+      "size": [
+        4.25,
+        3,
+        4.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_corner_l_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_L_01.glb",
+      "triangles": 92,
+      "bytes": 15120,
+      "sha256": "f24b7ea2b783f1d0",
+      "size": [
+        4.25,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_corner_r_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_R_01.glb",
+      "triangles": 92,
+      "bytes": 15180,
+      "sha256": "714c01b5c865d022",
+      "size": [
+        0.5,
+        3,
+        4.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_half_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_half_01.glb",
+      "triangles": 64,
+      "bytes": 13812,
+      "sha256": "8a7100d2a56ff0ea",
+      "size": [
+        4,
+        3,
+        0.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_01.glb",
+      "triangles": 60,
+      "bytes": 13552,
+      "sha256": "bce931d4b8c5b0c4",
+      "size": [
+        2,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_02.glb",
+      "triangles": 260,
+      "bytes": 19892,
+      "sha256": "af8b878214de904d",
+      "size": [
+        2,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_corner_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_01.glb",
+      "triangles": 120,
+      "bytes": 16068,
+      "sha256": "acf75a4dc8b2918e",
+      "size": [
+        2.25,
+        3,
+        2.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_corner_l_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_L_01.glb",
+      "triangles": 60,
+      "bytes": 13576,
+      "sha256": "f032c3704cea6e5e",
+      "size": [
+        2.25,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_corner_r_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_R_01.glb",
+      "triangles": 60,
+      "bytes": 13600,
+      "sha256": "94528afdc1ba76f7",
+      "size": [
+        0.5,
+        3,
+        2.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_half_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_half_01.glb",
+      "triangles": 44,
+      "bytes": 12884,
+      "sha256": "76736d62a40c6a46",
+      "size": [
+        2,
+        3,
+        0.25
+      ]
+    },
+    {
+      "file": "props/sd_brazier.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/Brazier.glb",
+      "triangles": 286,
+      "bytes": 16948,
+      "sha256": "5f99e63f949cfc3b",
+      "size": [
+        0.4,
+        1,
+        0.4
+      ]
+    },
+    {
+      "file": "props/sd_coffin.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/coffin.glb",
+      "triangles": 28,
+      "bytes": 10292,
+      "sha256": "37afc85bbd2bbea7",
+      "size": [
+        1.9,
+        0.49,
+        0.732
+      ]
+    },
+    {
+      "file": "props/sd_coffin_lid.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/coffin_lid.glb",
+      "triangles": 44,
+      "bytes": 10760,
+      "sha256": "70ba805a05584b12",
+      "size": [
+        2.033,
+        0.21,
+        0.829
+      ]
+    },
+    {
+      "file": "props/sd_crate.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/crate.glb",
+      "triangles": 108,
+      "bytes": 15496,
+      "sha256": "448be255f6ab310c",
+      "size": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    {
+      "file": "props/sd_door.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/door.glb",
+      "triangles": 56,
+      "bytes": 8372,
+      "sha256": "4744235b4226c572",
+      "size": [
+        1,
+        2,
+        0.215
+      ]
+    },
+    {
+      "file": "props/sd_pot.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/pot.glb",
+      "triangles": 124,
+      "bytes": 9204,
+      "sha256": "6595b30ec4c57162",
+      "size": [
+        0.578,
+        1.088,
+        0.578
+      ]
     }
   ]
 }
