@@ -1211,13 +1211,15 @@ async function mapsFlow(browser, half = 0) {
     const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    // Bots can be in sight the moment the match starts: keep the player alive from the first frame we can reach them.
+    await page.addInitScript(() => {
+      setInterval(() => {
+        const me = window.__match?.slots?.[window.__cs?.slot];
+        if (me) me.health = Math.max(me.health, 100);
+      }, 25);
+    });
     await page.goto(`${CLIENT}/?offline=${id}`);
     const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) }).then(() => true, () => false);
-    // Small maps put bots in sight at once: keep the player alive while we look at where they stand.
-    if (ok) await page.evaluate(() => {
-      const me = window.__match?.slots[window.__cs.slot];
-      if (me) setInterval(() => (me.health = 100), 50);
-    });
     await page.waitForTimeout(1500);
     // Imported maps can have floors below level 0: "solid ground" there means not below the lowest floor.
     let floor = -5;
