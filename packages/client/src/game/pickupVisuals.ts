@@ -84,6 +84,13 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       part(CreateCylinder(`${name}_jpnoz${x}`, { diameterTop: 0.1, diameterBottom: 0.16, height: 0.1, tessellation: 10 }, scene), mat(scene, '#2a2d33')).position.set(x, -0.3, 0);
     }
     part(CreateCylinder(`${name}_jpglow`, { diameter: 0.6, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ff9a3d', 0.7)).position.y = -0.42;
+  } else if (fx.kind === 'glider') {
+    // A folded hang-glider wing: a flat delta of fabric over a pack.
+    const wing = part(CreateCylinder(`${name}_glwing`, { diameter: 0.9, height: 0.03, tessellation: 3 }, scene), mat(scene, '#e2703a', 0.25));
+    wing.rotation.y = Math.PI / 2;
+    wing.position.y = 0.12;
+    part(CreateBox(`${name}_glpack`, { width: 0.3, height: 0.2, depth: 0.16 }, scene), mat(scene, '#3a3f48')).position.y = -0.05;
+    part(CreateBox(`${name}_glbar`, { width: 0.6, height: 0.03, depth: 0.03 }, scene), mat(scene, '#c9ccd2')).position.set(0, 0.06, 0.18);
   } else if (fx.kind === 'uav') {
     // A little quad drone: body, four arms and rotor discs.
     part(CreateBox(`${name}_uavbody`, { width: 0.26, height: 0.1, depth: 0.26 }, scene), mat(scene, '#3a3f48'));
@@ -126,6 +133,8 @@ export function itemColor(itemId: string): string {
       return fx.powerup === 'speed' ? '#36d6ff' : '#c03cff';
     case 'jetpack':
       return '#ff9a3d';
+    case 'glider':
+      return '#e2703a';
     case 'uav':
       return '#9fe8ff';
   }

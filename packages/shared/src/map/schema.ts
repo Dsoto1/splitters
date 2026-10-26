@@ -3,7 +3,7 @@ import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } 
 import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
 import { ScenarioLogic } from './logic.ts';
-import { MOUNT_MODELS } from '../sim/mounts.ts';
+import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
 
 /**
  * Tile Trigger map document, format version 6 (v2 added per-surface tile styles, v3 pickup
@@ -20,7 +20,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 17;
+export const MAP_FORMAT_VERSION = 18;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -290,10 +290,38 @@ export const MountEntity = EntityBase.extend({
   kind: z.literal('mount'),
   model: z.enum(MOUNT_MODELS),
   yaw: Yaw,
-  /** Sentries shoot this team's enemies (null: everyone); turrets and vehicles ignore it. */
+  /** Sentries shoot this team's enemies (null: everyone); vehicles and turrets given a team wear its colour (skin `auto`). */
   faction: FactionId.nullable().default(null),
   /** Override the respawn delay after it is destroyed (null: the mount's own). */
   respawnSeconds: z.number().min(5).max(600).nullable().default(null),
+  /** Paint (see MOUNT_SKINS): automatic, factory, desert, forest, snow, urban or team colour. */
+  skin: z.enum(MOUNT_SKINS).optional(),
+});
+
+/**
+ * Air drop: how players start on a map with a transport plane. `off`: the
+ * plane only flies over (jump in from a high place, or ride it from an air
+ * drop on another plane); `start`: everyone's first spawn of a round is in
+ * the plane (battle-royale start); `always`: every spawn is.
+ */
+export const AIRDROP_MODES = ['off', 'start', 'always'] as const;
+export type AirdropMode = (typeof AIRDROP_MODES)[number];
+
+/**
+ * A transport plane flying a fixed route over the map. Position is the
+ * route's anchor on the ground (MapMaker moves the whole route with it);
+ * `route` points are [x, z] offsets from it, flown at `altitude` metres
+ * above it, once round every `loopSeconds`. A closed route loops; an open
+ * one flies first to last, then the plane starts over and anyone still
+ * aboard is thrown out. Riders jump out with E or jump and parachute down.
+ */
+export const AirplaneEntity = EntityBase.extend({
+  kind: z.literal('airplane'),
+  route: z.array(z.tuple([z.number().min(-2000).max(2000), z.number().min(-2000).max(2000)])).min(2).max(32),
+  altitude: z.number().min(15).max(400).default(70),
+  loopSeconds: z.number().min(10).max(600).default(60),
+  closed: z.boolean().default(true),
+  airdrop: z.enum(AIRDROP_MODES).default('off'),
 });
 
 /** A jump pad: stepping on it throws you up (`power` m/s) and along its facing (`push` m/s). */
@@ -405,7 +433,7 @@ export const LightEntity = EntityBase.extend({
   fixture: z.enum(LIGHT_FIXTURES).default('ceiling'),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity]);
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -534,6 +562,7 @@ export type BombsiteEntity = z.infer<typeof BombsiteEntity>;
 export type HostageEntity = z.infer<typeof HostageEntity>;
 export type RescueEntity = z.infer<typeof RescueEntity>;
 export type LightEntity = z.infer<typeof LightEntity>;
+export type AirplaneEntity = z.infer<typeof AirplaneEntity>;
 export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
 export type Liquid = (typeof LIQUIDS)[number];
 export type Faction = z.infer<typeof Faction>;

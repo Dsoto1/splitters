@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { loadMap, type MapDocument } from '../src/index.ts';
+import { MAP_FORMAT_VERSION, loadMap, type MapDocument } from '../src/index.ts';
 
 export const ARENA_PATH = fileURLToPath(new URL('../../../maps/phase0_arena.json', import.meta.url));
 
@@ -14,7 +14,7 @@ export function loadArena(): MapDocument {
 export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns: [number, number, number][] = [[0, 0, 0]]): MapDocument {
   return {
     format: 'tiletrigger.map',
-    formatVersion: 17,
+    formatVersion: MAP_FORMAT_VERSION,
     metadata: {
       id: 'test_map',
       name: 'Test',

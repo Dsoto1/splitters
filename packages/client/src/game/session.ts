@@ -1,6 +1,9 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   QUICK_MESSAGES,
+  CHUTE,
+  CHUTE_GLIDER,
+  heightAboveGround,
   BODY_SIZES,
   bodySizeOf,
   CORE_WEAPONS,
@@ -798,12 +801,15 @@ export class GameSession {
     const enter = local.alive && !this.seat ? this.mounts?.enterable(local.state.pos) : null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
-      this.hud.setPrompt(`Get out of the ${m?.def.displayName ?? 'vehicle'}`);
+      this.hud.setPrompt(m?.def.airplane ? 'Jump out (E or Space), then Space to open your parachute' : `Get out of the ${m?.def.displayName ?? 'vehicle'}`);
     } else if (enter) {
       const seat = enter.mount.def.seats[enter.seat]!;
       const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';
       this.hud.setPrompt(`${verb} the ${enter.mount.def.displayName}`);
-    } else if (e?.kind === 'button') this.hud.setPrompt(sc.state(target!)?.[0] === 0 ? 'Not working' : e.label || 'Press', sc.state(target!)?.[0] === 0);
+    } else if (local.alive && !local.state.grounded && !local.state.chute && local.state.velY < -CHUTE.armSpeed && local.jetFuel === null && heightAboveGround(local.physics, local.state.pos, CHUTE.minHeight) === null) {
+      this.hud.setPrompt(local.glider ? 'Open your glider (Space)' : 'Open your parachute (Space)');
+    } else if (local.state.chute) this.hud.setPrompt(local.state.chute === CHUTE_GLIDER ? 'Gliding: W faster, S slower, crouch to let go' : 'Parachute: steer with WASD, crouch to cut away');
+    else if (e?.kind === 'button') this.hud.setPrompt(sc.state(target!)?.[0] === 0 ? 'Not working' : e.label || 'Press', sc.state(target!)?.[0] === 0);
     else if (e?.kind === 'door') {
       const [open, locked] = sc.state(target!) ?? [0, 0];
       this.hud.setPrompt(locked ? 'Locked' : open > 50 ? 'Close' : 'Open', locked === 1);
@@ -949,9 +955,9 @@ export class GameSession {
       const ride = local.alive && this.seat ? this.mounts?.mounts.get(this.seat[0]) : undefined;
       const seatDef = ride?.def.seats[this.seat?.[1] ?? 0];
       const seatGun = seatDef?.weapon ? CORE_WEAPONS[seatDef.weapon] : undefined;
-      const handsBusy = !!seatDef && (seatDef.role === 'driver' || !!seatDef.weapon);
+      const handsBusy = !!seatDef && (seatDef.role === 'driver' || !!seatDef.weapon || !!ride?.def.airplane);
       local.seatGun = seatGun ?? null;
-      local.unarmed = seatDef?.role === 'driver' && !seatGun;
+      local.unarmed = (seatDef?.role === 'driver' && !seatGun) || !!ride?.def.airplane;
       const weapon = local.alive && !handsBusy ? local.weapon : undefined;
       const ready = local.raiseTicks === 0 && local.reloadTicks === 0;
       const zoomed = !!weapon?.view.zoomFov && this.input.zooming && ready;
@@ -968,7 +974,12 @@ export class GameSession {
       if (ride && seatDef) {
         const feet = mountToWorld(ride.shown.pos, ride.shown.yaw, seatDef.offset);
         const eye = { x: feet.x, y: feet.y + PLAYER.eyeHeight, z: feet.z };
-        if (seatDef.role === 'driver' && ride.def.kind === 'vehicle') {
+        if (ride.def.airplane) {
+          // Riding the plane: watch from behind and above it, looking wherever you like.
+          const back = viewDirection(this.input.yaw, this.input.pitch - 0.3);
+          const dist = 10 + ride.def.half[2] * 1.5;
+          this.view.setCamera({ x: ride.shown.pos.x - back.x * dist, y: ride.shown.pos.y - back.y * dist + 3, z: ride.shown.pos.z - back.z * dist }, this.input.yaw, this.input.pitch - 0.15, DEFAULT_FOV);
+        } else if (seatDef.role === 'driver' && ride.def.kind === 'vehicle') {
           // The chase camera swings round behind the vehicle as it turns (the mouse can still look about).
           const d = Math.atan2(Math.sin(ride.shown.yaw - this.input.yaw), Math.cos(ride.shown.yaw - this.input.yaw));
           this.input.yaw += d * Math.min(1, dt * 2.5);
@@ -1077,7 +1088,9 @@ export class GameSession {
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
     // Third person: your own character drawn where prediction has you (not the delayed server copy).
     const self = this.thirdPerson && !this.tpClose && local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
-    if (self && local) Object.assign(self, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held });
+    if (self && local) Object.assign(self, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0 });
+    // Your own canopy in first person (third person draws it over your character).
+    this.view.updateLocalCanopy(local?.alive && !self && !this.seat && local.state.chute ? this.drawnPos : null, this.input.yaw, local?.state.chute ?? 0);
     // Hostage Rescue: the hostages walk about like everyone else.
     const hostages = this.modeHud?.hostagePoses() ?? [];
     this.view.updateAvatars(

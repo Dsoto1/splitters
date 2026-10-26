@@ -700,6 +700,114 @@
       ]
     },
     {
+      "file": "models/vehicles/gun_jeep.glb",
+      "sha256": "ebcef46a87789588",
+      "triangles": 2082,
+      "bytes": 179028,
+      "source": "kenney-car-kit/truck.glb",
+      "title": "Car Kit 3.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/car-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/vehicles/armored_rover.glb",
+      "sha256": "c66189bba9193658",
+      "triangles": 2476,
+      "bytes": 242684,
+      "source": "kenney-car-kit/delivery.glb",
+      "title": "Car Kit 3.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/car-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/vehicles/ice_cream_truck.glb",
+      "sha256": "a2ca6c23e40d8c38",
+      "triangles": 2082,
+      "bytes": 178976,
+      "source": "kenney-car-kit/van.glb",
+      "title": "Car Kit 3.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/car-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled",
+        "recoloured"
+      ]
+    },
+    {
+      "file": "models/vehicles/hover_bike.glb",
+      "sha256": "0eab9a0d49ad5596",
+      "triangles": 280,
+      "bytes": 19708,
+      "source": "kenney-space-kit/craft_speederA.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/vehicles/gunship.glb",
+      "sha256": "2dedd3d74bb8f7cb",
+      "triangles": 380,
+      "bytes": 25544,
+      "source": "kenney-space-kit/craft_cargoB.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/vehicles/transport_plane.glb",
+      "sha256": "3bdfb4db42a94d03",
+      "triangles": 264,
+      "bytes": 18164,
+      "source": "kenney-space-kit/craft_cargoA.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
+      "file": "models/vehicles/snow_sled.glb",
+      "sha256": "4e91299d52aa3f92",
+      "triangles": 204,
+      "bytes": 33624,
+      "source": "kenney-holiday-kit/sled-long.glb",
+      "title": "Holiday Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/holiday-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF",
+        "reoriented and scaled"
+      ]
+    },
+    {
       "file": "sounds/explosion_0.ogg",
       "sha256": "3cb48d86dab63140",
       "bytes": 14317,
@@ -1334,6 +1442,17 @@
       "title": "Impact Sounds 1.0",
       "creator": "Kenney",
       "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/pickup.glider_0.ogg",
+      "sha256": "5b7e07eccd4413ad",
+      "bytes": 19616,
+      "source": "kenney-sci-fi-sounds/Audio/doorOpen_000.ogg",
+      "title": "Sci-Fi Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/sci-fi-sounds",
       "license": "CC0-1.0",
       "modifications": []
     },

@@ -19,6 +19,8 @@ export * from './sim/effectsPhysics.ts';
 export * from './sim/weapons.ts';
 export * from './sim/trajectory.ts';
 export * from './sim/mounts.ts';
+export * from './sim/parachute.ts';
+export * from './sim/airplane.ts';
 export * from './sim/items.ts';
 export * from './sim/rules.ts';
 export * from './sim/scenarioDefs.ts';

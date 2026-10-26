@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import WebSocket from 'ws';
-import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, PLAYER, PROTOCOL_VERSION, lookAngles, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
+import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, PLAYER, PROTOCOL_VERSION, lookAngles, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
 import { startServer, type RunningServer } from '../src/server.ts';
 import { parseClientMessage } from '@tiletrigger/shared';
 
 const room: MapDocument = {
   format: 'tiletrigger.map',
-  formatVersion: 17,
+  formatVersion: MAP_FORMAT_VERSION,
   metadata: {
     id: 'test_room',
     name: 'Test Room',

@@ -3,6 +3,7 @@ import type { Vec3 } from '../math.ts';
 import { PLAYER, SPRINT, STANCES, TICK_DT, quantize, type Stance } from './constants.ts';
 import type { PhysicsWorld } from './physics.ts';
 import { JET, LIQUID_SPECS, SWIM_DEPTH, liquidAt, type LiquidBox } from './liquids.ts';
+import { CHUTE_GLIDER, CHUTE_PARACHUTE, chuteVelY, chuteWish, wantsChute, type ChuteKind } from './parachute.ts';
 
 export const BUTTON_JUMP = 1;
 export const BUTTON_FIRE = 2;
@@ -78,6 +79,10 @@ export interface MoveState {
   winded?: boolean;
   /** On a ladder this tick. */
   climb?: boolean;
+  /** Under an open canopy: parachute (1) or glider (2); see parachute.ts. */
+  chute?: ChuteKind;
+  /** Jumped out of something high (the plane, a flyer): the automatic opener is armed until you land. */
+  drop?: boolean;
 }
 
 /** Current stance of a move state. */
@@ -96,6 +101,12 @@ export interface MoveEnv {
   scale?: number;
   /** Gravity multiple (map / match setting); 1 = normal. */
   gravity?: number;
+  /** Wearing a jetpack (fuel or not): jump is its thrust, so it never pulls the parachute's cord. */
+  jetpack?: boolean;
+  /** Carrying a glider: the canopy that opens is a glider instead of a parachute. */
+  glider?: boolean;
+  /** Always open a canopy before a long fall, and never cut it away (bots). */
+  autoChute?: boolean;
 }
 
 /** A ladder as movement sees it: its foot against the wall, facing out from the wall, how tall and wide. */
@@ -250,6 +261,16 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   const jump = jumpPressed;
   let jet = false;
   const ladder = !chest && env.ladders?.length ? ladderAt(env.ladders, state.pos) : null;
+  // Canopy: packs up on the ground, in water or on a ladder; crouch cuts it away. Opens on jump
+  // (not with a jetpack, which jump fires) or by itself when the automatic opener is armed.
+  let chute: ChuteKind | undefined = state.chute;
+  let drop = !!state.drop;
+  if (state.grounded || chest || ladder) {
+    chute = undefined;
+    drop = false;
+  } else if (chute && input.buttons & BUTTON_CROUCH && !env.autoChute) chute = undefined;
+  else if (!chute && wantsChute(physics, state.pos, velY, jump && !env.jet && !env.jetpack, drop || !!env.autoChute)) chute = env.glider ? CHUTE_GLIDER : CHUTE_PARACHUTE;
+  if (chute) drop = false;
   if (ladder) {
     // On a ladder: walking into it climbs (looking well down, or backing off, climbs down), no gravity,
     // a little sideways movement, and jump lets go, pushing you off it.
@@ -281,6 +302,12 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     velY -= PLAYER.gravity * g * 0.15 * dt;
     velY *= Math.pow(0.9, dt * 60);
     if (jump) velY = state.pos.y + SWIM_DEPTH + 0.35 > chest.max.y ? Math.max(velY, 4.6) : Math.min(velY + 14 * dt, 3.2);
+  } else if (chute) {
+    // Under a canopy: a slow, steady sink and steering of its own (see parachute.ts).
+    velY = chuteVelY(velY, chute, dt);
+    const glide = chuteWish(chute, input.yaw, input.forward, input.right);
+    wx = glide.x;
+    wz = glide.z;
   } else {
     if (state.grounded && jump) velY = PLAYER.jumpSpeed;
     else if (jump && env.jet && !state.grounded) {
@@ -299,7 +326,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   if (velY > 0 && moved.movedY < desiredY - 1e-4) velY = 0;
   if (velY > 0) grounded = false;
 
-  const decay = grounded ? (traction < 1 ? 0.975 : 0.86) : AIR_PUSH_DECAY;
+  const decay = grounded ? (traction < 1 ? 0.975 : 0.86) : chute ? CHUTE_PUSH_DECAY : AIR_PUSH_DECAY;
   vx = Math.abs(vx * decay) < 0.02 ? 0 : quantize(vx * decay);
   vz = Math.abs(vz * decay) < 0.02 ? 0 : quantize(vz * decay);
   return {
@@ -315,8 +342,13 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     ...(sprint ? { sprint } : {}),
     ...(winded ? { winded } : {}),
     ...(ladder && !jump ? { climb: true } : {}),
+    ...(chute && !grounded ? { chute } : {}),
+    ...(drop && !grounded ? { drop } : {}),
   };
 }
+
+/** Under a canopy, momentum (a jump out of a moving plane) bleeds off faster than in free fall. */
+const CHUTE_PUSH_DECAY = 0.97;
 
 /** How much of a push (pads, knockback) is left after each tick in the air. */
 export const AIR_PUSH_DECAY = 0.99;

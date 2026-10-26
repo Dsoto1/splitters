@@ -15,7 +15,7 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@tiletrigger/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@tiletrigger/shared';
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { applyToneMapping } from '../game/atmosphere.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
@@ -330,7 +330,7 @@ export class EditorView {
               : e.kind === 'prop'
                 ? { key, node: createPropNode(this.scene, this.models, e, `edprop_${e.id}`, false) }
                 : e.kind === 'mount'
-                  ? { key, node: createMountNode(this.scene, this.models, e.model, `edmount_${e.id}`) }
+                  ? { key, node: createMountNode(this.scene, this.models, e.model, `edmount_${e.id}`, MOUNT_DEFS[e.model].kind === 'sentry' ? null : mountTint(e.skin, e.faction ? (teams.find((t) => t.id === e.faction)?.color ?? null) : null)) }
                   : { key, node: this.scenario.createNode(e, `ed_${e.id}`) };
         m.key = key;
         this.markers.set(e.id, m);

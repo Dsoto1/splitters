@@ -172,6 +172,9 @@ function buildBase(s: 1 | -1, team: string): void {
   m.mount('speeder', [s * 26, ground(s * 26, fz(96)), fz(96)], facing);
   m.mount('hauler', [s * 25, ground(s * 25, fz(114)), fz(114)], facing);
   m.mount('skyfighter', [-s * 25, ground(-s * 25, fz(114)), fz(114)], facing);
+  // Snow sleds on both flanks of the plateau: quick two-seaters for the slopes.
+  m.mount('snow_sled', [s * 31, ground(s * 31, fz(102)), fz(102)], facing, team);
+  m.mount('snow_sled', [-s * 31, ground(-s * 31, fz(102)), fz(102)], facing, team);
   // A tank waits on the field below the cliff, between the base and the ridge.
   m.mount('tank', [s * 40, ground(s * 40, fz(68)), fz(68)], facing);
   // Jump pads at the foot of the cliff throw you up onto the apron.
@@ -192,6 +195,8 @@ function buildBase(s: 1 | -1, team: string): void {
   m.pickup('ammo_rifle', [-10, BASE_Y, fz(114)]).pickup('grenades', [10, BASE_Y, fz(114)]);
   m.pickup('health_small', [0, BASE_Y, fz(114)]).pickup('armor_small', [-26, ground(-26, fz(104)), fz(104)]);
   m.pickup('weapon_sniper', [0, 16, fz(108)]).pickup('ammo_sniper', [-8, 16, fz(100)]);
+  // A glider on the roof: jump off the cliff and fly to the ridges.
+  m.pickup('glider', [8, 16, fz(100)]);
   // Capture the Flag: the flag stands behind the dais in the middle of the hall.
   m.flag(team, [0, BASE_Y, fz(107.6)], facing);
 }
@@ -348,6 +353,10 @@ for (let n = 0; n < 400 && placed.length < 190; n++) {
 
 // ---------------------------------------------------------------- map settings
 
+// Air drop: a transport plane loops over both bases at 70 m and every round starts with everyone aboard;
+// jump out (E or Space) over your base, or anywhere, and parachute in. Bots drop over their own base.
+m.add({ kind: 'airplane', position: [0, 0, 0], route: [[0, -110], [50, -60], [50, 60], [0, 110], [-50, 60], [-50, -60]], altitude: 70, loopSeconds: 45, closed: true, airdrop: 'start' });
+
 m.teams([8, 8]);
 // Furniture in the bare rooms, for what they are in this theme.
 m.furnish();
@@ -356,7 +365,7 @@ await m.fillTeamSpawns(8);
 m.lightRooms();
 m.meta({
   description:
-    'A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler, a skyfighter that flies and a tank below the cliff, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west. An homage in spirit to the great outdoor team maps of the early 2000s.',
+    'A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler, a skyfighter that flies and a tank below the cliff, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Snow sleds wait on the plateau flanks and a glider on each roof; every round starts in a transport plane looping over the basin, so pick your drop and parachute in. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west. An homage in spirit to the great outdoor team maps of the early 2000s.',
   modes: ['core.tdm', 'core.deathmatch'],
   players: [4, 16],
 });

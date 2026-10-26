@@ -8,8 +8,46 @@
  * metres from the mount's origin (its footprint centre on the ground).
  */
 
-export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank'] as const;
+export const MOUNT_MODELS = [
+  'turret_mg', 'turret_rocket', 'sentry', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank',
+  // Sprint 5 lineup (see VEHICLES.md): each one is an existing handling class with its own tuning.
+  'gun_jeep', 'armored_rover', 'hover_bike', 'gunship', 'ice_cream_truck', 'snow_sled',
+] as const;
 export type MountModel = (typeof MOUNT_MODELS)[number];
+
+/** The transport plane of an `airplane` map entity: not placeable as a mount, it flies the entity's route. */
+export const AIRPLANE_MODEL = 'airplane';
+
+/**
+ * Paint skins for vehicles (MapMaker inspector, per placed mount). `auto`
+ * paints a team-owned vehicle (one given a team) in its team's colour and
+ * leaves the rest in their factory paint; `team` always uses the team colour.
+ */
+export const MOUNT_SKINS = ['auto', 'factory', 'desert', 'forest', 'snow', 'urban', 'team'] as const;
+export type MountSkin = (typeof MOUNT_SKINS)[number];
+/** Tint per skin (multiplied over the model's own colours); null = unchanged. */
+export const MOUNT_SKIN_TINTS: Readonly<Record<Exclude<MountSkin, 'auto' | 'team'>, string | null>> = {
+  factory: null,
+  desert: '#d9b77e',
+  forest: '#7d9461',
+  snow: '#eef2f6',
+  urban: '#9097a0',
+};
+export const MOUNT_SKIN_LABELS: Readonly<Record<MountSkin, string>> = {
+  auto: 'Automatic (team colour when it has a team)',
+  factory: 'Factory paint',
+  desert: 'Desert',
+  forest: 'Forest',
+  snow: 'Snow',
+  urban: 'Urban grey',
+  team: 'Team colour',
+};
+/** The tint a placed mount is drawn with: a skin colour, its team's colour, or null (factory paint). */
+export function mountTint(skin: MountSkin | undefined, teamColor: string | null): string | null {
+  const s = skin ?? 'auto';
+  if (s === 'team' || s === 'auto') return teamColor;
+  return MOUNT_SKIN_TINTS[s];
+}
 
 export type SeatRole = 'driver' | 'gunner' | 'passenger';
 
@@ -20,12 +58,14 @@ export interface SeatDef {
   offset: [number, number, number];
   /** Mounted weapon this seat fires instead of the occupant's own (absent: passengers use their own weapons, drivers can't shoot). */
   weapon?: string;
-  /** How far the seat can aim either side of the mount's forward (radians; absent = all round). */
+  /** How far the seat can aim either side of its facing (radians; absent = all round). */
   arc?: number;
+  /** Which way the seat's arc is centred, from the mount's forward (radians, + to the right): side door guns. Default 0. */
+  facing?: number;
 }
 
 export interface MountDef {
-  id: MountModel;
+  id: MountModel | typeof AIRPLANE_MODEL;
   displayName: string;
   kind: 'turret' | 'sentry' | 'vehicle';
   /** Built model (content/models.json). */
@@ -55,6 +95,10 @@ export interface MountDef {
     fly?: { climb: number; ceiling: number };
   };
   sentry?: { weapon: string; range: number; turnRate: number };
+  /** The transport plane: flies its map entity's route on its own, can't be hurt, and riders jump out (E or jump) to parachute down. */
+  airplane?: boolean;
+  /** Drawn this far above the ground (m) instead of the class default (hovercraft float 0.35 m; sleds sit on the snow). */
+  rideHeight?: number;
   /** One line for MapMaker. */
   blurb: string;
 }
@@ -226,9 +270,135 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     vehicle: { maxSpeed: 11, reverseSpeed: 5, accel: 5, turnRate: 1.0, grip: 0.45, mass: 6 },
     blurb: 'A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun',
   },
+  gun_jeep: {
+    id: 'gun_jeep',
+    displayName: 'Gun Jeep',
+    kind: 'vehicle',
+    model: 'vehicles/gun_jeep.glb',
+    health: 380,
+    half: [1.0, 0.7, 2.1],
+    seats: [
+      { role: 'driver', label: 'Driver', offset: [-0.4, 0.8, 0.5] },
+      { role: 'gunner', label: 'Roof gun', offset: [0, 1.25, -1.1], weapon: 'core.mount_mg', arc: ALL_ROUND },
+      { role: 'passenger', label: 'Passenger', offset: [0.4, 0.8, 0.5] },
+    ],
+    enterRadius: 3.2,
+    respawnSeconds: 40,
+    blast: { radius: 4.5, damage: 85 },
+    vehicle: { maxSpeed: 21, reverseSpeed: 8, accel: 12, turnRate: 2.0, grip: 0.26, mass: 1.1 },
+    blurb: 'A light pickup with a machine gun on the back: a driver, a gunner who fires all round and one passenger',
+  },
+  armored_rover: {
+    id: 'armored_rover',
+    displayName: 'Armored Rover',
+    kind: 'vehicle',
+    model: 'vehicles/armored_rover.glb',
+    health: 900,
+    half: [1.25, 1.2, 2.65],
+    seats: [
+      { role: 'driver', label: 'Driver', offset: [-0.5, 1.1, 1.5] },
+      { role: 'gunner', label: 'Front gun', offset: [0.4, 2.75, 0.9], weapon: 'core.mount_mg', arc: 1.3 },
+      { role: 'gunner', label: 'Rear gun', offset: [0, 2.75, -1.7], weapon: 'core.mount_mg', arc: 1.6, facing: Math.PI },
+      { role: 'passenger', label: 'Left bench', offset: [-0.6, 1.2, -0.8] },
+      { role: 'passenger', label: 'Right bench', offset: [0.6, 1.2, -0.8] },
+    ],
+    enterRadius: 3.8,
+    respawnSeconds: 60,
+    blast: { radius: 5.5, damage: 110 },
+    vehicle: { maxSpeed: 14, reverseSpeed: 6, accel: 7, turnRate: 1.25, grip: 0.38, mass: 3.6 },
+    blurb: 'A heavy armoured truck for five: a driver, a front and a rear machine gunner and two riders in the back',
+  },
+  hover_bike: {
+    id: 'hover_bike',
+    displayName: 'Hover Bike',
+    kind: 'vehicle',
+    model: 'vehicles/hover_bike.glb',
+    health: 170,
+    half: [0.9, 0.5, 1.5],
+    seats: [{ role: 'driver', label: 'Rider', offset: [0, 0.95, -0.3] }],
+    enterRadius: 2.6,
+    respawnSeconds: 30,
+    blast: { radius: 3.5, damage: 70 },
+    vehicle: { maxSpeed: 31, reverseSpeed: 8, accel: 18, turnRate: 2.4, hover: true, grip: 0.1, mass: 0.35 },
+    blurb: 'The fastest thing on the map: one rider, no gun, drifts like a hovercraft',
+  },
+  gunship: {
+    id: 'gunship',
+    displayName: 'Gunship',
+    kind: 'vehicle',
+    model: 'vehicles/gunship.glb',
+    health: 950,
+    half: [2.4, 1.2, 4.3],
+    seats: [
+      { role: 'driver', label: 'Pilot', offset: [0, 3.1, 2.4], weapon: 'core.speeder_guns', arc: 0.3 },
+      { role: 'gunner', label: 'Left door gun', offset: [-2.0, 2.4, -0.4], weapon: 'core.mount_mg', arc: 1.25, facing: -Math.PI / 2 },
+      { role: 'gunner', label: 'Right door gun', offset: [2.0, 2.4, -0.4], weapon: 'core.mount_mg', arc: 1.25, facing: Math.PI / 2 },
+    ],
+    enterRadius: 4.5,
+    respawnSeconds: 80,
+    blast: { radius: 6, damage: 120 },
+    vehicle: { maxSpeed: 17, reverseSpeed: 6, accel: 6, turnRate: 1.1, hover: true, grip: 0.06, mass: 3, fly: { climb: 5, ceiling: 30 } },
+    blurb: 'A flying gunship (the dropship\'s flight model): the pilot fires blasters ahead, two door gunners cover the sides',
+  },
+  ice_cream_truck: {
+    id: 'ice_cream_truck',
+    displayName: 'Ice Cream Truck',
+    kind: 'vehicle',
+    model: 'vehicles/ice_cream_truck.glb',
+    health: 520,
+    half: [1.2, 1.1, 2.4],
+    seats: [
+      { role: 'driver', label: 'Driver', offset: [-0.45, 0.9, 1.2] },
+      { role: 'passenger', label: 'Serving hatch', offset: [0.5, 0.9, 0.0] },
+      { role: 'passenger', label: 'Back left', offset: [-0.5, 0.9, -1.2] },
+      { role: 'passenger', label: 'Back right', offset: [0.5, 0.9, -1.2] },
+    ],
+    enterRadius: 3.4,
+    respawnSeconds: 45,
+    blast: { radius: 5, damage: 95 },
+    vehicle: { maxSpeed: 16, reverseSpeed: 6, accel: 8, turnRate: 1.5, grip: 0.24, mass: 1.9 },
+    blurb: 'A pastel van for four: no gun, but the three riders shoot out of the windows',
+  },
+  snow_sled: {
+    id: 'snow_sled',
+    displayName: 'Snow Sled',
+    kind: 'vehicle',
+    model: 'vehicles/snow_sled.glb',
+    health: 200,
+    half: [0.85, 0.5, 1.4],
+    seats: [
+      { role: 'driver', label: 'Driver', offset: [0, 0.75, 0.35] },
+      { role: 'passenger', label: 'Passenger', offset: [0, 0.75, -0.75] },
+    ],
+    enterRadius: 2.8,
+    respawnSeconds: 30,
+    blast: { radius: 3.5, damage: 60 },
+    vehicle: { maxSpeed: 23, reverseSpeed: 5, accel: 13, turnRate: 2.0, hover: true, grip: 0.12, mass: 0.45 },
+    rideHeight: 0,
+    blurb: 'A two-seat sled that skims over snow (hover handling): a driver and a passenger with their own gun',
+  },
 };
 
-export const getMountDef = (id: string): MountDef | undefined => MOUNT_DEFS[id as MountModel];
+/**
+ * The transport plane (see AirplaneEntity and sim/airplane.ts): 24
+ * passenger benches along the hold; it cannot be hurt and nobody flies it.
+ */
+export const AIRPLANE_DEF: MountDef = {
+  id: AIRPLANE_MODEL,
+  displayName: 'Transport Plane',
+  kind: 'vehicle',
+  model: 'vehicles/transport_plane.glb',
+  health: 1_000_000,
+  half: [5.2, 2.6, 8],
+  seats: Array.from({ length: 24 }, (_, i): SeatDef => ({ role: 'passenger', label: `Bench ${i + 1}`, offset: [i % 2 ? 1.4 : -1.4, 1.0, 6 - Math.floor(i / 2)] })),
+  enterRadius: 0,
+  respawnSeconds: 600,
+  blast: { radius: 0, damage: 0 },
+  airplane: true,
+  blurb: 'Flies a fixed route; jump out with E or jump and parachute down',
+};
+
+export const getMountDef = (id: string): MountDef | undefined => (id === AIRPLANE_MODEL ? AIRPLANE_DEF : MOUNT_DEFS[id as MountModel]);
 
 /** Turn a mount-frame offset into world space for a mount at `pos` facing `yaw` (see viewDirection). */
 export function mountToWorld(pos: { x: number; y: number; z: number }, yaw: number, o: readonly [number, number, number]): { x: number; y: number; z: number } {

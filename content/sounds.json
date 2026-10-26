@@ -769,6 +769,16 @@
       "gain": 0.45,
       "range": "near"
     },
+    "pickup.glider": {
+      "gain": 0.55,
+      "range": "mid",
+      "variants": [
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/doorOpen_000.ogg"
+        }
+      ]
+    },
     "pickup.jetpack": {
       "gain": 0.6,
       "range": "mid",

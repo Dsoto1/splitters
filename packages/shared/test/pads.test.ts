@@ -34,6 +34,8 @@ describe('jump pads land where bots are told they do', () => {
         match.step();
       };
       me.health = 100;
+      // Maps with an air drop start you in the plane: get out first.
+      match.leaveMount(me, false);
       me.move = { pos: { ...pad.pos }, velY: 0, grounded: true };
       let left = false;
       for (let i = 0; i < 600; i++) {

@@ -8,6 +8,7 @@ import { floatingProps } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { validateScenario } from './validateScenario.ts';
+import { airplaneIssues } from '../sim/airplane.ts';
 
 export type IssueSeverity = 'error' | 'warning' | 'suggestion';
 
@@ -154,6 +155,8 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   }
 
   issues.push(...validateScenario(map));
+  const terrain = map.terrain;
+  issues.push(...airplaneIssues(map, (x, z) => (terrain ? terrainHeightAt(terrain, x, z) : null)));
 
   const { min, max } = map.metadata.recommendedPlayers;
   if (min > max) issues.push({ severity: 'error', code: 'meta.players', message: `recommended players min ${min} > max ${max}` });

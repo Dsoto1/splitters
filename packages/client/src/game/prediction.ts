@@ -69,6 +69,8 @@ export class LocalPlayer {
   scale = 1;
   /** Jetpack fuel units (see JET), or null without a jetpack. */
   jetFuel: number | null = null;
+  /** Carrying a glider (canopies open as gliders, as on the server). */
+  glider = false;
   /** Seated in a turret or vehicle: the server moves you, so movement isn't predicted. */
   mounted = false;
   /** The seat's gun (set by the session while seated), its heat, and whether the seat can't shoot at all (driving). */
@@ -161,7 +163,7 @@ export class LocalPlayer {
   /** Same order as the server: move with the current boost, then count the boost down. */
   private move(state: MoveState, input: PlayerInput): MoveState {
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
-    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity }));
+    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}) }));
     if (this.jetFuel !== null) this.jetFuel = stepJetFuel(this.jetFuel, !!next.jet);
     if (this.speedTicks > 0) this.speedTicks--;
     return next;
@@ -261,6 +263,7 @@ export class LocalPlayer {
       this.speedTicks = me.sp;
       this.damageTicks = me.dm;
       this.jetFuel = me.jp ?? null;
+      this.glider = me.gl === 1;
       this.reloadTicks = Math.max(0, me.rl - this.pending.length);
       this.raiseTicks = Math.max(0, me.rs - this.pending.length);
     }
@@ -276,6 +279,8 @@ export class LocalPlayer {
       grounded: server.g === 1,
       ...(server.vx || server.vz ? { vx: server.vx ?? 0, vz: server.vz ?? 0 } : {}),
       ...(server.sn ? { stance: server.sn } : {}),
+      ...(server.ch ? { chute: server.ch } : {}),
+      ...(server.dr ? { drop: true } : {}),
       ...(sta ? { ...(sta[0] < 1000 ? { stamina: sta[0] / 1000 } : {}), ...(sta[1] ? { rest: sta[1] } : {}), ...(sta[2] ? { winded: true } : {}) } : {}),
     };
     if (this.alive && !this.mounted) {

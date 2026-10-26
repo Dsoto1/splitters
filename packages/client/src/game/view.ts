@@ -11,6 +11,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun } from './mountVisuals.ts';
+import { createCanopy, placeCanopy } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import type { ClientMount } from './mountState.ts';
@@ -38,6 +39,7 @@ import {
   PROJECTILE_VISUALS,
   type ZoneSnapshot,
   FX_JET,
+  CHUTE_GLIDER,
   liquidAt,
   mapLiquids,
   type Liquid,
@@ -102,6 +104,8 @@ interface Avatar {
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
   aura?: Mesh;
   jet?: Mesh;
+  /** Parachute or glider over them, and which. */
+  canopy?: { node: TransformNode; kind: number };
   /** Physics body after death (until the next spawn). */
   ragdoll?: Ragdoll;
   wasAlive?: boolean;
@@ -344,6 +348,7 @@ export class GameView {
     a.tag = undefined;
     a.aura?.setEnabled(false);
     a.jet?.setEnabled(false);
+    this.dropCanopy(a);
     a.flash?.setEnabled(false);
     this.corpses.push({ a, slot, born: performance.now() });
     while (this.corpses.length > MAX_CORPSES) this.disposeAvatar(this.corpses.shift()!.a);
@@ -486,6 +491,24 @@ export class GameView {
       });
     }
     this.blood.update(dt);
+  }
+
+  private dropCanopy(a: Avatar): void {
+    a.canopy?.node.dispose(false, true);
+    a.canopy = undefined;
+  }
+
+  private localCanopy?: { node: TransformNode; kind: number };
+
+  /** Your own canopy in first person (overhead, where looking up shows it); null packs it away. */
+  updateLocalCanopy(pos: Vec3 | null, yaw: number, kind: number): void {
+    if (this.localCanopy && (this.localCanopy.kind !== kind || !pos)) {
+      this.localCanopy.node.dispose(false, true);
+      this.localCanopy = undefined;
+    }
+    if (!pos || !kind) return;
+    this.localCanopy ??= { node: createCanopy(this.scene, 'canopy_local', kind), kind };
+    placeCanopy(this.localCanopy.node, pos, yaw, performance.now(), 0);
   }
 
   /** A jetpack flame (a glowing cone pointing down behind the shoulders). */
@@ -768,6 +791,19 @@ export class GameView {
         a.jet.setEnabled(jetting);
         if (jetting) a.jet.scaling.set(1, 0.8 + Math.random() * 0.5, 1);
       }
+      // Parachute or glider: the canopy over them; gliders fly lying forward.
+      const chute = p.alive && !seated.has(p.slot) ? (p.chute ?? 0) : 0;
+      if (a.canopy && a.canopy.kind !== chute) this.dropCanopy(a);
+      if (chute) {
+        a.canopy ??= { node: createCanopy(this.scene, `canopy_${p.slot}`, chute), kind: chute };
+        placeCanopy(a.canopy.node, a.root.position, p.yaw, now, p.slot);
+      }
+      if (!a.ragdoll) {
+        // Gliding: lying forward under the wing, tipped round the hips (not the feet) so the body stays under it.
+        const glide = chute === CHUTE_GLIDER;
+        a.root.rotation.x = glide ? 1.1 : 0;
+        if (glide) a.root.position.set(a.root.position.x - Math.sin(p.yaw) * 0.9, a.root.position.y + 0.8, a.root.position.z - Math.cos(p.yaw) * 0.9);
+      }
       this.setTag(a, p.alive ? allyColor(p.slot) : null);
     }
     for (const [slot, a] of this.avatars) {
@@ -924,6 +960,7 @@ export class GameView {
     a.ragdoll?.dispose();
     a.anim?.dispose();
     a.weaponNode?.dispose();
+    this.dropCanopy(a);
     a.root.dispose(false, true);
   }
 
@@ -1101,7 +1138,7 @@ export class GameView {
     for (const m of mounts) {
       let node = this.mountNodes.get(m.index);
       if (!node) {
-        node = createMountNode(this.scene, this.models, m.model, `mount_${m.index}`);
+        node = createMountNode(this.scene, this.models, m.model, `mount_${m.index}`, m.tint);
         this.mountNodes.set(m.index, node);
       }
       node.setEnabled(m.alive && m.index !== manned);
@@ -1118,7 +1155,7 @@ export class GameView {
         }
       }
       node.rotation.y = m.shown.yaw;
-      if (m.def.kind === 'vehicle' && m.alive) this.suspend(m, node);
+      if (m.def.kind === 'vehicle' && m.alive && !m.def.airplane) this.suspend(m, node);
       if (m.def.kind !== 'vehicle') {
         const gun = mountGun(node);
         if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
