@@ -144,6 +144,102 @@ Terrain plants on Norman Shores (the grassiest big map), in view: before,
 shadow map; after, 0.52 M on High, 0.31 M (2,500 plants) on Medium, a lambert
 material and no shadow casting. Apex Ring on Medium: 0.07 M.
 
+### Clumped 48 v 48 (bot AI pass, October 2026)
+
+The owner's report: 48 v 48 gets choppy when the bots bunch up. In a clump
+every bot sees dozens of enemies: before this pass each perception cast a sight
+line to every enemy in view (200–260 rays a tick on the clumped maps), and
+every fighting bot thought in full every tick.
+
+**Measure**: `pnpm bench:96:clump` (96 bots, TDM 48 v 48, 10 s warm-up then
+30 s, Norman Shores, Frost Basin and Riot Junction, each spread out as they
+play and clumped: everyone put on a ~40 m patch in the middle, each side on
+its half, respawns put straight back). Add `--skills=mixed` for accuracy per
+bot skill. It prints process CPU per tick (avg, p95 tick by tick) and a
+breakdown: bot think (perception, decisions, paths, aim, sight rays), movement
+(character moves), combat (firing, bullets in flight) and the rest.
+`packages/shared/test/clumpPerf.test.ts` keeps a clump within 1.35× the
+spread match's CPU a tick, with fewer than 90 sight rays a tick.
+
+**What changed** (big matches only, past `BOT_FULL_RATE` bots; smaller
+matches are unchanged):
+
+- Bots think in full at 20 Hz (`BOT_THINK_EVERY` = 3 ticks, staggered by
+  slot). In between, a fighting bot *steers* (`BotBrain.steer`): perception
+  still runs on its own schedule, the aim tracks the target and the trigger
+  discipline runs every tick, and the move carries on; it falls back to a full
+  think when perception changes target, a decision is due (10 Hz), it is hurt
+  or shot at, or it was doing anything but aiming and shooting. A bot with
+  nobody to fight repeats its last move between thinks (as before, but two
+  ticks in three instead of one in two).
+- Think budget: at most an even share (thinking bots / 3) + 6 full thinks a
+  tick; the rest of those due wait one tick (steering, or holding their move
+  and trigger) and go first on the next. The loop starts at a different bot
+  every tick (round robin) and nobody waits two ticks running.
+- Perception casts sight lines nearest first (sticking with the current
+  target): at most 16 while looking for a target, 6 once it has one. Enemies
+  it had no ray for stay tracked (reaction time kept) for half a second.
+- `SightCache`: actor-to-actor sight lines are symmetric, so one ray answers
+  both bots, and is reused for up to 6 ticks while neither eye has moved
+  0.6 m. Cleared when a door, breakable or built piece changes
+  (`PhysicsWorld.structureVersion`).
+- Cheaper rays: `PhysicsWorld` casts through one reused `Ray` (no vectors made
+  per cast): about a third cheaper a ray (5.7 → 3.6 µs on Riot Junction,
+  11.3 → 7.2 µs on Frost Basin, 8,700–8,900 eye-to-eye rays in a clump).
+- A spatial grid (`ViewGrid`, 8 m cells) of each side's living members, built
+  once a tick, for keeping teammates apart. (Perception doesn't use it: in a
+  clump everyone is in sight range anyway, and the nearest-first cap bounds the
+  work.)
+- Fewer allocations: inventory views reused tick to tick, perception scratch
+  arrays, one view shape for every bot (keeps the bot code monomorphic: a
+  property added to some views made all bot code measurably slower), no
+  per-bot closures, coasting copies the input field by field, bullet target
+  lists shared per side for a pass.
+
+**Results**, CPU ms per tick (process CPU, breakdown scaled by CPU/wall), old
+and new run alternately, map by map, on a 4-core box shared with other
+agents (load 11–14). The simulation is deterministic, so kills, accuracy and
+stuck counts are exact for these seeds; times vary ±0.3 ms run to run.
+p95 is dominated by the box's load (scheduling), not by the code.
+
+| Map | Layout | Code | CPU avg | CPU p95 | Bot think | Movement | Combat | Rest | Sight rays/tick | Full thinks/tick |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Norman Shores | spread | before | 6.24 | 14.1 | 2.04 | 3.66 | 0.10 | 0.44 | 1 | 49 |
+| | | after | 6.20 | 14.7 | **1.73** | 3.90 | 0.09 | 0.48 | 1 | 33 |
+| | clumped | before | 8.17 | 17.3 | 2.83 | 4.09 | 0.67 | 0.57 | 260 | 92 |
+| | | after | **7.21** | 15.0 | **2.02** | 4.29 | 0.43 | 0.47 | **29** | 59 |
+| Frost Basin | spread | before | 6.93 | 15.4 | 2.54 | 3.56 | 0.28 | 0.55 | 10 | 57 |
+| | | after | 6.47 | 14.3 | **1.94** | 3.75 | 0.17 | 0.61 | 7 | 40 |
+| | clumped | before | 7.08 | 15.5 | 3.25 | 2.80 | 0.45 | 0.58 | 124 | 81 |
+| | | after | 7.10 | 15.5 | **2.45** | 3.59 | 0.53 | 0.53 | **37** | 52 |
+| Riot Junction | spread | before | 7.68 | 15.8 | 2.85 | 3.50 | 0.63 | 0.71 | 99 | 72 |
+| | | after | **6.80** | 13.7 | **2.23** | 3.61 | 0.39 | 0.57 | **33** | 39 |
+| | clumped | before | 6.42 | 13.4 | 2.65 | 2.69 | 0.53 | 0.55 | 211 | 86 |
+| | | after | **5.89** | 13.0 | **2.10** | 2.77 | 0.48 | 0.54 | **33** | 52 |
+
+Bot thinking is 21–29 % cheaper in a clump and 15–24 % spread out; sight
+rays 4–9× fewer. Clumped over spread CPU: 1.31 → 1.16 (Norman Shores),
+1.02 → 1.10 (Frost Basin), 0.84 → 0.87 (Riot Junction). Character movement is
+now the larger half of a tick (3–4 ms), and moved up where bots stand still
+less (Frost Basin clumped: idle samples 17.7 % → 12.6 %): that is the next
+thing to cut.
+
+Behaviour (mixed easy/normal/hard bots; accuracy = rounds that hit / fired):
+
+| Map, clumped | Easy before → after | Normal | Hard | Kills | Stuck recoveries |
+|---|---|---|---|---|---|
+| Norman Shores | 29.8 → 31.9 % | 42.4 → 43.5 % | 58.8 → 62.1 % | 365 → 350 | 36 → 72 |
+| Frost Basin | 13.0 → 7.2 % | 26.3 → 23.8 % | 34.8 → 34.0 % | 143 → 91 | 56 → 80 |
+| Riot Junction | 23.8 → 22.1 % | 35.9 → 37.9 % | 50.7 → 52.5 % | 278 → 250 | 39 → 91 |
+
+One-on-one aim (`botai.test.ts`, 15 m strafing target) is unchanged to the
+round: easy 19.5 %, normal 38.8 %, hard 59.1 %; pistol at 8 m 35.9 % strafing,
+50.3 % still. Trade-offs: rounds fired in a clump are 5–15 % fewer (bots
+think less often about *whether* to fight, not about aiming), Frost Basin's
+clump had fewer kills and its easy bots hit less in this seed, and stuck
+recoveries roughly double in clumps (bots crowding each other keep their move
+a tick or two longer before re-pathing; they recover as before).
+
 ### Player settings (Options)
 
 - **Render scale** (default Auto): pixels drawn per screen point. Retina
