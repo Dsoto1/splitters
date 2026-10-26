@@ -68,10 +68,11 @@ export interface BotDifficulty {
 }
 
 export const BOT_DIFFICULTIES: Readonly<Record<BotDifficulty['id'], BotDifficulty>> = {
+  // Aim recalibrated after the range-band dithering fix (bots no longer shuffle back and forth, which had cost them accuracy).
   easy: {
     id: 'easy',
     reactionMs: 650,
-    aim: { settledRad: 0.074, acquireRad: 0.18, settleSeconds: 0.9, lagSeconds: 0.24, prediction: 0.2, headChance: 0.02, burst: [2, 4], tapSeconds: 0.45 },
+    aim: { settledRad: 0.085, acquireRad: 0.18, settleSeconds: 0.9, lagSeconds: 0.24, prediction: 0.2, headChance: 0.02, burst: [2, 4], tapSeconds: 0.45 },
     turnRateRadPerSec: 3,
     perceptionIntervalTicks: 12,
     tactics: 0.35,
@@ -79,7 +80,7 @@ export const BOT_DIFFICULTIES: Readonly<Record<BotDifficulty['id'], BotDifficult
   normal: {
     id: 'normal',
     reactionMs: 380,
-    aim: { settledRad: 0.042, acquireRad: 0.13, settleSeconds: 0.6, lagSeconds: 0.15, prediction: 0.5, headChance: 0.08, burst: [3, 5], tapSeconds: 0.3 },
+    aim: { settledRad: 0.044, acquireRad: 0.13, settleSeconds: 0.6, lagSeconds: 0.15, prediction: 0.5, headChance: 0.08, burst: [3, 5], tapSeconds: 0.3 },
     turnRateRadPerSec: 6,
     perceptionIntervalTicks: 8,
     tactics: 0.7,

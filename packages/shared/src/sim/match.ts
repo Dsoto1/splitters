@@ -858,7 +858,8 @@ export class Match {
         // Focused bots (flag carriers) also ignore distant gunfire and near misses: they keep running.
         noises: aware < Infinity ? undefined : noises,
         shotAt: aware < Infinity ? null : (c.shotAt ?? null),
-        mounts: aware < Infinity ? undefined : mounts,
+        // Bots that may not take a vehicle right now (carrying the bomb, leading hostages) don't see any to get in.
+        mounts: aware < Infinity ? undefined : mounts && !c.mount && this.mode?.blocksVehicle(c) ? mounts.filter((m) => m.kind !== 'vehicle') : mounts,
         seat: c.mount ? this.seatView(c) : null,
         squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
       });
@@ -900,8 +901,8 @@ export class Match {
       health: Math.max(0, m.health) / m.def.health,
       alive: m.alive,
       enterRadius: m.def.enterRadius,
-      seats: m.def.seats.map((s, i) => ({ role: s.role, free: m.seats[i] === null, ...(s.weapon ? { weapon: getWeapon(s.weapon) } : {}), ...(s.arc !== undefined ? { arc: s.arc } : {}) })),
-      ...(m.def.vehicle ? { maxSpeed: m.def.vehicle.maxSpeed } : {}),
+      seats: m.def.seats.map((s, i) => ({ role: s.role, free: m.seats[i] === null, ...(m.seats[i] !== null ? { by: m.seats[i]! } : {}), ...(s.weapon ? { weapon: getWeapon(s.weapon) } : {}), ...(s.arc !== undefined ? { arc: s.arc } : {}) })),
+      ...(m.def.vehicle ? { maxSpeed: m.def.vehicle.maxSpeed, speed: Math.abs(m.speed) } : {}),
       humanNear: humans.some((h) => horizontalDistance(h.move.pos, m.pos) < 35),
     }));
   }

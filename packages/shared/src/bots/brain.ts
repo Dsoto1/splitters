@@ -11,7 +11,7 @@ import { findCover, stillCovered, type CoverSpot } from './cover.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
 import { fanPoints, isDoorway, solveThrow, turnAngle } from './tactics.ts';
-import { freshDrive, inArc, steer, turretFor, vehicleFor, type DriveState, type MountView, type SeatView } from './vehicles.ts';
+import { freshDrive, inArc, rideFor, steer, turretFor, vehicleFor, type DriveState, type MountView, type SeatView } from './vehicles.ts';
 
 export type { MountView, SeatView } from './vehicles.ts';
 
@@ -117,6 +117,11 @@ const SIDEARM = 0.4;
 const VEHICLE_TRIP = 55;
 /** How far (m, plus height) a bot with only a sidearm detours for a gun. */
 const GUN_DETOUR = 30;
+/** How far (m) a bot goes to hop into a teammate's vehicle. */
+const RIDE_REACH = 25;
+/** A path corner counts as reached this close (m), or once passed and within PASS_RADIUS. */
+const CORNER_RADIUS = 0.45;
+const PASS_RADIUS = 1.4;
 
 /** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
 const DECIDE_TICKS = 6;
@@ -174,6 +179,20 @@ export class BotBrain {
   private lastPathTick = -Infinity;
   private strafeDir = 1;
   private nextStrafeFlip = 0;
+  /** When the current strafe run started, and the last tick spent strafing. */
+  private strafeStart = -Infinity;
+  private lastStrafeTick = -Infinity;
+  /** Strafing (with hysteresis on the distance band). */
+  private strafing = false;
+  /** Fighting in the open: closing in, holding, or backing off (with hysteresis on the range). */
+  private spacing: 'close' | 'hold' | 'back' = 'hold';
+  /** Where a retreat is headed, kept for a while so the bot runs one way. */
+  private retreatGoal: { pos: Vec3; until: number } | null = null;
+  /** Retreating: sprint away (run) or back off shooting, committed for a moment. */
+  private retreatMode: { run: boolean; until: number } | null = null;
+  /** Smoothed movement intent in world space (inputs ease in and out rather than snapping). */
+  private moveX = 0;
+  private moveZ = 0;
   private nextHop = 0;
   private yaw = 0;
   private pitch = 0;
@@ -202,7 +221,11 @@ export class BotBrain {
   private throwPlan: ThrowPlan | null = null;
   private nextThrow = 0;
   // Turrets and vehicles.
-  private mountPlan: { index: number; until: number; drive: boolean } | null = null;
+  private mountPlan: { index: number; until: number; drive: boolean; ride?: boolean } | null = null;
+  /** Riding with a teammate: when the driver left (or the vehicle stopped), and how long before getting out. */
+  private rideIdleSince = -Infinity;
+  private noDriverSince = -Infinity;
+  private bailDelay = 0;
   private drive: DriveState = freshDrive();
   private mountedSince = 0;
   private lastTargetTick = -Infinity;
@@ -267,6 +290,11 @@ export class BotBrain {
     this.lastPos = null;
     this.lastHealth = 100;
     this.hurtTick = this.underFireTick = -Infinity;
+    this.retreatGoal = null;
+    this.retreatMode = null;
+    this.spacing = 'hold';
+    this.strafing = false;
+    this.moveX = this.moveZ = 0;
   }
 
   // ------------------------------------------------------------------ main loop
@@ -369,7 +397,8 @@ export class BotBrain {
     const hurt = this.hurt(view);
     const underFire = tick - this.underFireTick < TICK_RATE * 1.5 || tick - this.hurtTick < TICK_RATE * 1.5;
 
-    if (this.mountPlan && !hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)) this.state = 'mount';
+    // A lift from a teammate is worth taking even when hurt or with someone about.
+    if (this.mountPlan && (this.mountPlan.ride || (!hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)))) this.state = 'mount';
     else if (target && hurt && !this.berserker) this.state = 'retreat';
     else if (target) this.state = this.cover ? 'cover' : 'engage';
     else if (this.cover && (underFire || tick - this.lastTargetTick < TICK_RATE * (2.5 + (1 - this.profile.aggression / 100) * 3))) {
@@ -461,6 +490,11 @@ export class BotBrain {
     const hurt = this.hurt(view);
     const underFire = tick - this.underFireTick < TICK_RATE * 1.5;
 
+    if (this.state !== 'retreat') {
+      this.retreatGoal = null;
+      this.retreatMode = null;
+    }
+
     const aimAtTarget = (t: CombatantView) => {
       sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: t.stance });
       this.turnToward(sol.yaw, sol.pitch);
@@ -475,6 +509,19 @@ export class BotBrain {
         const t = target;
         if (!t) {
           const threat = this.lastKnown?.pos ?? this.threatFrom;
+          if (this.state === 'retreat' && !this.cover && this.retreatGoal) {
+            // Lost sight of them while getting away: keep going (stopping to look back is how you get caught).
+            moveYaw = this.followPathTo(view, this.retreatGoal.pos, false);
+            if (moveYaw !== null) {
+              sprint = true;
+              this.turnToward(moveYaw, 0);
+              lookDone = true;
+              break;
+            }
+          } else if (!this.cover && this.strafing && tick - this.lastTargetTick < TICK_RATE * 0.6) {
+            // Out of sight for a moment mid-fight: carry on with the strafe rather than freezing.
+            strafe = true;
+          }
           if (this.cover && threat) {
             // Hidden behind cover (or peeking for the enemy to show again).
             const r = this.inCover(view, threat, def);
@@ -491,11 +538,17 @@ export class BotBrain {
         const dist = horizontalDistance(me.pos, t.pos);
         const preferred = this.preferredRange(view);
         if (this.state === 'retreat' && !this.cover) {
-          // No cover: get to health or away from the threat, fast.
-          const refuge = this.pickupGoal(view, 'health') ?? farthest(view.spawnPoints, t.pos) ?? me.pos;
+          // No cover: get to health or away from the threat. One place, kept for a while, so the bot runs one way.
+          const refuge = this.refuge(view, t.pos);
           moveYaw = this.followPathTo(view, refuge, false);
-          sprint = true;
-          if (moveYaw !== null) {
+          if (moveYaw === null) this.retreatGoal = null;
+          // Either turn and run, or back off shooting; stick with the choice for a moment.
+          if (!this.retreatMode || tick >= this.retreatMode.until) {
+            const run = dist > 9 || this.berserker || this.rng() < 0.5;
+            this.retreatMode = { run, until: tick + Math.round(TICK_RATE * (1.3 + this.rng() * 1.2)) };
+          }
+          if (moveYaw !== null && this.retreatMode.run) {
+            sprint = true;
             this.turnToward(moveYaw, 0);
             lookDone = true;
           } else aimAtTarget(t);
@@ -525,11 +578,19 @@ export class BotBrain {
           strafe = dist < 10;
         } else {
           const squadAdvance = view.squad?.advance === true;
-          if (dist > preferred + 4 || (squadAdvance && dist > 8)) {
+          // Range bands with hysteresis: once closing in (or backing off), carry on until well inside the band.
+          if (this.spacing === 'close') {
+            if (dist < preferred + 2.5 && !(squadAdvance && dist > 8)) this.spacing = 'hold';
+          } else if (this.spacing === 'back') {
+            if (dist > preferred - 1.5) this.spacing = 'hold';
+          } else if (dist > preferred + 4 || (squadAdvance && dist > 8)) this.spacing = 'close';
+          else if (dist < preferred - 4) this.spacing = 'back';
+          this.strafing = this.strafing ? dist < 15.5 : dist < 13;
+          if (this.spacing === 'close') {
             moveYaw = this.followPathTo(view, t.pos, true);
             moveScale = 0.75;
-          } else if (dist < preferred - 4) backOff = true;
-          else if (dist < 14) strafe = true;
+          } else if (this.spacing === 'back') backOff = true;
+          else if (this.strafing) strafe = true;
           // Holding at range: crouch to steady the aim; snipers lie down.
           if (moveYaw === null && !backOff && !strafe) {
             stance = this.wantsProne(view, dist) ? 2 : dist > 13 && !this.arena && this.tactical > 0.25 ? 1 : 0;
@@ -589,6 +650,20 @@ export class BotBrain {
           break;
         }
         const d = horizontalDistance(me.pos, m.pos);
+        if (plan.ride) {
+          // A teammate's ride: still theirs, still a seat beside the driver's?
+          const driver = m.seats.find((x) => x.role === 'driver')?.by;
+          if (driver === undefined || !view.allies?.some((a) => a.slot === driver) || !m.seats.some((x) => x.free && x.role !== 'driver') || d > RIDE_REACH + 6) {
+            this.mountPlan = null;
+            break;
+          }
+          // It moves: re-plan to it as it goes, and run straight at it over the last few metres.
+          if (d > m.enterRadius * 0.75) {
+            moveYaw = d < 6 ? Math.atan2(m.pos.x - me.pos.x, m.pos.z - me.pos.z) : this.followPathTo(view, m.pos, true);
+            sprint = d > 4;
+          }
+          break;
+        }
         if (d > m.enterRadius * 0.8) {
           moveYaw = this.followPathTo(view, m.pos, false);
           sprint = d > 8;
@@ -700,12 +775,11 @@ export class BotBrain {
       forward = -0.8;
     }
     if (strafe) {
-      if (tick >= this.nextStrafeFlip) {
-        this.strafeDir = this.rng() < 0.5 ? -1 : 1;
-        this.nextStrafeFlip = tick + Math.round(TICK_RATE * (0.5 + this.rng() * 1.1));
-      }
+      this.updateStrafe(tick);
       right = clamp(right + this.strafeDir * 0.7, -1, 1);
     }
+    // Fighting: ease direction changes (no stutter-steps); travelling, follow the route's turns closely (no clipping corners).
+    [forward, right] = this.smoothMove(forward, right, !!target || tick - this.lastTargetTick < TICK_RATE || strafe || backOff || this.state === 'retreat');
 
     let buttons = 0;
     // Fire through the aim model's trigger discipline.
@@ -745,7 +819,7 @@ export class BotBrain {
     // Getting in: use when close enough to the planned mount.
     if (this.state === 'mount' && this.mountPlan) {
       const m = view.mounts?.find((x) => x.index === this.mountPlan!.index);
-      if (m && horizontalDistance(me.pos, m.pos) <= m.enterRadius * 0.8 && tick - this.lastUseTick > 20) {
+      if (m && horizontalDistance(me.pos, m.pos) <= m.enterRadius * (this.mountPlan.ride ? 0.85 : 0.8) && Math.abs(m.pos.y - me.pos.y) < 2.3 && tick - this.lastUseTick > 20) {
         buttons |= BUTTON_USE;
         this.lastUseTick = tick;
       }
@@ -765,6 +839,65 @@ export class BotBrain {
   private careful(): boolean {
     if (this.methodical) return true;
     return !this.berserker && !this.arena && this.tactical > 0.3;
+  }
+
+  /** Where to retreat to: health close by, or the far side from the threat; re-picked only now and then. */
+  private refuge(view: BotWorldView, threat: Vec3): Vec3 {
+    const me = view.self.pos;
+    const r = this.retreatGoal;
+    if (!r || view.tick >= r.until || horizontalDistance(me, r.pos) < 1.5) {
+      const pos = this.pickupGoal(view, 'health') ?? farthest(view.spawnPoints, threat) ?? me;
+      this.retreatGoal = { pos: { ...pos }, until: view.tick + Math.round(TICK_RATE * (3.5 + this.rng() * 2)) };
+    }
+    return this.retreatGoal!.pos;
+  }
+
+  /**
+   * Strafing: commit to a direction for a while (shorter, with the odd quick
+   * juke, for better bots), then usually reverse; turn round straight away
+   * when blocked.
+   */
+  private updateStrafe(tick: number): void {
+    const id = this.difficulty.id;
+    if (tick - this.lastStrafeTick > TICK_RATE / 2) {
+      // A fresh strafe: either way.
+      this.strafeDir = this.rng() < 0.5 ? -1 : 1;
+      this.nextStrafeFlip = tick + this.strafeRun(id);
+      this.strafeStart = tick;
+    } else if (tick >= this.nextStrafeFlip || (tick - this.strafeStart > 18 && this.speed < 0.8)) {
+      // Run over (or up against something): reverse, mostly.
+      const blocked = tick < this.nextStrafeFlip;
+      if (blocked || this.rng() < (id === 'hard' ? 0.8 : 0.7)) this.strafeDir = -this.strafeDir;
+      this.nextStrafeFlip = tick + this.strafeRun(id);
+      this.strafeStart = tick;
+    }
+    this.lastStrafeTick = tick;
+  }
+
+  /** Length (ticks) of one strafe run. */
+  private strafeRun(id: BotDifficulty['id']): number {
+    if (id === 'hard' && this.rng() < 0.2) return Math.round(TICK_RATE * (0.25 + this.rng() * 0.15));
+    const [lo, span] = id === 'hard' ? [0.5, 0.8] : id === 'easy' ? [0.8, 0.9] : [0.6, 1.0];
+    return Math.round(TICK_RATE * (lo + this.rng() * span));
+  }
+
+  /**
+   * Ease the movement intent in and out (in world space, so turning doesn't
+   * smear it) rather than snapping between directions each tick: no
+   * stutter-steps. Better bots change direction more sharply; out of a
+   * fight the easing is slight, so the bot keeps to its route round corners.
+   */
+  private smoothMove(forward: number, right: number, fighting: boolean): [number, number] {
+    const sin = Math.sin(this.yaw);
+    const cos = Math.cos(this.yaw);
+    const wx = sin * forward + cos * right;
+    const wz = cos * forward - sin * right;
+    const tau = !fighting ? 0.035 : this.difficulty.id === 'hard' ? 0.06 : this.difficulty.id === 'easy' ? 0.12 : 0.09;
+    const k = 1 - Math.exp(-TICK_DT / tau);
+    this.moveX += (wx - this.moveX) * k;
+    this.moveZ += (wz - this.moveZ) * k;
+    if (wx === 0 && wz === 0 && Math.hypot(this.moveX, this.moveZ) < 0.08) this.moveX = this.moveZ = 0;
+    return [sin * this.moveX + cos * this.moveZ, cos * this.moveX - sin * this.moveZ];
   }
 
   private reacted(view: BotWorldView, target: CombatantView): boolean {
@@ -998,6 +1131,18 @@ export class BotBrain {
     if (!mounts?.length || this.mountPlan || hasTag(this.profile, 'NPC') || view.tick < this.nextMountTick) return;
     if ((view.tick + this.slot * 7) % (TICK_RATE / 2) >= DECIDE_TICKS) return;
     const me = view.self;
+    // A teammate driving by with a seat free: hop in (unless on station somewhere it was sent, or in a close fight).
+    const g = view.orderGoal;
+    const onStation = !!g && horizontalDistance(me.pos, g.pos) < g.radius + 8;
+    const ride = view.allies?.length ? rideFor(mounts, me.pos, me.slot, view.allies, RIDE_REACH) : null;
+    if (ride && !(onStation && horizontalDistance(g!.pos, ride.pos) > g!.radius + 4)) {
+      const close = target && horizontalDistance(me.pos, target.pos) < 12 && horizontalDistance(me.pos, ride.pos) > 6;
+      if (!close && this.rng() < 0.6 + (this.profile.teamLoyalty / 100) * 0.4) {
+        this.mountPlan = { index: ride.index, until: view.tick + TICK_RATE * 8, drive: false, ride: true };
+        this.state = 'mount';
+        return;
+      }
+    }
     const enemy = target?.pos ?? (this.lastKnown && view.tick - this.lastKnown.tick < TICK_RATE * 4 ? this.lastKnown.pos : null);
     if (enemy) {
       // A turret covering the enemy, closer to us than they are.
@@ -1044,6 +1189,9 @@ export class BotBrain {
       this.useLatch = true;
       this.path = [];
       this.goal = null;
+      this.moveX = this.moveZ = 0;
+      this.rideIdleSince = this.noDriverSince = -Infinity;
+      this.bailDelay = Math.round(TICK_RATE * (0.35 + this.rng() * 0.5));
     }
     this.mountPlan = null;
     let forward = 0;
@@ -1080,6 +1228,19 @@ export class BotBrain {
       }
       // Get out: arrived, wrecked soon, stuck for good, or a fight with no gun.
       if (left < 14 || m.health < 0.3 || this.drive.unstick >= 3 || (target && !seat.weapon && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
+    } else if (m && m.kind === 'vehicle') {
+      // Riding along: stay while a teammate drives; get out when they do, when it is about to blow,
+      // or when it has sat parked a while with nothing to shoot.
+      if (fireAt) this.lastTargetTick = tick;
+      const driver = m.seats.find((s) => s.role === 'driver')?.by;
+      const driven = driver !== undefined && driver !== view.self.slot && !!view.allies?.some((a) => a.slot === driver);
+      if (driven) this.noDriverSince = -Infinity;
+      else if (this.noDriverSince === -Infinity) this.noDriverSince = tick;
+      if ((m.speed ?? 0) > 0.5 || fireAt) this.rideIdleSince = -Infinity;
+      else if (this.rideIdleSince === -Infinity) this.rideIdleSince = tick;
+      const parked = tick - this.rideIdleSince > TICK_RATE * 8 && tick - this.lastTargetTick > TICK_RATE * 4;
+      if ((!driven && tick - this.noDriverSince >= this.bailDelay) || m.health < 0.3 || parked) leave = true;
+      if (!fireAt) this.turnToward(m.yaw, 0);
     } else if (m) {
       // Gunner: stay while there is something to shoot.
       if (fireAt) this.lastTargetTick = tick;
@@ -1313,7 +1474,12 @@ export class BotBrain {
     }
     while (this.pathIndex < this.path.length) {
       const c = this.path[this.pathIndex]!;
-      if (horizontalDistance(me.pos, c) < 0.35 && Math.abs(me.pos.y - c.y) < 1.6) this.pathIndex++;
+      const d = horizontalDistance(me.pos, c);
+      if (Math.abs(me.pos.y - c.y) >= 1.6) break;
+      // Reached, or already past it (beyond the corner along the way in): on to the next, no circling back.
+      const prev = this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null;
+      const past = !!prev && this.pathIndex < this.path.length - 1 && d < PASS_RADIUS && (me.pos.x - c.x) * (c.x - prev.x) + (me.pos.z - c.z) * (c.z - prev.z) > 0;
+      if (d < CORNER_RADIUS || past) this.pathIndex++;
       else break;
     }
     const corner = this.path[this.pathIndex];

@@ -14,6 +14,11 @@ import type { WeaponDefinition } from '../sim/weapons.ts';
  *   follow the navmesh route, back up when stuck, and bail out near the
  *   destination, when it is about to blow, or when the fight is on and the
  *   seat has no gun.
+ * - Riding along: a teammate (a human first) driving by with a free seat
+ *   picks the bot up: it runs over and gets in (the gun if it is free) and
+ *   shoots from there; it gets out when the driver does, when the vehicle
+ *   is about to blow, or when it has been parked a while with nothing to
+ *   shoot.
  */
 
 /** A turret or vehicle as a bot sees it. */
@@ -27,9 +32,12 @@ export interface MountView {
   health: number;
   alive: boolean;
   enterRadius: number;
-  seats: readonly { role: SeatRole; free: boolean; weapon?: WeaponDefinition; arc?: number }[];
+  /** `by`: who sits there (actor ID), when taken. */
+  seats: readonly { role: SeatRole; free: boolean; by?: number; weapon?: WeaponDefinition; arc?: number }[];
   /** Vehicles: top speed (m/s). */
   maxSpeed?: number;
+  /** Vehicles: how fast it is going right now (m/s). */
+  speed?: number;
   /** A human (or anyone friendly) has a claim: a human ally close by. */
   humanNear?: boolean;
   /** Hostile to us (an enemy is in it). */
@@ -91,6 +99,36 @@ export function vehicleFor(mounts: readonly MountView[], from: Vec3, goal: Vec3,
     if (d < bestD) {
       best = m;
       bestD = d;
+    }
+  }
+  return best;
+}
+
+/**
+ * Bots ride along with a friendly driver: the nearest vehicle (human drivers
+ * first) driven by an ally, with a free gunner or passenger seat, within
+ * `reach`, and not tearing past too fast to catch.
+ */
+export function rideFor(mounts: readonly MountView[], from: Vec3, self: number, allies: readonly { slot: number; human?: boolean }[], reach: number): MountView | null {
+  let best: MountView | null = null;
+  let bestScore = Infinity;
+  for (const m of mounts) {
+    if (!m.alive || m.kind !== 'vehicle' || m.health < 0.35 || m.hostile) continue;
+    const by = m.seats.find((s) => s.role === 'driver')?.by;
+    if (by === undefined || by === self) continue;
+    const driver = allies.find((a) => a.slot === by);
+    if (!driver) continue;
+    const free = m.seats.filter((s) => s.free && s.role !== 'driver');
+    if (!free.length) continue;
+    const d = horizontalDistance(m.pos, from) + Math.abs(m.pos.y - from.y) * 3;
+    // Not one tearing past; a bot at the wheel won't wait, so only one that is (nearly) stopped or right here.
+    const speed = m.speed ?? 0;
+    if (d > reach || (speed > 11 && d > 8) || (!driver.human && speed > 2 && d > 6)) continue;
+    // A human's ride first, and one with the gun free.
+    const score = d - (driver.human ? 10 : 0) - (free.some((s) => s.role === 'gunner') ? 3 : 0);
+    if (score < bestScore) {
+      best = m;
+      bestScore = score;
     }
   }
   return best;
