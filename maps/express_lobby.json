@@ -1,0 +1,7469 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 20,
+  "metadata": {
+    "id": "express_lobby",
+    "name": "Express Lobby",
+    "author": "Tile Trigger",
+    "description": "A skyscraper's elevator core is the arena: six open glass cabs race up and down a 48 m neon atrium, and the shaft runs over anyone in a car's way. Hop cab to cab, ride up to the two mezzanines that hold the hills, take the roof with its gunship, and hit the machine-room console to drop cab C's floor out from under its riders (hold jump for a parachute: long falls kill).",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 8,
+      "max": 16
+    },
+    "supportedModes": [
+      "core.koth",
+      "core.tdm"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.neon_megacity",
+    "tiles": []
+  },
+  "entities": [
+    {
+      "id": "block_001",
+      "position": [
+        -18,
+        -0.6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        36,
+        0.6,
+        48
+      ],
+      "yaw": 0,
+      "material": "core.pbr_wet_asphalt",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_002",
+      "position": [
+        18,
+        -0.6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        36,
+        0.6,
+        48
+      ],
+      "yaw": 0,
+      "material": "core.pbr_wet_asphalt",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_003",
+      "position": [
+        0,
+        0,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        36,
+        0.1,
+        4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_004",
+      "position": [
+        -16,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        4,
+        0.1,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_005",
+      "position": [
+        0,
+        0,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        36,
+        0.1,
+        4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_006",
+      "position": [
+        16,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        4,
+        0.1,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_007",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        28,
+        0.1,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_008",
+      "position": [
+        -17,
+        -0.08,
+        -17
+      ],
+      "kind": "block",
+      "size": [
+        34,
+        0.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#d8c040",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_009",
+      "position": [
+        17,
+        -0.08,
+        -17
+      ],
+      "kind": "block",
+      "size": [
+        34,
+        0.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#d8c040",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_010",
+      "position": [
+        -17,
+        -0.08,
+        17
+      ],
+      "kind": "block",
+      "size": [
+        34,
+        0.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#d8c040",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_011",
+      "position": [
+        17,
+        -0.08,
+        17
+      ],
+      "kind": "block",
+      "size": [
+        34,
+        0.1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#d8c040",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_012",
+      "position": [
+        0,
+        0,
+        -9.8
+      ],
+      "kind": "block",
+      "size": [
+        28,
+        24,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_013",
+      "position": [
+        0,
+        24,
+        -9.8
+      ],
+      "kind": "block",
+      "size": [
+        28,
+        24,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_014",
+      "position": [
+        -13.8,
+        0,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        24,
+        7.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_015",
+      "position": [
+        -13.8,
+        24,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        24,
+        7.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_016",
+      "position": [
+        -13.8,
+        0,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        24,
+        7.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_017",
+      "position": [
+        -13.8,
+        24,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        24,
+        7.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_018",
+      "position": [
+        -13.8,
+        3,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        22.5,
+        4.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_019",
+      "position": [
+        -13.8,
+        25.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        22.5,
+        4.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_020",
+      "position": [
+        -13.8,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        3,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_021",
+      "position": [
+        0,
+        7.7,
+        -10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_022",
+      "position": [
+        -14.1,
+        7.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_023",
+      "position": [
+        0,
+        15.7,
+        -10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_024",
+      "position": [
+        -14.1,
+        15.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_025",
+      "position": [
+        0,
+        23.7,
+        -10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_026",
+      "position": [
+        -14.1,
+        23.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_027",
+      "position": [
+        0,
+        31.7,
+        -10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_028",
+      "position": [
+        -14.1,
+        31.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_029",
+      "position": [
+        0,
+        39.7,
+        -10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_030",
+      "position": [
+        -14.1,
+        39.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_031",
+      "position": [
+        0,
+        47.7,
+        -10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_032",
+      "position": [
+        -14.1,
+        47.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_033",
+      "position": [
+        0,
+        0,
+        9.8
+      ],
+      "kind": "block",
+      "size": [
+        28,
+        24,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_034",
+      "position": [
+        0,
+        24,
+        9.8
+      ],
+      "kind": "block",
+      "size": [
+        28,
+        24,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_035",
+      "position": [
+        13.8,
+        0,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        24,
+        7.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_036",
+      "position": [
+        13.8,
+        24,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        24,
+        7.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_037",
+      "position": [
+        13.8,
+        0,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        24,
+        7.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_038",
+      "position": [
+        13.8,
+        24,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        24,
+        7.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_039",
+      "position": [
+        13.8,
+        3,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        22.5,
+        4.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_040",
+      "position": [
+        13.8,
+        25.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        22.5,
+        4.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#6a80a0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_041",
+      "position": [
+        13.8,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        3,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_042",
+      "position": [
+        0,
+        7.7,
+        10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_043",
+      "position": [
+        14.1,
+        7.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_044",
+      "position": [
+        0,
+        15.7,
+        10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_045",
+      "position": [
+        14.1,
+        15.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_046",
+      "position": [
+        0,
+        23.7,
+        10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_047",
+      "position": [
+        14.1,
+        23.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_048",
+      "position": [
+        0,
+        31.7,
+        10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_049",
+      "position": [
+        14.1,
+        31.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_050",
+      "position": [
+        0,
+        39.7,
+        10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_051",
+      "position": [
+        14.1,
+        39.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_052",
+      "position": [
+        0,
+        47.7,
+        10.1
+      ],
+      "kind": "block",
+      "size": [
+        28.4,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_053",
+      "position": [
+        14.1,
+        47.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "field_west_n",
+      "position": [
+        -13.8,
+        0,
+        1.3
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        3,
+        0.2
+      ],
+      "yaw": 1.5707963267948966,
+      "material": null,
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "field": true
+    },
+    {
+      "id": "field_west_s",
+      "position": [
+        -13.8,
+        0,
+        -1.3
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        3,
+        0.2
+      ],
+      "yaw": 1.5707963267948966,
+      "material": null,
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "startHidden": true,
+      "field": true
+    },
+    {
+      "id": "field_east_n",
+      "position": [
+        13.8,
+        0,
+        1.3
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        3,
+        0.2
+      ],
+      "yaw": 1.5707963267948966,
+      "material": null,
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "field": true
+    },
+    {
+      "id": "field_east_s",
+      "position": [
+        13.8,
+        0,
+        -1.3
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        3,
+        0.2
+      ],
+      "yaw": 1.5707963267948966,
+      "material": null,
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "startHidden": true,
+      "field": true
+    },
+    {
+      "id": "block_054",
+      "position": [
+        0,
+        7.6,
+        8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_055",
+      "position": [
+        12,
+        7.6,
+        5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_056",
+      "position": [
+        0,
+        7.4,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_057",
+      "position": [
+        -11.3,
+        8,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_058",
+      "position": [
+        11.3,
+        8,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_059",
+      "position": [
+        12,
+        8,
+        6.6
+      ],
+      "kind": "ladder",
+      "yaw": 3.141592653589793,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "ladder_060",
+      "position": [
+        -12,
+        0.1,
+        6.6
+      ],
+      "kind": "ladder",
+      "yaw": 3.141592653589793,
+      "height": 8,
+      "width": 0.9
+    },
+    {
+      "id": "light_061",
+      "position": [
+        9,
+        11.4,
+        8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#bfe8ff",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_062",
+      "position": [
+        0,
+        7.6,
+        -8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_063",
+      "position": [
+        -12,
+        7.6,
+        -5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_064",
+      "position": [
+        0,
+        7.4,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_065",
+      "position": [
+        -11.3,
+        8,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_066",
+      "position": [
+        11.3,
+        8,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_067",
+      "position": [
+        -12,
+        8,
+        -6.6
+      ],
+      "kind": "ladder",
+      "yaw": 0,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "ladder_068",
+      "position": [
+        12,
+        0.1,
+        -6.6
+      ],
+      "kind": "ladder",
+      "yaw": 0,
+      "height": 8,
+      "width": 0.9
+    },
+    {
+      "id": "light_069",
+      "position": [
+        -9,
+        11.4,
+        -8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd0f0",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_070",
+      "position": [
+        0,
+        15.6,
+        8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_071",
+      "position": [
+        -12,
+        15.6,
+        5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_072",
+      "position": [
+        0,
+        15.4,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_073",
+      "position": [
+        -11.3,
+        16,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_074",
+      "position": [
+        11.3,
+        16,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_075",
+      "position": [
+        -12,
+        16,
+        6.6
+      ],
+      "kind": "ladder",
+      "yaw": 3.141592653589793,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "light_076",
+      "position": [
+        9,
+        19.4,
+        8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#bfe8ff",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_077",
+      "position": [
+        0,
+        15.6,
+        -8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_078",
+      "position": [
+        12,
+        15.6,
+        -5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_079",
+      "position": [
+        0,
+        15.4,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_080",
+      "position": [
+        -11.3,
+        16,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_081",
+      "position": [
+        11.3,
+        16,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_082",
+      "position": [
+        12,
+        16,
+        -6.6
+      ],
+      "kind": "ladder",
+      "yaw": 0,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "light_083",
+      "position": [
+        -9,
+        19.4,
+        -8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd0f0",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_084",
+      "position": [
+        0,
+        23.6,
+        8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_085",
+      "position": [
+        12,
+        23.6,
+        5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_086",
+      "position": [
+        0,
+        23.4,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_087",
+      "position": [
+        -11.3,
+        24,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_088",
+      "position": [
+        11.3,
+        24,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_089",
+      "position": [
+        12,
+        24,
+        6.6
+      ],
+      "kind": "ladder",
+      "yaw": 3.141592653589793,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "light_090",
+      "position": [
+        9,
+        27.4,
+        8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#bfe8ff",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_091",
+      "position": [
+        0,
+        23.6,
+        -8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_092",
+      "position": [
+        -12,
+        23.6,
+        -5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_093",
+      "position": [
+        0,
+        23.4,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_094",
+      "position": [
+        -11.3,
+        24,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_095",
+      "position": [
+        11.3,
+        24,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_096",
+      "position": [
+        -12,
+        24,
+        -6.6
+      ],
+      "kind": "ladder",
+      "yaw": 0,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "light_097",
+      "position": [
+        -9,
+        27.4,
+        -8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd0f0",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_098",
+      "position": [
+        0,
+        31.6,
+        8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_099",
+      "position": [
+        -12,
+        31.6,
+        5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_100",
+      "position": [
+        0,
+        31.4,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_101",
+      "position": [
+        -11.3,
+        32,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_102",
+      "position": [
+        11.3,
+        32,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_103",
+      "position": [
+        -12,
+        32,
+        6.6
+      ],
+      "kind": "ladder",
+      "yaw": 3.141592653589793,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "light_104",
+      "position": [
+        9,
+        35.4,
+        8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#bfe8ff",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_105",
+      "position": [
+        0,
+        31.6,
+        -8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_106",
+      "position": [
+        12,
+        31.6,
+        -5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_107",
+      "position": [
+        0,
+        31.4,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_108",
+      "position": [
+        -11.3,
+        32,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_109",
+      "position": [
+        11.3,
+        32,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_110",
+      "position": [
+        12,
+        32,
+        -6.6
+      ],
+      "kind": "ladder",
+      "yaw": 0,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "light_111",
+      "position": [
+        -9,
+        35.4,
+        -8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd0f0",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_112",
+      "position": [
+        0,
+        39.6,
+        8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_113",
+      "position": [
+        12,
+        39.6,
+        5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_114",
+      "position": [
+        0,
+        39.4,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_115",
+      "position": [
+        -11.3,
+        40,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_116",
+      "position": [
+        11.3,
+        40,
+        6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_117",
+      "position": [
+        12,
+        40,
+        6.6
+      ],
+      "kind": "ladder",
+      "yaw": 3.141592653589793,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "light_118",
+      "position": [
+        9,
+        43.4,
+        8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#bfe8ff",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_119",
+      "position": [
+        0,
+        39.6,
+        -8.1
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.4,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_120",
+      "position": [
+        -12,
+        39.6,
+        -5.9
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.4,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_121",
+      "position": [
+        0,
+        39.4,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        27.2,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_122",
+      "position": [
+        -11.3,
+        40,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_123",
+      "position": [
+        11.3,
+        40,
+        -6.7
+      ],
+      "kind": "block",
+      "size": [
+        4.6,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "ladder_124",
+      "position": [
+        -12,
+        40,
+        -6.6
+      ],
+      "kind": "ladder",
+      "yaw": 0,
+      "height": 8.1,
+      "width": 0.9
+    },
+    {
+      "id": "light_125",
+      "position": [
+        -9,
+        43.4,
+        -8.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd0f0",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "block_126",
+      "position": [
+        6,
+        7.6,
+        5.75
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.4,
+        1.7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_127",
+      "position": [
+        0,
+        7.6,
+        5.75
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.4,
+        1.7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_128",
+      "position": [
+        6,
+        15.6,
+        5.75
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.4,
+        1.7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_129",
+      "position": [
+        6,
+        23.6,
+        5.75
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.4,
+        1.7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_130",
+      "position": [
+        6,
+        31.6,
+        5.75
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.4,
+        1.7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_131",
+      "position": [
+        6,
+        39.6,
+        5.75
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.4,
+        1.7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_132",
+      "position": [
+        0,
+        39.6,
+        5.75
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.4,
+        1.7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3a44",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_133",
+      "position": [
+        10.75,
+        19.5,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.7,
+        0.5,
+        4.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#3a3040",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_134",
+      "position": [
+        10.75,
+        19.3,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.7,
+        0.2,
+        4.8
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_135",
+      "position": [
+        8,
+        20,
+        -4.8
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_136",
+      "position": [
+        8,
+        20,
+        -1.2
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "light_137",
+      "position": [
+        10.8,
+        23,
+        -3
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1.2,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "block_138",
+      "position": [
+        -10.75,
+        35.5,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.7,
+        0.5,
+        4.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#3a3040",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_139",
+      "position": [
+        -10.75,
+        35.3,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.7,
+        0.2,
+        4.8
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_140",
+      "position": [
+        -8,
+        36,
+        -4.8
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_141",
+      "position": [
+        -8,
+        36,
+        -1.2
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "light_142",
+      "position": [
+        -10.8,
+        39,
+        -3
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1.2,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "block_143",
+      "position": [
+        -13.45,
+        47.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        1.1,
+        0.6,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_144",
+      "position": [
+        -12,
+        47.4,
+        -8.55
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_145",
+      "position": [
+        -12,
+        47.4,
+        2.4
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        15.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_146",
+      "position": [
+        -9.45,
+        47.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        3.3,
+        0.6,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_147",
+      "position": [
+        -6,
+        47.4,
+        -4.4
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        0.6,
+        11.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_148",
+      "position": [
+        -6,
+        47.4,
+        7.4
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        0.6,
+        5.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_149",
+      "position": [
+        -3,
+        47.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.6,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_150",
+      "position": [
+        0,
+        47.4,
+        -7.4
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        0.6,
+        5.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_151",
+      "position": [
+        0,
+        47.4,
+        4.4
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        0.6,
+        11.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_152",
+      "position": [
+        6.45,
+        47.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        9.3,
+        0.6,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_153",
+      "position": [
+        12,
+        47.4,
+        -2.4
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        15.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_154",
+      "position": [
+        12,
+        47.4,
+        8.55
+      ],
+      "kind": "block",
+      "size": [
+        1.8,
+        0.6,
+        2.9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_155",
+      "position": [
+        13.45,
+        47.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        1.1,
+        0.6,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_156",
+      "position": [
+        0,
+        48,
+        -9.85
+      ],
+      "kind": "block",
+      "size": [
+        28,
+        1.1,
+        0.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_157",
+      "position": [
+        -13.85,
+        48,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        1.1,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_158",
+      "position": [
+        0,
+        48,
+        9.85
+      ],
+      "kind": "block",
+      "size": [
+        28,
+        1.1,
+        0.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_159",
+      "position": [
+        13.85,
+        48,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        1.1,
+        20
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_sill",
+      "position": [
+        -4.7,
+        -0.2,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_floor",
+      "position": [
+        -6.3,
+        -0.2,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5868",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_post_ws",
+      "position": [
+        -7.5,
+        0.1,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_post_es",
+      "position": [
+        -4.5,
+        0.1,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_post_wn",
+      "position": [
+        -7.5,
+        0.1,
+        4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_post_en",
+      "position": [
+        -4.5,
+        0.1,
+        4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_roof",
+      "position": [
+        -6,
+        3.3,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.2,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_rail_w",
+      "position": [
+        -7.5,
+        0.1,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        2.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_160",
+      "position": [
+        -8,
+        0.1,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        4.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_rail_n",
+      "position": [
+        -6,
+        0.1,
+        4.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_161",
+      "position": [
+        -6,
+        0.1,
+        5
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_a_rail_s",
+      "position": [
+        -6,
+        0.1,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_162",
+      "position": [
+        -6,
+        0.1,
+        1
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_cab_a",
+      "position": [
+        -6,
+        0.1,
+        3
+      ],
+      "name": "Cab A",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "cab_a_sill",
+        "cab_a_floor",
+        "cab_a_post_ws",
+        "cab_a_post_es",
+        "cab_a_post_wn",
+        "cab_a_post_en",
+        "cab_a_roof",
+        "cab_a_rail_w",
+        "cab_a_rail_n",
+        "cab_a_rail_s"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          47.9,
+          0
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 6,
+      "turnSpeed": 45,
+      "wait": 3,
+      "startActive": true
+    },
+    {
+      "id": "light_163",
+      "position": [
+        -6,
+        4.6,
+        3
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4fe0ff",
+      "intensity": 0.8,
+      "range": 6,
+      "fixture": "none"
+    },
+    {
+      "id": "cab_b_sill",
+      "position": [
+        0,
+        7.7,
+        4.3
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#5dff9a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_b_floor",
+      "position": [
+        0,
+        7.7,
+        2.7
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.3,
+        2.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5868",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_b_post_ws",
+      "position": [
+        -1.5,
+        8,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_b_post_es",
+      "position": [
+        1.5,
+        8,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_b_post_wn",
+      "position": [
+        -1.5,
+        8,
+        4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_b_post_en",
+      "position": [
+        1.5,
+        8,
+        4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_b_roof",
+      "position": [
+        0,
+        11.2,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.2,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#5dff9a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_b_rail_e",
+      "position": [
+        1.5,
+        8,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        2.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_b_rail_w",
+      "position": [
+        -1.5,
+        8,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        2.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_b_rail_s",
+      "position": [
+        0,
+        8,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_cab_b",
+      "position": [
+        0,
+        8,
+        3
+      ],
+      "name": "Cab B",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "cab_b_sill",
+        "cab_b_floor",
+        "cab_b_post_ws",
+        "cab_b_post_es",
+        "cab_b_post_wn",
+        "cab_b_post_en",
+        "cab_b_roof",
+        "cab_b_rail_e",
+        "cab_b_rail_w",
+        "cab_b_rail_s"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          32,
+          0
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 5,
+      "turnSpeed": 45,
+      "wait": 2,
+      "startActive": true
+    },
+    {
+      "id": "light_164",
+      "position": [
+        0,
+        4.6,
+        3
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#5dff9a",
+      "intensity": 0.8,
+      "range": 6,
+      "fixture": "none"
+    },
+    {
+      "id": "cab_c_sill",
+      "position": [
+        6,
+        -0.2,
+        4.3
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_c_floor",
+      "position": [
+        6,
+        -0.2,
+        2.7
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.3,
+        2.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5868",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_c_post_ws",
+      "position": [
+        4.5,
+        0.1,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_c_post_es",
+      "position": [
+        7.5,
+        0.1,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_c_post_wn",
+      "position": [
+        4.5,
+        0.1,
+        4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_c_post_en",
+      "position": [
+        7.5,
+        0.1,
+        4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_c_roof",
+      "position": [
+        6,
+        3.3,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.2,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_c_rail_e",
+      "position": [
+        7.5,
+        0.1,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        2.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_165",
+      "position": [
+        8,
+        0.1,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        4.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_c_rail_w",
+      "position": [
+        4.5,
+        0.1,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        2.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_166",
+      "position": [
+        4,
+        0.1,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        4.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_c_rail_s",
+      "position": [
+        6,
+        0.1,
+        1.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_167",
+      "position": [
+        6,
+        0.1,
+        1
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_cab_c",
+      "position": [
+        6,
+        0.1,
+        3
+      ],
+      "name": "Cab C",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "cab_c_sill",
+        "cab_c_floor",
+        "cab_c_post_ws",
+        "cab_c_post_es",
+        "cab_c_post_wn",
+        "cab_c_post_en",
+        "cab_c_roof",
+        "cab_c_rail_e",
+        "cab_c_rail_w",
+        "cab_c_rail_s"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          7.9,
+          0
+        ],
+        [
+          0,
+          15.9,
+          0
+        ],
+        [
+          0,
+          23.9,
+          0
+        ],
+        [
+          0,
+          31.9,
+          0
+        ],
+        [
+          0,
+          39.9,
+          0
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 5.5,
+      "turnSpeed": 45,
+      "wait": 1.6,
+      "startActive": true
+    },
+    {
+      "id": "light_168",
+      "position": [
+        6,
+        4.6,
+        3
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 0.8,
+      "range": 6,
+      "fixture": "none"
+    },
+    {
+      "id": "cab_d_sill",
+      "position": [
+        -7.3,
+        -0.2,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#c45cff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_d_floor",
+      "position": [
+        -5.7,
+        -0.2,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5868",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_d_post_ws",
+      "position": [
+        -7.5,
+        0.1,
+        -4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_d_post_es",
+      "position": [
+        -4.5,
+        0.1,
+        -4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_d_post_wn",
+      "position": [
+        -7.5,
+        0.1,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_d_post_en",
+      "position": [
+        -4.5,
+        0.1,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_d_roof",
+      "position": [
+        -6,
+        3.3,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.2,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#c45cff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_d_rail_e",
+      "position": [
+        -4.5,
+        0.1,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        2.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_169",
+      "position": [
+        -4,
+        0.1,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        4.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_d_rail_n",
+      "position": [
+        -6,
+        0.1,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_170",
+      "position": [
+        -6,
+        0.1,
+        -1
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_d_rail_s",
+      "position": [
+        -6,
+        0.1,
+        -4.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_171",
+      "position": [
+        -6,
+        0.1,
+        -5
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_cab_d",
+      "position": [
+        -6,
+        0.1,
+        -3
+      ],
+      "name": "Cab D",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "cab_d_sill",
+        "cab_d_floor",
+        "cab_d_post_ws",
+        "cab_d_post_es",
+        "cab_d_post_wn",
+        "cab_d_post_en",
+        "cab_d_roof",
+        "cab_d_rail_e",
+        "cab_d_rail_n",
+        "cab_d_rail_s"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          35.9,
+          0
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 5,
+      "turnSpeed": 45,
+      "wait": 3.5,
+      "startActive": true
+    },
+    {
+      "id": "light_172",
+      "position": [
+        -6,
+        4.6,
+        -3
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#c45cff",
+      "intensity": 0.8,
+      "range": 6,
+      "fixture": "none"
+    },
+    {
+      "id": "cab_e_sill",
+      "position": [
+        1.3,
+        -0.2,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_e_floor",
+      "position": [
+        -0.3,
+        -0.2,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5868",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_e_post_ws",
+      "position": [
+        -1.5,
+        0.1,
+        -4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_e_post_es",
+      "position": [
+        1.5,
+        0.1,
+        -4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_e_post_wn",
+      "position": [
+        -1.5,
+        0.1,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_e_post_en",
+      "position": [
+        1.5,
+        0.1,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_e_roof",
+      "position": [
+        0,
+        3.3,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.2,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_e_rail_w",
+      "position": [
+        -1.5,
+        0.1,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        2.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_173",
+      "position": [
+        -2,
+        0.1,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        4.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_e_rail_n",
+      "position": [
+        0,
+        0.1,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_174",
+      "position": [
+        0,
+        0.1,
+        -1
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_e_rail_s",
+      "position": [
+        0,
+        0.1,
+        -4.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_175",
+      "position": [
+        0,
+        0.1,
+        -5
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_cab_e",
+      "position": [
+        0,
+        0.1,
+        -3
+      ],
+      "name": "Cab E",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "cab_e_sill",
+        "cab_e_floor",
+        "cab_e_post_ws",
+        "cab_e_post_es",
+        "cab_e_post_wn",
+        "cab_e_post_en",
+        "cab_e_roof",
+        "cab_e_rail_w",
+        "cab_e_rail_n",
+        "cab_e_rail_s"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          47.9,
+          0
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 6,
+      "turnSpeed": 45,
+      "wait": 2.5,
+      "startActive": true
+    },
+    {
+      "id": "light_176",
+      "position": [
+        0,
+        4.6,
+        -3
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff4fd8",
+      "intensity": 0.8,
+      "range": 6,
+      "fixture": "none"
+    },
+    {
+      "id": "cab_f_sill",
+      "position": [
+        7.3,
+        -0.2,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff3b5c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_f_floor",
+      "position": [
+        5.7,
+        -0.2,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.3,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5868",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_f_post_ws",
+      "position": [
+        4.5,
+        0.1,
+        -4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_f_post_es",
+      "position": [
+        7.5,
+        0.1,
+        -4.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_f_post_wn",
+      "position": [
+        4.5,
+        0.1,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_f_post_en",
+      "position": [
+        7.5,
+        0.1,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        3.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_f_roof",
+      "position": [
+        6,
+        3.3,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.2,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff3b5c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_f_rail_w",
+      "position": [
+        4.5,
+        0.1,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        2.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_177",
+      "position": [
+        4,
+        0.1,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1,
+        4.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_f_rail_n",
+      "position": [
+        6,
+        0.1,
+        -1.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_178",
+      "position": [
+        6,
+        0.1,
+        -1
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "cab_f_rail_s",
+      "position": [
+        6,
+        0.1,
+        -4.5
+      ],
+      "kind": "block",
+      "size": [
+        2.8,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_179",
+      "position": [
+        6,
+        0.1,
+        -5
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        1,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": "#9ab8d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_cab_f",
+      "position": [
+        6,
+        0.1,
+        -3
+      ],
+      "name": "Cab F",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "cab_f_sill",
+        "cab_f_floor",
+        "cab_f_post_ws",
+        "cab_f_post_es",
+        "cab_f_post_wn",
+        "cab_f_post_en",
+        "cab_f_roof",
+        "cab_f_rail_w",
+        "cab_f_rail_n",
+        "cab_f_rail_s"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          19.9,
+          0
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 5,
+      "turnSpeed": 45,
+      "wait": 2.5,
+      "startActive": true
+    },
+    {
+      "id": "light_180",
+      "position": [
+        6,
+        4.6,
+        -3
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff3b5c",
+      "intensity": 0.8,
+      "range": 6,
+      "fixture": "none"
+    },
+    {
+      "id": "block_181",
+      "position": [
+        0,
+        0.1,
+        -8
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1.05,
+        0.8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_marble_black",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_182",
+      "position": [
+        0,
+        1.15,
+        -8
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.1,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_183",
+      "position": [
+        -11.5,
+        0.1,
+        9.1
+      ],
+      "kind": "prop",
+      "model": "prop.nc_vending",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_184",
+      "position": [
+        -10.3,
+        0.1,
+        9.1
+      ],
+      "kind": "prop",
+      "model": "prop.nc_vending",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_185",
+      "position": [
+        11.5,
+        0.1,
+        -9.1
+      ],
+      "kind": "prop",
+      "model": "prop.nc_vending",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_186",
+      "position": [
+        10.5,
+        0.1,
+        8.6
+      ],
+      "kind": "prop",
+      "model": "prop.nc_holo_kiosk",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_187",
+      "position": [
+        -11,
+        0.1,
+        -8.799999999999999
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_188",
+      "position": [
+        -8,
+        0.1,
+        -8.799999999999999
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_189",
+      "position": [
+        -13,
+        0.1,
+        -9
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_190",
+      "position": [
+        13,
+        0.1,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "board_lobby",
+      "position": [
+        0,
+        5.2,
+        -9.299999999999999
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4fe0ff",
+      "intensity": 2,
+      "range": 16,
+      "fixture": "billboard",
+      "text": "EXPRESS LOBBY",
+      "size": [
+        9,
+        2.4
+      ]
+    },
+    {
+      "id": "floor_1",
+      "position": [
+        3,
+        5.6,
+        9.35
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb347",
+      "intensity": 1.4,
+      "range": 4,
+      "fixture": "sign",
+      "text": "1",
+      "size": [
+        0.9,
+        0.8
+      ]
+    },
+    {
+      "id": "floor_3",
+      "position": [
+        4.2,
+        5.6,
+        9.35
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb347",
+      "intensity": 1.4,
+      "range": 4,
+      "fixture": "sign",
+      "off": true,
+      "text": "3",
+      "size": [
+        0.9,
+        0.8
+      ]
+    },
+    {
+      "id": "floor_5",
+      "position": [
+        5.4,
+        5.6,
+        9.35
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb347",
+      "intensity": 1.4,
+      "range": 4,
+      "fixture": "sign",
+      "off": true,
+      "text": "5",
+      "size": [
+        0.9,
+        0.8
+      ]
+    },
+    {
+      "id": "floor_7",
+      "position": [
+        6.6,
+        5.6,
+        9.35
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb347",
+      "intensity": 1.4,
+      "range": 4,
+      "fixture": "sign",
+      "off": true,
+      "text": "7",
+      "size": [
+        0.9,
+        0.8
+      ]
+    },
+    {
+      "id": "floor_9",
+      "position": [
+        7.8,
+        5.6,
+        9.35
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb347",
+      "intensity": 1.4,
+      "range": 4,
+      "fixture": "sign",
+      "off": true,
+      "text": "9",
+      "size": [
+        0.9,
+        0.8
+      ]
+    },
+    {
+      "id": "floor_11",
+      "position": [
+        9,
+        5.6,
+        9.35
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb347",
+      "intensity": 1.4,
+      "range": 4,
+      "fixture": "sign",
+      "off": true,
+      "text": "11",
+      "size": [
+        0.9,
+        0.8
+      ]
+    },
+    {
+      "id": "light_191",
+      "position": [
+        6,
+        6.6,
+        9.35
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ff4fd8",
+      "intensity": 1,
+      "range": 4,
+      "fixture": "sign",
+      "text": "CAB C",
+      "size": [
+        2.4,
+        0.7
+      ]
+    },
+    {
+      "id": "light_192",
+      "position": [
+        -9,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe0f0",
+      "intensity": 1,
+      "range": 11,
+      "fixture": "none"
+    },
+    {
+      "id": "light_193",
+      "position": [
+        9,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe0f0",
+      "intensity": 1,
+      "range": 11,
+      "fixture": "none"
+    },
+    {
+      "id": "light_194",
+      "position": [
+        0,
+        3.6,
+        -6.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe0f0",
+      "intensity": 1,
+      "range": 11,
+      "fixture": "none"
+    },
+    {
+      "id": "light_195",
+      "position": [
+        0,
+        3.6,
+        6.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe0f0",
+      "intensity": 1,
+      "range": 11,
+      "fixture": "none"
+    },
+    {
+      "id": "block_196",
+      "position": [
+        -11.1,
+        48,
+        5.15
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        3.4,
+        0.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_197",
+      "position": [
+        -8.75,
+        48,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        3.4,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_198",
+      "position": [
+        -11.1,
+        51.4,
+        7.3
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.3,
+        4.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#4a4a56",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_199",
+      "position": [
+        -12,
+        48,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.os_generator",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_200",
+      "position": [
+        -11.6,
+        48,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.os_console_corner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_201",
+      "position": [
+        -9.8,
+        48,
+        6.2
+      ],
+      "kind": "prop",
+      "model": "prop.os_terminal",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "btn_cab_drop",
+      "position": [
+        -10.4,
+        49.1,
+        5.55
+      ],
+      "name": "Cab C floor release",
+      "kind": "button",
+      "yaw": 0,
+      "label": "Drop cab C floor",
+      "once": false,
+      "cooldownSeconds": 30,
+      "startEnabled": true
+    },
+    {
+      "id": "lamp_machine",
+      "position": [
+        -11,
+        51.1,
+        7.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff6040",
+      "intensity": 1,
+      "range": 7,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_202",
+      "position": [
+        -11,
+        52.4,
+        5.2
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff3b5c",
+      "intensity": 1.2,
+      "range": 6,
+      "fixture": "sign",
+      "text": "MACHINE ROOM",
+      "size": [
+        3.6,
+        0.7
+      ]
+    },
+    {
+      "id": "block_203",
+      "position": [
+        7.7,
+        48,
+        -4.1
+      ],
+      "kind": "block",
+      "size": [
+        9.4,
+        0.25,
+        9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": "#4a4a52",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_204",
+      "position": [
+        7.7,
+        48.2,
+        -4.1
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        0.1,
+        4.6
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f0f0f0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mount_205",
+      "position": [
+        7.7,
+        48.3,
+        -4.1
+      ],
+      "kind": "mount",
+      "model": "gunship",
+      "yaw": 1.5707963267948966,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "light_206",
+      "position": [
+        7.7,
+        54,
+        -4.1
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_207",
+      "position": [
+        5.5,
+        48,
+        8.6
+      ],
+      "kind": "prop",
+      "model": "prop.nc_ac_unit",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_208",
+      "position": [
+        8,
+        48,
+        8.6
+      ],
+      "kind": "prop",
+      "model": "prop.nc_ac_unit",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_209",
+      "position": [
+        12.4,
+        48,
+        2.8
+      ],
+      "kind": "prop",
+      "model": "prop.nc_antenna",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_210",
+      "position": [
+        -6.4,
+        48,
+        -7.6
+      ],
+      "kind": "prop",
+      "model": "prop.nc_water_tank",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_211",
+      "position": [
+        -20,
+        0,
+        -14
+      ],
+      "kind": "prop",
+      "model": "prop.nc_streetlight",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_212",
+      "position": [
+        20,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.nc_streetlight",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_213",
+      "position": [
+        -20,
+        0,
+        14
+      ],
+      "kind": "prop",
+      "model": "prop.nc_streetlight",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_214",
+      "position": [
+        20,
+        0,
+        -14
+      ],
+      "kind": "prop",
+      "model": "prop.nc_streetlight",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_215",
+      "position": [
+        -20,
+        6.6,
+        -12.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a0",
+      "intensity": 1,
+      "range": 13,
+      "fixture": "none"
+    },
+    {
+      "id": "light_216",
+      "position": [
+        20,
+        6.6,
+        12.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a0",
+      "intensity": 1,
+      "range": 13,
+      "fixture": "none"
+    },
+    {
+      "id": "light_217",
+      "position": [
+        -20,
+        6.6,
+        12.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a0",
+      "intensity": 1,
+      "range": 13,
+      "fixture": "none"
+    },
+    {
+      "id": "light_218",
+      "position": [
+        20,
+        6.6,
+        -12.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a0",
+      "intensity": 1,
+      "range": 13,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_219",
+      "position": [
+        -24,
+        0,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.nc_food_stall",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_220",
+      "position": [
+        24,
+        0,
+        -6
+      ],
+      "kind": "prop",
+      "model": "prop.nc_food_stall",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_221",
+      "position": [
+        -24,
+        0,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.nc_dumpster",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_222",
+      "position": [
+        24,
+        0,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.nc_dumpster",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_223",
+      "position": [
+        -27,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.nc_road_barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_224",
+      "position": [
+        27,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.nc_road_barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_225",
+      "position": [
+        -17.5,
+        0,
+        4
+      ],
+      "kind": "prop",
+      "model": "prop.nc_neon_barrier",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_226",
+      "position": [
+        17.5,
+        0,
+        -4
+      ],
+      "kind": "prop",
+      "model": "prop.nc_neon_barrier",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_227",
+      "position": [
+        -24,
+        2.6,
+        6
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ff4fd8",
+      "intensity": 1.2,
+      "range": 6,
+      "fixture": "sign",
+      "text": "RAMEN",
+      "size": [
+        2.2,
+        0.7
+      ]
+    },
+    {
+      "id": "light_228",
+      "position": [
+        24,
+        2.6,
+        -6
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#5dff9a",
+      "intensity": 1.2,
+      "range": 6,
+      "fixture": "sign",
+      "text": "NOODLES",
+      "size": [
+        2.6,
+        0.7
+      ]
+    },
+    {
+      "id": "light_229",
+      "position": [
+        -14.1,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#4fe0ff",
+      "intensity": 1.4,
+      "range": 8,
+      "fixture": "sign",
+      "text": "EXPRESS LOBBY",
+      "size": [
+        4.4,
+        0.8
+      ]
+    },
+    {
+      "id": "light_230",
+      "position": [
+        14.1,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#4fe0ff",
+      "intensity": 1.4,
+      "range": 8,
+      "fixture": "sign",
+      "text": "EXPRESS LOBBY",
+      "size": [
+        4.4,
+        0.8
+      ]
+    },
+    {
+      "id": "hill_231",
+      "position": [
+        10.8,
+        20,
+        -3
+      ],
+      "kind": "hill",
+      "radius": 2.4
+    },
+    {
+      "id": "hill_232",
+      "position": [
+        -10.8,
+        36,
+        -3
+      ],
+      "kind": "hill",
+      "radius": 2.4
+    },
+    {
+      "id": "spawn_233",
+      "position": [
+        -20,
+        0,
+        -6
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_234",
+      "position": [
+        -20,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_235",
+      "position": [
+        -20,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_236",
+      "position": [
+        -20,
+        0,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_237",
+      "position": [
+        -4,
+        8,
+        8.2
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_238",
+      "position": [
+        4,
+        8,
+        8.2
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_239",
+      "position": [
+        -4,
+        24,
+        8.2
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_240",
+      "position": [
+        4,
+        24,
+        8.2
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_241",
+      "position": [
+        20,
+        0,
+        -6
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_242",
+      "position": [
+        20,
+        0,
+        -2
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_243",
+      "position": [
+        20,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_244",
+      "position": [
+        20,
+        0,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_245",
+      "position": [
+        -4,
+        8,
+        -8.2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_246",
+      "position": [
+        4,
+        8,
+        -8.2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_247",
+      "position": [
+        -4,
+        24,
+        -8.2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_248",
+      "position": [
+        4,
+        24,
+        -8.2
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "pickup_249",
+      "position": [
+        -6,
+        0.1,
+        -7.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_250",
+      "position": [
+        6,
+        0.1,
+        7.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_251",
+      "position": [
+        0,
+        0.1,
+        -6.5
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_252",
+      "position": [
+        -8,
+        16,
+        8.2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_253",
+      "position": [
+        8,
+        16,
+        -8.2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_254",
+      "position": [
+        0,
+        32,
+        8.2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_255",
+      "position": [
+        0,
+        32,
+        -8.2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_256",
+      "position": [
+        12,
+        20,
+        -1.6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_257",
+      "position": [
+        -12,
+        36,
+        -1.6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_258",
+      "position": [
+        -4,
+        48,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_259",
+      "position": [
+        2,
+        48,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_260",
+      "position": [
+        -10,
+        8,
+        -8.2
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_261",
+      "position": [
+        10,
+        8,
+        8.2
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_262",
+      "position": [
+        -6,
+        24,
+        -8.2
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_263",
+      "position": [
+        6,
+        24,
+        8.2
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_264",
+      "position": [
+        -10,
+        40,
+        -8.2
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_265",
+      "position": [
+        10,
+        40,
+        8.2
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_266",
+      "position": [
+        -22,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_267",
+      "position": [
+        22,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_268",
+      "position": [
+        10,
+        32,
+        8.2
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_269",
+      "position": [
+        -10,
+        32,
+        -8.2
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_270",
+      "position": [
+        0,
+        0.1,
+        6.5
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_271",
+      "position": [
+        -6,
+        16,
+        -8.2
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_272",
+      "position": [
+        6,
+        16,
+        8.2
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_273",
+      "position": [
+        -2,
+        40,
+        -8.2
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [
+      {
+        "id": "timer_door_a",
+        "name": "Revolving doors (turn)",
+        "seconds": 2,
+        "loop": false,
+        "visible": false
+      },
+      {
+        "id": "timer_door_b",
+        "name": "Revolving doors (back)",
+        "seconds": 2,
+        "loop": false,
+        "visible": false
+      }
+    ],
+    "objectives": [],
+    "rules": [
+      {
+        "id": "rule_welcome",
+        "name": "Welcome",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Express Lobby. Cabs do not stop for you: mind the shaft.",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_door_a",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_door_turn",
+        "name": "Revolving doors turn",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_door_a"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "block_drop",
+            "target": "field_west_n",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "field_west_s",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "field_east_n",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "field_east_s",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_door_b",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_door_back",
+        "name": "Revolving doors turn back",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_door_b"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "block_drop",
+            "target": "field_west_s",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "field_west_n",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "field_east_s",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "field_east_n",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_door_a",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cab_drop",
+        "name": "Cab C floor release",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_cab_drop"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Cab C floor released! Hold jump to open a parachute.",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_machine",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "block_drop",
+            "target": "cab_c_floor",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "cab_c_sill",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 6,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "cab_c_floor",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "cab_c_sill",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_machine",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          }
+        ]
+      },
+      {
+        "id": "rule_floor_1",
+        "name": "Cab C at floor 1",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "mover_arrived",
+          "target": "mover_cab_c"
+        },
+        "if": [
+          {
+            "type": "mover_at",
+            "target": "mover_cab_c",
+            "op": "==",
+            "value": 1,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "light_on",
+            "target": "floor_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_5",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_7",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_9",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_floor_3",
+        "name": "Cab C at floor 3",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "mover_arrived",
+          "target": "mover_cab_c"
+        },
+        "if": [
+          {
+            "type": "mover_at",
+            "target": "mover_cab_c",
+            "op": "==",
+            "value": 2,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "light_off",
+            "target": "floor_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "floor_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_5",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_7",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_9",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_floor_5",
+        "name": "Cab C at floor 5",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "mover_arrived",
+          "target": "mover_cab_c"
+        },
+        "if": [
+          {
+            "type": "mover_at",
+            "target": "mover_cab_c",
+            "op": "==",
+            "value": 3,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "light_off",
+            "target": "floor_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "floor_5",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_7",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_9",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_floor_7",
+        "name": "Cab C at floor 7",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "mover_arrived",
+          "target": "mover_cab_c"
+        },
+        "if": [
+          {
+            "type": "mover_at",
+            "target": "mover_cab_c",
+            "op": "==",
+            "value": 4,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "light_off",
+            "target": "floor_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_5",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "floor_7",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_9",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_floor_9",
+        "name": "Cab C at floor 9",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "mover_arrived",
+          "target": "mover_cab_c"
+        },
+        "if": [
+          {
+            "type": "mover_at",
+            "target": "mover_cab_c",
+            "op": "==",
+            "value": 5,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "light_off",
+            "target": "floor_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_5",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_7",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "floor_9",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_floor_11",
+        "name": "Cab C at floor 11",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "mover_arrived",
+          "target": "mover_cab_c"
+        },
+        "if": [
+          {
+            "type": "mover_at",
+            "target": "mover_cab_c",
+            "op": "==",
+            "value": 6,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "light_off",
+            "target": "floor_1",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_3",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_5",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_7",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "floor_9",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "floor_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -36,
+      -24
+    ],
+    "max": [
+      36,
+      24
+    ],
+    "style": "invisible",
+    "height": 60
+  },
+  "track": null,
+  "backdrop": {
+    "sky": "night",
+    "scenery": "city",
+    "ground": "stone",
+    "haze": 0.4,
+    "border": "skyline"
+  },
+  "physics": {
+    "gravity": 1,
+    "fallDamage": true
+  },
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      8,
+      8
+    ]
+  },
+  "dependencies": []
+}

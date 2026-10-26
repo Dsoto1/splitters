@@ -1,0 +1,5419 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 20,
+  "metadata": {
+    "id": "sushi_belt_sumo",
+    "name": "Sushi Belt Sumo",
+    "author": "Tile Trigger",
+    "description": "Disc Arena in a neon sushi bar the size of a stadium. Eight plates, each carrying a giant nigiri, ride a 60 m conveyor belt round the chef's island over the void: board them at the corners or off the bar counters, bank discs off the sushi, grab a power disc from the chef, take the sake bottle towers, and knock everyone else off the belt.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 4,
+      "max": 8
+    },
+    "supportedModes": [
+      "core.discs",
+      "core.deathmatch"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.neon_megacity",
+    "tiles": []
+  },
+  "entities": [
+    {
+      "id": "plate_salmon_deck",
+      "position": [
+        30,
+        -1,
+        -3.75
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#2a1c22",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_salmon_under",
+      "position": [
+        30,
+        -1.4,
+        -3.75
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.4,
+        5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_salmon_rim_e",
+      "position": [
+        32.9,
+        -0.4,
+        -3.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff7a3c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_salmon_rim_w",
+      "position": [
+        27.1,
+        -0.4,
+        -3.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff7a3c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_salmon_rim_n",
+      "position": [
+        30,
+        -0.4,
+        -0.85
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff7a3c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_salmon_rim_s",
+      "position": [
+        30,
+        -0.4,
+        -6.65
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff7a3c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_salmon_rice",
+      "position": [
+        28.9,
+        0,
+        -3.15
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.6,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#f4f0e6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_salmon_fish",
+      "position": [
+        28.9,
+        0.6,
+        -3.15
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.22,
+        1.5
+      ],
+      "yaw": -0.35,
+      "material": "core.paint_gloss",
+      "tint": "#ff8a50",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_salmon_band",
+      "position": [
+        28.9,
+        0.82,
+        -3.15
+      ],
+      "kind": "block",
+      "size": [
+        0.5,
+        0.1,
+        1.52
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#fff2e8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_plate_salmon",
+      "position": [
+        30,
+        0,
+        -3.75
+      ],
+      "name": "Salmon plate",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "plate_salmon_deck",
+        "plate_salmon_under",
+        "plate_salmon_rim_e",
+        "plate_salmon_rim_w",
+        "plate_salmon_rim_n",
+        "plate_salmon_rim_s",
+        "plate_salmon_rice",
+        "plate_salmon_fish",
+        "plate_salmon_band"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          18.75
+        ],
+        [
+          -60,
+          0,
+          18.75
+        ],
+        [
+          -60,
+          0,
+          -11.25
+        ],
+        [
+          0,
+          0,
+          -11.25
+        ]
+      ],
+      "mode": "loop",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 1.2,
+      "startActive": true
+    },
+    {
+      "id": "plate_maguro_deck",
+      "position": [
+        26.25,
+        -1,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#24161c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_maguro_under",
+      "position": [
+        26.25,
+        -1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.4,
+        5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_maguro_rim_e",
+      "position": [
+        29.15,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff3b5c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_maguro_rim_w",
+      "position": [
+        23.35,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff3b5c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_maguro_rim_n",
+      "position": [
+        26.25,
+        -0.4,
+        17.9
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff3b5c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_maguro_rim_s",
+      "position": [
+        26.25,
+        -0.4,
+        12.1
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff3b5c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_maguro_rice",
+      "position": [
+        27.35,
+        0,
+        15.6
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.6,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#f4f0e6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_maguro_fish",
+      "position": [
+        27.35,
+        0.6,
+        15.6
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.22,
+        1.5
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#c8243a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_plate_maguro",
+      "position": [
+        26.25,
+        0,
+        15
+      ],
+      "name": "Maguro plate",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "plate_maguro_deck",
+        "plate_maguro_under",
+        "plate_maguro_rim_e",
+        "plate_maguro_rim_w",
+        "plate_maguro_rim_n",
+        "plate_maguro_rim_s",
+        "plate_maguro_rice",
+        "plate_maguro_fish"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          -56.25,
+          0,
+          0
+        ],
+        [
+          -56.25,
+          0,
+          -30
+        ],
+        [
+          3.75,
+          0,
+          -30
+        ],
+        [
+          3.75,
+          0,
+          0
+        ]
+      ],
+      "mode": "loop",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 1.2,
+      "startActive": true
+    },
+    {
+      "id": "plate_tamago_deck",
+      "position": [
+        3.75,
+        -1,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#2a2418",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tamago_under",
+      "position": [
+        3.75,
+        -1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.4,
+        5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tamago_rim_e",
+      "position": [
+        6.65,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffd34a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tamago_rim_w",
+      "position": [
+        0.85,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffd34a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tamago_rim_n",
+      "position": [
+        3.75,
+        -0.4,
+        17.9
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffd34a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tamago_rim_s",
+      "position": [
+        3.75,
+        -0.4,
+        12.1
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffd34a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tamago_rice",
+      "position": [
+        2.65,
+        0,
+        15.6
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.6,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#f4f0e6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tamago_fish",
+      "position": [
+        2.65,
+        0.6,
+        15.6
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.22,
+        1.5
+      ],
+      "yaw": 0.35,
+      "material": "core.paint_gloss",
+      "tint": "#ffd24a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tamago_band",
+      "position": [
+        2.65,
+        0.82,
+        15.6
+      ],
+      "kind": "block",
+      "size": [
+        0.5,
+        0.1,
+        1.52
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#1a2a1a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_plate_tamago",
+      "position": [
+        3.75,
+        0,
+        15
+      ],
+      "name": "Tamago plate",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "plate_tamago_deck",
+        "plate_tamago_under",
+        "plate_tamago_rim_e",
+        "plate_tamago_rim_w",
+        "plate_tamago_rim_n",
+        "plate_tamago_rim_s",
+        "plate_tamago_rice",
+        "plate_tamago_fish",
+        "plate_tamago_band"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          -33.75,
+          0,
+          0
+        ],
+        [
+          -33.75,
+          0,
+          -30
+        ],
+        [
+          26.25,
+          0,
+          -30
+        ],
+        [
+          26.25,
+          0,
+          0
+        ]
+      ],
+      "mode": "loop",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 1.2,
+      "startActive": true
+    },
+    {
+      "id": "plate_tako_deck",
+      "position": [
+        -18.75,
+        -1,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#261a2a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tako_under",
+      "position": [
+        -18.75,
+        -1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.4,
+        5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tako_rim_e",
+      "position": [
+        -15.85,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#c45cff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tako_rim_w",
+      "position": [
+        -21.65,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#c45cff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tako_rim_n",
+      "position": [
+        -18.75,
+        -0.4,
+        17.9
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#c45cff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tako_rim_s",
+      "position": [
+        -18.75,
+        -0.4,
+        12.1
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#c45cff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tako_rice",
+      "position": [
+        -17.65,
+        0,
+        15.6
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.6,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#f4f0e6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tako_fish",
+      "position": [
+        -17.65,
+        0.6,
+        15.6
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.22,
+        1.5
+      ],
+      "yaw": -0.35,
+      "material": "core.paint_gloss",
+      "tint": "#b05a78",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_tako_band",
+      "position": [
+        -17.65,
+        0.82,
+        15.6
+      ],
+      "kind": "block",
+      "size": [
+        0.5,
+        0.1,
+        1.52
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#f0d0d8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_plate_tako",
+      "position": [
+        -18.75,
+        0,
+        15
+      ],
+      "name": "Tako plate",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "plate_tako_deck",
+        "plate_tako_under",
+        "plate_tako_rim_e",
+        "plate_tako_rim_w",
+        "plate_tako_rim_n",
+        "plate_tako_rim_s",
+        "plate_tako_rice",
+        "plate_tako_fish",
+        "plate_tako_band"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          -11.25,
+          0,
+          0
+        ],
+        [
+          -11.25,
+          0,
+          -30
+        ],
+        [
+          48.75,
+          0,
+          -30
+        ],
+        [
+          48.75,
+          0,
+          0
+        ]
+      ],
+      "mode": "loop",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 1.2,
+      "startActive": true
+    },
+    {
+      "id": "plate_ebi_deck",
+      "position": [
+        -30,
+        -1,
+        3.75
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#2a1e1c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_ebi_under",
+      "position": [
+        -30,
+        -1.4,
+        3.75
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.4,
+        5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_ebi_rim_e",
+      "position": [
+        -27.1,
+        -0.4,
+        3.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff9a7a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_ebi_rim_w",
+      "position": [
+        -32.9,
+        -0.4,
+        3.75
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff9a7a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_ebi_rim_n",
+      "position": [
+        -30,
+        -0.4,
+        6.65
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff9a7a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_ebi_rim_s",
+      "position": [
+        -30,
+        -0.4,
+        0.85
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff9a7a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_ebi_rice",
+      "position": [
+        -31.1,
+        0,
+        4.35
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.6,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#f4f0e6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_ebi_fish",
+      "position": [
+        -31.1,
+        0.6,
+        4.35
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.22,
+        1.5
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#ff9e7a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_ebi_band",
+      "position": [
+        -31.1,
+        0.82,
+        4.35
+      ],
+      "kind": "block",
+      "size": [
+        0.5,
+        0.1,
+        1.52
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#ffffff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_plate_ebi",
+      "position": [
+        -30,
+        0,
+        3.75
+      ],
+      "name": "Ebi plate",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "plate_ebi_deck",
+        "plate_ebi_under",
+        "plate_ebi_rim_e",
+        "plate_ebi_rim_w",
+        "plate_ebi_rim_n",
+        "plate_ebi_rim_s",
+        "plate_ebi_rice",
+        "plate_ebi_fish",
+        "plate_ebi_band"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          -18.75
+        ],
+        [
+          60,
+          0,
+          -18.75
+        ],
+        [
+          60,
+          0,
+          11.25
+        ],
+        [
+          0,
+          0,
+          11.25
+        ]
+      ],
+      "mode": "loop",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 1.2,
+      "startActive": true
+    },
+    {
+      "id": "plate_wasabi_deck",
+      "position": [
+        -26.25,
+        -1,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#18261c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_wasabi_under",
+      "position": [
+        -26.25,
+        -1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.4,
+        5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_wasabi_rim_e",
+      "position": [
+        -23.35,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#5dff9a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_wasabi_rim_w",
+      "position": [
+        -29.15,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#5dff9a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_wasabi_rim_n",
+      "position": [
+        -26.25,
+        -0.4,
+        -12.1
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#5dff9a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_wasabi_rim_s",
+      "position": [
+        -26.25,
+        -0.4,
+        -17.9
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#5dff9a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_wasabi_rice",
+      "position": [
+        -25.15,
+        0,
+        -14.4
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.6,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#f4f0e6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_wasabi_fish",
+      "position": [
+        -25.15,
+        0.6,
+        -14.4
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.22,
+        1.5
+      ],
+      "yaw": 0.35,
+      "material": "core.paint_gloss",
+      "tint": "#7ccf5a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_plate_wasabi",
+      "position": [
+        -26.25,
+        0,
+        -15
+      ],
+      "name": "Wasabi plate",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "plate_wasabi_deck",
+        "plate_wasabi_under",
+        "plate_wasabi_rim_e",
+        "plate_wasabi_rim_w",
+        "plate_wasabi_rim_n",
+        "plate_wasabi_rim_s",
+        "plate_wasabi_rice",
+        "plate_wasabi_fish"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          56.25,
+          0,
+          0
+        ],
+        [
+          56.25,
+          0,
+          30
+        ],
+        [
+          -3.75,
+          0,
+          30
+        ],
+        [
+          -3.75,
+          0,
+          0
+        ]
+      ],
+      "mode": "loop",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 1.2,
+      "startActive": true
+    },
+    {
+      "id": "plate_uni_deck",
+      "position": [
+        -3.75,
+        -1,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#2a2014",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_uni_under",
+      "position": [
+        -3.75,
+        -1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.4,
+        5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_uni_rim_e",
+      "position": [
+        -0.85,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_uni_rim_w",
+      "position": [
+        -6.65,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_uni_rim_n",
+      "position": [
+        -3.75,
+        -0.4,
+        -12.1
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_uni_rim_s",
+      "position": [
+        -3.75,
+        -0.4,
+        -17.9
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_uni_rice",
+      "position": [
+        -4.85,
+        0,
+        -14.4
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.6,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#f4f0e6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_uni_fish",
+      "position": [
+        -4.85,
+        0.6,
+        -14.4
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.22,
+        1.5
+      ],
+      "yaw": -0.35,
+      "material": "core.paint_gloss",
+      "tint": "#e8a030",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_plate_uni",
+      "position": [
+        -3.75,
+        0,
+        -15
+      ],
+      "name": "Uni plate",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "plate_uni_deck",
+        "plate_uni_under",
+        "plate_uni_rim_e",
+        "plate_uni_rim_w",
+        "plate_uni_rim_n",
+        "plate_uni_rim_s",
+        "plate_uni_rice",
+        "plate_uni_fish"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          33.75,
+          0,
+          0
+        ],
+        [
+          33.75,
+          0,
+          30
+        ],
+        [
+          -26.25,
+          0,
+          30
+        ],
+        [
+          -26.25,
+          0,
+          0
+        ]
+      ],
+      "mode": "loop",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 1.2,
+      "startActive": true
+    },
+    {
+      "id": "plate_saba_deck",
+      "position": [
+        18.75,
+        -1,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        1,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#182028",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_saba_under",
+      "position": [
+        18.75,
+        -1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        0.4,
+        5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_saba_rim_e",
+      "position": [
+        21.65,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_saba_rim_w",
+      "position": [
+        15.85,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_saba_rim_n",
+      "position": [
+        18.75,
+        -0.4,
+        -12.1
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_saba_rim_s",
+      "position": [
+        18.75,
+        -0.4,
+        -17.9
+      ],
+      "kind": "block",
+      "size": [
+        5.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_saba_rice",
+      "position": [
+        19.85,
+        0,
+        -14.4
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.6,
+        1.3
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#f4f0e6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_saba_fish",
+      "position": [
+        19.85,
+        0.6,
+        -14.4
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.22,
+        1.5
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#9aa8b8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "plate_saba_band",
+      "position": [
+        19.85,
+        0.82,
+        -14.4
+      ],
+      "kind": "block",
+      "size": [
+        0.5,
+        0.1,
+        1.52
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#3a4a5a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mover_plate_saba",
+      "position": [
+        18.75,
+        0,
+        -15
+      ],
+      "name": "Saba plate",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "plate_saba_deck",
+        "plate_saba_under",
+        "plate_saba_rim_e",
+        "plate_saba_rim_w",
+        "plate_saba_rim_n",
+        "plate_saba_rim_s",
+        "plate_saba_rice",
+        "plate_saba_fish",
+        "plate_saba_band"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          11.25,
+          0,
+          0
+        ],
+        [
+          11.25,
+          0,
+          30
+        ],
+        [
+          -48.75,
+          0,
+          30
+        ],
+        [
+          -48.75,
+          0,
+          0
+        ]
+      ],
+      "mode": "loop",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 1.2,
+      "startActive": true
+    },
+    {
+      "id": "prop_001",
+      "position": [
+        30,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_002",
+      "position": [
+        30,
+        -2.6,
+        -7.5
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_003",
+      "position": [
+        30,
+        -2.6,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_004",
+      "position": [
+        30,
+        -2.6,
+        7.5
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_005",
+      "position": [
+        30,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_006",
+      "position": [
+        30,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_007",
+      "position": [
+        22.5,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_008",
+      "position": [
+        15,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_009",
+      "position": [
+        7.5,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_010",
+      "position": [
+        0,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_011",
+      "position": [
+        -7.5,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_012",
+      "position": [
+        -15,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_013",
+      "position": [
+        -22.5,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_014",
+      "position": [
+        -30,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_015",
+      "position": [
+        -30,
+        -2.6,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_016",
+      "position": [
+        -30,
+        -2.6,
+        7.5
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_017",
+      "position": [
+        -30,
+        -2.6,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_018",
+      "position": [
+        -30,
+        -2.6,
+        -7.5
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_019",
+      "position": [
+        -30,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_020",
+      "position": [
+        -30,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_021",
+      "position": [
+        -22.5,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_022",
+      "position": [
+        -15,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_023",
+      "position": [
+        -7.5,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_024",
+      "position": [
+        0,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_025",
+      "position": [
+        7.5,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_026",
+      "position": [
+        15,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_027",
+      "position": [
+        22.5,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_028",
+      "position": [
+        30,
+        -2.6,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.nc_monorail_track",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "block_029",
+      "position": [
+        0,
+        -1,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        18,
+        1,
+        10
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#3a3036",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_030",
+      "position": [
+        0,
+        -1.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        17,
+        0.4,
+        9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_031",
+      "position": [
+        -8.9,
+        -0.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        10
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_032",
+      "position": [
+        0,
+        -0.4,
+        -4.9
+      ],
+      "kind": "block",
+      "size": [
+        17.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_033",
+      "position": [
+        8.9,
+        -0.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        10
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_034",
+      "position": [
+        0,
+        -0.4,
+        4.9
+      ],
+      "kind": "block",
+      "size": [
+        17.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_035",
+      "position": [
+        0,
+        -1,
+        -10.7
+      ],
+      "kind": "block",
+      "size": [
+        36,
+        1,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_walnut",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_036",
+      "position": [
+        0,
+        -1.4,
+        -10.7
+      ],
+      "kind": "block",
+      "size": [
+        35,
+        0.4,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_037",
+      "position": [
+        -17.9,
+        -0.4,
+        -10.7
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_038",
+      "position": [
+        0,
+        -0.4,
+        -11.6
+      ],
+      "kind": "block",
+      "size": [
+        35.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_039",
+      "position": [
+        17.9,
+        -0.4,
+        -10.7
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_040",
+      "position": [
+        0,
+        -0.4,
+        -9.8
+      ],
+      "kind": "block",
+      "size": [
+        35.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_041",
+      "position": [
+        0,
+        -1,
+        10.7
+      ],
+      "kind": "block",
+      "size": [
+        36,
+        1,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_walnut",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_042",
+      "position": [
+        0,
+        -1.4,
+        10.7
+      ],
+      "kind": "block",
+      "size": [
+        35,
+        0.4,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_043",
+      "position": [
+        -17.9,
+        -0.4,
+        10.7
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_044",
+      "position": [
+        0,
+        -0.4,
+        9.8
+      ],
+      "kind": "block",
+      "size": [
+        35.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_045",
+      "position": [
+        17.9,
+        -0.4,
+        10.7
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_046",
+      "position": [
+        0,
+        -0.4,
+        11.6
+      ],
+      "kind": "block",
+      "size": [
+        35.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_047",
+      "position": [
+        36.8,
+        -1,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        7,
+        1,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c1418",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_048",
+      "position": [
+        36.8,
+        -1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.4,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_049",
+      "position": [
+        33.4,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_050",
+      "position": [
+        36.8,
+        -0.4,
+        -18.4
+      ],
+      "kind": "block",
+      "size": [
+        6.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_051",
+      "position": [
+        40.2,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_052",
+      "position": [
+        36.8,
+        -0.4,
+        -11.6
+      ],
+      "kind": "block",
+      "size": [
+        6.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_053",
+      "position": [
+        36.8,
+        -1,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        7,
+        1,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c1418",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_054",
+      "position": [
+        36.8,
+        -1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.4,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_055",
+      "position": [
+        33.4,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_056",
+      "position": [
+        36.8,
+        -0.4,
+        11.6
+      ],
+      "kind": "block",
+      "size": [
+        6.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_057",
+      "position": [
+        40.2,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_058",
+      "position": [
+        36.8,
+        -0.4,
+        18.4
+      ],
+      "kind": "block",
+      "size": [
+        6.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_059",
+      "position": [
+        -36.8,
+        -1,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        7,
+        1,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c1418",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_060",
+      "position": [
+        -36.8,
+        -1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.4,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_061",
+      "position": [
+        -40.2,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_062",
+      "position": [
+        -36.8,
+        -0.4,
+        11.6
+      ],
+      "kind": "block",
+      "size": [
+        6.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_063",
+      "position": [
+        -33.4,
+        -0.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_064",
+      "position": [
+        -36.8,
+        -0.4,
+        18.4
+      ],
+      "kind": "block",
+      "size": [
+        6.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_065",
+      "position": [
+        -36.8,
+        -1,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        7,
+        1,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c1418",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_066",
+      "position": [
+        -36.8,
+        -1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.4,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#2a2830",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_067",
+      "position": [
+        -40.2,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_068",
+      "position": [
+        -36.8,
+        -0.4,
+        -18.4
+      ],
+      "kind": "block",
+      "size": [
+        6.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_069",
+      "position": [
+        -33.4,
+        -0.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.3,
+        7
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_070",
+      "position": [
+        -36.8,
+        -0.4,
+        -11.6
+      ],
+      "kind": "block",
+      "size": [
+        6.6,
+        0.3,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ffb347",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_071",
+      "position": [
+        -46,
+        -16,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        21.4,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#ece6da",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_072",
+      "position": [
+        -46,
+        5.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6.4,
+        0.6,
+        6.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#dcd4c4",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_073",
+      "position": [
+        -46,
+        6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        2.2,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#ece6da",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_074",
+      "position": [
+        -46,
+        8.2,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.5,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#b8202a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_075",
+      "position": [
+        -46,
+        2,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6.1,
+        0.6,
+        6.1
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4f8cff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "light_076",
+      "position": [
+        -42.85,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ff4f6a",
+      "intensity": 1.3,
+      "range": 8,
+      "fixture": "sign",
+      "text": "SAKE",
+      "size": [
+        3,
+        1.1
+      ]
+    },
+    {
+      "id": "block_077",
+      "position": [
+        46,
+        -16,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        21.4,
+        6
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#ece6da",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_078",
+      "position": [
+        46,
+        5.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6.4,
+        0.6,
+        6.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#dcd4c4",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_079",
+      "position": [
+        46,
+        6,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        2.2,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.plaster",
+      "tint": "#ece6da",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_080",
+      "position": [
+        46,
+        8.2,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        1.9,
+        0.5,
+        1.9
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#b8202a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_081",
+      "position": [
+        46,
+        2,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        6.1,
+        0.6,
+        6.1
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4f8cff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "light_082",
+      "position": [
+        42.85,
+        3.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ff4f6a",
+      "intensity": 1.3,
+      "range": 8,
+      "fixture": "sign",
+      "text": "SAKE",
+      "size": [
+        3,
+        1.1
+      ]
+    },
+    {
+      "id": "block_083",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5,
+        1.1,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_marble_black",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_084",
+      "position": [
+        0,
+        1.1,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.2,
+        0.1,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_085",
+      "position": [
+        -6.5,
+        0,
+        2.6
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1,
+        2.6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c1418",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_086",
+      "position": [
+        6.5,
+        0,
+        -2.6
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1,
+        2.6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#1c1418",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_087",
+      "position": [
+        -7.2,
+        0,
+        -3.6
+      ],
+      "kind": "prop",
+      "model": "prop.nc_food_stall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "position": [
+        7.1,
+        0,
+        3.8
+      ],
+      "kind": "prop",
+      "model": "prop.nc_holo_kiosk",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "position": [
+        -3.5,
+        0,
+        4.4
+      ],
+      "kind": "prop",
+      "model": "prop.nc_neon_barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "position": [
+        3.5,
+        0,
+        -4.4
+      ],
+      "kind": "prop",
+      "model": "prop.nc_neon_barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "pad_091",
+      "position": [
+        4,
+        0,
+        -3.4
+      ],
+      "kind": "pad",
+      "yaw": 3.1416,
+      "power": 10,
+      "push": 9.32
+    },
+    {
+      "id": "pad_092",
+      "position": [
+        -4,
+        0,
+        -10.5
+      ],
+      "kind": "pad",
+      "yaw": 0,
+      "power": 10,
+      "push": 10.22
+    },
+    {
+      "id": "pad_093",
+      "position": [
+        -4,
+        0,
+        3.4
+      ],
+      "kind": "pad",
+      "yaw": 0,
+      "power": 10,
+      "push": 9.32
+    },
+    {
+      "id": "pad_094",
+      "position": [
+        4,
+        0,
+        10.5
+      ],
+      "kind": "pad",
+      "yaw": 3.1416,
+      "power": 10,
+      "push": 10.22
+    },
+    {
+      "id": "pad_095",
+      "position": [
+        16.6,
+        0,
+        -10.7
+      ],
+      "kind": "pad",
+      "yaw": 1.7805,
+      "power": 11,
+      "push": 25.29
+    },
+    {
+      "id": "pad_096",
+      "position": [
+        39,
+        0,
+        -12.8
+      ],
+      "kind": "pad",
+      "yaw": 0.6522,
+      "power": 18,
+      "push": 14.68
+    },
+    {
+      "id": "pad_097",
+      "position": [
+        34.6,
+        0,
+        -17.2
+      ],
+      "kind": "pad",
+      "yaw": -1.0532,
+      "power": 14,
+      "push": 33.78
+    },
+    {
+      "id": "pad_098",
+      "position": [
+        16.6,
+        0,
+        10.7
+      ],
+      "kind": "pad",
+      "yaw": 1.3611,
+      "power": 11,
+      "push": 25.29
+    },
+    {
+      "id": "pad_099",
+      "position": [
+        39,
+        0,
+        12.8
+      ],
+      "kind": "pad",
+      "yaw": 2.4894,
+      "power": 18,
+      "push": 14.68
+    },
+    {
+      "id": "pad_100",
+      "position": [
+        34.6,
+        0,
+        17.2
+      ],
+      "kind": "pad",
+      "yaw": -2.0884,
+      "power": 14,
+      "push": 33.78
+    },
+    {
+      "id": "pad_101",
+      "position": [
+        -16.6,
+        0,
+        10.7
+      ],
+      "kind": "pad",
+      "yaw": -1.3611,
+      "power": 11,
+      "push": 25.29
+    },
+    {
+      "id": "pad_102",
+      "position": [
+        -39,
+        0,
+        12.8
+      ],
+      "kind": "pad",
+      "yaw": -2.4894,
+      "power": 18,
+      "push": 14.68
+    },
+    {
+      "id": "pad_103",
+      "position": [
+        -34.6,
+        0,
+        17.2
+      ],
+      "kind": "pad",
+      "yaw": 2.0884,
+      "power": 14,
+      "push": 33.78
+    },
+    {
+      "id": "pad_104",
+      "position": [
+        -16.6,
+        0,
+        -10.7
+      ],
+      "kind": "pad",
+      "yaw": -1.7805,
+      "power": 11,
+      "push": 25.29
+    },
+    {
+      "id": "pad_105",
+      "position": [
+        -39,
+        0,
+        -12.8
+      ],
+      "kind": "pad",
+      "yaw": -0.6522,
+      "power": 18,
+      "push": 14.68
+    },
+    {
+      "id": "pad_106",
+      "position": [
+        -34.6,
+        0,
+        -17.2
+      ],
+      "kind": "pad",
+      "yaw": 1.0532,
+      "power": 14,
+      "push": 33.78
+    },
+    {
+      "id": "pad_107",
+      "position": [
+        -43.8,
+        6,
+        0
+      ],
+      "kind": "pad",
+      "yaw": 1.6038,
+      "power": 13,
+      "push": 34.18
+    },
+    {
+      "id": "pad_108",
+      "position": [
+        43.8,
+        6,
+        0
+      ],
+      "kind": "pad",
+      "yaw": -1.6038,
+      "power": 13,
+      "push": 34.18
+    },
+    {
+      "id": "spawn_109",
+      "position": [
+        -5,
+        0,
+        -1.8
+      ],
+      "kind": "spawn",
+      "yaw": 1.2252407462131845,
+      "faction": null
+    },
+    {
+      "id": "spawn_110",
+      "position": [
+        5,
+        0,
+        1.8
+      ],
+      "kind": "spawn",
+      "yaw": -1.9163519073766089,
+      "faction": null
+    },
+    {
+      "id": "spawn_111",
+      "position": [
+        -2.5,
+        0,
+        2.8
+      ],
+      "kind": "spawn",
+      "yaw": 2.4127379271371625,
+      "faction": null
+    },
+    {
+      "id": "spawn_112",
+      "position": [
+        2.5,
+        0,
+        -2.8
+      ],
+      "kind": "spawn",
+      "yaw": -0.7288547264526309,
+      "faction": null
+    },
+    {
+      "id": "spawn_113",
+      "position": [
+        -12,
+        0,
+        -10.7
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_114",
+      "position": [
+        12,
+        0,
+        -10.7
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_115",
+      "position": [
+        -12,
+        0,
+        10.7
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_116",
+      "position": [
+        12,
+        0,
+        10.7
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_117",
+      "position": [
+        39,
+        0,
+        -17.2
+      ],
+      "kind": "spawn",
+      "yaw": -1.1837479869354262,
+      "faction": null
+    },
+    {
+      "id": "spawn_118",
+      "position": [
+        39,
+        0,
+        17.2
+      ],
+      "kind": "spawn",
+      "yaw": -1.9578446666543672,
+      "faction": null
+    },
+    {
+      "id": "spawn_119",
+      "position": [
+        -39,
+        0,
+        17.2
+      ],
+      "kind": "spawn",
+      "yaw": 1.9578446666543672,
+      "faction": null
+    },
+    {
+      "id": "spawn_120",
+      "position": [
+        -39,
+        0,
+        -17.2
+      ],
+      "kind": "spawn",
+      "yaw": 1.1837479869354262,
+      "faction": null
+    },
+    {
+      "id": "spawn_121",
+      "position": [
+        -46,
+        6,
+        2.3
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_122",
+      "position": [
+        46,
+        6,
+        2.3
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "pickup_123",
+      "position": [
+        -46,
+        6,
+        -2.3
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_124",
+      "position": [
+        46,
+        6,
+        -2.3
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_125",
+      "position": [
+        -6,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.disc_fast",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_126",
+      "position": [
+        6,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.disc_triple",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_127",
+      "position": [
+        -2,
+        0,
+        -3
+      ],
+      "kind": "pickup",
+      "item": "core.disc_split",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_128",
+      "position": [
+        2,
+        0,
+        3
+      ],
+      "kind": "pickup",
+      "item": "core.disc_freeze",
+      "respawnSeconds": null
+    },
+    {
+      "id": "block_129",
+      "position": [
+        -60,
+        -30,
+        -19
+      ],
+      "kind": "block",
+      "size": [
+        1,
+        24,
+        38
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_130",
+      "position": [
+        -60,
+        -6,
+        -19
+      ],
+      "kind": "block",
+      "size": [
+        1,
+        24,
+        38
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_131",
+      "position": [
+        -60,
+        -30,
+        19
+      ],
+      "kind": "block",
+      "size": [
+        1,
+        24,
+        38
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_132",
+      "position": [
+        -60,
+        -6,
+        19
+      ],
+      "kind": "block",
+      "size": [
+        1,
+        24,
+        38
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_133",
+      "position": [
+        -30,
+        -30,
+        -38
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        24,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_134",
+      "position": [
+        -30,
+        -6,
+        -38
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        24,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_135",
+      "position": [
+        30,
+        -30,
+        -38
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        24,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_136",
+      "position": [
+        30,
+        -6,
+        -38
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        24,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_137",
+      "position": [
+        -59.4,
+        4,
+        -18.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.25,
+        37
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_138",
+      "position": [
+        -59.4,
+        4,
+        18.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.25,
+        37
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_139",
+      "position": [
+        -29.5,
+        4,
+        -37.4
+      ],
+      "kind": "block",
+      "size": [
+        59,
+        0.25,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_140",
+      "position": [
+        29.5,
+        4,
+        -37.4
+      ],
+      "kind": "block",
+      "size": [
+        59,
+        0.25,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_141",
+      "position": [
+        -59.4,
+        12,
+        -18.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.25,
+        37
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_142",
+      "position": [
+        -59.4,
+        12,
+        18.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.25,
+        37
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_143",
+      "position": [
+        -29.5,
+        12,
+        -37.4
+      ],
+      "kind": "block",
+      "size": [
+        59,
+        0.25,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_144",
+      "position": [
+        29.5,
+        12,
+        -37.4
+      ],
+      "kind": "block",
+      "size": [
+        59,
+        0.25,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_145",
+      "position": [
+        60,
+        -30,
+        -19
+      ],
+      "kind": "block",
+      "size": [
+        1,
+        24,
+        38
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_146",
+      "position": [
+        60,
+        -6,
+        -19
+      ],
+      "kind": "block",
+      "size": [
+        1,
+        24,
+        38
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_147",
+      "position": [
+        60,
+        -30,
+        19
+      ],
+      "kind": "block",
+      "size": [
+        1,
+        24,
+        38
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_148",
+      "position": [
+        60,
+        -6,
+        19
+      ],
+      "kind": "block",
+      "size": [
+        1,
+        24,
+        38
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_149",
+      "position": [
+        -30,
+        -30,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        24,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_150",
+      "position": [
+        -30,
+        -6,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        24,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_151",
+      "position": [
+        30,
+        -30,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        24,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_152",
+      "position": [
+        30,
+        -6,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        24,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete_dark",
+      "tint": "#2a2430",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_153",
+      "position": [
+        59.4,
+        4,
+        -18.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.25,
+        37
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_154",
+      "position": [
+        59.4,
+        4,
+        18.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.25,
+        37
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_155",
+      "position": [
+        -29.5,
+        4,
+        37.4
+      ],
+      "kind": "block",
+      "size": [
+        59,
+        0.25,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_156",
+      "position": [
+        29.5,
+        4,
+        37.4
+      ],
+      "kind": "block",
+      "size": [
+        59,
+        0.25,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#ff4fd8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_157",
+      "position": [
+        59.4,
+        12,
+        -18.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.25,
+        37
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_158",
+      "position": [
+        59.4,
+        12,
+        18.5
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.25,
+        37
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_159",
+      "position": [
+        -29.5,
+        12,
+        37.4
+      ],
+      "kind": "block",
+      "size": [
+        59,
+        0.25,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_160",
+      "position": [
+        29.5,
+        12,
+        37.4
+      ],
+      "kind": "block",
+      "size": [
+        59,
+        0.25,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.neon_tube",
+      "tint": "#4fe0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sign_salmon",
+      "position": [
+        -36,
+        7.5,
+        37.4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ff7a3c",
+      "intensity": 1.5,
+      "range": 14,
+      "fixture": "sign",
+      "text": "SALMON",
+      "size": [
+        6,
+        1.8
+      ]
+    },
+    {
+      "id": "sign_maguro",
+      "position": [
+        -12,
+        7.5,
+        37.4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ff3b5c",
+      "intensity": 1.5,
+      "range": 14,
+      "fixture": "sign",
+      "text": "MAGURO",
+      "size": [
+        6,
+        1.8
+      ]
+    },
+    {
+      "id": "sign_tamago",
+      "position": [
+        12,
+        7.5,
+        37.4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffd34a",
+      "intensity": 1.5,
+      "range": 14,
+      "fixture": "sign",
+      "text": "TAMAGO",
+      "size": [
+        6,
+        1.8
+      ]
+    },
+    {
+      "id": "sign_tako",
+      "position": [
+        36,
+        7.5,
+        37.4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#c45cff",
+      "intensity": 1.5,
+      "range": 14,
+      "fixture": "sign",
+      "text": "TAKO",
+      "size": [
+        6,
+        1.8
+      ]
+    },
+    {
+      "id": "sign_ebi",
+      "position": [
+        -36,
+        7.5,
+        -37.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a7a",
+      "intensity": 1.5,
+      "range": 14,
+      "fixture": "sign",
+      "text": "EBI",
+      "size": [
+        6,
+        1.8
+      ]
+    },
+    {
+      "id": "sign_wasabi",
+      "position": [
+        -12,
+        7.5,
+        -37.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#5dff9a",
+      "intensity": 1.5,
+      "range": 14,
+      "fixture": "sign",
+      "text": "WASABI",
+      "size": [
+        6,
+        1.8
+      ]
+    },
+    {
+      "id": "sign_uni",
+      "position": [
+        12,
+        7.5,
+        -37.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1.5,
+      "range": 14,
+      "fixture": "sign",
+      "text": "UNI",
+      "size": [
+        6,
+        1.8
+      ]
+    },
+    {
+      "id": "sign_saba",
+      "position": [
+        36,
+        7.5,
+        -37.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4fe0ff",
+      "intensity": 1.5,
+      "range": 14,
+      "fixture": "sign",
+      "text": "SABA",
+      "size": [
+        6,
+        1.8
+      ]
+    },
+    {
+      "id": "board_east",
+      "position": [
+        59.4,
+        8,
+        0
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ff4fd8",
+      "intensity": 2,
+      "range": 20,
+      "fixture": "billboard",
+      "text": "SUSHI-GO-ROUND",
+      "size": [
+        16,
+        5
+      ]
+    },
+    {
+      "id": "board_west",
+      "position": [
+        -59.4,
+        8,
+        0
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#4fe0ff",
+      "intensity": 2,
+      "range": 20,
+      "fixture": "billboard",
+      "text": "KAITEN ARENA",
+      "size": [
+        16,
+        5
+      ]
+    },
+    {
+      "id": "light_161",
+      "position": [
+        0,
+        5,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9e8",
+      "intensity": 1.2,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "light_162",
+      "position": [
+        -7,
+        5,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff4fd8",
+      "intensity": 1.2,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "light_163",
+      "position": [
+        7,
+        5,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4fe0ff",
+      "intensity": 1.2,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "light_164",
+      "position": [
+        -12,
+        4,
+        -10.7
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe0b0",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "light_165",
+      "position": [
+        12,
+        4,
+        -10.7
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe0b0",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "light_166",
+      "position": [
+        -12,
+        4,
+        10.7
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe0b0",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "light_167",
+      "position": [
+        12,
+        4,
+        10.7
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe0b0",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "light_168",
+      "position": [
+        36.8,
+        4,
+        -15
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_169",
+      "position": [
+        36.8,
+        4,
+        15
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_170",
+      "position": [
+        -36.8,
+        4,
+        15
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_171",
+      "position": [
+        -36.8,
+        4,
+        -15
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb347",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_172",
+      "position": [
+        -46,
+        10,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe8f0",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "none"
+    },
+    {
+      "id": "light_173",
+      "position": [
+        46,
+        10,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe8f0",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "none"
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [
+      {
+        "id": "timer_special",
+        "name": "Chef special",
+        "seconds": 30,
+        "loop": true,
+        "visible": false
+      }
+    ],
+    "objectives": [],
+    "rules": [
+      {
+        "id": "rule_welcome",
+        "name": "Irasshaimase",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Irasshaimase! Ride the plates, knock them into the void.",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_special",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_special",
+        "name": "Chef special",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_special"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_salmon",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_maguro",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_tamago",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_tako",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_salmon",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_maguro",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_tamago",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_tako",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_ebi",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_wasabi",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_uni",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_saba",
+            "value": 3,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_ebi",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_wasabi",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_uni",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "sign_saba",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -61,
+      -39
+    ],
+    "max": [
+      61,
+      39
+    ],
+    "style": "invisible",
+    "height": 20
+  },
+  "track": null,
+  "backdrop": {
+    "sky": "night",
+    "scenery": "city",
+    "ground": "none",
+    "haze": 0.2
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
+  "dependencies": []
+}
