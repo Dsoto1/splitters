@@ -19,7 +19,7 @@ const SLOW = process.env.CI ? 3 : 1;
  */
 const SHARDS = [
   ['maps', 'online', 'webgpu'],
-  ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby'],
+  ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby', 'hostcontrols'],
   ['maps2', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'zombies'],
   ['setpieces', 'physicsfx', 'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'classes', 'race'],
 ];
@@ -1488,6 +1488,104 @@ async function hostgameFlow(browser) {
   await friend.context().close();
 }
 
+/**
+ * Host controls (pause menu → Match): offline, change the bots live, end and
+ * restart, then change map; in Host game, change map with a friend who comes
+ * along to the new map by themselves.
+ */
+async function hostcontrolsFlow(browser) {
+  const errors = [];
+  const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
+  const openPanel = (page) => page.evaluate(() => (document.getElementById('host-controls').open = true));
+  const pickMap = async (page, id) => {
+    await page.evaluate(() => document.getElementById('hc-map').click());
+    await page.waitForSelector('#host-maps', { timeout: T(10000) });
+    await page.evaluate((mapId) => {
+      document.querySelector('#host-maps .hm-modes [data-mode="core.deathmatch"]')?.click();
+      document.querySelector(`#host-maps .map-card[data-id="${mapId}"]`).click();
+      document.getElementById('hm-go').click();
+    }, id);
+  };
+
+  // Offline: the player runs the match.
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  page.on('pageerror', (e) => errors.push(`offline: ${e.message}`));
+  await page.goto(`${CLIENT}/?offline=arena`, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(playing, null, { timeout: T(60000) });
+  const state = await page.waitForFunction(() => window.__cs.host(), null, { timeout: T(10000) }).then((h) => h.jsonValue());
+  check(state?.fill === 4 && state.teams === 0, `the offline player runs the match (${JSON.stringify(state)})`);
+  await openPanel(page);
+  await page.evaluate(() => {
+    document.getElementById('hc-players-plus').click();
+    document.getElementById('hc-players-plus').click();
+    document.querySelector('#hc-skill [data-value="hard"]').click();
+    document.getElementById('hc-apply').click();
+  });
+  const six = await page.waitForFunction(() => window.__match.combatants().length === 6, null, { timeout: T(5000) }).then(() => true, () => false);
+  const feed = await page.evaluate(() => document.getElementById('feed').textContent);
+  check(six && feed.includes('Host set the match to 6 players, bot skill to hard'), `Apply adds bots live, with a feed line (${feed})`);
+  const hard = await page.evaluate(() => window.__match.combatants().filter((c) => c.bot).every((c) => c.bot.difficulty.id === 'hard'));
+  check(hard, 'bot skill changes live');
+  await page.evaluate(() => document.getElementById('hc-end').click());
+  const ended = await page.waitForFunction(() => window.__cs.phase() === 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
+  check(ended, 'End match goes to the scoreboard');
+  await page.evaluate(() => document.getElementById('hc-restart').click());
+  const restarted = await page.waitForFunction(() => window.__cs.phase() !== 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
+  check(restarted, 'Restart match starts it over');
+  await pickMap(page, 'm3_vault');
+  const toast = await page.evaluate(() => document.getElementById('message').textContent);
+  check(/Changing map to .*Vault/i.test(toast), `the change is announced (${toast})`);
+  const moved = await page.waitForFunction(() => window.__match?.map.metadata.id === 'm3_vault' && window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false);
+  await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
+  const after = await page.evaluate(() => ({ n: window.__match.combatants().length, skill: window.__cs.host()?.skill }));
+  check(moved && after.n === 6 && after.skill === 'hard', `the match restarts on the new map with the same players and bots (${JSON.stringify(after)})`);
+  await page.context().close();
+
+  // Host game: the host changes map; the friend comes along without a new code.
+  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
+  await sleep(5000);
+  const peer = `&hub=127.0.0.1:${PEER_PORT}`;
+  const host = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
+  await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded' });
+  await host.waitForFunction(playing, null, { timeout: T(90000) });
+  const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
+  for (let i = 0; i < 3; i++) {
+    await host.evaluate(() => document.getElementById('host-game').click());
+    if (await host.waitForFunction(hasCode, null, { timeout: T(30000) }).then(() => true, () => false)) break;
+  }
+  const code = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
+  const friend = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+  friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
+  await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
+  await friend.goto(`${CLIENT}/?join=${code}${peer}`, { waitUntil: 'domcontentloaded' });
+  const joined = await friend.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(joined, `a friend joins the hosted match (${code})`);
+  if (joined) {
+    const guestPanel = await friend.evaluate(() => document.getElementById('host-controls')?.hidden ?? true);
+    check(guestPanel, 'the friend gets no host controls');
+    // Everything the friend's feed shows from here on (the match moves on soon after the announcement).
+    await friend.evaluate(() => {
+      window.__notes = [];
+      new MutationObserver(() => window.__notes.push(document.getElementById('feed').textContent)).observe(document.getElementById('feed'), { childList: true, subtree: true });
+    });
+    await openPanel(host);
+    await pickMap(host, 'm3_vault');
+    const together = await host.waitForFunction(() => window.__match?.map.metadata.id === 'm3_vault' && window.__match.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, { timeout: T(90000) }).then(() => true, () => false);
+    check(together, "the friend rejoins the host's new map by themselves");
+    const friendThere = await friend.waitForFunction(() => window.__cs?.map === 'm3_vault' && window.__cs.local && document.getElementById('menu').hidden, null, { timeout: T(60000) }).then(() => true, () => false);
+    const sameCode = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
+    check(friendThere && sameCode === code, `the friend plays on with the same join code (${sameCode})`);
+    const heard = await friend.evaluate(() => window.__notes.some((t) => t.includes('Changing map to')));
+    check(heard, 'the friend saw the map change announced in the feed');
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await host.context().close();
+  await friend.context().close();
+}
+
 try {
   start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
   start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1' });
@@ -1528,7 +1626,7 @@ try {
   const shard = process.env.E2E_SHARD ? SHARDS[Number(process.env.E2E_SHARD.split('/')[0]) - 1] : null;
   if (process.env.E2E_SHARD && !shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
   const only = process.env.E2E_ONLY?.split(',') ?? shard;
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, maps: mapsFlow, maps2: (b) => mapsFlow(b, 1), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, maps: mapsFlow, maps2: (b) => mapsFlow(b, 1), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
   // Every flow belongs to exactly one shard, so CI's parallel jobs between them run everything.
   const sharded = SHARDS.flat();
   const lost = Object.keys(flows).filter((f) => sharded.filter((x) => x === f).length !== 1);

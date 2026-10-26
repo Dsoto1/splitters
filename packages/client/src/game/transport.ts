@@ -1,4 +1,4 @@
-import type { PlayerInput, ServerMessage } from '@tiletrigger/shared';
+import type { ClientMessage, PlayerInput, ServerMessage } from '@tiletrigger/shared';
 
 /**
  * Where a game session's match lives: a dedicated server over the network, or
@@ -14,5 +14,7 @@ export interface Transport {
   sendInputs(inputs: PlayerInput[]): void;
   /** Everything for the match has loaded (the start countdown waits for it). */
   sendReady(): void;
+  /** Host commands and admin logins (dedicated servers; the host's own browser match runs them directly). */
+  sendCommand?(msg: Extract<ClientMessage, { t: 'host' | 'admin' }>): void;
   close(): void;
 }

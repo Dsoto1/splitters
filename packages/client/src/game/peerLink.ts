@@ -160,7 +160,8 @@ export class PeerHost {
   private readonly links = new Map<string, DataConnection>();
   code = '';
 
-  constructor(private readonly admit: (link: RemoteLink) => void) {}
+  /** `admit`: where friends' connections go; a map change points it at the next match (same code, friends rejoin). */
+  constructor(public admit: (link: RemoteLink) => void) {}
 
   /** Resolves with the join code once the broker has registered it. */
   async start(): Promise<string> {

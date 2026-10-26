@@ -605,6 +605,16 @@ export class Hud {
     window.setTimeout(() => line.remove(), 6000);
   }
 
+  /** A line from the match itself in the feed: what the host changed ("Host set teams to 8v8"). */
+  note(text: string): void {
+    const line = document.createElement('div');
+    line.className = 'say note';
+    line.textContent = text;
+    this.feed.prepend(line);
+    while (this.feed.children.length > 5) this.feed.lastChild?.remove();
+    window.setTimeout(() => line.remove(), 6000);
+  }
+
   /** A quick message in the feed: "Name: Enemy spotted!". */
   say(slot: number, text: string): void {
     if (!text) return;

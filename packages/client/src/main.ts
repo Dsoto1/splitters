@@ -27,7 +27,8 @@ import { MenuScene } from './frontend/menuScene.ts';
 import { ModelThumbnails } from './frontend/modelThumbs.ts';
 import { setWeaponIconSource } from './frontend/weaponIcons.ts';
 import { PortraitRenderer } from './frontend/portraits.ts';
-import { GameSession, type Travel } from './game/session.ts';
+import { GameSession, type SessionOptions, type Travel } from './game/session.ts';
+import { listLibrary, openFromLibrary } from './editor/storage.ts';
 import { PLAYLISTS, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import type { Transport } from './game/transport.ts';
@@ -83,6 +84,14 @@ function arcadeMaps(): ArcadeMap[] {
     // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata.
     ...arcadeEntries(EXTRA_MAPS),
   ];
+}
+
+/** Your MapMaker maps (this browser's library), for an offline host's Change map. */
+function ownMaps(): ArcadeMap[] {
+  return listLibrary().flatMap((e): ArcadeMap[] => {
+    const r = openFromLibrary(e.id);
+    return 'map' in r ? [{ key: `own:${e.id}`, map: r.map, blurb: 'Your map', modes: playableModes(r.map), bots: 4, group: 'Your' }] : [];
+  });
 }
 
 // One audio system for the whole app. Browsers only start audio after a user
@@ -237,19 +246,33 @@ class App {
   /** The scenario chain being played (Arcade → co-op → Playlist): which playlist, how far in, and its settings. */
   private chain: { playlist: Playlist; index: number; botFill: number; difficulty: 'easy' | 'normal' | 'hard' } | null = null;
 
-  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver): void {
+  /** `hosting`: Host game carried over a map change (the same join code; friends rejoin it). */
+  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting']): void {
     this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
       chain: !!this.chain,
+      hosting,
       onExit: (reason, travel) => {
+        // The host changed map: the same rules, players and bot skill there (Host game friends follow).
+        if (reason === 'travel' && travel?.host) return this.playLocal(travel.host.map, travel.host.rules, travel.host.fill, travel.host.skill, undefined, travel.hosting);
         if (reason === 'travel' && travel) return this.travelLocal(travel, rules, botFill, difficulty);
+        travel?.hosting?.peer.close();
         this.chain = null;
         void this.showMenu(reason ?? '');
       },
     });
   }
+
+  /** The host's Change map (pause menu → Match): the Arcade's map cards; offline, your MapMaker maps too. */
+  private mapPicker: NonNullable<SessionOptions['mapPicker']> = (o) =>
+    this.front!.hostMapPicker({
+      ...o,
+      isSuite: inSuite,
+      own: o.suiteOnly ? [] : ownMaps(),
+      onPick: (m, mode) => o.onPick(m.map, mode),
+    });
 
   /** Start a playlist (maps/playlists): its first map; each win moves on to the next. */
   playPlaylist(id: string, botFill: number, difficulty: 'easy' | 'normal' | 'hard'): void {
@@ -269,12 +292,14 @@ class App {
     const id = travel.id ?? (chain && at !== null ? chain.playlist.maps[at]!.map : null);
     if (!id) {
       this.chain = null;
+      travel.hosting?.peer.close();
       return void this.showMenu(chain ? `${chain.playlist.name} complete!` : '');
     }
     const json = inSuite(id) ? EXTRA_MAPS[`../../../maps/${id}.json`] : undefined;
     const loaded = json ? loadMap(json) : null;
     if (!loaded?.ok) {
       this.chain = null;
+      travel.hosting?.peer.close();
       return void this.showMenu(`The next map (${id}) isn't one of ours`);
     }
     const entry = chain && at !== null && chain.playlist.maps[at]!.map === id ? chain.playlist.maps[at]! : null;
@@ -284,7 +309,7 @@ class App {
     const keep = chain?.playlist.carry ?? { score: true, loadout: true };
     const c = travel.carry;
     const carry = c ? { ...(keep.score ? { kills: c.kills, deaths: c.deaths } : {}), ...(keep.loadout ? { weapons: c.weapons } : {}) } : undefined;
-    this.playLocal(loaded.map, next, chain?.botFill ?? botFill, chain?.difficulty ?? difficulty, carry);
+    this.playLocal(loaded.map, next, chain?.botFill ?? botFill, chain?.difficulty ?? difficulty, carry, travel.hosting);
   }
 
   /** Join a friend's hosted game (Host game) by its code. */
@@ -294,7 +319,11 @@ class App {
     this.startSession(new PeerTransport(cleanJoinCode(code), name, this.front!.look), {
       exitLabel: 'Leave match',
       exitOnF5: false,
-      onExit: (reason) => void this.showMenu(reason ? `Disconnected: ${reason}` : ''),
+      onExit: (reason, travel) => {
+        // The host changed map: rejoin the same code in a moment (their next match lets us in).
+        if (reason === 'travel' && travel) return void window.setTimeout(() => void this.joinCode(code, name), 1200);
+        void this.showMenu(reason ? `Disconnected: ${reason}` : '');
+      },
     });
   }
 
@@ -312,7 +341,7 @@ class App {
     });
   }
 
-  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; onExit: (reason?: string, travel?: Travel) => void; onReady?: () => void }): void {
+  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; onExit: (reason?: string, travel?: Travel) => void; onReady?: () => void }): void {
     $('menu').hidden = true;
     this.mode = 'game';
     this.session = new GameSession({
@@ -328,6 +357,8 @@ class App {
       showStats: params.has('stats'),
       onReady: o.onReady,
       portrait: this.portraits?.get(this.front!.look),
+      hosting: o.hosting,
+      mapPicker: this.mapPicker,
       onExit: (reason, travel) => {
         this.session = undefined;
         o.onExit(reason, travel);

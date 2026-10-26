@@ -527,3 +527,33 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #class-menu button small { display: block; margin-top: 4px; opacity: 0.75; font-size: 12px; }
 #class-menu > small { display: block; margin-top: 10px; opacity: 0.7; }
 #scoreboard .sb-class { margin-left: 6px; opacity: 0.7; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* Pause menu → Match: the host's bots, map, restart and end (hostPanel.ts), and the Change map picker. */
+#pause { overflow-y: auto; justify-content: safe center; }
+.host-controls { width: min(420px, calc(100vw - 32px)); padding: 8px 12px; border: 1px solid rgba(0, 209, 255, 0.4); border-radius: 6px; background: rgba(0, 20, 30, 0.5); }
+.host-controls summary { cursor: pointer; font: 600 15px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
+.host-controls summary small { font-size: 12px; letter-spacing: 0.02em; text-transform: none; opacity: 0.7; }
+.host-controls h4 { margin: 8px 0 4px; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
+.host-controls .hc-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.host-controls .hc-row > span { flex: 0 0 80px; color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+.host-controls .hc-row input { flex: 1; min-width: 0; padding: 5px 8px; background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); }
+#pause .host-controls button { min-width: 0; font-size: 14px; padding: 6px 10px; }
+.host-controls .stepper { display: flex; align-items: center; gap: 6px; }
+.host-controls .stepper b { min-width: 52px; text-align: center; font: 700 16px var(--font-display); }
+.host-controls select { background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); padding: 4px; }
+.host-controls .tabs { flex-wrap: wrap; }
+#pause .host-controls #hc-apply { width: 100%; margin-top: 4px; }
+.host-controls .hc-actions { display: flex; gap: 6px; margin-top: 8px; }
+.host-controls .hc-actions button { flex: 1; }
+.host-controls .hc-status { margin: 6px 0 0; }
+.host-controls .hc-status.error { color: #ff8a6b; }
+#feed .note { font-style: normal; color: #9fe8ff; }
+.host-maps { position: fixed; inset: 16px; z-index: 5; display: flex; flex-direction: column; gap: 10px; padding: 14px; background: rgba(8, 12, 22, 0.96); border: 1px solid rgba(0, 209, 255, 0.4); border-radius: 6px; }
+.host-maps .hm-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.host-maps .hm-head h3 { margin: 0; font: italic 700 24px var(--font-display); text-transform: uppercase; }
+.host-maps .tabs { flex-wrap: wrap; }
+.host-maps .map-cards { flex: 1; min-height: 0; }
+.host-maps .hm-foot { display: flex; align-items: center; gap: 10px; }
+.host-maps .hm-chosen { flex: 1; font: 600 15px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+#pause .host-maps button { min-width: 0; font-size: 14px; padding: 8px 14px; }
+#pause .host-maps .map-card { padding: 0; }

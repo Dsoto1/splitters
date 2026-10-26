@@ -67,6 +67,10 @@ import {
   getProp,
   mapTerrainMesh,
   mountDamageState,
+  rulesForTravel,
+  travelNotice,
+  type GameMode,
+  type HostState,
 } from '@tiletrigger/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
@@ -76,6 +80,9 @@ import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
 import { LocalTransport } from './localTransport.ts';
+import { NetTransport } from './netTransport.ts';
+import { HostPanel } from './hostPanel.ts';
+import type { PeerHost } from './peerLink.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
 import { FortsClient } from './fortsClient.ts';
@@ -121,6 +128,10 @@ export interface SessionOptions {
   onReady?: () => void;
   /** Your character's portrait for the HUD (rendered by the menus). */
   portrait?: Promise<string>;
+  /** Host game across a map change: the join code already open (friends come back to it), and the game browser listing's name when it was listed. */
+  hosting?: { peer: PeerHost; listing?: string };
+  /** The map picker for the host's Change map (pause menu → Match): the front end's map cards. */
+  mapPicker?: (o: { mode: GameMode; current: string; suiteOnly: boolean; onPick: (map: MapDocument, mode: GameMode) => void; onClose: () => void }) => HTMLElement;
 }
 
 /** Where a scenario chain goes next: a suite map ID (local "Next map"), or the server's new map (its name). */
@@ -128,6 +139,10 @@ export interface Travel {
   id?: string;
   map?: string;
   carry?: CarryOver;
+  /** The host changed map (offline, Host game): play `map` with these rules, players and bot skill. */
+  host?: { map: MapDocument; rules: MatchRules; fill: number; skill: HostState['skill'] };
+  /** Host game: the join code, handed on to the next match (friends were sent `travel` and rejoin it). */
+  hosting?: { peer: PeerHost; listing?: string };
 }
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -186,7 +201,11 @@ export class GameSession {
   /** H: a camera over your shoulder, to see your own character. */
   private thirdPerson = false;
   /** The join code's registration while this match is hosted for friends. */
-  private peerHost?: { close(): void; code: string };
+  private peerHost?: PeerHost;
+  /** The pause menu's Match section (bots, map, restart, end) and the match's settings while you run it. */
+  private readonly hostPanel: HostPanel;
+  private hostState: HostState | null = null;
+  private mapPicker: HTMLElement | null = null;
   /** The host has a relay set up (Options → Relay), for the game browser's badge. */
   private relayOn = false;
   private tpClose = false;
@@ -286,6 +305,18 @@ export class GameSession {
     hostBtn.textContent = 'Host game (invite friends)';
     hostBtn.disabled = false;
     hostBtn.addEventListener('click', () => void this.startHosting(hostBtn, hostInfo), { signal });
+    // Host game across a map change: the same code, friends come back to it.
+    if (opts.hosting && opts.transport instanceof LocalTransport) {
+      const local = opts.transport;
+      this.peerHost = opts.hosting.peer;
+      this.peerHost.admit = (link) => local.accept(link);
+      if (opts.hosting.listing !== undefined) {
+        ($('host-list') as HTMLInputElement).checked = true;
+        ($('host-name') as HTMLInputElement).value = opts.hosting.listing;
+      }
+      void this.showHostInfo(hostBtn, hostInfo, this.peerHost.code);
+    }
+    this.hostPanel = this.makeHostPanel();
     // Public: the hosted match shows up in everyone's game browser (needs a community hub).
     const pub = $('host-public');
     const listBox = $('host-list') as HTMLInputElement;
@@ -441,36 +472,110 @@ export class GameSession {
     btn.disabled = true;
     btn.textContent = 'Opening a join code…';
     try {
-      const peerLink = await import('./peerLink.ts');
-      const { PeerHost, loadRelay, relayParams } = peerLink;
+      const { PeerHost } = await import('./peerLink.ts');
       const host = new PeerHost((link) => local.accept(link));
       this.peerHost = host;
       const code = await host.start();
       if (this.closed) return host.close();
-      // A slow first answer from the hub left us without its relay: ask once more before telling anyone.
-      if (!peerLink.hubRelay) await peerLink.prepareIce();
-      this.relayOn = !!loadRelay() || peerLink.hubRelay;
-      const q = new URLSearchParams(location.search);
-      const peer = q.get('peer');
-      // Friends must use the same broker: carry the hub unless it's the site's built-in one.
-      const hub = hubSetting() && hubSetting() !== builtHub() ? hubSetting() : null;
-      const link = `${location.origin}${location.pathname}?join=${code}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}${hub ? `&hub=${encodeURIComponent(hub)}` : ''}${relayParams()}`;
-      // "localhost" only works on this machine: friends need the address the game is served from.
-      const onlyHere = /^(localhost|127\.|\[::1\])/.test(location.hostname);
-      const hubHere = /^(\w+:\/\/)?(localhost|127\.|\[::1\])/.test(hubSetting());
-      btn.hidden = true;
-      info.hidden = false;
-      info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${peerLink.hubRelay ? ' The hub provides a relay, so friends on strict networks can connect too.' : loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options and send a new link.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
-      info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
-      if (onlyHere) void this.lanInvite(info, code, link);
-      this.hud.showMessage(`Hosting: join code ${code}`, 5);
-      this.updateListing();
+      await this.showHostInfo(btn, info, code);
     } catch (e) {
       this.peerHost = undefined;
       btn.disabled = false;
       btn.textContent = 'Host game (invite friends)';
       this.hud.showMessage(`Couldn't host: ${(e as Error).message}`, 5);
     }
+  }
+
+  /** The join code and invite link in the pause menu (a new code, or one carried over a map change). */
+  private async showHostInfo(btn: HTMLButtonElement, info: HTMLElement, code: string): Promise<void> {
+    const peerLink = await import('./peerLink.ts');
+    const { loadRelay, relayParams } = peerLink;
+    if (this.closed) return;
+    // A slow first answer from the hub left us without its relay: ask once more before telling anyone.
+    if (!peerLink.hubRelay) await peerLink.prepareIce();
+    this.relayOn = !!loadRelay() || peerLink.hubRelay;
+    const q = new URLSearchParams(location.search);
+    const peer = q.get('peer');
+    // Friends must use the same broker: carry the hub unless it's the site's built-in one.
+    const hub = hubSetting() && hubSetting() !== builtHub() ? hubSetting() : null;
+    const link = `${location.origin}${location.pathname}?join=${code}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}${hub ? `&hub=${encodeURIComponent(hub)}` : ''}${relayParams()}`;
+    // "localhost" only works on this machine: friends need the address the game is served from.
+    const onlyHere = /^(localhost|127\.|\[::1\])/.test(location.hostname);
+    const hubHere = /^(\w+:\/\/)?(localhost|127\.|\[::1\])/.test(hubSetting());
+    btn.hidden = true;
+    info.hidden = false;
+    info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${peerLink.hubRelay ? ' The hub provides a relay, so friends on strict networks can connect too.' : loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options and send a new link.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
+    info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
+    if (onlyHere) void this.lanInvite(info, code, link);
+    this.hud.showMessage(`Hosting: join code ${code}`, 5);
+    this.updateListing();
+  }
+
+  /** The pause menu's Match section: the offline player and the Host game host run their match; on a dedicated server, its admin. */
+  private makeHostPanel(): HostPanel {
+    const t = this.opts.transport;
+    const local = t instanceof LocalTransport ? t : null;
+    const net = t instanceof NetTransport ? t : null;
+    const panel = new HostPanel(
+      {
+        command: (cmd) => {
+          if (local) {
+            const error = local.host(cmd);
+            if (error) panel.setStatus(error, true);
+          } else net?.sendCommand({ t: 'host', cmd });
+        },
+        ...((local ? this.opts.hostable : net) && this.opts.mapPicker ? { changeMap: () => this.openMapPicker() } : {}),
+        ...(net ? { login: (token: string) => net.sendCommand({ t: 'admin', token }) } : {}),
+      },
+      net ? 'Admin' : 'Host',
+    );
+    panel.root.hidden = true;
+    $('exitmatch').before(panel.root);
+    return panel;
+  }
+
+  /** Change map: the front end's map cards (our suite only on servers and in Host game), then travel. */
+  private openMapPicker(): void {
+    const s = this.hostState;
+    if (!s || !this.opts.mapPicker || this.mapPicker) return;
+    const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
+    const close = () => {
+      this.mapPicker?.remove();
+      this.mapPicker = null;
+    };
+    this.mapPicker = this.opts.mapPicker({
+      mode: s.mode,
+      current: s.map,
+      suiteOnly: !local || !!this.peerHost,
+      onClose: close,
+      onPick: (map, mode) => {
+        close();
+        this.changeMap(map, mode);
+      },
+    });
+    $('pause').append(this.mapPicker);
+  }
+
+  /**
+   * The host picked a map. Dedicated server: ask it (it checks the map is ours
+   * and sends everyone `travel`). In the browser: tell everyone, then restart
+   * the match there with the same rules and players; Host game friends follow.
+   */
+  private changeMap(map: MapDocument, mode: GameMode): void {
+    const s = this.hostState;
+    const t = this.opts.transport;
+    if (!s || this.travel) return;
+    if (!(t instanceof LocalTransport)) {
+      t.sendCommand?.({ t: 'host', cmd: { c: 'map', map: map.metadata.id, mode } });
+      this.hostPanel.setStatus(`Changing map to ${map.metadata.name}…`);
+      return;
+    }
+    const rules = t.liveRules() ?? this.rules;
+    if (!rules) return;
+    const next = rulesForTravel(rules, map, s.fill, mode, s.teamSize);
+    t.notice(travelNotice(map.metadata.name, next.rules.mode));
+    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill } };
+    window.setTimeout(() => this.exit('travel'), 1200);
   }
 
   /** A dedicated server's LAN join addresses in the pause menu, to pass on to people on the same network. */
@@ -586,7 +691,15 @@ export class GameSession {
     if (this.closed) return;
     this.closed = true;
     this.advertiser?.stop();
-    this.peerHost?.close();
+    const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
+    if (reason === 'travel' && this.travel && this.peerHost && local) {
+      // Host game: friends get `travel` and rejoin the same code, which the next match takes over.
+      local.travelGuests(this.travel.host?.map.metadata.name ?? this.travel.id ?? 'the next map');
+      const listed = ($('host-list') as HTMLInputElement).checked;
+      this.travel.hosting = { peer: this.peerHost, ...(listed ? { listing: ($('host-name') as HTMLInputElement).value } : {}) };
+    } else this.peerHost?.close();
+    this.hostPanel.root.remove();
+    this.mapPicker?.remove();
     if (document.pointerLockElement) document.exitPointerLock();
     this.opts.transport.close();
     this.abort.abort();
@@ -650,7 +763,7 @@ export class GameSession {
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, host: () => this.hostState, map: loaded.map.metadata.id };
         this.opts.onReady?.();
         void this.prepareMatch();
         break;
@@ -863,6 +976,21 @@ export class GameSession {
         }
         break;
       }
+      case 'host':
+        // You run this match (or a command was refused).
+        if (msg.state || !this.hostPanel.controlling) {
+          this.hostState = msg.state;
+          this.hostPanel.setState(msg.state);
+        }
+        if (msg.error) {
+          this.hostPanel.setStatus(msg.error, true);
+          this.hud.showMessage(msg.error, 3);
+        } else if (msg.state) this.hostPanel.setStatus('');
+        break;
+      case 'notice':
+        this.hud.note(msg.text);
+        this.hud.showMessage(msg.text, 4);
+        break;
       case 'travel':
         // The server is changing map: reconnect to play the next one.
         this.travel = { map: msg.map };
