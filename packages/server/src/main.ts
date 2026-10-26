@@ -17,6 +17,10 @@ const server = await startServer({
   botFill: Number(env.BOT_FILL ?? 4),
   botDifficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined,
   mode: mode as GameMode | undefined,
+  // BOT_TAKEBACK=0: a leaving player's slot empties (a fresh bot spawns) instead of a bot taking over where they were.
+  botTakeBack: env.BOT_TAKEBACK !== '0',
+  // LEADERS=on (team leaders) or LEADERS=vip (Leader variant: downing a leader scores extra).
+  leaders: env.LEADERS === 'vip' ? 'vip' : env.LEADERS === 'on' ? true : undefined,
   onStats: env.QUIET_STATS ? undefined : (line) => console.log(`[stats] ${line}`),
 });
 console.log(`Tile Trigger server listening on ws://localhost:${server.port}`);

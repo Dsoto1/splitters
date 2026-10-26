@@ -35,6 +35,8 @@ export interface ServerOptions {
   botFill: number;
   /** When a player leaves, a bot takes over where they were (default on); off, a fresh bot spawns instead. */
   botTakeBack?: boolean;
+  /** Team leaders (team modes): true, or 'vip' for the Leader variant (see MatchRules.leaders). */
+  leaders?: boolean | 'vip';
   botDifficulty?: BotDifficulty['id'];
   rules?: MatchRules;
   /** Play this mode with its default rules (ignored when `rules` is given); default: the map's first mode. */
@@ -70,7 +72,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
 
   const map = typeof opts.map === 'string' ? readMapFile(opts.map) : opts.map;
   if (opts.mode && !opts.rules && !mapCanRun(map, opts.mode)) throw new Error(`${map.metadata.name} can't host ${MODE_LABELS[opts.mode]} (it has no flag bases or hills for it)`);
-  const match = new Match(map, opts.rules ?? (opts.mode ? rulesForMode(map, opts.mode) : rulesForMap(map)), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
+  const baseRules = opts.rules ?? (opts.mode ? rulesForMode(map, opts.mode) : rulesForMap(map));
+  const match = new Match(map, opts.leaders ? { ...baseRules, leaders: opts.leaders } : baseRules, opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
   for (const issue of validateNavigation(map, match.nav)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
   const difficulty = BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'];
   const botFill = Math.min(opts.botFill, MAX_PLAYER_SLOTS);

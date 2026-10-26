@@ -122,6 +122,8 @@ interface Avatar {
   flash?: Mesh;
   /** Climbing out of a hatch or burrow: rises from below the floor from this time. */
   emergeAt?: number;
+  /** Team leader's crown (rules.leaders), made on first need. */
+  crown?: Mesh;
   /** Crowds: far avatars animate every few frames; the frames counted and the time saved up since. */
   animFrame?: number;
   animDt?: number;
@@ -836,6 +838,12 @@ export class GameView {
       const enemy = !tag || tag.toLowerCase() === '#ff3b3b';
       const shown = cloaked ? (enemy ? 0.06 : 0.35) : 1;
       this.setTag(a, cloaked && enemy ? null : tag);
+      // Team leaders wear a gold star over their marker, for both sides to see.
+      const leads = p.alive && !cloaked && this.leaderSlots.has(p.slot);
+      if (leads || a.crown) {
+        a.crown ??= this.createCrown(a.root);
+        a.crown.setEnabled(leads);
+      }
       // Applied every frame while see-through: the model may finish loading under it.
       if (shown !== 1 || (a.shown ?? 1) !== 1) {
         a.shown = shown;
@@ -968,6 +976,26 @@ export class GameView {
   }
 
   /** Show a teammate marker in the team colour over the avatar (null hides it). */
+  /** Slots leading their teams (rules.leaders), from the latest snapshot. */
+  private leaderSlots: ReadonlySet<number> = new Set();
+
+  setLeaders(slots: ReadonlySet<number>): void {
+    this.leaderSlots = slots;
+  }
+
+  private createCrown(root: TransformNode): Mesh {
+    const mesh = CreateDisc(`${root.name}_crown`, { radius: 0.16, tessellation: 5 }, this.scene);
+    const mat = new StandardMaterial(`${root.name}_crownmat`, this.scene);
+    mat.emissiveColor = Color3.FromHexString('#ffd23f');
+    mat.disableLighting = true;
+    mesh.material = mat;
+    mesh.billboardMode = MeshClass.BILLBOARDMODE_ALL;
+    mesh.parent = root;
+    mesh.position.y = PLAYER.height + 0.68;
+    mesh.isPickable = false;
+    return mesh;
+  }
+
   private setTag(a: Avatar, color: string | null): void {
     if (a.tag && a.tag.color !== color) {
       a.tag.mesh.dispose(false, true);

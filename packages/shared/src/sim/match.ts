@@ -847,6 +847,7 @@ export class Match {
     if (this.mode) return this.mode.teamScores();
     const out = new Map<string, number>((this.teams ?? []).map((t) => [t.id, 0]));
     for (const c of this.combatants()) if (c.faction && out.has(c.faction)) out.set(c.faction, out.get(c.faction)! + c.kills + c.selfKills);
+    for (const [team, n] of this.leaderBounty) if (out.has(team)) out.set(team, out.get(team)! + n);
     // Team kills still cost the team, but a team's score never drops below zero.
     for (const [id, v] of out) out.set(id, Math.max(0, v));
     return out;
@@ -1101,6 +1102,7 @@ export class Match {
   /** Advance the simulation by one fixed tick and return the events it produced. */
   step(): GameEvent[] {
     this.tick++;
+    if (this.rules.leaders && this.teams) this.updateLeaders();
     if (this.phase === 'intermission') {
       if (this.tick >= this.phaseEndTick) this.startRound();
     } else if (this.phase === 'waiting' || this.phase === 'countdown') {
@@ -1416,6 +1418,54 @@ export class Match {
   }
 
   /** Where a teammate told this bot to be ("Follow me!" / "Hold here!"), while the order lasts. */
+  /** Team leaders (rules.leaders): team ID -> leader slot. */
+  private readonly leaderOf = new Map<string, number>();
+  /** Leader variant: points each team earned by downing enemy leaders. */
+  private readonly leaderBounty = new Map<string, number>();
+
+  /** Whether `c` leads their team (rules.leaders). */
+  isLeader(c: Combatant): boolean {
+    return !!this.rules.leaders && !!c.faction && this.leaderOf.get(c.faction) === c.slot && this.slots[c.slot] === c;
+  }
+
+  /** Each team's leader slot, in team order (-1: nobody on the team). */
+  leaders(): number[] {
+    return (this.teams ?? []).map((t) => this.leaderOf.get(t.id) ?? -1);
+  }
+
+  /**
+   * Keep a leader on every team: a person leads ahead of a bot (the first to
+   * join, by slot); the leader keeps the job until they leave, or until a
+   * person joins a team a bot was leading. A player who takes over the
+   * leading bot (same slot) leads straight away.
+   */
+  private updateLeaders(): void {
+    for (const t of this.teams!) {
+      const cur = this.leaderOf.get(t.id);
+      const c = cur === undefined ? null : this.slots[cur];
+      const onTeam = c && c.faction === t.id ? c : null;
+      if (onTeam?.kind === 'human') continue;
+      const members = this.combatants().filter((m) => m.faction === t.id);
+      const next = members.find((m) => m.kind === 'human') ?? onTeam ?? members[0];
+      if (!next) {
+        this.leaderOf.delete(t.id);
+        continue;
+      }
+      if (next === onTeam) continue;
+      this.leaderOf.set(t.id, next.slot);
+      this.pendingEvents.push({ e: 'leader', a: 'lead', s: next.slot, team: t.id });
+    }
+  }
+
+  /** A leader went down: the Leader variant pays the side that did it. */
+  private leaderDown(victim: Combatant, killer: Combatant | null): void {
+    const team = victim.faction!;
+    const scorer = killer && killer !== victim && killer.faction && this.hostile(killer, victim) ? killer.faction : null;
+    const n = this.rules.leaders === 'vip' && scorer && !this.mode ? LEADER_BOUNTY : 0;
+    if (n && scorer) this.leaderBounty.set(scorer, (this.leaderBounty.get(scorer) ?? 0) + n);
+    this.pendingEvents.push({ e: 'leader', a: 'down', s: victim.slot, team, ...(n ? { n } : {}) });
+  }
+
   private teammateOrder(c: Combatant): { pos: Vec3; radius: number } | null {
     const o = c.order;
     if (!o || this.tick > o.until) return null;
@@ -2873,6 +2923,7 @@ export class Match {
       victim.selfKills++;
     }
     this.scenario.playerKilled(victim.slot, killer?.slot ?? null);
+    if (this.isLeader(victim)) this.leaderDown(victim, killer);
     this.mode?.onKill(victim, killer);
     if (!killer || killer.npc || this.rules.scoreLimit <= 0) return;
     const score = this.teams && killer.faction ? (this.teamScores().get(killer.faction) ?? 0) : killer.kills;
@@ -3102,6 +3153,7 @@ export class Match {
     for (const cv of [...this.covers]) this.removeCover(cv);
     this.uavUntil.clear();
     this.jamUntil.clear();
+    this.leaderBounty.clear();
     for (const c of this.combatants()) {
       c.kills = 0;
       c.selfKills = 0;
@@ -3191,11 +3243,13 @@ export class Match {
 
   /** "Follow me!" / "Hold here!": your side's bots nearby do it for a while. */
   private orderBots(c: Combatant, kind: 'follow' | 'hold'): void {
+    const lead = this.isLeader(c);
     for (const b of this.combatants()) {
       if (b.kind !== 'bot' || !b.alive || b === c || this.hostile(c, b)) continue;
       // Free-for-all has no side to order.
       if (!this.teams && this.rules.mode !== 'core.coop' && this.rules.mode !== 'core.zombies') continue;
-      if (horizontalDistance(b.move.pos, c.move.pos) > 30) continue;
+      // A team leader's order reaches the whole team; anyone else's, the bots within earshot.
+      if (!lead && horizontalDistance(b.move.pos, c.move.pos) > 30) continue;
       b.order = { kind, leader: c.slot, pos: { ...c.move.pos }, until: this.tick + TICK_RATE * 40 };
     }
   }
@@ -3309,6 +3363,7 @@ export class Match {
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
+      ...(this.rules.leaders && this.teams ? { ld: this.teams.map((t) => this.leaderOf.get(t.id) ?? -1) } : {}),
       ...(this.mode ? { md: this.mode.snapshot() } : this.zombies ? { md: { ts: [this.zombies.wave], zb: this.zombies.snapshot() } } : this.race ? { md: { ts: [], rc: this.race.snapshot() } } : {}),
     };
   }
@@ -3426,6 +3481,9 @@ interface Trigger {
   recoil?: WeaponDefinition['recoil'];
   headshot?: number;
 }
+
+/** Leader variant (rules.leaders 'vip'): extra points for downing an enemy team's leader. */
+export const LEADER_BOUNTY = 3;
 
 /** Past this many thinking bots, idle ones think every other tick (Match.botBudget). */
 export const BOT_FULL_RATE = 40;

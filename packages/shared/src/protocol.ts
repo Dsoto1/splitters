@@ -172,6 +172,8 @@ export type GameEvent =
   | { e: 'broken'; i: number }
   /** A player pressed a button, or was refused (locked door, disabled button). */
   | { e: 'use'; s: number; i: number; ok: 0 | 1 }
+  /** Team leaders: `s` now leads `team` ('lead'), or `team`'s leader went down ('down'; Leader variant: `n` points to the killer's side). */
+  | { e: 'leader'; a: 'lead' | 'down'; s: number; team: string; n?: number }
   /** Slot `s` changed hands mid-match: `to` (a player who joined, or a bot when a player left) took over `from`, keeping the body, team and loadout. */
   | { e: 'takeover'; s: number; from: string; to: string; bot?: 1 };
 
@@ -361,6 +363,8 @@ export type ServerMessage =
        * keep drawing them from the snapshots that had them (see net/interest.ts).
        */
       hold?: number[];
+      /** Team leaders (rules.leaders): each team's leader slot, in team order (-1: none). */
+      ld?: number[];
     }
   | { t: 'pong'; id: number; ct: number }
   | ({ t: 'stats' } & ServerStats);

@@ -579,6 +579,7 @@ export class GameSession {
         for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8], size: n[11] ?? 1 });
         this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr, msg.hold);
+        if (msg.ld) this.view.setLeaders(new Set(msg.ld.filter((s) => s >= 0)));
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt, msg.tick);
         this.covers?.apply(msg.cv);
@@ -751,6 +752,11 @@ export class GameSession {
               this.view.breakProp(ev.i);
               if (def) this.view.debris({ x: e.position[0], y: e.position[1] + (def.size[1] * e.scale) / 2, z: e.position[2] }, def.breakable?.debris ?? '#8a5a32', Math.max(0.3, Math.min(1.2, (Math.max(...def.size) * e.scale) / 2)));
             }
+          } else if (ev.e === 'leader') {
+            const team = this.hud.teamById(ev.team);
+            if (ev.a === 'lead' && ev.s === this.slot) this.hud.showMessage('You lead your team: B then 1 "Follow me!" or 7 "Hold here!" orders all its bots', 5);
+            else if (ev.a === 'lead') this.hud.say(ev.s, `leads ${team?.name ?? 'the team'}`);
+            else this.hud.say(ev.s, `${team?.name ?? 'Team'} leader down!${ev.n ? ` (+${ev.n} to the other side)` : ''}`);
           } else if (ev.e === 'takeover') {
             this.hud.takeover(ev.s, ev.to, ev.from, !!ev.bot);
           } else if (ev.e === 'throw') {
