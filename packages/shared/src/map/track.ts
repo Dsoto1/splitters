@@ -436,7 +436,8 @@ export function validateTrack(map: MapDocument): ValidationIssue[] {
     if (off) issues.push({ severity: 'warning', code: 'track.off_terrain', message: `${off * 2} m of road runs off the terrain` });
   }
   if (g.length < 80) issues.push({ severity: 'warning', code: 'track.short', message: `the road is only ${Math.round(g.length)} m long: races need 80 m or more` });
-  if (t.grid < map.metadata.recommendedPlayers.max) {
+  // Only races put everyone on the grid; a track that just carries ambient traffic can have any player count.
+  if (map.metadata.supportedModes.includes('core.race') && t.grid < map.metadata.recommendedPlayers.max) {
     issues.push({ severity: 'warning', code: 'track.grid', message: `the start grid has ${t.grid} places for up to ${map.metadata.recommendedPlayers.max} players` });
   }
   // A grid longer than the road behind the start line would wrap round into the last corner.
