@@ -49,34 +49,33 @@ describe('players joining and leaving running matches', () => {
     expect(ana.queue).toHaveLength(1);
   });
 
-  it('a leaving player hands their place back to a bot where they were (or not, when take-back is off)', () => {
+  it('a leaving player\u2019s slot empties and a fresh bot spawns normally (or, with take-back on, a bot takes their place where they were)', () => {
     const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2] }, 6);
     const filler = new BotFiller(match);
     filler.join('Host', undefined, 4);
     run(match, 30);
     const ana = filler.join('Ana', undefined, 4)!;
-    run(match, 60);
-    const slot = ana.slot;
-    const pos = { ...ana.move.pos };
-    filler.leave(slot, 4);
-    const back = match.slots[slot]!;
-    expect(back.kind).toBe('bot');
-    expect(back.bot).toBeDefined();
-    expect(back.move.pos).toEqual(pos);
-    expect(match.step().find((e) => e.e === 'takeover')).toMatchObject({ s: slot, from: 'Ana', bot: 1 });
+    const team = ana.faction;
+    filler.leave(ana.slot, 4);
     expect(match.combatants()).toHaveLength(4);
-    // The bot plays on.
-    run(match, 60);
-    expect(back.bot!.state).not.toBe('dead');
+    expect(match.combatants().filter((c) => c.kind === 'human')).toHaveLength(1);
+    // The fresh bot fills Ana's team, spawned like anyone else (no take-over).
+    expect(match.combatants().filter((c) => c.faction === team && c.kind === 'bot')).toHaveLength(2);
+    expect(match.step().some((e) => e.e === 'takeover' && e.bot)).toBe(false);
 
-    const off = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2] }, 6);
-    const plain = new BotFiller(off, BOT_DIFFICULTIES.normal, { takeBack: false });
-    plain.join('Host', undefined, 4);
-    const bea = plain.join('Bea', undefined, 4)!;
-    plain.leave(bea.slot, 4);
-    expect(off.combatants()).toHaveLength(4);
-    expect(off.combatants().filter((c) => c.kind === 'human')).toHaveLength(1);
-    expect(off.step().some((e) => e.e === 'takeover' && e.bot)).toBe(false);
+    const keep = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2] }, 6);
+    const back = new BotFiller(keep, BOT_DIFFICULTIES.normal, { takeBack: true });
+    back.join('Host', undefined, 4);
+    run(keep, 30);
+    const bea = back.join('Bea', undefined, 4)!;
+    run(keep, 60);
+    const slot = bea.slot;
+    const pos = { ...bea.move.pos };
+    back.leave(slot, 4);
+    const bot = keep.slots[slot]!;
+    expect(bot.kind).toBe('bot');
+    expect(bot.move.pos).toEqual(pos);
+    expect(keep.step().find((e) => e.e === 'takeover')).toMatchObject({ s: slot, from: 'Bea', bot: 1 });
   });
 
   it('a match without bots to take over gives the newcomer a free slot, and a full one turns them away', () => {

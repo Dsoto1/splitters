@@ -212,6 +212,23 @@ describe('Fort Wars', () => {
     void ta;
   });
 
+  it('with the default budget bots build a big fort: two towers, an outer wall and metal facing', { timeout: 120_000 }, () => {
+    const rules: MatchRules = { ...DEFAULT_FORTS_RULES, fortCombatSeconds: 60, teamSizes: [3, 3] };
+    expect(rules.fortBudget).toBe(420);
+    const match = new Match(meadow(), rules);
+    for (let i = 0; i < 6; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
+    const forts = fortsOf(match);
+    steps(match, (rules.fortBuildSeconds ?? 150) * TICK_RATE - 5);
+    expect(forts.phase).toBe(FORT_BUILD);
+    for (const t of [0, 1]) {
+      const mine = forts.pieces.filter((p) => p.team === t);
+      const spent = rules.fortBudget! - forts.pointsLeft(t);
+      expect(mine.length, `team ${t} built ${mine.length} pieces for ${spent} points`).toBeGreaterThanOrEqual(30);
+      expect(spent).toBeGreaterThan(120);
+      expect(mine.filter((p) => p.kind === 'stairs').length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
   it('bots build a fort round their flag, then play Capture the Flag over it', { timeout: 120_000 }, () => {
     const rules: MatchRules = { ...DEFAULT_FORTS_RULES, fortBuildSeconds: 60, fortCombatSeconds: 180, fortBudget: 120, teamSizes: [3, 3] };
     const match = new Match(meadow(), rules);

@@ -95,7 +95,7 @@ export class FortsMode implements ModeLogic {
   }
 
   get budget(): number {
-    return Math.max(0, Math.round(this.host.rules.fortBudget ?? 120));
+    return Math.max(0, Math.round(this.host.rules.fortBudget ?? 420));
   }
 
   /** Team index (0, 1) of a faction, -1 for anyone else. */

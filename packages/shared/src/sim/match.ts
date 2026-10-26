@@ -3565,7 +3565,7 @@ export class BotFiller {
   constructor(
     private readonly match: Match,
     private readonly difficulty: BotDifficulty = BOT_DIFFICULTIES.normal,
-    /** `takeBack`: a bot takes a leaving player's place where they stood (default on); off, the slot empties and a fresh bot spawns. */
+    /** `takeBack`: a bot takes a leaving player's place where they stood; off (the default), the slot empties and a fresh bot spawns normally. */
     private readonly opts: { takeBack?: boolean } = {},
   ) {}
 
@@ -3589,7 +3589,7 @@ export class BotFiller {
     return c;
   }
 
-  /** A player leaves: a bot takes their place where they were when the fill wants one, else the slot empties. */
+  /** A player leaves: their slot empties and the fill spawns a fresh bot normally (or, with `takeBack`, a bot takes their place where they were). */
   leave(slot: number, fill: number): void {
     const c = this.match.slots[slot];
     if (!c) return;
@@ -3597,7 +3597,7 @@ export class BotFiller {
     const humans = all.filter((x) => x.kind === 'human').length - (c.kind === 'human' ? 1 : 0);
     const bots = all.filter((x) => x.kind === 'bot').length;
     const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans));
-    if (this.opts.takeBack !== false && c.kind === 'human' && bots < want) {
+    if (this.opts.takeBack === true && c.kind === 'human' && bots < want) {
       const { name, profile } = this.nextBot();
       this.match.handToBot(slot, name, profile, this.difficulty, true);
     } else this.match.remove(slot);

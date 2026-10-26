@@ -156,7 +156,7 @@ describe('dedicated server', () => {
     expect(server.match.combatants().filter((c) => c.kind === 'bot')).toHaveLength(3);
   });
 
-  it('a player joining a running match replaces the worst-scoring bot and spawns normally, and a bot takes their place back when they leave', async () => {
+  it('a player joining a running match replaces the worst-scoring bot and spawns normally, and a fresh bot fills their place when they leave', async () => {
     server = await startServer({ port: 0, map: room, botFill: 3, seed: 4, startGate: false });
     await new Promise((r) => setTimeout(r, 100));
     const bots = server.match.combatants();
@@ -174,8 +174,8 @@ describe('dedicated server', () => {
     expect(snap.ev.find((e) => e.e === 'takeover')).toEqual({ e: 'takeover', s: welcome.slot, from: worst, to: 'Alice' });
     a.ws.close();
     await new Promise((r) => setTimeout(r, 50));
-    expect(server.match.slots[welcome.slot]?.kind).toBe('bot');
     expect(server.match.combatants()).toHaveLength(3);
+    expect(server.match.combatants().every((c) => c.kind === 'bot')).toBe(true);
   });
 
   it('rejects mismatched protocol versions', async () => {

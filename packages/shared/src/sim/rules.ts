@@ -240,7 +240,7 @@ export const DEFAULT_FORTS_RULES: MatchRules = {
   fortBuildSeconds: 150,
   fortCombatSeconds: 300,
   fortCycles: 1,
-  fortBudget: 120,
+  fortBudget: 420,
 };
 
 /**

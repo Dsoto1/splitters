@@ -54,7 +54,7 @@ export const FORT_GRID = 0.5;
 /** How far the Builder reaches. */
 export const FORT_REACH = 7;
 /** Pieces standing per team at most (performance). */
-export const FORT_MAX_PIECES = 80;
+export const FORT_MAX_PIECES = 200;
 /** Keep this far (m) from the midfield barrier when building. */
 export const FORT_BARRIER_CLEARANCE = 1;
 /** Keep pieces this far (m, horizontally) from flag bases and spawn points. */

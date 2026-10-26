@@ -10,9 +10,11 @@ import type { BotGoal, ModeHost } from './types.ts';
 
 /**
  * Fort Wars bots. During the build phase each team's bots work through a
- * simple fortification template laid out round their own flag (a front wall
- * with a gap, sandbags out in front, a metal wall inside, side walls, a
- * two-high block tower with stairs up to it, a crate), walking to each piece
+ * fortification template laid out round their own flag (a front wall with a
+ * gap, sandbags out in front, a metal wall inside, side walls, a two-high
+ * block tower with stairs up to it, a crate; with a big budget also a second
+ * tower, an outer wall line, metal facing, firing ramps and more cover),
+ * walking to each piece
  * and placing it through the same rules players build by. In combat they play
  * Capture the Flag; the navmesh is rebuilt with the forts in when combat
  * starts, so they path round walls and through gaps, and a bot whose way
@@ -44,6 +46,53 @@ const TEMPLATE: readonly TemplateItem[] = [
   ['block', -5, 5, 0],
   ['crate', 1.5, -4.5, 0],
 ];
+
+/**
+ * With a big budget (the default) bots go on to a proper fort: a second tower
+ * on the other flank, an outer wall line with a gap, metal facing on the
+ * front, ramps up behind the front wall to fire over it, and cover inside.
+ */
+const TEMPLATE_BIG: readonly TemplateItem[] = [
+  // Second tower on the left flank.
+  ['block', -4, -4, 0],
+  ['block', -4, -5, 0],
+  ['block', -5, -4, 0],
+  ['block', -5, -5, 0],
+  ['stairs', -4, -2.5, 3],
+  ['block', -4, -4, 0],
+  ['block', -4, -5, 0],
+  ['block', -5, -4, 0],
+  ['block', -5, -5, 0],
+  // Outer wall line with a gap in the middle.
+  ['wall', 11, -7, 0],
+  ['wall', 11, -5, 0],
+  ['wall', 11, -3, 0],
+  ['wall', 11, 3, 0],
+  ['wall', 11, 5, 0],
+  ['wall', 11, 7, 0],
+  ['wall', 9.75, -8.25, 1],
+  ['wall', 9.75, 8.25, 1],
+  // Metal facing behind the outer wall's gap, and on the inner front.
+  ['metal_wall', 9, -1, 0],
+  ['metal_wall', 9, 1, 0],
+  ['metal_wall', 3.5, 3, 0],
+  // Firing steps up behind the front wall.
+  ['ramp', 4.5, -2, 2],
+  ['ramp', 4.5, 2, 2],
+  // Side walls for the back of the fort.
+  ['wall', 0, -6, 1],
+  ['wall', -2, -6, 1],
+  ['wall', 0, 6, 1],
+  ['wall', -2, 6, 1],
+  // Cover inside.
+  ['sandbags', 2, 0, 0],
+  ['sandbags', 7.5, -6, 1],
+  ['sandbags', 7.5, 6, 1],
+  ['crate', 1.5, 4.5, 0],
+  ['crate', -1.5, -2.5, 0],
+];
+/** Budgets at least this big get the big template too. */
+const BIG_FORT_BUDGET = 250;
 
 interface Plan {
   kind: FortPieceKind;
@@ -95,7 +144,8 @@ export class FortBots {
     const turn = (x: number, z: number, r: number): [number, number] => (r === 0 ? [x, z] : r === 1 ? [z, -x] : r === 2 ? [-x, -z] : [-z, x]);
     const [fx, fz] = turn(0, 1, facing);
     const [rx, rz] = turn(1, 0, facing);
-    return TEMPLATE.map(([kind, f, r, q]) => {
+    const items = this.mode.budget >= BIG_FORT_BUDGET ? [...TEMPLATE, ...TEMPLATE_BIG] : TEMPLATE;
+    return items.map(([kind, f, r, q]) => {
       const rot = (facing + q) % 4;
       const at = snapFortBase(kind, rot, { x: home.x + fx * f + rx * r, y: home.y, z: home.z + fz * f + rz * r });
       // Stand a couple of metres from the spot, on the flag's side of it.

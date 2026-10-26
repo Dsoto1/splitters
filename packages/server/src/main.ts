@@ -24,8 +24,8 @@ const server = await startServer({
   botFill: Number(env.BOT_FILL ?? 4),
   botDifficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined,
   mode: mode as GameMode | undefined,
-  // BOT_TAKEBACK=0: a leaving player's slot empties (a fresh bot spawns) instead of a bot taking over where they were.
-  botTakeBack: env.BOT_TAKEBACK !== '0',
+  // BOT_TAKEBACK=1: a bot takes over where a leaving player was, instead of the slot emptying and a fresh bot spawning normally.
+  botTakeBack: env.BOT_TAKEBACK === '1',
   // LEADERS=on (team leaders) or LEADERS=vip (Leader variant: downing a leader scores extra).
   leaders: env.LEADERS === 'vip' ? 'vip' : env.LEADERS === 'on' ? true : undefined,
   name: env.SERVER_NAME,

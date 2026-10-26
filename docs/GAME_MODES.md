@@ -77,8 +77,8 @@ the forts (`sim/modes/forts.ts`, pieces and placement rules in
   bots): on your own half and at least 1 m from the barrier, at least 3 m
   from either flag base and 1.2 m from spawn points, not into a player,
   another piece or the level (a little sinking into uneven ground is fine),
-  something underneath, enough build points, and at most 80 pieces per team.
-- **Build points** (default 120 per team): what your standing pieces cost
+  something underneath, enough build points, and at most 200 pieces per team.
+- **Build points** (default 420 per team): what your standing pieces cost
   comes off the budget, so picking up refunds and each new build phase lets
   you rebuild what was broken.
 - **Combat.** The barrier drops and the Builder goes. Pieces take damage:
@@ -354,8 +354,9 @@ low-scoring CTF map: its bases are 108 m apart on a sniper causeway.
   worst-scoring one (fewest kills less deaths) on the team that most needs a
   person. They then spawn normally at a spawn point with a fresh loadout. The
   feed says "Ana joined, replacing Mildred".
-  When a player leaves, a bot takes over where they were ("Mildred took over
-  for Ana"); servers can turn that off (`BOT_TAKEBACK=0`).
+  When a player leaves, their slot empties and a fresh bot spawns normally to
+  keep the teams full (servers can have a bot take over where they were
+  instead: `BOT_TAKEBACK=1`).
 - **Team leaders** (Arcade → More rules → Team leaders; servers `LEADERS=on`).
   Each team's first person leads it (a bot leads a team without one; a
   person joining takes over from a bot leader). Leaders wear a gold star that
