@@ -40,6 +40,8 @@ export class HostControl {
       style: r.botStyle ?? 'mixed',
       map: this.match.map.metadata.id,
       mode: r.mode,
+      teamNames: this.match.teams?.map((t) => t.name) ?? [],
+      teamColors: this.match.teams?.map((t) => t.color) ?? [],
       sizes: teams ? Array.from({ length: teams }, (_, i) => sizes[i] ?? Math.max(1, Math.round(this.fill / teams))) : [],
       rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks },
       pending: { ...this.pending },

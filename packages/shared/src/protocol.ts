@@ -55,8 +55,10 @@ export interface HostRulesPatch {
 
 /** The match's host settings, for the pause menu of whoever runs it. */
 export interface HostState {
-  /** Team modes: every team's size, in team order (empty otherwise). */
+  /** Team modes: every team's size, name and colour, in team order (empty otherwise). */
   sizes?: number[];
+  teamNames?: string[];
+  teamColors?: string[];
   /** The restart-only rules as they play now, and any change waiting for the restart. */
   rules?: Required<HostRulesPatch>;
   pending?: HostRulesPatch;
