@@ -11,6 +11,7 @@ import {
   PROTOCOL_VERSION,
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
+  encodeSnapshots,
   initPhysics,
   loadMap,
   parseClientMessage,
@@ -30,8 +31,10 @@ export interface ServerOptions {
   host?: string;
   /** Map file path or an already-parsed document. */
   map: string | MapDocument;
-  /** Fill the match with Player Bots up to this many total players. */
+  /** Fill the match with Player Bots up to this many total players (players joining take over bots). */
   botFill: number;
+  /** When a player leaves, a bot takes over where they were (default on); off, a fresh bot spawns instead. */
+  botTakeBack?: boolean;
   botDifficulty?: BotDifficulty['id'];
   rules?: MatchRules;
   /** Play this mode with its default rules (ignored when `rules` is given); default: the map's first mode. */
@@ -75,7 +78,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const clients = new Set<Client>();
   const stats = new StatsWindow();
   let pendingEvents: GameEvent[] = [];
-  const bots = new BotFiller(match, difficulty);
+  const bots = new BotFiller(match, difficulty, { takeBack: opts.botTakeBack });
 
   const send = (c: Client, msg: ServerMessage | string) => {
     const data = typeof msg === 'string' ? msg : JSON.stringify(msg);
@@ -112,17 +115,14 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           ws.close(4001, 'protocol');
           return;
         }
-        // Make room by dropping a bot if the server is full of them.
-        const bot = match.combatants().find((c) => c.kind === 'bot');
-        if (match.combatants().length >= MAX_PLAYER_SLOTS && bot) match.remove(bot.slot);
-        const player = match.addHuman(sanitizeName(msg.name), msg.look);
+        // Take over a bot where it stands (team that needs a player), or a free slot.
+        const player = bots.join(sanitizeName(msg.name), msg.look, botFill);
         if (!player) {
           send(client, { t: 'reject', reason: 'server full' });
           ws.close(4002, 'full');
           return;
         }
         client.slot = player.slot;
-        rebalanceBots();
         send(client, {
           t: 'welcome',
           protocol: PROTOCOL_VERSION,
@@ -148,8 +148,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       clearTimeout(helloTimer);
       clients.delete(client);
       if (client.slot !== null) {
-        match.remove(client.slot);
-        rebalanceBots();
+        // A bot takes the leaver's place where they were (unless botTakeBack is off).
+        bots.leave(client.slot, botFill);
         broadcast({ t: 'roster', players: match.roster() });
       }
     });
@@ -161,19 +161,18 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const sendSnapshots = () => {
     const ev = pendingEvents;
     pendingEvents = [];
-    // Everything but the per-recipient ack is shared, so serialise it once.
-    const body = JSON.stringify(match.snapshot(ev));
+    // Everything but the per-recipient ack, private state and (in big matches) far players is shared:
+    // encodeSnapshots serialises the pieces once and gives each client its own copy.
+    const body = match.snapshot(ev);
+    const to = [...clients].filter((c): c is Client & { slot: number } => c.slot !== null);
+    const texts = encodeSnapshots(body, to.map((c) => ({ slot: c.slot, ack: match.slots[c.slot]?.lastSeq ?? 0, me: match.privateState(c.slot) })));
     let total = 0;
     let n = 0;
-    for (const c of clients) {
-      if (c.slot === null) continue;
-      const ack = match.slots[c.slot]?.lastSeq ?? 0;
-      const me = match.privateState(c.slot);
-      const data = `{"t":"snapshot","ack":${ack},${me ? `"me":${JSON.stringify(me)},` : ''}${body.slice(1)}`;
-      send(c, data);
-      total += data.length;
+    to.forEach((c, i) => {
+      send(c, texts[i]!);
+      total += texts[i]!.length;
       n++;
-    }
+    });
     if (n) stats.recordSnapshot(total / n);
   };
 

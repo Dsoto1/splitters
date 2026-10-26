@@ -7,7 +7,7 @@ import type { MatchRules } from './sim/rules.ts';
  * are kept compact so a binary encoding can replace JSON after measurement
  * without changing gameplay code.
  */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 export type Tuple3 = [number, number, number];
 
@@ -171,7 +171,9 @@ export type GameEvent =
   /** A destructible broke. */
   | { e: 'broken'; i: number }
   /** A player pressed a button, or was refused (locked door, disabled button). */
-  | { e: 'use'; s: number; i: number; ok: 0 | 1 };
+  | { e: 'use'; s: number; i: number; ok: 0 | 1 }
+  /** Slot `s` changed hands mid-match: `to` (a player who joined, or a bot when a player left) took over `from`, keeping the body, team and loadout. */
+  | { e: 'takeover'; s: number; from: string; to: string; bot?: 1 };
 
 /**
  * Scenario state. Sent as a delta (only what changed since the previous
@@ -353,6 +355,12 @@ export type ServerMessage =
       np: NpcSnapshot[];
       /** Objective mode state (CTF, KOTH, Elimination). */
       md?: ModeSnapshot;
+      /**
+       * Interest management (big matches): players left out of this snapshot
+       * because they are far from the receiver. They are still in the match:
+       * keep drawing them from the snapshots that had them (see net/interest.ts).
+       */
+      hold?: number[];
     }
   | { t: 'pong'; id: number; ct: number }
   | ({ t: 'stats' } & ServerStats);

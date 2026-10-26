@@ -100,7 +100,7 @@ describe('Match', () => {
     expect(b.alive).toBe(true);
   });
 
-  it('supports 32 player slots and rejects the 33rd', () => {
+  it(`supports ${MAX_PLAYER_SLOTS} player slots and rejects one more`, () => {
     const match = new Match(loadArena());
     for (let i = 0; i < MAX_PLAYER_SLOTS; i++) expect(match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % 4]!)).not.toBeNull();
     expect(match.addHuman('late')).toBeNull();
@@ -131,7 +131,7 @@ describe('Player Bots', () => {
 
   it('run a 32-bot match without errors and keep everyone inside the map', () => {
     const match = new Match(loadArena(), DEFAULT_DEATHMATCH_RULES, 3);
-    for (let i = 0; i < MAX_PLAYER_SLOTS; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % 4]!, BOT_DIFFICULTIES.normal);
+    for (let i = 0; i < 32; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % 4]!, BOT_DIFFICULTIES.normal);
     const events = runTicks(match, 60 * 20);
     expect(events.filter((e) => e.e === 'kill').length).toBeGreaterThan(10);
     expect(events.some((e) => e.e === 'kill' && e.weapon === 'core.fall')).toBe(false);

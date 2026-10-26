@@ -1,5 +1,5 @@
 /** Architectural maximum (MASTER_SPEC_V2 §3.4). Never hard-code a smaller structural limit. */
-export const MAX_PLAYER_SLOTS = 32;
+export const MAX_PLAYER_SLOTS = 96;
 
 export const TICK_RATE = 60;
 export const TICK_DT = 1 / TICK_RATE;

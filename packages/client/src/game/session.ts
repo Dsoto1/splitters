@@ -578,7 +578,7 @@ export class GameSession {
         for (const p of msg.players) this.hp.set(p.s, p.hp / PLAYER.maxHealth);
         for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8], size: n[11] ?? 1 });
-        this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr);
+        this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr, msg.hold);
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt, msg.tick);
         this.covers?.apply(msg.cv);
@@ -589,7 +589,9 @@ export class GameSession {
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         if (this.classesOn) {
-          this.classOf = new Map(msg.players.filter((p) => p.cl !== undefined).map((p) => [p.s, p.cl!]));
+          // Players held back from this snapshot (far away in a big match) keep the class they had.
+          const kept = msg.hold ? [...this.classOf].filter(([slot]) => msg.hold!.includes(slot)) : [];
+          this.classOf = new Map([...kept, ...msg.players.filter((p) => p.cl !== undefined).map((p): [number, number] => [p.s, p.cl!])]);
           this.hud.setClasses(msg.players);
         }
         this.myClass = msg.me?.cl ?? null;
@@ -749,6 +751,8 @@ export class GameSession {
               this.view.breakProp(ev.i);
               if (def) this.view.debris({ x: e.position[0], y: e.position[1] + (def.size[1] * e.scale) / 2, z: e.position[2] }, def.breakable?.debris ?? '#8a5a32', Math.max(0.3, Math.min(1.2, (Math.max(...def.size) * e.scale) / 2)));
             }
+          } else if (ev.e === 'takeover') {
+            this.hud.takeover(ev.s, ev.to, ev.from, !!ev.bot);
           } else if (ev.e === 'throw') {
             if (ev.s !== this.slot) this.view.avatarAction(ev.s, 'throw');
           }

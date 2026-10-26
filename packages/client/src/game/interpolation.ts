@@ -9,6 +9,8 @@ interface Frame {
   players: Map<number, PlayerSnapshot>;
   /** Projectile id -> [x, y, z, look]. */
   projectiles: Map<number, [number, number, number, number]>;
+  /** Players still in the match but left out of this snapshot (far away, big matches). */
+  hold?: Set<number>;
 }
 
 export interface RemotePose {
@@ -39,9 +41,10 @@ export class Interpolator {
   private latestTick = 0;
   private latestAt = 0;
 
-  push(tick: number, players: PlayerSnapshot[], projectiles: [number, number, number, number, number][] = []): void {
+  /** `hold`: slots left out of this snapshot to save bandwidth; they are drawn from the frames that had them. */
+  push(tick: number, players: PlayerSnapshot[], projectiles: [number, number, number, number, number][] = [], hold?: readonly number[]): void {
     if (tick <= this.latestTick && this.frames.length) return;
-    this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])), projectiles: new Map(projectiles.map(([id, x, y, z, v]) => [id, [x, y, z, v ?? 0]])) });
+    this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])), projectiles: new Map(projectiles.map(([id, x, y, z, v]) => [id, [x, y, z, v ?? 0]])), ...(hold?.length ? { hold: new Set(hold) } : {}) });
     this.latestTick = tick;
     this.latestAt = performance.now();
     while (this.frames.length > 2 && this.frames[0]!.tick < tick - BUFFER_TICKS) this.frames.shift();
@@ -98,8 +101,28 @@ export class Interpolator {
     const span = b.tick - a.tick;
     const t = span > 0 ? Math.max(0, Math.min(1, (renderTick - a.tick) / span)) : 1;
     const out: RemotePose[] = [];
-    for (const [slot, pb] of b.players) {
-      const pa = a.players.get(slot);
+    const last = this.frames[this.frames.length - 1]!;
+    // Big matches: players far away come in some snapshots only. Blend each between the frames that have them.
+    const held = last.hold || b.hold ? [...last.players.keys(), ...(last.hold ?? [])].filter((slot) => !b.players.has(slot)) : [];
+    const pairs: [number, PlayerSnapshot | undefined, PlayerSnapshot, number][] = [...b.players].map(([slot, pb]) => [slot, a.players.get(slot), pb, t]);
+    for (const slot of held) {
+      let fa: Frame | undefined;
+      let fb: Frame | undefined;
+      for (const f of this.frames) {
+        if (!f.players.has(slot)) continue;
+        if (f.tick <= renderTick) fa = f;
+        else {
+          fb = f;
+          break;
+        }
+      }
+      const pa = (fa ?? fb)?.players.get(slot);
+      const pb = (fb ?? fa)?.players.get(slot);
+      if (!pa || !pb) continue;
+      const span = fa && fb ? fb.tick - fa.tick : 0;
+      pairs.push([slot, pa, pb, span > 0 ? Math.max(0, Math.min(1, (renderTick - fa!.tick) / span)) : 1]);
+    }
+    for (const [slot, pa, pb, t] of pairs) {
       // Do not blend across a respawn teleport.
       const blend = pa && pa.alive === pb.alive ? t : 1;
       const from = blend === 1 || !pa ? pb : pa;

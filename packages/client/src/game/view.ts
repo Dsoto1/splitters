@@ -122,6 +122,9 @@ interface Avatar {
   flash?: Mesh;
   /** Climbing out of a hatch or burrow: rises from below the floor from this time. */
   emergeAt?: number;
+  /** Crowds: far avatars animate every few frames; the frames counted and the time saved up since. */
+  animFrame?: number;
+  animDt?: number;
 }
 
 /** How long an NPC takes to climb out of a hatch or burrow (ms), and from how deep. */
@@ -146,6 +149,16 @@ export function bodiesPreference(): BodiesSetting {
 }
 /** Bodies kept at once (the oldest goes when another falls). */
 const MAX_CORPSES = 32;
+/** Ragdolls still tumbling at once; past this a death plays the death animation instead (96-player matches). */
+const MAX_ACTIVE_RAGDOLLS = 12;
+/**
+ * Crowd animation LOD: with more than this many remote characters, ones past
+ * ANIM_LOD_NEAR metres animate every other frame and past ANIM_LOD_FAR every
+ * fourth (their meshes already drop to the low-detail copy past LOD_DISTANCE).
+ */
+const ANIM_LOD_CROWD = 24;
+const ANIM_LOD_NEAR = 45;
+const ANIM_LOD_FAR = 120;
 /** "Fade" setting: seconds a body lies there, then seconds it takes to sink away. */
 const CORPSE_STAY = 30;
 const CORPSE_SINK = 3;
@@ -356,6 +369,14 @@ export class GameView {
     } catch {
       a.ragdoll = undefined;
     }
+  }
+
+  /** Ragdolls still moving (resting ones cost next to nothing). */
+  private activeRagdolls(): number {
+    let n = 0;
+    for (const a of this.avatars.values()) if (a.ragdoll && !a.ragdoll.resting) n++;
+    for (const c of this.corpses) if (c.a.ragdoll && !c.a.ragdoll.resting) n++;
+    return n;
   }
 
   /** The fallen body becomes a corpse that outlives the player's respawn. */
@@ -712,6 +733,8 @@ export class GameView {
    */
   updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set()): void {
     const now = performance.now();
+    const crowd = poses.length > ANIM_LOD_CROWD;
+    const cam = crowd ? this.scene.activeCamera?.globalPosition : undefined;
     const seen = new Set<number>();
     for (const p of poses) {
       if (p.slot === localSlot) continue;
@@ -748,7 +771,7 @@ export class GameView {
         continue;
       }
       // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
-      if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) {
+      if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll && this.activeRagdolls() < MAX_ACTIVE_RAGDOLLS) {
         this.startRagdoll(p.slot, a);
         if (a.ragdoll) {
           this.toCorpse(p.slot, a);
@@ -776,7 +799,14 @@ export class GameView {
       if (a.anim) {
         // Riders stand still in their seats, however fast the vehicle goes.
         const speed = seated.has(p.slot) ? 0 : Math.hypot(a.vel.x, a.vel.z);
-        a.anim.update(Math.min(0.1, dt), {
+        // Far characters in a crowd animate every few frames, with the time saved up (a death always plays at once).
+        const far = crowd && cam && p.alive ? Math.hypot(p.x - cam.x, p.z - cam.z) : 0;
+        const every = far > ANIM_LOD_FAR ? 4 : far > ANIM_LOD_NEAR ? 2 : 1;
+        a.animDt = (a.animDt ?? 0) + dt;
+        a.animFrame = ((a.animFrame ?? 0) + 1) % every;
+        const animDt = Math.min(every > 1 ? 0.25 : 0.1, a.animDt);
+        if (a.animFrame === 0) a.animDt = 0;
+        if (a.animFrame === 0) a.anim.update(animDt, {
           speed,
           moveAngle: speed > 0.3 ? angleDelta(p.yaw, Math.atan2(a.vel.x, a.vel.z)) : 0,
           airborne: !p.grounded && !seated.has(p.slot),

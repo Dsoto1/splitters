@@ -1,4 +1,5 @@
 import { GAME_MODES, type GameMode } from '../sim/rules.ts';
+import { MAX_PLAYER_SLOTS } from '../sim/constants.ts';
 import { sanitizeName } from './clientMessages.ts';
 
 /**
@@ -48,8 +49,8 @@ export function parseAdvert(v: unknown): LobbyAdvert | null {
   const host = text(o.host, 32);
   const map = text(o.map, 40);
   const mode = typeof o.mode === 'string' && (GAME_MODES as readonly string[]).includes(o.mode) ? (o.mode as GameMode) : null;
-  const max = int(o.max, 1, 64);
-  const players = int(o.players, 0, 64);
+  const max = int(o.max, 1, MAX_PLAYER_SLOTS);
+  const players = int(o.players, 0, MAX_PLAYER_SLOTS);
   const version = int(o.version, 0, 1_000_000);
   if (!code || !name || !host || !map || !mode || max === null || players === null || version === null) return null;
   return { code, name, host, map, mode, players: Math.min(players, max), max, version, relay: o.relay === true };

@@ -36,7 +36,7 @@ import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './cons
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
-import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
@@ -993,6 +993,60 @@ export class Match {
     return c;
   }
 
+  /**
+   * A player joining a running match takes over a Player Bot in place: the
+   * same slot, body, position, team, loadout, seat and score, so play goes on
+   * without a respawn. The bot comes from the team that most needs a player
+   * (fewest people for its size), preferring one that is alive and on foot.
+   * Null when there is no bot to take over.
+   */
+  takeOverBot(name: string, look?: string): Combatant | null {
+    const all = this.combatants();
+    const bots = all.filter((c) => c.kind === 'bot');
+    if (!bots.length) return null;
+    const targets = this.teamTargets();
+    const people = (team: string | null) => all.filter((c) => c.kind === 'human' && c.faction === team).length / (team ? (targets.get(team) ?? 1) : 1);
+    bots.sort((a, b) => people(a.faction) - people(b.faction) || Number(b.alive) - Number(a.alive) || Number(!!a.mount) - Number(!!b.mount) || a.slot - b.slot);
+    const c = bots[0]!;
+    const from = c.name;
+    c.kind = 'human';
+    c.name = name;
+    c.bot = undefined;
+    c.order = undefined;
+    c.shotAt = undefined;
+    // The newcomer's inputs count from 1: forget the bot's.
+    c.queue = [];
+    c.lastSeq = 0;
+    c.prevButtons = 0;
+    c.look = validLookId(look);
+    this.applyBodySize(c);
+    c.health = Math.min(c.health, c.maxHealth);
+    this.botThought.delete(c.slot);
+    this.raceBots.delete(c.slot);
+    this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name });
+    return c;
+  }
+
+  /**
+   * A player left: a Player Bot takes their slot back in place (same body,
+   * position, team, loadout and score) instead of the slot emptying.
+   */
+  handToBot(slot: number, name: string, profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal, asCharacter = false): Combatant | null {
+    const c = this.slots[slot];
+    if (!c || c.kind !== 'human') return null;
+    const from = c.name;
+    c.kind = 'bot';
+    c.name = name;
+    c.queue = [];
+    c.prevButtons = 0;
+    this.readySlots.delete(slot);
+    c.bot = new BotBrain(c.slot, asCharacter ? profileFor(c.look, profile, this.rules.botStyle) : profile, difficulty, this.seed);
+    c.bot.onSpawn(c.yaw);
+    this.nav.places();
+    this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name, bot: 1 });
+    return c;
+  }
+
   /** Small and large looks play differently unless the match turns body sizes off. */
   private applyBodySize(c: Combatant): void {
     const spec = BODY_SIZES[this.rules.bodySizes === false ? 'standard' : bodySizeOf(c.look)];
@@ -1138,13 +1192,24 @@ export class Match {
       if (!list) factionViews.set(o.faction, (list = []));
       list.push(views.get(o.slot)!);
     }
+    // Who each side may attack depends only on the sides (and never yourself): work it out once
+    // per side a tick instead of once per bot, which is quadratic with 96 players.
+    const hostileBySide = new Map<string | null, Combatant[]>();
+    const hostilesOf = (c: Combatant): Combatant[] => {
+      let list = hostileBySide.get(c.faction);
+      if (!list) hostileBySide.set(c.faction, (list = actors.filter((o) => o.alive && (o === c || this.hostile(c, o)) && (o !== c || c.faction === null))));
+      return list.includes(c) ? list.filter((o) => o !== c) : list;
+    };
+    const budget = this.botBudget(actors);
     for (const c of actors) {
       if (!c.bot) continue;
       if (this.race && !c.npc) {
         c.queue.push(this.raceBotInput(c, this.race));
         continue;
       }
-      const hostiles = actors.filter((o) => o.alive && this.hostile(c, o));
+      // Big matches: a bot with nobody to fight thinks every other tick and keeps its last move in between.
+      if (budget > 1 && this.coastBot(c, budget)) continue;
+      const hostiles = hostilesOf(c);
       // Objective modes can narrow what a bot notices (flag carriers keep running).
       const aware = this.mode && !c.npc ? this.mode.botAwareness(c) : Infinity;
       const npc = c.npc;
@@ -1195,8 +1260,38 @@ export class Match {
       if (!npc) this.classes?.botInput(c, input, orderGoal);
       if (!npc && c.alive && !c.mount && this.rules.weapons === 'discs') this.dodgeDiscs(c, input);
       c.queue.push(input);
+      if (budget > 1) this.botThought.set(c.slot, { input, tick: this.tick });
     }
     this.lastAiMs = performance.now() - t0;
+  }
+
+  /** Each bot's last thought-out input and its tick (only kept in big matches, see coastBot). */
+  private readonly botThought = new Map<number, { input: PlayerInput; tick: number }>();
+
+  /**
+   * Think budget: up to BOT_FULL_RATE thinking bots (Player Bots and awake
+   * NPCs) all think every tick; past that, bots with nobody to fight think
+   * every other tick (96-player matches).
+   */
+  private botBudget(actors: readonly Combatant[]): number {
+    let n = 0;
+    for (const c of actors) if (c.bot && c.alive) n++;
+    return n > BOT_FULL_RATE ? 2 : 1;
+  }
+
+  /**
+   * On its off tick, a bot that is alive, on foot, not fighting and not under
+   * fire repeats the move it thought out last tick (without one-shot buttons).
+   * Returns false when it should think now.
+   */
+  private coastBot(c: Combatant, every: number): boolean {
+    if ((this.tick + c.slot) % every === 0 || !c.alive || c.mount || c.bot!.target !== null) return false;
+    if (c.shotAt && this.tick - c.shotAt.tick <= 2) return false;
+    const last = this.botThought.get(c.slot);
+    if (!last || last.tick !== this.tick - 1) return false;
+    const { seq: _seq, say: _say, build: _build, weapon: _weapon, ...keep } = last.input;
+    c.queue.push({ ...keep, seq: c.lastSeq + 1, buttons: keep.buttons & COAST_BUTTONS });
+    return true;
   }
 
   /**
@@ -3256,7 +3351,43 @@ export class BotFiller {
   constructor(
     private readonly match: Match,
     private readonly difficulty: BotDifficulty = BOT_DIFFICULTIES.normal,
+    /** `takeBack`: a bot takes a leaving player's place where they stood (default on); off, the slot empties and a fresh bot spawns. */
+    private readonly opts: { takeBack?: boolean } = {},
   ) {}
+
+  private nextBot(): { name: string; profile: BotProfile } {
+    const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
+    const round = Math.floor(this.counter / BOT_NAMES.length);
+    // Big matches run out of names: Mildred, then Mildred 2.
+    const name = `${BOT_NAMES[this.counter % BOT_NAMES.length]!}${round ? ` ${round + 1}` : ''}`;
+    this.counter++;
+    return { name, profile };
+  }
+
+  /**
+   * A player joins: they take over a bot where it stands (Match.takeOverBot),
+   * or get a slot of their own when there is no bot. Then the fill is kept.
+   */
+  join(name: string, look: string | undefined, fill: number): Combatant | null {
+    const c = this.match.takeOverBot(name, look) ?? this.match.addHuman(name, look);
+    this.rebalance(fill);
+    return c;
+  }
+
+  /** A player leaves: a bot takes their place where they were when the fill wants one, else the slot empties. */
+  leave(slot: number, fill: number): void {
+    const c = this.match.slots[slot];
+    if (!c) return;
+    const all = this.match.combatants();
+    const humans = all.filter((x) => x.kind === 'human').length - (c.kind === 'human' ? 1 : 0);
+    const bots = all.filter((x) => x.kind === 'bot').length;
+    const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans));
+    if (this.opts.takeBack !== false && c.kind === 'human' && bots < want) {
+      const { name, profile } = this.nextBot();
+      this.match.handToBot(slot, name, profile, this.difficulty, true);
+    } else this.match.remove(slot);
+    this.rebalance(fill);
+  }
 
   rebalance(fill: number): void {
     const all = this.match.combatants();
@@ -3272,9 +3403,7 @@ export class BotFiller {
       this.match.remove(left[0]!.slot);
     }
     for (let i = bots.length; i < want; i++) {
-      const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
-      const name = BOT_NAMES[this.counter % BOT_NAMES.length]!;
-      this.counter++;
+      const { name, profile } = this.nextBot();
       if (!this.match.addBot(name, profile, this.difficulty, true)) break;
     }
   }
@@ -3297,6 +3426,11 @@ interface Trigger {
   recoil?: WeaponDefinition['recoil'];
   headshot?: number;
 }
+
+/** Past this many thinking bots, idle ones think every other tick (Match.botBudget). */
+export const BOT_FULL_RATE = 40;
+/** Held buttons a coasting bot keeps (movement stance); fire, use, jump and the rest are one-shot. */
+const COAST_BUTTONS = BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE;
 
 /** Crouching steadies your aim; lying prone steadies it more. */
 const STANCE_SPREAD = [1, 0.7, 0.5] as const;

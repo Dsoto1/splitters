@@ -199,6 +199,8 @@ export class BotBrain {
   private stuckCheck: { tick: number; pos: Vec3 } | null = null;
   private jumpNext = false;
   private lastPos: Vec3 | null = null;
+  /** The tick of the previous think (big matches skip some ticks for bots with nobody to fight). */
+  private lastThinkTick = 0;
   private speed = 0;
   private lastHealth = 100;
   private hurtTick = -Infinity;
@@ -307,7 +309,9 @@ export class BotBrain {
       return { seq, forward: 0, right: 0, yaw: this.yaw, pitch: this.pitch, buttons: 0 };
     }
     // Own movement and pain.
-    this.speed = this.lastPos ? Math.min(20, horizontalDistance(me.pos, this.lastPos) / TICK_DT) : 0;
+    const ticks = Math.max(1, Math.min(4, view.tick - this.lastThinkTick));
+    this.lastThinkTick = view.tick;
+    this.speed = this.lastPos ? Math.min(20, horizontalDistance(me.pos, this.lastPos) / (TICK_DT * ticks)) : 0;
     this.lastPos = { ...me.pos };
     if (me.health < this.lastHealth) this.hurtTick = view.tick;
     this.lastHealth = me.health;

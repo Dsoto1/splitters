@@ -142,6 +142,10 @@ export interface FrontEndHooks {
 
 type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options';
 
+/** Arcade team layouts: MapMaker's, plus the big ones (up to 48 v 48; players joining take bots' places). */
+const ARCADE_TEAM_PRESETS: readonly (readonly number[])[] = [...TEAM_PRESETS, [16, 16], [24, 24], [48, 48]];
+/** Largest team the Arcade sets up (two of these fill MAX_PLAYER_SLOTS). */
+const ARCADE_MAX_TEAM = 48;
 const MODE_LABEL = MODE_LABELS;
 const BASE_RULES = DEFAULT_RULES;
 /** The score limit row per mode: its label and stepper (step, min, max). */
@@ -521,7 +525,7 @@ export class FrontEnd {
       el('div', { class: 'setup-body' },
         el('section', {}, el('h4', { textContent: 'Mode' }), modeTabs),
         el('section', {}, el('h4', { textContent: coop ? 'Squad' : 'Players' }),
-          ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, twoTeams) : [row(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper(s.bots, 1, 0, 15, (v) => (this.setup.bots = v)))]),
+          ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, twoTeams) : [row(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper(s.bots, 1, 0, coop ? 15 : 47, (v) => (this.setup.bots = v)))]),
           row('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill'])))),
         ...(coop
           ? []
@@ -593,7 +597,7 @@ export class FrontEnd {
     const preset = el('select', { id: 'arcade-teams' }) as HTMLSelectElement;
     const label = teamLayoutLabel(sizes);
     preset.append(new Option(`${label} (${sizes.reduce((a, b) => a + b, 0)} players)`, ''));
-    for (const p of TEAM_PRESETS) if (teamLayoutLabel(p) !== label) preset.append(new Option(`${teamLayoutLabel(p)} (${p.reduce((a, b) => a + b, 0)} players)`, p.join(',')));
+    for (const p of ARCADE_TEAM_PRESETS) if (teamLayoutLabel(p) !== label) preset.append(new Option(`${teamLayoutLabel(p)} (${p.reduce((a, b) => a + b, 0)} players)`, p.join(',')));
     preset.addEventListener('change', () => preset.value && set(preset.value.split(',').map(Number)));
     const plus = el('button', { class: 'tab', textContent: '+ Team' });
     plus.addEventListener('click', () => sizes.length < MAX_TEAMS && set([...sizes, sizes[sizes.length - 1] ?? 2]));
@@ -616,7 +620,7 @@ export class FrontEnd {
         this.setup.teamNames = list;
         this.saveSetup();
       });
-      return el('div', { class: 'team-size' }, color, name, stepper(sizes[i]!, 1, 1, 16, (v) => (this.setup.teams = all.map((s, j) => (j === i ? v : s)))));
+      return el('div', { class: 'team-size' }, color, name, stepper(sizes[i]!, 1, 1, ARCADE_MAX_TEAM, (v) => (this.setup.teams = all.map((s, j) => (j === i ? v : s)))));
     });
     // Capture the Flag is always two teams: just their sizes.
     if (twoTeams) return [el('div', { class: 'team-grid' }, ...steppers)];
