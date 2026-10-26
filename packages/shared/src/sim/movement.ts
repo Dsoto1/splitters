@@ -45,6 +45,13 @@ export interface PlayerInput {
   say?: number;
   /** Fort Wars Builder: the piece picked (FORT_PIECE_KINDS index) plus quarter turns × 16. */
   build?: number;
+  /**
+   * Recoil counter (radians, pitch and yaw): how much of this input's mouse
+   * movement pulled against the weapon's recoil. The client doesn't move its
+   * view by that amount; the server takes it off the recoil offset instead
+   * (gunplay.ts counterRecoil), so the aim never overshoots on recovery.
+   */
+  rc?: [number, number];
 }
 
 /** Quick messages players can send (keys 1-6 while the quick-message menu is open). */
@@ -220,6 +227,7 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
     ...(i.say ? { say: Math.max(0, Math.min(255, Math.trunc(finite(i.say)))) } : {}),
     viewTick: Math.max(0, Math.trunc(finite(i.viewTick ?? 0))),
     ...(i.build ? { build: Math.max(0, Math.min(63, Math.trunc(finite(i.build)))) } : {}),
+    ...(Array.isArray(i.rc) ? { rc: [Math.max(-0.5, Math.min(0.5, finite(i.rc[0]))), Math.max(-0.5, Math.min(0.5, finite(i.rc[1])))] as [number, number] } : {}),
   };
 }
 

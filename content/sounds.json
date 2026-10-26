@@ -402,6 +402,23 @@
       "variants": 4,
       "jitter": 0.02
     },
+    "ui.hit.head": {
+      "gain": 0.5,
+      "synth": "hithead",
+      "variants": 3,
+      "jitter": 0.01
+    },
+    "ui.hit.armor": {
+      "gain": 0.5,
+      "synth": "hitarmor",
+      "variants": 3,
+      "jitter": 0.03
+    },
+    "ui.kill.confirm": {
+      "gain": 0.6,
+      "synth": "killconfirm",
+      "variants": 1
+    },
     "ui.kill": {
       "gain": 0.5,
       "variants": [
@@ -709,6 +726,14 @@
       "range": "far",
       "jitter": 0.05,
       "rate": 1.6
+    },
+    "fire.revolver": {
+      "synth": "sniper",
+      "variants": 2,
+      "gain": 0.95,
+      "range": "far",
+      "jitter": 0.03,
+      "rate": 0.82
     },
     "fire.heavy": {
       "synth": "sniper",

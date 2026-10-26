@@ -58,7 +58,12 @@ import { ambientCarEntities, raceGridEntities, trackGeometry, type TrackGeometry
 import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, zoneMultiplier, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import {
+  BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, MAX_RICOCHETS, NEAR_INSTANT_M,
+  RELOAD_KINDS, RICOCHET_MAX_ANGLE, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, spreadOf, stepAds, stepReload, surfaceMaterial,
+  type BallisticMaterial, type GunState, type Gunplay, type ReloadRun,
+} from './gunplay.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
@@ -90,6 +95,8 @@ export interface WeaponState {
   overheated?: boolean;
   /** Mounted guns: the tick it last fired (they cool when idle, manned or not). */
   firedTick?: number;
+  /** A magazine is in but no round is chambered (an empty reload stopped before the bolt). */
+  unchambered?: boolean;
 }
 
 /** A turret, sentry or vehicle in play (see mounts.ts). */
@@ -207,6 +214,10 @@ export interface Combatant {
   burstLeft: number;
   burstTimer: number;
   bloom: number;
+  /** Mechanical recoil offset, spray and sights (gunplay.ts), counted in applied inputs like the timers. */
+  gun: GunState;
+  /** The reload in progress (stages, shells); `reloadTicks` is what is left of it. */
+  reload: ReloadRun | null;
   /** Horizontal speed over the last tick (m/s), for movement spread. */
   moveSpeed: number;
   /** Status effects (ticks left; chill builds 0..1 into a freeze), and who caused them (kill credit). */
@@ -266,6 +277,46 @@ interface Projectile {
   heading?: Vec3;
   hopIn?: number;
 }
+
+/**
+ * A conventional bullet in flight (GUNPLAY_SPEC §3.2). Server-only and light:
+ * clients draw their own tracers from the shot event, so bullets never go out
+ * in snapshots.
+ */
+interface Bullet {
+  owner: number;
+  trig: Trigger;
+  /** Muzzle point (for falloff and the impact event). */
+  origin: Vec3;
+  pos: Vec3;
+  vel: Vec3;
+  gravity: number;
+  drag: number;
+  travelled: number;
+  age: number;
+  energy: number;
+  /** Damage left after penetrations and ricochets (1 = full). */
+  scale: number;
+  pens: number;
+  rics: number;
+  /** Surfaces it passed through or glanced off (drawn as impacts). */
+  marks: Tuple3[];
+  /** Tick it was fired (it already flew that tick). */
+  born: number;
+}
+
+/** Where a bullet ended up: a player (with damage to apply), a surface, or nowhere. */
+interface BulletEnd {
+  at: Vec3;
+  victim: Combatant | null;
+  zone: HitZone;
+  damage: number;
+  dir: Vec3;
+  /** Ran out of range or time in the air (nothing to draw where it ends). */
+  gone?: boolean;
+}
+
+type ShotTargets = readonly { slot: number; feet: Vec3; height: number; radius: number }[];
 
 /** A ground hazard or field (see ZONE_KINDS). */
 interface Zone {
@@ -349,6 +400,7 @@ export class Match {
   private pendingEvents: GameEvent[] = [];
   private readonly rng: () => number;
   private projectiles: Projectile[] = [];
+  private bullets: Bullet[] = [];
   private zones: Zone[] = [];
   private readonly pads: JumpPad[];
   /** Foliage to hide in (bushes, ferns, tall crops): footprint centre, radius, base and top. */
@@ -974,6 +1026,8 @@ export class Match {
       burstLeft: 0,
       burstTimer: 0,
       bloom: 0,
+      gun: newGunState(),
+      reload: null,
       burnTicks: 0,
       jetFuel: null,
       breath: 0,
@@ -1150,6 +1204,7 @@ export class Match {
       if (this.ambient.length && this.road) this.driveAmbient(this.road);
       this.stepMounts();
       this.stepProjectiles();
+      this.stepBullets();
       this.stepZones();
       this.stepStatuses();
       if (this.phase === 'playing') this.scenario.step();
@@ -1296,6 +1351,11 @@ export class Match {
       if (!npc) this.classes?.botInput(c, input, orderGoal);
       if (!npc && c.alive && !c.mount && this.rules.weapons === 'discs') this.dodgeDiscs(c, input);
       this.planeBot(c, input);
+      // Bots fight recoil like players do, as well as their skill allows (spec §40).
+      if (c.alive && (c.gun.rp > 0 || c.gun.ry !== 0)) {
+        const k = c.bot.difficulty.aim.recoilComp ?? 0.5;
+        input.rc = [c.gun.rp * k, c.gun.ry * k];
+      }
       c.queue.push(input);
       if (budget > 1) this.botThought.set(c.slot, { input, tick: this.tick });
     }
@@ -1382,6 +1442,14 @@ export class Match {
     this.noises = this.noises.filter((n) => this.tick - n.tick < TICK_RATE);
     for (const ev of events) {
       if (ev.e === 'explode') this.noises.push({ pos: { x: ev.p[0], y: ev.p[1], z: ev.p[2] }, tick: this.tick, by: ev.s, range: 60 });
+      if (ev.e === 'impact') {
+        // A bullet that flew a while: a near miss (or a hit) still sends bots into cover.
+        const shooter = this.actor(ev.s);
+        const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
+        const to = { x: ev.to[0], y: ev.to[1], z: ev.to[2] };
+        if (shooter) for (const c of this.actors()) if (c.bot && c.alive && this.hostile(shooter, c) && (ev.hit === c.slot || segmentDistance(chest(c.move.pos), from, to) < 1.6)) c.shotAt = { tick: this.tick, from };
+        continue;
+      }
       if (ev.e !== 'shot' || ev.s < 0) continue;
       const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
       this.noises.push({ pos: from, tick: this.tick, by: ev.s, range: 45 });
@@ -1527,6 +1595,8 @@ export class Match {
         input.say = undefined;
       }
       if (!c.alive) continue;
+      // The player pulling against the recoil (the client reports how much of its mouse movement countered it).
+      if (input.rc) counterRecoil(c.gun, input.rc[0], input.rc[1]);
       if (input.say === PING && !c.npc && this.tick >= (c.pingAt ?? 0)) {
         c.pingAt = this.tick + Math.round(TICK_RATE * 0.75);
         this.ping(c);
@@ -1602,7 +1672,7 @@ export class Match {
       if (c.raiseTicks > 0) c.raiseTicks--;
       if (c.speedTicks > 0) c.speedTicks--;
       if (c.damageTicks > 0) c.damageTicks--;
-      if (c.reloadTicks > 0 && --c.reloadTicks === 0) this.finishReload(c);
+      this.advanceReload(c);
 
       if (input.buttons & BUTTON_USE) {
         c.useTick = this.tick;
@@ -1621,14 +1691,21 @@ export class Match {
       const held = gun ?? heldWeapon(c);
       const def = held.def;
       const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
+      const pressed = input.buttons & ~c.prevButtons;
       c.prevButtons = input.buttons;
       if (!fireDown) c.semiLatch = false;
+      // Reloads give way to emergency actions (spec §16): breaking into a sprint, using something.
+      if (c.reload && ((pressed & BUTTON_SPRINT && input.forward > 0) || pressed & BUTTON_USE)) this.cancelReload(c);
       if (input.buttons & BUTTON_RELOAD) this.startReload(c);
       const frozen = c.frozenTicks > 0;
+      const gp = gunplayOf(def);
+      stepAds(c.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !gun);
+      // Firing interrupts a reload whenever a round is ready: a loaded shell, a tactical reload's chambered round.
+      if (fireDown && c.reload && !gun && !c.semiLatch && c.fireCooldown === 0 && c.raiseTicks === 0 && roundsReady(held) > 0) this.cancelReload(c);
       const ready = c.fireCooldown === 0 && (gun ? true : c.raiseTicks === 0) && c.reloadTicks === 0 && !frozen && !unarmed;
       // Spin-up and charge: the trigger has to be held this long first.
       if (def.windupTicks) {
-        const able = fireDown && c.raiseTicks === 0 && c.reloadTicks === 0 && !frozen && !held.overheated && (def.magazine === 0 || held.mag > 0);
+        const able = fireDown && c.raiseTicks === 0 && c.reloadTicks === 0 && !frozen && !held.overheated && (def.magazine === 0 || roundsReady(held) > 0);
         c.windup = able ? Math.min(def.windupTicks, c.windup + 1) : Math.max(0, c.windup - 2);
       }
       let fired = false;
@@ -1643,7 +1720,7 @@ export class Match {
           } else c.burstLeft = 0;
         }
       } else if (fireDown && ready && !c.semiLatch && (!def.windupTicks || c.windup >= def.windupTicks)) {
-        if (def.magazine > 0 && held.mag === 0) this.startReload(c);
+        if (def.magazine > 0 && roundsReady(held) === 0) this.startReload(c);
         else if (spendRound(held)) {
           const mode = def.fireMode ?? 'auto';
           c.fireCooldown = def.fireIntervalTicks;
@@ -1673,6 +1750,8 @@ export class Match {
         if (w.heat === 0) w.overheated = false;
       }
       if (!fired && c.bloom > 0) c.bloom = Math.max(0, c.bloom - (def.recoil?.recover ?? 0.002));
+      // Aim settles back after the recoil along the weapon's curve; the spray recovers.
+      if (!fired) recoilIdle(c.gun, gp.kick, gp.accuracy, def.fireIntervalTicks);
       // Classes: G is the class's ability (sentry, overcharge, cloak) when it has one.
       if (input.buttons & BUTTON_THROW && !frozen && !gun && c.cls && this.classes?.useAbility(c)) {
         // Used.
@@ -1701,29 +1780,55 @@ export class Match {
     if (!w) return;
     c.current = code;
     c.raiseTicks = w.def.raiseTicks;
-    c.reloadTicks = 0;
+    // Swapping always beats a reload: whatever stage it reached stays done (spec §16, §19).
+    this.cancelReload(c);
     c.windup = 0;
     c.burstLeft = 0;
     c.bloom = 0;
+    // The new gun starts a fresh spray; the aim offset still settles on its own.
+    c.gun.shots = 0;
+    c.gun.spray = 0;
+    c.gun.ads = 0;
   }
 
+  /** Start a reload of the held weapon: a staged magazine change or round by round (gunplay.ts). */
   private startReload(c: Combatant): void {
+    if (c.reloadTicks > 0) return;
     const w = heldWeapon(c);
-    if (w.def.magazine === 0 || w.mag >= w.def.magazine || w.reserve === 0 || c.reloadTicks > 0) return;
-    c.reloadTicks = w.def.reloadTicks;
+    const run = beginReload(w.def, w);
+    if (!run) return;
+    c.reload = run;
+    c.reloadTicks = run.total;
+    c.burstLeft = 0;
   }
 
-  private finishReload(c: Combatant): void {
+  /** Stop a reload where it is: the ammunition keeps the stage it reached. */
+  private cancelReload(c: Combatant): void {
+    c.reload = null;
+    c.reloadTicks = 0;
+  }
+
+  /** One applied input of reloading (something else zeroing `reloadTicks` cancels it). */
+  private advanceReload(c: Combatant): void {
+    if (!c.reload || c.reloadTicks === 0) {
+      c.reload = null;
+      c.reloadTicks = 0;
+      return;
+    }
     const w = heldWeapon(c);
-    const take = Math.min(w.def.magazine - w.mag, w.reserve);
-    w.mag += take;
-    w.reserve -= take;
+    c.reload = stepReload(w.def, w, c.reload);
+    c.reloadTicks = c.reload ? Math.max(1, c.reload.total - c.reload.t) : 0;
+  }
+
+  /** Where a shooter's rounds go: the view plus the mechanical recoil offset. */
+  private aimOf(c: Combatant): Vec3 {
+    return viewDirection(c.yaw + c.gun.ry, Math.max(-1.55, Math.min(1.55, c.pitch + c.gun.rp)));
   }
 
   /** Launch a projectile from the eye along the aim (lifted a little for throws, so they arc). */
   private launch(shooter: Combatant, spec: ProjectileSpec, weapon: string, lift = 0, spread = 0): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
-    const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : viewDirection(shooter.yaw, shooter.pitch), spread);
+    const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : this.aimOf(shooter), spread);
     this.projectiles.push({
       id: this.nextProjectileId++,
       owner: shooter.slot,
@@ -1738,12 +1843,24 @@ export class Match {
 
   private fire(shooter: Combatant, def: Trigger, viewTick: number): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
-    const aim = viewDirection(shooter.yaw, shooter.pitch);
-    // Bloom from sustained fire widens the spread; each shot adds more. So does
-    // shooting on the run or in the air; aiming down a scope tightens it, and a
-    // scoped rifle fired from the hip is a guess.
-    const spread = aimSpread(shooter, def, def.spread + (def.alt ? 0 : shooter.bloom) + movementSpread(shooter, def)) * STANCE_SPREAD[stanceOf(shooter.move)];
-    if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
+    const aim = this.aimOf(shooter);
+    const gp = gunplayOf(getWeapon(def.id));
+    let spread: number;
+    if (gp.accuracy && !def.alt) {
+      // Gunplay spread (spec §14): base, movement, air and sustained fire, tightened by stance and the sights.
+      spread = spreadOf(gp.accuracy, shooter.gun, { run: shooter.moveSpeed / PLAYER.runSpeed, airborne: !shooter.move.grounded, stance: STANCE_SPREAD[stanceOf(shooter.move)] });
+      // A scoped rifle fired from the hip is a guess.
+      const zoom = getWeapon(def.id).view.zoomFov;
+      if (zoom && !shooter.npc && shooter.gun.ads < 0.5) spread += zoom < 0.5 ? 0.05 : 0.012;
+    } else {
+      // Bloom from sustained fire widens the spread; each shot adds more. So does
+      // shooting on the run or in the air; aiming down a scope tightens it, and a
+      // scoped rifle fired from the hip is a guess.
+      spread = aimSpread(shooter, def, def.spread + (def.alt ? 0 : shooter.bloom) + movementSpread(shooter, def)) * STANCE_SPREAD[stanceOf(shooter.move)];
+      if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
+    }
+    // Mechanical recoil: this round kicks the aim for the next one.
+    if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, gp.kick);
     if (def.kind === 'projectile' && def.projectile?.disc && !def.alt) {
       this.throwDisc(shooter, def.projectile, def.id);
       return;
@@ -1785,11 +1902,16 @@ export class Match {
       return;
     }
 
+    if (gp.ballistic && !def.alt && def.kind === 'hitscan') {
+      this.fireBullets(shooter, def, gp, eye, aim, spread, viewTick, targets);
+      return;
+    }
+
     const to: Tuple3[] = [];
     const hits: (number | null)[] = [];
     const zones: number[] = [];
     const bodies: number[] = [];
-    const struck: { slot: number; dir: Vec3; zone: HitZone }[] = [];
+    const struck: { slot: number; dir: Vec3; zone: HitZone; dist: number }[] = [];
     const feetOf = (slot: number) => targets.find((t) => t.slot === slot)!.feet;
     const heightOf = (slot: number) => targets.find((t) => t.slot === slot)!.height;
     for (let p = 0; p < def.pellets; p++) {
@@ -1803,7 +1925,7 @@ export class Match {
           .filter((t): t is { slot: number; d: number } => t.d !== null && t.d < wallAt)
           .sort((a, b) => a.d - b.d)
           .slice(0, def.pierce + 1);
-        for (const t of along) struck.push({ slot: t.slot, dir, zone: hitZone(feetOf(t.slot), eye.y + dir.y * t.d, heightOf(t.slot)) });
+        for (const t of along) struck.push({ slot: t.slot, dir, zone: hitZone(feetOf(t.slot), eye.y + dir.y * t.d, heightOf(t.slot)), dist: t.d });
         to.push(tuple(add(eye, scale(dir, wallAt))));
         hits.push(along[0]?.slot ?? null);
         zones.push(along[0] ? hitZone(feetOf(along[0].slot), eye.y + dir.y * along[0].d, heightOf(along[0].slot)) : 0);
@@ -1815,13 +1937,13 @@ export class Match {
       hits.push(shot.hitSlot);
       const zone = shot.hitSlot !== null ? hitZone(feetOf(shot.hitSlot), shot.end.y, heightOf(shot.hitSlot)) : 0;
       zones.push(zone);
-      if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir, zone });
+      if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir, zone, dist: shot.distance });
       else if (world) bodies.push(world.handle);
     }
     this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(zones.some((z) => z) ? { z: zones } : {}), ...(def.alt ? { alt: 1 as const } : {}) });
-    for (const { slot, dir, zone } of struck) {
+    for (const { slot, dir, zone, dist } of struck) {
       const victim = this.actor(slot)!;
-      this.damage(victim, def.damage * zoneMultiplier(zone, def.headshot), shooter, def.id, zone === 1);
+      this.damage(victim, def.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, dist), shooter, def.id, zone === 1);
       if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
       if (def.knockback) this.push(victim, dir, def.knockback);
     }
@@ -2114,6 +2236,252 @@ export class Match {
       keep.push(p);
     }
     this.projectiles = keep;
+  }
+
+  // ---------------------------------------------------------------- bullets (GUNPLAY_SPEC §3-6, §8, §38)
+
+  /**
+   * Fire conventional bullets (weapons with a ballistic spec).
+   *
+   * Lag compensation is designed together with travel (spec §38). The first
+   * NEAR_INSTANT_M metres are a ray resolved in this tick against the world
+   * as the shooter saw it (their view tick), so close range is instant and
+   * fair. The bullet then "catches up" the ticks the input spent on its way
+   * to the server, one tick of flight per recorded tick, against those
+   * rewound positions; after that it flies against the live world. A shooter
+   * therefore leads only for the bullet's travel time, never for latency, and
+   * nobody is ever rewound further than MAX_REWIND_TICKS. Bots and NPCs have
+   * no latency: their bullets fly against the live world from the start.
+   */
+  private fireBullets(shooter: Combatant, def: Trigger, gp: Gunplay, eye: Vec3, aim: Vec3, spread: number, viewTick: number, viewTargets: ShotTargets): void {
+    const bal = gp.ballistic!;
+    const phys = bulletPhysics(bal, this.rules);
+    const lag = shooter.kind === 'human' && viewTick > 0 ? Math.max(0, Math.min(MAX_REWIND_TICKS, this.tick - viewTick)) : 0;
+    // Targets as the shooter saw them k ticks after their view tick (k = lag is now), built once per shot.
+    const byTick: ShotTargets[] = [viewTargets];
+    const seen = (k: number): ShotTargets => (byTick[k] ??= lag > 0 ? this.targetsFor(shooter, this.tick - lag + k) : viewTargets);
+    const to: Tuple3[] = [];
+    const hits: (number | null)[] = [];
+    const zones: number[] = [];
+    const flying: number[] = [];
+    const marks: Tuple3[] = [];
+    const ends: BulletEnd[] = [];
+    let armored = false;
+    for (let p = 0; p < Math.max(1, def.pellets); p++) {
+      const dir = this.spreadDir(aim, spread);
+      const b: Bullet = { owner: shooter.slot, trig: def, origin: eye, pos: { ...eye }, vel: scale(dir, phys.speed), gravity: phys.gravity, drag: phys.drag, travelled: 0, age: 0, energy: bal.energy, scale: 1, pens: 0, rics: 0, marks: [], born: this.tick };
+      // Near range: one straight ray, no time taken.
+      const near = add(eye, scale(dir, Math.min(NEAR_INSTANT_M, def.range)));
+      b.pos = near;
+      let end = this.bulletSegment(b, eye, near, seen(0));
+      // Then this tick's flight, or (for a human) the ticks the shot spent reaching the server,
+      // each against the world as the shooter saw it then.
+      for (let k = 1; !end && k <= Math.max(1, lag); k++) end = this.flyTick(b, seen(k));
+      marks.push(...b.marks);
+      b.marks = [];
+      if (end) {
+        to.push(tuple(end.at));
+        hits.push(end.victim?.slot ?? null);
+        zones.push(end.zone);
+        if (end.victim && end.victim.armor > 0) armored = true;
+        ends.push(end);
+      } else {
+        // Still flying: clients draw it on from here; its landing comes as an `impact` event.
+        to.push(tuple(b.pos));
+        hits.push(null);
+        zones.push(0);
+        flying.push(p);
+        this.bullets.push(b);
+      }
+    }
+    this.pendingEvents.push({
+      e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits,
+      ...(zones.some((z) => z) ? { z: zones } : {}),
+      v: Math.round(phys.speed), g: r3(phys.gravity),
+      ...(flying.length ? { fl: flying } : {}),
+      ...(armored ? { ar: 1 as const } : {}),
+      ...(marks.length ? { pn: marks } : {}),
+    });
+    for (const end of ends) this.bulletHit(shooter, def, end);
+  }
+
+  /** Bullets in flight: one tick each (sub-stepped), against the live world. */
+  private stepBullets(): void {
+    if (!this.bullets.length) return;
+    const keep: Bullet[] = [];
+    const targets = new Map<number, ShotTargets>();
+    for (const b of this.bullets) {
+      if (b.born === this.tick) {
+        keep.push(b);
+        continue;
+      }
+      let list = targets.get(b.owner);
+      if (!list) targets.set(b.owner, (list = this.liveTargets(b.owner)));
+      const end = this.flyTick(b, list);
+      if (!end) {
+        keep.push(b);
+        continue;
+      }
+      const owner = this.actor(b.owner) ?? null;
+      this.pendingEvents.push({
+        e: 'impact', s: b.owner, w: b.trig.id, from: tuple(b.origin), to: tuple(end.at), hit: end.victim?.slot ?? null,
+        ...(end.zone ? { z: end.zone } : {}),
+        ...(end.victim && end.victim.armor > 0 ? { ar: 1 as const } : {}),
+        ...(b.marks.length ? { pn: b.marks } : {}),
+        ...(end.gone ? { gone: 1 as const } : {}),
+      });
+      this.bulletHit(owner, b.trig, end);
+    }
+    this.bullets = keep;
+  }
+
+  /** Living actors a bullet of `owner`'s can hit, where they are now (allies are passed through, as with every shot). */
+  private liveTargets(owner: number): ShotTargets {
+    const shooter = this.actor(owner);
+    if (shooter) return this.targetsFor(shooter, 0);
+    return this.actors()
+      .filter((o) => o.alive && o.slot !== owner)
+      .map((o) => ({ slot: o.slot, feet: o.move.pos, height: bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size }));
+  }
+
+  /** One tick of flight (BULLET_SUBSTEPS segments). Returns where it ended, or null while it flies on. */
+  private flyTick(b: Bullet, targets: ShotTargets): BulletEnd | null {
+    const dt = TICK_DT / BULLET_SUBSTEPS;
+    for (let i = 0; i < BULLET_SUBSTEPS; i++) {
+      const seg = flyBullet(b, b.gravity, b.drag, dt);
+      b.age += dt;
+      const end = this.bulletSegment(b, seg.from, seg.to, targets);
+      if (end) return end;
+      if (b.travelled >= b.trig.range || b.age >= BULLET_LIFETIME || b.pos.y < this.killY) return { at: { ...b.pos }, victim: null, zone: 0, damage: 0, dir: normalize(b.vel), gone: true };
+    }
+    return null;
+  }
+
+  /**
+   * Test the straight piece of flight a → c against players and the world.
+   * Returns the bullet's end when it stops (a body, or a surface it can't get
+   * through). Otherwise the bullet is moved on: to c, or out of the far side
+   * of a surface it went through (energy-based penetration, spec §8), or off a
+   * surface it glanced off (rare, bounded ricochets).
+   */
+  private bulletSegment(b: Bullet, a: Vec3, c: Vec3, targets: ShotTargets): BulletEnd | null {
+    const dx = c.x - a.x;
+    const dy = c.y - a.y;
+    const dz = c.z - a.z;
+    const len = Math.hypot(dx, dy, dz);
+    if (len < 1e-6) return null;
+    const u = { x: dx / len, y: dy / len, z: dz / len };
+    const wall = this.physics.raycastNormal(a, u, len);
+    let best = wall?.dist ?? Infinity;
+    let victim: ShotTargets[number] | null = null;
+    // Only bodies near the segment are worth the capsule test.
+    const mx = (a.x + c.x) / 2;
+    const mz = (a.z + c.z) / 2;
+    const reach = len / 2 + 2;
+    for (const t of targets) {
+      if (Math.abs(t.feet.x - mx) > reach || Math.abs(t.feet.z - mz) > reach) continue;
+      const d = rayCapsule(a, u, t.feet, t.radius, t.height);
+      if (d !== null && d <= len && d < best) {
+        best = d;
+        victim = t;
+      }
+    }
+    if (victim) {
+      const at = add(a, scale(u, best));
+      const zone = hitZone(victim.feet, at.y, victim.height);
+      const gp = gunplayOf(getWeapon(b.trig.id));
+      const damage = b.trig.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, b.travelled + best) * b.scale;
+      return { at, victim: this.actor(victim.slot) ?? null, zone, damage, dir: u };
+    }
+    if (wall) {
+      const at = add(a, scale(u, wall.dist));
+      const mat = this.materialAt(wall.handle);
+      const spec = MATERIAL_BALLISTICS[mat];
+      // The round hurts what it strikes: vehicles, turrets and sandbags as any shot does; doors, crates and
+      // glass by their material (glass shatters, concrete barely chips).
+      const owner = this.actor(b.owner) ?? null;
+      const raw = owner ? this.boosted(owner, b.trig.damage * b.scale) : b.trig.damage * b.scale;
+      if (!this.damageMountBody(wall.handle, raw, owner) && spec.destruction > 0) this.scenario.damageBody(wall.handle, raw * spec.destruction, b.owner);
+      // Ricochet: only grazing hits on hard surfaces, at most once, and the round comes off weakened.
+      const n = wall.normal;
+      const grazing = Math.asin(Math.min(1, Math.abs(u.x * n.x + u.y * n.y + u.z * n.z)));
+      if (b.rics < MAX_RICOCHETS && spec.ricochet > 0 && grazing < RICOCHET_MAX_ANGLE && ricochets(mat, grazing, this.rng())) {
+        const vn = b.vel.x * n.x + b.vel.y * n.y + b.vel.z * n.z;
+        b.vel = scale({ x: b.vel.x - 2 * vn * n.x, y: b.vel.y - 2 * vn * n.y, z: b.vel.z - 2 * vn * n.z }, 0.6);
+        b.pos = add(at, scale(n, 0.02));
+        b.scale *= 0.5;
+        b.energy *= 0.4;
+        b.rics++;
+        b.travelled += wall.dist;
+        b.marks.push(tuple(at));
+        return null;
+      }
+      // Penetration: energy against what is in the way, how thick it is.
+      if (b.pens < MAX_PENETRATIONS && this.rules.ballistics !== 'arcade') {
+        const exit = this.exitPoint(at, u);
+        if (exit) {
+          const thick = distance(at, exit);
+          const left = penetrate(b.energy, mat, thick);
+          if (left !== null) {
+            const kept = left / b.energy;
+            b.energy = left;
+            b.vel = scale(b.vel, Math.sqrt(kept));
+            b.scale *= kept;
+            b.pens++;
+            b.travelled += wall.dist + thick;
+            b.pos = add(exit, scale(u, 0.01));
+            b.marks.push(tuple(at));
+            return null;
+          }
+        }
+      }
+      return { at, victim: null, zone: 0, damage: 0, dir: u };
+    }
+    b.travelled += len;
+    return null;
+  }
+
+  /** Where a ray entering a surface at `at` comes out (null: thicker than a metre or so, or solid all the way). */
+  private exitPoint(at: Vec3, u: Vec3): Vec3 | null {
+    const probe = 1.2;
+    const start = add(at, scale(u, probe));
+    const back = this.physics.raycastHit(start, scale(u, -1), probe - 0.005);
+    if (!back || back.dist <= 0.001) return null;
+    return add(start, scale(u, -back.dist));
+  }
+
+  /** What a collider is made of, ballistically (gunplay.ts). */
+  private materialAt(handle: number): BallisticMaterial {
+    if (this.mountBodies.has(handle)) return 'metal';
+    if (this.covers.some((c) => c.body.handle === handle)) return 'soil';
+    const i = this.scenario.bodies.entityAt(handle);
+    if (i !== undefined) {
+      const e = this.map.entities[i];
+      return e ? entityMaterial(e) : 'concrete';
+    }
+    const box = this.physics.boxAt(handle);
+    if (!box) return 'concrete';
+    if (box.kind === 'prop') {
+      const e = this.entityById(box.sourceId);
+      return e ? entityMaterial(e) : 'wood';
+    }
+    // Free blocks and Style Pack pieces carry their own material; tile structure is structural.
+    return box.surface ? surfaceMaterial(box.surface.material) : 'concrete';
+  }
+
+  private entityIds?: Map<string, MapDocument['entities'][number]>;
+  private entityById(id: string): MapDocument['entities'][number] | undefined {
+    this.entityIds ??= new Map(this.map.entities.map((e) => [e.id, e]));
+    return this.entityIds.get(id);
+  }
+
+  /** A bullet struck someone: damage, status and push. */
+  private bulletHit(shooter: Combatant | null, def: Trigger, end: BulletEnd): void {
+    const victim = end.victim;
+    if (!victim) return;
+    this.damage(victim, end.damage, shooter, def.id, end.zone === 1);
+    if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
+    if (def.knockback) this.push(victim, end.dir, def.knockback * (end.damage / Math.max(1, def.damage)));
   }
 
   /** A lying spear goes to the first living player close by whose spear is thrown. */
@@ -3014,6 +3382,8 @@ export class Match {
     if (!victim.alive || this.phase !== 'playing') return;
     if (this.mode?.blocksDamage?.(victim, attacker)) return;
     if (this.classes) amount = this.classes.adjustDamage(victim, attacker, weapon, amount);
+    // Lethality (spec §10): one systemic multiple, so every weapon keeps its identity.
+    amount *= lethalityScale(this.rules);
     if (amount <= 0) return;
     // No friendly fire; hazards (no attacker) and your own grenades still hurt.
     if (attacker && attacker !== victim && !this.hostile(attacker, victim)) {
@@ -3217,6 +3587,8 @@ export class Match {
     c.breath = 0;
     c.chill = c.bloom = c.windup = c.burstLeft = 0;
     c.semiLatch = false;
+    c.gun = newGunState();
+    c.reload = null;
     c.weapons = new Map();
     for (const id of this.rules.weapons === 'spears' ? ['core.spear'] : this.rules.weapons === 'discs' ? [ARENA_DISC] : this.rules.startingWeapons) {
       const def = getWeapon(id);
@@ -3262,6 +3634,7 @@ export class Match {
     this.phase = 'intermission';
     this.phaseEndTick = this.tick + this.rules.intermissionTicks;
     this.projectiles = [];
+    this.bullets = [];
     this.zones = [];
     if (this.teams && !outcome) {
       // Team Deathmatch: the highest team score wins; a tie at the top is a draw (logic can still name a player, whose team wins).
@@ -3497,6 +3870,8 @@ export class Match {
       ...(c.throwable ? { gr: [THROWABLES.indexOf(c.throwable.kind), c.throwable.count] as [number, number] } : {}),
       rl: c.reloadTicks,
       rs: c.raiseTicks,
+      ...(c.reload && c.reloadTicks > 0 ? { rd: [RELOAD_KINDS.indexOf(c.reload.kind), c.reload.t, c.reload.total, c.reload.stage] as [number, number, number, number] } : {}),
+      ...([...c.weapons.values()].some((w) => w.unchambered) ? { uc: [...c.weapons.entries()].filter(([, w]) => w.unchambered).map(([code]) => code) } : {}),
       sp: c.speedTicks,
       dm: c.damageTicks,
       ...(c.jetFuel !== null ? { jp: c.jetFuel } : {}),
@@ -3725,12 +4100,16 @@ function spendRound(w: WeaponState): boolean {
     return true;
   }
   if (w.def.magazine > 0) {
-    if (w.mag === 0) return false;
+    if (w.mag === 0 || w.unchambered) return false;
     w.mag--;
   }
   return true;
 }
 
+/** Body-zone damage multiple for a weapon: head, torso or legs (spec §11). */
+function zoneScale(gp: Gunplay, zone: HitZone): number {
+  return zone === 1 ? gp.head : zone === 2 ? gp.legs : 1;
+}
 /** Movement multiplier from status effects (frozen solid, chilled, slowed) and the mode (carrying a flag). */
 function statusSpeed(c: Combatant): number {
   if (c.frozenTicks > 0) return 0;

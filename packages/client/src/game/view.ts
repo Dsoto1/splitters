@@ -33,6 +33,7 @@ import {
   WEAPONS_BY_SLOT,
   weaponByCode,
   getWeapon,
+  gunplayOf,
   type MapDocument,
   type PickupEntity,
   type Vec3,
@@ -450,13 +451,14 @@ export class GameView {
    * damage, more on a head), or a hole, sparks and dust on a wall. Bodies
    * lying in the way take the hit too and are knocked about.
    */
-  shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean }): void {
+  shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean; speed?: number; time?: number; tracer?: boolean; land?: boolean }): void {
     if (o.def?.view.beam) {
       this.addShot(o.def, o.muzzle ?? o.eye, o.to, o.color);
       this.landRound(o);
       return;
     }
-    this.impacts.fire(o.muzzle ?? { x: o.eye.x, y: o.eye.y - 0.1, z: o.eye.z }, o.to, o.color, () => this.landRound(o), o.local ? 1.5 : 0);
+    // Bullets fly at their real speed (and only tracer rounds draw); `land: false` when the server's impact will land it.
+    this.impacts.fire(o.muzzle ?? { x: o.eye.x, y: o.eye.y - 0.1, z: o.eye.z }, o.to, o.color, o.land === false ? undefined : () => this.landRound(o), o.local ? 1.5 : 0, { ...(o.speed ? { speed: o.speed } : {}), ...(o.tracer === false ? { tracer: false } : {}) });
   }
 
   /** What happens where a round lands (see shotVisual). */
@@ -683,7 +685,9 @@ export class GameView {
   /** Recoil kick and muzzle flash for a predicted shot. */
   kick(def: WeaponDefinition): void {
     const rail = def.id === 'core.railgun';
-    this.kickAmount = Math.min(1, this.kickAmount + (def.kind === 'melee' ? 0.9 : rail || def.pellets > 1 || def.projectile ? 1 : 0.45));
+    // Visual recoil (GUNPLAY_SPEC §29): the weapon's own kick strength when it has one; the camera's real climb is mechanical.
+    const visual = gunplayOf(def).kick?.visual;
+    this.kickAmount = Math.min(1, this.kickAmount + (def.kind === 'melee' ? 0.9 : visual !== undefined ? Math.min(1, visual * 0.75) : rail || def.pellets > 1 || def.projectile ? 1 : 0.45));
     if (rail) {
       // The rail slams back with a big blue-white flash.
       this.flashUntil = performance.now() + 80;

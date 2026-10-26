@@ -669,15 +669,32 @@ export class Hud {
     this.marker.querySelector('span')!.textContent = `${Math.round(at.dist)} m`;
   }
 
-  /** Hit confirmation on the crosshair (red and longer for a head hit). */
-  hit(head = false): void {
+  /**
+   * Hit confirmation on the crosshair, told apart by shape (GUNPLAY_SPEC §21):
+   * a diamond for a body hit, a bigger red one for the head, a blue square
+   * when armor soaked it. `true` / `false` are head / body (older callers).
+   */
+  hit(kind: 'body' | 'head' | 'armor' | boolean = 'body'): void {
+    const k = kind === true ? 'head' : kind === false ? 'body' : kind;
+    // A kill marker still showing wins over the hit that caused it.
+    if (this.hitmarker.classList.contains('kill')) return;
     // Restart the pop animation on every hit.
-    this.hitmarker.classList.remove('on');
+    this.hitmarker.classList.remove('on', 'head', 'armor');
     void this.hitmarker.offsetWidth;
     this.hitmarker.classList.add('on');
-    this.hitmarker.classList.toggle('head', head);
+    if (k !== 'body') this.hitmarker.classList.add(k);
     clearTimeout(this.hitTimer);
-    this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on', 'head'), head ? 220 : 140);
+    this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on', 'head', 'armor'), k === 'head' ? 220 : 140);
+  }
+
+  /** Kill confirmation: a sharp X that punches in, bigger and brighter with each kill in a row (`multi`, from 1). */
+  killConfirm(multi: number): void {
+    this.hitmarker.classList.remove('on', 'head', 'armor', 'kill');
+    void this.hitmarker.offsetWidth;
+    this.hitmarker.dataset.multi = String(Math.min(4, Math.max(1, multi)));
+    this.hitmarker.classList.add('on', 'kill');
+    clearTimeout(this.hitTimer);
+    this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on', 'kill'), 380 + Math.min(3, multi - 1) * 60);
   }
 
   /**

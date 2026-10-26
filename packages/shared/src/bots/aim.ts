@@ -1,6 +1,7 @@
 import { angleDelta, clamp, lookAngles, type Vec3 } from '../math.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import type { WeaponDefinition } from '../sim/weapons.ts';
+import { BULLET_GRAVITY, NEAR_INSTANT_M, gunplayOf } from '../sim/gunplay.ts';
 import type { BotDifficulty, BotProfile } from './profile.ts';
 
 /**
@@ -216,12 +217,18 @@ export class AimModel {
     const dist = Math.hypot(seen.x - ctx.eye.x, seen.y + up - ctx.eye.y, seen.z - ctx.eye.z);
     // Projectiles: lead a moving target a little (never the full flight time).
     if (proj && proj.speed > 0) lead += (dist / proj.speed) * (0.35 + 0.5 * skill.prediction);
+    // Bullets travel too (GUNPLAY_SPEC §40): skilled bots lead by most of the flight time and hold over
+    // for the drop; weak ones barely do, so long shots at moving targets genuinely miss.
+    const bal = ctx.weapon ? gunplayOf(ctx.weapon).ballistic : null;
+    const flight = bal ? Math.max(0, dist - NEAR_INSTANT_M) / bal.velocity : 0;
+    if (bal) lead += flight * (skill.leadSkill ?? 0.5);
     const point = { x: seen.x + v.x * lead, y: seen.y + up, z: seen.z + v.z * lead };
     const want = lookAngles(ctx.eye, point);
     if (proj && proj.gravity > 0) {
       const t = dist / proj.speed;
       want.pitch += Math.atan2(0.5 * proj.gravity * t * t, dist);
     }
+    if (bal) want.pitch += Math.atan2(0.5 * BULLET_GRAVITY * bal.gravityScale * flight * flight, dist) * (skill.dropComp ?? 0.5);
     return { yaw: want.yaw + this.errYaw, pitch: want.pitch + this.errPitch, dist, halfAngle: Math.atan2(PLAYER.radius, Math.max(1, dist)) };
   }
 
@@ -264,7 +271,13 @@ export class AimModel {
       // Wider guns and longer range: shorter bursts.
       const spreadRatio = (def.spread + (def.recoil?.maxBloom ?? 0) * 0.5) / Math.max(0.005, sol.halfAngle);
       const shrink = sol.dist > 30 || spreadRatio > 1.5 ? 1 : 0;
-      const shots = Math.max(2, Math.round(lo + this.rng() * (hi - lo)) - shrink);
+      let shots = Math.max(2, Math.round(lo + this.rng() * (hi - lo)) - shrink);
+      // Burst discipline: disciplined bots let go once the spray starts to widen, sloppy ones hold on well past it.
+      const tight = gunplayOf(def).accuracy?.tight;
+      if (tight !== undefined) {
+        const discipline = this.difficulty.aim.discipline ?? 0.5;
+        shots = discipline >= 0.5 ? Math.min(shots, tight + 1) : shots + Math.round((1 - discipline) * 6);
+      }
       this.burstLeft = shots * def.fireIntervalTicks;
     }
     this.burstLeft--;

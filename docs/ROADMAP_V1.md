@@ -72,6 +72,10 @@ sounds (needs new CC0 sounds and a grip pose).
 | 13 | ✅ **[feature]** Clan tags on names (Options) |
 | 14 | ✅ **[feature]** Emotes (dance etc.) and quick-message pop-ups, with a server setting to turn them off — B: messages, N: dance; arcade "Emotes & messages" |
 | 15 | ✅ **[feature]** Squad/team support: UAV pickup; kill streaks (3 UAV, 5 Supply Pulse, 7 Counter-UAV, 9 Airstrike); pings (T); "Follow me!" / "Hold here!" order your team's bots; respawn beside a teammate out of the fight (arcade toggles for streaks and squad spawns) |
+| 16 | ✅ **[feature]** Gunplay G0 ([GUNPLAY_SPEC.md](GUNPLAY_SPEC.md), gaps and plan in [GUNPLAY_GAPS.md](GUNPLAY_GAPS.md)): ballistic bullets (near range instant, velocity, drop, lead, lag compensation designed with travel), deterministic split recoil with recovery and counter-pull, spread model, staged / shell-by-shell interruptible reloads, equip times, falloff and per-family body multipliers, distinct hit/armor/head/kill feedback with a multi-kill rhythm, Heavy Revolver, benchmark retune |
+| 17 | ✅ **[feature]** Gunplay G1 core: material classes, energy-based penetration, rare ricochets; G5 start: Lethality and Ballistics in Arcade "more rules"; G4 start: bots lead, hold over, fight recoil and keep burst discipline by skill |
+| 18 | ✅ **[map]** Training Range (`training_range`): static boards at 10–200 m, moving boards, penetration panels, recoil wall |
+| 19 | ⏳ **[feature]** Gunplay G2–G6 (archetype retunes, network validation and killcam, creator combat settings, exotic ammo): see GUNPLAY_GAPS.md |
 
 ## Sprint 3 — AI
 

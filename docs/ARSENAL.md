@@ -18,6 +18,75 @@ All gameplay numbers live in `packages/shared/src/sim/weapons.ts` and
 Right mouse fires a second trigger when the held weapon has one, otherwise it
 zooms.
 
+## Gunplay (GUNPLAY_SPEC.md; status in GUNPLAY_GAPS.md)
+
+The gunplay model lives in `sim/gunplay.ts`, driven by each
+`WeaponDefinition`: a `family` gives defaults and the weapon's own
+`ballistic`, `accuracy`, `kick`, `reload`, `falloff`, `headshot` and
+`legshot` override them. Server, client prediction and bots run the same
+code.
+
+- **Bullets fly.** Conventional guns fire ballistic bullets: the first 8 m
+  are an instant ray, then the round flies at its muzzle velocity, drops
+  under gravity and is integrated in two sub-steps a tick. Lag compensation
+  rewinds targets for the near ray and for the ticks the shot spent reaching
+  the server, then the bullet flies against the live world: you lead for
+  travel, never for latency. Beams, the railgun, the gilded pistol and
+  shotgun pellets stay hitscan; rockets, grenades and plasma are slow
+  projectiles as before.
+- **Recoil is mechanical and learnable.** Every round kicks the real aim by
+  the weapon's deterministic pattern (with a small, bounded, deterministic
+  sideways wobble). Let go and the aim settles back to where the spray
+  started along the weapon's own curve. Pull down against it and the recoil
+  is used up instead of turning your view, so it never overshoots. The
+  camera shows it; the viewmodel kick and a light shake are visual only.
+- **Spread** = base + movement + air + sustained fire after the first
+  `tight` rounds, capped, then scaled by stance and the sights (accuracy
+  blends in while the sights come up; firing is never blocked).
+- **Reloads** are staged: magazine out (its rounds go back to reserve; a
+  tactical reload keeps one chambered), new magazine in, then the bolt on an
+  empty reload. Shotguns and the revolver load round by round and each round
+  can be fired straight away. Firing (with a round ready), swapping, sprinting
+  off and using something all stop a reload where it is. Tactical reloads are
+  quicker than empty ones.
+- **Damage** falls off with distance by family and body zones multiply by
+  family (shotgun heads ×1.25, precision ×3). Lethality (arcade / standard /
+  tactical) scales all of it; Ballistics (arcade / standard / advanced)
+  scales velocity and drop.
+- **Materials.** Free blocks, props and destructibles are glass, wood,
+  drywall, brick, concrete, metal and so on; rounds go through thin cover
+  with what energy they have left and come out weaker, and rarely glance off
+  metal at a grazing angle. Tile structure counts as concrete.
+- **Feedback.** Body hits draw a diamond, head hits a bigger red one with a
+  ding, armor a blue square with a clank, kills a sharp X with a crunchy
+  confirmation that climbs in pitch with each kill in a row. Tracers fly at
+  real speed and only on tracer rounds (`tracerEvery`, plus the magazine's
+  last rounds).
+
+**Benchmark weapons** (spec §51):
+
+| | Service Pistol | Heavy Revolver | SMG | Assault Rifle |
+|---|---|---|---|---|
+| Damage (body) | 24 | 70 (head ×1.75 kills) | 11 | 18 |
+| Rate | 360 rpm | 106 rpm, semi | 900 rpm | 600 rpm |
+| Magazine | 12 | 6 | 32 | 30 |
+| Velocity | 375 m/s | 300 m/s | 400 m/s | 820 m/s |
+| First kick | 0.012 rad | 0.10 rad | 0.004 rad, 0.009 from round 5 | 0.010, then 0.0085 per round |
+| Recovery | fast | slow (≈0.6 s) | very fast | medium |
+| Spread | true first shot | true first shot | tight 4 rounds, then +0.0045/round | tight 3, then +0.0012 |
+| Reload tactical / empty | 0.83 / 1.1 s | round by round: 0.3 s + 0.27 s a round + 0.17 s | 0.9 / 1.2 s | 1.4 / 1.8 s |
+| Equip | 0.15 s | 0.27 s | 0.2 s | 0.37 s |
+| Falloff | 18→45 m to 65% | 25→60 m to 70% | 12→35 m to 55% (steep) | 30→80 m to 75% |
+
+The **Heavy Revolver** (slot 2, pickup `core.weapon_revolver`) uses the
+Quaternius Ultimate Gun Pack revolver (CC0).
+
+**Training Range** (`maps/training_range.json`, built by
+`packages/server/src/tools/maps/training_range.ts`): boards at 10, 25, 50,
+100 and 200 m, boards sliding side to side at 25, 50 and 100 m, penetration
+panels (glass, drywall, planks, sheet metal, brick, concrete) with a board
+behind each, and a concrete recoil wall.
+
 **Ammo pickups.** The general Ammo Box gives half a pickup to every weapon and
 one underbarrel grenade. Typed boxes (Light, Rifle, Shells, Sniper, Explosives,
 Energy Cells; told apart by their stripe colour) fill every weapon of that type
@@ -53,6 +122,7 @@ recipes.
 |---|---|---|
 | 2 | Pulse Pistol | Semi-auto energy bolts (cells) |
 | 2 | Hand Cannon | Semi-auto, 58 damage, heavy recoil, pushes the target |
+| 2 | Heavy Revolver | Six rounds, 70 damage, savage kick, loaded round by round |
 | 2 | Gilded Pistol | One shot, one kill; slow reload, rare pickup |
 | 2 | Flare Gun | Arcing flare that sticks to what it hits, burns and lights oil |
 | 2 | Machine Pistol | Very fast, blooms wide |
@@ -93,7 +163,8 @@ blast that throws people about; pickup `core.dynamite`).
 
 - **Triggers.** `fireMode` is auto, semi or burst. `windupTicks` adds spin-up
   or charge (`windupResets` charges every shot). `heat` replaces ammo.
-  `recoil` adds camera kick on the client and spread bloom on the server.
+  `recoil` (weapons without a gunplay family) is a deterministic camera climb
+  plus spread bloom on the server; family weapons use `kick` and `accuracy`.
 - **Hitscan.** `pierce`, `chain` (jumps, range, falloff), `status` and
   `knockback`.
 - **Projectiles.** `pellets` (several projectiles per shot), `bounce` and

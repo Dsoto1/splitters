@@ -10,6 +10,7 @@ import {
   THROWABLE_DEFS,
   WEAPONS_BY_SLOT,
   getWeapon,
+  gunplayOf,
   hitZone,
   initPhysics,
   lookAngles,
@@ -87,9 +88,12 @@ describe('hit zones and spread', () => {
     const { match, d, a, others } = duel([[30, 0, 4]], 'core.sniper');
     const target = others[0]!;
     const head = lookAngles(eye(a.move.pos), { x: target.move.pos.x, y: target.move.pos.y + 1.68, z: target.move.pos.z });
+    // Bring the scope up first: accuracy blends in over the ADS time.
+    d.run(gunplayOf(getWeapon('core.sniper')).accuracy!.adsTicks, () => d.input(a, { yaw: head.yaw, pitch: head.pitch, buttons: BUTTON_ZOOM }));
     const ev = d.run(3, () => d.input(a, { yaw: head.yaw, pitch: head.pitch, buttons: BUTTON_FIRE | BUTTON_ZOOM }));
-    const shot = ev.find((e) => e.e === 'shot');
-    expect(shot && shot.e === 'shot' && shot.z?.[0]).toBe(1);
+    // The round flies 30 m (a tick or two), so where it landed comes in the shot or the impact that follows.
+    const landed = ev.find((e) => e.e === 'impact' || (e.e === 'shot' && !e.fl));
+    expect(landed && (landed.e === 'impact' ? landed.z : landed.e === 'shot' ? landed.z?.[0] : null)).toBe(1);
     expect(ev.some((e) => e.e === 'kill' && e.hs === 1)).toBe(true);
     void match;
 
@@ -97,18 +101,20 @@ describe('hit zones and spread', () => {
     const t2 = legs.others[0]!;
     const low = lookAngles(eye(legs.a.move.pos), { x: t2.move.pos.x, y: t2.move.pos.y + 0.45, z: t2.move.pos.z });
     legs.d.run(1, () => legs.d.input(legs.a, { yaw: low.yaw, pitch: low.pitch, buttons: BUTTON_FIRE }));
-    expect(100 - t2.health).toBeCloseTo(getWeapon('core.rifle').damage * 0.75, 5);
+    expect(100 - t2.health).toBeCloseTo(getWeapon('core.rifle').damage * gunplayOf(getWeapon('core.rifle')).legs, 5);
   });
 
   it('a sniper rifle fired from the hip sprays; through the scope it is dead on', () => {
     const shots = (buttons: number) => {
       const { d, aim, a, others } = duel([[30, 0, 4]], 'core.sniper');
+      // Scoped: bring the scope up before the first shot (accuracy blends in over the ADS time).
+      if (buttons & BUTTON_ZOOM) d.run(25, () => aim({ buttons: BUTTON_ZOOM }));
       let hits = 0;
       let fired = 0;
       for (let i = 0; i < 12; i++) {
         heldWeapon(a).mag = 5;
         const ev = d.run(80, () => aim({ buttons }));
-        hits += ev.filter((e) => e.e === 'shot' && e.hit[0] !== null).length;
+        hits += ev.filter((e) => (e.e === 'shot' && e.hit[0] !== null) || (e.e === 'impact' && e.hit !== null)).length;
         fired += ev.filter((e) => e.e === 'shot').length;
         // Keep the target standing so every shot counts.
         others[0]!.health = 100;

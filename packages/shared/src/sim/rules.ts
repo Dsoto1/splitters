@@ -99,6 +99,17 @@ export interface MatchRules {
   raceCombat?: boolean;
   /** Race: laps of a circuit (absent: the track's own). */
   raceLaps?: number;
+  /**
+   * Lethality (GUNPLAY_SPEC §10): one systemic damage multiple so every
+   * weapon keeps its identity. Arcade ≈ 140% effective health, tactical ≈ 72%.
+   * Absent: standard.
+   */
+  lethality?: 'arcade' | 'standard' | 'tactical';
+  /**
+   * Ballistics (GUNPLAY_SPEC §5): arcade bullets fly faster and barely drop,
+   * advanced ones are slower and drop more. Absent: standard.
+   */
+  ballistics?: 'arcade' | 'standard' | 'advanced';
 }
 
 /** Weapons-only rules (spears, discs) take away weapon, ammo and grenade pickups. */

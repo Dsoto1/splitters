@@ -179,6 +179,13 @@ export class SessionAudio {
   }
 
   /** Server events. `poses` gives remote positions for events that carry none. */
+  /** Your hit, by sound (GUNPLAY_SPEC §21): a bright ding for the head, a dull clank for armor, the tick for flesh. */
+  private hitSound(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
+    if (!hits.some((h) => h !== null && h !== undefined)) return;
+    const head = zones?.some((z, i) => z === 1 && hits[i] !== null && hits[i] !== undefined) ?? false;
+    this.audio.play(head ? 'ui.hit.head' : armor ? 'ui.hit.armor' : 'ui.hit');
+  }
+
   event(ev: GameEvent, poses: () => readonly RemotePose[], now: number): void {
     const me = this.localSlot();
     const poseOf = (slot: number): Vec3 | undefined => {
@@ -196,6 +203,8 @@ export class SessionAudio {
         const def = getWeapon(ev.w);
         const perVictim = new Map<number, { at: Tuple3; pellets: number; head: boolean }>();
         ev.to.forEach((to, i) => {
+          // Rounds still in the air sound where they land (their impact event).
+          if (ev.fl?.includes(i)) return;
           const hit = ev.hit[i];
           if (hit !== null && hit !== undefined) {
             const v = perVictim.get(hit);
@@ -212,7 +221,20 @@ export class SessionAudio {
           this.audio.play(heavy ? 'impact.heavy' : 'impact.body', { at, gain: victim === me ? 0.6 : 1 });
           this.audio.play('impact.thud', { at, gain: 0.8 });
         }
-        if (mine && ev.hit.some((h) => h !== null)) this.audio.play('ui.hit');
+        if (mine) this.hitSound(ev.hit, ev.z, !!ev.ar);
+        break;
+      }
+      case 'impact': {
+        // A bullet that was in flight landed (no shot sound: that played when it was fired).
+        if (ev.gone) break;
+        const def = getWeapon(ev.w);
+        if (ev.hit !== null) {
+          const head = ev.z === 1;
+          const at = ev.hit === me ? undefined : tuple(ev.to);
+          this.audio.play(head || def.damage >= 45 ? 'impact.heavy' : 'impact.body', { at, gain: ev.hit === me ? 0.6 : 1 });
+          this.audio.play('impact.thud', { at, gain: 0.8 });
+        } else this.audio.play('impact.world', { at: tuple(ev.to) });
+        if (ev.s === me) this.hitSound([ev.hit], ev.z !== undefined ? [ev.z] : undefined, !!ev.ar);
         break;
       }
       case 'melee': {
@@ -261,9 +283,12 @@ export class SessionAudio {
         else if (at) this.audio.play('death', { at });
         if (at && this.bloodOn()) this.audio.play('blood.splat', { at });
         if (ev.killer === me && ev.victim !== me) {
-          this.audio.play('ui.kill');
           const t = now / 1000;
           this.recentKills = [...this.recentKills.filter((k) => t - k < MULTI_KILL_WINDOW), t];
+          // Crunchy kill confirmation (GUNPLAY_SPEC §22): short, and each kill in a row climbs a step, so a multi-kill is a rhythm.
+          const step = Math.min(4, this.recentKills.length) - 1;
+          this.audio.play('ui.kill.confirm', { rate: 1 + step * 0.12 });
+          this.audio.play('ui.kill', { rate: 1 + step * 0.122, gain: 0.8 });
           if (this.recentKills.length === 2) this.audio.play('announce.multikill');
         }
         break;

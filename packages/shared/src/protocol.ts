@@ -68,6 +68,10 @@ export interface PrivateState {
   /** Ticks left on reload / weapon raise (0 = ready). */
   rl: number;
   rs: number;
+  /** The reload in progress: [kind (RELOAD_KINDS index), inputs into it, total, stage reached], for prediction. */
+  rd?: [number, number, number, number];
+  /** Weapon codes with a magazine in but no round chambered (an empty reload stopped early). */
+  uc?: number[];
   /** Remaining inputs of speed / damage boost. */
   sp: number;
   dm: number;
@@ -123,7 +127,15 @@ export const POWERUP_DAMAGE_BIT = 2;
 
 export type GameEvent =
   /** One trigger pull: `to`/`hit` hold one entry per pellet (one for most weapons). */
-  | { e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Body zone per hit (0 body, 1 head, 2 legs), parallel to `hit`. */ z?: number[]; /** Second trigger. */ alt?: 1 }
+  | {
+      e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Body zone per hit (0 body, 1 head, 2 legs), parallel to `hit`. */ z?: number[]; /** Second trigger. */ alt?: 1;
+      /** Ballistic bullets: muzzle speed (m/s) and gravity (m/s²) they fly with, for client tracers. */ v?: number; g?: number;
+      /** Pellet indices still in flight (their `to` is where they were when this was sent; an `impact` event follows). */ fl?: number[];
+      /** A hit landed on armor. */ ar?: 1;
+      /** Surfaces rounds went through or glanced off (drawn as impacts). */ pn?: Tuple3[];
+    }
+  /** A bullet that was in flight landed: on a player (`hit`), a surface, or nowhere (`gone`, out of range). */
+  | { e: 'impact'; s: number; w: string; from: Tuple3; to: Tuple3; hit: number | null; z?: number; ar?: 1; pn?: Tuple3[]; gone?: 1 }
   /** Chain lightning: the points it jumped through, from the muzzle on. */
   | { e: 'arc'; s: number; pts: Tuple3[] }
   /** Someone got into a seat (seat ≥ 0) or out of one (seat -1); `m` is the mount's map entity index. */

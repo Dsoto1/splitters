@@ -14,6 +14,8 @@ import {
   BODY_SIZES,
   bodySizeOf,
   CORE_WEAPONS,
+  gunplayOf,
+  traceBullet,
   THROWABLE_DEFS,
   predictThrow,
   mapLadders,
@@ -96,7 +98,9 @@ import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 /** Match events that only make effects, skipped while the tab is hidden. */
 /** Field of view while aiming down the sights, as a fraction of the normal one. */
 const ADS_FOV = 0.72;
-const HIDDEN_SKIP = new Set(['shot', 'melee', 'arc', 'explode', 'crash', 'throw']);
+const HIDDEN_SKIP = new Set(['shot', 'impact', 'melee', 'arc', 'explode', 'crash', 'throw']);
+/** Kills this close together escalate the kill marker (and its sound). */
+const MULTI_KILL_MS = 4000;
 
 export interface SessionOptions {
   engine: AbstractEngine;
@@ -159,6 +163,17 @@ export class GameSession {
   /** Last known health fraction of every player and NPC, for the target bar. */
   private readonly hp = new Map<number, number>();
   private rules: MatchRules | null = null;
+  /** Your recent kills (ms), for the multi-kill rhythm of the kill marker. */
+  private killTimes: number[] = [];
+
+  /** Hit confirmation on the crosshair for your shot: head, armor or body, told apart by shape (and by sound, in SessionAudio). */
+  private hitFeedback(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
+    const target = hits.find((h): h is number => h !== null && h !== undefined);
+    if (target === undefined) return;
+    const head = zones?.some((z, i) => z === 1 && hits[i] !== null && hits[i] !== undefined) ?? false;
+    this.hud.hit(head ? 'head' : armor ? 'armor' : 'body');
+    this.hud.showTarget(this.hud.name(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
+  }
   private outcome: 'victory' | 'defeat' | null = null;
   /** Role and faction of each NPC seen, for names and looks. */
   private npcInfo = new Map<number, { role: number; faction: number; size: number }>();
@@ -640,6 +655,7 @@ export class GameSession {
         this.local.ladders = mapLadders(loaded.map.entities);
         this.local.scale = this.sizeOf(this.slot);
         this.local.gravity = matchPhysics(msg.rules, loaded.map).gravity;
+        this.local.rules = { ...(msg.rules.ballistics ? { ballistics: msg.rules.ballistics } : {}) };
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.local.gravityZones = mapGravityZones(loaded.map.entities);
         this.local.portals = mapPortals(loaded.map.entities);
@@ -737,8 +753,21 @@ export class GameSession {
               if (t) this.view.addBeam(muzzle ?? { x: eye.x, y: eye.y - 0.25, z: eye.z }, { x: t[0], y: t[1], z: t[2] }, color, 0.025, 450);
               continue;
             }
+            const flying = new Set(ev.fl ?? []);
             ev.to.forEach((t, i) => {
               const to = { x: t[0], y: t[1], z: t[2] };
+              if (flying.has(i)) {
+                // Still in the air: someone else's round flies on from their muzzle until it meets the level
+                // (drawn here, at its real speed and drop); the server's impact event lands it. Yours is already drawn.
+                if (!mine && ev.v && this.local) {
+                  const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
+                  const len = Math.hypot(d.x, d.y, d.z) || 1;
+                  const physics = this.local.physics;
+                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: 0 }, def?.range ?? 300, (o, dir, l) => physics.raycastWorld(o, dir, l));
+                  this.view.shotVisual({ eye, muzzle, to: flight.end, color, victim: null, zone: 0, strength, def, speed: ev.v, land: false });
+                }
+                return;
+              }
               const victim = ev.hit[i] ?? null;
               const zone = ev.z?.[i] ?? 0;
               if (victim === this.slot) this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
@@ -751,20 +780,37 @@ export class GameSession {
               if (mine) {
                 // Land the hit when your round gets there (it left the muzzle about one round trip ago).
                 const dist = Math.hypot(to.x - eye.x, to.y - eye.y, to.z - eye.z);
-                if (victim !== null) window.setTimeout(() => this.view.landRound({ eye, to, victim, zone, strength }), Math.max(0, (dist / BULLET_SPEED) * 1000 - 40));
+                if (victim !== null) window.setTimeout(() => this.view.landRound({ eye, to, victim, zone, strength }), Math.max(0, (dist / (ev.v ?? BULLET_SPEED)) * 1000 - 40));
                 return;
               }
-              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def });
+              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def, ...(ev.v ? { speed: ev.v } : {}) });
             });
+            // Rounds that went through a surface or glanced off it leave their mark there too.
+            for (const p of ev.pn ?? []) this.view.landRound({ eye, to: { x: p[0], y: p[1], z: p[2] }, victim: null, zone: 0, strength });
             if (mine) {
-              const hits = ev.hit.filter((h) => h !== null).length;
-              if (hits) this.hud.hit(ev.z?.some((z, i) => z === 1 && ev.hit[i] !== null) ?? false);
-              const target = ev.hit.find((h): h is number => h !== null && h !== undefined);
-              if (target !== undefined) this.hud.showTarget(this.hud.name(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
+              this.hitFeedback(ev.hit, ev.z, !!ev.ar);
             } else {
               this.view.avatarAction(ev.s, 'shoot');
               if (def && def.kind !== 'melee') this.view.remoteFlash(ev.s);
             }
+          } else if (ev.e === 'impact') {
+            // A bullet that was in flight landed.
+            const def = CORE_WEAPONS[ev.w];
+            const mine = ev.s === this.slot;
+            const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
+            const to = { x: ev.to[0], y: ev.to[1], z: ev.to[2] };
+            const strength = Math.min(2.5, Math.max(0.6, (def?.damage ?? 20) / 25));
+            const zone = ev.z ?? 0;
+            if (ev.hit === this.slot) this.hurtFrom = { x: from.x, z: from.z, at: performance.now() };
+            if (ev.hit !== null) {
+              const d = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
+              const len = Math.hypot(d.x, d.y, d.z) || 1;
+              this.view.pushPlayer(ev.hit, { x: (d.x / len) * 1.4 * strength, y: zone === 1 ? 0.8 : 0.4, z: (d.z / len) * 1.4 * strength });
+            }
+            for (const p of ev.pn ?? []) this.view.landRound({ eye: from, to: { x: p[0], y: p[1], z: p[2] }, victim: null, zone: 0, strength });
+            // Your own misses already landed where your predicted round hit the level.
+            if (!ev.gone && (ev.hit !== null || !mine)) this.view.landRound({ eye: from, to, victim: ev.hit, zone, strength });
+            if (mine) this.hitFeedback([ev.hit], [zone], !!ev.ar);
           } else if (ev.e === 'melee') {
             if (ev.s === this.slot && ev.hit !== null) this.hud.hit();
             if (ev.s !== this.slot) this.view.avatarAction(ev.s, 'melee');
@@ -802,6 +848,12 @@ export class GameSession {
             if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
           } else if (ev.e === 'kill') {
             this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs);
+            if (ev.killer === this.slot && ev.victim !== this.slot) {
+              // Kill confirmation (GUNPLAY_SPEC §22): a sharper marker that escalates with kills in a row.
+              const t = performance.now();
+              this.killTimes = [...this.killTimes.filter((k) => t - k < MULTI_KILL_MS), t];
+              this.hud.killConfirm(this.killTimes.length);
+            }
             const at = this.view.chestOf(ev.victim);
             if (at) this.view.blood.kill(at);
             if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2);
@@ -1140,11 +1192,16 @@ export class GameSession {
         }
         moving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
-        const { input: cmd, shot } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
+        const { input: cmd, shot, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
         if (local.portalTurn) {
           // Through a portal: you face the way you came out.
           this.input.yaw += local.portalTurn;
           local.portalTurn = 0;
+        }
+        // Mouse movement that pulled against the recoil brought the recoil down instead of turning the view.
+        if (absorbed) {
+          this.input.pitch += absorbed[0];
+          this.input.yaw += absorbed[1];
         }
         if (this.forts) cmd.build = this.forts.code;
         this.outbox.push(cmd);
@@ -1156,13 +1213,12 @@ export class GameSession {
           this.view.kick(shot.def);
           const muzzle = this.view.localMuzzle();
           const strength = Math.min(2.5, Math.max(0.6, shot.def.damage / 25));
-          for (const end of shot.ends) this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true });
-          // Recoil: the sights climb (and wander a little) with each shot.
-          const recoil = !shot.alt ? shot.def.recoil : undefined;
-          if (recoil?.kick) {
-            this.input.pitch = Math.min(1.5, this.input.pitch + recoil.kick * (0.8 + Math.random() * 0.4));
-            this.input.yaw += (Math.random() - 0.5) * recoil.kick * 0.5;
-          }
+          // Your rounds leave at their real speed; only tracer rounds draw a streak (the rest still land).
+          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
+          // Mechanical recoil is in the prediction (the camera shows it, below); this is the visual kick on top.
+          // Only big single kicks (revolver, rifles that slam, shotguns) shake the camera, and briefly: automatics would blur your target.
+          const visual = gunplayOf(shot.def).kick?.visual ?? 0;
+          if (!shot.alt && visual >= 0.8) this.view.shake(Math.min(0.25, visual * 0.15));
         }
       }
       this.opts.transport.sendInputs(this.outbox.splice(0));
@@ -1241,11 +1297,13 @@ export class GameSession {
           this.view.setCamera({ x: head.x + dir.x * d, y: head.y + dir.y * d, z: head.z + dir.z * d }, this.input.yaw, this.input.pitch, fov);
         } else {
           this.hud.setSpectating(null);
-          this.view.setCamera(head, this.input.yaw, this.input.pitch, fov);
+          // First person: the view carries the weapon's mechanical recoil (it is where your rounds go).
+          const aimed = local.aimAngles(this.input.yaw, this.input.pitch);
+          this.view.setCamera(head, aimed.yaw, aimed.pitch, fov);
         }
       }
       this.view.setViewmodel(weapon);
-      const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, (weapon.reloadTicks - local.reloadTicks) / 10) : 0;
+      const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride), ads: this.adsAmount });
       this.hud.setScope(zoomed);
       this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount);

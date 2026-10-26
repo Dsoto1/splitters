@@ -3,6 +3,30 @@ import {
   CLASS_IDS,
   BUTTON_ALT,
   BUTTON_FIRE,
+  BUTTON_RELOAD,
+  BUTTON_SPRINT,
+  BUTTON_USE,
+  BUTTON_ZOOM,
+  RELOAD_KINDS,
+  angleDelta,
+  beginReload,
+  bulletPhysics,
+  counterFrom,
+  counterRecoil,
+  gunplayOf,
+  isTracer,
+  newGunState,
+  recoilIdle,
+  recoilShot,
+  roundsReady,
+  spreadOf,
+  stepAds,
+  stepReload,
+  traceBullet,
+  type AmmoBox,
+  type GunState,
+  type MatchRules,
+  type ReloadRun,
   OIL_TRACTION,
   applyPads,
   applyPortals,
@@ -46,7 +70,14 @@ export interface PredictedShot {
   ends: Vec3[];
   /** The second trigger. */
   alt?: boolean;
+  /** Ballistic bullets: muzzle speed (m/s) for the drawn round, flight time to each end (s), and whether this round shows a tracer. */
+  speed?: number;
+  times?: number[];
+  tracer?: boolean;
 }
+
+/** Crouched and prone steady the aim (the server's STANCE_SPREAD). */
+const STANCE_SPREAD = [1, 0.7, 0.5] as const;
 
 
 /**
@@ -101,6 +132,23 @@ export class LocalPlayer {
   portalTurn = 0;
   /** Server tick the latest predicted input will run on (estimate: snapshot tick + inputs not yet acknowledged). */
   predTick = 0;
+  /**
+   * Gunplay state mirrored exactly from the server (gunplay.ts): the
+   * mechanical recoil offset (the camera shows it, and it is where rounds
+   * go), spray, sights, and the reload in progress with its stages.
+   */
+  gun: GunState = newGunState();
+  reload: ReloadRun | null = null;
+  /** Weapons with a magazine in but no round chambered. */
+  private unchambered = new Set<number>();
+  /** Rounds fired since drawing the held weapon (tracer intervals). */
+  private rounds = 0;
+  /** Angles sent with the last input (mouse movement is measured from them to counter recoil). */
+  private lastYaw = 0;
+  private lastPitch = 0;
+  private prevButtons = 0;
+  /** Match rules the drawn rounds fly by (ballistics). */
+  rules: Pick<MatchRules, 'ballistics'> = {};
   /** Trigger state mirrored from the server rules (semi-auto latch, spin-up, burst). */
   private semiLatch = false;
   private windup = 0;
@@ -158,9 +206,32 @@ export class LocalPlayer {
     return WEAPONS_BY_SLOT.map((w) => ORDER.get(w.id)!).filter((code) => this.inventory.has(code));
   }
 
-  /** Predict one tick. Returns the input to send and any predicted shot. */
-  tick(sample: { forward: number; right: number; buttons: number; say?: number }, yaw: number, pitch: number, weapon: number, viewTick: number): { input: PlayerInput; shot: PredictedShot | null } {
-    const input: PlayerInput = { seq: ++this.seq, ...sample, yaw, pitch, weapon, viewTick };
+  /** Where the camera and the rounds point: the view plus the mechanical recoil offset. */
+  aimAngles(yaw: number, pitch: number): { yaw: number; pitch: number } {
+    return { yaw: yaw + this.gun.ry, pitch: Math.max(-1.55, Math.min(1.55, pitch + this.gun.rp)) };
+  }
+
+  /**
+   * Predict one tick. Returns the input to send, any predicted shot, and the
+   * part of this tick's mouse movement that went into countering recoil
+   * (`absorbed`, pitch and yaw): the caller adds it back to its view angles,
+   * because that movement brought the recoil down instead of turning the view.
+   */
+  tick(sample: { forward: number; right: number; buttons: number; say?: number }, yaw: number, pitch: number, weapon: number, viewTick: number): { input: PlayerInput; shot: PredictedShot | null; absorbed: [number, number] | null } {
+    let absorbed: [number, number] | null = null;
+    if (this.alive) {
+      // Pulling against the recoil (the server applies the same counter from `rc`).
+      const [cp, cy] = counterFrom(this.gun, pitch - this.lastPitch, angleDelta(this.lastYaw, yaw));
+      if (cp || cy) {
+        counterRecoil(this.gun, cp, cy);
+        pitch += cp;
+        yaw += cy;
+        absorbed = [cp, cy];
+      }
+    }
+    this.lastYaw = yaw;
+    this.lastPitch = pitch;
+    const input: PlayerInput = { seq: ++this.seq, ...sample, yaw, pitch, weapon, viewTick, ...(absorbed ? { rc: absorbed } : {}) };
     this.prevPos = { ...this.state.pos };
     let shot: PredictedShot | null = null;
     if (this.alive) {
@@ -168,19 +239,67 @@ export class LocalPlayer {
         this.held = weapon;
         this.raiseTicks = this.weapon?.raiseTicks ?? 0;
         this.reloadTicks = 0;
+        this.reload = null;
         this.windup = 0;
         this.burstLeft = 0;
+        this.gun.shots = 0;
+        this.gun.spray = 0;
+        this.gun.ads = 0;
+        this.rounds = 0;
       }
       if (!this.mounted) this.state = this.move(this.state, input, this.predTick + 1, true);
       if (this.fireCooldown > 0) this.fireCooldown--;
       if (this.raiseTicks > 0) this.raiseTicks--;
-      if (this.reloadTicks > 0) this.reloadTicks--;
+      this.advanceReload();
       shot = this.predictFire(input);
     }
     this.predTick++;
     this.pending.push(input);
     if (this.pending.length > MAX_PENDING) this.pending.shift();
-    return { input, shot };
+    return { input, shot, absorbed };
+  }
+
+  /** The held weapon's ammunition as the reload code sees it (written back with `storeBox`). */
+  private box(code: number, ammo: [number, number, number, number]): AmmoBox {
+    return { mag: ammo[0], reserve: ammo[1], unchambered: this.unchambered.has(code) };
+  }
+
+  private storeBox(code: number, ammo: [number, number, number, number], b: AmmoBox): void {
+    ammo[0] = b.mag;
+    ammo[1] = b.reserve;
+    if (b.unchambered) this.unchambered.add(code);
+    else this.unchambered.delete(code);
+  }
+
+  /** The server's reload, step for step: ammunition follows the stages. */
+  private advanceReload(): void {
+    const def = this.weapon;
+    const ammo = this.inventory.get(this.held);
+    if (!this.reload || this.reloadTicks === 0 || !def || !ammo) {
+      this.reload = null;
+      this.reloadTicks = 0;
+      return;
+    }
+    const b = this.box(this.held, ammo);
+    this.reload = stepReload(def, b, this.reload);
+    this.storeBox(this.held, ammo, b);
+    this.reloadTicks = this.reload ? Math.max(1, this.reload.total - this.reload.t) : 0;
+  }
+
+  private startReload(): void {
+    const def = this.weapon;
+    const ammo = this.inventory.get(this.held);
+    if (this.reloadTicks > 0 || !def || !ammo) return;
+    const run = beginReload(def, this.box(this.held, ammo));
+    if (!run) return;
+    this.reload = run;
+    this.reloadTicks = run.total;
+    this.burstLeft = 0;
+  }
+
+  private cancelReload(): void {
+    this.reload = null;
+    this.reloadTicks = 0;
   }
 
   /** Same order as the server: move with the current boost, then count the boost down. */
@@ -212,37 +331,58 @@ export class LocalPlayer {
     return 1;
   }
 
-  /** Mirrors the server's trigger rules (semi-auto, burst, spin-up, heat) so tracers and the HUD match what will happen. */
+  /**
+   * Mirrors the server's trigger rules (semi-auto, burst, spin-up, heat,
+   * reload interrupts, recoil and spray) so tracers, the HUD and the camera
+   * match what will happen. Same order as Match.applyInputs.
+   */
   private predictFire(input: PlayerInput): PredictedShot | null {
     const def = this.seatGun ?? this.weapon;
     const ammo = this.seatGun ? this.seatAmmo : this.inventory.get(this.held);
     const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
+    const pressed = input.buttons & ~this.prevButtons;
+    this.prevButtons = input.buttons;
     if (!fireDown) this.semiLatch = false;
-    if (!def || !ammo || this.unarmed) return null;
+    if (!def || !ammo) return null;
+    if (this.reload && ((pressed & BUTTON_SPRINT && input.forward > 0) || pressed & BUTTON_USE)) this.cancelReload();
+    if (input.buttons & BUTTON_RELOAD) this.startReload();
+    const gp = gunplayOf(def);
+    stepAds(this.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !this.seatGun);
+    const ready = (a: [number, number, number, number]) => (this.seatGun ? a[0] : roundsReady(this.box(this.held, a)));
+    if (fireDown && this.reload && !this.seatGun && !this.semiLatch && this.fireCooldown === 0 && this.raiseTicks === 0 && ready(ammo) > 0) this.cancelReload();
+    const { shot, fired } = this.trigger(def, ammo, input, fireDown, ready);
+    if (!fired) recoilIdle(this.gun, gp.kick, gp.accuracy, def.fireIntervalTicks);
+    return shot;
+  }
+
+  /** The trigger itself. `fired`: a primary round (or swing) went off, as the server counts it. */
+  private trigger(def: WeaponDefinition, ammo: [number, number, number, number], input: PlayerInput, fireDown: boolean, ready: (a: [number, number, number, number]) => number): { shot: PredictedShot | null; fired: boolean } {
+    const none = { shot: null, fired: false };
     if (def.windupTicks) {
-      const able = fireDown && this.raiseTicks === 0 && this.reloadTicks === 0 && ammo[3] < 100 && (def.magazine === 0 || ammo[0] > 0);
+      const able = fireDown && this.raiseTicks === 0 && this.reloadTicks === 0 && ammo[3] < 100 && (def.magazine === 0 || ready(ammo) > 0);
       this.windup = able ? Math.min(def.windupTicks, this.windup + 1) : Math.max(0, this.windup - 2);
     }
+    if (this.unarmed) return none;
     if (this.burstLeft > 0) {
-      if (--this.burstTimer > 0) return null;
-      if (ammo[0] === 0) {
+      if (--this.burstTimer > 0) return none;
+      if (ready(ammo) === 0 || this.reloadTicks > 0 || this.statusSpeed === 0) {
         this.burstLeft = 0;
-        return null;
+        return none;
       }
       ammo[0]--;
       this.burstLeft--;
       this.burstTimer = def.burst?.intervalTicks ?? 1;
-      return this.hitscanShot(def, input, def.pellets, def.spread, false);
+      return { shot: this.primaryShot(def, input, ammo), fired: true };
     }
-    if (this.fireCooldown > 0 || (this.raiseTicks > 0 && !this.seatGun) || this.reloadTicks > 0 || this.statusSpeed === 0) return null;
-    let pellets = def.pellets;
-    let spread = def.spread;
-    let alt = false;
+    if (this.fireCooldown > 0 || (this.raiseTicks > 0 && !this.seatGun) || this.reloadTicks > 0 || this.statusSpeed === 0) return none;
     if (fireDown) {
-      if (this.semiLatch || (def.windupTicks && this.windup < def.windupTicks)) return null;
-      if (def.magazine > 0 && ammo[0] === 0) return null;
+      if (this.semiLatch || (def.windupTicks && this.windup < def.windupTicks)) return none;
+      if (def.magazine > 0 && ready(ammo) === 0) {
+        if (!this.seatGun) this.startReload();
+        return none;
+      }
       if (def.heat) {
-        if (ammo[3] >= 100) return null;
+        if (ammo[3] >= 100) return none;
         ammo[3] = Math.min(100, ammo[3] + def.heat.perShot * 100);
       }
       if (def.magazine > 0) ammo[0]--;
@@ -253,34 +393,60 @@ export class LocalPlayer {
         this.burstTimer = def.burst.intervalTicks;
       }
       if (def.windupResets) this.windup = 0;
-      if (def.kind !== 'hitscan') return { def, ends: [] };
-    } else if (input.buttons & BUTTON_ALT && def.alt) {
+      return { shot: this.primaryShot(def, input, ammo), fired: true };
+    }
+    if (input.buttons & BUTTON_ALT && def.alt) {
       // Mirrors the server: own-ammo triggers spend their own rounds, shared ones the magazine.
       const a = def.alt;
-      if (a.ammo === 'own' ? ammo[2] < a.cost : ammo[0] < a.cost) return null;
+      if (a.ammo === 'own' ? ammo[2] < a.cost : ammo[0] < a.cost) {
+        if (a.ammo === 'shared' && !this.seatGun) this.startReload();
+        return none;
+      }
       if (a.ammo === 'own') ammo[2] -= a.cost;
       else ammo[0] -= a.cost;
       this.fireCooldown = a.fireIntervalTicks;
-      alt = true;
-      if (a.kind !== 'hitscan') return { def, ends: [], alt };
-      pellets = a.pellets ?? pellets;
-      spread = a.spread ?? spread;
-    } else return null;
-    return this.hitscanShot(def, input, pellets, spread, alt);
+      if (a.kind !== 'hitscan') return { shot: { def, ends: [], alt: true }, fired: false };
+      return { shot: this.hitscanShot(def, this.aimAngles(input.yaw, input.pitch), a.pellets ?? def.pellets, a.spread ?? def.spread, true), fired: false };
+    }
+    return none;
   }
 
-  private hitscanShot(def: WeaponDefinition, input: PlayerInput, pellets: number, spread: number, alt: boolean): PredictedShot {
+  /** A primary round: spread from the gunplay model, then the recoil kick (as the server does in Match.fire). */
+  private primaryShot(def: WeaponDefinition, input: PlayerInput, ammo: [number, number, number, number]): PredictedShot {
+    const gp = gunplayOf(def);
+    const aim = this.aimAngles(input.yaw, input.pitch);
+    const run = this.prevPos ? Math.hypot(this.state.pos.x - this.prevPos.x, this.state.pos.z - this.prevPos.z) / TICK_DT / PLAYER.runSpeed : 0;
+    const spread = gp.accuracy ? spreadOf(gp.accuracy, this.gun, { run, airborne: !this.state.grounded, stance: STANCE_SPREAD[this.state.stance ?? 0] ?? 1 }) : def.spread;
+    if (def.kind !== 'melee') recoilShot(this.gun, gp.kick);
+    if (def.kind !== 'hitscan') return { def, ends: [] };
+    const shot = this.hitscanShot(def, aim, def.pellets, spread, false);
+    if (gp.ballistic) shot.tracer = isTracer(gp.ballistic, this.rounds, ammo[0]);
+    this.rounds++;
+    return shot;
+  }
+
+  private hitscanShot(def: WeaponDefinition, aim: { yaw: number; pitch: number }, pellets: number, spread: number, alt: boolean): PredictedShot {
     const eye = this.eye;
     const ends: Vec3[] = [];
+    const times: number[] = [];
+    const bal = alt ? null : gunplayOf(def).ballistic;
+    const phys = bal ? bulletPhysics(bal, this.rules) : null;
     for (let i = 0; i < pellets; i++) {
       // Cosmetic spread; the server rolls its own.
-      const yaw = input.yaw + (Math.random() - 0.5) * 2 * spread;
-      const pitch = input.pitch + (Math.random() - 0.5) * 2 * spread;
+      const yaw = aim.yaw + (Math.random() - 0.5) * 2 * spread;
+      const pitch = aim.pitch + (Math.random() - 0.5) * 2 * spread;
       const dir = viewDirection(yaw, pitch);
+      if (phys) {
+        // A bullet: it flies (and drops) until it meets the level.
+        const t = traceBullet(eye, dir, phys, def.range, (o, d, len) => this.physics.raycastWorld(o, d, len));
+        ends.push(t.end);
+        times.push(t.time);
+        continue;
+      }
       const d = this.physics.raycastWorld(eye, dir, def.range) ?? def.range;
       ends.push({ x: eye.x + dir.x * d, y: eye.y + dir.y * d, z: eye.z + dir.z * d });
     }
-    return { def, ends, ...(alt ? { alt } : {}) };
+    return { def, ends, ...(alt ? { alt } : {}), ...(phys ? { speed: phys.speed, times } : {}) };
   }
 
   /** Server reconciliation. */
@@ -303,6 +469,14 @@ export class LocalPlayer {
       this.glider = me.gl === 1;
       this.reloadTicks = Math.max(0, me.rl - this.pending.length);
       this.raiseTicks = Math.max(0, me.rs - this.pending.length);
+      this.unchambered = new Set(me.uc ?? []);
+      // The reload as the server has it, moved on by the inputs it hasn't seen yet (their stages land on the next tick).
+      this.reload = me.rd && this.reloadTicks > 0 ? { kind: RELOAD_KINDS[me.rd[0]] ?? 'tactical', t: me.rd[1] + this.pending.length, total: me.rd[2], stage: me.rd[3] } : null;
+    }
+    // A fresh life: no recoil left over.
+    if (!wasAlive && this.alive) {
+      this.gun = newGunState();
+      this.rounds = 0;
     }
     // Keep a pending weapon switch the server hasn't seen yet.
     const pendingSwitch = [...this.pending].reverse().find((i) => i.weapon && this.inventory.has(i.weapon))?.weapon;

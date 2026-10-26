@@ -136,6 +136,8 @@ describe('arsenal', () => {
     give(a, 'core.rifle');
     const shootAt = (p: { x: number; y: number; z: number }, ticks: number) => {
       const look = lookAngles(eye(a.move.pos), p);
+      // Let go of the trigger first so the recoil settles (it climbs on a long spray).
+      d.run(40, () => d.input(a, look));
       return d.run(ticks, () => d.input(a, { buttons: BUTTON_FIRE, ...look }));
     };
     expect(match.scenario.destructibleAlive('crate')).toBe(true);

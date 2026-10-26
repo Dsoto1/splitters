@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum';
+export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum' | 'hithead' | 'hitarmor' | 'killconfirm';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum', 'hithead', 'hitarmor', 'killconfirm'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -278,6 +278,45 @@ function renderHitmark(seed: number, variant: number): Float32Array<ArrayBuffer>
   return finish(out);
 }
 
+/** Head hit: a bright, ringing "ding" an octave over the body tick, with a little shimmer (GUNPLAY_SPEC §21). */
+function renderHitHead(seed: number, variant: number): Float32Array<ArrayBuffer> {
+  const hp = new Biquad('highpass').set(4000, 0.8);
+  const ring = 4200 + variant * 160;
+  return render(0.16, seed, (t, _u, rnd) => {
+    const click = hp.run(rnd()) * Math.exp(-t / 0.002) * 0.8;
+    const tone = (Math.sin(2 * Math.PI * ring * t) + 0.5 * Math.sin(2 * Math.PI * ring * 2.01 * t) + 0.25 * Math.sin(2 * Math.PI * ring * 2.98 * t)) * Math.exp(-t / 0.05) * 0.55;
+    return click + tone;
+  });
+}
+
+/** Armor hit: a dull, hollow clank (a plate soaked it), lower and duller than flesh. */
+function renderHitArmor(seed: number, variant: number): Float32Array<ArrayBuffer> {
+  const bp = new Biquad('bandpass').set(1400 + variant * 90, 4);
+  return render(0.12, seed, (t, _u, rnd) => {
+    const clank = bp.run(rnd()) * Math.exp(-t / 0.03) * 2.2;
+    const body = (Math.sin(2 * Math.PI * 620 * t) + 0.6 * Math.sin(2 * Math.PI * 931 * t)) * Math.exp(-t / 0.028) * 0.45;
+    return clank + body;
+  });
+}
+
+/**
+ * Kill confirmation (GUNPLAY_SPEC §22): short and crunchy so rapid kills make
+ * a rhythm, not clutter: a crunch of band-passed noise, a low punch and a
+ * bright snap on top. Played faster for each kill in a row.
+ */
+function renderKillConfirm(seed: number): Float32Array<ArrayBuffer> {
+  const crunch = new Biquad('bandpass').set(2400, 1.2);
+  const snapHp = new Biquad('highpass').set(5000, 0.7);
+  return render(0.22, seed, (t, _u, rnd) => {
+    const grit = Math.sign(Math.sin(2 * Math.PI * 95 * t)) * 0.3;
+    const c = crunch.run(rnd() + grit) * Math.exp(-t / 0.035) * 2.6;
+    const punch = Math.sin(2 * Math.PI * (150 - t * 400) * t) * Math.exp(-t / 0.05) * 0.9;
+    const snap = snapHp.run(rnd()) * Math.exp(-t / 0.004) * 0.9;
+    const tone = Math.sin(2 * Math.PI * 1760 * t) * Math.exp(-((t - 0.03) ** 2) / 0.0004) * 0.35;
+    return c + punch + snap + tone;
+  });
+}
+
 /** Flame jet: a low, flickering roar of filtered noise that swells and dies away. */
 function renderFlame(seed: number): Float32Array<ArrayBuffer> {
   const n = Math.ceil(1.6 * SYNTH_RATE);
@@ -514,5 +553,11 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
       return renderHitmark(seed, variant);
     case 'hum':
       return renderHum(seed);
+    case 'hithead':
+      return renderHitHead(seed, variant);
+    case 'hitarmor':
+      return renderHitArmor(seed, variant);
+    case 'killconfirm':
+      return renderKillConfirm(seed);
   }
 }
