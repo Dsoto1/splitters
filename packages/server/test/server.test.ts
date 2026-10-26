@@ -7,7 +7,7 @@ import { parseClientMessage } from '@tiletrigger/shared';
 
 const room: MapDocument = {
   format: 'tiletrigger.map',
-  formatVersion: 17,
+  formatVersion: 18,
   metadata: {
     id: 'test_room',
     name: 'Test Room',
@@ -28,6 +28,7 @@ const room: MapDocument = {
   logic: { variables: [], timers: [], objectives: [], rules: [] },
   terrain: null,
   bounds: null,
+  track: null,
   teamSetup: null,
   backdrop: null,
     blood: null,

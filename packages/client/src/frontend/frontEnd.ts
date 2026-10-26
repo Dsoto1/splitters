@@ -125,6 +125,10 @@ export interface ArcadeSetup {
   /** Classes: everyone picks a class (absent: off), and at most this many per team in one class (absent: no limit). */
   classes?: boolean;
   classLimit?: number;
+  /** Race: laps, the vehicle and combat on or off (absent: the track's own). */
+  raceLaps?: number;
+  raceVehicle?: 'kart' | 'speeder' | 'buggy';
+  raceCombat?: boolean;
 }
 
 export interface FrontEndHooks {
@@ -164,6 +168,7 @@ const MODE_TIPS: Partial<Record<GameMode, string>> = {
   'core.coop': 'Work through the mission with bot squadmates against the map\'s enemies.',
   'core.zombies': 'Hold out with your bot squad against endless waves of zombies. Each wave is bigger; the fallen come back when it is beaten.',
   'core.discs': 'Ricochet-style: everyone throws three bouncing discs that come back. A hit knocks you about without hurting; knock someone into the void to score. Power discs (fast, triple, splitting, freeze) lie about the arena.',
+  'core.race': 'Everyone starts on the grid in a vehicle: drive the checkpoints in order, lap after lap. First over the line wins. Combat races turn the guns and sideline sentries on.',
 };
 
 /** A small (i) that explains something when hovered or focused (see the tooltip in FrontEnd). */
@@ -520,7 +525,15 @@ export class FrontEnd {
           row('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill'])))),
         ...(coop
           ? []
-          : [
+          : s.mode === 'core.race'
+            ? [
+                el('section', {}, el('h4', { textContent: 'Race' }),
+                  row('Laps', 'Laps of the circuit (a point-to-point track is always one run).', stepper(s.raceLaps ?? current.map.track?.laps ?? 3, 1, 1, 10, (v) => (this.setup.raceLaps = v))),
+                  row('Vehicle', 'What everyone races in. Map: the track\'s own choice.', tabs([['map', 'Map'], ['kart', 'Go-Kart'], ['speeder', 'Speeder'], ['buggy', 'Buggy']], s.raceVehicle ?? 'map', (v) => (this.setup.raceVehicle = v === 'map' ? undefined : (v as ArcadeSetup['raceVehicle'])))),
+                  row('Combat', 'Combat race: weapons and vehicle guns are live and the sentries by the track shoot. Clean: nobody can hurt anybody.', tabs([['map', 'Map'], ['off', 'Clean'], ['on', 'Combat']], s.raceCombat === undefined ? 'map' : s.raceCombat ? 'on' : 'off', (v) => (this.setup.raceCombat = v === 'map' ? undefined : v === 'on'))),
+                  row('Time limit', 'When time runs out the leader wins. ∞: no limit.', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v} min` : '∞')))),
+              ]
+            : [
               el('section', {}, el('h4', { textContent: 'To win' }),
                 ((r) => row(r.label, 'The match ends when someone reaches this.', stepper(s.scoreLimit, r.step, r.min, r.max, (v) => (this.setup.scoreLimit = v)))) (SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 }),
                 ...(forts ? [] : [row('Time limit', 'When time runs out the highest score wins. ∞: no limit.', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v} min` : '∞')))])),
@@ -548,8 +561,7 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : this.setup.discs ? { weapons: 'discs' as const } : {}), ...(this.setup.classes ? { classes: true, ...(this.setup.classLimit ? { classLimit: this.setup.classLimit } : {}) } : {}), ...(this.setup.vehicleDamage ? { vehicleDamage: this.setup.vehicleDamage } : {}), ...(this.setup.mode === 'core.forts' ? { timeLimitSeconds: 0, fortBuildSeconds: Math.round((this.setup.fortBuild ?? 2.5) * 60), fortCombatSeconds: Math.round((this.setup.fortCombat ?? 5) * 60), fortCycles: this.setup.fortCycles ?? 1, fortBudget: this.setup.fortBudget ?? 120 } : {}) };
-
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : this.setup.discs ? { weapons: 'discs' as const } : {}), ...(this.setup.classes ? { classes: true, ...(this.setup.classLimit ? { classLimit: this.setup.classLimit } : {}) } : {}), ...(this.setup.vehicleDamage ? { vehicleDamage: this.setup.vehicleDamage } : {}), ...(this.setup.mode === 'core.forts' ? { timeLimitSeconds: 0, fortBuildSeconds: Math.round((this.setup.fortBuild ?? 2.5) * 60), fortCombatSeconds: Math.round((this.setup.fortCombat ?? 5) * 60), fortCycles: this.setup.fortCycles ?? 1, fortBudget: this.setup.fortBudget ?? 120 } : {}), ...(this.setup.mode === 'core.race' ? { ...(this.setup.raceLaps ? { raceLaps: this.setup.raceLaps } : {}), ...(this.setup.raceVehicle ? { raceVehicle: this.setup.raceVehicle } : {}), ...(this.setup.raceCombat !== undefined ? { raceCombat: this.setup.raceCombat } : {}) } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.

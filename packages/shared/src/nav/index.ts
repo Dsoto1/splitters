@@ -5,6 +5,7 @@ import type { MapDocument } from '../map/schema.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import type { Vec3 } from '../math.ts';
 import { PLAYER } from '../sim/constants.ts';
+import { trackGeometry } from '../map/track.ts';
 
 let initPromise: Promise<void> | undefined;
 
@@ -170,5 +171,31 @@ export function validateNavigation(map: MapDocument, nav: NavWorld): ValidationI
       }
     }
   }
+  issues.push(...validateTrackNavigation(map, nav));
+  return issues;
+}
+
+/**
+ * Race tracks: every checkpoint must be on drivable ground and reachable from
+ * the one before (vehicles and racing bots follow the same ground the navmesh
+ * covers), and every start-grid place must be on it.
+ */
+export function validateTrackNavigation(map: MapDocument, nav: NavWorld): ValidationIssue[] {
+  const g = trackGeometry(map);
+  if (!g) return [];
+  const issues: ValidationIssue[] = [];
+  const reach = { x: g.width / 2, y: 4, z: g.width / 2 };
+  const spots = g.gates.map((gate) => nav.closestPoint({ x: gate.x, y: gate.y, z: gate.z }, reach));
+  spots.forEach((p, i) => {
+    if (!p) issues.push({ severity: 'warning', code: 'nav.checkpoint_off_mesh', message: `checkpoint ${i + 1} is not on drivable ground` });
+  });
+  const legs = g.loop ? spots.length : spots.length - 1;
+  for (let i = 0; i < legs; i++) {
+    const a = spots[i];
+    const b = spots[(i + 1) % spots.length];
+    if (a && b && !nav.findPath(a, b)) issues.push({ severity: 'warning', code: 'nav.checkpoint_unreachable', message: `checkpoint ${((i + 1) % spots.length) + 1} cannot be reached from checkpoint ${i + 1}` });
+  }
+  const off = g.grid().filter((p) => !nav.closestPoint(p, { x: 2, y: 4, z: 2 })).length;
+  if (off) issues.push({ severity: 'warning', code: 'nav.grid_off_mesh', message: `${off} start-grid place${off > 1 ? 's are' : ' is'} not on drivable ground` });
   return issues;
 }

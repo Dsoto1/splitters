@@ -10,6 +10,7 @@
 | Co-op | `core.coop` | players vs NPCs | none (logic ends it) | NPC encounters |
 | Fort Wars | `core.forts` | 2 | captures (default 3) | a **Flag Base** per team (any CTF map) |
 | Disc Arena | `core.discs` | none | knock-offs (default 10) | listed in the map's modes (decks over a void) |
+| Race | `core.race` | none | first over the line after the last lap | a **track** (Road tool) |
 
 **Classes** isn't a mode but a match setting for any mode with weapons
 (see below).
@@ -254,6 +255,60 @@ glance off anyone who spawned (or started the round) in the last 2 s.
   pads.
 - MapMaker: **Map properties → Mode → Disc Arena**. A map listing only Disc
   Arena isn't asked for health pickups.
+
+## Race
+
+Everyone starts on the start grid in a vehicle and races the map's track
+(`sim/race.ts`). Needs a **track** (map format v18), drawn with MapMaker's
+Road tool.
+
+- **The start.** Racers are put at the wheel of a fresh vehicle on the
+  grid, two abreast behind the start line, in join order. A 3 s countdown
+  holds everyone still (when the match's own countdown has just run, the
+  race goes straight away). Unused grid vehicles are taken off the track.
+- **Checkpoints** are spaced about 40 m apart along the road (at least
+  four on a circuit); gate 0 is the start line, which is also the finish
+  line of a circuit. They count only in order and only when you cross the
+  line forwards within the road's width (plus 4 m), so cutting across the
+  infield doesn't help. A lap is a crossing of the start line; the race is
+  the track's laps (point to point: one run, start line to finish).
+- **Positions:** finishers by finish time, then by checkpoints passed, then
+  by distance to the next one. First over the line wins the round; the rest
+  have 30 s to finish (or until everyone is in). The HUD shows lap X/Y, your
+  place, the race clock, the current and best lap, a marker on the next
+  checkpoint (an arrow at the screen edge when it's behind you), the
+  running order, the countdown and a **WRONG WAY** warning.
+- **Back on track.** Wrecked, thrown out of your vehicle for 1.5 s, stuck
+  for 5 s or more than 30 m off the road for 3 s: you are put just past the
+  last checkpoint you passed, in a fresh vehicle. Dying (respawn key
+  included) does the same after the respawn delay. You can't get out (E).
+- **Clean or combat.** In a clean race nobody can hurt anybody (no shots,
+  no run-overs between racers, sentries asleep). A **combat race** turns on
+  weapons, vehicle guns (the speeder pilot's blasters) and the sideline
+  sentries. The track sets it; Arcade can override it, and the vehicle class
+  and laps too (`MatchRules.raceCombat`, `raceVehicle`, `raceLaps`).
+- **Grip.** On any map with a track, wheeled vehicles grip the road 1.7×
+  better and are 15% slower off it; hovercraft don't care.
+- **Bots** drive with the reusable `TrackDriver` (`sim/trackDriver.ts`):
+  look-ahead steering in their own lane, braking for the bends they see
+  coming, pulling out to pass slower cars (braking when boxed in), backing
+  out when stuck. In a combat race they fire bursts of their forward gun at
+  rivals ahead in reach, after the first 10 s.
+- **Ambient cars** (any mode): a track can carry up to 12 NPC-driven cars
+  (`track.ambient`, `ambientVehicle`) that lap it with the same driver. They
+  belong to no team: they run anyone over, anyone can shoot them up or take
+  the wheel (the AI lets go), and wrecked or stranded ones come back in the
+  pit lane (`track.pit`, else just off the road by the start line). For an
+  F1-style map with traffic while players fight round it.
+- **Events:** `race` with `a` = `go` / `gate` / `lap` / `best` / `finish`.
+  Snapshots carry `md.rc` (`RaceSnapshot`).
+- **Quick start:** `?offline=sandsweep&gamemode=core.race`. Headless:
+  `pnpm bench 8 200 maps/sandsweep.json --mode=core.race` (8 bots finish a
+  3-lap race in about 3 minutes, ~53 s laps).
+
+Sandsweep Circuit is the demo: a 1 km podrace circuit round a desert mesa
+in speeders, a combat race by default, with five sentries on the rocks 31 m
+off the straights (they reach only the near edge of the road).
 
 ## Map requirements and MapMaker steps
 

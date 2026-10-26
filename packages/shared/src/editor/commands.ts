@@ -1,5 +1,5 @@
 import type { ScenarioLogic } from '../map/logic.ts';
-import type { BloodSettings, Faction, MapPhysics, MapBounds, MapDocument, MapEntity, TeamSetup, TilePlacement } from '../map/schema.ts';
+import type { BloodSettings, Faction, MapPhysics, MapBounds, MapDocument, MapEntity, TeamSetup, TilePlacement, Track } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
 import type { Backdrop } from '../map/backdrop.ts';
 
@@ -27,6 +27,8 @@ export type EditCommand =
   | { kind: 'setBackdrop'; before: Backdrop | null; after: Backdrop | null }
   | { kind: 'setBlood'; before: BloodSettings | null; after: BloodSettings | null }
   | { kind: 'setPhysics'; before: MapPhysics | null; after: MapPhysics | null }
+  /** The race track is replaced whole: one point placed, moved or deleted = one undo step. */
+  | { kind: 'setTrack'; before: Track | null; after: Track | null }
   | { kind: 'batch'; commands: EditCommand[] };
 
 export class CommandError extends Error {}
@@ -92,6 +94,8 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       return { ...doc, blood: cmd.after };
     case 'setPhysics':
       return { ...doc, physics: cmd.after };
+    case 'setTrack':
+      return { ...doc, track: cmd.after };
     case 'batch':
       return cmd.commands.reduce(applyCommand, doc);
   }
@@ -131,6 +135,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setBlood', before: cmd.after, after: cmd.before };
     case 'setPhysics':
       return { kind: 'setPhysics', before: cmd.after, after: cmd.before };
+    case 'setTrack':
+      return { kind: 'setTrack', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -159,6 +165,7 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setBackdrop':
     case 'setBlood':
     case 'setPhysics':
+    case 'setTrack':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':
       return cmd.commands.every(isEmptyCommand);

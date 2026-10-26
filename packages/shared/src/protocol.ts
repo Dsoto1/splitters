@@ -148,6 +148,8 @@ export type GameEvent =
   /** Hostage Rescue: hostage `i` (index in ModeSnapshot.hg) started following `s`, was left behind, or was rescued. */
   | { e: 'hostage'; a: 'follow' | 'stop' | 'rescue'; i: number; s: number | null }
   | { e: 'bomb'; a: 'pickup' | 'drop' | 'plant' | 'defuse' | 'explode'; s: number | null; i?: number; p?: Tuple3 }
+  /** Race: `s` passed checkpoint `n`, started lap `n`, finished in place `n` (`t` race time in ms), set a best lap (`t` ms), or the start was given (`s` -1). */
+  | { e: 'race'; a: 'gate' | 'lap' | 'finish' | 'best' | 'go'; s: number; n: number; t?: number }
   // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
   /** Creator message from a logic rule. */
   | { e: 'msg'; text: string; secs: number }
@@ -275,6 +277,25 @@ export interface ModeSnapshot {
    * Sent when the pieces change (and every few seconds); absent means unchanged.
    */
   fp?: [number, number, number, number, number, number, number, number][];
+  /** Race (see RaceSnapshot). */
+  rc?: RaceSnapshot;
+}
+
+/**
+ * Race state: `st` 0 on the grid (countdown), 1 racing, 2 the leader has
+ * finished (the rest have a little longer); `cd` seconds of countdown left;
+ * `t` race time in ms; `laps` to run; `combat` 1 when weapons are on. Per
+ * racer (in race order): [slot, lap (1-based), next checkpoint, finish time
+ * ms (-1 still racing), best lap ms (-1 none yet), current lap time ms,
+ * going the wrong way (0/1), respawning (0/1)].
+ */
+export interface RaceSnapshot {
+  st: number;
+  cd: number;
+  t: number;
+  laps: number;
+  combat: number;
+  r: [number, number, number, number, number, number, number, number][];
 }
 
 export const HOSTAGE_WAITING = 0;

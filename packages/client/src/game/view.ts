@@ -64,6 +64,7 @@ import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 const DEBRIS_LIFE = 6;
 const SHAKE_MS = 650;
 import { MapStyler } from '../mapMeshes.ts';
+import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
@@ -263,6 +264,7 @@ export class GameView {
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);
+    buildRoadMeshes(this.scene, doc, styler);
     const backdropVisuals = new BackdropVisuals(this.scene, styler, this.models);
     const backdrop = backdropVisuals.build(doc, boxes);
     if (backdropVisuals.sky) this.skyEffects.apply(doc, backdrop, backdropVisuals.sky);

@@ -79,6 +79,12 @@ Car Kit (CC0).
   Vehicle bodies are in the prediction physics, so walking into one feels
   solid.
 
+- **Roads.** On a map with a race track, wheeled vehicles grip the road
+  better and are a little slower off it. Race mode puts everyone in a
+  vehicle on the start grid; a track can also carry NPC-driven ambient cars
+  in any mode (see GAME_MODES.md, Race). `TrackDriver`
+  (`sim/trackDriver.ts`) drives any vehicle round a track.
+
 Rockfall Canyon has a buggy and a speeder at each base, an MG turret on each
 roof, a hauler on the west ledge and two sentries mid-field.
 

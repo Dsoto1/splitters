@@ -54,6 +54,8 @@ import {
   type Side,
   type TerrainData,
   type ValidationIssue,
+  Track,
+  conformTerrainToTrack,
 } from '@tiletrigger/shared';
 import { NavWorld, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 
@@ -334,6 +336,17 @@ export class MapBuilder {
 
   terrain(t: TerrainData): this {
     this.run('Terrain', { kind: 'setTerrain', before: this.doc.terrain, after: t });
+    return this;
+  }
+
+  /**
+   * A race track through `points` (see map/track.ts); `layIn` also lays the
+   * road into the terrain (flat under it, shoulders blended).
+   */
+  track(t: Partial<Track> & { points: [number, number, number][] }, layIn = true): this {
+    const track = Track.parse(t);
+    this.run('Track', { kind: 'setTrack', before: this.doc.track, after: track });
+    if (layIn && this.doc.terrain) this.terrain(conformTerrainToTrack(this.doc.terrain, track));
     return this;
   }
 
