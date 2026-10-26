@@ -170,11 +170,67 @@ like any other movement. Each pad's flight is traced to where it lands and
 added to the navmesh as a one-way link, so bots ride pads too, and ledges
 reachable only by pad count as reachable for map validation.
 
+## Interior dressing (`map/dressing.ts`)
+
+Furnishes a room so it reads as what it is, from a recipe per room type:
+kitchen, dining, living, bedroom, bathroom, office, classroom, library,
+storage, warehouse, barracks, lab, bar / restaurant, shop, garage /
+workshop, chapel, prison cell, armoury, server room, lobby / reception and
+conference. A recipe is data (`DRESS_RECIPES`): items of props, each a slot,
+how many per cell of floor (49 m²), a minimum and a maximum.
+
+| Slot | What goes there | Examples |
+|---|---|---|
+| wall | Backs to a wall, facing in; far from the doors, near them, centred on the front wall (opposite the main door) or anywhere | Bed between nightstands, a run of kitchen units, bookcases, lockers, computer banks, the altar |
+| centre | Groups that share one turn and one lattice, nearest the middle (or in rows facing the front) | Table and chairs, sofa and armchairs round a coffee table on a rug, rows of desks or pews, back-to-back shelving |
+| corner | Inside corners, turned to face into the room | Plants, lamps, bins, urns, drums |
+| decor | On the wall above what stands in front of it | Shelves, banners, sword mounts |
+
+Placement is seeded (same seed, same room) on a 0.2 m occupancy grid of the
+room's floor:
+- **Doorways** keep 1.5 m clear in front; **windows**, firing slits, half walls,
+  railings and bars 0.9 m; spawns, pickups and set pieces 1.2 m; hills, bomb
+  sites and zones 2.5 m round their middle; the foot of a flight of stairs and
+  the edges of an upper floor's stair hole or mezzanine stay clear too.
+- Pieces never overlap each other or what the room already has (its own
+  pillars, cover and furniture, props, free blocks).
+- After every solid piece, every doorway that had a **2 m walking lane** to
+  the others still has one, and most of the room's open floor stays reachable
+  (sparse 60 %, normal 45 %, full 35 %). 2 m, not 1 m: bots' navmesh keeps
+  0.8 m off obstacles, so this is the lane the validator's reachability check
+  and the bots can follow.
+- Recipes mix in waist-high solid pieces (counters, desks, tables, crates):
+  every room type leaves cover to fight round.
+- **Density** (sparse, normal, full) scales the counts (×0.55, ×1, ×1.5).
+  **Budgets**: at most 48 props a room (`max`), and with `models` it only
+  picks models the map already uses once it is at its budget of different
+  models (80, see MAP_BUDGETS.md).
+
+`dressSpace(map, cells)` reads a room from a map: the floor inside its walls
+(upper storeys use their partial floors), the walls to back onto, the
+doorways and windows from the resolved edges, and what already stands
+there. `dressRoom(space, type, options)` returns prop entities without IDs;
+`dressMapRoom(map, cell, type)` does both for the room tile covering a cell;
+`guessRoomType(space, theme)` picks a plausible type from the room's size and
+the theme. In MapMaker, the tile inspector of a room, hall or building has
+**Dress room**: a room type (guessed to start with), a density, a storey for
+buildings, and Dress / Re-roll / Clear. The pieces are ordinary props (IDs
+`dr_<room>_<n>`), added in one undoable step, so creators dress, then move or
+delete what they like; dressing again or re-rolling replaces them. The map
+panel's **Dress all bare rooms** dresses every room with no props in it as a
+type guessed from its size and the theme.
+
 ## Scripted maps (`packages/server/src/tools/mapkit.ts`)
 
 `MapBuilder` wraps the MapMaker's edit commands for map build scripts:
 - `tile`, `fill` and `edge`;
 - `spawn`, `pickup`, `prop`, `breakable`, `mount` and `pad`;
+- `dress(room, type, { seed, density, max })`: interior dressing for the room
+  tile covering a cell (`[x, y, z]`), a rectangle of cells
+  (`{ x0, y0, x1, y1, z }`) or a `DressSpace`, seeded by the map and room and
+  kept within the map's prop budgets; call it after spawns and pickups so the
+  furniture keeps clear of them (Snowline Offices, Crossroads and Pump Tower
+  are dressed this way);
 - `theme`, `terrain`, `bounds`, `teams` and `meta`;
 - `save`, which validates the map and its navmesh and writes `maps/<id>.json`.
 

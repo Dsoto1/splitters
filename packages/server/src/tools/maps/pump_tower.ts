@@ -137,13 +137,8 @@ m.prop('warning_sign', at(1, 0, 0, 0, -3.3)).prop('big_pipe', at(3, 1, 0, 3, 0))
 m.breakable('crate', at(2, 0, 0, -2, -3)).breakable('gas', at(0, 2, 0, -3.2, 2));
 // The pump room behind bars.
 m.prop('machine', at(3, 4, 0, 0, 1), PI).prop('pipe_valve', at(3, 4, 0, -2.5, 2)).prop('hopper', at(3, 4, 0, 2.5, 2));
-// Middle floors: stores and kit.
-m.prop('shelf_boxes', at(3, 0, 1, 2.6, -3.1)).prop('metal_crate', at(0, 3, 1, -2.8, 2.8)).prop('barrel', at(3, 3, 1, 3, -3));
-m.prop('crate_small', at(0, 0, 1, -2.8, -2.8)).breakable('barrel', at(2, 3, 1, 2, 3));
-m.prop('crate_large', at(3, 0, 2, 2.8, 2.8)).prop('factory_box', at(3, 0, 2, -2.6, -2.8)).prop('warning_sign', at(3, 0, 2, 3.3, 0), -P);
-m.prop('shelf_bags', at(0, 3, 2, -2.8, 3)).prop('cardboard_box', at(3, 3, 2, 2.8, -2.8)).breakable('gas', at(0, 0, 2, -3, -3));
-m.prop('metal_crate', at(3, 0, 3, 2.8, -2.8)).prop('crate_small', at(0, 3, 3, -2.8, 2.8)).prop('shelf_boxes', at(3, 3, 3, 2.6, -3.1));
-m.breakable('crate', at(0, 0, 3, -2.8, -2.8));
+// Middle floors: a few drums and crates to shoot apart (the corner rooms are dressed below, after the spawns and pickups).
+m.breakable('barrel', at(2, 3, 1, 2, 3)).breakable('gas', at(0, 0, 2, -3, -3)).breakable('crate', at(0, 0, 3, -2.8, -2.8));
 // The control rooms at the top: consoles, screens and desks.
 m.prop('computer_bank', at(0, 0, 4, -2.6, -3), 0).prop('screen_panel', at(0, 0, 4, -3.3, 0), P);
 m.prop('computer_wide', at(3, 0, 4, 2.4, -3), 0).prop('office_chair', at(3, 0, 4, 2.4, -1.8), PI).prop('lever', at(3, 0, 4, 3.2, 2.5));
@@ -185,6 +180,15 @@ m.pickup('health_large', at(3, 2, TOP, 0, 1)).pickup('ammo', at(0, 1, TOP)).pick
 
 // King of the Hill: the bottom of the shaft, the catwalk, the control rooms.
 m.hill(at(1, 1, 0, 4, 4), 5).hill(at(1, 1, 2, 0, 4), 3).hill(at(0, 2, TOP, 0, 2), 4);
+
+// ---------------------------------------------------------------- the corner rooms, dressed for the works' crew
+// Bunks and lockers, the mess, stores, the armoury round the rockets, the shift office and the pump controls.
+const CORNER_ROOMS: [number, number, number, Parameters<typeof m.dress>[1]][] = [
+  [0, 0, 1, 'barracks'], [3, 0, 1, 'storage'], [0, 3, 1, 'armoury'], [3, 3, 1, 'bathroom'],
+  [0, 0, 2, 'kitchen'], [3, 0, 2, 'armoury'], [0, 3, 2, 'storage'], [3, 3, 2, 'barracks'],
+  [0, 0, 3, 'office'], [3, 0, 3, 'server'], [0, 3, 3, 'lab'], [3, 3, 3, 'storage'],
+];
+for (const [x, y, z, type] of CORNER_ROOMS) m.dress([x, y, z], type);
 
 // ---------------------------------------------------------------- light
 

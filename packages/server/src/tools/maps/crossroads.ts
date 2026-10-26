@@ -131,6 +131,11 @@ for (const [x, z] of [[-2.5, 30], [76.5, 22], [76.5, 54], [8, 76.5], [56, 76.5]]
 m.breakable('gas', [6, 0, 58]);
 m.breakable('glass', [14, 0, 10.2]);
 
+// ---------------------------------------------------------------- interiors, dressed for what they are (clear of the doors, spawns, pickups and hostages)
+m.dress([1, 1, 0], 'shop', { density: 'full' }).dress([6, 1, 0], 'armoury');
+for (const [x, y] of [[8, 2], [1, 8]] as const) m.dress([x, y, 0], 'living', { density: 'full' }).dress([x, y, 1], 'bedroom', { density: 'full' });
+m.dress([6, 6, 0], 'warehouse').dress([6, 7, 1], 'storage');
+
 // ---------------------------------------------------------------- ground and planting (after the boundary is set)
 const sm = (a: number, b: number, v: number) => {
   const t = Math.max(0, Math.min(1, (v - a) / (b - a)));

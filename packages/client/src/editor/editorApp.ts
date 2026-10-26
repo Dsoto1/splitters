@@ -79,6 +79,18 @@ import {
   ROOM_LAYOUTS,
   ROOM_LAYOUT_LABELS,
   type RoomOptions,
+  DRESS_DENSITIES,
+  ROOM_TYPES,
+  ROOM_TYPE_LABELS,
+  buildOccupancy,
+  dressRoom,
+  dressSpace,
+  guessRoomType,
+  modelBudget,
+  roomCells,
+  seededRandom,
+  type DressDensity,
+  type RoomType,
   SIDES,
   TILE_CATEGORIES,
   edgeChoiceAt,
@@ -2215,6 +2227,12 @@ export class EditorApp {
       this.renderBackdropPanel(el);
       this.renderBloodPanel(el);
       this.renderPhysicsPanel(el);
+      if (doc.classicStructure.tiles.some((t) => dressable(coreCatalog.get(t.tile)))) {
+        const all = button('Dress all bare rooms', () => this.dressAllRooms());
+        all.id = 'ed-dress-all';
+        all.title = 'Furnish every room with no props in it, as a room type guessed from its size and the theme (undo takes it back)';
+        el.append(all);
+      }
       if (doc.terrain && doc.entities.some((e) => e.kind === 'prop')) {
         const settle = button('Settle all props on ground', () => this.settleProps());
         settle.id = 'ed-settle-all';
@@ -2256,6 +2274,7 @@ export class EditorApp {
         }
       } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
       if (def?.configurable) this.roomOptionsPanel(el, t);
+      if (def && dressable(def)) this.dressPanel(el, t);
       const h3 = document.createElement('h3');
       h3.textContent = 'Surfaces';
       el.append(h3);
@@ -2589,6 +2608,122 @@ export class EditorApp {
     el.append(small(`ID ${e.id}`));
   }
 
+  /** Room type, density and re-roll count last used per room storey (by dressing tag). */
+  private readonly dressChoices = new Map<string, { type: RoomType; density: DressDensity; roll: number }>();
+
+  /**
+   * "Dress room as…": furnish the room for a room type (shared/map/dressing.ts).
+   * The props are ordinary prop entities (IDs starting with the room's dressing
+   * tag), added in one undoable step; dressing again or re-rolling replaces
+   * them, so creators can dress, tweak and re-roll.
+   */
+  private dressPanel(el: HTMLElement, t: TilePlacement): void {
+    const def = coreCatalog.get(t.tile)!;
+    const levels = [...new Set(def.cells.map((c) => c[2]))].sort((a, b) => a - b);
+    const head = document.createElement('h3');
+    head.textContent = 'Dress room';
+    el.append(head);
+    let level = levels[0] ?? 0;
+    const tag = () => dressTag(t.id, level);
+    const choice = () => this.dressChoices.get(tag());
+    const type = document.createElement('select');
+    type.id = 'ed-dress-type';
+    for (const r of ROOM_TYPES) type.append(new Option(ROOM_TYPE_LABELS[r], r));
+    const density = document.createElement('select');
+    density.id = 'ed-dress-density';
+    for (const d of DRESS_DENSITIES) density.append(new Option(d[0]!.toUpperCase() + d.slice(1), d));
+    const dressed = () => this.doc.entities.filter((e) => e.kind === 'prop' && e.id.startsWith(`${tag()}_`));
+    const clear = button('Clear', () => {
+      const old = dressed();
+      if (old.length) this.run('Clear room dressing', { kind: 'removeEntities', entities: old });
+    });
+    clear.id = 'ed-dress-clear';
+    const sync = () => {
+      const now = choice();
+      type.value = now?.type ?? guessRoomType(dressSpace(this.doc, roomCells(this.doc, t.x, t.y, t.z + level)), this.doc.classicStructure.theme, seededRandom(tag())());
+      density.value = now?.density ?? 'normal';
+      clear.disabled = !dressed().length;
+    };
+    if (levels.length > 1) {
+      const storey = document.createElement('select');
+      storey.id = 'ed-dress-storey';
+      for (const l of levels) storey.append(new Option(l === 0 ? 'Ground floor' : `Floor ${l + 1}`, String(l)));
+      storey.addEventListener('change', () => {
+        level = Number(storey.value);
+        sync();
+      });
+      el.append(row('Storey', storey));
+    }
+    sync();
+    el.append(row('Dress as', type), row('Density', density));
+    const go = (roll: number) => this.dressRoomAt(t, level, type.value as RoomType, density.value as DressDensity, roll);
+    const dress = button('Dress room', () => go(choice()?.roll ?? 0));
+    dress.id = 'ed-dress';
+    dress.title = 'Furnish the room as this room type (replaces what it was dressed with before)';
+    const reroll = button('Re-roll', () => go((choice()?.roll ?? 0) + 1));
+    reroll.id = 'ed-dress-reroll';
+    reroll.title = 'Dress it again with another arrangement';
+    const buttons = document.createElement('div');
+    buttons.className = 'buttons';
+    buttons.append(dress, reroll, clear);
+    el.append(buttons, small('Furniture backs onto the walls, groups stand in the middle, plants and lamps in the corners; doorways, windows, spawns and pickups stay clear, with a lane between the doorways. The pieces are ordinary props: move or delete them as you like.'));
+  }
+
+  /** Dress (or re-dress) one storey of a room in a single undoable step. */
+  private dressRoomAt(t: TilePlacement, level: number, type: RoomType, density: DressDensity, roll: number): void {
+    const tag = dressTag(t.id, level);
+    const doc = this.doc;
+    const old = doc.entities.filter((e) => e.kind === 'prop' && e.id.startsWith(`${tag}_`));
+    const base: MapDocument = { ...doc, entities: doc.entities.filter((e) => !old.includes(e)) };
+    const props = dressRoom(dressSpace(base, roomCells(base, t.x, t.y, t.z + level)), type, {
+      seed: `${t.id}:${level}:${roll}`,
+      density,
+      models: modelBudget(base),
+      max: Math.max(0, Math.min(48, 1500 - base.entities.filter((e) => e.kind === 'prop').length)),
+    });
+    this.dressChoices.set(tag, { type, density, roll });
+    if (!props.length) {
+      this.toast(`Nothing fits in this room as a ${ROOM_TYPE_LABELS[type].toLowerCase()}`, true);
+      return;
+    }
+    const added = props.map((p, i) => ({ ...p, id: `${tag}_${i}` }) as MapEntity);
+    const commands: EditCommand[] = [...(old.length ? [{ kind: 'removeEntities', entities: old } as EditCommand] : []), { kind: 'addEntities', entities: added }];
+    if (this.run(`Dress room: ${ROOM_TYPE_LABELS[type]}`, { kind: 'batch', commands })) this.toast(`Dressed as a ${ROOM_TYPE_LABELS[type].toLowerCase()}: ${added.length} props`);
+  }
+
+  /** Dress every room storey with no props in it yet, as a type guessed from its size and the theme. */
+  private dressAllRooms(): void {
+    let doc = this.doc;
+    const { cells } = buildOccupancy(doc);
+    const added: MapEntity[] = [];
+    let rooms = 0;
+    for (const t of doc.classicStructure.tiles) {
+      const def = coreCatalog.get(t.tile);
+      if (!dressable(def)) continue;
+      for (const level of new Set(def!.cells.map((c) => c[2]))) {
+        const here = roomCells(doc, t.x, t.y, t.z + level).filter((c) => cells.get(`${c[0]},${c[1]},${c[2]}`)?.placement.id === t.id);
+        if (!here.length) continue;
+        const space = dressSpace(doc, here);
+        const taken = doc.entities.some((e) => e.kind === 'prop' && Math.abs(e.position[1] - space.y) < 1.5 && space.rects.some((r) => e.position[0] >= r.x0 && e.position[0] <= r.x1 && e.position[2] >= r.z0 && e.position[2] <= r.z1));
+        if (taken) continue;
+        const tag = dressTag(t.id, level);
+        const type = guessRoomType(space, doc.classicStructure.theme, seededRandom(tag)());
+        const props = dressRoom(space, type, { seed: `${t.id}:${level}:0`, models: modelBudget(doc), max: Math.max(0, Math.min(48, 1500 - doc.entities.filter((e) => e.kind === 'prop').length)) });
+        if (!props.length) continue;
+        const mine = props.map((p, i) => ({ ...p, id: `${tag}_${i}` }) as MapEntity);
+        this.dressChoices.set(tag, { type, density: 'normal', roll: 0 });
+        added.push(...mine);
+        doc = { ...doc, entities: [...doc.entities, ...mine] };
+        rooms++;
+      }
+    }
+    if (!added.length) {
+      this.toast('No bare rooms to dress');
+      return;
+    }
+    if (this.run('Dress all rooms', { kind: 'addEntities', entities: added })) this.toast(`Dressed ${rooms} room${rooms > 1 ? 's' : ''} (${added.length} props)`);
+  }
+
   /** One surface slot in the tile inspector: material (or theme default) and tint. */
   /** Layout, floor, ceiling and corners of a room (absent = the room as designed). */
   private roomOptionsPanel(el: HTMLElement, t: TilePlacement): void {
@@ -2819,6 +2954,18 @@ export class EditorApp {
 function isTyping(): boolean {
   const el = document.activeElement;
   return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') && (el as HTMLInputElement).type !== 'checkbox';
+}
+
+/** Rooms you can dress: enclosed room, hall and building tiles (not open yards, streets or model buildings). */
+function dressable(def: { open?: boolean; model?: unknown; category: string } | undefined): boolean {
+  return !!def && !def.open && !def.model && (def.category === 'Rooms' || def.category === 'Large' || def.category === 'Buildings');
+}
+
+/** Prefix of the IDs of the props a room storey is dressed with (short and stable, from the placement's ID). */
+function dressTag(placementId: string, level: number): string {
+  let h = 2166136261;
+  for (const ch of `${placementId}:${level}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return `dr_${(h >>> 0).toString(36)}`;
 }
 
 function button(label: string, onClick: () => void): HTMLButtonElement {

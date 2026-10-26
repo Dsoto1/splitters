@@ -114,14 +114,8 @@ m.prop('lightpost', [-2, 0, 40]).prop('lightpost', [66, 0, 40]).prop('trashcan',
 m.prop('crate_large', [-1, 0, 28]).prop('cargo_crate', [65, 0, 24], 0.2).prop('metal_crate', [30, 0, 62]).prop('barrel', [38, 0, 62]);
 m.prop('tree_cone', [20, 0, -2]).prop('tree_cone', [36, 0, 2]).prop('bush_cone', [60, 0, 10]);
 
-// ---------------------------------------------------------------- inside: set pieces, then the offices furnished
-// The conference table, the server racks, the break room, the lobby desk.
-m.prop('table', [22, 0, 48], 0).prop('table', [26, 0, 48], 0).prop('chair', [22, 0, 46.6], 0).prop('chair', [26, 0, 49.4], Math.PI);
-m.prop('shelf_boxes', [45.5, 0, 51], Math.PI).prop('shelf_boxes', [50.5, 0, 51], Math.PI).prop('screen_panel', [51.5, 0, 46], -P);
-m.prop('fridge', [36.8, 0, 51.2], Math.PI).prop('kitchen_cabinet', [38, 0, 51.4], Math.PI).prop('table_round', [42, 0, 47]).prop('freezers_upright', [43.4, 0, 51.2], Math.PI);
-m.prop('desk', [28, 0, 18.5], 0).prop('potted_plant', [24.5, 0, 13]).prop('potted_plant', [35.5, 0, 13]).prop('sofa', [36, 0, 19.5], Math.PI);
+// ---------------------------------------------------------------- inside: the glass front (the rooms are dressed below)
 m.breakable('glass', [28, 0, 12.1], 0);
-m.furnish('office', (x, y) => isHall(x, y));
 
 // ---------------------------------------------------------------- spawns, hostages, pickups
 for (const [x, z] of [[20, -2], [26, 0], [32, -2], [38, 0], [44, -2], [32, 3]] as const) m.spawn([x, 0, z], 0, embers);
@@ -133,6 +127,13 @@ m.pickup('weapon_smg', [4, 0, 4]).pickup('weapon_shotgun', [60, 0, 4]).pickup('w
 m.pickup('weapon_auto_shotgun', [32, 0, 40]).pickup('armor_large', [48, 0, 24]).pickup('armor_small', [16, 0, 40]).pickup('health_large', [40, 0, 24]);
 m.pickup('health_small', [8, 0, 16]).pickup('health_small', [56, 0, 48]).pickup('ammo', [24, 0, 24]).pickup('ammo', [40, 0, 40]);
 m.pickup('ammo_shells', [8, 0, 32]).pickup('grenades', [32, 0, 60]).pickup('grenades', [56, 0, 16]);
+
+// ---------------------------------------------------------------- inside: every room dressed for what it is (after the spawns and hostages, which it keeps clear)
+m.dress({ x0: 2, y0: 6, x1: 3, y1: 6 }, 'conference', { density: 'full' }); // the hostages' conference room
+m.dress([6, 6, 0], 'server', { density: 'full' }).dress([5, 6, 0], 'kitchen').dress([1, 6, 0], 'office').dress([7, 6, 0], 'storage');
+m.dress({ x0: 3, y0: 2, x1: 4, y1: 2 }, 'lobby');
+for (const [x, y] of [[1, 2], [2, 2], [5, 2], [6, 2], [2, 4], [3, 4], [5, 4]] as const) m.dress([x, y, 0], 'office');
+m.dress([7, 2, 0], 'storage').dress([4, 4, 0], 'library').dress([6, 4, 0], 'bathroom');
 
 // Office lighting: a cool white panel in every office and corridor.
 m.lightRooms({ color: '#eef3ff', intensity: 1.1 });

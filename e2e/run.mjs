@@ -312,6 +312,25 @@ async function editoruxFlow(browser) {
   check(!d.classicStructure.tiles.some((t) => t.id === sel), 'toolbar Delete removes the selection');
   await page.keyboard.press('Control+KeyZ');
 
+  // Dress room as…: the start room furnished as an office, re-rolled, undone in one step each.
+  await clickAt(2.6, 0, -2.6);
+  await settle();
+  check(await page.isVisible('#ed-dress') && (await page.textContent('#ed-inspector')).includes('Dress room'), 'the room inspector offers Dress room');
+  await page.selectOption('#ed-dress-type', 'office');
+  await page.click('#ed-dress');
+  const dressed = async () => (await doc()).entities.filter((e) => e.kind === 'prop' && e.id.startsWith('dr_'));
+  const first = await dressed();
+  check(first.length >= 3 && first.some((e) => e.model === 'prop.desk'), `Dress room furnishes it as an office (${first.length} props)`);
+  await settle();
+  await page.click('#ed-dress-reroll');
+  const second = await dressed();
+  check(second.length >= 3 && JSON.stringify(second.map((e) => e.position)) !== JSON.stringify(first.map((e) => e.position)), 'Re-roll replaces the dressing with another arrangement');
+  await page.keyboard.press('Control+KeyZ');
+  check(JSON.stringify((await dressed()).map((e) => e.position)) === JSON.stringify(first.map((e) => e.position)), 'one undo brings the first dressing back');
+  await page.keyboard.press('Control+KeyZ');
+  check((await dressed()).length === 0, 'and another takes it away');
+  await page.keyboard.press('Escape');
+
   // Levels: up with the strip, build there, the toast and the ghosted ground floor; erase stays on its level.
   await page.click('#ed-level-up');
   await settle();

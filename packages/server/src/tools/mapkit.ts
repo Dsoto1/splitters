@@ -56,6 +56,13 @@ import {
   type ValidationIssue,
   Track,
   conformTerrainToTrack,
+  dressRoom,
+  dressSpace,
+  modelBudget,
+  roomCells,
+  type DressOptions,
+  type DressSpace,
+  type RoomType,
 } from '@tiletrigger/shared';
 import { NavWorld, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 
@@ -537,6 +544,43 @@ export class MapBuilder {
         this.prop(model, [+px.toFixed(2), y, +pz.toFixed(2)], +yaw.toFixed(4));
       });
     }
+    return this;
+  }
+
+  /**
+   * Dress a room for what it is (shared/map/dressing.ts): wall pieces backed
+   * onto its walls, centre groups, corner pieces and wall decor from the room
+   * type's recipe, keeping its doorways, windows, spawns and pickups clear and
+   * a lane between its doorways. `room` is a cell (the whole room tile covering
+   * it, on that level), a rectangle of cells on one level (walls built between
+   * them count as obstacles), or a `DressSpace`. Seeded by the map and the
+   * room, so rebuilding gives the same file; it stays within the map's prop
+   * budgets (1,500 props, 80 different models). Dress after placing spawns and
+   * pickups, so the furniture keeps clear of them.
+   */
+  dress(room: V3 | { x0: number; y0: number; x1: number; y1: number; z?: number } | DressSpace, type: RoomType, o: DressOptions = {}): this {
+    this.flush();
+    let space: DressSpace;
+    let key: string;
+    if (Array.isArray(room)) {
+      const cells = roomCells(this.doc, room[0], room[1], room[2]);
+      if (!cells.length) throw new Error(`${this.id}: dress: no room at ${room.join(',')}`);
+      space = dressSpace(this.doc, cells);
+      key = room.join(',');
+    } else if ('rects' in room) {
+      space = room;
+      key = room.rects.map((r) => `${r.x0},${r.z0}`).join(';');
+    } else {
+      const z = room.z ?? 0;
+      const cells: V3[] = [];
+      for (let x = Math.min(room.x0, room.x1); x <= Math.max(room.x0, room.x1); x++) for (let y = Math.min(room.y0, room.y1); y <= Math.max(room.y0, room.y1); y++) cells.push([x, y, z]);
+      space = dressSpace(this.doc, cells);
+      key = `${room.x0},${room.y0},${room.x1},${room.y1},${z}`;
+    }
+    const props = this.doc.entities.filter((e) => e.kind === 'prop').length;
+    const placed = dressRoom(space, type, { seed: `${this.id}:${key}`, models: modelBudget(this.doc), max: Math.max(0, Math.min(48, 1500 - props)), ...o });
+    for (const p of placed) this.add(p);
+    this.flush();
     return this;
   }
 
