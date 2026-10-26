@@ -42,6 +42,9 @@ export class BackdropVisuals {
   private profile: BeltProfile = BELTS.none!;
 
   /** (Re)build for this map; cheap to call again when nothing changed. `dim` darkens the sky (MapMaker). */
+  /** The sky of the last build (its colours and sun drive the mist and light shafts). */
+  sky: SkyDefinition | null = null;
+
   build(doc: MapDocument, boxes: readonly WorldBox[], dim = 1): Backdrop {
     const backdrop = resolveBackdrop(doc);
     const area = playArea(doc, boxes);
@@ -50,6 +53,7 @@ export class BackdropVisuals {
     this.dispose();
     this.key = key;
     const sky = skyFor(backdrop, doc);
+    this.sky = sky;
     const horizon = Color3.FromHexString(sky.horizon);
     this.applyLighting(sky);
     this.scene.clearColor = new Color4(horizon.r * dim, horizon.g * dim, horizon.b * dim, 1);

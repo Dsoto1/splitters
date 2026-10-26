@@ -28393,7 +28393,8 @@
     "sky": "dusk",
     "scenery": "city",
     "ground": "gravel",
-    "haze": 0.55
+    "haze": 0.55,
+    "mist": 0.55
   },
   "physics": null,
   "blood": null,

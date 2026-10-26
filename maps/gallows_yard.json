@@ -39338,7 +39338,8 @@
     "sky": "dusk",
     "scenery": "forest",
     "ground": "grass",
-    "haze": 0.6
+    "haze": 0.6,
+    "mist": 0.45
   },
   "physics": null,
   "blood": null,

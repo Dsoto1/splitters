@@ -35210,7 +35210,8 @@
     "sky": "sunset",
     "scenery": "hills",
     "ground": "grass",
-    "haze": 0.45
+    "haze": 0.45,
+    "mist": 0.25
   },
   "physics": null,
   "blood": null,

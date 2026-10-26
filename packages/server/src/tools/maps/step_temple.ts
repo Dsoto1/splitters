@@ -118,7 +118,7 @@ const terrace = (h: number, step: number) => {
 const m = new MapBuilder('step_temple', 'Step Temple');
 m.theme('temple');
 // Like the original, a temple lost in the jungle.
-m.backdrop('clear', 'forest', 'moss', 0.55);
+m.backdrop('clear', 'forest', 'moss', 0.55, 0.5);
 const P = Math.PI / 2;
 const SIDES: Side[] = ['N', 'E', 'S', 'W'];
 type V3 = [number, number, number];

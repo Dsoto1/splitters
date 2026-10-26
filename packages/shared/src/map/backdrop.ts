@@ -24,6 +24,8 @@ export interface Backdrop {
   ground: BackdropGround;
   /** 0 (crystal clear) to 1 (thick haze). */
   haze: number;
+  /** Ground mist, 0 (none) to 1 (thick): fog that pools in low ground and thins with height. */
+  mist?: number;
 }
 
 export interface SkyDefinition {

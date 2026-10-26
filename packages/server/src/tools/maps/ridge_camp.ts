@@ -113,7 +113,7 @@ const terrace = (h: number, step: number) => {
 
 const m = new MapBuilder('ridge_camp', 'Ridge Camp');
 m.theme('castle');
-m.backdrop('sunrise', 'mountains', 'grass', 0.5);
+m.backdrop('sunrise', 'mountains', 'grass', 0.5, 0.35);
 const P = Math.PI / 2;
 
 // ---------------------------------------------------------------- floor (z0)

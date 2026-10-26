@@ -457,6 +457,7 @@ export const BackdropSchema = z.object({
   scenery: z.enum(SCENERY_IDS),
   ground: z.enum(BACKDROP_GROUNDS),
   haze: z.number().min(0).max(1).default(0.5),
+  mist: z.number().min(0).max(1).optional(),
 });
 
 /** Blood on hits and kills: its colour (green for aliens, oil for robots…) and how much. */

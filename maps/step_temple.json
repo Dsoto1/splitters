@@ -50093,7 +50093,8 @@
     "sky": "clear",
     "scenery": "forest",
     "ground": "moss",
-    "haze": 0.55
+    "haze": 0.55,
+    "mist": 0.5
   },
   "physics": null,
   "blood": null,

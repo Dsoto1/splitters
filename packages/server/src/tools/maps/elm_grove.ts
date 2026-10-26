@@ -24,7 +24,7 @@ import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('elm_grove', 'Elm Grove');
 m.theme('garden');
-m.backdrop('sunset', 'hills', 'grass', 0.45);
+m.backdrop('sunset', 'hills', 'grass', 0.45, 0.25);
 m.teams([8, 8]);
 const [embers, tide] = m.teamIds(2) as [string, string];
 const P = Math.PI / 2;

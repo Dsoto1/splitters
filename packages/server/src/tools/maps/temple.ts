@@ -30,7 +30,7 @@ import { MapBuilder } from '../mapkit.ts';
 const m = new MapBuilder('temple', 'Temple');
 m.theme('temple');
 // An old temple at dusk, the jungle hills dark beyond its walls.
-m.backdrop('dusk', 'forest', 'moss', 0.5);
+m.backdrop('dusk', 'forest', 'moss', 0.5, 0.3);
 const P = Math.PI / 2;
 const PI = Math.PI;
 type V3 = [number, number, number];

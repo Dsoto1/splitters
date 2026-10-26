@@ -388,7 +388,7 @@ for (let n = 0; n < 2000 && placed.length < 420; n++) {
 
 // ---------------------------------------------------------------- map settings
 
-m.backdrop('sunset', 'mountains', 'grass', 0.45);
+m.backdrop('sunset', 'mountains', 'grass', 0.45, 0.35);
 m.bounds('invisible', 0, { min: [-78, -156], max: [78, 156] }, 40);
 m.teams([8, 8]);
 m.furnish();

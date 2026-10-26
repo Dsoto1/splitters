@@ -49,7 +49,7 @@ import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('backwoods', 'Backwoods Lodge');
 m.theme('saloon');
-m.backdrop('cloudy', 'forest', 'grass', 0.4);
+m.backdrop('cloudy', 'forest', 'grass', 0.4, 0.5);
 m.teams([8, 8]);
 const [defenders, attackers] = m.teamIds() as [string, string];
 

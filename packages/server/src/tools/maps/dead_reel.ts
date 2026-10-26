@@ -23,7 +23,7 @@ import { MapBuilder } from '../mapkit.ts';
 
 const m = new MapBuilder('dead_reel', 'Dead Reel');
 m.theme('manor');
-m.backdrop('dusk', 'city', 'gravel', 0.55);
+m.backdrop('dusk', 'city', 'gravel', 0.55, 0.55);
 m.factions([{ id: 'xeno', name: 'The Things', color: '#8fd14f', relations: {} }]);
 const P = Math.PI / 2;
 type Style = Parameters<typeof m.edge>[4];

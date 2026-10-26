@@ -6,9 +6,9 @@ here blocks players, bots or shots, except trees and rocks placed as props
 
 ## Backdrop
 
-Every map has a backdrop with four parts, set in MapMaker under **Map
+Every map has a backdrop, set in MapMaker under **Map
 properties → Backdrop** (click empty space with the Select tool), or in a map
-script with `m.backdrop(sky, scenery, ground, haze)`:
+script with `m.backdrop(sky, scenery, ground, haze, mist)`:
 
 | Part | Choices |
 |---|---|
@@ -16,6 +16,7 @@ script with `m.backdrop(sky, scenery, ground, haze)`:
 | **Scenery** | None, Rolling hills, Mountains, Snowy peaks, Mesas, Dunes, Forest, City skyline, Open sea |
 | **Ground beyond** | Any terrain ground (grass, dirt, stone, sand, gravel, snow, moss, dark earth), Water, or None (floating in the sky or space) |
 | **Haze** | 0 (crystal clear) to 100% (thick): fades the distance into the horizon colour |
+| **Ground mist** | 0 (none, the default) to 100%: fog that pools in low ground (valleys, ditches, the canyon floor) and thins with height, so hilltops stand clear. Medium and high graphics |
 
 A map that hasn't chosen one uses its **theme's backdrop** (`THEME_BACKDROPS`
 in `packages/shared/src/map/backdrop.ts`): Desert Town gets a clear sky over
@@ -23,6 +24,16 @@ mesas, Arctic Base snowy peaks, Neon City a night skyline, Space Station a
 starfield, and so on. With terrain, the ground beyond follows the terrain's
 commonest edge material, so the land carries on seamlessly past the border.
 **Use the theme's backdrop** in the panel goes back to the default.
+
+Ground mist and light shafts (`packages/client/src/game/skyEffects.ts`): the
+mist is a screen pass over the camera-space depth that integrates a density
+falling off exponentially with height along each view ray (base: the lowest
+fifth of the terrain, or the ground floor), in the horizon colour. On high
+graphics, sunny skies (clear, cloudy, sunrise, sunset, dusk, misty, snowy) cast
+shafts of light past whatever stands between you and the sun (volumetric light
+scattering from a sun disc kept far out along the sun's direction). Mist is set
+on Blood Gulch, Backwoods, Step Temple, Gallows Yard, Dead Reel, Ridge Camp,
+Temple and Elm Grove.
 
 How it's drawn (`packages/client/src/backdrop.ts`):
 

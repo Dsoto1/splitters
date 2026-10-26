@@ -347,8 +347,8 @@ export class MapBuilder {
   }
 
   /** Sky, distant scenery, ground past the border and haze (otherwise the theme's). */
-  backdrop(sky: SkyId, scenery: SceneryId, ground: BackdropGround, haze = 0.5): this {
-    this.run('Backdrop', { kind: 'setBackdrop', before: this.doc.backdrop, after: { sky, scenery, ground, haze } });
+  backdrop(sky: SkyId, scenery: SceneryId, ground: BackdropGround, haze = 0.5, mist = 0): this {
+    this.run('Backdrop', { kind: 'setBackdrop', before: this.doc.backdrop, after: { sky, scenery, ground, haze, ...(mist ? { mist } : {}) } });
     return this;
   }
 

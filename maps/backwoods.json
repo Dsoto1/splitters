@@ -37165,7 +37165,8 @@
     "sky": "cloudy",
     "scenery": "forest",
     "ground": "grass",
-    "haze": 0.4
+    "haze": 0.4,
+    "mist": 0.5
   },
   "physics": null,
   "blood": null,

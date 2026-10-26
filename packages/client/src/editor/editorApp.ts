@@ -1570,6 +1570,16 @@ export class EditorApp {
     haze.id = 'ed-bd-haze';
     haze.addEventListener('change', () => patch({ haze: Number(haze.value) / 100 }));
     el.append(row('Haze', haze));
+    const mist = document.createElement('input');
+    mist.type = 'range';
+    mist.min = '0';
+    mist.max = '100';
+    mist.step = '5';
+    mist.value = String(Math.round((b.mist ?? 0) * 100));
+    mist.id = 'ed-bd-mist';
+    mist.title = 'Fog that pools in low ground (valleys, ditches, the canyon floor) and thins with height. Medium and high graphics.';
+    mist.addEventListener('change', () => patch({ mist: Number(mist.value) / 100 }));
+    el.append(row('Ground mist', mist));
     if (own) el.append(button('Use the theme\'s backdrop', () => set('Theme backdrop', null)));
     el.append(small(own ? 'Drawn only: nothing out there blocks players or shots.' : "Following the theme. Change anything to give this map its own."));
   }

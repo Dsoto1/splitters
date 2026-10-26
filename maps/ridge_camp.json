@@ -32692,7 +32692,8 @@
     "sky": "sunrise",
     "scenery": "mountains",
     "ground": "grass",
-    "haze": 0.5
+    "haze": 0.5,
+    "mist": 0.35
   },
   "physics": null,
   "blood": null,

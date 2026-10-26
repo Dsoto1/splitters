@@ -62,6 +62,7 @@ import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
 import { CityVisuals } from './cityVisuals.ts';
+import { SkyEffects } from './skyEffects.ts';
 import { CharacterLibrary, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { CreatureLibrary, type AvatarSpec } from '../content/creatures.ts';
@@ -163,6 +164,7 @@ export class GameView {
   readonly models: ModelLibrary;
   /** City facades and building/street tile models. */
   readonly city: CityVisuals;
+  private readonly skyEffects: SkyEffects;
   readonly scenario: ScenarioVisuals;
   readonly characters: CharacterLibrary;
   readonly creatures: CreatureLibrary;
@@ -227,6 +229,7 @@ export class GameView {
     this.viewRoot = new TransformNode('viewRoot', this.scene);
     this.viewRoot.parent = this.camera;
     this.atmosphere = new Atmosphere(this.scene, this.camera, sun, this.viewRoot);
+    this.skyEffects = new SkyEffects(this.scene, this.camera, this.atmosphere.quality);
     this.flash = createStarFlash(this.scene, 'muzzleFlash', 0.32);
     this.flash.renderingGroupId = 1;
     // It rides on the gun in camera space and already faces you: billboarding it
@@ -240,7 +243,9 @@ export class GameView {
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);
-    new BackdropVisuals(this.scene, styler, this.models).build(doc, boxes);
+    const backdropVisuals = new BackdropVisuals(this.scene, styler, this.models);
+    const backdrop = backdropVisuals.build(doc, boxes);
+    if (backdropVisuals.sky) this.skyEffects.apply(doc, backdrop, backdropVisuals.sky);
     this.city.setMap(doc);
     this.liquids = mapLiquids(doc.entities);
     this.physics?.free();

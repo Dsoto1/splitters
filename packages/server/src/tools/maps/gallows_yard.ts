@@ -116,7 +116,7 @@ const terrace = (h: number, step: number) => {
 
 const m = new MapBuilder('gallows_yard', 'Gallows Yard');
 m.theme('castle');
-m.backdrop('dusk', 'forest', 'grass', 0.6);
+m.backdrop('dusk', 'forest', 'grass', 0.6, 0.45);
 const [embers, tide] = m.teamIds() as [string, string];
 const P = Math.PI / 2;
 
