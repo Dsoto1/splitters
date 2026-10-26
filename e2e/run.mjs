@@ -1463,13 +1463,19 @@ async function hostgameFlow(browser) {
       const f = window.__match.combatants().find((c) => c.name === 'Friend');
       if (f) setInterval(() => (f.health = f.maxHealth), 50);
     });
+    // The friend now spawns at a spawn point, which can face a wall or a bot: turn and try again if blocked.
     const moved = await friend.evaluate(async () => {
-      const y0 = window.__cs.local.state.pos;
-      window.__autoInput = { forward: 1 };
-      await new Promise((r) => setTimeout(r, 1500));
-      window.__autoInput = { forward: 0 };
-      const y1 = window.__cs.local.state.pos;
-      return Math.hypot(y1.x - y0.x, y1.z - y0.z);
+      let best = 0;
+      for (let turn = 0; turn < 4 && best <= 1; turn++) {
+        if (turn) window.__cs.input.yaw += Math.PI / 2;
+        const y0 = { ...window.__cs.local.state.pos };
+        window.__autoInput = { forward: 1 };
+        await new Promise((r) => setTimeout(r, 1500));
+        window.__autoInput = { forward: 0 };
+        const y1 = window.__cs.local.state.pos;
+        best = Math.max(best, Math.hypot(y1.x - y0.x, y1.z - y0.z));
+      }
+      return best;
     });
     const onHost = await host.evaluate(() => {
       const f = window.__match.combatants().find((c) => c.name === 'Friend');
