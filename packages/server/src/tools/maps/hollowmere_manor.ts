@@ -9,9 +9,10 @@
  *   - Study (first floor): the gallery lasers, two rows of laser fences across
  *     the long gallery for 5 s (cooldown 25 s).
  *   - Balcony over the great hall: seal the hall (its five doors lock for
- *     6 s) and the spike plates in its floor fire three times. The only way
- *     out is down: the hall has three red-rimmed trapdoors that drop into the
- *     crypt (they give way when stood on and come back after 6 s).
+ *     6 s), the red lamps over its trapdoors blink and the spike plates in
+ *     its floor fire three times; then the lever springs the hall's three
+ *     red-rimmed trapdoors and everyone still in there drops into the crypt.
+ *     (They also give way when stood on, and come back after 6 s.)
  *   - Kitchen: cut the chandelier, a crusher over the dining-hall table
  *     (cooldown 15 s).
  *   - Wine cellar: fire the spike plates in the cellar corridor in a ripple
@@ -390,6 +391,8 @@ terrace(-6.4, 44, 6.4, 46.4);
 // ---------------------------------------------------------------- scenario: doors, buttons, traps
 
 const door = (id: string, name: string, pos: V3, yaw: number, locked = false) => m.add({ kind: 'door', id, name, position: pos, yaw, startOpen: false, locked, auto: true });
+/** The red lamps over the great hall's trapdoors (they blink while the balcony lever has the hall armed). */
+const HALL_LAMPS = ['lamp_trapdoor_1', 'lamp_trapdoor_2', 'lamp_trapdoor_3'];
 const HALL_DOORS = ['door_hall_s', 'door_hall_w', 'door_hall_e', 'door_hall_nw', 'door_hall_ne'];
 door('door_hall_s', 'Great hall (foyer)', [0, 0, 12], 0);
 door('door_hall_w', 'Great hall (dining)', [-12, 0, 24], P);
@@ -436,7 +439,8 @@ for (const x of [-10, -6.5, 6.5, 10]) {
 }
 
 // Trapdoors in the great hall floor, rotten floor in the attic, and the bookcase walls.
-for (const [x, y] of [[-1, 2], [1, 2], [0, 3]] as const) m.block(at(x, y, 0, 0, 0, -0.3), [4, 0.3, 4], 'trapdoor', { material: 'pbr_floorboards', tint: '#6a5038', delay: 0.25, respawn: 6 });
+const TRAPDOORS = ['trapdoor_hall_1', 'trapdoor_hall_2', 'trapdoor_hall_3'];
+for (const [k, [x, y]] of ([[-1, 2], [1, 2], [0, 3]] as const).entries()) m.block(at(x, y, 0, 0, 0, -0.3), [4, 0.3, 4], 'trapdoor', { material: 'pbr_floorboards', tint: '#6a5038', delay: 0.25, respawn: 6, id: TRAPDOORS[k]! });
 for (const x of [-1, 1]) m.block(at(x, 0, 2, 0, 0, -0.3), [4, 0.3, 4], 'crumble', { material: 'pbr_floorboards', tint: '#8a7a64', delay: 0.7, respawn: 8 });
 m.add({ kind: 'destructible', id: 'wall_bookcase_lib', name: 'Library bookcase', model: 'wall', position: [-12, 0, 0], yaw: P, health: 200, explosiveOnly: false });
 m.add({ kind: 'destructible', id: 'wall_bookcase_din', name: 'Dining bookcase', model: 'wall', position: [-16, 0, 12], yaw: 0, health: 200, explosiveOnly: false });
@@ -481,6 +485,15 @@ m.logic({
       ...HALL_SPIKES.map((t) => act('trap_fire', t)),
       wait(1.8),
       ...HALL_SPIKES.map((t) => act('trap_fire', t)),
+    ]),
+    rule('rule_hall_floor', 'Great hall: the floor gives way', pressed('btn_hall'), [
+      // The tell: the trapdoor lamps blink red while the hall is armed.
+      ...HALL_LAMPS.flatMap((l) => [act('light_color', l, { text: '#ff1a10' }), act('light_blink', l, { state: 'on', value: 3 })]),
+      wait(5.6),
+      // Then the lever springs the trapdoors into the crypt (they come back 6 s later).
+      say('The floor gives way!', 2),
+      ...TRAPDOORS.map((t) => act('block_drop', t)),
+      ...HALL_LAMPS.flatMap((l) => [act('light_blink', l, { state: 'off' }), act('light_color', l)]),
     ]),
     rule('rule_chandelier', 'The chandelier falls', pressed('btn_chandelier'), [
       act('disable', 'btn_chandelier'),
@@ -662,7 +675,7 @@ for (const [k, kind] of cells) {
   m.light(at(x, y, z, 0, 0, 3), { fixture: 'none', color: z < 0 ? CELLAR : WARM, intensity: z < 0 ? 0.6 : 0.5, range: 9 });
 }
 // The great hall: candelabra glow low, and a red warning lamp over each trapdoor.
-for (const [x, y] of [[-1, 2], [1, 2], [0, 3]] as const) m.light(at(x, y, 0, 0, 0, 3.4), { fixture: 'bulb', color: '#ff4a32', intensity: 0.8, range: 6 });
+for (const [k, [x, y]] of ([[-1, 2], [1, 2], [0, 3]] as const).entries()) m.light(at(x, y, 0, 0, 0, 3.4), { fixture: 'bulb', color: '#ff4a32', intensity: 0.8, range: 6, id: HALL_LAMPS[k]! });
 m.light([0, 6.5, 20], { fixture: 'none', color: WARM, intensity: 0.8, range: 14 });
 // The chandelier over the crusher, red-tinged; red strips over the gallery's laser rows; red lamps in the spike corridor.
 m.light([-20, 3.1, 20], { fixture: 'none', color: '#ff7a4a', intensity: 1, range: 8 });

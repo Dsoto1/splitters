@@ -1,4 +1,6 @@
-import { SQUAD_ORDERS, type BlockEntity, type ButtonEntity, type DestructibleEntity, type DoorEntity, type MapDocument, type MapEntity, type SquadOrder, type TrapEntity, type ZoneEntity } from '../map/schema.ts';
+import { SQUAD_ORDERS, type BlockEntity, type ButtonEntity, type DestructibleEntity, type DoorEntity, type LightEntity, type MapDocument, type MapEntity, type SquadOrder, type TrapEntity, type ZoneEntity } from '../map/schema.ts';
+import { dynamicBlockIds } from '../map/geometry.ts';
+import { Movers, legTicks, liftLinks } from './movers.ts';
 import { isMapId } from './playlist.ts';
 import { OBJECTIVE_STATES, type CompareOp, type EventType, type LogicAction, type LogicCondition, type ObjectiveState } from '../map/logic.ts';
 import { distance, viewDirection, type Vec3 } from '../math.ts';
@@ -16,6 +18,7 @@ import {
   type Breakable,
   doorway,
   entityPos,
+  localToWorld,
   oboxAabb,
   playerInOBox,
   pointInOBox,
@@ -26,13 +29,26 @@ import {
   type Aabb,
 } from './scenarioDefs.ts';
 
+/** Someone the scenario reacts to; `team` (their team or faction) matters to team-only buttons, doors and zones. */
+export interface ScenarioActor {
+  slot: number;
+  alive: boolean;
+  pos: Vec3;
+  team?: string | null;
+}
+
+/** Whether a team filter lets this actor through (no filter: everyone). */
+export const teamAllows = (filter: string | undefined, team: string | null | undefined): boolean => !filter || filter === team;
+
 /** What the scenario needs from the match it runs in. */
 export interface ScenarioHost {
   readonly tick: number;
   /** Players (humans and Player Bots): zones count these. */
-  players(): readonly { slot: number; alive: boolean; pos: Vec3 }[];
+  players(): readonly ScenarioActor[];
   /** Players and NPCs: doors open for them and traps hurt them. */
-  actors(): readonly { slot: number; alive: boolean; pos: Vec3 }[];
+  actors(): readonly ScenarioActor[];
+  /** The team (or faction) of an actor, for team-only buttons and doors used with E. */
+  teamOf?(slot: number): string | null;
   hurt(slot: number, amount: number, weapon: string): void;
   /** An explosion (barrel, mine) that hurts players and other destructibles. */
   blast(at: Vec3, radius: number, damage: number, edge: number, owner: number | null, weapon: string): void;
@@ -98,6 +114,34 @@ interface TrapRt {
   hitAt: Map<number, number>;
 }
 
+interface LightRt {
+  i: number;
+  e: LightEntity;
+  on: boolean;
+  /** Colour as 0xrrggbb. */
+  color: number;
+  /** Blinks per second (0: steady). */
+  blink: number;
+  flashUntil: number;
+}
+
+interface MoverRt {
+  /** Index in Movers.defs. */
+  k: number;
+  enabled: boolean;
+  /** Pingpong and "Send mover" direction through the points. */
+  dir: 1 | -1;
+  /** Where logic asked it to go next (taken when it parks). */
+  queued: number | null;
+}
+
+/** Light snapshot flags: [index, LIGHT_ON | LIGHT_FLASH | blinks per second × 10 << 2, colour 0xrrggbb]. */
+export const LIGHT_ON = 1;
+export const LIGHT_FLASH = 2;
+export const lightBlinkOf = (flags: number): number => (flags >> 2) / 10;
+export const hexColor = (hex: string): number => parseInt(hex.slice(1), 16);
+const isHexColor = (s: string): boolean => /^#[0-9a-fA-F]{6}$/.test(s);
+
 interface Sequence {
   actions: readonly LogicAction[];
   pc: number;
@@ -144,6 +188,14 @@ export class Scenario {
   private readonly destructibles = new Map<number, DestructibleRt>();
   private readonly zones = new Map<number, ZoneRt>();
   private readonly traps = new Map<number, TrapRt>();
+  private readonly lights = new Map<number, LightRt>();
+  /** Movers (lifts, drawbridges…): legs, poses and riders; shared with client prediction. */
+  readonly movers: Movers;
+  private readonly moverRt = new Map<number, MoverRt>();
+  private readonly dynamic: Set<string>;
+  /** Lights some rule targets (or that start off or blinking): only these are replicated. */
+  private readonly drivenLights = new Set<number>();
+  private readonly lifts: ReturnType<typeof liftLinks>;
   private readonly index = new Map<string, number>();
   private readonly pickupEnabled = new Map<string, boolean>();
   private vars = new Map<string, number>();
@@ -165,7 +217,14 @@ export class Scenario {
     private readonly host: ScenarioHost,
   ) {
     this.bodies = new ScenarioBodies(physics, map);
+    this.dynamic = dynamicBlockIds(map);
+    this.movers = new Movers(map);
+    this.lifts = liftLinks(map);
     map.entities.forEach((e, i) => this.index.set(e.id, i));
+    const targets = new Set(map.logic.rules.flatMap((r) => r.do.map((a) => a.target)));
+    map.entities.forEach((e, i) => {
+      if (e.kind === 'light' && (targets.has(e.id) || e.off || e.blink)) this.drivenLights.add(i);
+    });
     this.reset();
   }
 
@@ -190,10 +249,19 @@ export class Scenario {
           break;
         }
         case 'block': {
-          const b = breakableOf(e);
+          const b = breakableOf(e, this.dynamic);
           if (!b) break;
-          this.destructibles.set(i, { i, id: e.id, b, health: b.health, max: b.health, alive: true, block: { e, triggeredAt: null, respawnAt: null } });
-          this.bodies.setSolid(i, true);
+          const alive = !e.startHidden;
+          this.destructibles.set(i, { i, id: e.id, b, health: alive ? b.health : 0, max: b.health, alive, block: { e, triggeredAt: null, respawnAt: null } });
+          this.bodies.setSolid(i, alive);
+          break;
+        }
+        case 'light':
+          this.lights.set(i, { i, e, on: !e.off, color: hexColor(e.color), blink: e.blink ?? 0, flashUntil: 0 });
+          break;
+        case 'mover': {
+          const k = this.movers.of(i);
+          if (k !== undefined) this.moverRt.set(i, { k, enabled: e.startActive, dir: 1, queued: null });
           break;
         }
         case 'zone':
@@ -220,7 +288,68 @@ export class Scenario {
     this.sequences = [];
     this.started = false;
     this.roundStart = tick;
+    this.movers.reset(tick);
+    this.moveMovers(tick);
     this.bodies.commit();
+  }
+
+  // ---------------------------------------------------------------- movers
+
+  /** Put carried blocks where their movers are at `tick` (the match calls this before moving anyone). */
+  moveMovers(tick = this.host.tick): void {
+    if (!this.movers.defs.length) return;
+    for (const t of this.movers.transforms(tick)) this.bodies.setTransform(t.block.i, t.center, t.rot);
+    this.bodies.commit();
+  }
+
+  /** Where feet standing on a moving block are carried to this tick (null: not riding). */
+  carry(feet: Vec3): Vec3 | null {
+    if (!this.movers.defs.length) return null;
+    return this.movers.carry(feet, this.host.tick, (i) => this.destructibles.get(i)?.alive !== false);
+  }
+
+  /** Lifts as bots see them: the ride (navmesh link) and where the platform's top is now. */
+  liftViews(): { start: Vec3; end: Vec3; top: Vec3; half: number }[] {
+    const tick = this.host.tick;
+    return this.lifts.flatMap((l) => {
+      const i = this.index.get(l.mover);
+      const k = i === undefined ? undefined : this.movers.of(i);
+      if (k === undefined) return [];
+      const def = this.movers.defs[k]!;
+      const block = def.blocks[0]!;
+      const pose = this.movers.pose(k, tick);
+      const top = { x: def.pivot.x + pose.offset.x + block.local.x, y: def.pivot.y + pose.offset.y + block.local.y + block.half.y, z: def.pivot.z + pose.offset.z + block.local.z };
+      return [{ start: l.start, end: l.end, top, half: Math.max(block.half.x, block.half.z) }];
+    });
+  }
+
+  private stepMovers(tick: number): void {
+    for (const m of this.moverRt.values()) {
+      const def = this.movers.defs[m.k]!;
+      const leg = this.movers.legs[m.k]!;
+      const n = def.points.length;
+      if (leg.from !== leg.to) {
+        const end = leg.start + legTicks(def, leg.from, leg.to);
+        if (tick < end) continue;
+        this.movers.legs[m.k] = { from: leg.to, to: leg.to, start: end };
+        this.fire('mover_arrived', def.e.id, null);
+        continue;
+      }
+      let next: number | null = null;
+      if (m.queued !== null) {
+        next = m.queued;
+        m.queued = null;
+      } else if (def.e.mode !== 'trigger' && m.enabled && tick >= leg.start + Math.round(def.e.wait * TICK_RATE)) {
+        next = this.nextPoint(m, def.e.mode === 'loop', n, leg.to);
+      }
+      if (next !== null && next !== leg.to) this.movers.legs[m.k] = { from: leg.to, to: next, start: tick };
+    }
+  }
+
+  private nextPoint(m: MoverRt, loop: boolean, n: number, at: number): number {
+    if (loop) return (at + 1) % n;
+    if (at + m.dir < 0 || at + m.dir >= n) m.dir = m.dir === 1 ? -1 : 1;
+    return at + m.dir;
   }
 
   // ---------------------------------------------------------------- per tick
@@ -232,6 +361,7 @@ export class Scenario {
       this.roundStart = tick;
       this.fire('match_start', null, null);
     }
+    this.stepMovers(tick);
     this.stepDoors(tick);
     this.stepBlocks(tick);
     this.stepZones();
@@ -275,7 +405,7 @@ export class Scenario {
     for (const d of this.doors.values()) {
       const way = doorway(d.e);
       if (d.e.auto && !d.locked) {
-        const near = players.some((p) => Math.hypot(p.pos.x - way.center.x, p.pos.z - way.center.z) <= DOOR.autoRadius && Math.abs(p.pos.y - d.e.position[1]) < 2.5);
+        const near = players.some((p) => teamAllows(d.e.team, p.team) && Math.hypot(p.pos.x - way.center.x, p.pos.z - way.center.z) <= DOOR.autoRadius && Math.abs(p.pos.y - d.e.position[1]) < 2.5);
         if (near) {
           d.lastNear = tick;
           if (d.target === 0) {
@@ -313,7 +443,8 @@ export class Scenario {
         continue;
       }
       const box = zoneBox(z.e);
-      const now = new Set(alive.filter((p) => pointInOBox(box, { x: p.pos.x, y: p.pos.y + 0.1, z: p.pos.z })).map((p) => p.slot));
+      const counted = z.e.team ? alive.filter((p) => p.team === z.e.team) : alive;
+      const now = new Set(counted.filter((p) => pointInOBox(box, { x: p.pos.x, y: p.pos.y + 0.1, z: p.pos.z })).map((p) => p.slot));
       const entered = [...now].filter((s) => !z.inside.has(s));
       const left = [...z.inside].filter((s) => !now.has(s));
       z.inside = now;
@@ -322,7 +453,7 @@ export class Scenario {
         for (const s of left) this.fire('zone_exit', z.e.id, s);
         continue;
       }
-      const sat = z.e.who === 'count' ? now.size >= z.e.count : alive.length > 0 && now.size === alive.length;
+      const sat = z.e.who === 'count' ? now.size >= z.e.count : counted.length > 0 && now.size === counted.length;
       if (sat && !z.satisfied) this.fire('zone_enter', z.e.id, entered[entered.length - 1] ?? [...now][0] ?? null);
       else if (!sat && z.satisfied) this.fire('zone_exit', z.e.id, left[0] ?? null);
       z.satisfied = sat;
@@ -442,6 +573,11 @@ export class Scenario {
     if (i === null) return;
     const e = this.map.entities[i]!;
     const tick = this.host.tick;
+    const team = this.host.teamOf?.(slot) ?? null;
+    if ((e.kind === 'button' || e.kind === 'door') && !teamAllows(e.team, team)) {
+      this.host.emit({ e: 'use', s: slot, i, ok: 0 });
+      return;
+    }
     if (e.kind === 'button') {
       const b = this.buttons.get(i)!;
       if (!b.enabled || (b.e.once && b.used) || tick < b.readyAt) {
@@ -505,7 +641,8 @@ export class Scenario {
     if (!d.alive) return;
     d.alive = false;
     d.health = 0;
-    if (d.block?.e.respawnSeconds) d.block.respawnAt = this.host.tick + Math.round(d.block.e.respawnSeconds * TICK_RATE);
+    // Hidden solid blocks stay gone until logic puts them back.
+    if (d.block?.e.respawnSeconds && d.block.e.behaviour !== 'solid') d.block.respawnAt = this.host.tick + Math.round(d.block.e.respawnSeconds * TICK_RATE);
     this.bodies.setSolid(d.i, false);
     this.bodies.commit();
     this.host.emit({ e: 'broken', i: d.i });
@@ -588,6 +725,20 @@ export class Scenario {
       }
       case 'encounter_alive':
         return this.entityIndex(c.target, 'encounter') !== undefined && compare(this.host.encounterAlive(c.target!), c.op, c.value);
+      case 'light': {
+        const l = this.lights.get(this.entityIndex(c.target, 'light') ?? -1);
+        return !!l && l.on === (c.state !== 'off');
+      }
+      case 'block': {
+        const d = this.destructibles.get(this.entityIndex(c.target, 'block') ?? -1);
+        return !!d && d.alive === (c.state !== 'gone');
+      }
+      case 'mover_at': {
+        const m = this.moverRt.get(this.entityIndex(c.target, 'mover') ?? -1);
+        if (!m) return false;
+        const at = this.movers.parkedAt(m.k, this.host.tick);
+        return compare(at === null ? 0 : at + 1, c.op, c.value);
+      }
     }
   }
 
@@ -596,7 +747,9 @@ export class Scenario {
     if (i === undefined) return undefined;
     const e = this.map.entities[i]!;
     if (e.kind === 'pickup') return this.isPickupEnabled(e.id);
-    return (this.buttons.get(i) ?? this.zones.get(i) ?? this.traps.get(i))?.enabled;
+    if (e.kind === 'block') return this.destructibles.get(i)?.alive;
+    if (e.kind === 'light') return this.lights.get(i)?.on;
+    return (this.buttons.get(i) ?? this.zones.get(i) ?? this.traps.get(i) ?? this.moverRt.get(i))?.enabled;
   }
 
   private setEnabled(id: string | null, enabled: boolean): void {
@@ -608,8 +761,29 @@ export class Scenario {
       this.host.setPickupEnabled(e.id, enabled);
       return;
     }
-    const rt = this.buttons.get(i) ?? this.zones.get(i) ?? this.traps.get(i);
+    if (e.kind === 'block') {
+      const d = this.destructibles.get(i);
+      if (d) {
+        if (enabled) this.restore(d);
+        else this.destroy(d, null);
+      }
+      return;
+    }
+    if (e.kind === 'light') {
+      const l = this.lights.get(i);
+      if (l) l.on = enabled;
+      return;
+    }
+    const rt = this.buttons.get(i) ?? this.zones.get(i) ?? this.traps.get(i) ?? this.moverRt.get(i);
     if (rt) rt.enabled = enabled;
+  }
+
+  /** Put a dropped, broken or hidden block back at once (unless someone stands where it goes; then it comes back as soon as they move). */
+  private restore(d: DestructibleRt): void {
+    if (d.alive || !d.block) return;
+    d.block.respawnAt = this.host.tick;
+    d.block.triggeredAt = null;
+    this.stepBlocks(this.host.tick);
   }
 
   private execute(a: LogicAction, instigator: number | null): void {
@@ -693,6 +867,45 @@ export class Scenario {
         if (this.entityIndex(a.target, 'encounter') === undefined) return;
         this.host.encounter(a.target!, a.type === 'encounter_start' ? 'start' : a.type === 'encounter_stop' ? 'stop' : 'order', (SQUAD_ORDERS as readonly string[]).includes(a.state) ? (a.state as SquadOrder) : 'attack');
         break;
+      case 'light_on':
+      case 'light_off':
+      case 'light_toggle':
+      case 'light_color':
+      case 'light_flash':
+      case 'light_blink': {
+        const l = this.lights.get(this.entityIndex(a.target, 'light') ?? -1);
+        if (!l) return;
+        if (a.type === 'light_on') l.on = true;
+        else if (a.type === 'light_off') l.on = false;
+        else if (a.type === 'light_toggle') l.on = !l.on;
+        else if (a.type === 'light_color') l.color = hexColor(isHexColor(a.text.trim()) ? a.text.trim().toLowerCase() : l.e.color);
+        else if (a.type === 'light_flash') l.flashUntil = tick + Math.max(1, Math.round((a.value > 0 ? Math.min(a.value, 30) : 0.3) * TICK_RATE));
+        else l.blink = a.state === 'off' ? 0 : Math.max(0.2, Math.min(10, a.value || 2));
+        break;
+      }
+      case 'block_drop':
+      case 'block_restore': {
+        const d = this.destructibles.get(this.entityIndex(a.target, 'block') ?? -1);
+        if (!d) return;
+        if (a.type === 'block_drop') this.destroy(d, instigator);
+        else this.restore(d);
+        break;
+      }
+      case 'mover_go':
+      case 'mover_to': {
+        const m = this.moverRt.get(this.entityIndex(a.target, 'mover') ?? -1);
+        if (!m) return;
+        const def = this.movers.defs[m.k]!;
+        const leg = this.movers.legs[m.k]!;
+        const n = def.points.length;
+        const target = a.type === 'mover_to' ? Math.max(0, Math.min(n - 1, Math.round(a.value) - 1)) : this.nextPoint(m, def.e.mode === 'loop', n, m.queued ?? leg.to);
+        if (leg.from === leg.to) {
+          // Parked: leave now.
+          if (target !== leg.to) this.movers.legs[m.k] = { from: leg.to, to: target, start: tick };
+          m.queued = null;
+        } else m.queued = target;
+        break;
+      }
       case 'wait':
         break;
     }
@@ -700,15 +913,48 @@ export class Scenario {
 
   // ---------------------------------------------------------------- queries
 
-  /** Obstacles bots must path around: locked or manual closed doors and intact breakable walls. */
-  blockers(): Aabb[] {
+  /**
+   * Obstacles bots must path around: locked or manual closed doors (and
+   * team-only doors of another team) and intact breakable walls. `team`: the
+   * bot's team or faction.
+   */
+  blockers(team: string | null = null): Aabb[] {
     const out: Aabb[] = [];
     for (const d of this.doors.values()) {
       // Just the door's own plane, so goals standing next to a closed door stay reachable.
-      if (d.open < 0.9 && (d.locked || !d.e.auto)) out.push(oboxAabb({ ...doorway(d.e), half: { ...doorway(d.e).half, z: DOOR.thickness } }));
+      if (d.open < 0.9 && (d.locked || !d.e.auto || !teamAllows(d.e.team, team))) out.push(this.doorPlane(d));
     }
     for (const d of this.destructibles.values()) {
       if (d.alive && d.b.blocksPaths) out.push(oboxAabb(d.b.box));
+    }
+    return out;
+  }
+
+  private doorPlane(d: DoorRt): Aabb {
+    return oboxAabb({ ...doorway(d.e), half: { ...doorway(d.e).half, z: DOOR.thickness } });
+  }
+
+  /**
+   * Closed doors a button opens, for bots whose path they block: the door's
+   * blocker box (the same box `blockers` gives), where to stand to press the
+   * button and the button face to look at. Only buttons `team` may press and
+   * rules that open, toggle or unlock-and-open the door count.
+   */
+  doorButtons(team: string | null = null): { door: Aabb; stand: Vec3; face: Vec3; button: string }[] {
+    const out: { door: Aabb; stand: Vec3; face: Vec3; button: string }[] = [];
+    for (const rule of this.map.logic.rules) {
+      if (!rule.enabled || this.spentRules.has(rule.id) || rule.when.event !== 'button_pressed' || !rule.when.target) continue;
+      const b = this.buttons.get(this.entityIndex(rule.when.target, 'button') ?? -1);
+      if (!b || !b.enabled || (b.e.once && b.used) || !teamAllows(b.e.team, team)) continue;
+      for (const a of rule.do) {
+        if (a.type !== 'door_open' && a.type !== 'door_toggle' && a.type !== 'door_unlock') continue;
+        const d = this.doors.get(this.entityIndex(a.target, 'door') ?? -1);
+        if (!d || d.open >= 0.9 || d.target === 1) continue;
+        // Unlocking alone opens only doors that then open by themselves for this bot.
+        if (a.type === 'door_unlock' && !(d.e.auto && teamAllows(d.e.team, team)) && !rule.do.some((x) => x.target === d.e.id && (x.type === 'door_open' || x.type === 'door_toggle'))) continue;
+        const pos = entityPos(b.e);
+        out.push({ door: this.doorPlane(d), stand: localToWorld(pos, b.e.yaw, 0, 0, 1), face: localToWorld(pos, b.e.yaw, 0, BUTTON.height, 0.15), button: b.e.id });
+      }
     }
     return out;
   }
@@ -735,6 +981,24 @@ export class Scenario {
     return this.doors.get(this.entityIndex(id, 'door') ?? -1)?.open;
   }
 
+  private lightFlags(l: LightRt, tick: number): number {
+    return (l.on ? LIGHT_ON : 0) | (tick < l.flashUntil ? LIGHT_FLASH : 0) | (Math.round(l.blink * 10) << 2);
+  }
+
+  /** A light's state as sent to players: [flags (LIGHT_*), colour 0xrrggbb]. */
+  lightState(id: string): [number, number] | undefined {
+    const l = this.lights.get(this.entityIndex(id, 'light') ?? -1);
+    return l && [this.lightFlags(l, this.host.tick), l.color];
+  }
+
+  /** Point (1 = first) a mover is parked at, 0 while travelling. */
+  moverAt(id: string): number | undefined {
+    const m = this.moverRt.get(this.entityIndex(id, 'mover') ?? -1);
+    if (!m) return undefined;
+    const at = this.movers.parkedAt(m.k, this.host.tick);
+    return at === null ? 0 : at + 1;
+  }
+
   destructibleAlive(id: string): boolean | undefined {
     return this.destructibles.get(this.entityIndex(id) ?? -1)?.alive;
   }
@@ -753,6 +1017,10 @@ export class Scenario {
       const flags = (t.enabled ? TRAP_ENABLED : 0) | (t.active ? TRAP_ACTIVE : 0) | (t.armedAt !== null ? TRAP_WARNING : 0) | (t.spent ? TRAP_SPENT : 0);
       out.push([t.i, flags, 0]);
     }
+    for (const l of this.lights.values()) {
+      if (this.drivenLights.has(l.i)) out.push([l.i, this.lightFlags(l, tick), l.color]);
+    }
+    for (const m of this.moverRt.values()) out.push(this.movers.encode(m.k));
     return out;
   }
 

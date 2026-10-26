@@ -15,8 +15,8 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@tiletrigger/shared';
-import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@tiletrigger/shared';
+import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyToneMapping } from '../game/atmosphere.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { buildRoadMeshes, disposeRoadMeshes } from '../roadMeshes.ts';
@@ -314,11 +314,13 @@ export class EditorView {
     this.scenario.teamColor = (id) => flagTeams.find((t) => t.id === id)?.color ?? '#888888';
     this.scenario.surface = (m, t) => this.styler.surfaceMaterial(doc, m, t);
     const teams = mapTeams(doc, MAX_TEAMS);
+    const dynamic = dynamicBlockIds(doc);
+    this.scenario.dynamicBlocks = dynamic;
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
       seen.add(e.id);
       // Rebuild a marker when the entity changed kind, item or any scenario property.
-      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null, color: e.kind === 'encounter' ? factionColor(e.faction) : e.kind === 'flag' ? this.scenario.teamColor(e.team) : null });
+      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null, color: e.kind === 'encounter' ? factionColor(e.faction) : e.kind === 'flag' ? this.scenario.teamColor(e.team) : null, driven: dynamic.has(e.id) });
       let m = this.markers.get(e.id);
       if (m && m.key !== key) {
         this.nodeEntity.delete(m.node);
@@ -351,7 +353,8 @@ export class EditorView {
         const scenario = e.kind !== 'pickup';
         m.node.position.set(e.position[0], e.position[1] + (scenario ? 0 : PICKUP_HOVER), e.position[2]);
         if (e.kind === 'prop') orientProp(m.node as TransformNode, e, doc.terrain);
-        else if ('yaw' in e && scenario) m.node.rotation.y = e.yaw;
+        else if (e.kind === 'mount') m.node.rotation.y = e.yaw;
+        else if (scenario) placeScenarioNode(m.node as TransformNode, e);
         if (selected.has(e.id) && !m.ring) {
           m.ring = CreateCylinder(`edsel_${e.id}`, { diameter: selectionSize(e), height: 1.2, tessellation: 24 }, this.scene);
           m.ring.material = this.mat.outline;

@@ -29,6 +29,7 @@ import {
   mapPads,
   mapTeams,
   navLinks,
+  liftLinks,
   padLandings,
   mapTerrainMesh,
   newMapDocument,
@@ -261,8 +262,20 @@ export class MapBuilder {
   }
 
   /** A light at `at` (fixture defaults to a ceiling panel; colour a warm white). */
-  light(at: V3, o: { fixture?: LightFixture; color?: string; intensity?: number; range?: number; yaw?: number } = {}): this {
-    return this.add({ kind: 'light', position: at, yaw: o.yaw ?? 0, color: o.color ?? '#fff1d6', intensity: o.intensity ?? 1, range: o.range ?? 9, fixture: o.fixture ?? 'ceiling' });
+  light(at: V3, o: { fixture?: LightFixture; color?: string; intensity?: number; range?: number; yaw?: number; id?: string; off?: boolean; blink?: number } = {}): this {
+    return this.add({
+      kind: 'light',
+      position: at,
+      yaw: o.yaw ?? 0,
+      color: o.color ?? '#fff1d6',
+      intensity: o.intensity ?? 1,
+      range: o.range ?? 9,
+      fixture: o.fixture ?? 'ceiling',
+      // v20: logic can switch lights by ID; they can start off or blinking.
+      ...(o.off ? { off: true } : {}),
+      ...(o.blink ? { blink: o.blink } : {}),
+      ...(o.id ? { id: o.id } : {}),
+    });
   }
 
   /**
@@ -302,7 +315,7 @@ export class MapBuilder {
   }
 
   /** A free block (`size` [x, thickness, z], base at `at`): solid, breakable, crumble or trapdoor. */
-  block(at: V3, size: V3, behaviour: 'solid' | 'breakable' | 'crumble' | 'trapdoor' = 'solid', o: { material?: string; tint?: string; yaw?: number; delay?: number; respawn?: number | null; health?: number; trigger?: 'step' | 'logic'; id?: string } = {}): this {
+  block(at: V3, size: V3, behaviour: 'solid' | 'breakable' | 'crumble' | 'trapdoor' = 'solid', o: { material?: string; tint?: string; yaw?: number; delay?: number; respawn?: number | null; health?: number; trigger?: 'step' | 'logic'; id?: string; pitch?: number; roll?: number; hidden?: boolean } = {}): this {
     return this.add({
       kind: 'block',
       position: at,
@@ -315,13 +328,42 @@ export class MapBuilder {
       delaySeconds: o.delay ?? (behaviour === 'trapdoor' ? 0.15 : 0.8),
       respawnSeconds: o.respawn === undefined ? 8 : o.respawn,
       health: o.health ?? 120,
+      // v20: tilt (radians, ±45°: ramps, roofs, wrecks; pitch lifts the +Z end) and starting hidden (logic rebuilds it).
+      ...(o.pitch ? { pitch: o.pitch } : {}),
+      ...(o.roll ? { roll: o.roll } : {}),
+      ...(o.hidden ? { startHidden: true } : {}),
       ...(o.id ? { id: o.id } : {}),
     });
   }
 
-  /** A body of liquid with its floor at `at` and `size` [x, depth, z]. */
-  water(at: V3, size: V3, liquid: 'water' | 'lava' | 'acid' | 'swamp' = 'water'): this {
-    return this.add({ kind: 'water', position: at, size, liquid });
+  /** A body of liquid with its floor at `at` and `size` [x, depth, z]; `tint` recolours it (v20: green acid, murky sewer water). */
+  water(at: V3, size: V3, liquid: 'water' | 'lava' | 'acid' | 'swamp' = 'water', tint?: string): this {
+    return this.add({ kind: 'water', position: at, size, liquid, ...(tint ? { tint } : {}) });
+  }
+
+  /**
+   * A mover (v20): carries the blocks `blocks` (IDs) between `points`
+   * (offsets from where the blocks are placed; [0, 0, 0] first), turning them
+   * by `angles` (radians, per point) about a level hinge through `at`, square
+   * to `yaw` (drawbridges). `loop`/`pingpong` run by themselves; `trigger`
+   * waits for logic ("mover_go", "mover_to"). See docs/BUILDING_KIT.md.
+   */
+  mover(id: string, at: V3, blocks: string[], points: V3[], o: { mode?: 'loop' | 'pingpong' | 'trigger'; speed?: number; turnSpeed?: number; wait?: number; yaw?: number; angles?: number[]; startActive?: boolean; name?: string } = {}): this {
+    return this.add({
+      kind: 'mover',
+      id,
+      position: at,
+      yaw: o.yaw ?? 0,
+      blocks,
+      points,
+      ...(o.angles ? { angles: o.angles } : {}),
+      mode: o.mode ?? 'pingpong',
+      speed: o.speed ?? 3,
+      turnSpeed: o.turnSpeed ?? 45,
+      wait: o.wait ?? 2,
+      startActive: o.startActive ?? true,
+      ...(o.name ? { name: o.name } : {}),
+    });
   }
 
   /** Scenario logic: variables, timers, objectives and WHEN -> IF -> DO rules (docs/SCENARIO.md). Replaces any set before. */
@@ -407,7 +449,7 @@ export class MapBuilder {
     await Promise.all([initPhysics(), initNavigation()]);
     const geometry = buildMapGeometry(loaded.map);
     const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
-    const nav = NavWorld.build([...geometry, ...propBoxes(loaded.map, true), ...blockBoxes(loaded.map, true)], mapTerrainMesh(loaded.map), navLinks(loaded.map.entities, physics));
+    const nav = NavWorld.build([...geometry, ...propBoxes(loaded.map, true), ...blockBoxes(loaded.map, true)], mapTerrainMesh(loaded.map), [...navLinks(loaded.map.entities, physics), ...liftLinks(loaded.map)]);
     physics.free();
     return { loaded: loaded as { ok: true; map: MapDocument }, nav };
   }

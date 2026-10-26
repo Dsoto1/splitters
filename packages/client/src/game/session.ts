@@ -639,6 +639,7 @@ export class GameSession {
         this.local.gravity = matchPhysics(msg.rules, loaded.map).gravity;
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.scenario = new ScenarioState(loaded.map, physics);
+        if (this.scenario.movers.defs.length) this.local.platforms = this.scenario;
         this.mounts = new MountState(loaded.map, physics);
         this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7));
         if (teams && msg.rules.mode === 'core.forts') this.forts = new FortsClient(this.view, physics, loaded.map, teams, () => this.hud.team(this.slot)?.id ?? null, this.opts.audio);
@@ -705,7 +706,7 @@ export class GameSession {
             this.input.pitch = 0;
             this.wantWeapon = 0;
           }
-          this.local.reconcile(me, msg.ack, msg.me);
+          this.local.reconcile(me, msg.ack, msg.me, msg.tick);
         }
         this.botStates = msg.players.filter((p) => p.st).map((p) => `  ${this.hud.name(p.s).padEnd(14)} ${p.st}`);
         let poses: ReturnType<Interpolator['sample']> | undefined;
@@ -989,7 +990,8 @@ export class GameSession {
     }));
 
     // Use prompt: get out, get in, or the button or door in front of the player.
-    const target = local.alive ? pickUsable(map, local.eye, this.input.yaw, this.input.pitch, (i) => sc.usable(i)) : null;
+    const myTeam = this.hud.team(this.slot)?.id ?? (this.rules?.mode === 'core.coop' ? 'players' : null);
+    const target = local.alive ? pickUsable(map, local.eye, this.input.yaw, this.input.pitch, (i) => sc.usable(i, myTeam)) : null;
     const e = target === null ? undefined : map.entities[target];
     const enter = local.alive && !this.seat ? this.mounts?.enterable(local.state.pos) : null;
     if (local.alive && this.seat) {
@@ -1270,6 +1272,8 @@ export class GameSession {
     }
     if (this.scenario) {
       this.view.scenario.apply(this.scenario.entities);
+      // Platforms are drawn where you are in time (your predicted tick), so what you stand on stays under your feet.
+      if (this.scenario.movers.defs.length && this.local) this.view.scenario.applyMovers(this.scenario.movers, this.local.predTick - 1 + this.acc / TICK_DT);
       this.view.applyPropStates(this.scenario.entities);
     }
     this.view.updatePickups(this.taken, now);

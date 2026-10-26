@@ -308,12 +308,40 @@ export const SCENARIO_PALETTE = [
   { key: 'water:acid', label: 'Acid', search: 'acid toxic liquid hazard pool' },
   { key: 'water:swamp', label: 'Swamp', search: 'swamp mud bog marsh liquid slow' },
   { key: 'airplane', label: 'Transport Plane', search: 'airplane plane transport air drop parachute route fly over battle royale jump' },
+  { key: 'mover:lift', label: 'Lift', search: 'mover lift elevator platform moving up down ride' },
+  { key: 'mover:slider', label: 'Sliding Wall', search: 'mover sliding wall door gate moving platform train car shuttle' },
+  { key: 'mover:drawbridge', label: 'Drawbridge', search: 'mover drawbridge bridge hinge lower raise castle moat' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 
 /** Entities that sit in a doorway and snap to cell edges. */
 export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser';
+
+/**
+ * What a palette entry places: one entity, or for movers a block and the
+ * mover that carries it (lift platform, sliding wall, drawbridge deck).
+ */
+export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, number, number], yaw: number, doc?: MapDocument): MapEntity[] {
+  if (!key.startsWith('mover:')) return [newScenarioEntity(key, position, yaw, doc)];
+  const block = (size: [number, number, number], at: [number, number, number]): Extract<MapEntity, { kind: 'block' }> => ({ id: newId('block'), kind: 'block', position: at, yaw, size, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+  const mover = (blocks: string[], points: [number, number, number][], extra: Partial<Extract<MapEntity, { kind: 'mover' }>>): Extract<MapEntity, { kind: 'mover' }> => ({ id: newId('mover'), kind: 'mover', position, yaw, blocks, points, mode: 'pingpong', speed: 2, turnSpeed: 45, wait: 2, startActive: true, ...extra });
+  const [x, y, z] = position;
+  if (key === 'mover:lift') {
+    // A 3 m platform that rides one storey up and back.
+    const b = block([3, 0.4, 3], [x, y, z]);
+    return [b, mover([b.id], [[0, 0, 0], [0, doc?.classicStructure.levelHeight ?? 4, 0]], { speed: 2, wait: 2.5 })];
+  }
+  if (key === 'mover:slider') {
+    // A wall that slides 4 m sideways and back (a gate, a train car, a crushing corridor).
+    const [sx, sz] = [Math.cos(yaw) * 4, -Math.sin(yaw) * 4];
+    const b = block([4, 3, 0.4], [x, y, z]);
+    return [b, mover([b.id], [[0, 0, 0], [Math.round(sx * 100) / 100, 0, Math.round(sz * 100) / 100]], { speed: 1.5, wait: 3 })];
+  }
+  // Drawbridge: an 8 m deck hinged at the marker, reaching out the way it faces; starts raised, logic lowers it.
+  const b = block([3, 0.3, 8], [x + Math.sin(yaw) * 4, y, z + Math.cos(yaw) * 4]);
+  return [b, mover([b.id], [[0, 0, 0], [0, 0, 0]], { angles: [Math.PI / 2, 0], mode: 'trigger', turnSpeed: 30, wait: 0 })];
+}
 
 /**
  * A new scenario entity with sensible defaults. Flag bases go to the first
@@ -408,6 +436,10 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'water:acid':
     case 'water:swamp':
       return { id: newId(key.slice(6)), kind: 'water', position, size: [8, 1.2, 8], liquid: key.slice(6) as Liquid };
+    case 'mover:lift':
+    case 'mover:slider':
+    case 'mover:drawbridge':
+      return newScenarioEntities(key, position, yaw, doc)[1]!;
     default: {
       const trap = key.slice(5) as TrapKind;
       const d = TRAP_SPECS[trap].defaults;
@@ -430,7 +462,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {

@@ -303,7 +303,7 @@ export class GameView {
     doc.entities.forEach((e, i) => {
       if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`, true, true, doc.terrain));
     });
-    this.scenario.build(doc.entities);
+    this.scenario.build(doc.entities, doc);
     this.entrances = doc.entities.filter((e): e is Extract<MapEntity, { kind: 'encounter' }> => e.kind === 'encounter' && (e.entrance ?? 'none') !== 'none');
     // Warm the model cache so first switches and pickups don't hitch.
     for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);

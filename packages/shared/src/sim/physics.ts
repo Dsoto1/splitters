@@ -1,5 +1,5 @@
 import RAPIER from '@dimforge/rapier3d-compat';
-import type { WorldBox } from '../map/geometry.ts';
+import { boxQuat, type Rot, type WorldBox } from '../map/geometry.ts';
 import type { Vec3 } from '../math.ts';
 import { PLAYER } from './constants.ts';
 
@@ -51,7 +51,8 @@ export class PhysicsWorld {
       const desc = RAPIER.ColliderDesc.cuboid(hx, hy, hz)
         .setTranslation(b.min[0] + hx, b.min[1] + hy, b.min[2] + hz)
         .setCollisionGroups(WORLD_COLLIDER_GROUPS);
-      if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
+      if (b.pitch || b.roll) desc.setRotation(boxQuat(b.yaw, b.pitch, b.roll));
+      else if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
       this.world.createCollider(desc);
     }
     this.controller = this.world.createCharacterController(CONTROLLER_OFFSET);
@@ -73,10 +74,10 @@ export class PhysicsWorld {
    * disable. It blocks movement, shots and line of sight like static geometry.
    * `yaw` turns the box about the vertical axis (see viewDirection()).
    */
-  createBox(center: Vec3, half: Vec3, yaw = 0): RAPIER.Collider {
+  createBox(center: Vec3, half: Vec3, yaw = 0, rotation?: Rot): RAPIER.Collider {
     const desc = RAPIER.ColliderDesc.cuboid(half.x, half.y, half.z)
       .setTranslation(center.x, center.y, center.z)
-      .setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) })
+      .setRotation(rotation ?? { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) })
       .setCollisionGroups(WORLD_COLLIDER_GROUPS);
     this.dirty = true;
     return this.world.createCollider(desc);
@@ -93,6 +94,16 @@ export class PhysicsWorld {
   setBoxPose(collider: RAPIER.Collider, center: Vec3, yaw: number): void {
     collider.setTranslation(center);
     collider.setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) });
+    this.dirty = true;
+  }
+
+  /** Move and turn a box to any orientation (movers carrying tilted or hinged blocks). */
+  setBoxTransform(collider: RAPIER.Collider, center: Vec3, rotation: Rot): void {
+    const t = collider.translation();
+    const r = collider.rotation();
+    if (t.x === center.x && t.y === center.y && t.z === center.z && r.x === rotation.x && r.y === rotation.y && r.z === rotation.z && r.w === rotation.w) return;
+    collider.setTranslation(center);
+    collider.setRotation(rotation);
     this.dirty = true;
   }
 

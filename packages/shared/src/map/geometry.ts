@@ -1,6 +1,7 @@
 import { PLAYER } from '../sim/constants.ts';
 import { SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, type Corner, type EdgeStyle, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
+import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
 import { terrainBoundary, terrainTriangles } from './terrain.ts';
 import { resolveBackdrop } from './backdrop.ts';
@@ -26,6 +27,12 @@ export interface WorldBox {
    * Curved walls, arches and balconies are built from turned boxes.
    */
   yaw?: number;
+  /**
+   * Tilt of pitched free blocks (v20), applied before the yaw: pitch about the
+   * box's own X axis (+Z end rises), roll about its own Z axis (+X end rises).
+   */
+  pitch?: number;
+  roll?: number;
   /** Material for every face (free blocks), instead of the theme's. */
   surface?: { material: string; tint: string | null };
 }
@@ -37,11 +44,63 @@ export function yawXZ(x: number, z: number, yaw: number): [number, number] {
   return [x * c + z * s, -x * s + z * c];
 }
 
+export interface Rot {
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+}
+
+/** Rotation of a turned and tilted box: yaw (about +Y) after pitch (about X) after roll (about Z). Same in physics and rendering. */
+export function boxQuat(yaw = 0, pitch = 0, roll = 0): Rot {
+  const sy = Math.sin(yaw / 2);
+  const cy = Math.cos(yaw / 2);
+  // Positive pitch lifts the +Z end (a standard turn about +X would lower it).
+  const sp = Math.sin(-pitch / 2);
+  const cp = Math.cos(pitch / 2);
+  const sr = Math.sin(roll / 2);
+  const cr = Math.cos(roll / 2);
+  // qY * qX
+  const a = { x: cy * sp, y: sy * cp, z: -sy * sp, w: cy * cp };
+  // (qY * qX) * qZ
+  return { x: a.x * cr + a.y * sr, y: a.y * cr - a.x * sr, z: a.w * sr + a.z * cr, w: a.w * cr - a.z * sr };
+}
+
+export function quatMul(a: Rot, b: Rot): Rot {
+  return {
+    x: a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+    y: a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+    z: a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+    w: a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z,
+  };
+}
+
+/** Rotate the vector (x, y, z) by a unit quaternion. */
+export function quatRotate(q: Rot, x: number, y: number, z: number): [number, number, number] {
+  // t = 2 * cross(q.xyz, v); v' = v + w * t + cross(q.xyz, t)
+  const tx = 2 * (q.y * z - q.z * y);
+  const ty = 2 * (q.z * x - q.x * z);
+  const tz = 2 * (q.x * y - q.y * x);
+  return [x + q.w * tx + (q.y * tz - q.z * ty), y + q.w * ty + (q.z * tx - q.x * tz), z + q.w * tz + (q.x * ty - q.y * tx)];
+}
+
+/** Whether a box is tilted (pitched or rolled), not just turned. */
+export const isTilted = (b: Pick<WorldBox, 'pitch' | 'roll'>): boolean => !!(b.pitch || b.roll);
+
 /** A box's 8 corners in world space; corner i has bit0 → max x, bit1 → max y, bit2 → max z (in the box's own frame). */
-export function boxCorners(b: Pick<WorldBox, 'min' | 'max' | 'yaw'>): [number, number, number][] {
+export function boxCorners(b: Pick<WorldBox, 'min' | 'max' | 'yaw' | 'pitch' | 'roll'>): [number, number, number][] {
   const cx = (b.min[0] + b.max[0]) / 2;
   const cz = (b.min[2] + b.max[2]) / 2;
   const out: [number, number, number][] = [];
+  if (isTilted(b)) {
+    const cy = (b.min[1] + b.max[1]) / 2;
+    const q = boxQuat(b.yaw, b.pitch, b.roll);
+    for (let i = 0; i < 8; i++) {
+      const [x, y, z] = quatRotate(q, (i & 1 ? b.max[0] : b.min[0]) - cx, (i & 2 ? b.max[1] : b.min[1]) - cy, (i & 4 ? b.max[2] : b.min[2]) - cz);
+      out.push([cx + x, cy + y, cz + z]);
+    }
+    return out;
+  }
   for (let i = 0; i < 8; i++) {
     const x = i & 1 ? b.max[0] : b.min[0];
     const y = i & 2 ? b.max[1] : b.min[1];
@@ -56,13 +115,18 @@ export function boxCorners(b: Pick<WorldBox, 'min' | 'max' | 'yaw'>): [number, n
 }
 
 /** A box's outline seen from above, as four (x, z) corners in order round the edge. */
-export function boxFootprint(b: Pick<WorldBox, 'min' | 'max' | 'yaw'>): [number, number][] {
+export function boxFootprint(b: Pick<WorldBox, 'min' | 'max' | 'yaw' | 'pitch' | 'roll'>): [number, number][] {
   const c = boxCorners(b);
   return [c[0]!, c[1]!, c[5]!, c[4]!].map((p) => [p[0], p[2]] as [number, number]);
 }
 
 /** World-axis bounds of a (possibly turned) box. */
-export function boxBounds(b: Pick<WorldBox, 'min' | 'max' | 'yaw'>): { min: [number, number, number]; max: [number, number, number] } {
+export function boxBounds(b: Pick<WorldBox, 'min' | 'max' | 'yaw' | 'pitch' | 'roll'>): { min: [number, number, number]; max: [number, number, number] } {
+  if (isTilted(b)) {
+    const c = boxCorners(b);
+    const axis = (k: 0 | 1 | 2) => c.map((p) => p[k]);
+    return { min: [Math.min(...axis(0)), Math.min(...axis(1)), Math.min(...axis(2))], max: [Math.max(...axis(0)), Math.max(...axis(1)), Math.max(...axis(2))] };
+  }
   if (!b.yaw) return { min: [...b.min], max: [...b.max] };
   const f = boxFootprint(b);
   const xs = f.map((p) => p[0]);
@@ -375,17 +439,81 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
 }
 
 /**
- * Free blocks as world boxes. Solid blocks are level geometry; the others
- * (breakable, crumble, trapdoor) belong to the scenario runtime, which turns
- * their colliders on and off (ask for them with `dynamic`).
+ * Blocks the scenario runtime owns (v20): breakable, crumbling and trapdoor
+ * blocks, plus solid blocks that logic targets, that start hidden or that a
+ * mover carries. Everything else is static level geometry.
+ */
+export function dynamicBlockIds(map: MapDocument): Set<string> {
+  const out = new Set<string>();
+  const targets = logicTargets(map.logic);
+  const carried = new Set(map.entities.flatMap((e) => (e.kind === 'mover' ? e.blocks : [])));
+  for (const e of map.entities) {
+    if (e.kind !== 'block') continue;
+    if (e.behaviour !== 'solid' || e.startHidden || targets.has(e.id) || carried.has(e.id)) out.add(e.id);
+  }
+  return out;
+}
+
+/**
+ * Free blocks as world boxes. Static solid blocks are level geometry; the
+ * dynamic ones (see dynamicBlockIds) belong to the scenario runtime, which
+ * moves them and turns their colliders on and off (ask for them with
+ * `dynamic`: you get them in their idle state, as navigation and the
+ * validator see them: present unless they start hidden, movers' blocks at
+ * their first point).
  */
 export function blockBoxes(map: MapDocument, dynamic = false): WorldBox[] {
   const out: WorldBox[] = [];
+  const dyn = dynamicBlockIds(map);
+  const starts = dynamic ? moverStarts(map) : null;
   for (const e of map.entities) {
-    if (e.kind !== 'block' || (e.behaviour !== 'solid') !== dynamic) continue;
-    out.push(blockBox(e));
+    if (e.kind !== 'block' || dyn.has(e.id) !== dynamic) continue;
+    if (dynamic && e.startHidden) continue;
+    const start = starts?.get(e.id);
+    out.push(start ? carriedBox(e, start) : blockBox(e));
   }
   return out;
+}
+
+interface MoverStart {
+  pivot: [number, number, number];
+  offset: [number, number, number];
+  angle: number;
+  yaw: number;
+}
+
+/** Where each mover-carried block starts: its mover's first point and angle. */
+function moverStarts(map: MapDocument): Map<string, MoverStart> {
+  const out = new Map<string, MoverStart>();
+  for (const m of map.entities) {
+    if (m.kind !== 'mover') continue;
+    const start = { pivot: m.position, offset: m.points[0]!, angle: m.angles?.[0] ?? 0, yaw: m.yaw };
+    for (const id of m.blocks) if (!out.has(id)) out.set(id, start);
+  }
+  return out;
+}
+
+/** A carried block's box at its mover's first point (the hinge turn tilts it when it faces the mover's way). */
+function carriedBox(e: Extract<MapEntity, { kind: 'block' }>, s: MoverStart): WorldBox {
+  const b = blockBox(e);
+  const h = e.size[1] / 2;
+  let c: [number, number, number] = [e.position[0] - s.pivot[0], e.position[1] + h - s.pivot[1], e.position[2] - s.pivot[2]];
+  let pitch = e.pitch ?? 0;
+  if (s.angle) {
+    const turn = boxQuat(s.yaw);
+    const back = { x: -turn.x, y: -turn.y, z: -turn.z, w: turn.w };
+    const hinge = quatMul(quatMul(turn, boxQuat(0, s.angle)), back);
+    c = quatRotate(hinge, c[0], c[1], c[2]);
+    const dy = Math.atan2(Math.sin(e.yaw - s.yaw), Math.cos(e.yaw - s.yaw));
+    if (Math.abs(dy) < 1e-6 && !e.roll) pitch += s.angle;
+  }
+  const cx = s.pivot[0] + s.offset[0] + c[0];
+  const cy = s.pivot[1] + s.offset[1] + c[1];
+  const cz = s.pivot[2] + s.offset[2] + c[2];
+  const [w, , d] = e.size;
+  const { pitch: _p, ...rest } = b;
+  void _p;
+  return { ...rest, min: [cx - w / 2, cy - h, cz - d / 2], max: [cx + w / 2, cy + h, cz + d / 2], ...(pitch ? { pitch } : {}) };
 }
 
 export function blockBox(e: Extract<MapEntity, { kind: 'block' }>): WorldBox {
@@ -397,6 +525,8 @@ export function blockBox(e: Extract<MapEntity, { kind: 'block' }>): WorldBox {
     kind: 'floor',
     sourceId: e.id,
     ...(e.yaw ? { yaw: e.yaw } : {}),
+    ...(e.pitch ? { pitch: e.pitch } : {}),
+    ...(e.roll ? { roll: e.roll } : {}),
     ...(e.material ? { surface: { material: e.material, tint: e.tint } } : {}),
   };
 }

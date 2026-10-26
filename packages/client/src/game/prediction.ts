@@ -85,6 +85,13 @@ export class LocalPlayer {
   airJumps = 0;
   /** Ground hazards from the latest snapshot (oil makes movement slick). */
   zones: readonly ZoneSnapshot[] = [];
+  /**
+   * Moving platforms (map movers): put their colliders where they are at a
+   * tick and carry feet standing on them, exactly as the server does.
+   */
+  platforms: { poseAt(tick: number): void; carry(feet: Vec3, tick: number): Vec3 | null } | null = null;
+  /** Server tick the latest predicted input will run on (estimate: snapshot tick + inputs not yet acknowledged). */
+  predTick = 0;
   /** Trigger state mirrored from the server rules (semi-auto latch, spin-up, burst). */
   private semiLatch = false;
   private windup = 0;
@@ -153,19 +160,26 @@ export class LocalPlayer {
         this.windup = 0;
         this.burstLeft = 0;
       }
-      if (!this.mounted) this.state = this.move(this.state, input);
+      if (!this.mounted) this.state = this.move(this.state, input, this.predTick + 1);
       if (this.fireCooldown > 0) this.fireCooldown--;
       if (this.raiseTicks > 0) this.raiseTicks--;
       if (this.reloadTicks > 0) this.reloadTicks--;
       shot = this.predictFire(input);
     }
+    this.predTick++;
     this.pending.push(input);
     if (this.pending.length > MAX_PENDING) this.pending.shift();
     return { input, shot };
   }
 
   /** Same order as the server: move with the current boost, then count the boost down. */
-  private move(state: MoveState, input: PlayerInput): MoveState {
+  private move(state: MoveState, input: PlayerInput, tick: number): MoveState {
+    if (this.platforms) {
+      // The server moves platforms, then riders, then everyone's own movement (Match.step).
+      this.platforms.poseAt(tick);
+      const ridden = this.platforms.carry(state.pos, tick);
+      if (ridden) state = { ...state, pos: ridden };
+    }
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
     const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}) }));
     if (this.jetFuel !== null) this.jetFuel = stepJetFuel(this.jetFuel, !!next.jet);
@@ -252,7 +266,7 @@ export class LocalPlayer {
   }
 
   /** Server reconciliation. */
-  reconcile(server: PlayerSnapshot, ack: number, me?: PrivateState): void {
+  reconcile(server: PlayerSnapshot, ack: number, me?: PrivateState, serverTick?: number): void {
     const wasAlive = this.alive;
     this.alive = server.alive === 1;
     this.health = server.hp;
@@ -291,9 +305,11 @@ export class LocalPlayer {
       ...(me?.cl && me.cl[4] & 3 ? { airJumps: me.cl[4] & 3 } : {}),
       ...(me?.cl && me.cl[4] & 4 ? { jumpHeld: true } : {}),
     };
+    let t = serverTick ?? this.predTick - this.pending.length;
     if (this.alive && !this.mounted) {
-      for (const input of this.pending) this.state = this.move(this.state, input);
-    }
+      for (const input of this.pending) this.state = this.move(this.state, input, ++t);
+    } else t += this.pending.length;
+    this.predTick = t;
     const err = distance(before, this.state.pos);
     if (wasAlive && this.alive && err > 0.01) {
       this.corrections++;

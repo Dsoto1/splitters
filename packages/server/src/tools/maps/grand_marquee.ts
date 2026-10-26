@@ -16,7 +16,8 @@
  *   and the lighting bridge across the house.
  * - The projection booth: high at the back over the balcony (the sniper's
  *   seat), with a button that runs the film: the fire curtain drops away from
- *   the glowing screen and the house doors shut and lock for 20 s.
+ *   the glowing screen, the house lights go down, the screen flickers and the
+ *   house doors shut and lock for 20 s.
  * - Carpeted side halls on three storeys either side of the house; backstage
  *   crossover, scene shop, wardrobe and prop store; a corridor of dressing
  *   rooms upstairs; the fly gallery on top.
@@ -463,6 +464,10 @@ for (const s of [-1, 1]) {
     HOUSE_DOORS.push(id);
   }
 }
+/** The house lights "Run the film" dims (their IDs; the lights themselves are placed with the others below). */
+const HOUSE_LIGHTS = Array.from({ length: 11 }, (_, k) => `light_house_${k + 1}`);
+let houseLights = 0;
+const houseLight = () => HOUSE_LIGHTS[houseLights++]!;
 m.add({ kind: 'button', id: 'btn_film', name: 'Projector', position: [-8, 8, 4.3], yaw: 0, label: 'Run the film', once: false, cooldownSeconds: 1, startEnabled: true });
 const act = (type: LogicAction['type'], target: string | null = null, o: { value?: number; text?: string; state?: string } = {}): LogicAction => ({ type, target, value: o.value ?? 0, text: o.text ?? '', state: o.state ?? '' });
 const say = (text: string, seconds = 3) => act('message', null, { value: seconds, text });
@@ -486,6 +491,16 @@ m.logic({
       say('The End. House doors open, and an encore waits on the stage.', 3),
       act('wait', null, { value: 25 }),
       act('enable', 'btn_film'),
+    ]),
+    // The house lights go down for the feature and the screen flickers with the film; they come up at The End.
+    rule('rule_house_lights', 'House lights down', { event: 'button_pressed', target: 'btn_film' }, [
+      ...HOUSE_LIGHTS.map((l) => act('light_off', l)),
+      act('light_color', 'light_screen', { text: '#f4f8ff' }),
+      act('light_blink', 'light_screen', { state: 'on', value: 1.5 }),
+      act('wait', null, { value: 20 }),
+      ...HOUSE_LIGHTS.map((l) => act('light_on', l)),
+      act('light_blink', 'light_screen', { state: 'off' }),
+      act('light_color', 'light_screen'),
     ]),
     rule('rule_encore', 'Encore taken', { event: 'pickup_taken', target: 'pickup_encore' }, [act('disable', 'pickup_encore')]),
   ],
@@ -536,8 +551,8 @@ m.pickup('health_small', [-24, 0, 24]).pickup('health_small', [24, 0, 36]).picku
 m.pickup('health_small', [-32, 4, 40]).pickup('health_small', [32, 4, 40]).pickup('health_small', [10, 0, -16]).pickup('health_small', [-16, 0, 66]);
 m.pickup('grenades', [-12, 4, 6]).pickup('grenades', [12, 4, 6]).pickup('grenades', [16, 0, 58]).pickup('grenades', [0, 0, -7 - 3]);
 m.pickup('ammo_light', [-36, 0, 2]).pickup('ammo_shells', [36, 0, 2]);
-// A pad from the sidewalk up onto the marquee canopy.
-m.padTo([-18, 0, -12], [-10, 5.1, -7], 14);
+// A pad from the sidewalk up onto the marquee canopy (17 m/s of lift clears the bulb ring round its edge).
+m.padTo([-18, 0, -12], [-10, 5.1, -7], 17);
 // Fire extinguisher-red barrels and a gas bottle in the scene shop and on the dock.
 m.breakable('barrel', [-12, 0, 68]).breakable('barrel', [-11, 0, 69]).breakable('gas', [4, 0, 69]);
 
@@ -578,11 +593,12 @@ m.prop('computer_bank', [-4, 8, 11.2], S).prop('machine', [4, 8, 10.6], S).prop(
 
 m.lightRooms({ color: '#ffd8a0', intensity: 0.9, skip: (x, y, z) => z === 0 && y === 0 && Math.abs(x) <= 3 });
 // The house: low gold glow along the walls, a warm wash on the stage, the screen's cold light.
-for (const s of [-1, 1]) for (const z of [18, 26, 34]) m.light([s * 19.2, 7, z], { fixture: 'none', color: '#ffc870', intensity: 1, range: 10 });
+// The house lights (wall glow and the bulbs over the stalls) have IDs: "Run the film" dims them; the screen's light flickers.
+for (const s of [-1, 1]) for (const z of [18, 26, 34]) m.light([s * 19.2, 7, z], { fixture: 'none', color: '#ffc870', intensity: 1, range: 10, id: houseLight() });
 for (const x of [-10, 0, 10]) m.light([x, 7.4, 44], { fixture: 'bulb', color: '#fff0d0', intensity: 1.4, range: 12 });
-m.light([0, 7, 49.5], { fixture: 'none', color: '#d8e0ff', intensity: 1.6, range: 18 });
-for (const x of [-12, 0, 12]) m.light([x, 11, 24], { fixture: 'bulb', color: '#ffd8a0', intensity: 1.2, range: 14 });
-for (const x of [-8, 8]) m.light([x, 11, 36], { fixture: 'bulb', color: '#ffd8a0', intensity: 1, range: 12 });
+m.light([0, 7, 49.5], { fixture: 'none', color: '#d8e0ff', intensity: 1.6, range: 18, id: 'light_screen' });
+for (const x of [-12, 0, 12]) m.light([x, 11, 24], { fixture: 'bulb', color: '#ffd8a0', intensity: 1.2, range: 14, id: houseLight() });
+for (const x of [-8, 8]) m.light([x, 11, 36], { fixture: 'bulb', color: '#ffd8a0', intensity: 1, range: 12, id: houseLight() });
 m.light([0, 7, 13], { fixture: 'none', color: '#ffb060', intensity: 0.9, range: 10 });
 // The lobby: chandeliers and the concession glow.
 for (const x of [-14, 0, 14]) m.light([x, 6.8, -0.5], { fixture: 'none', color: '#ffe0b0', intensity: 1.4, range: 14 });
@@ -604,7 +620,7 @@ m.bounds('invisible', 4, undefined, 30);
 m.backdrop('night', 'city', 'stone', 0.45);
 m.meta({
   description:
-    'A 1930s art-deco movie palace at night. Ushers hold the lobby and the projection booth; Stagehands come from backstage. The street front under the marquee and the ticket booth; the grand lobby with twin curving stairs, the concession stand and the lounge; the main house with twelve raked rows of stalls, the orchestra pit, box seats, a three-tier balcony and the stage in front of the giant screen; the wings, fly-floor ladders and catwalks over the stage and the house; dressing rooms, scene shop and wardrobe behind; Screen 2 off the east hall; the rooftop and its neon sign. The booth button runs the film: the fire curtain drops from the glowing screen and the house doors lock for 20 s. King of the Hill: the stage, the balcony, the booth.',
+    'A 1930s art-deco movie palace at night. Ushers hold the lobby and the projection booth; Stagehands come from backstage. The street front under the marquee and the ticket booth; the grand lobby with twin curving stairs, the concession stand and the lounge; the main house with twelve raked rows of stalls, the orchestra pit, box seats, a three-tier balcony and the stage in front of the giant screen; the wings, fly-floor ladders and catwalks over the stage and the house; dressing rooms, scene shop and wardrobe behind; Screen 2 off the east hall; the rooftop and its neon sign. The booth button runs the film: the fire curtain drops from the glowing screen, the house lights go down and the house doors lock for 20 s. King of the Hill: the stage, the balcony, the booth.',
   modes: ['core.tdm', 'core.ctf', 'core.koth', 'core.deathmatch', 'core.zombies'],
   players: [8, 16],
 });

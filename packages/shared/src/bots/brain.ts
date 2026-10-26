@@ -83,6 +83,14 @@ export interface BotWorldView {
   /** Traps that are dangerous right now: bots wait at the edge instead of walking in. */
   hazards?: readonly Aabb[];
   /**
+   * Buttons that open closed doors (the door's box is one of `blockers`):
+   * where to stand and the button face to aim at. A bot whose path a door
+   * blocks goes and presses one first.
+   */
+  doorButtons?: readonly { door: Aabb; stand: Vec3; face: Vec3 }[];
+  /** Lifts (movers going up and down): the ride's two ends (a navmesh link) and where the platform's top is now. */
+  lifts?: readonly { start: Vec3; end: Vec3; top: Vec3; half: number }[];
+  /**
    * Squad order (NPCs) or co-op goal (Player Bots): when not fighting, go here
    * instead of roaming, and wait within `radius` of it.
    */
@@ -233,6 +241,11 @@ export class BotBrain {
   private lastTargetTick = -Infinity;
   private useLatch = false;
   private lastUseTick = -Infinity;
+  /** Going to press a button that opens a door in the way. */
+  private pressPlan: { stand: Vec3; face: Vec3; until: number } | null = null;
+  private pressedAt = -Infinity;
+  /** Waiting for or riding a lift: stand still this tick. */
+  private holdStill = false;
 
   constructor(
     readonly slot: number,
@@ -481,6 +494,8 @@ export class BotBrain {
   private act(view: BotWorldView, seq: number, target: CombatantView | undefined, ctx: AimContext): PlayerInput {
     const me = view.self;
     const tick = view.tick;
+    this.holdStill = false;
+    if (this.pressPlan && tick >= this.pressPlan.until) this.pressPlan = null;
     let moveYaw: number | null = null;
     let moveScale = 1;
     let backOff = false;
@@ -778,6 +793,27 @@ export class BotBrain {
     } else if (backOff) {
       forward = -0.8;
     }
+    // On or waiting for a lift: stand still; at a button: stop, aim at it and press.
+    let pressNow = false;
+    if (this.holdStill) {
+      forward = 0;
+      right = 0;
+    }
+    const plan = this.pressPlan;
+    if (plan && horizontalDistance(me.pos, plan.stand) < 0.8 && Math.abs(me.pos.y - plan.stand.y) < 1) {
+      forward = 0;
+      right = 0;
+      const a = lookAngles({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, plan.face);
+      this.turnToward(a.yaw, a.pitch);
+      if (Math.abs(angleDelta(this.yaw, a.yaw)) < 0.3 && Math.abs(this.pitch - a.pitch) < 0.3) {
+        pressNow = true;
+        this.pressPlan = null;
+        this.pressedAt = tick;
+        this.path = [];
+        this.goal = null;
+        this.lastPathTick = -Infinity;
+      }
+    }
     if (strafe) {
       this.updateStrafe(tick);
       right = clamp(right + this.strafeDir * 0.7, -1, 1);
@@ -807,6 +843,7 @@ export class BotBrain {
     // Badly hurt and hidden: lie flat.
     if (hurt && inCoverHidden && this.tactical > 0.5) stance = 2;
 
+    if (pressNow) buttons |= BUTTON_USE;
     if (sprint && moveYaw !== null && forward > 0.3) buttons |= BUTTON_SPRINT;
     else if (stance === 2) buttons |= BUTTON_PRONE;
     else if (stance === 1) buttons |= BUTTON_CROUCH;
@@ -1465,6 +1502,11 @@ export class BotBrain {
   /** Follow a navmesh path to `goal`; returns the world yaw to move along, or null when there is nowhere to go. */
   private followPathTo(view: BotWorldView, goal: Vec3, movingGoal: boolean): number | null {
     const me = view.self;
+    // A door in the way that a button opens: the button first.
+    if (this.pressPlan) {
+      goal = this.pressPlan.stand;
+      movingGoal = false;
+    }
     const goalMoved = this.goal === null || horizontalDistance(this.goal, goal) > 2 || Math.abs(this.goal.y - goal.y) > 1.5;
     const stale = movingGoal && view.tick - this.lastPathTick > PATH_REFRESH_TICKS;
     // Ran out of corners without arriving (e.g. pushed off the path): replan, throttled.
@@ -1472,7 +1514,11 @@ export class BotBrain {
     if ((goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6)) {
       this.goal = { ...goal };
       this.path = view.nav.findPath(me.pos, goal) ?? [];
-      if (this.pathBlocked(view)) this.path = [];
+      const door = this.pathBlocked(view);
+      if (door) {
+        this.path = [];
+        if (!this.pressPlan && view.tick - this.pressedAt > TICK_RATE * 3) this.planPress(view, door);
+      }
       this.pathIndex = this.path.length > 1 ? 1 : 0;
       this.lastPathTick = view.tick;
     }
@@ -1491,7 +1537,50 @@ export class BotBrain {
       if (this.path.length === 0 || horizontalDistance(me.pos, goal) < 0.5) return null;
       return Math.atan2(goal.x - me.pos.x, goal.z - me.pos.z);
     }
+    if (view.lifts?.length) this.holdStill = this.liftWait(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null);
     return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+  }
+
+  /**
+   * Lifts: the navmesh has a link from the platform's top at one end of its
+   * run to the other. Coming up to the link, wait (a couple of metres back)
+   * until the platform is there; on it, stand still until it has arrived.
+   */
+  private liftWait(view: BotWorldView, corner: Vec3, prev: Vec3 | null): boolean {
+    const me = view.self.pos;
+    // The navmesh snaps link ends to the floor beside the shaft, up to a couple of metres off.
+    const near = (a: Vec3, b: Vec3) => horizontalDistance(a, b) < 2.6 && Math.abs(a.y - b.y) < 0.8;
+    for (const l of view.lifts!) {
+      if (prev && near(prev, l.start) && near(corner, l.end)) {
+        // Riding (or about to): until the platform has brought us level with the far end.
+        const aboard = horizontalDistance(me, l.top) < l.half + 0.2 && Math.abs(me.y - l.top.y) < 0.3;
+        if (aboard && Math.abs(me.y - l.end.y) > 0.5) return true;
+      } else if (near(corner, l.start)) {
+        // Walking up to it: wait back from the edge while the platform is away.
+        if (Math.abs(l.top.y - l.start.y) > 0.3 && horizontalDistance(me, l.start) < 2.5) return true;
+      }
+    }
+    return false;
+  }
+
+  /** The path is shut by a door some button opens: go and press it (if it can be reached). */
+  private planPress(view: BotWorldView, door: Aabb): void {
+    const same = (a: Aabb, b: Aabb) => Math.abs(a.min.x - b.min.x) + Math.abs(a.min.z - b.min.z) + Math.abs(a.max.x - b.max.x) + Math.abs(a.max.z - b.max.z) + Math.abs(a.min.y - b.min.y) < 0.05;
+    const me = view.self.pos;
+    const options = (view.doorButtons ?? []).filter((d) => same(d.door, door)).sort((a, b) => horizontalDistance(me, a.stand) - horizontalDistance(me, b.stand));
+    for (const o of options) {
+      const path = view.nav.findPath(me, o.stand);
+      if (!path) continue;
+      const saved = this.path;
+      this.path = path;
+      const blocked = this.pathBlocked(view);
+      this.path = saved;
+      if (blocked) continue;
+      this.pressPlan = { stand: o.stand, face: o.face, until: view.tick + TICK_RATE * 20 };
+      this.path = path;
+      this.goal = { ...o.stand };
+      return;
+    }
   }
 
   /** Chasing or investigating `goal` without getting any closer for five seconds. */
@@ -1511,17 +1600,18 @@ export class BotBrain {
     return view.tick - h.tick > TICK_RATE * 5;
   }
 
-  /** Does the planned path cross a closed door or breakable wall? */
-  private pathBlocked(view: BotWorldView): boolean {
-    if (!view.blockers?.length) return false;
+  /** The closed door or breakable wall the planned path crosses, if any. */
+  private pathBlocked(view: BotWorldView): Aabb | null {
+    if (!view.blockers?.length) return null;
     let prev = view.self.pos;
     for (const c of this.path) {
       const a = { x: prev.x, y: prev.y + 1, z: prev.z };
       const b = { x: c.x, y: c.y + 1, z: c.z };
-      if (view.blockers.some((box) => segmentHitsAabb(a, b, box))) return true;
+      const hit = view.blockers.find((box) => segmentHitsAabb(a, b, box));
+      if (hit) return hit;
       prev = c;
     }
-    return false;
+    return null;
   }
 
   /** Would the next couple of metres along `moveYaw` enter an active trap we are not already standing in? */
