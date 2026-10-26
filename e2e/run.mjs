@@ -1054,7 +1054,8 @@ async function classesFlow(browser) {
   await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name)), null, { timeout: T(10000) }).catch(() => {});
   check(await page.evaluate(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name))), 'a Mechanic bot builds a sentry and it is drawn');
   await page.keyboard.down('Tab');
-  await page.waitForTimeout(400);
+  // CI's software renderer can take a moment to fill the board.
+  await page.waitForFunction(() => /Bulwark/i.test(document.getElementById('scoreboard')?.textContent ?? ''), null, { timeout: T(3000) }).catch(() => {});
   const board = await page.evaluate(() => document.getElementById('scoreboard')?.textContent ?? '');
   await page.keyboard.up('Tab');
   check(/Bulwark/i.test(board), 'the scoreboard shows classes');
@@ -1183,7 +1184,8 @@ async function vehiclesFlow(browser) {
     const e = cs.local.eye;
     return { view: cs.rideView(), off: Math.hypot(c.x - e.x, c.y - e.y, c.z - e.z), roll: cs.view.camera.rotation.z };
   });
-  check(foot.view === null && foot.off < 0.4 && Math.abs(foot.roll) < 1e-6, `after getting out the camera is at your eye and level (${foot.view}, ${foot.off.toFixed(2)} m off, roll ${foot.roll})`);
+  // A blast nearby can still be shaking the view a little: level means within a fraction of a degree.
+  check(foot.view === null && foot.off < 0.4 && Math.abs(foot.roll) < 0.01, `after getting out the camera is at your eye and level (${foot.view}, ${foot.off.toFixed(2)} m off, roll ${foot.roll})`);
   // A blast next to you while looking up shakes the view; once it settles, turning and looking around stay level
   // (Babylon kept the up vector from the shake's last frame, which rolled the view and gun with every turn).
   await page.evaluate(() => {
