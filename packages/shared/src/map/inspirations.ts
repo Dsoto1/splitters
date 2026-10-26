@@ -25,6 +25,7 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   coldwater_gulch: 'Blood Gulch (Halo)',
   dead_reel: 'Kino der Toten (Call of Duty: Black Ops)',
   kanto_plaza: 'Nakatomi Plaza (Die Hard)',
+  shingle_point: 'the D-Day beach landings (1944)',
 };
 
 /** "Inspired by …" for a map, if it has one (imported TimeSplitters maps name their game). */
