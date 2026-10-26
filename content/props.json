@@ -127,6 +127,53 @@
       "normalSize": 256,
       "decalSize": 512
     },
+    "kenney-modular-space-kit": {
+      "title": "Modular Space Kit 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/modular-space-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-modular-space-kit/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "kenney_modular-space-kit_1.0",
+      "models": "Models/GLB format",
+      "textureSize": 512,
+      "normalSize": 0,
+      "decalSize": 512
+    },
+    "kenney-space-kit": {
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-space-kit/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "kenney_space-kit",
+      "models": "Models/GLTF format",
+      "textureSize": 512,
+      "normalSize": 0,
+      "decalSize": 512
+    },
+    "kenney-city-kit-roads": {
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-city-kit-roads/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "kenney_city-kit-roads",
+      "models": "Models/GLB format",
+      "textureSize": 512,
+      "normalSize": 0,
+      "decalSize": 512
+    },
+    "tiletrigger-stylepacks": {
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "licenseFile": "assets-src/tiletrigger-stylepacks/License.txt",
+      "retrieved": "2026-10-26"
+    },
     "quaternius-survival-pack": {
       "title": "Survival Pack",
       "creator": "Quaternius",
@@ -4037,6 +4084,439 @@
       "scale": 1,
       "collide": "none",
       "lift": 0.02
+    },
+    {
+      "id": "os_airlock_frame",
+      "pack": "kenney-modular-space-kit",
+      "src": "gate.glb",
+      "name": "Airlock Frame",
+      "category": "Orbital Station",
+      "scale": 0.86,
+      "collide": "frame"
+    },
+    {
+      "id": "os_bulkhead",
+      "pack": "kenney-modular-space-kit",
+      "src": "gate-door.glb",
+      "name": "Sealed Bulkhead",
+      "category": "Orbital Station",
+      "scale": 0.86,
+      "collide": "box"
+    },
+    {
+      "id": "os_bulkhead_window",
+      "pack": "kenney-modular-space-kit",
+      "src": "gate-door-window.glb",
+      "name": "Bulkhead (Window)",
+      "category": "Orbital Station",
+      "scale": 0.86,
+      "collide": "box"
+    },
+    {
+      "id": "os_laser_gate",
+      "pack": "kenney-modular-space-kit",
+      "src": "gate-lasers.glb",
+      "name": "Laser Gate Frame",
+      "category": "Orbital Station",
+      "scale": 0.86,
+      "collide": "frame"
+    },
+    {
+      "id": "os_floor_cables",
+      "pack": "kenney-modular-space-kit",
+      "src": "cables.glb",
+      "name": "Floor Cables",
+      "category": "Orbital Station",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "os_wall_column",
+      "pack": "kenney-modular-space-kit",
+      "src": "template-detail.glb",
+      "name": "Station Column",
+      "category": "Orbital Station",
+      "scale": 0.94,
+      "collide": "box"
+    },
+    {
+      "id": "os_wall_panel",
+      "pack": "kenney-modular-space-kit",
+      "src": "template-wall-detail-a.glb",
+      "name": "Station Wall Section",
+      "category": "Orbital Station",
+      "scale": 0.94,
+      "collide": "box"
+    },
+    {
+      "id": "os_satellite_dish",
+      "pack": "kenney-space-kit",
+      "src": "satelliteDish_large.glb",
+      "name": "Satellite Dish",
+      "category": "Orbital Station",
+      "height": 3.6,
+      "collide": "box"
+    },
+    {
+      "id": "os_comms_dish",
+      "pack": "kenney-space-kit",
+      "src": "satelliteDish.glb",
+      "name": "Comms Dish",
+      "category": "Orbital Station",
+      "height": 2.4,
+      "collide": "box"
+    },
+    {
+      "id": "os_generator",
+      "pack": "kenney-space-kit",
+      "src": "machine_generatorLarge.glb",
+      "name": "Fusion Generator",
+      "category": "Orbital Station",
+      "height": 1.8,
+      "collide": "box"
+    },
+    {
+      "id": "os_power_unit",
+      "pack": "kenney-space-kit",
+      "src": "machine_generator.glb",
+      "name": "Power Unit",
+      "category": "Orbital Station",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "os_transmitter",
+      "pack": "kenney-space-kit",
+      "src": "machine_wireless.glb",
+      "name": "Transmitter",
+      "category": "Orbital Station",
+      "height": 1.5,
+      "collide": "box"
+    },
+    {
+      "id": "os_truss",
+      "pack": "kenney-space-kit",
+      "src": "supports_high.glb",
+      "name": "Support Truss",
+      "category": "Orbital Station",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "os_frame_module",
+      "pack": "kenney-space-kit",
+      "src": "structure_detailed.glb",
+      "name": "Frame Module",
+      "category": "Orbital Station",
+      "height": 3,
+      "collide": "box"
+    },
+    {
+      "id": "os_coolant_pipe",
+      "pack": "kenney-space-kit",
+      "src": "pipe_straight.glb",
+      "name": "Coolant Pipe",
+      "category": "Orbital Station",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "os_pipe_junction",
+      "pack": "kenney-space-kit",
+      "src": "pipe_ring.glb",
+      "name": "Pipe Junction",
+      "category": "Orbital Station",
+      "height": 1.7,
+      "collide": "box"
+    },
+    {
+      "id": "os_console_corner",
+      "pack": "kenney-space-kit",
+      "src": "desk_computerCorner.glb",
+      "name": "Corner Console",
+      "category": "Orbital Station",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "os_terminal",
+      "pack": "kenney-space-kit",
+      "src": "desk_computer.glb",
+      "name": "Desk Terminal",
+      "category": "Orbital Station",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "os_canister_rack",
+      "pack": "kenney-space-kit",
+      "src": "barrels_rail.glb",
+      "name": "Canister Rack",
+      "category": "Orbital Station",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "os_viewport",
+      "pack": "tiletrigger-stylepacks",
+      "src": "os_viewport.glb",
+      "name": "Space Viewport",
+      "category": "Orbital Station",
+      "height": 2.4,
+      "collide": "none"
+    },
+    {
+      "id": "os_reactor_core",
+      "pack": "tiletrigger-stylepacks",
+      "src": "os_reactor_core.glb",
+      "name": "Reactor Core",
+      "category": "Orbital Station",
+      "height": 7.8,
+      "collide": "box"
+    },
+    {
+      "id": "os_field_emitter",
+      "pack": "tiletrigger-stylepacks",
+      "src": "os_field_emitter.glb",
+      "name": "Field Emitter",
+      "category": "Orbital Station",
+      "height": 3.3,
+      "collide": "box"
+    },
+    {
+      "id": "os_cryo_pod",
+      "pack": "tiletrigger-stylepacks",
+      "src": "os_cryo_pod.glb",
+      "name": "Cryo Pod",
+      "category": "Orbital Station",
+      "height": 2.35,
+      "collide": "box"
+    },
+    {
+      "id": "os_holo_globe",
+      "pack": "tiletrigger-stylepacks",
+      "src": "os_holo_globe.glb",
+      "name": "Holo Globe",
+      "category": "Orbital Station",
+      "height": 2.25,
+      "collide": "box"
+    },
+    {
+      "id": "os_cargo_crate",
+      "pack": "tiletrigger-stylepacks",
+      "src": "os_cargo_crate.glb",
+      "name": "Station Cargo Crate",
+      "category": "Orbital Station",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "nc_streetlight",
+      "pack": "kenney-city-kit-roads",
+      "src": "light-curved.glb",
+      "name": "Street Light",
+      "category": "Neon Megacity",
+      "height": 7,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_streetlight_double",
+      "pack": "kenney-city-kit-roads",
+      "src": "light-curved-double.glb",
+      "name": "Double Street Light",
+      "category": "Neon Megacity",
+      "height": 7,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_traffic_light",
+      "pack": "kenney-city-kit-roads",
+      "src": "traffic-light.glb",
+      "name": "Traffic Light",
+      "category": "Neon Megacity",
+      "height": 4,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_traffic_light_hanging",
+      "pack": "kenney-city-kit-roads",
+      "src": "traffic-light-hanging.glb",
+      "name": "Hanging Traffic Light",
+      "category": "Neon Megacity",
+      "height": 5.5,
+      "collide": "none"
+    },
+    {
+      "id": "nc_highway_sign",
+      "pack": "kenney-city-kit-roads",
+      "src": "sign-highway-wide.glb",
+      "name": "Overhead Sign Gantry",
+      "category": "Neon Megacity",
+      "height": 6.5,
+      "collide": "frame",
+      "yaw": 90
+    },
+    {
+      "id": "nc_street_sign",
+      "pack": "kenney-city-kit-roads",
+      "src": "road-sign-street.glb",
+      "name": "Street Sign",
+      "category": "Neon Megacity",
+      "height": 3.2,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_dumpster",
+      "pack": "kenney-city-kit-roads",
+      "src": "dumpster.glb",
+      "name": "Dumpster",
+      "category": "Neon Megacity",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "nc_road_barrier",
+      "pack": "kenney-city-kit-roads",
+      "src": "construction-barrier.glb",
+      "name": "Road Barrier",
+      "category": "Neon Megacity",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "nc_cone",
+      "pack": "kenney-city-kit-roads",
+      "src": "construction-cone.glb",
+      "name": "Traffic Cone",
+      "category": "Neon Megacity",
+      "height": 0.7,
+      "collide": "none"
+    },
+    {
+      "id": "nc_elevated_pillar",
+      "pack": "kenney-city-kit-roads",
+      "src": "bridge-pillar-wide.glb",
+      "name": "Elevated Pillar",
+      "category": "Neon Megacity",
+      "height": 10,
+      "collide": "box"
+    },
+    {
+      "id": "nc_power_pole",
+      "pack": "kenney-city-kit-roads",
+      "src": "electricity-pole.glb",
+      "name": "Power Pole",
+      "category": "Neon Megacity",
+      "height": 9,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_monorail_track",
+      "pack": "kenney-space-kit",
+      "src": "monorail_trackStraight.glb",
+      "name": "Skytrain Track",
+      "category": "Neon Megacity",
+      "scale": 8,
+      "collide": "box"
+    },
+    {
+      "id": "nc_monorail_pylon",
+      "pack": "kenney-space-kit",
+      "src": "monorail_trackSupport.glb",
+      "name": "Skytrain Pylon",
+      "category": "Neon Megacity",
+      "scale": 16,
+      "collide": "box"
+    },
+    {
+      "id": "nc_skytrain_car",
+      "pack": "kenney-space-kit",
+      "src": "monorail_trainPassenger.glb",
+      "name": "Skytrain Car",
+      "category": "Neon Megacity",
+      "scale": 5,
+      "collide": "box"
+    },
+    {
+      "id": "nc_skytrain_front",
+      "pack": "kenney-space-kit",
+      "src": "monorail_trainFront.glb",
+      "name": "Skytrain Cab",
+      "category": "Neon Megacity",
+      "scale": 5,
+      "collide": "box"
+    },
+    {
+      "id": "nc_skytrain_end",
+      "pack": "kenney-space-kit",
+      "src": "monorail_trainEnd.glb",
+      "name": "Skytrain Tail",
+      "category": "Neon Megacity",
+      "scale": 5,
+      "collide": "box"
+    },
+    {
+      "id": "nc_vending",
+      "pack": "tiletrigger-stylepacks",
+      "src": "nc_vending.glb",
+      "name": "Vending Machine",
+      "category": "Neon Megacity",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "nc_ac_unit",
+      "pack": "tiletrigger-stylepacks",
+      "src": "nc_ac_unit.glb",
+      "name": "Rooftop AC Unit",
+      "category": "Neon Megacity",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "nc_water_tank",
+      "pack": "tiletrigger-stylepacks",
+      "src": "nc_water_tank.glb",
+      "name": "Rooftop Water Tank",
+      "category": "Neon Megacity",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "nc_holo_kiosk",
+      "pack": "tiletrigger-stylepacks",
+      "src": "nc_holo_kiosk.glb",
+      "name": "Holo Kiosk",
+      "category": "Neon Megacity",
+      "height": 2.65,
+      "collide": "box"
+    },
+    {
+      "id": "nc_food_stall",
+      "pack": "tiletrigger-stylepacks",
+      "src": "nc_food_stall.glb",
+      "name": "Noodle Stall",
+      "category": "Neon Megacity",
+      "height": 2.55,
+      "collide": "box"
+    },
+    {
+      "id": "nc_antenna",
+      "pack": "tiletrigger-stylepacks",
+      "src": "nc_antenna.glb",
+      "name": "Rooftop Antenna",
+      "category": "Neon Megacity",
+      "height": 6.43,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_neon_barrier",
+      "pack": "tiletrigger-stylepacks",
+      "src": "nc_neon_barrier.glb",
+      "name": "Neon Barrier",
+      "category": "Neon Megacity",
+      "height": 0.95,
+      "collide": "box"
     },
     {
       "id": "sv_backpack",

@@ -106,6 +106,8 @@ export interface MoveEnv {
   scale?: number;
   /** Gravity multiple (map / match setting); 1 = normal. */
   gravity?: number;
+  /** Low-gravity zones (map zones with `gravity`): inside one, gravity is further multiplied by its factor. */
+  gravityZones?: readonly GravityZone[];
   /** Extra jumps in the air (a fresh press of jump each), e.g. 1 for a double jump (Classes). */
   airJumps?: number;
   /** Wearing a jetpack (fuel or not): jump is its thrust, so it never pulls the parachute's cord. */
@@ -114,6 +116,44 @@ export interface MoveEnv {
   glider?: boolean;
   /** Always open a canopy before a long fall, and never cut it away (bots). */
   autoChute?: boolean;
+}
+
+/** A zone that changes gravity inside it (an axis-aligned box from `min` to `max`), as movement sees it. */
+export interface GravityZone {
+  min: Vec3;
+  max: Vec3;
+  /** Multiplies the map's gravity inside (0.35: floaty; 2: heavy). */
+  factor: number;
+}
+
+/** The gravity zones of a map (shared by the server and client prediction): zones with a `gravity` factor. */
+export function mapGravityZones(entities: readonly { kind: string; position: [number, number, number]; size?: unknown; gravity?: number }[]): GravityZone[] {
+  const out: GravityZone[] = [];
+  for (const e of entities) {
+    if (e.kind !== 'zone' || e.gravity === undefined || e.gravity === 1 || !Array.isArray(e.size)) continue;
+    const [x, y, z] = e.position;
+    const [w, h, d] = e.size as [number, number, number];
+    out.push({ min: { x: x - w / 2, y, z: z - d / 2 }, max: { x: x + w / 2, y: y + h, z: z + d / 2 }, factor: e.gravity });
+  }
+  return out;
+}
+
+/**
+ * Gravity multiple at a point (feet position): the factor of the gravity zone
+ * the body is in (its middle, so stepping in from below or above counts), or
+ * 1. Where zones overlap the weakest gravity wins.
+ */
+export function gravityAt(zones: readonly GravityZone[] | undefined, feet: Vec3): number {
+  if (!zones?.length) return 1;
+  const y = feet.y + 0.9;
+  let g = 1;
+  let found = false;
+  for (const z of zones) {
+    if (feet.x < z.min.x || feet.x > z.max.x || feet.z < z.min.z || feet.z > z.max.z || y < z.min.y || y > z.max.y) continue;
+    g = found ? Math.min(g, z.factor) : z.factor;
+    found = true;
+  }
+  return g;
 }
 
 /** A ladder as movement sees it: its foot against the wall, facing out from the wall, how tall and wide. */
@@ -191,7 +231,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   // Stance: what you ask for, unless there's no room to stand (or crouch) up. Jumping gets you up first.
   let jumpPressed = (input.buttons & BUTTON_JUMP) !== 0;
   const k = env.scale ?? 1;
-  const g = env.gravity ?? 1;
+  const g = (env.gravity ?? 1) * gravityAt(env.gravityZones, state.pos);
   const radius = PLAYER.radius * k;
   const was = stanceOf(state);
   let want: Stance = input.buttons & BUTTON_PRONE ? 2 : input.buttons & BUTTON_CROUCH ? 1 : 0;
@@ -403,7 +443,7 @@ export function applyPads(pads: readonly JumpPad[], state: MoveState): MoveState
  * link from the pad to its landing). Traces the flight with gravity and
  * returns the first floor hit on the way down; pads that never land are left out.
  */
-export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3 }[] {
+export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gravity = 1, zones: readonly GravityZone[] = []): { start: Vec3; end: Vec3 }[] {
   const out: { start: Vec3; end: Vec3 }[] = [];
   for (const p of pads) {
     let pos = { x: p.pos.x, y: p.pos.y + 0.9, z: p.pos.z };
@@ -412,7 +452,7 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gra
     let vz = p.vz;
     for (let t = 0; t < 6; t += TICK_DT) {
       const next = { x: pos.x + vx * TICK_DT, y: pos.y + vy * TICK_DT, z: pos.z + vz * TICK_DT };
-      vy -= PLAYER.gravity * gravity * TICK_DT;
+      vy -= PLAYER.gravity * gravity * gravityAt(zones, { x: pos.x, y: pos.y - 0.9, z: pos.z }) * TICK_DT;
       // The push fades in the air as it does in movement (AIR_PUSH_DECAY), so the landing is where you really come down.
       vx *= AIR_PUSH_DECAY;
       vz *= AIR_PUSH_DECAY;
@@ -430,6 +470,6 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gra
 }
 
 /** Every one-way navmesh link a map needs for bots: jump pad flights and ladders up and down. */
-export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3 }[] {
-  return [...padLandings(mapPads(entities), physics, gravity), ...ladderLinks(mapLadders(entities))];
+export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3 }[] {
+  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities)), ...ladderLinks(mapLadders(entities))];
 }

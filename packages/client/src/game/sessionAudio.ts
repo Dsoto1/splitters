@@ -31,6 +31,12 @@ export class SessionAudio {
   private recentKills: number[] = [];
   private fences: ShockLine[] = [];
   private humAt = 0;
+  /** Force fields (block index and the run of its long side) and when one last hummed. */
+  private fields: { i: number; line: ShockLine }[] = [];
+  private fieldHumAt = 0;
+
+  /** Whether a block (entity index) is up: force fields only hum while they stand. */
+  blockPresent: (i: number) => boolean = () => true;
 
   /** Your team in team modes (null otherwise), for objective and round announcements. */
   myTeam: () => string | null = () => null;
@@ -53,6 +59,16 @@ export class SessionAudio {
       this.fences.push({ a: run.a, b: run.b, y0: e.position[1], height: ELECTRIC_FENCE.height, push: null, entity: null });
     }
     for (const e of doc.entities) if (e.kind === 'pickup') this.pickupAt.set(e.id, tuple(e.position));
+    // Force fields hum along their long side.
+    this.fields = [];
+    doc.entities.forEach((e, i) => {
+      if (e.kind !== 'block' || !e.field) return;
+      const [w, h, d] = e.size;
+      const along = w >= d ? w / 2 : d / 2;
+      const [ax, az] = w >= d ? [Math.cos(e.yaw), -Math.sin(e.yaw)] : [Math.sin(e.yaw), Math.cos(e.yaw)];
+      const [x, , z] = e.position;
+      this.fields.push({ i, line: { a: [x - ax * along, z - az * along], b: [x + ax * along, z + az * along], y0: e.position[1], height: h, push: null, entity: null } });
+    });
   }
 
   joined(): void {
@@ -95,6 +111,23 @@ export class SessionAudio {
     }
     this.wasGrounded = s.grounded;
     this.fenceHum(s.pos);
+    this.fieldHum(s.pos);
+  }
+
+  /** The low hum of a standing force field nearby (and only while it is up). */
+  private fieldHum(pos: Vec3): void {
+    if (!this.fields.length) return;
+    const now = performance.now();
+    if (now - this.fieldHumAt < 1700) return;
+    let best: { x: number; z: number; dist: number } | null = null;
+    for (const f of this.fields) {
+      if (!this.blockPresent(f.i) || pos.y < f.line.y0 - 3 || pos.y > f.line.y0 + f.line.height + 2) continue;
+      const n = shockLineNearest(f.line, pos.x, pos.z);
+      if (!best || n.dist < best.dist) best = n;
+    }
+    if (!best || best.dist > 12) return;
+    this.fieldHumAt = now;
+    this.audio.play('fence.hum', { at: { x: best.x, y: pos.y + 1.2, z: best.z }, gain: 0.55 });
   }
 
   /** The hum of a live electric fence nearby, from its nearest point (each buzz is 2 s; they overlap). */
@@ -291,6 +324,11 @@ export class SessionAudio {
       }
       case 'broken': {
         const e = this.entities[ev.i];
+        // A force field switching off crackles out.
+        if (e?.kind === 'block' && e.field) {
+          this.audio.play('trap.shock', { at: this.entityAt(ev.i, e.size[1] / 2), gain: 0.6 });
+          break;
+        }
         if (e?.kind === 'prop') {
           if (!getProp(e.model)?.breakable?.blast) this.audio.play('break.crate', { at: this.entityAt(ev.i, 0.6) });
           break;

@@ -1,0 +1,11 @@
+Tile Trigger originals: Style Pack pieces modelled in code
+
+These pieces (props such as the reactor core, viewport, force-field emitter,
+cryo pod, vending machine and rooftop units, and the facade pieces of the
+Station hull, Glass tower and Neon block facades) are made by the Tile Trigger
+team from simple solids (boxes, cylinders, rings, spheres) written as code in
+tools/content/prepare-packs.mjs with the modeller in tools/content/pieces.mjs.
+No asset pack, scan, generated model or third-party file is used.
+
+They are owned by the game and ship as part of it. Re-run
+`node tools/content/prepare-packs.mjs` to rebuild them exactly.

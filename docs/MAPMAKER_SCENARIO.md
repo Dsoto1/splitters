@@ -60,6 +60,9 @@ Boolean, integer/float counter, simple enum/reference. No arbitrary creator code
 ### Kit v20 (lights, blocks, movers, team filters)
 Lights, free blocks and movers are logic targets: lights switch, recolour, flash and blink (alarms, trap tells, a cinema dimming); blocks drop, crumble, vanish and come back (trapdoors sprung from a lever, floors that collapse on cue, bridges that extend); movers (lifts, sliding walls, train cars, drawbridges) run on a loop or when logic sends them and carry whoever stands on them. Buttons, doors and zones take a team filter. Free blocks tilt (pitch and roll up to ±45°: ramps, roofs, wrecks) and liquids take a colour. MapMaker: Scenario palette **Lift**, **Sliding Wall**, **Drawbridge** (a mover and its block in one step), the mover inspector (mode, speed, turn speed, wait, points with hinge angles, carried blocks), block pitch/roll and *Starts hidden*, light *Starts off*/*Blinks*, liquid *Colour*, *Team only* on buttons/doors/zones, and a colour picker for "Set light colour". Details in [`SCENARIO.md`](SCENARIO.md) and [`SET_PIECES.md`](SET_PIECES.md).
 
+### Style Packs (Set 1)
+The palette's **Packs** tab groups each Style Pack's theme ("Use this look"), gameplay pieces, tiles and props (04 Orbital Station, 07 Neon Megacity; see [`BUILDING_KIT.md`](BUILDING_KIT.md)). New pieces: **Force Field** (blocks players, not shots; logic switches it), **Low-Gravity Zone** (the zone inspector's *Gravity*), **Tower Elevator**, **Sky Tram**, **Neon Sign** and **Holo Billboard** (light fixtures with words; logic-controlled like any light).
+
 ## Destruction
 Destructible entities expose health, damage-type acceptance/resistance, states, debris/presentation policy, and Destroyed event. A door can therefore require explosives and trigger alarms/reinforcements when breached.
 

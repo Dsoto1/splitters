@@ -30,7 +30,7 @@ export class ModelLibrary {
       this.containers.set(path, p);
     }
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(/^(props|creatures|city)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB);
+      p = LoadAssetContainerAsync(versioned(/^(props|creatures|city|packs)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB);
       this.containers.set(path, p);
     }
     return p;

@@ -337,7 +337,7 @@ export class ScenarioBodies {
       } else {
         const box = breakableOf(e, dynamic)?.box;
         if (!box) return;
-        const c = physics.createBox(box.center, box.half, box.yaw, box.rot);
+        const c = physics.createBox(box.center, box.half, box.yaw, box.rot, e.kind === 'block' && !!e.field);
         this.solids.set(i, c);
         this.byHandle.set(c.handle, i);
         if (e.kind === 'block' && e.startHidden) physics.setBoxEnabled(c, false);

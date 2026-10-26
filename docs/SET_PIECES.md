@@ -47,6 +47,28 @@ and back, an 8 m deck hinged at the marker that starts raised and comes down
 when logic sends it. Tick more blocks in the mover's *Carries* list to move
 them together (a train car, a moving room). See SCENARIO.md, *Movers*.
 
+### Force fields, low gravity and lit signs (Style Packs)
+
+Three more pieces came with the Orbital Station and Neon Megacity Style
+Packs (BUILDING_KIT.md, *Style Packs*). All are optional fields, so older
+maps load unchanged:
+
+- **Force field** (block `field: true`; palette *Force Field*): a solid block
+  that stops players and vehicles but not shots, grenades or sight, drawn as
+  a humming sheet of light between two emitter posts. Logic switches it
+  (Drop block / Disable off, Rebuild block / Enable on); it can start hidden.
+  Shots cannot hurt it.
+- **Low-gravity zone** (zone `gravity`, × the map's gravity, 0.1–3; palette
+  *Low-Gravity Zone*): movement inside falls at that fraction, predicted on
+  the client exactly like the server; pad flights through it carry further
+  and bots are told so. Where zones overlap the weakest gravity wins.
+- **Neon signs and holographic billboards** (light `fixture: 'sign' |
+  'billboard'` with `text` and `size`): lights, so every light action works on
+  them.
+
+The Packs also add two mover presets, **Tower Elevator** (three storeys up)
+and **Sky Tram** (a car with a roof on posts, 24 m along its facing).
+
 ## Liquids (Entities tab)
 
 Water, Lava, Acid and Swamp are boxes of liquid; *Height* is the floor and
@@ -91,5 +113,8 @@ m.water([x, y, z], [width, depth, length], 'water', '#3a4a2a'); // murky sewer w
 m.light([x, y, z], { fixture: 'bulb', color: '#ff3020', id: 'lamp_alarm', blink: 3 });
 m.block([x, y, z], [3, 0.3, 3], 'solid', { id: 'lift_1' });
 m.mover('mover_lift', [x, y, z], ['lift_1'], [[0, 0, 0], [0, 4, 0]], { speed: 2, wait: 2 });
+m.field([x, y, z], 3, 3, { yaw: Math.PI / 2, id: 'field_lab', hidden: true }); // a force field across a doorway, raised by logic
+m.gravityZone([x, y, z], [15, 8, 15], 0.35); // a third of normal gravity
+m.light([x, y, z], { fixture: 'sign', text: 'NOODLES', color: '#ff4fd8', id: 'sign_1' }); // a neon sign logic can switch
 m.pickup('jetpack', [x, y, z]);
 ```

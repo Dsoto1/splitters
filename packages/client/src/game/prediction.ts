@@ -24,6 +24,7 @@ import {
   distance,
   stepMovement,
   viewDirection,
+  type GravityZone,
   type MoveState,
   type PlayerInput,
   type PlayerSnapshot,
@@ -116,6 +117,8 @@ export class LocalPlayer {
 
   /** Gravity multiple in force (match rules over the map's), so prediction falls like the server. */
   gravity = 1;
+  /** The map's low-gravity zones (see mapGravityZones), applied exactly as the server applies them. */
+  gravityZones: GravityZone[] = [];
 
   /** Position at the start of the latest predicted tick (drawing blends from it to `state.pos`). */
   private prevPos: Vec3 | null = null;
@@ -181,7 +184,7 @@ export class LocalPlayer {
       if (ridden) state = { ...state, pos: ridden };
     }
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
-    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}) }));
+    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}) }));
     if (this.jetFuel !== null) this.jetFuel = stepJetFuel(this.jetFuel, !!next.jet);
     if (this.speedTicks > 0) this.speedTicks--;
     return next;

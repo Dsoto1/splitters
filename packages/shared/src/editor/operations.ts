@@ -313,12 +313,19 @@ export const SCENARIO_PALETTE = [
   { key: 'mover:lift', label: 'Lift', search: 'mover lift elevator platform moving up down ride' },
   { key: 'mover:slider', label: 'Sliding Wall', search: 'mover sliding wall door gate moving platform train car shuttle' },
   { key: 'mover:drawbridge', label: 'Drawbridge', search: 'mover drawbridge bridge hinge lower raise castle moat' },
+  // Style Pack gameplay pieces (04 Orbital Station, 07 Neon Megacity).
+  { key: 'block:field', label: 'Force Field', search: 'force field energy shield barrier laser gate sci-fi orbital station blocks players not shots hum logic' },
+  { key: 'zone:lowgrav', label: 'Low-Gravity Zone', search: 'low gravity zone moon float drift space reactor jump orbital station' },
+  { key: 'light:sign', label: 'Neon Sign', search: 'neon sign signage glow lit letters shop bar light logic neon megacity cyberpunk' },
+  { key: 'light:billboard', label: 'Holo Billboard', search: 'billboard hologram holographic screen advert sign emissive light logic neon megacity cyberpunk' },
+  { key: 'mover:elevator', label: 'Tower Elevator', search: 'mover elevator lift tower floors storeys cab ride up down neon megacity' },
+  { key: 'mover:tram', label: 'Sky Tram', search: 'mover tram skytrain transit train car shuttle cable car ride moving platform neon megacity' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 
 /** Entities that sit in a doorway and snap to cell edges. */
-export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser';
+export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field';
 
 /**
  * What a palette entry places: one entity, or for movers a block and the
@@ -333,6 +340,21 @@ export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, 
     // A 3 m platform that rides one storey up and back.
     const b = block([3, 0.4, 3], [x, y, z]);
     return [b, mover([b.id], [[0, 0, 0], [0, doc?.classicStructure.levelHeight ?? 4, 0]], { speed: 2, wait: 2.5 })];
+  }
+  if (key === 'mover:elevator') {
+    // A 3 m cab floor with a roof that rides three storeys up and back, waiting at the top and bottom.
+    const up = 3 * (doc?.classicStructure.levelHeight ?? 4);
+    const floor = block([3, 0.3, 3], [x, y, z]);
+    return [floor, mover([floor.id], [[0, 0, 0], [0, up, 0]], { speed: 3, wait: 3, name: 'Elevator' })];
+  }
+  if (key === 'mover:tram') {
+    // A tram car (a 3 × 7 m floor with a roof on posts) running 24 m along its facing and back.
+    const [fx, fz] = [Math.sin(yaw), Math.cos(yaw)];
+    const floor = block([3, 0.3, 7], [x, y, z]);
+    const roof = block([3.2, 0.25, 7.2], [x, y + 3, z]);
+    const posts = ([[-1.4, -3.3], [1.4, -3.3], [-1.4, 3.3], [1.4, 3.3]] as const).map(([px, pz]) => block([0.2, 2.7, 0.2], [Math.round((x + px * Math.cos(yaw) + pz * fx) * 100) / 100, y + 0.3, Math.round((z - px * Math.sin(yaw) + pz * fz) * 100) / 100]));
+    const parts = [floor, roof, ...posts];
+    return [...parts, mover(parts.map((b) => b.id), [[0, 0, 0], [Math.round(fx * 2400) / 100, 0, Math.round(fz * 2400) / 100]], { speed: 4, wait: 4, name: 'Sky tram' })];
   }
   if (key === 'mover:slider') {
     // A wall that slides 4 m sideways and back (a gate, a train car, a crushing corridor).
@@ -430,6 +452,15 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       const fixture = key.slice(6) as LightFixture;
       return { id: newId('light'), kind: 'light', position, yaw, color: fixture === 'strip' ? '#e8f4ff' : '#fff1d6', intensity: 1, range: fixture === 'none' ? 12 : 10, fixture };
     }
+    case 'light:sign':
+      return { id: newId('light'), kind: 'light', position, yaw, color: '#ff4fd8', intensity: 1.2, range: 8, fixture: 'sign', text: 'OPEN' };
+    case 'light:billboard':
+      return { id: newId('light'), kind: 'light', position, yaw, color: '#4fe0ff', intensity: 1.5, range: 14, fixture: 'billboard', text: 'TILE TRIGGER' };
+    case 'block:field':
+      // A doorway-sized sheet: 3 m wide, 3 m high, 0.2 m thick, along its facing's X.
+      return { id: newId('field'), kind: 'block', position, yaw, size: [3, 3, 0.2], material: null, tint: '#5ad8ff', behaviour: 'solid', trigger: 'logic', delaySeconds: 0.8, respawnSeconds: null, health: 120, field: true };
+    case 'zone:lowgrav':
+      return { id: newId('zone'), kind: 'zone', position, size: [8, 8, 8], who: 'any', count: 1, startEnabled: true, gravity: 0.35, name: 'Low gravity' };
     case 'airplane':
       // A square loop 160 m across, 70 m up, once a minute; no air drop until the creator picks one.
       return { id: newId('plane'), kind: 'airplane', position, route: [[-80, -80], [80, -80], [80, 80], [-80, 80]], altitude: 70, loopSeconds: 60, closed: true, airdrop: 'off' };
@@ -441,7 +472,11 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'mover:lift':
     case 'mover:slider':
     case 'mover:drawbridge':
-      return newScenarioEntities(key, position, yaw, doc)[1]!;
+    case 'mover:elevator':
+    case 'mover:tram': {
+      const all = newScenarioEntities(key, position, yaw, doc);
+      return all[all.length - 1]!;
+    }
     default: {
       const trap = key.slice(5) as TrapKind;
       const d = TRAP_SPECS[trap].defaults;

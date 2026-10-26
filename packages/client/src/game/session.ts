@@ -49,6 +49,7 @@ import {
   type PlayerSnapshot,
   buildMapGeometry,
   mapLiquids,
+  mapGravityZones,
   JET,
   getItem,
   getMountDef,
@@ -330,6 +331,7 @@ export class GameSession {
       { signal },
     );
     this.sfx.bloodOn = () => this.view.blood.on;
+    this.sfx.blockPresent = (i) => this.scenario?.present(i) ?? true;
     // Bodies: stay all match, or sink away after a while.
     const bodiesSel = $('bodies-setting') as HTMLSelectElement;
     bodiesSel.value = this.view.bodies;
@@ -638,6 +640,7 @@ export class GameSession {
         this.local.scale = this.sizeOf(this.slot);
         this.local.gravity = matchPhysics(msg.rules, loaded.map).gravity;
         this.local.liquids = mapLiquids(loaded.map.entities);
+        this.local.gravityZones = mapGravityZones(loaded.map.entities);
         this.scenario = new ScenarioState(loaded.map, physics);
         if (this.scenario.movers.defs.length) this.local.platforms = this.scenario;
         this.mounts = new MountState(loaded.map, physics);

@@ -85,6 +85,78 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
+## Style Packs (`map/stylePacks.ts`)
+
+A Style Pack is a look you can build a whole map in: a theme, room options,
+tiles, props and gameplay pieces, grouped in the MapMaker palette's **Packs**
+tab (Build workspace). Each pack starts with **Use this look** (switches the
+map's theme), then its gameplay pieces, tiles and props. Everything is
+ordinary kit, so pieces mix across packs. Set 1 ("Foundation", ROADMAP_V1
+Sprint 7) adds two packs here (other Set 1 packs live beside them):
+
+| Pack | Theme | Room options | Own tiles | Own props | Demo map |
+|---|---|---|---|---|---|
+| 04 Orbital Station (clean sci-fi) | `core.orbital`: grated floors, white Station Panels, white panel cover, Glow Trim | Facade **Station hull (viewports)**, roof | Hangar Bay, Reactor Hall | 25 (category *Orbital Station*) | Halcyon Station |
+| 07 Neon Megacity (futuristic city) | `core.neon_megacity`: Wet Asphalt, dark concrete, glass, Neon Tube trim | Facades **Glass tower** and **Neon block**, roof | Glass Tower, Spire Tower, Stepped Tower, Twin-Block Tower, Corner Shop Block, Apartment Block | 23 (category *Neon Megacity*) | Neon Spire |
+
+Orbital Station also lists the Modular SciFi MegaKit and Space Station Kit
+props already in the game (consoles, glass floors, round platforms, crates,
+beds), and the core corridors, atrium, stairwell and catwalks; Neon Megacity
+lists the city streets and crossroads, courtyards, platforms, bridges and
+terraces.
+
+**Orbital Station pieces.** *Hangar Bay* (3 × 3 cells, two storeys): a
+landing pad under a gantry along the back wall, stairs up the west side;
+open its front (edge style *No wall* on both storeys) and seal it with a
+force field. *Reactor Hall* (2 × 2, two storeys): a catwalk all round with
+glowing edge trim, stairs up, coolant pylons, room in the middle for the
+**Reactor Core** prop; pair it with a low-gravity zone. Props: airlock frame,
+sealed bulkheads, laser gate frame, field emitter, space viewport (a round
+window onto stars for any wall), reactor core, cryo pod, holo globe, cargo
+crate, generators, transmitter, satellite and comms dishes, trusses, frame
+module, coolant pipes, consoles and terminals, canister rack, floor cables,
+station columns and wall sections. The **Station hull** facade dresses a
+room's outside in white panels with round viewports, a glowing trim line,
+cornices and lit corner columns.
+
+**Neon Megacity pieces.** Towers from Kenney's City Kit (Commercial) fitted
+to whole cells (solid, their street face local north, roofs walkable at the
+height measured from the model: 31, 49, 39, 47, 9.5 and 13 m). Props: street
+lights, traffic lights, an overhead sign gantry, street signs, dumpsters,
+barriers, cones, neon barriers, elevated pillars, power poles, skytrain
+track, pylon and cars (cab, car, tail), vending machine, holo kiosk, noodle
+stall, rooftop AC units, water tanks and antennas. The **Glass tower** facade
+is a dark curtain wall with every other bay lit and a neon cornice; **Neon
+block** is dark concrete with lit windows and AC units, sign blades, magenta
+neon bands and shopfronts with half-raised shutters.
+
+**Gameplay pieces** (Entities → Scenario, and each pack's Packs group):
+
+| Piece | What it is |
+|---|---|
+| Force Field | A solid block marked *Force field*: a glowing sheet of scrolling bands between two emitter posts, humming while it stands. Stops players and vehicles; shots, grenades and sight pass straight through (its collider is in its own physics group, so only movement queries see it). Logic switches it like any block: *Drop / crumble block* or Disable turns it off (it crackles out), *Rebuild block* or Enable back on; *Starts hidden* for a field that logic raises. Snaps to doorways. Navigation sees it in its idle state. |
+| Low-Gravity Zone | A zone with *Gravity* (× the map's, 0.1–3; the palette entry uses 0.35). Inside, movement falls at that fraction (higher jumps, slow floating falls, longer jump-pad flights, softer landings for fall damage), on the server and in client prediction alike; bots are given pad landings traced through it. Always on, whatever logic does to the zone. Drawn in play as a faint column of rising motes (sinking, orange, when heavier than normal). |
+| Door (auto) | Sliding doors open as anyone comes close (or only one team, with *Team only*); airlocks are two of them either side of a short room. |
+| Tower Elevator | A 3 m cab riding three storeys up and back (a mover); set the second point's height to reach any roof. Bots ride lifts. |
+| Sky Tram | A tram car (floor, roof on posts) on a mover running 24 m along its facing and back: ride it roof to roof. |
+| Neon Sign, Holo Billboard | Light fixtures `sign` and `billboard` with *Words* and a size: lit letters on a dark box with a neon tube border, or a glowing, see-through screen with scanlines. They are lights, so logic switches, recolours, flashes and blinks them (a blackout console). |
+| Transit | A race track with *Ambient cars* laid on an elevated deck: hover cabs lap it all match, run down anyone in the way and can be shot up or taken (Neon Spire's skytrain, as in Undergate Transit). |
+
+**Demo maps.** *Halcyon Station* (`maps/halcyon_station.json`, script
+`packages/server/src/tools/maps/halcyon_station.ts`): a station ring round a
+low-gravity reactor hall, a hangar sealed by a force field (the control room
+vents it), labs that seal behind a field, an airlock onto a floaty exterior
+gantry, windows onto space all round. *Neon Spire* (`maps/neon_spire.json`):
+streets and a crossroads under neon signs and billboards, a glass elevator up
+the 31 m Spire to the sniper roost, two three-storey blocks joined roof to
+roof by the sky tram, a skytrain loop 12 m up with hover cabs, and a roof
+console that blacks the neon out for 12 s.
+
+Content: `tools/content/prepare-packs.mjs` models our own props and facade
+pieces in code (`tools/content/pieces.mjs`) and fits the Kenney towers;
+`prepare-props.mjs --downloads` builds the Kenney kit props (see
+CONTENT_PIPELINE.md and ASSET_SOURCES.md).
+
 ## Materials and themes (`map/materials.ts`)
 
 28 procedural materials plus 41 scanned sets from ambientCG (CC0), prepared by

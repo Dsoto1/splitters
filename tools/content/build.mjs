@@ -381,7 +381,8 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
       continue;
     }
     if (!existsSync(join(ROOT, pack.licenseFile))) problems.push(`${f.file}: licence file missing (${pack.licenseFile})`);
-    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
+    // `Owned`: pieces the team made itself (the Style Pack props and facades, modelled in code).
+    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$|^Owned$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
     const path = join(ROOT, 'packages/client/public', f.file);
     if (!existsSync(path)) problems.push(`${f.file}: missing (run ${prepare})`);
     else if (createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${f.file}: does not match ${lockPath}`);
@@ -422,7 +423,16 @@ const skyPacks = Object.fromEntries(
 const skyCount = checkLocked('content/skies.lock.json', 'skies', (f) => skyPacks[f.source], { maxBytes: 400000 }, ['tonemapped photo scaled to a 2048 × 1024 equirectangular JPEG', 'colour graded where content/skies.json gives a grade (night)'], 'node tools/content/prepare-skies.mjs');
 const cityManifest = JSON.parse(readFileSync(join(ROOT, 'content/city.json'), 'utf8'));
 const cityCount = checkLocked('content/city.lock.json', 'city', () => cityManifest.pack, cityManifest.budgets, ['scaled by 4/3 (buildings fitted to whole cells)', 'variant materials merged, normal and ORM maps dropped, colour maps shrunk', 'interior wall faces removed; buildings simplified'], 'node tools/content/prepare-city.mjs <kit folder>');
-console.log(`checked ${textureCount} texture files, ${propCount} props, ${skyCount} skies and ${cityCount} city files`);
+const packsManifest = JSON.parse(readFileSync(join(ROOT, 'content/packs.json'), 'utf8'));
+const packFileCount = checkLocked(
+  'content/packs.lock.json',
+  'packs',
+  (f) => packsManifest.packs[f.source],
+  packsManifest.budgets,
+  (f, pack) => (pack.download ? ['fitted to whole cells (centred, stood on the ground, uniform scale)', 'colour map embedded as a palette PNG and reused as a faint emissive map (night city)'] : ['modelled in code by tools/content/prepare-packs.mjs']),
+  'node tools/content/prepare-packs.mjs [--downloads <dir>]',
+);
+console.log(`checked ${textureCount} texture files, ${propCount} props, ${skyCount} skies, ${cityCount} city files and ${packFileCount} style pack files`);
 
 const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
 if (check) {

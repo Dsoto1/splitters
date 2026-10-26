@@ -104,6 +104,10 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('proto_trim', 'Prototype Trim', 'Prototype', 'plain', '#5d636b', '#555b63', 4),
   m('brass', 'Brass', 'Metal', 'plain', '#b08d3a', '#9a7a30', 4, 0.7),
   m('stone_trim', 'Dressed Stone', 'Stone', 'noise', '#cfc8ba', '#b9b2a4', 2),
+  // Style Packs: 04 Orbital Station (white panels, glowing trim) and 07 Neon Megacity (neon tubes, wet asphalt).
+  m('orbital_panel', 'Station Panels', 'Tech', 'panels', '#eef1f4', '#c4ccd4', 2, 0.55),
+  m('glow_trim', 'Glow Trim', 'Tech', 'plain', '#7fe6ff', '#7fe6ff', 1, 0.3, true),
+  m('neon_tube', 'Neon Tube', 'Tech', 'plain', '#ff4fd8', '#ff4fd8', 1, 0.3, true),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -145,6 +149,7 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   t('pbr_snow', 'Snowy Ground', 'Ground', 'Snow015', '#c8ccc4', 4),
   t('pbr_ice', 'Ice', 'Ground', 'Ice002', '#4a8a86', 3, 0.8),
   t('pbr_asphalt', 'Asphalt', 'Ground', 'Asphalt031', '#7a7a7a', 4),
+  t('pbr_wet_asphalt', 'Wet Asphalt', 'Ground', 'Asphalt031', '#3a3a40', 4, 0.85),
   t('pbr_lava', 'Lava', 'Ground', 'Lava004', '#b4421c', 4, 0.2, true),
 ];
 
@@ -188,6 +193,9 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('forest', 'Forest Camp', '#8ab08a', 'pbr_forest', 'pbr_planks', 'pbr_rock', 'pbr_siding', 'pbr_walnut'),
   theme('canyon', 'Canyon Outpost', '#8fb8dc', 'pbr_tread_plate', 'pbr_concrete', 'pbr_rusted_plate', 'pbr_steel', 'hazard'),
   theme('garden', 'Walled Garden', '#b8d8f0', 'pbr_grass', 'pbr_brick_red', 'pbr_hex_paving', 'pbr_brick_old', 'stone_trim'),
+  // Style Packs (map/stylePacks.ts).
+  theme('orbital', 'Orbital Station', '#05070d', ['grate', '#b8c2cc'], 'orbital_panel', 'pbr_white_panel', ['orbital_panel', '#c8d0d8'], 'glow_trim'),
+  theme('neon_megacity', 'Neon Megacity', '#0d0820', 'pbr_wet_asphalt', ['pbr_concrete_dark', '#8a80a0'], 'pbr_glass_facade', 'pbr_concrete_dark', 'neon_tube'),
 ];
 
 /** Shorthand for a theme: each slot is a material name or [material, tint]. */
