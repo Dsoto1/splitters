@@ -328,7 +328,8 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     model: 'vehicles/hover_bike.glb',
     health: 170,
     half: [0.9, 0.5, 1.5],
-    seats: [{ role: 'driver', label: 'Rider', offset: [0, 0.95, -0.3] }],
+    // Astride the canopy, ahead of the middle: the nose (+Z) leads and the twin exhausts trail.
+    seats: [{ role: 'driver', label: 'Rider', offset: [0, 0.95, 0.25] }],
     enterRadius: 2.6,
     respawnSeconds: 30,
     blast: { radius: 3.5, damage: 70 },
