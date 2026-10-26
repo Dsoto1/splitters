@@ -1,0 +1,2541 @@
+{
+ "about": "Per-map conversion summary written by packages/server/src/tools/import-timesplitters.ts (counts only; no save data). Read by packages/server/src/tools/audit-imported.ts.",
+ "maps": [
+  {
+   "id": "ts2_a_history_of_the",
+   "game": "TS2",
+   "tiles": 37,
+   "placed": 37,
+   "pieces": 124,
+   "standIns": {
+    "type 26": 2,
+    "type 28": 3,
+    "type 23": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 30,
+   "verticals": 1,
+   "repairs": {
+    "doors": 1,
+    "stairs": 9
+   },
+   "lights": 12,
+   "props": 121,
+   "dressed": true,
+   "theme": "lab (guessed tileset field = 3)"
+  },
+  {
+   "id": "ts2_avp",
+   "game": "TS2",
+   "tiles": 72,
+   "placed": 72,
+   "pieces": 484,
+   "standIns": {
+    "type 28": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 2,
+   "repairs": {
+    "doors": 0,
+    "stairs": 9
+   },
+   "lights": 59,
+   "props": 625,
+   "dressed": true,
+   "theme": "volcano (keyword \"demons\")"
+  },
+  {
+   "id": "ts2_basement",
+   "game": "TS2",
+   "tiles": 93,
+   "placed": 93,
+   "pieces": 98,
+   "standIns": {
+    "type 3": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 44,
+   "props": 14,
+   "dressed": true,
+   "theme": "factory (keyword \"BASEMENT\")"
+  },
+  {
+   "id": "ts2_bridge",
+   "game": "TS2",
+   "tiles": 46,
+   "placed": 46,
+   "pieces": 163,
+   "standIns": {
+    "type 24": 4,
+    "type 26": 2,
+    "type 27": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 2,
+   "repairs": {
+    "doors": 0,
+    "stairs": 4
+   },
+   "lights": 34,
+   "props": 200,
+   "dressed": true,
+   "theme": "lab (guessed tileset field = 3)"
+  },
+  {
+   "id": "ts2_bunker",
+   "game": "TS2",
+   "tiles": 119,
+   "placed": 119,
+   "pieces": 167,
+   "standIns": {
+    "type 3": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 44,
+   "verticals": 11,
+   "repairs": {
+    "doors": 2,
+    "stairs": 1
+   },
+   "lights": 46,
+   "props": 16,
+   "dressed": true,
+   "theme": "bunker (keyword \"BUNKER\")"
+  },
+  {
+   "id": "ts2_catacombs",
+   "game": "TS2",
+   "tiles": 58,
+   "placed": 58,
+   "pieces": 139,
+   "standIns": {
+    "type 20": 2,
+    "type 3": 1,
+    "type 4": 1,
+    "type 5": 3,
+    "type 13": 2,
+    "type 11": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 1,
+   "repairs": {
+    "doors": 0,
+    "stairs": 3
+   },
+   "lights": 37,
+   "props": 171,
+   "dressed": true,
+   "theme": "manor (keyword \"Catacombs\")"
+  },
+  {
+   "id": "ts2_clover",
+   "game": "TS2",
+   "tiles": 113,
+   "placed": 113,
+   "pieces": 234,
+   "standIns": {
+    "type 13": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 1
+   },
+   "lights": 77,
+   "props": 141,
+   "dressed": true,
+   "theme": "factory (guessed tileset field = 1)"
+  },
+  {
+   "id": "ts2_core",
+   "game": "TS2",
+   "tiles": 101,
+   "placed": 101,
+   "pieces": 112,
+   "standIns": {
+    "type 8": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 3,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 42,
+   "props": 35,
+   "dressed": true,
+   "theme": "bunker (keyword \"Core\")"
+  },
+  {
+   "id": "ts2_cyberstorm",
+   "game": "TS2",
+   "tiles": 62,
+   "placed": 62,
+   "pieces": 252,
+   "standIns": {
+    "type 26": 4,
+    "type 13": 1,
+    "type 23": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 4,
+   "repairs": {
+    "doors": 0,
+    "stairs": 5
+   },
+   "lights": 47,
+   "props": 243,
+   "dressed": true,
+   "theme": "station (keyword \"Cyberstorm\")"
+  },
+  {
+   "id": "ts2_dark_trenches",
+   "game": "TS2",
+   "tiles": 89,
+   "placed": 89,
+   "pieces": 366,
+   "standIns": {
+    "type 23": 4,
+    "type 22": 2,
+    "type 25": 6
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 4,
+   "repairs": {
+    "doors": 0,
+    "stairs": 13
+   },
+   "lights": 62,
+   "props": 516,
+   "dressed": true,
+   "theme": "bunker (keyword \"Trenches\")"
+  },
+  {
+   "id": "ts2_destroyer_duck",
+   "game": "TS2",
+   "tiles": 101,
+   "placed": 101,
+   "pieces": 104,
+   "standIns": {
+    "type 3": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 45,
+   "props": 12,
+   "dressed": true,
+   "theme": "city (keyword \"Duck\")"
+  },
+  {
+   "id": "ts2_face_off",
+   "game": "TS2",
+   "tiles": 34,
+   "placed": 34,
+   "pieces": 258,
+   "standIns": {
+    "type 24": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 4
+   },
+   "lights": 31,
+   "props": 438,
+   "dressed": true,
+   "theme": "castle (guessed tileset field = 2)"
+  },
+  {
+   "id": "ts2_freedom",
+   "game": "TS2",
+   "tiles": 43,
+   "placed": 43,
+   "pieces": 121,
+   "standIns": {
+    "type 13": 1,
+    "type 28": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 1,
+   "repairs": {
+    "doors": 1,
+    "stairs": 4
+   },
+   "lights": 23,
+   "props": 21,
+   "dressed": true,
+   "theme": "castle (keyword \"keep\")"
+  },
+  {
+   "id": "ts2_largectf",
+   "game": "TS2",
+   "tiles": 64,
+   "placed": 64,
+   "pieces": 180,
+   "standIns": {
+    "type 24": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 52,
+   "verticals": 6,
+   "repairs": {
+    "doors": 4,
+    "stairs": 4
+   },
+   "lights": 28,
+   "props": 55,
+   "dressed": true,
+   "theme": "lab (guessed tileset field = 3)"
+  },
+  {
+   "id": "ts2_ledges",
+   "game": "TS2",
+   "tiles": 20,
+   "placed": 20,
+   "pieces": 180,
+   "standIns": {
+    "type 22": 4,
+    "type 20": 4,
+    "type 23": 6,
+    "type 24": 2,
+    "type 13": 4
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 20,
+   "props": 317,
+   "dressed": true,
+   "theme": "lab (guessed tileset field = 3)"
+  },
+  {
+   "id": "ts2_mayhem",
+   "game": "TS2",
+   "tiles": 65,
+   "placed": 65,
+   "pieces": 228,
+   "standIns": {
+    "type 24": 3,
+    "type 13": 1,
+    "type 22": 2,
+    "type 4": 1,
+    "type 27": 1,
+    "type 7": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 12,
+   "repairs": {
+    "doors": 2,
+    "stairs": 5
+   },
+   "lights": 42,
+   "props": 226,
+   "dressed": true,
+   "theme": "factory (guessed tileset field = 1)"
+  },
+  {
+   "id": "ts2_maze",
+   "game": "TS2",
+   "tiles": 123,
+   "placed": 123,
+   "pieces": 140,
+   "standIns": {},
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 52,
+   "props": 0,
+   "dressed": true,
+   "theme": "castle (keyword \"Maze\")"
+  },
+  {
+   "id": "ts2_messy_base",
+   "game": "TS2",
+   "tiles": 65,
+   "placed": 65,
+   "pieces": 214,
+   "standIns": {},
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 4,
+   "repairs": {
+    "doors": 4,
+    "stairs": 1
+   },
+   "lights": 45,
+   "props": 42,
+   "dressed": true,
+   "theme": "bunker (keyword \"BASE\")"
+  },
+  {
+   "id": "ts2_neverhitalady",
+   "game": "TS2",
+   "tiles": 26,
+   "placed": 26,
+   "pieces": 45,
+   "standIns": {
+    "type 28": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 2,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 17,
+   "props": 22,
+   "dressed": true,
+   "theme": "castle (guessed tileset field = 2)"
+  },
+  {
+   "id": "ts2_plus",
+   "game": "TS2",
+   "tiles": 47,
+   "placed": 46,
+   "pieces": 111,
+   "standIns": {
+    "type 24": 1,
+    "type 4": 12,
+    "type 28": 2,
+    "type 5": 2
+   },
+   "skippedTiles": 1,
+   "cutOffCells": 9,
+   "verticals": 0,
+   "repairs": {
+    "doors": 1,
+    "stairs": 5
+   },
+   "lights": 27,
+   "props": 71,
+   "dressed": true,
+   "theme": "castle (guessed tileset field = 2)"
+  },
+  {
+   "id": "ts2_preposessed",
+   "game": "TS2",
+   "tiles": 58,
+   "placed": 58,
+   "pieces": 171,
+   "standIns": {
+    "type 20": 2,
+    "type 3": 4,
+    "type 27": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 40,
+   "verticals": 3,
+   "repairs": {
+    "doors": 0,
+    "stairs": 1
+   },
+   "lights": 26,
+   "props": 125,
+   "dressed": true,
+   "theme": "station (keyword \"space\")"
+  },
+  {
+   "id": "ts2_quasimmando",
+   "game": "TS2",
+   "tiles": 29,
+   "placed": 29,
+   "pieces": 142,
+   "standIns": {
+    "type 6": 1,
+    "type 27": 1,
+    "type 28": 3,
+    "type 29": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 61,
+   "verticals": 1,
+   "repairs": {
+    "doors": 1,
+    "stairs": 7
+   },
+   "lights": 10,
+   "props": 81,
+   "dressed": true,
+   "theme": "temple (keyword \"Gargoyleville\")"
+  },
+  {
+   "id": "ts2_ramp",
+   "game": "TS2",
+   "tiles": 61,
+   "placed": 61,
+   "pieces": 218,
+   "standIns": {
+    "type 22": 2,
+    "type 23": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 6
+   },
+   "lights": 41,
+   "props": 280,
+   "dressed": true,
+   "theme": "factory (guessed tileset field = 1)"
+  },
+  {
+   "id": "ts2_reaper_madness",
+   "game": "TS2",
+   "tiles": 82,
+   "placed": 82,
+   "pieces": 522,
+   "standIns": {
+    "type 23": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 1
+   },
+   "lights": 82,
+   "props": 615,
+   "dressed": true,
+   "theme": "volcano (keyword \"Hell\")"
+  },
+  {
+   "id": "ts2_riot",
+   "game": "TS2",
+   "tiles": 12,
+   "placed": 12,
+   "pieces": 72,
+   "standIns": {
+    "type 26": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 2
+   },
+   "lights": 12,
+   "props": 97,
+   "dressed": true,
+   "theme": "bunker (guessed tileset field = 0)"
+  },
+  {
+   "id": "ts2_ritual_ruins",
+   "game": "TS2",
+   "tiles": 37,
+   "placed": 37,
+   "pieces": 146,
+   "standIns": {
+    "type 4": 1,
+    "type 24": 1,
+    "type 13": 1,
+    "type 7": 1,
+    "type 6": 1,
+    "type 5": 1,
+    "type 29": 1,
+    "type 27": 1,
+    "type 22": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 27,
+   "verticals": 3,
+   "repairs": {
+    "doors": 1,
+    "stairs": 2
+   },
+   "lights": 25,
+   "props": 144,
+   "dressed": true,
+   "theme": "temple (keyword \"Ritual\")"
+  },
+  {
+   "id": "ts2_sober_up",
+   "game": "TS2",
+   "tiles": 107,
+   "placed": 107,
+   "pieces": 161,
+   "standIns": {
+    "type 24": 1,
+    "type 23": 3,
+    "type 8": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 111,
+   "verticals": 2,
+   "repairs": {
+    "doors": 0,
+    "stairs": 1
+   },
+   "lights": 10,
+   "props": 0,
+   "dressed": false,
+   "theme": "castle (guessed tileset field = 2)"
+  },
+  {
+   "id": "ts2_sole_survivor",
+   "game": "TS2",
+   "tiles": 35,
+   "placed": 35,
+   "pieces": 99,
+   "standIns": {
+    "type 29": 1,
+    "type 3": 1,
+    "type 4": 1,
+    "type 8": 1,
+    "type 11": 1
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 46,
+   "verticals": 2,
+   "repairs": {
+    "doors": 0,
+    "stairs": 3
+   },
+   "lights": 8,
+   "props": 57,
+   "dressed": true,
+   "theme": "station (keyword \"station\")"
+  },
+  {
+   "id": "ts2_solid_squid_vr",
+   "game": "TS2",
+   "tiles": 26,
+   "placed": 26,
+   "pieces": 60,
+   "standIns": {},
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 9,
+   "props": 0,
+   "dressed": true,
+   "theme": "station (keyword \"VR\")"
+  },
+  {
+   "id": "ts2_symmetry",
+   "game": "TS2",
+   "tiles": 67,
+   "placed": 67,
+   "pieces": 128,
+   "standIns": {
+    "type 4": 8,
+    "type 3": 3,
+    "type 28": 4,
+    "type 5": 4
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 9,
+   "verticals": 25,
+   "repairs": {
+    "doors": 9,
+    "stairs": 9
+   },
+   "lights": 28,
+   "props": 144,
+   "dressed": true,
+   "theme": "factory (guessed tileset field = 1)"
+  },
+  {
+   "id": "ts2_tagstorydm",
+   "game": "TS2",
+   "tiles": 68,
+   "placed": 68,
+   "pieces": 100,
+   "standIns": {
+    "type 4": 20
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 67,
+   "verticals": 0,
+   "repairs": {
+    "doors": 8,
+    "stairs": 0
+   },
+   "lights": 14,
+   "props": 0,
+   "dressed": true,
+   "theme": "castle (guessed tileset field = 2)"
+  },
+  {
+   "id": "ts2_trenches",
+   "game": "TS2",
+   "tiles": 42,
+   "placed": 42,
+   "pieces": 222,
+   "standIns": {
+    "type 28": 4,
+    "type 7": 2,
+    "type 25": 4
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 4,
+   "repairs": {
+    "doors": 0,
+    "stairs": 1
+   },
+   "lights": 34,
+   "props": 381,
+   "dressed": true,
+   "theme": "bunker (keyword \"Trenches\")"
+  },
+  {
+   "id": "ts2_udedstory",
+   "game": "TS2",
+   "tiles": 98,
+   "placed": 98,
+   "pieces": 98,
+   "standIns": {},
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 49,
+   "props": 0,
+   "dressed": true,
+   "theme": "factory (guessed tileset field = 1)"
+  },
+  {
+   "id": "ts2_upstairs",
+   "game": "TS2",
+   "tiles": 60,
+   "placed": 58,
+   "pieces": 108,
+   "standIns": {
+    "type 4": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 2,
+   "verticals": 8,
+   "repairs": {
+    "doors": 1,
+    "stairs": 2
+   },
+   "lights": 29,
+   "props": 48,
+   "dressed": true,
+   "theme": "factory (keyword \"UPSTAIRS\")"
+  },
+  {
+   "id": "ts2_upstairs_11",
+   "game": "TS2",
+   "tiles": 83,
+   "placed": 83,
+   "pieces": 367,
+   "standIns": {
+    "type 4": 3
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 8,
+   "repairs": {
+    "doors": 3,
+    "stairs": 7
+   },
+   "lights": 64,
+   "props": 560,
+   "dressed": true,
+   "theme": "factory (keyword \"Upstairs\")"
+  },
+  {
+   "id": "ts2_zombie_night",
+   "game": "TS2",
+   "tiles": 48,
+   "placed": 48,
+   "pieces": 266,
+   "standIns": {
+    "type 20": 4
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 3,
+    "stairs": 2
+   },
+   "lights": 11,
+   "props": 345,
+   "dressed": true,
+   "theme": "manor (keyword \"Zombie\")"
+  },
+  {
+   "id": "tsfp_10tilsunrise",
+   "game": "TSFP",
+   "tiles": 56,
+   "placed": 51,
+   "pieces": 70,
+   "standIns": {
+    "type 3": 2
+   },
+   "skippedTiles": 5,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 2,
+    "stairs": 1
+   },
+   "lights": 13,
+   "props": 28,
+   "dressed": true,
+   "theme": "volcano (keyword \"hell\")"
+  },
+  {
+   "id": "tsfp_air_ball",
+   "game": "TSFP",
+   "tiles": 58,
+   "placed": 16,
+   "pieces": 89,
+   "standIns": {
+    "type 30": 5
+   },
+   "skippedTiles": 41,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 5,
+    "stairs": 4
+   },
+   "lights": 14,
+   "props": 137,
+   "dressed": true,
+   "theme": "castle (keyword \"keep\")"
+  },
+  {
+   "id": "tsfp_air_ball_round_2",
+   "game": "TSFP",
+   "tiles": 191,
+   "placed": 46,
+   "pieces": 122,
+   "standIns": {},
+   "skippedTiles": 141,
+   "cutOffCells": 2,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 4
+   },
+   "lights": 26,
+   "props": 104,
+   "dressed": true,
+   "theme": "factory (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_alamo",
+   "game": "TSFP",
+   "tiles": 82,
+   "placed": 64,
+   "pieces": 320,
+   "standIns": {},
+   "skippedTiles": 18,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 47,
+   "props": 752,
+   "dressed": true,
+   "theme": "saloon (keyword \"Alamo\")"
+  },
+  {
+   "id": "tsfp_archives",
+   "game": "TSFP",
+   "tiles": 58,
+   "placed": 58,
+   "pieces": 130,
+   "standIns": {
+    "type 3": 3,
+    "type 28": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 1
+   },
+   "lights": 39,
+   "props": 89,
+   "dressed": true,
+   "theme": "lab (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_assassin_9",
+   "game": "TSFP",
+   "tiles": 184,
+   "placed": 89,
+   "pieces": 215,
+   "standIns": {
+    "type 5": 7,
+    "type 27": 1,
+    "type 30": 9,
+    "type 4": 3
+   },
+   "skippedTiles": 91,
+   "cutOffCells": 10,
+   "verticals": 1,
+   "repairs": {
+    "doors": 17,
+    "stairs": 17
+   },
+   "lights": 51,
+   "props": 318,
+   "dressed": true,
+   "theme": "tomb (keyword \"MUMMY\")"
+  },
+  {
+   "id": "tsfp_atomic_core_2",
+   "game": "TSFP",
+   "tiles": 66,
+   "placed": 50,
+   "pieces": 72,
+   "standIns": {
+    "type 44": 6
+   },
+   "skippedTiles": 16,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 6
+   },
+   "lights": 27,
+   "props": 58,
+   "dressed": true,
+   "theme": "lab (keyword \"Atomic\")"
+  },
+  {
+   "id": "tsfp_avt",
+   "game": "TSFP",
+   "tiles": 83,
+   "placed": 73,
+   "pieces": 486,
+   "standIns": {
+    "type 30": 7
+   },
+   "skippedTiles": 9,
+   "cutOffCells": 14,
+   "verticals": 0,
+   "repairs": {
+    "doors": 7,
+    "stairs": 2
+   },
+   "lights": 60,
+   "props": 741,
+   "dressed": true,
+   "theme": "lab (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_basement",
+   "game": "TSFP",
+   "tiles": 192,
+   "placed": 182,
+   "pieces": 210,
+   "standIns": {},
+   "skippedTiles": 10,
+   "cutOffCells": 4,
+   "verticals": 0,
+   "repairs": {
+    "doors": 8,
+    "stairs": 0
+   },
+   "lights": 84,
+   "props": 37,
+   "dressed": true,
+   "theme": "factory (keyword \"Basement\")"
+  },
+  {
+   "id": "tsfp_bb_assault",
+   "game": "TSFP",
+   "tiles": 51,
+   "placed": 51,
+   "pieces": 75,
+   "standIns": {
+    "type 30": 26
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 26,
+    "stairs": 0
+   },
+   "lights": 24,
+   "props": 44,
+   "dressed": true,
+   "theme": "bunker (keyword \"Assault\")"
+  },
+  {
+   "id": "tsfp_blossom",
+   "game": "TSFP",
+   "tiles": 108,
+   "placed": 108,
+   "pieces": 140,
+   "standIns": {},
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 56,
+   "props": 77,
+   "dressed": true,
+   "theme": "temple (keyword \"Blossom\")"
+  },
+  {
+   "id": "tsfp_bunker",
+   "game": "TSFP",
+   "tiles": 152,
+   "placed": 133,
+   "pieces": 174,
+   "standIns": {
+    "type 3": 1
+   },
+   "skippedTiles": 19,
+   "cutOffCells": 0,
+   "verticals": 3,
+   "repairs": {
+    "doors": 0,
+    "stairs": 2
+   },
+   "lights": 61,
+   "props": 69,
+   "dressed": true,
+   "theme": "bunker (keyword \"Bunker\")"
+  },
+  {
+   "id": "tsfp_cabin_fight",
+   "game": "TSFP",
+   "tiles": 146,
+   "placed": 102,
+   "pieces": 306,
+   "standIns": {
+    "type 42": 14,
+    "type 30": 2
+   },
+   "skippedTiles": 42,
+   "cutOffCells": 153,
+   "verticals": 1,
+   "repairs": {
+    "doors": 16,
+    "stairs": 4
+   },
+   "lights": 31,
+   "props": 209,
+   "dressed": true,
+   "theme": "manor (keyword \"CABIN\")"
+  },
+  {
+   "id": "tsfp_carmageddon",
+   "game": "TSFP",
+   "tiles": 182,
+   "placed": 113,
+   "pieces": 311,
+   "standIns": {},
+   "skippedTiles": 67,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 3,
+    "stairs": 14
+   },
+   "lights": 84,
+   "props": 406,
+   "dressed": true,
+   "theme": "city (keyword \"Carmageddon\")"
+  },
+  {
+   "id": "tsfp_cat_ops",
+   "game": "TSFP",
+   "tiles": 196,
+   "placed": 125,
+   "pieces": 280,
+   "standIns": {
+    "type 30": 3,
+    "type 4": 1,
+    "type 3": 4,
+    "type 5": 3,
+    "type 28": 1,
+    "type 44": 1
+   },
+   "skippedTiles": 68,
+   "cutOffCells": 7,
+   "verticals": 7,
+   "repairs": {
+    "doors": 10,
+    "stairs": 22
+   },
+   "lights": 83,
+   "props": 224,
+   "dressed": true,
+   "theme": "factory (keyword \"factory\")"
+  },
+  {
+   "id": "tsfp_cloudy",
+   "game": "TSFP",
+   "tiles": 77,
+   "placed": 47,
+   "pieces": 81,
+   "standIns": {
+    "type 27": 8,
+    "type 30": 14
+   },
+   "skippedTiles": 30,
+   "cutOffCells": 44,
+   "verticals": 0,
+   "repairs": {
+    "doors": 15,
+    "stairs": 1
+   },
+   "lights": 4,
+   "props": 0,
+   "dressed": false,
+   "theme": "manor (keyword \"zombies\")"
+  },
+  {
+   "id": "tsfp_cloverleaf",
+   "game": "TSFP",
+   "tiles": 88,
+   "placed": 86,
+   "pieces": 173,
+   "standIns": {
+    "type 44": 2,
+    "type 28": 2
+   },
+   "skippedTiles": 2,
+   "cutOffCells": 6,
+   "verticals": 2,
+   "repairs": {
+    "doors": 6,
+    "stairs": 14
+   },
+   "lights": 52,
+   "props": 0,
+   "dressed": false,
+   "theme": "factory (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_columnwars",
+   "game": "TSFP",
+   "tiles": 80,
+   "placed": 60,
+   "pieces": 228,
+   "standIns": {},
+   "skippedTiles": 20,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 6
+   },
+   "lights": 43,
+   "props": 272,
+   "dressed": true,
+   "theme": "volcano (keyword \"fire\")"
+  },
+  {
+   "id": "tsfp_complex",
+   "game": "TSFP",
+   "tiles": 133,
+   "placed": 133,
+   "pieces": 236,
+   "standIns": {
+    "type 28": 3,
+    "type 44": 8,
+    "type 27": 1,
+    "type 3": 2,
+    "type 43": 3
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 1,
+   "repairs": {
+    "doors": 8,
+    "stairs": 13
+   },
+   "lights": 82,
+   "props": 248,
+   "dressed": true,
+   "theme": "factory (keyword \"Complex\")"
+  },
+  {
+   "id": "tsfp_daemonic",
+   "game": "TSFP",
+   "tiles": 58,
+   "placed": 51,
+   "pieces": 75,
+   "standIns": {
+    "type 4": 1,
+    "type 3": 1
+   },
+   "skippedTiles": 7,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 3
+   },
+   "lights": 29,
+   "props": 56,
+   "dressed": true,
+   "theme": "volcano (keyword \"Daemonic\")"
+  },
+  {
+   "id": "tsfp_dead_heat_2",
+   "game": "TSFP",
+   "tiles": 15,
+   "placed": 15,
+   "pieces": 35,
+   "standIns": {
+    "type 27": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 1,
+   "verticals": 1,
+   "repairs": {
+    "doors": 1,
+    "stairs": 2
+   },
+   "lights": 10,
+   "props": 54,
+   "dressed": true,
+   "theme": "manor (keyword \"ZOMBIE\")"
+  },
+  {
+   "id": "tsfp_dungeon_d",
+   "game": "TSFP",
+   "tiles": 72,
+   "placed": 65,
+   "pieces": 87,
+   "standIns": {
+    "type 4": 1,
+    "type 3": 1
+   },
+   "skippedTiles": 7,
+   "cutOffCells": 0,
+   "verticals": 1,
+   "repairs": {
+    "doors": 0,
+    "stairs": 3
+   },
+   "lights": 34,
+   "props": 78,
+   "dressed": true,
+   "theme": "castle (keyword \"Dungeon\")"
+  },
+  {
+   "id": "tsfp_dynocrysis",
+   "game": "TSFP",
+   "tiles": 92,
+   "placed": 69,
+   "pieces": 188,
+   "standIns": {
+    "type 27": 9,
+    "type 30": 4,
+    "type 4": 1
+   },
+   "skippedTiles": 20,
+   "cutOffCells": 107,
+   "verticals": 0,
+   "repairs": {
+    "doors": 7,
+    "stairs": 10
+   },
+   "lights": 17,
+   "props": 0,
+   "dressed": false,
+   "theme": "station (keyword \"space\")"
+  },
+  {
+   "id": "tsfp_egyptology",
+   "game": "TSFP",
+   "tiles": 200,
+   "placed": 128,
+   "pieces": 211,
+   "standIns": {
+    "type 4": 2,
+    "type 42": 3,
+    "type 27": 1,
+    "type 30": 57,
+    "type 5": 1
+   },
+   "skippedTiles": 65,
+   "cutOffCells": 44,
+   "verticals": 0,
+   "repairs": {
+    "doors": 83,
+    "stairs": 12
+   },
+   "lights": 59,
+   "props": 58,
+   "dressed": true,
+   "theme": "tomb (keyword \"EGYPTOLOGY\")"
+  },
+  {
+   "id": "tsfp_evolution",
+   "game": "TSFP",
+   "tiles": 184,
+   "placed": 133,
+   "pieces": 359,
+   "standIns": {
+    "type 30": 1,
+    "type 4": 1,
+    "type 44": 1,
+    "type 28": 1,
+    "type 3": 2,
+    "type 5": 6
+   },
+   "skippedTiles": 51,
+   "cutOffCells": 70,
+   "verticals": 0,
+   "repairs": {
+    "doors": 17,
+    "stairs": 21
+   },
+   "lights": 75,
+   "props": 433,
+   "dressed": true,
+   "theme": "manor (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_fecundity",
+   "game": "TSFP",
+   "tiles": 161,
+   "placed": 118,
+   "pieces": 184,
+   "standIns": {},
+   "skippedTiles": 42,
+   "cutOffCells": 1,
+   "verticals": 2,
+   "repairs": {
+    "doors": 0,
+    "stairs": 2
+   },
+   "lights": 63,
+   "props": 90,
+   "dressed": true,
+   "theme": "lab (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_fire_temple",
+   "game": "TSFP",
+   "tiles": 190,
+   "placed": 190,
+   "pieces": 200,
+   "standIns": {},
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 81,
+   "props": 11,
+   "dressed": true,
+   "theme": "volcano (keyword \"Fire\")"
+  },
+  {
+   "id": "tsfp_fortress",
+   "game": "TSFP",
+   "tiles": 63,
+   "placed": 48,
+   "pieces": 160,
+   "standIns": {},
+   "skippedTiles": 15,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 32,
+   "props": 217,
+   "dressed": true,
+   "theme": "castle (keyword \"Fortress\")"
+  },
+  {
+   "id": "tsfp_foxed",
+   "game": "TSFP",
+   "tiles": 25,
+   "placed": 25,
+   "pieces": 75,
+   "standIns": {
+    "type 28": 2,
+    "type 44": 2,
+    "type 4": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 4
+   },
+   "lights": 17,
+   "props": 77,
+   "dressed": true,
+   "theme": "station (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_gas_station",
+   "game": "TSFP",
+   "tiles": 140,
+   "placed": 77,
+   "pieces": 238,
+   "standIns": {
+    "type 3": 1
+   },
+   "skippedTiles": 62,
+   "cutOffCells": 54,
+   "verticals": 0,
+   "repairs": {
+    "doors": 4,
+    "stairs": 2
+   },
+   "lights": 38,
+   "props": 222,
+   "dressed": true,
+   "theme": "station (keyword \"station\")"
+  },
+  {
+   "id": "tsfp_globe",
+   "game": "TSFP",
+   "tiles": 161,
+   "placed": 150,
+   "pieces": 167,
+   "standIns": {
+    "type 30": 9
+   },
+   "skippedTiles": 2,
+   "cutOffCells": 0,
+   "verticals": 9,
+   "repairs": {
+    "doors": 17,
+    "stairs": 11
+   },
+   "lights": 64,
+   "props": 12,
+   "dressed": true,
+   "theme": "lab (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_guardian",
+   "game": "TSFP",
+   "tiles": 179,
+   "placed": 86,
+   "pieces": 297,
+   "standIns": {
+    "type 42": 14,
+    "type 27": 1
+   },
+   "skippedTiles": 92,
+   "cutOffCells": 116,
+   "verticals": 0,
+   "repairs": {
+    "doors": 7,
+    "stairs": 16
+   },
+   "lights": 44,
+   "props": 225,
+   "dressed": true,
+   "theme": "manor (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_hallway_2",
+   "game": "TSFP",
+   "tiles": 83,
+   "placed": 83,
+   "pieces": 183,
+   "standIns": {},
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 2,
+    "stairs": 0
+   },
+   "lights": 49,
+   "props": 38,
+   "dressed": true,
+   "theme": "bunker (keyword \"sniper\")"
+  },
+  {
+   "id": "tsfp_hardcore",
+   "game": "TSFP",
+   "tiles": 104,
+   "placed": 84,
+   "pieces": 125,
+   "standIns": {},
+   "skippedTiles": 16,
+   "cutOffCells": 0,
+   "verticals": 4,
+   "repairs": {
+    "doors": 0,
+    "stairs": 9
+   },
+   "lights": 47,
+   "props": 74,
+   "dressed": true,
+   "theme": "castle (keyword \"Keep\")"
+  },
+  {
+   "id": "tsfp_hazard_pay",
+   "game": "TSFP",
+   "tiles": 182,
+   "placed": 173,
+   "pieces": 288,
+   "standIns": {
+    "type 4": 1,
+    "type 3": 2,
+    "type 30": 12,
+    "type 28": 1
+   },
+   "skippedTiles": 8,
+   "cutOffCells": 18,
+   "verticals": 1,
+   "repairs": {
+    "doors": 19,
+    "stairs": 5
+   },
+   "lights": 95,
+   "props": 80,
+   "dressed": true,
+   "theme": "lab (keyword \"HAZARD\")"
+  },
+  {
+   "id": "tsfp_hell_march",
+   "game": "TSFP",
+   "tiles": 94,
+   "placed": 81,
+   "pieces": 220,
+   "standIns": {
+    "type 27": 1
+   },
+   "skippedTiles": 12,
+   "cutOffCells": 73,
+   "verticals": 7,
+   "repairs": {
+    "doors": 7,
+    "stairs": 8
+   },
+   "lights": 27,
+   "props": 179,
+   "dressed": true,
+   "theme": "volcano (keyword \"Hell\")"
+  },
+  {
+   "id": "tsfp_hell_monkeys_dx",
+   "game": "TSFP",
+   "tiles": 37,
+   "placed": 34,
+   "pieces": 109,
+   "standIns": {
+    "type 27": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 63,
+   "verticals": 0,
+   "repairs": {
+    "doors": 3,
+    "stairs": 5
+   },
+   "lights": 7,
+   "props": 47,
+   "dressed": true,
+   "theme": "volcano (keyword \"Hell\")"
+  },
+  {
+   "id": "tsfp_horus_vs_bastet",
+   "game": "TSFP",
+   "tiles": 195,
+   "placed": 113,
+   "pieces": 259,
+   "standIns": {
+    "type 28": 2,
+    "type 44": 2,
+    "type 42": 2
+   },
+   "skippedTiles": 82,
+   "cutOffCells": 0,
+   "verticals": 4,
+   "repairs": {
+    "doors": 4,
+    "stairs": 6
+   },
+   "lights": 71,
+   "props": 273,
+   "dressed": true,
+   "theme": "tomb (keyword \"Horus\")"
+  },
+  {
+   "id": "tsfp_hostages",
+   "game": "TSFP",
+   "tiles": 91,
+   "placed": 78,
+   "pieces": 185,
+   "standIns": {
+    "type 27": 3,
+    "type 4": 4,
+    "type 44": 2,
+    "type 28": 4
+   },
+   "skippedTiles": 12,
+   "cutOffCells": 3,
+   "verticals": 2,
+   "repairs": {
+    "doors": 17,
+    "stairs": 12
+   },
+   "lights": 53,
+   "props": 113,
+   "dressed": true,
+   "theme": "factory (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_ice_temple",
+   "game": "TSFP",
+   "tiles": 65,
+   "placed": 65,
+   "pieces": 241,
+   "standIns": {},
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 8,
+    "stairs": 1
+   },
+   "lights": 57,
+   "props": 276,
+   "dressed": true,
+   "theme": "arctic (keyword \"Ice\")"
+  },
+  {
+   "id": "tsfp_infernal_devices",
+   "game": "TSFP",
+   "tiles": 88,
+   "placed": 71,
+   "pieces": 155,
+   "standIns": {
+    "type 27": 2,
+    "type 3": 1,
+    "type 4": 1
+   },
+   "skippedTiles": 13,
+   "cutOffCells": 56,
+   "verticals": 0,
+   "repairs": {
+    "doors": 11,
+    "stairs": 9
+   },
+   "lights": 26,
+   "props": 52,
+   "dressed": true,
+   "theme": "volcano (keyword \"Infernal\")"
+  },
+  {
+   "id": "tsfp_kinda_dark",
+   "game": "TSFP",
+   "tiles": 87,
+   "placed": 86,
+   "pieces": 279,
+   "standIns": {
+    "type 4": 13,
+    "type 30": 1
+   },
+   "skippedTiles": 1,
+   "cutOffCells": 20,
+   "verticals": 3,
+   "repairs": {
+    "doors": 16,
+    "stairs": 15
+   },
+   "lights": 47,
+   "props": 324,
+   "dressed": true,
+   "theme": "station (keyword \"PLANET\")"
+  },
+  {
+   "id": "tsfp_lab_rats",
+   "game": "TSFP",
+   "tiles": 150,
+   "placed": 80,
+   "pieces": 107,
+   "standIns": {
+    "type 43": 3
+   },
+   "skippedTiles": 70,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 3
+   },
+   "lights": 37,
+   "props": 87,
+   "dressed": true,
+   "theme": "lab (keyword \"Lab\")"
+  },
+  {
+   "id": "tsfp_labyrinthxr",
+   "game": "TSFP",
+   "tiles": 157,
+   "placed": 149,
+   "pieces": 177,
+   "standIns": {
+    "type 30": 7,
+    "type 28": 1,
+    "type 44": 1,
+    "type 27": 1,
+    "type 4": 1
+   },
+   "skippedTiles": 5,
+   "cutOffCells": 1,
+   "verticals": 8,
+   "repairs": {
+    "doors": 8,
+    "stairs": 7
+   },
+   "lights": 65,
+   "props": 79,
+   "dressed": true,
+   "theme": "castle (keyword \"LabyrinthXR\")"
+  },
+  {
+   "id": "tsfp_landodalost",
+   "game": "TSFP",
+   "tiles": 153,
+   "placed": 102,
+   "pieces": 383,
+   "standIns": {
+    "type 44": 2,
+    "type 28": 5,
+    "type 42": 1,
+    "type 4": 1,
+    "type 30": 2,
+    "type 3": 2
+   },
+   "skippedTiles": 51,
+   "cutOffCells": 16,
+   "verticals": 1,
+   "repairs": {
+    "doors": 5,
+    "stairs": 18
+   },
+   "lights": 88,
+   "props": 404,
+   "dressed": true,
+   "theme": "station (keyword \"space\")"
+  },
+  {
+   "id": "tsfp_last_stand",
+   "game": "TSFP",
+   "tiles": 24,
+   "placed": 24,
+   "pieces": 136,
+   "standIns": {
+    "type 29": 2
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 2,
+   "verticals": 4,
+   "repairs": {
+    "doors": 0,
+    "stairs": 3
+   },
+   "lights": 19,
+   "props": 197,
+   "dressed": true,
+   "theme": "bunker (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_last_stand_2",
+   "game": "TSFP",
+   "tiles": 80,
+   "placed": 41,
+   "pieces": 103,
+   "standIns": {
+    "type 30": 10,
+    "type 27": 1
+   },
+   "skippedTiles": 38,
+   "cutOffCells": 28,
+   "verticals": 0,
+   "repairs": {
+    "doors": 17,
+    "stairs": 3
+   },
+   "lights": 17,
+   "props": 87,
+   "dressed": true,
+   "theme": "bunker (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_lf8r_action",
+   "game": "TSFP",
+   "tiles": 84,
+   "placed": 66,
+   "pieces": 181,
+   "standIns": {
+    "type 30": 11,
+    "type 28": 1,
+    "type 3": 2
+   },
+   "skippedTiles": 17,
+   "cutOffCells": 84,
+   "verticals": 2,
+   "repairs": {
+    "doors": 23,
+    "stairs": 8
+   },
+   "lights": 27,
+   "props": 105,
+   "dressed": true,
+   "theme": "bunker (keyword \"base\")"
+  },
+  {
+   "id": "tsfp_nuclear_silo",
+   "game": "TSFP",
+   "tiles": 100,
+   "placed": 65,
+   "pieces": 199,
+   "standIns": {
+    "type 26": 1,
+    "type 29": 1
+   },
+   "skippedTiles": 34,
+   "cutOffCells": 100,
+   "verticals": 3,
+   "repairs": {
+    "doors": 5,
+    "stairs": 7
+   },
+   "lights": 13,
+   "props": 157,
+   "dressed": true,
+   "theme": "lab (keyword \"Nuclear\")"
+  },
+  {
+   "id": "tsfp_project_witch_1",
+   "game": "TSFP",
+   "tiles": 139,
+   "placed": 112,
+   "pieces": 409,
+   "standIns": {
+    "type 27": 3,
+    "type 4": 1,
+    "type 3": 2
+   },
+   "skippedTiles": 25,
+   "cutOffCells": 49,
+   "verticals": 2,
+   "repairs": {
+    "doors": 5,
+    "stairs": 8
+   },
+   "lights": 29,
+   "props": 592,
+   "dressed": true,
+   "theme": "manor (keyword \"Witch\")"
+  },
+  {
+   "id": "tsfp_purgatory_s",
+   "game": "TSFP",
+   "tiles": 166,
+   "placed": 149,
+   "pieces": 185,
+   "standIns": {
+    "type 3": 1
+   },
+   "skippedTiles": 15,
+   "cutOffCells": 99,
+   "verticals": 3,
+   "repairs": {
+    "doors": 1,
+    "stairs": 5
+   },
+   "lights": 31,
+   "props": 42,
+   "dressed": true,
+   "theme": "manor (keyword \"Purgatory\")"
+  },
+  {
+   "id": "tsfp_quack_man",
+   "game": "TSFP",
+   "tiles": 118,
+   "placed": 104,
+   "pieces": 107,
+   "standIns": {
+    "type 30": 7
+   },
+   "skippedTiles": 14,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 7,
+    "stairs": 1
+   },
+   "lights": 37,
+   "props": 0,
+   "dressed": true,
+   "theme": "city (keyword \"DUCKMAN\")"
+  },
+  {
+   "id": "tsfp_racer_c",
+   "game": "TSFP",
+   "tiles": 43,
+   "placed": 40,
+   "pieces": 258,
+   "standIns": {
+    "type 42": 1,
+    "type 4": 2,
+    "type 27": 1
+   },
+   "skippedTiles": 3,
+   "cutOffCells": 2,
+   "verticals": 1,
+   "repairs": {
+    "doors": 0,
+    "stairs": 2
+   },
+   "lights": 32,
+   "props": 648,
+   "dressed": true,
+   "theme": "city (keyword \"RACER\")"
+  },
+  {
+   "id": "tsfp_rat_king_rumble",
+   "game": "TSFP",
+   "tiles": 84,
+   "placed": 48,
+   "pieces": 144,
+   "standIns": {},
+   "skippedTiles": 36,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 32,
+   "props": 203,
+   "dressed": true,
+   "theme": "factory (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_rat_king_spiral",
+   "game": "TSFP",
+   "tiles": 84,
+   "placed": 48,
+   "pieces": 144,
+   "standIns": {},
+   "skippedTiles": 36,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 0
+   },
+   "lights": 32,
+   "props": 241,
+   "dressed": true,
+   "theme": "manor (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_rat_race",
+   "game": "TSFP",
+   "tiles": 191,
+   "placed": 184,
+   "pieces": 210,
+   "standIns": {
+    "type 3": 1,
+    "type 4": 3,
+    "type 27": 1,
+    "type 30": 7
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 1,
+   "verticals": 0,
+   "repairs": {
+    "doors": 9,
+    "stairs": 10
+   },
+   "lights": 92,
+   "props": 83,
+   "dressed": true,
+   "theme": "city (keyword \"Race\")"
+  },
+  {
+   "id": "tsfp_revisitation",
+   "game": "TSFP",
+   "tiles": 175,
+   "placed": 161,
+   "pieces": 287,
+   "standIns": {
+    "type 4": 1,
+    "type 3": 2,
+    "type 28": 1,
+    "type 30": 1,
+    "type 27": 1
+   },
+   "skippedTiles": 12,
+   "cutOffCells": 11,
+   "verticals": 2,
+   "repairs": {
+    "doors": 6,
+    "stairs": 7
+   },
+   "lights": 96,
+   "props": 99,
+   "dressed": true,
+   "theme": "bunker (keyword \"ASSAULT\")"
+  },
+  {
+   "id": "tsfp_roll_call",
+   "game": "TSFP",
+   "tiles": 49,
+   "placed": 35,
+   "pieces": 89,
+   "standIns": {
+    "type 4": 1,
+    "type 42": 4
+   },
+   "skippedTiles": 13,
+   "cutOffCells": 21,
+   "verticals": 0,
+   "repairs": {
+    "doors": 5,
+    "stairs": 11
+   },
+   "lights": 17,
+   "props": 71,
+   "dressed": true,
+   "theme": "station (keyword \"SPACE\")"
+  },
+  {
+   "id": "tsfp_romulus",
+   "game": "TSFP",
+   "tiles": 164,
+   "placed": 85,
+   "pieces": 133,
+   "standIns": {},
+   "skippedTiles": 79,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 2
+   },
+   "lights": 41,
+   "props": 120,
+   "dressed": true,
+   "theme": "temple (keyword \"Romulus\")"
+  },
+  {
+   "id": "tsfp_rubgldbrg",
+   "game": "TSFP",
+   "tiles": 108,
+   "placed": 68,
+   "pieces": 130,
+   "standIns": {
+    "type 30": 10,
+    "type 42": 1
+   },
+   "skippedTiles": 39,
+   "cutOffCells": 10,
+   "verticals": 5,
+   "repairs": {
+    "doors": 16,
+    "stairs": 4
+   },
+   "lights": 40,
+   "props": 61,
+   "dressed": true,
+   "theme": "factory (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_run_cortez",
+   "game": "TSFP",
+   "tiles": 102,
+   "placed": 44,
+   "pieces": 134,
+   "standIns": {
+    "type 30": 1
+   },
+   "skippedTiles": 56,
+   "cutOffCells": 1,
+   "verticals": 0,
+   "repairs": {
+    "doors": 1,
+    "stairs": 8
+   },
+   "lights": 33,
+   "props": 182,
+   "dressed": true,
+   "theme": "castle (keyword \"KEEP\")"
+  },
+  {
+   "id": "tsfp_sniperbasic",
+   "game": "TSFP",
+   "tiles": 122,
+   "placed": 67,
+   "pieces": 406,
+   "standIns": {
+    "type 42": 10
+   },
+   "skippedTiles": 54,
+   "cutOffCells": 5,
+   "verticals": 0,
+   "repairs": {
+    "doors": 15,
+    "stairs": 9
+   },
+   "lights": 57,
+   "props": 745,
+   "dressed": true,
+   "theme": "bunker (keyword \"SniperBasic\")"
+  },
+  {
+   "id": "tsfp_solar_shrine",
+   "game": "TSFP",
+   "tiles": 57,
+   "placed": 57,
+   "pieces": 171,
+   "standIns": {
+    "type 5": 8,
+    "type 43": 12,
+    "type 4": 4
+   },
+   "skippedTiles": 0,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 10
+   },
+   "lights": 42,
+   "props": 506,
+   "dressed": true,
+   "theme": "temple (keyword \"Shrine\")"
+  },
+  {
+   "id": "tsfp_stack",
+   "game": "TSFP",
+   "tiles": 191,
+   "placed": 151,
+   "pieces": 208,
+   "standIns": {
+    "type 5": 4
+   },
+   "skippedTiles": 40,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 1
+   },
+   "lights": 88,
+   "props": 56,
+   "dressed": true,
+   "theme": "factory (keyword \"Stack\")"
+  },
+  {
+   "id": "tsfp_stargate",
+   "game": "TSFP",
+   "tiles": 125,
+   "placed": 98,
+   "pieces": 308,
+   "standIns": {
+    "type 27": 6,
+    "type 3": 2,
+    "type 44": 1,
+    "type 28": 1,
+    "type 4": 2
+   },
+   "skippedTiles": 27,
+   "cutOffCells": 70,
+   "verticals": 1,
+   "repairs": {
+    "doors": 6,
+    "stairs": 20
+   },
+   "lights": 35,
+   "props": 134,
+   "dressed": true,
+   "theme": "station (keyword \"STARGATE\")"
+  },
+  {
+   "id": "tsfp_stealth_101",
+   "game": "TSFP",
+   "tiles": 28,
+   "placed": 24,
+   "pieces": 70,
+   "standIns": {},
+   "skippedTiles": 0,
+   "cutOffCells": 21,
+   "verticals": 1,
+   "repairs": {
+    "doors": 4,
+    "stairs": 5
+   },
+   "lights": 11,
+   "props": 57,
+   "dressed": true,
+   "theme": "lab (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_stopsynsun",
+   "game": "TSFP",
+   "tiles": 170,
+   "placed": 83,
+   "pieces": 316,
+   "standIns": {
+    "type 30": 6,
+    "type 5": 8,
+    "type 28": 1,
+    "type 44": 1,
+    "type 42": 2,
+    "type 4": 1
+   },
+   "skippedTiles": 87,
+   "cutOffCells": 14,
+   "verticals": 1,
+   "repairs": {
+    "doors": 11,
+    "stairs": 30
+   },
+   "lights": 65,
+   "props": 492,
+   "dressed": true,
+   "theme": "castle (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_sugar_rush",
+   "game": "TSFP",
+   "tiles": 31,
+   "placed": 23,
+   "pieces": 89,
+   "standIns": {},
+   "skippedTiles": 8,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 4,
+    "stairs": 0
+   },
+   "lights": 17,
+   "props": 123,
+   "dressed": true,
+   "theme": "station (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_synchronicity",
+   "game": "TSFP",
+   "tiles": 117,
+   "placed": 89,
+   "pieces": 336,
+   "standIns": {
+    "type 27": 13,
+    "type 3": 1,
+    "type 4": 1
+   },
+   "skippedTiles": 28,
+   "cutOffCells": 140,
+   "verticals": 1,
+   "repairs": {
+    "doors": 3,
+    "stairs": 10
+   },
+   "lights": 34,
+   "props": 234,
+   "dressed": true,
+   "theme": "station (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_tenchwho",
+   "game": "TSFP",
+   "tiles": 75,
+   "placed": 63,
+   "pieces": 255,
+   "standIns": {
+    "type 4": 2
+   },
+   "skippedTiles": 12,
+   "cutOffCells": 0,
+   "verticals": 0,
+   "repairs": {
+    "doors": 8,
+    "stairs": 4
+   },
+   "lights": 39,
+   "props": 328,
+   "dressed": true,
+   "theme": "bunker (keyword \"Armor\")"
+  },
+  {
+   "id": "tsfp_the_armor",
+   "game": "TSFP",
+   "tiles": 112,
+   "placed": 68,
+   "pieces": 213,
+   "standIns": {
+    "type 27": 1,
+    "type 3": 1
+   },
+   "skippedTiles": 43,
+   "cutOffCells": 90,
+   "verticals": 0,
+   "repairs": {
+    "doors": 8,
+    "stairs": 14
+   },
+   "lights": 24,
+   "props": 138,
+   "dressed": true,
+   "theme": "bunker (keyword \"ARMOR\")"
+  },
+  {
+   "id": "tsfp_the_unseen",
+   "game": "TSFP",
+   "tiles": 98,
+   "placed": 86,
+   "pieces": 258,
+   "standIns": {
+    "type 27": 12,
+    "type 4": 1
+   },
+   "skippedTiles": 12,
+   "cutOffCells": 99,
+   "verticals": 0,
+   "repairs": {
+    "doors": 13,
+    "stairs": 4
+   },
+   "lights": 31,
+   "props": 247,
+   "dressed": true,
+   "theme": "manor (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_the_wall",
+   "game": "TSFP",
+   "tiles": 118,
+   "placed": 75,
+   "pieces": 403,
+   "standIns": {
+    "type 42": 9,
+    "type 28": 1
+   },
+   "skippedTiles": 43,
+   "cutOffCells": 7,
+   "verticals": 2,
+   "repairs": {
+    "doors": 13,
+    "stairs": 12
+   },
+   "lights": 62,
+   "props": 824,
+   "dressed": true,
+   "theme": "manor (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_time_jump",
+   "game": "TSFP",
+   "tiles": 113,
+   "placed": 78,
+   "pieces": 193,
+   "standIns": {
+    "type 30": 26,
+    "type 27": 4,
+    "type 42": 2
+   },
+   "skippedTiles": 35,
+   "cutOffCells": 118,
+   "verticals": 0,
+   "repairs": {
+    "doors": 34,
+    "stairs": 12
+   },
+   "lights": 12,
+   "props": 90,
+   "dressed": true,
+   "theme": "station (keyword \"TIME JUMP\")"
+  },
+  {
+   "id": "tsfp_ts_3_5",
+   "game": "TSFP",
+   "tiles": 100,
+   "placed": 62,
+   "pieces": 188,
+   "standIns": {
+    "type 27": 17,
+    "type 42": 3,
+    "type 3": 1,
+    "type 30": 3
+   },
+   "skippedTiles": 37,
+   "cutOffCells": 18,
+   "verticals": 0,
+   "repairs": {
+    "doors": 8,
+    "stairs": 10
+   },
+   "lights": 32,
+   "props": 268,
+   "dressed": true,
+   "theme": "factory (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_ts4",
+   "game": "TSFP",
+   "tiles": 82,
+   "placed": 75,
+   "pieces": 458,
+   "standIns": {
+    "type 30": 11
+   },
+   "skippedTiles": 6,
+   "cutOffCells": 13,
+   "verticals": 0,
+   "repairs": {
+    "doors": 10,
+    "stairs": 1
+   },
+   "lights": 64,
+   "props": 768,
+   "dressed": true,
+   "theme": "lab (no keyword: picked from the name)"
+  },
+  {
+   "id": "tsfp_unleashed",
+   "game": "TSFP",
+   "tiles": 180,
+   "placed": 132,
+   "pieces": 206,
+   "standIns": {
+    "type 44": 2,
+    "type 28": 3,
+    "type 5": 4,
+    "type 30": 21,
+    "type 27": 1
+   },
+   "skippedTiles": 48,
+   "cutOffCells": 3,
+   "verticals": 4,
+   "repairs": {
+    "doors": 16,
+    "stairs": 9
+   },
+   "lights": 78,
+   "props": 138,
+   "dressed": true,
+   "theme": "lab (keyword \"EXPERIMENTS\")"
+  },
+  {
+   "id": "tsfp_vault",
+   "game": "TSFP",
+   "tiles": 62,
+   "placed": 38,
+   "pieces": 109,
+   "standIns": {
+    "type 42": 3,
+    "type 5": 6
+   },
+   "skippedTiles": 24,
+   "cutOffCells": 1,
+   "verticals": 0,
+   "repairs": {
+    "doors": 0,
+    "stairs": 5
+   },
+   "lights": 28,
+   "props": 172,
+   "dressed": true,
+   "theme": "factory (keyword \"Vault\")"
+  },
+  {
+   "id": "tsfp_zenyattav",
+   "game": "TSFP",
+   "tiles": 131,
+   "placed": 64,
+   "pieces": 143,
+   "standIns": {},
+   "skippedTiles": 66,
+   "cutOffCells": 24,
+   "verticals": 1,
+   "repairs": {
+    "doors": 22,
+    "stairs": 8
+   },
+   "lights": 37,
+   "props": 82,
+   "dressed": true,
+   "theme": "station (keyword \"ZenyattaV\")"
+  },
+  {
+   "id": "tsfp_zombies",
+   "game": "TSFP",
+   "tiles": 60,
+   "placed": 56,
+   "pieces": 68,
+   "standIns": {},
+   "skippedTiles": 4,
+   "cutOffCells": 16,
+   "verticals": 0,
+   "repairs": {
+    "doors": 16,
+    "stairs": 4
+   },
+   "lights": 26,
+   "props": 17,
+   "dressed": true,
+   "theme": "manor (keyword \"Zombies\")"
+  }
+ ]
+}

@@ -29,7 +29,7 @@ Things that make every playtest worse. Small, high value.
 | 10 | **[bug]** Some characters look like they shrink | Check LOD switch / per-look scale. |
 | 11 | **[bug]** Boulders and some props block movement badly | Collision boxes too big or unclimbable; tighten boxes, allow stepping over low rocks. |
 | 12 | **[bug]** NPCs travel in one clump then spread at once | Add separation between agents (players and NPCs can't share a spot) and staggered spawning. |
-| 13 | **[bug]** Imported TS maps are mostly empty, one renders wrong (sky below / mirrored) | See Sprint 6; until then **hide the imported/original maps** from the map list, as you asked. |
+| 13 | **[bug]** Imported TS maps are mostly empty, one renders wrong (sky below / mirrored) | See Sprint 6; until then **hide the imported/original maps** from the map list, as you asked. (Oct 26, 6b: cut-off areas and "sky below" fixed; five verified maps shown, the rest hidden.) |
 | 14 | **[feel]** Bodies fling too much | Lower ragdoll impulse on death, more damping. |
 | 15 | **[feel]** Damage direction indicator | Red edge flash/arc pointing at the attacker. |
 | 16 | **[feel]** Railgun doesn't feel good | Charge sound, heavier kick, thicker beam, through-wall spark trail. |
@@ -138,8 +138,8 @@ sounds (needs new CC0 sounds and a grip pose).
 - Map cards: show **one image** per map — a real aerial/player-camera screenshot — and let the user cycle to the grid layout.
 
 ### 6b. Imported TimeSplitters maps
-- Hide them until each one is verified (your call).
-- Work out what the decoded data is missing (props, textures, heights) using controlled test saves, then rebuild a few by hand to set the bar.
+- ✅ Hide them until each one is verified (your call). (Oct 26: only verified maps show, `VISIBLE_IMPORTED_MAPS` in `shared/map/imported.ts`: Clover, Core, Archives, Bunker, Stack; `?imported` lists all 116.)
+- ✅ Work out what the decoded data is missing (props, textures, heights) using controlled test saves, then rebuild a few by hand to set the bar. (Oct 26: audit of every map in [IMPORTED_MAPS_AUDIT.md](IMPORTED_MAPS_AUDIT.md) (`tools/audit-imported.ts`). Fixed in the converter: cut-off areas joined back (9,195 → 2,428 floor cells cut off), "sky below" (Space Station backdrop had no ground), roofs on rooms, the saves' per-tile light colours as lights, sparse dressing, spawn facing; rotation/footprint rules pinned by `imported.test.ts`. Clover and Bunker polished by hand (`tools/polish-imported.ts`). Still open, needing controlled test saves (no test saves were available): item kinds, tile looks, tall pieces and lifts, and whether the whole map is mirrored.)
 
 ### 6c. New maps (all built in MapMaker format from our assets)
 **Ten originals** mixing the tile kit and the terrain editor, including the largest maps. Plus these requested ones:

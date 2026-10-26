@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 10,
+  "formatVersion": 19,
   "metadata": {
     "id": "tsfp_bunker",
     "name": "Bunker",
@@ -40,6 +40,9 @@
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -51,6 +54,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -62,6 +68,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -494,6 +503,9 @@
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -506,6 +518,9 @@
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -519,6 +534,9 @@
           "0,0,0:E": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -532,6 +550,9 @@
           "0,0,0:E": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -544,6 +565,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -555,6 +579,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -566,6 +593,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -574,7 +604,10 @@
         "x": -6,
         "y": -9,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_064",
@@ -585,6 +618,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -596,6 +632,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -607,6 +646,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -615,7 +657,10 @@
         "x": -8,
         "y": -8,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_068",
@@ -670,6 +715,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -681,6 +729,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -692,6 +743,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -700,7 +754,10 @@
         "x": 0,
         "y": -10,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_077",
@@ -760,6 +817,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -772,6 +832,9 @@
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -780,7 +843,10 @@
         "x": 2,
         "y": -2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_086",
@@ -792,6 +858,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -804,6 +873,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -815,6 +887,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -827,6 +902,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -839,6 +917,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -850,6 +931,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -861,6 +945,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -872,6 +959,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -880,7 +970,10 @@
         "x": 3,
         "y": 3,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_095",
@@ -893,6 +986,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -905,6 +1001,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -916,6 +1015,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -929,6 +1031,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -941,6 +1046,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -952,6 +1060,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -965,6 +1076,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -977,6 +1091,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -988,6 +1105,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1001,6 +1121,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1013,6 +1136,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1024,6 +1150,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1037,6 +1166,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1049,6 +1181,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1060,6 +1195,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1072,6 +1210,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1084,6 +1225,9 @@
         "edges": {
           "0,0,0:N": "wide",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1092,7 +1236,10 @@
         "x": -3,
         "y": 5,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_113",
@@ -1104,11 +1251,11 @@
       },
       {
         "id": "tile_114",
-        "tile": "core.dead_end",
+        "tile": "core.corridor_clear",
         "x": -6,
         "y": 6,
         "z": 1,
-        "rotation": 3
+        "rotation": 1
       },
       {
         "id": "tile_115",
@@ -1119,6 +1266,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1130,6 +1280,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1141,6 +1294,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1152,6 +1308,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1163,6 +1322,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1171,7 +1333,10 @@
         "x": -4,
         "y": 11,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_121",
@@ -1215,15 +1380,11 @@
       },
       {
         "id": "tile_126",
-        "tile": "core.room",
+        "tile": "core.stairs",
         "x": -8,
         "y": 0,
         "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:N": "wall",
-          "0,0,0:E": "open"
-        }
+        "rotation": 1
       },
       {
         "id": "tile_127",
@@ -1234,6 +1395,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1245,6 +1409,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1257,6 +1424,9 @@
         "edges": {
           "0,0,0:S": "wall",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1268,6 +1438,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1279,6 +1452,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1614,7 +1790,10 @@
         "x": 6,
         "y": -12,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_169",
@@ -1634,11 +1813,11 @@
       },
       {
         "id": "tile_171",
-        "tile": "core.dead_end",
+        "tile": "core.corner",
         "x": -8,
         "y": -1,
         "z": 1,
-        "rotation": 1
+        "rotation": 0
       },
       {
         "id": "tile_172",
@@ -1655,23 +1834,31 @@
         "y": -12,
         "z": 0,
         "rotation": 0
+      },
+      {
+        "id": "tile_174",
+        "tile": "core.stairs",
+        "x": -5,
+        "y": 6,
+        "z": 0,
+        "rotation": 2
       }
     ]
   },
   "entities": [
     {
-      "id": "spawn_174",
+      "id": "spawn_175",
       "position": [
         24,
         0,
         -96
       ],
       "kind": "spawn",
-      "yaw": 1.5707963267948966,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
-      "id": "spawn_175",
+      "id": "spawn_176",
       "position": [
         -32,
         0,
@@ -1682,7 +1869,7 @@
       "faction": null
     },
     {
-      "id": "spawn_176",
+      "id": "spawn_177",
       "position": [
         16,
         4,
@@ -1693,7 +1880,7 @@
       "faction": null
     },
     {
-      "id": "spawn_177",
+      "id": "spawn_178",
       "position": [
         -64,
         0,
@@ -1704,44 +1891,33 @@
       "faction": null
     },
     {
-      "id": "spawn_178",
+      "id": "spawn_179",
       "position": [
         -64,
         0,
         16
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.5707963267948966,
       "faction": null
     },
     {
-      "id": "spawn_179",
+      "id": "spawn_180",
       "position": [
         64,
         4,
         -48
       ],
       "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_180",
-      "position": [
-        0,
-        4,
-        -48
-      ],
-      "kind": "spawn",
-      "yaw": 0,
+      "yaw": 3.141592653589793,
       "faction": null
     },
     {
       "id": "spawn_181",
       "position": [
-        -24,
         0,
-        -96
+        4,
+        -48
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -1752,6 +1928,17 @@
       "position": [
         -24,
         0,
+        -96
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_183",
+      "position": [
+        -24,
+        0,
         40
       ],
       "kind": "spawn",
@@ -1759,7 +1946,7 @@
       "faction": null
     },
     {
-      "id": "spawn_183",
+      "id": "spawn_184",
       "position": [
         -24,
         0,
@@ -1770,18 +1957,18 @@
       "faction": null
     },
     {
-      "id": "spawn_184",
+      "id": "spawn_185",
       "position": [
         56,
         4,
         -8
       ],
       "kind": "spawn",
-      "yaw": 1.5707963267948966,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
-      "id": "spawn_185",
+      "id": "spawn_186",
       "position": [
         64,
         0,
@@ -1792,224 +1979,2120 @@
       "faction": null
     },
     {
-      "id": "pickup_186",
+      "id": "light_207",
       "position": [
-        32,
-        4,
-        -48
+        56,
+        3.2,
+        -96
       ],
-      "kind": "pickup",
-      "item": "core.weapon_smg",
-      "respawnSeconds": null
+      "kind": "light",
+      "yaw": 0,
+      "color": "#c1c1ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
     },
     {
-      "id": "pickup_187",
+      "id": "light_208",
       "position": [
-        0,
-        0,
-        -80
-      ],
-      "kind": "pickup",
-      "item": "core.health_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_188",
-      "position": [
-        -40,
-        0,
-        -72
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_auto_shotgun",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_189",
-      "position": [
-        8,
-        4,
-        -24
-      ],
-      "kind": "pickup",
-      "item": "core.ammo",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_190",
-      "position": [
-        8,
-        4,
-        24
-      ],
-      "kind": "pickup",
-      "item": "core.armor_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_191",
-      "position": [
-        -64,
-        0,
+        48,
+        3.45,
         -88
       ],
-      "kind": "pickup",
-      "item": "core.weapon_burst_rifle",
-      "respawnSeconds": null
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
     },
     {
-      "id": "pickup_192",
-      "position": [
-        -40,
-        0,
-        24
-      ],
-      "kind": "pickup",
-      "item": "core.health_large",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_193",
+      "id": "light_209",
       "position": [
         40,
-        4,
-        -24
+        3.45,
+        -96
       ],
-      "kind": "pickup",
-      "item": "core.weapon_marksman",
-      "respawnSeconds": null
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
     },
     {
-      "id": "pickup_194",
-      "position": [
-        48,
-        0,
-        -88
-      ],
-      "kind": "pickup",
-      "item": "core.ammo",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_195",
-      "position": [
-        48,
-        4,
-        -40
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_flak",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_196",
-      "position": [
-        0,
-        4,
-        -72
-      ],
-      "kind": "pickup",
-      "item": "core.armor_large",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_197",
+      "id": "light_210",
       "position": [
         24,
-        4,
+        3.2,
+        -96
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_211",
+      "position": [
+        8,
+        3.2,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_212",
+      "position": [
+        64,
+        7.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_213",
+      "position": [
+        56,
+        7.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#00ff00",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_214",
+      "position": [
+        48,
+        7.2,
         -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#00ff00",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_215",
+      "position": [
+        48,
+        7.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#00ff00",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_216",
+      "position": [
+        40,
+        7.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_217",
+      "position": [
+        40,
+        7.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#00ff00",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_218",
+      "position": [
+        24,
+        7.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_219",
+      "position": [
+        8,
+        7.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_220",
+      "position": [
+        16,
+        7.2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_221",
+      "position": [
+        0,
+        7.2,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_222",
+      "position": [
+        0,
+        7.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_223",
+      "position": [
+        0,
+        7.2,
+        -48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_224",
+      "position": [
+        0,
+        7.2,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_225",
+      "position": [
+        -24,
+        3.2,
+        -64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_226",
+      "position": [
+        -24,
+        3.2,
+        -80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_227",
+      "position": [
+        -32,
+        3.2,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_228",
+      "position": [
+        -48,
+        3.2,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_229",
+      "position": [
+        -48,
+        3.2,
+        -96
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_230",
+      "position": [
+        -40,
+        3.2,
+        -64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_231",
+      "position": [
+        -40,
+        3.2,
+        -80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_232",
+      "position": [
+        -32,
+        3.2,
+        -96
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_233",
+      "position": [
+        -16,
+        3.2,
+        -96
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_234",
+      "position": [
+        -56,
+        3.45,
+        -64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_235",
+      "position": [
+        -56,
+        3.45,
+        -80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_236",
+      "position": [
+        -48,
+        3.45,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_237",
+      "position": [
+        -64,
+        3.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_238",
+      "position": [
+        -64,
+        3.45,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_239",
+      "position": [
+        8,
+        3.2,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_240",
+      "position": [
+        0,
+        3.2,
+        -96
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_241",
+      "position": [
+        -8,
+        3.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_242",
+      "position": [
+        24,
+        7.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_243",
+      "position": [
+        8,
+        7.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_244",
+      "position": [
+        16,
+        7.45,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_245",
+      "position": [
+        16,
+        7.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ff81",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_246",
+      "position": [
+        -32,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_247",
+      "position": [
+        -32,
+        3.45,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_248",
+      "position": [
+        -56,
+        7.2,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_249",
+      "position": [
+        -32,
+        3.45,
+        56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_250",
+      "position": [
+        -32,
+        3.45,
+        80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_251",
+      "position": [
+        32,
+        7.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_252",
+      "position": [
+        24,
+        7.2,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_253",
+      "position": [
+        -56,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_254",
+      "position": [
+        -56,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_255",
+      "position": [
+        -64,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_256",
+      "position": [
+        -48,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_257",
+      "position": [
+        -48,
+        3.2,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_258",
+      "position": [
+        -64,
+        3.2,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_259",
+      "position": [
+        -56,
+        3.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_260",
+      "position": [
+        32,
+        7.2,
+        -48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_261",
+      "position": [
+        32,
+        7.2,
+        -64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_262",
+      "position": [
+        40,
+        7.2,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_263",
+      "position": [
+        56,
+        7.2,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_264",
+      "position": [
+        64,
+        7.2,
+        -64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_265",
+      "position": [
+        64,
+        7.2,
+        -48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_266",
+      "position": [
+        -24,
+        3.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_267",
+      "position": [
+        -64,
+        7.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "g_pickup_001",
+      "position": [
+        16,
+        4,
+        16
       ],
       "kind": "pickup",
       "item": "core.weapon_rockets",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_198",
+      "id": "g_pickup_002",
       "position": [
-        24,
-        4,
-        16
-      ],
-      "kind": "pickup",
-      "item": "core.health_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_199",
-      "position": [
-        -24,
+        -48,
         0,
-        -80
-      ],
-      "kind": "pickup",
-      "item": "core.ammo_explosive",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_200",
-      "position": [
-        -32,
-        0,
-        72
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_lmg",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_201",
-      "position": [
-        64,
-        4,
-        -64
+        24
       ],
       "kind": "pickup",
       "item": "core.weapon_railgun",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_202",
+      "id": "g_pickup_003",
       "position": [
-        40,
-        0,
-        -96
+        32,
+        4,
+        -40
       ],
       "kind": "pickup",
-      "item": "core.armor_small",
+      "item": "core.weapon_auto_shotgun",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_203",
+      "id": "g_pickup_004",
       "position": [
         -56,
         0,
         -72
       ],
       "kind": "pickup",
-      "item": "core.weapon_shotgun",
+      "item": "core.weapon_smg",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_204",
+      "id": "g_pickup_005",
+      "position": [
+        -32,
+        0,
+        72
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_006",
+      "position": [
+        -32,
+        0,
+        32
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_007",
+      "position": [
+        40,
+        4,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_flak",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_008",
+      "position": [
+        0,
+        0,
+        -88
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_009",
+      "position": [
+        16,
+        4,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_010",
+      "position": [
+        -56,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_011",
       "position": [
         -8,
         0,
-        -88
+        -80
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_012",
+      "position": [
+        64,
+        4,
+        -64
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_013",
+      "position": [
+        -32,
+        0,
+        56
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_014",
+      "position": [
+        48,
+        0,
+        -96
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_015",
+      "position": [
+        -24,
+        0,
+        16
       ],
       "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_205",
+      "id": "g_pickup_016",
+      "position": [
+        32,
+        4,
+        -72
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_017",
+      "position": [
+        -16,
+        0,
+        -96
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "g_pickup_018",
       "position": [
         24,
         4,
-        -40
+        -8
       ],
       "kind": "pickup",
-      "item": "core.health_small",
+      "item": "core.grenades",
       "respawnSeconds": null
+    },
+    {
+      "id": "g_light_019",
+      "position": [
+        16,
+        7.45,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a0",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "g_light_020",
+      "position": [
+        48,
+        7.45,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a0",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "g_prop_021",
+      "position": [
+        -51.53,
+        0,
+        5.63
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_022",
+      "position": [
+        -50.36,
+        0,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_023",
+      "position": [
+        -38.53,
+        0,
+        42.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_024",
+      "position": [
+        -39.7,
+        0,
+        42.91
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_025",
+      "position": [
+        -23.18,
+        0,
+        42.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_026",
+      "position": [
+        -24.35,
+        0,
+        42.91
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_027",
+      "position": [
+        -21.64,
+        0,
+        33.62
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_028",
+      "position": [
+        -21.09,
+        0,
+        34.79
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_029",
+      "position": [
+        -62.93,
+        0,
+        42.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_030",
+      "position": [
+        -64.1,
+        0,
+        42.91
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_031",
+      "position": [
+        -66.36,
+        0,
+        30.67
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_032",
+      "position": [
+        -66.91,
+        0,
+        29.5
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_033",
+      "position": [
+        -66.36,
+        0,
+        10.47
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_034",
+      "position": [
+        -66.91,
+        0,
+        9.3
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_035",
+      "position": [
+        -57.33,
+        0,
+        42.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_036",
+      "position": [
+        -58.5,
+        0,
+        42.91
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_037",
+      "position": [
+        -20.92,
+        0,
+        13.2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_038",
+      "position": [
+        -47.15,
+        0,
+        4.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_039",
+      "position": [
+        -43.93,
+        0,
+        23.87
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_040",
+      "position": [
+        -42.95,
+        0,
+        24.34
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_041",
+      "position": [
+        -44.9,
+        0,
+        24.34
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_042",
+      "position": [
+        -42.95,
+        0,
+        23.41
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_043",
+      "position": [
+        -44.9,
+        0,
+        23.41
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_044",
+      "position": [
+        -20.86,
+        0,
+        43.13
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": -2.2676,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_045",
+      "position": [
+        -67.14,
+        0,
+        43.13
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": 2.2695,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_046",
+      "position": [
+        -67.12,
+        0,
+        4.85
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": 0.6719,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_047",
+      "position": [
+        -66.65,
+        0,
+        -76.32
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_048",
+      "position": [
+        -61.52,
+        0,
+        -90.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_049",
+      "position": [
+        -45.09,
+        0,
+        -74.95
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_050",
+      "position": [
+        -66.65,
+        0,
+        -85.32
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_051",
+      "position": [
+        -57.12,
+        0,
+        -90.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_052",
+      "position": [
+        -66.65,
+        0,
+        -74.12
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_053",
+      "position": [
+        -56,
+        0,
+        -79.75
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_054",
+      "position": [
+        -56,
+        1.1,
+        -79.75
+      ],
+      "kind": "prop",
+      "model": "prop.sv_medkit_case",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_055",
+      "position": [
+        -45.15,
+        0,
+        -90.85
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": -0.8557,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_056",
+      "position": [
+        -67.3,
+        0,
+        -91.28
+      ],
+      "kind": "prop",
+      "model": "prop.sv_gas_can",
+      "yaw": 0.8982,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_057",
+      "position": [
+        -67.34,
+        1.4,
+        -87.22
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_058",
+      "position": [
+        -44.66,
+        1.4,
+        -76.47
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_059",
+      "position": [
+        -67.34,
+        1.4,
+        -80.02
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_060",
+      "position": [
+        -64.22,
+        1.4,
+        -91.34
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "g_prop_061",
+      "position": [
+        7.52,
+        4,
+        27.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_062",
+      "position": [
+        5.92,
+        4,
+        4.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_063",
+      "position": [
+        20.52,
+        4,
+        27.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_064",
+      "position": [
+        4.82,
+        4,
+        6.32
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_065",
+      "position": [
+        27.18,
+        4,
+        12.72
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_066",
+      "position": [
+        27.18,
+        4,
+        5.32
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_067",
+      "position": [
+        24.92,
+        4,
+        27.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_068",
+      "position": [
+        5.7,
+        4,
+        18.25
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_069",
+      "position": [
+        16.7,
+        4,
+        18.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_070",
+      "position": [
+        16,
+        4,
+        18.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_071",
+      "position": [
+        15.3,
+        4,
+        18.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_072",
+      "position": [
+        16.7,
+        4,
+        18.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_073",
+      "position": [
+        16,
+        4,
+        18.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_074",
+      "position": [
+        15.3,
+        4,
+        18.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_075",
+      "position": [
+        16.7,
+        4,
+        13.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_076",
+      "position": [
+        16,
+        4,
+        13.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_077",
+      "position": [
+        15.3,
+        4,
+        13.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_078",
+      "position": [
+        16.7,
+        4,
+        13.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_079",
+      "position": [
+        16,
+        4,
+        13.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_080",
+      "position": [
+        15.3,
+        4,
+        13.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_081",
+      "position": [
+        20.14,
+        4,
+        15.68
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_082",
+      "position": [
+        19.44,
+        4,
+        15.68
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_083",
+      "position": [
+        18.74,
+        4,
+        15.68
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_084",
+      "position": [
+        20.14,
+        4,
+        16.32
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_085",
+      "position": [
+        19.44,
+        4,
+        16.32
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_086",
+      "position": [
+        18.74,
+        4,
+        16.32
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_087",
+      "position": [
+        20.14,
+        4,
+        13.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_088",
+      "position": [
+        19.44,
+        4,
+        13.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_089",
+      "position": [
+        18.74,
+        4,
+        13.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_090",
+      "position": [
+        20.14,
+        4,
+        13.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_091",
+      "position": [
+        19.44,
+        4,
+        13.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_092",
+      "position": [
+        18.74,
+        4,
+        13.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_093",
+      "position": [
+        5.25,
+        4,
+        26.75
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate",
+      "yaw": 2.2485,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "g_prop_094",
+      "position": [
+        26.74,
+        4,
+        26.74
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate",
+      "yaw": -2.4285,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -2021,7 +4104,9 @@
   },
   "terrain": null,
   "bounds": null,
+  "track": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

@@ -27,7 +27,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFil
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SIDES, SIDE_DIRS, coreCatalog, edgeKey, localSide, placeTileCommand, rotateSide, rotateXZ, type EdgeStyle, type Rotation, type Side, type TilePlacement, type ValidationIssue } from '@tiletrigger/shared';
+import { SIDES, SIDE_DIRS, coreCatalog, dressSpace, edgeKey, localSide, placeTileCommand, rotateSide, rotateXZ, tsFootprintCell, tsRotationToOurs, tsTurnSide, type EdgeStyle, type RoomType, type Rotation, type Side, type TilePlacement, type ValidationIssue } from '@tiletrigger/shared';
 import { MapBuilder } from './mapkit.ts';
 
 // ---------------------------------------------------------------- decoder JSON
@@ -42,6 +42,8 @@ interface DecodedTile {
   rot: number;
   w: number;
   h: number;
+  /** The tile's light colour (RGBA hex; fefefeff is the default white, 000000ff lights off). */
+  light_rgba?: string;
   raw: { cell_links?: [number, number, number][]; b08?: string };
 }
 
@@ -104,6 +106,7 @@ interface Table {
 
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
 const TABLE_PATH = join(ROOT, 'content/import/timesplitters-mapmaker.json');
+const SUMMARY_PATH = join(ROOT, 'content/import/timesplitters-import.json');
 const DECODER = join(ROOT, 'tools/import/timesplitters/tsdecode.py');
 const OUT_DIR = 'imported';
 
@@ -204,14 +207,10 @@ function refreshTable(old: Table | null, seen: Map<string, { footprint: [number,
 const key3 = (x: number, y: number, z: number) => `${x},${y},${z}`;
 const OPP: Record<Side, Side> = { N: 'S', E: 'W', S: 'N', W: 'E' };
 /** Turn a side counter-clockwise by r quarter turns (the original's rotation sense). */
-const ccw = (s: Side, r: number): Side => SIDES[(SIDES.indexOf(s) - (r & 3) + 8) % 4]!;
+const ccw = tsTurnSide;
 
 /** World cell of local (i, j) for a footprint w × h anchored at its min corner with CCW rotation (as the decoder). */
-function fpCell(t: { x: number; y: number; rot: number }, w: number, h: number, i: number, j: number): [number, number] {
-  const r = t.rot & 3;
-  const [dx, dy] = r === 0 ? [i, j] : r === 1 ? [h - 1 - j, i] : r === 2 ? [w - 1 - i, h - 1 - j] : [j, w - 1 - i];
-  return [t.x + dx, t.y + dy];
-}
+const fpCell = (t: { x: number; y: number; rot: number }, w: number, h: number, i: number, j: number): [number, number] => tsFootprintCell(t.x, t.y, t.rot, w, h, i, j);
 
 /** Our tile with `rot` whose rotated footprint's min corner is (x, y): returns the anchor (local 0,0 cell). */
 function anchorForMinCorner(tile: string, rot: Rotation, x: number, y: number): [number, number] {
@@ -271,6 +270,10 @@ interface MapReport {
   standIns: Record<string, number>;
   skippedTiles: string[];
   verticals: number;
+  /** Doorways and stairs added to join areas the save connects in ways we can't decode. */
+  repairs?: { doors: number; stairs: number };
+  lights?: number;
+  props?: number;
   pickups: number;
   spawns: number;
   theme: string;
@@ -363,7 +366,7 @@ interface Converted {
   builder?: MapBuilder;
 }
 
-function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds: Map<number, number>): Converted {
+function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds: Map<number, number>, dress = true): Converted {
   const game = d.game!;
   const tiles = d.tiles!;
   const name = (d.name ?? '').trim() || d.file.replace(/\..*$/, '');
@@ -540,7 +543,7 @@ function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds
       report.warnings.push(`${label}: stairs would collide with other tiles; kept flat`);
     }
     if (strategy === 'tile' && entry && coreCatalog.get(entry.ours.id)) {
-      const rotation = (((4 - (t.rot & 3)) % 4) + entry.ours.rotationOffset) % 4 as Rotation;
+      const rotation = ((tsRotationToOurs(t.rot) + entry.ours.rotationOffset) % 4) as Rotation;
       const minX = Math.min(...tsCells[k]!.map((c) => c.x));
       const minY = Math.min(...tsCells[k]!.map((c) => c.y));
       const [ax, ay] = anchorForMinCorner(entry.ours.id, rotation, minX, minY);
@@ -618,6 +621,169 @@ function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds
       connected.set(`${n}:${OPP[s]}`, v);
     }
   }
+  // ------------------------------------------------ connectivity repair
+  // MapMaker only lets you save a map whose pieces all join up, so every part
+  // of an original is reachable. Where our reading of a piece's openings (TS2
+  // exit tables are statistical) or of a vertical piece (lifts, ladders and
+  // stairs we can't decode) cuts an area off, join it back with the smallest
+  // change, Kruskal-style: one doorway where two areas touch on a level (where
+  // the save hints at a link first), else a stairwell or a flight of stairs in
+  // an empty column beside them.
+  const repairs = { doors: 0, stairs: 0 };
+  let synthetic = -1;
+  const sideStep = (c: string, s: Side): string => {
+    const [x, y, z] = c.split(',').map(Number) as [number, number, number];
+    return key3(x + SIDE_DIRS[s][0], y + SIDE_DIRS[s][1], z);
+  };
+  const setConn = (c: string, s: Side) => {
+    connected.set(`${c}:${s}`, true);
+    connected.set(`${sideStep(c, s)}:${OPP[s]}`, true);
+  };
+  /** How much the save supports joining original tiles a and b (lower is better). */
+  const evidence = (pa: Plan, pb: Plan, a: string, s: Side, b2: string): number => {
+    if (game === 'TSFP') return pa.ts >= 0 && pb.ts >= 0 && tsLinked(pa.ts, pb.ts) ? 0 : 3;
+    const ex = (p: Plan, c: string, side: Side) => {
+      if (p.kind === 'vertical' || p.ts < 0) return null;
+      const l = tsCellLocal(p.ts, c);
+      return l ? exitAt(p.ts, l.i, l.j, side) : null;
+    };
+    const ea = ex(pa, a, s);
+    const eb = ex(pb, b2, OPP[s]);
+    if (ea === false || eb === false) return 3;
+    return ea || eb ? 0 : 1;
+  };
+  /** Whether every cell joined to c still reaches `from` without going through c. */
+  const stepSafe = (c: string, from: string): boolean => {
+    const linkedTo = (q: string): string[] => {
+      const out: string[] = [];
+      for (const t of SIDES) if (connected.get(`${q}:${t}`) && occ.has(sideStep(q, t))) out.push(sideStep(q, t));
+      const p = plans[occ.get(q)!]!;
+      if (p.kind !== 'cell') out.push(...p.cells.keys());
+      return out;
+    };
+    const need = new Set(linkedTo(c).filter((q) => q !== c && q !== from));
+    const seen = new Set([c, from]);
+    const todo = [from];
+    while (todo.length && need.size) {
+      for (const n of linkedTo(todo.pop()!)) {
+        if (seen.has(n)) continue;
+        seen.add(n);
+        need.delete(n);
+        todo.push(n);
+      }
+    }
+    return need.size === 0;
+  };
+  for (let pass = 0; pass < 8; pass++) {
+    const par = new Map<string, string>();
+    const root = (a: string): string => {
+      let r = a;
+      while (par.get(r) !== r) r = par.get(r)!;
+      par.set(a, r);
+      return r;
+    };
+    for (const c of occ.keys()) par.set(c, c);
+    const join = (a: string, c: string) => par.set(root(a), root(c));
+    for (const p of plans) {
+      const cs = [...p.cells.keys()];
+      if (p.kind !== 'cell') for (const c of cs.slice(1)) join(cs[0]!, c);
+    }
+    for (const [ks, v] of connected) {
+      if (!v) continue;
+      const [c, s] = ks.split(':') as [string, Side];
+      if (occ.has(sideStep(c, s))) join(c, sideStep(c, s));
+    }
+    if (new Set([...occ.keys()].map(root)).size <= 1) break;
+    const fixes: { score: number; key: string; a: string; b: string; apply: () => boolean }[] = [];
+    for (const c of occ.keys()) {
+      const [x, y, z] = c.split(',').map(Number) as [number, number, number];
+      const pc = plans[occ.get(c)!]!;
+      for (const s of SIDES) {
+        const n = sideStep(c, s);
+        // Doorways: each touching pair once (from its west / south cell).
+        if ((s === 'E' || s === 'N') && occ.has(n) && root(c) !== root(n)) {
+          const pn = plans[occ.get(n)!]!;
+          if (portOk(pc, c, s) && portOk(pn, n, OPP[s])) {
+            fixes.push({ score: evidence(pc, pn, c, s, n), key: `${c}:${s}`, a: c, b: n, apply: () => (setConn(c, s), repairs.doors++, true) });
+          }
+        }
+        // A step up between two areas that touch across a level (terraces, stepped pyramids): turn c
+        // itself into stairs, in from the cell behind it and out onto the higher cell ahead, as long
+        // as nothing else depends on c to stay joined up.
+        const up = key3(x, y, z + 1);
+        const ahead = key3(x + SIDE_DIRS[s][0], y + SIDE_DIRS[s][1], z + 1);
+        const behind = sideStep(c, OPP[s]);
+        if (pc.kind === 'cell' && !occ.has(up) && occ.has(ahead) && occ.has(behind) && root(behind) === root(c) && root(ahead) !== root(c)) {
+          const pa = plans[occ.get(ahead)!]!;
+          const pb = plans[occ.get(behind)!]!;
+          if (portOk(pa, ahead, OPP[s]) && portOk(pb, behind, s)) {
+            const idx = occ.get(c)!;
+            fixes.push({
+              score: game === 'TSFP' && pc.ts >= 0 && pa.ts >= 0 && tsLinked(pc.ts, pa.ts) ? 3.2 : 5,
+              key: `${c}:step:${s}`,
+              a: c,
+              b: ahead,
+              apply: () => {
+                if (occ.has(up) || plans[idx]!.kind !== 'cell' || !portOk(plans[occ.get(ahead)!]!, ahead, OPP[s]) || !portOk(plans[occ.get(behind)!]!, behind, s) || !stepSafe(c, behind)) return false;
+                for (const t of SIDES) {
+                  connected.set(`${c}:${t}`, false);
+                  connected.set(`${sideStep(c, t)}:${OPP[t]}`, false);
+                }
+                const rotation = SIDES.findIndex((_, r) => rotateSide('W', r) === OPP[s]) as Rotation;
+                plans[idx] = { ts: synthetic--, kind: 'vertical', tile: 'core.stairs', rotation, x, y, z, cells: new Map([[c, [0, 0, 0]], [up, [0, 0, 1]]]), low: { cell: c, side: OPP[s] }, high: { cell: up, side: s } };
+                occ.set(up, idx);
+                setConn(c, OPP[s]);
+                setConn(up, s);
+                repairs.stairs++;
+                return true;
+              },
+            });
+          }
+        }
+        // Vertical: the stair column is the empty cell on side s of c (c is at the stairs' foot).
+        const [qx, qy] = [x + SIDE_DIRS[s][0], y + SIDE_DIRS[s][1]];
+        const lo = key3(qx, qy, z);
+        const hi = key3(qx, qy, z + 1);
+        if (occ.has(lo) || occ.has(hi) || !portOk(pc, c, s)) continue;
+        const stair = (tile: string, top: string, topSide: Side, score: number) => {
+          const pt = plans[occ.get(top)!]!;
+          if (root(c) === root(top) || !portOk(pt, top, OPP[topSide])) return;
+          const rotation = SIDES.findIndex((_, r) => rotateSide('W', r) === OPP[s]) as Rotation;
+          fixes.push({
+            score: score + (game === 'TSFP' && pc.ts >= 0 && pt.ts >= 0 && tsLinked(pc.ts, pt.ts) ? 0 : 2),
+            key: `${lo}:${tile}:${s}`,
+            a: c,
+            b: top,
+            apply: () => {
+              if (occ.has(lo) || occ.has(hi) || !portOk(plans[occ.get(c)!]!, c, s) || !portOk(plans[occ.get(top)!]!, top, OPP[topSide])) return false;
+              claim({ ts: synthetic--, kind: 'vertical', tile, rotation, x: qx, y: qy, z, cells: new Map([[lo, [0, 0, 0]], [hi, [0, 0, 1]]]), low: { cell: lo, side: OPP[s] }, high: { cell: hi, side: topSide } });
+              setConn(c, s);
+              setConn(hi, topSide);
+              repairs.stairs++;
+              return true;
+            },
+          });
+        };
+        // A stairwell: doorways on the same side on both floors, beside two cells stacked one over the other.
+        const above = key3(x, y, z + 1);
+        if (occ.has(above)) stair('core.stairwell', above, OPP[s], 2);
+        // A straight flight: in on this level from c, out one level up on the far side.
+        const far = key3(qx + SIDE_DIRS[s][0], qy + SIDE_DIRS[s][1], z + 1);
+        if (occ.has(far)) stair('core.stairs', far, s, 2.5);
+      }
+    }
+    fixes.sort((p, q) => p.score - q.score || (p.key < q.key ? -1 : p.key > q.key ? 1 : 0));
+    let changed = false;
+    for (const f of fixes) {
+      if (root(f.a) === root(f.b) || !f.apply()) continue;
+      join(f.a, f.b);
+      changed = true;
+    }
+    if (!changed) break;
+  }
+  if (repairs.doors || repairs.stairs) report.warnings.push(`connectivity repair: ${repairs.doors} doorway(s) and ${repairs.stairs} stair(s) added to join areas the save connects in ways we can't decode`);
+  report.repairs = repairs;
+
   const conn = (c: string, s: Side) => connected.get(`${c}:${s}`) === true;
   // Open areas: a cell is part of one when a 2 × 2 block round it is connected all the way round.
   const openArea = new Set<string>();
@@ -658,7 +824,7 @@ function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds
       }
     }
   }
-  const multi = (p: Plan) => tsCells[p.ts]!.length > 1 && p.kind !== 'vertical';
+  const multi = (p: Plan) => p.kind !== 'vertical' && p.ts >= 0 && tsCells[p.ts]!.length > 1;
   const styleFor = (a: string, s: Side, b: string): EdgeStyle => {
     const pa = plans[occ.get(a)!]!;
     const pb = plans[occ.get(b)!]!;
@@ -692,9 +858,12 @@ function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds
         edges[edgeKey(local, localSide(s, p.rotation))] = style;
       }
     }
-    placements.push({ id: b.newId('tile'), tile: p.tile, x: p.x, y: p.y, z: p.z, rotation: p.rotation, ...(Object.keys(edges).length ? { edges } : {}) });
+    // Original rooms and halls get a roof (the originals are indoor complexes), except Future
+    // Perfect's open blocks (type 17: courtyards and outdoor areas). Corridor pieces take no options.
+    const roofed = p.tile === 'core.room' && p.ts >= 0 && !(game === 'TSFP' && tiles[p.ts]!.type === 17);
+    placements.push({ id: b.newId('tile'), tile: p.tile, x: p.x, y: p.y, z: p.z, rotation: p.rotation, ...(Object.keys(edges).length ? { edges } : {}), ...(roofed ? { options: { ceiling: 'roof' as const } } : {}) });
   });
-  report.placed = new Set(plans.map((p) => p.ts)).size;
+  report.placed = new Set(plans.filter((p) => p.ts >= 0).map((p) => p.ts)).size;
   report.ourTiles = placements.length;
 
   // ------------------------------------------------ centre the map on the origin
@@ -748,7 +917,7 @@ function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds
   for (const pl of placements) {
     const r = placeTileCommand(b.doc, pl.tile, pl.x, pl.y, pl.z, pl.rotation);
     if ('error' in r) return { report: { ...report, status: 'skipped', reason: `tile ${pl.tile} at ${pl.x},${pl.y},${pl.z}: ${r.error}` } };
-    b.history.execute('Place tile', { kind: 'addTiles', tiles: [{ ...r.placement, id: pl.id, ...(pl.edges ? { edges: pl.edges } : {}) }] });
+    b.history.execute('Place tile', { kind: 'addTiles', tiles: [{ ...r.placement, id: pl.id, ...(pl.edges ? { edges: pl.edges } : {}), ...(pl.options ? { options: pl.options } : {}) }] });
   }
   const world = (c: string, off: [number, number] = [0, 0]): [number, number, number] => {
     const [x, y, z] = c.split(',').map(Number) as [number, number, number];
@@ -796,8 +965,14 @@ function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds
   const nPickups = Math.max(6, Math.min(20, itemCells.length || Math.round(area.length / 3)));
   const pickupCells = [...spread(itemCells, Math.min(nPickups, itemCells.length), spawnCells)];
   if (pickupCells.length < nPickups) pickupCells.push(...spread(area.filter((c) => !pickupCells.includes(c)), nPickups - pickupCells.length, [...spawnCells, ...pickupCells]));
+  // Spawns face down the longest straight run of open floor (not the first doorway in N, E, S, W order).
+  const run = (c: string, s: Side): number => {
+    let n = 0;
+    for (let q = c; n < 8 && conn(q, s); q = sideStep(q, s)) n++;
+    return n;
+  };
   for (const c of spawnCells) {
-    const open = SIDES.filter((s) => conn(c, s));
+    const open = SIDES.filter((s) => conn(c, s)).sort((p, q) => run(c, q) - run(c, p));
     const facing = open[0] ?? 'N';
     const yaw = { N: 0, E: Math.PI / 2, S: Math.PI, W: -Math.PI / 2 }[facing];
     const shared = pickupCells.includes(c);
@@ -811,10 +986,73 @@ function convert(d: Decoded, id: string, table: Map<string, TableEntry>, cellIds
   report.pickups = pickupCells.length;
   if (!(d.items ?? []).length) report.warnings.push('the save has no items: pickups spread evenly');
 
-  // ------------------------------------------------ theme and metadata
+  // ------------------------------------------------ theme and backdrop
   const { theme, why } = pickTheme(d);
   b.theme(theme);
   report.theme = `${theme} (${why})`;
+  // A theme whose backdrop has no ground (Space Station floats in space) shows sky under every gap
+  // and below the map: the "sky below" bug. Imported maps always stand on ground.
+  if (theme === 'station') b.backdrop('space', 'none', 'stone', 0);
+
+  // ------------------------------------------------ lights
+  // Every original tile carries a light colour (white by default, black = lights off). One light per
+  // original tile, in the colour the author picked, at the tile's middle cell; dimmer colours are
+  // dimmer lights. Under a roof or a floor it hangs as a ceiling panel, elsewhere it is light only.
+  const cellPos = new Map<number, string[]>();
+  for (const p of plans) if (p.kind === 'cell' && p.ts >= 0) (cellPos.get(p.ts) ?? cellPos.set(p.ts, []).get(p.ts)!).push(...p.cells.keys());
+  const roofedCell = (c: string): boolean => {
+    const [x, y, z] = c.split(',').map(Number) as [number, number, number];
+    const p = plans[occ.get(c)!]!;
+    return occ.has(key3(x, y, z + 1)) || (p.tile === 'core.room' && !(game === 'TSFP' && tiles[p.ts]!.type === 17));
+  };
+  const lit: string[] = [];
+  for (const [k, cs] of [...cellPos].sort((p, q) => p[0] - q[0])) {
+    const rgba = tiles[k]!.light_rgba ?? 'fefefeff';
+    const [r, g, bl] = [0, 2, 4].map((i) => parseInt(rgba.slice(i, i + 2), 16) || 0) as [number, number, number];
+    const peak = Math.max(r, g, bl);
+    if (peak < 0x20 || !cs.some((c) => area.includes(c))) continue;
+    const mx = cs.reduce((a, c) => a + Number(c.split(',')[0]), 0) / cs.length;
+    const my = cs.reduce((a, c) => a + Number(c.split(',')[1]), 0) / cs.length;
+    const c = [...cs].sort((p, q) => {
+      const [px, py] = p.split(',').map(Number) as [number, number];
+      const [qx, qy] = q.split(',').map(Number) as [number, number];
+      return (px - mx) ** 2 + (py - my) ** 2 - ((qx - mx) ** 2 + (qy - my) ** 2) || (p < q ? -1 : 1);
+    })[0]!;
+    if (lit.some((q) => dist2(q, c) < 2) || lit.length >= 160) continue;
+    lit.push(c);
+    const white = r >= 0xf0 && g >= 0xf0 && bl >= 0xf0;
+    const hex = white ? '#fff1d6' : `#${[r, g, bl].map((v) => Math.round((v / peak) * 255).toString(16).padStart(2, '0')).join('')}`;
+    const roof = roofedCell(c);
+    const [wx, wy, wz] = world(c);
+    const { levelHeight } = b.doc.classicStructure;
+    b.light([wx, wy + (roof ? levelHeight - 0.55 : 3.2), wz], { fixture: roof ? 'ceiling' : 'none', color: hex, intensity: +(0.35 + 0.85 * (peak / 254)).toFixed(2), range: cs.length >= 4 ? 14 : 9 });
+  }
+  report.lights = lit.length;
+
+  // ------------------------------------------------ dressing
+  // The originals' props are not in the save (or not decoded): dress each original room of four
+  // cells or more, sparsely, for what the theme suggests, keeping doorways, spawns and pickups clear.
+  const ROOMS_BY_THEME: Record<string, RoomType[]> = {
+    bunker: ['barracks', 'armoury', 'storage'], factory: ['warehouse', 'workshop', 'storage'], lab: ['lab', 'server', 'office'],
+    station: ['server', 'lab', 'lobby'], manor: ['living', 'library', 'dining', 'bedroom'], castle: ['dining', 'armoury', 'chapel', 'storage'],
+    temple: ['chapel', 'storage'], tomb: ['chapel', 'storage'], volcano: ['workshop', 'storage', 'armoury'], city: ['shop', 'bar', 'office', 'lobby'],
+    saloon: ['bar', 'dining', 'bedroom'], arctic: ['barracks', 'storage', 'lab'],
+  };
+  const roomTypes = ROOMS_BY_THEME[theme] ?? ['storage'];
+  let dressed = 0;
+  const propsBefore = b.doc.entities.filter((e) => e.kind === 'prop').length;
+  for (const [, cs] of dress ? [...cellPos].sort((p, q) => p[0] - q[0]) : []) {
+    const own = cs.filter((c) => area.includes(c) && plans[occ.get(c)!]!.tile === 'core.room');
+    if (own.length < 4 || own.length !== cs.length) continue;
+    const levels = new Set(own.map((c) => c.split(',')[2]));
+    if (levels.size !== 1) continue;
+    const cells = own.map((c) => {
+      const [x, y, z] = c.split(',').map(Number) as [number, number, number];
+      return [x - ox, y - oy, z - oz] as [number, number, number];
+    });
+    b.dress(dressSpace(b.doc, cells), roomTypes[dressed++ % roomTypes.length]!, { density: 'sparse' });
+  }
+  report.props = b.doc.entities.filter((e) => e.kind === 'prop').length - propsBefore;
   const gameName = game === 'TS2' ? 'TimeSplitters 2' : 'TimeSplitters: Future Perfect';
   const desc = cleanText(d.description);
   const credit = `Imported from a ${gameName} MapMaker save.`;
@@ -897,9 +1135,15 @@ async function main(): Promise<void> {
     for (let n = 2; used.has(id); n++) id = `${base}_${n}`;
     used.add(id);
     if (opt.only && opt.only !== id) continue;
-    const { report, builder } = convert(d, id, byType, cellIds);
+    let { report, builder } = convert(d, id, byType, cellIds);
     if (builder) {
-      const issues: ValidationIssue[] = await builder.save({ dir: OUT_DIR, exitOnError: false, quiet: true });
+      let issues: ValidationIssue[] = await builder.save({ dir: OUT_DIR, exitOnError: false, quiet: true });
+      // Dressing can close the only way to a pickup or a spawn: then the map goes without it.
+      if (issues.some((i) => i.code.startsWith('nav.'))) {
+        ({ report, builder } = convert(d, id, byType, cellIds, false));
+        issues = await builder!.save({ dir: OUT_DIR, exitOnError: false, quiet: true });
+        report.warnings.push('dressing left out: it blocked a way through');
+      }
       const errors = issues.filter((i) => i.severity === 'error');
       if (errors.length) {
         report.status = 'skipped';
@@ -918,6 +1162,28 @@ async function main(): Promise<void> {
   for (const r of reports.filter((x) => x.status === 'skipped')) console.log(`  skipped ${r.file}: ${r.reason}`);
   console.log('items are placeholders: the original item kinds are unknown, so every map gets a balanced default set where the original had items.');
   if (opt.report) writeFileSync(opt.report, `${JSON.stringify(reports, null, 1)}\n`);
+  // What the conversion did to each map, for the audit (tools/audit-imported.ts): counts only, nothing from the saves' bytes.
+  if (!opt.only) {
+    const summary = conv
+      .map((r) => ({
+        id: r.id!,
+        game: r.game,
+        tiles: r.tiles,
+        placed: r.placed,
+        pieces: r.ourTiles,
+        standIns: Object.fromEntries(Object.entries(r.standIns).map(([k, v]) => [k.replace(/ \(not in the table\)/, ''), v])),
+        skippedTiles: r.skippedTiles.length,
+        cutOffCells: Number(/^(\d+) of \d+ floor cells are not connected/.exec(r.warnings.find((w) => /floor cells are not connected/.test(w)) ?? '')?.[1] ?? 0),
+        verticals: r.verticals,
+        repairs: r.repairs ?? { doors: 0, stairs: 0 },
+        lights: r.lights ?? 0,
+        props: r.props ?? 0,
+        dressed: !r.warnings.includes('dressing left out: it blocked a way through'),
+        theme: r.theme,
+      }))
+      .sort((a, b) => a.id.localeCompare(b.id));
+    writeFileSync(SUMMARY_PATH, `${JSON.stringify({ about: 'Per-map conversion summary written by packages/server/src/tools/import-timesplitters.ts (counts only; no save data). Read by packages/server/src/tools/audit-imported.ts.', maps: summary }, null, 1)}\n`);
+  }
 }
 
 await main();
