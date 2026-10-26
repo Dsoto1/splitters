@@ -987,6 +987,10 @@ async function zombiesFlow(browser) {
   await page.waitForFunction(() => window.__cs.view.characterCount() > 3, null, { timeout: T(15000) }).catch(() => {});
   const drawn = await page.evaluate(() => window.__cs.view.characterCount());
   check(drawn > 3, `zombies are drawn as characters (${drawn})`);
+  // Most wear Quaternius' zombie body, walking, running and biting with its own clips.
+  await page.waitForFunction(() => window.__cs.view.creatureCount('zombie') > 0, null, { timeout: T(15000) }).catch(() => {});
+  const bodies = await page.evaluate(() => window.__cs.view.creatureCount('zombie'));
+  check(bodies > 0, `zombies wear the zombie body (${bodies})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

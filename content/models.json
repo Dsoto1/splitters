@@ -73,6 +73,14 @@
       "licenseFile": "assets-src/quaternius-modular-scifi-megakit/License.txt",
       "retrieved": "2026-10-23"
     },
+    "quaternius-zombie": {
+      "title": "Zombie (animated)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.com",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/quaternius-zombie/License.txt",
+      "retrieved": "2026-10-26"
+    },
     "meshy-owned": {
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Tile Trigger (generated with Meshy)",

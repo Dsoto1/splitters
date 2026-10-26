@@ -2613,6 +2613,22 @@
       ]
     },
     {
+      "file": "creatures/zombie.glb",
+      "sha256": "147ace76d1495ade",
+      "triangles": 2116,
+      "bytes": 566932,
+      "source": "quaternius-zombie/Zombie.fbx",
+      "title": "Zombie (animated)",
+      "creator": "Quaternius",
+      "url": "https://quaternius.com",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted from FBX to glTF with its own skeleton and clips (renamed, the attack trimmed, still tracks dropped)",
+        "scaled to 1.8 m and stood on the ground",
+        "palette texture embedded"
+      ]
+    },
+    {
       "file": "textures/Asphalt031_color.jpg",
       "sha256": "3c7247af9ff89325",
       "bytes": 59092,
@@ -16820,6 +16836,406 @@
       "modifications": [
         "built in code by tools/content/prepare-ancient.mjs",
         "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hp_floor_tile.glb",
+      "sha256": "5fcb251168afc314",
+      "triangles": 12,
+      "bytes": 1740,
+      "source": "madduck-hospital/floor_tile_1.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_floor_tile_blue.glb",
+      "sha256": "05b331f175106901",
+      "triangles": 12,
+      "bytes": 1740,
+      "source": "madduck-hospital/floor_tile_2.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_ceiling_tile.glb",
+      "sha256": "d900f0d36db8cef6",
+      "triangles": 12,
+      "bytes": 1796,
+      "source": "madduck-hospital/ceiling_tile.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_wall.glb",
+      "sha256": "afa83eeab3a2111f",
+      "triangles": 252,
+      "bytes": 8616,
+      "source": "madduck-hospital/tile_wall.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_wall_half.glb",
+      "sha256": "ae5b1804fd3bc03e",
+      "triangles": 252,
+      "bytes": 8628,
+      "source": "madduck-hospital/tile_wall_half.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_wall_window.glb",
+      "sha256": "99e1acd35d39feb7",
+      "triangles": 618,
+      "bytes": 18400,
+      "source": "madduck-hospital/tile_window.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_doorway.glb",
+      "sha256": "d9ca4b895928fc67",
+      "triangles": 1056,
+      "bytes": 28852,
+      "source": "madduck-hospital/tile_doorway_1.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_doorway_wide.glb",
+      "sha256": "46ab2ecbe3eb914b",
+      "triangles": 1056,
+      "bytes": 28804,
+      "source": "madduck-hospital/tile_doorway_2.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_wall_corner.glb",
+      "sha256": "c9f3fc19648f88c7",
+      "triangles": 380,
+      "bytes": 11984,
+      "source": "madduck-hospital/tile_corner.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_pillar.glb",
+      "sha256": "cd8962184a184131",
+      "triangles": 452,
+      "bytes": 12272,
+      "source": "madduck-hospital/pillar.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_door.glb",
+      "sha256": "4853fe344ac16112",
+      "triangles": 2880,
+      "bytes": 49960,
+      "source": "madduck-hospital/door_1.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_door_swing.glb",
+      "sha256": "f7d3c8d255cfb4f6",
+      "triangles": 928,
+      "bytes": 17372,
+      "source": "madduck-hospital/door_2.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_bed.glb",
+      "sha256": "b6de7c2ac6803e3c",
+      "triangles": 4185,
+      "bytes": 268948,
+      "source": "madduck-hospital/bed.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_bench.glb",
+      "sha256": "4a082ee021bed77e",
+      "triangles": 2572,
+      "bytes": 66828,
+      "source": "madduck-hospital/bench.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_chair.glb",
+      "sha256": "dbed69bf65dae7bb",
+      "triangles": 1324,
+      "bytes": 28856,
+      "source": "madduck-hospital/chair.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_table.glb",
+      "sha256": "220b0e9e6df84587",
+      "triangles": 940,
+      "bytes": 23792,
+      "source": "madduck-hospital/table.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_cabinet_counter.glb",
+      "sha256": "34f268a8c49dd750",
+      "triangles": 4654,
+      "bytes": 80136,
+      "source": "madduck-hospital/cabinet_1.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_cabinet_low.glb",
+      "sha256": "463486bed238e7e7",
+      "triangles": 2078,
+      "bytes": 38024,
+      "source": "madduck-hospital/cabinet_2.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_cabinet_drawers.glb",
+      "sha256": "0632013dfd7bd45a",
+      "triangles": 2836,
+      "bytes": 49456,
+      "source": "madduck-hospital/cabinet_3.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_wheelchair.glb",
+      "sha256": "eeef56b4e650a72d",
+      "triangles": 4135,
+      "bytes": 263052,
+      "source": "madduck-hospital/wheel_chair.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_iv_stand.glb",
+      "sha256": "03a7da24a5439272",
+      "triangles": 3524,
+      "bytes": 98112,
+      "source": "madduck-hospital/IV_Bag_holder.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_iv_bag.glb",
+      "sha256": "95076de4a6f75fa4",
+      "triangles": 1326,
+      "bytes": 26312,
+      "source": "madduck-hospital/IV_Bag.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_magazine.glb",
+      "sha256": "a31c794d64d49270",
+      "triangles": 12,
+      "bytes": 1884,
+      "source": "madduck-hospital/Magazine1.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_exit_sign.glb",
+      "sha256": "1cc5904f8eaba479",
+      "triangles": 32,
+      "bytes": 2604,
+      "source": "madduck-hospital/Exit_sign.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
+      ]
+    },
+    {
+      "file": "props/hp_ceiling_light.glb",
+      "sha256": "d82e5fd2689c715b",
+      "triangles": 288,
+      "bytes": 8280,
+      "source": "madduck-hospital/ceiling_light.fbx",
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "untextured materials given flat colours (per material, some pieces banded by height)"
       ]
     },
     {

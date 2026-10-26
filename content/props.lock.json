@@ -7354,6 +7354,331 @@
       "triangles": 468,
       "bytes": 17636,
       "sha256": "66af409d76df08fc"
+    },
+    {
+      "file": "props/hp_floor_tile.glb",
+      "source": "madduck-hospital",
+      "src": "floor_tile_1.fbx",
+      "triangles": 12,
+      "bytes": 1740,
+      "sha256": "5fcb251168afc314",
+      "size": [
+        3,
+        0.15,
+        3
+      ]
+    },
+    {
+      "file": "props/hp_floor_tile_blue.glb",
+      "source": "madduck-hospital",
+      "src": "floor_tile_2.fbx",
+      "triangles": 12,
+      "bytes": 1740,
+      "sha256": "05b331f175106901",
+      "size": [
+        3,
+        0.15,
+        3
+      ]
+    },
+    {
+      "file": "props/hp_ceiling_tile.glb",
+      "source": "madduck-hospital",
+      "src": "ceiling_tile.fbx",
+      "triangles": 12,
+      "bytes": 1796,
+      "sha256": "d900f0d36db8cef6",
+      "size": [
+        3,
+        0.15,
+        3
+      ]
+    },
+    {
+      "file": "props/hp_wall.glb",
+      "source": "madduck-hospital",
+      "src": "tile_wall.fbx",
+      "triangles": 252,
+      "bytes": 8616,
+      "sha256": "afa83eeab3a2111f",
+      "size": [
+        3,
+        3.75,
+        0.266
+      ]
+    },
+    {
+      "file": "props/hp_wall_half.glb",
+      "source": "madduck-hospital",
+      "src": "tile_wall_half.fbx",
+      "triangles": 252,
+      "bytes": 8628,
+      "sha256": "ae5b1804fd3bc03e",
+      "size": [
+        1.5,
+        3.75,
+        0.266
+      ]
+    },
+    {
+      "file": "props/hp_wall_window.glb",
+      "source": "madduck-hospital",
+      "src": "tile_window.fbx",
+      "triangles": 618,
+      "bytes": 18400,
+      "sha256": "99e1acd35d39feb7",
+      "size": [
+        3,
+        3.75,
+        0.266
+      ]
+    },
+    {
+      "file": "props/hp_doorway.glb",
+      "source": "madduck-hospital",
+      "src": "tile_doorway_1.fbx",
+      "triangles": 1056,
+      "bytes": 28852,
+      "sha256": "d9ca4b895928fc67",
+      "size": [
+        3,
+        3.75,
+        0.28
+      ]
+    },
+    {
+      "file": "props/hp_doorway_wide.glb",
+      "source": "madduck-hospital",
+      "src": "tile_doorway_2.fbx",
+      "triangles": 1056,
+      "bytes": 28804,
+      "sha256": "46ab2ecbe3eb914b",
+      "size": [
+        4.5,
+        3.75,
+        0.28
+      ]
+    },
+    {
+      "file": "props/hp_wall_corner.glb",
+      "source": "madduck-hospital",
+      "src": "tile_corner.fbx",
+      "triangles": 380,
+      "bytes": 11984,
+      "sha256": "c9f3fc19648f88c7",
+      "size": [
+        2.983,
+        3.75,
+        2.983
+      ]
+    },
+    {
+      "file": "props/hp_pillar.glb",
+      "source": "madduck-hospital",
+      "src": "pillar.fbx",
+      "triangles": 452,
+      "bytes": 12272,
+      "sha256": "cd8962184a184131",
+      "size": [
+        0.655,
+        3.75,
+        0.655
+      ]
+    },
+    {
+      "file": "props/hp_door.glb",
+      "source": "madduck-hospital",
+      "src": "door_1.fbx",
+      "triangles": 2880,
+      "bytes": 49960,
+      "sha256": "4853fe344ac16112",
+      "size": [
+        1.499,
+        3.002,
+        0.232
+      ]
+    },
+    {
+      "file": "props/hp_door_swing.glb",
+      "source": "madduck-hospital",
+      "src": "door_2.fbx",
+      "triangles": 928,
+      "bytes": 17372,
+      "sha256": "f7d3c8d255cfb4f6",
+      "size": [
+        1.499,
+        3.002,
+        0.085
+      ]
+    },
+    {
+      "file": "props/hp_bed.glb",
+      "source": "madduck-hospital",
+      "src": "bed.fbx",
+      "triangles": 4185,
+      "bytes": 268948,
+      "sha256": "b6de7c2ac6803e3c",
+      "size": [
+        1.018,
+        0.85,
+        2.31
+      ]
+    },
+    {
+      "file": "props/hp_bench.glb",
+      "source": "madduck-hospital",
+      "src": "bench.fbx",
+      "triangles": 2572,
+      "bytes": 66828,
+      "sha256": "4a082ee021bed77e",
+      "size": [
+        1.579,
+        0.85,
+        0.526
+      ]
+    },
+    {
+      "file": "props/hp_chair.glb",
+      "source": "madduck-hospital",
+      "src": "chair.fbx",
+      "triangles": 1324,
+      "bytes": 28856,
+      "sha256": "dbed69bf65dae7bb",
+      "size": [
+        0.584,
+        1,
+        0.691
+      ]
+    },
+    {
+      "file": "props/hp_table.glb",
+      "source": "madduck-hospital",
+      "src": "table.fbx",
+      "triangles": 940,
+      "bytes": 23792,
+      "sha256": "220b0e9e6df84587",
+      "size": [
+        1.798,
+        0.78,
+        1.208
+      ]
+    },
+    {
+      "file": "props/hp_cabinet_counter.glb",
+      "source": "madduck-hospital",
+      "src": "cabinet_1.fbx",
+      "triangles": 4654,
+      "bytes": 80136,
+      "sha256": "34f268a8c49dd750",
+      "size": [
+        2.155,
+        0.92,
+        0.836
+      ]
+    },
+    {
+      "file": "props/hp_cabinet_low.glb",
+      "source": "madduck-hospital",
+      "src": "cabinet_2.fbx",
+      "triangles": 2078,
+      "bytes": 38024,
+      "sha256": "463486bed238e7e7",
+      "size": [
+        0.961,
+        0.62,
+        0.464
+      ]
+    },
+    {
+      "file": "props/hp_cabinet_drawers.glb",
+      "source": "madduck-hospital",
+      "src": "cabinet_3.fbx",
+      "triangles": 2836,
+      "bytes": 49456,
+      "sha256": "0632013dfd7bd45a",
+      "size": [
+        0.661,
+        0.8,
+        0.547
+      ]
+    },
+    {
+      "file": "props/hp_wheelchair.glb",
+      "source": "madduck-hospital",
+      "src": "wheel_chair.fbx",
+      "triangles": 4135,
+      "bytes": 263052,
+      "sha256": "eeef56b4e650a72d",
+      "size": [
+        0.707,
+        0.95,
+        1.042
+      ]
+    },
+    {
+      "file": "props/hp_iv_stand.glb",
+      "source": "madduck-hospital",
+      "src": "IV_Bag_holder.fbx",
+      "triangles": 3524,
+      "bytes": 98112,
+      "sha256": "03a7da24a5439272",
+      "size": [
+        0.603,
+        1.9,
+        0.598
+      ]
+    },
+    {
+      "file": "props/hp_iv_bag.glb",
+      "source": "madduck-hospital",
+      "src": "IV_Bag.fbx",
+      "triangles": 1326,
+      "bytes": 26312,
+      "sha256": "95076de4a6f75fa4",
+      "size": [
+        0.424,
+        1.108,
+        0.248
+      ]
+    },
+    {
+      "file": "props/hp_magazine.glb",
+      "source": "madduck-hospital",
+      "src": "Magazine1.fbx",
+      "triangles": 12,
+      "bytes": 1884,
+      "sha256": "a31c794d64d49270",
+      "size": [
+        0.202,
+        0.01,
+        0.278
+      ]
+    },
+    {
+      "file": "props/hp_exit_sign.glb",
+      "source": "madduck-hospital",
+      "src": "Exit_sign.fbx",
+      "triangles": 32,
+      "bytes": 2604,
+      "sha256": "1cc5904f8eaba479",
+      "size": [
+        0.424,
+        0.283,
+        0.047
+      ]
+    },
+    {
+      "file": "props/hp_ceiling_light.glb",
+      "source": "madduck-hospital",
+      "src": "ceiling_light.fbx",
+      "triangles": 288,
+      "bytes": 8280,
+      "sha256": "d82e5fd2689c715b",
+      "size": [
+        0.608,
+        0.062,
+        0.608
+      ]
     }
   ]
 }

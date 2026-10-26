@@ -7,7 +7,12 @@
 // - "Bestiary - Dungeon Monsters Kit[Standard]" (Quaternius Asset License v1.0:
 //   the raw files may not be redistributed, so they never go in the repo; only
 //   these processed, game-ready models ship inside the game),
-// - "Modular SciFi MegaKit[Standard]" (CC0).
+// - "Modular SciFi MegaKit[Standard]" (CC0),
+// - "Zombie by @Quaternius" (CC0; the download's own folder name).
+//
+// A creature whose download is not in the directory is kept as built (its file
+// must still match content/creatures.lock.json), so one pack can be rebuilt
+// without the others.
 //
 // What it does:
 // - Imp and Puglin are rigged to the same humanoid skeleton naming as our
@@ -17,6 +22,10 @@
 //   the rig's rest pose; the hips' motion is scaled to the creature's leg length.
 // - The three aliens keep their own spine-chain skeletons and their one idle
 //   clip; the game adds walk, attack and death motion procedurally.
+// - The zombie is an FBX with its own rig and clips (idle, walk, run, bite,
+//   crawl): converted with tools/content/fbx.mjs, its clips renamed to ours
+//   (the bite trimmed to its lunge), its 32 px palette texture embedded as it
+//   is. It has no death clip; the game drops it procedurally.
 // - Meshes are simplified with meshoptimizer, textures downscaled to JPEGs and
 //   embedded, metal/roughness maps dropped.
 // Outputs go to packages/client/public/creatures and content/creatures.lock.json,
@@ -26,11 +35,12 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Logger, NodeIO } from '@gltf-transform/core';
+import { Logger, NodeIO, TextureInfo } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { dedup, prune, simplify, weld } from '@gltf-transform/functions';
+import { dedup, prune, resample, simplify, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
+import { fbxRiggedToGlb } from './fbx.mjs';
 
 await MeshoptSimplifier.ready;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -42,20 +52,22 @@ if (!downloads) throw new Error('usage: prepare-creatures.mjs <downloads dir>');
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 const quiet = new Logger(Logger.Verbosity.WARN);
 
-/** The folder of an extracted download: directly under the downloads dir or one level down. */
+/** The folder of an extracted download: directly under the downloads dir or one level down (null: not there). */
 function downloadDir(folder) {
   const direct = join(downloads, folder);
   if (existsSync(direct)) return direct;
   for (const d of readdirSync(downloads, { withFileTypes: true })) {
     if (d.isDirectory() && existsSync(join(downloads, d.name, folder))) return join(downloads, d.name, folder);
   }
-  throw new Error(`${folder} not found in ${downloads}`);
+  return null;
 }
 const BESTIARY = 'Bestiary - Dungeon Monsters Kit[Standard]';
 const SCIFI = 'Modular SciFi MegaKit[Standard]';
+const ZOMBIE = 'Zombie by @Quaternius';
 
 /**
- * The creatures: [our id, pack, file in the download, simplify ratio, rig clips to retarget as [our clip, rig clip]].
+ * The creatures: [our id, pack, file in the download, simplify ratio, rig clips to retarget as [our clip, rig clip],
+ * and for a rigged FBX its own clips as [our clip, its clip, first frame, last frame], its height and palette].
  * Clip names the game looks for: idle, walk, run, attack, hit, death.
  */
 const CREATURES = [
@@ -64,6 +76,15 @@ const CREATURES = [
   ['cyclops', 'quaternius-modular-scifi-megakit', `${SCIFI}/glTF/Aliens/Alien_Cyclop.gltf`, 1, null],
   ['oculus', 'quaternius-modular-scifi-megakit', `${SCIFI}/glTF/Aliens/Alien_Oculichrysalis.gltf`, 0.6, null],
   ['scolitex', 'quaternius-modular-scifi-megakit', `${SCIFI}/glTF/Aliens/Alien_Scolitex.gltf`, 0.5, null],
+  [
+    'zombie',
+    'quaternius-zombie',
+    `${ZOMBIE}/FBX/Zombie.fbx`,
+    1,
+    null,
+    // The bite lunges in over its first 1.8 s (then holds and backs off for three more): that part is the attack.
+    { clips: [['idle', 'ZombieIdle'], ['walk', 'ZombieWalk'], ['run', 'ZombieRun'], ['attack', 'ZombieBite', 0, 43]], height: 1.8, palette: `${ZOMBIE}/Blends/ZombieTexture.png` },
+  ],
 ];
 
 // ---------------------------------------------------------------- quaternions [x, y, z, w]
@@ -163,25 +184,49 @@ const triangles = (doc) => doc.getRoot().listMeshes().reduce((n, m) => n + m.lis
 
 // ---------------------------------------------------------------- main
 
-rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
+const oldLock = existsSync(LOCK) ? JSON.parse(readFileSync(LOCK, 'utf8')) : { files: [] };
 const rig = await io.read(RIG);
 const lock = { $comment: 'Generated by tools/content/prepare-creatures.mjs. Do not edit by hand.', files: [] };
-for (const [id, pack, src, ratio, clips] of CREATURES) {
+for (const [id, pack, src, ratio, clips, fbx] of CREATURES) {
   const folder = src.split('/')[0];
-  const doc = await readSource(join(downloadDir(folder), src.slice(folder.length + 1)));
-  await bakeTextures(doc);
+  const dir = downloadDir(folder);
+  const file = `creatures/${id}.glb`;
+  if (!dir) {
+    // Not rebuilding this one: keep it as built.
+    const was = oldLock.files.find((f) => f.file === file);
+    const path = join(OUT, `${id}.glb`);
+    if (!was || !existsSync(path) || createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 16) !== was.sha256) throw new Error(`${folder} not found in ${downloads}, and ${file} is not built as content/creatures.lock.json records`);
+    console.log(`${`${id}.glb`.padEnd(16)} kept (no ${folder} in the downloads)`);
+    lock.files.push(was);
+    continue;
+  }
+  const path = join(dir, src.slice(folder.length + 1));
+  let doc;
+  if (fbx) {
+    doc = await io.readBinary(await fbxRiggedToGlb(path, fbx));
+    doc.setLogger(quiet);
+    // Its palette (a 32 px strip of flat colours) goes in as it is, sampled without blur.
+    const tex = doc.createTexture('palette').setImage(readFileSync(join(downloadDir(fbx.palette.split('/')[0]), fbx.palette.slice(fbx.palette.indexOf('/') + 1)))).setMimeType('image/png');
+    for (const mat of doc.getRoot().listMaterials()) {
+      mat.setBaseColorTexture(tex).setBaseColorFactor([1, 1, 1, 1]).setMetallicFactor(0).setRoughnessFactor(0.85);
+      mat.getBaseColorTextureInfo().setMagFilter(TextureInfo.MagFilter.NEAREST).setMinFilter(TextureInfo.MinFilter.NEAREST);
+    }
+  } else {
+    doc = await readSource(path);
+    await bakeTextures(doc);
+  }
   if (clips) {
     // Only our clips ship.
     for (const a of doc.getRoot().listAnimations()) a.dispose();
     retarget(rig, doc, clips);
-  } else {
+  } else if (!fbx) {
     const [idle, ...rest] = doc.getRoot().listAnimations();
     idle.setName('idle');
     for (const a of rest) a.dispose();
   }
   for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) for (const a of ['TANGENT', 'TEXCOORD_1', 'COLOR_0']) p.setAttribute(a, null);
-  await doc.transform(weld(), dedup(), prune());
+  await doc.transform(weld(), dedup(), ...(fbx ? [resample()] : []), prune());
   if (ratio < 1) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.004, lockBorder: true }), prune());
   doc.getRoot().getAsset().generator = 'tiletrigger prepare-creatures';
   const glb = await io.writeBinary(doc);
@@ -189,7 +234,9 @@ for (const [id, pack, src, ratio, clips] of CREATURES) {
   const tris = triangles(doc);
   const names = doc.getRoot().listAnimations().map((a) => a.getName());
   console.log(`${`${id}.glb`.padEnd(16)} ${String(tris).padStart(6)} tris ${(glb.byteLength / 1024).toFixed(0).padStart(5)} KB  clips: ${names.join(', ')}`);
-  lock.files.push({ file: `creatures/${id}.glb`, id, source: pack, src: src.split('/').at(-1), clips: names, triangles: tris, bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) });
+  lock.files.push({ file, id, source: pack, src: src.split('/').at(-1), clips: names, triangles: tris, bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) });
 }
+// Files of creatures no longer listed.
+for (const f of readdirSync(OUT)) if (!lock.files.some((x) => x.file === `creatures/${f}`)) rmSync(join(OUT, f));
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
 console.log(`wrote ${lock.files.length} creatures and content/creatures.lock.json`);

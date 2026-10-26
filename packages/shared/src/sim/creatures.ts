@@ -11,6 +11,13 @@ import type { Vec3 } from '../math.ts';
  */
 export type CreatureKind = (typeof CREATURE_ROLES)[number];
 export { CREATURE_ROLES };
+/**
+ * Every creature model: the creature roles, and the zombie's body (Quaternius'
+ * Zombie, with its own rig and clips). The zombie role itself stays a plain
+ * NPC (soldier stats, no creature flag); most zombies are drawn with this
+ * body, the rest as shambling soldiers.
+ */
+export type CreatureModel = CreatureKind | 'zombie';
 
 export interface CreatureSpec {
   /** Built model, relative to the client's public folder (tools/content/prepare-creatures.mjs). */
@@ -25,15 +32,26 @@ export interface CreatureSpec {
    * are animated procedurally by the client.
    */
   body: 'humanoid' | 'alien';
+  /**
+   * Its own clips' natural ground speeds (m/s, at this scale) and the speed it
+   * breaks into its run (humanoids with clips of their own; the retargeted
+   * rig clips go by the rig's speeds and the hip height).
+   */
+  gait?: { walk: number; run: number; runFrom: number };
 }
 
-export const CREATURE_SPECS: Record<CreatureKind, CreatureSpec> = {
+export const CREATURE_SPECS: Record<CreatureModel, CreatureSpec> = {
   imp: { model: 'creatures/imp.glb', scale: 1, hover: 0, body: 'humanoid' },
   puglin: { model: 'creatures/puglin.glb', scale: 1.2, hover: 0, body: 'humanoid' },
   cyclops: { model: 'creatures/cyclops.glb', scale: 1, hover: 0.25, body: 'alien' },
   oculus: { model: 'creatures/oculus.glb', scale: 1, hover: 0.5, body: 'alien' },
   scolitex: { model: 'creatures/scolitex.glb', scale: 0.75, hover: 0, body: 'alien' },
+  // A slow shamble that breaks into a lurching run; no death clip (it drops like the aliens).
+  zombie: { model: 'creatures/zombie.glb', scale: 1, hover: 0, body: 'humanoid', gait: { walk: 0.3, run: 3, runFrom: 1.4 } },
 };
+
+/** Which zombies get the Quaternius body: two in three; the rest shamble on the soldiers' rig. */
+export const zombieHasCreatureBody = (id: number): boolean => id % 3 !== 0;
 
 export const isCreature = (role: string): role is CreatureKind => (CREATURE_ROLES as readonly string[]).includes(role);
 
