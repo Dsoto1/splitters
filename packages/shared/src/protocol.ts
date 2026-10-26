@@ -47,6 +47,8 @@ export interface PlayerSnapshot {
   em?: 1;
   /** Sprinting this tick. */
   sr?: 1;
+  /** Classes: the player's class (index into CLASS_IDS). */
+  cl?: number;
 }
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */
@@ -75,6 +77,13 @@ export interface PrivateState {
   ks?: number;
   /** Stamina for sprinting, when not full: [stamina ×1000, rest ticks, winded 0/1]. */
   sta?: [number, number, number];
+  /**
+   * Classes: [class (index into CLASS_IDS), class asked for at the next spawn, ability 0-100 (charge, energy
+   * or readiness), ability active 0/1, air jumps used + 4 while jump is held (for predicting double jumps)].
+   */
+  cl?: [number, number, number, number, number];
+  /** Disc Arena: the power disc you hold (index into DISC_POWERS) and throws left. */
+  dp?: [number, number];
 }
 
 export const STATUS_BURN = 1;
@@ -85,11 +94,16 @@ export const STATUS_CHILL = 16;
 /** Not statuses, but carried in the same bits for drawing: jetpack firing, swimming. */
 export const FX_JET = 32;
 export const FX_SWIM = 64;
+/** Classes: cloaked (drawn nearly invisible to enemies). */
+export const FX_CLOAK = 128;
+/** Classes: overcharged (can't be hurt for a few seconds). */
+export const FX_OVERCHARGE = 256;
 
 /**
  * A turret, sentry or vehicle: [map entity index, x, y, z, yaw, aim yaw, aim
  * pitch, health %, state bits (MOUNT_FLAG_ALIVE, MOUNT_FLAG_WRECK,
- * MOUNT_FLAG_BURNING; 0 = gone), ...occupant slot per seat (-1 = empty)].
+ * MOUNT_FLAG_BURNING; 0 = gone), ...occupant slot per seat (-1 = empty)]. A
+ * sentry a player built (Classes) has index BUILT_MOUNT_BASE + their slot.
  */
 export type MountSnapshot = number[];
 /** Deployed cover (sandbags): [id, x, y (ground), z, yaw, health %]. */
@@ -115,6 +129,8 @@ export type GameEvent =
   | { e: 'explode'; s: number; p: Tuple3; r: number; m?: number }
   /** A vehicle hit something hard (another vehicle, a wreck, a turret, a person): `n` 0..1 how hard. */
   | { e: 'crash'; p: Tuple3; n: number }
+  /** Disc Arena: `s`'s disc struck `t` and knocked them about (no damage). */
+  | { e: 'knock'; s: number; t: number }
   | { e: 'pickup'; s: number; id: string; item: string }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit. */ hs?: 1 }
   | { e: 'spawn'; s: number }

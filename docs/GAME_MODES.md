@@ -9,6 +9,10 @@
 | Elimination | `core.elim` | 2–8 | rounds won (default 5) | what TDM needs |
 | Co-op | `core.coop` | players vs NPCs | none (logic ends it) | NPC encounters |
 | Fort Wars | `core.forts` | 2 | captures (default 3) | a **Flag Base** per team (any CTF map) |
+| Disc Arena | `core.discs` | none | knock-offs (default 10) | listed in the map's modes (decks over a void) |
+
+**Classes** isn't a mode but a match setting for any mode with weapons
+(see below).
 
 Teams, team sizes and team spawns work the same in every team mode (see
 [TEAMS.md](TEAMS.md)). A team spawns on its own spawn points if the map has
@@ -167,6 +171,90 @@ of zombies (`sim/zombies.ts`).
   "Follow me!" / "Hold here!" orders work as in co-op. Quick start
   (`?offline=<map>&gamemode=core.zombies`) brings three bots.
 
+## Classes
+
+A match setting (`MatchRules.classes`, Arcade **More rules → Classes**) for
+every mode with weapons: Deathmatch, TDM, CTF, KOTH, Elimination, Bomb and
+Hostage (not co-op, Zombies, Fort Wars, or spears/discs only). Everyone plays one of
+nine classes (`sim/classes.ts`), each with its own loadout of existing
+weapons, health and speed. Classes replace character sizes' health and speed
+(sizes still set the hitbox).
+
+| # | Class | Role | HP | Speed | Loadout (held last) | G |
+|---|---|---|---|---|---|---|
+| 1 | Runner | Offence | 75 | 1.3 | Knife, Machine Pistol, Sawed-Off; **double jump** | — |
+| 2 | Rocketeer | Offence | 130 | 0.86 | Knife, Shotgun, Blast Rockets (rocket-jump) | frag |
+| 3 | Torch | Offence | 115 | 1.0 | Knife, Shotgun, Oil Slicker, Flamethrower | — |
+| 4 | Breacher | Defence | 115 | 0.93 | Knife, Pistol, Grenade Launcher | 3 proximity mines |
+| 5 | Bulwark | Defence | 200 | 0.77 | Knife, Shotgun, Spin Gun | — |
+| 6 | Mechanic | Defence | 100 | 1.0 | Knife, Pistol, Shotgun | **build sentry** |
+| 7 | Medic | Support | 100 | 1.07 | Knife, Nailgun, Medi-Beam | **overcharge** |
+| 8 | Marksman | Support | 85 | 1.0 | Knife, SMG, Railgun (charged) | — |
+| 9 | Shade | Support | 85 | 1.07 | Hand Cannon, Knife (backstab kills) | **cloak** |
+
+- **Class screen.** Opens when you join and whenever you're down; **L** or
+  **,** opens and closes it. Number keys 1–9 or a click pick a class. While
+  you're still at your spawn point and unhurt (or in your first 8 s), the
+  new class's loadout replaces yours at once; otherwise it starts at your
+  next spawn. The pick travels as `PlayerInput.say = CLASS_SAY_BASE + index`,
+  so it works over every transport.
+- **Limits.** `MatchRules.classLimit` caps players per team in one class
+  (Arcade: Max 1 / Max 2). Full classes are dimmed on the class screen.
+- **Abilities (G, instead of a grenade).**
+  - Mechanic: builds the map's **sentry gun** mount on the floor ahead
+    (one per Mechanic; kills are the Mechanic's). It is also a
+    **dispenser**: teammates within 3.5 m get 10 HP/s and ammo each second.
+    A destroyed sentry's kit comes back after 12 s. Built sentries go out in
+    snapshots as `BUILT_MOUNT_BASE + slot`; the client draws them from the
+    snapshot alone.
+  - Medic: the Medi-Beam heals the teammate in your sights (30 HP/s, 9 m);
+    300 HP of healing fills the **overcharge**: 6 s when neither you nor the
+    teammate you last healed can be hurt.
+  - Shade: **cloak** for up to 9 s (recharges in 10 s); firing breaks it.
+    Cloaked Shades are almost invisible to enemies (`FX_CLOAK`), and bots
+    treat them like players hidden in a bush. A knife hit from behind kills.
+- **HUD.** Your class and its ability state sit over the vitals; the
+  scoreboard shows everyone's class (`PlayerSnapshot.cl`); your own class
+  and ability charge come in `PrivateState.cl` (which also lets the client
+  predict the Runner's double jump and class speeds).
+- **Bots** take whatever their team has fewest of (Rocketeer, Medic,
+  Bulwark, Mechanic, Runner, Torch, Breacher, Marksman, Shade), within the
+  limit. Mechanics build at the objective (or wherever they are after 10 s,
+  or in a fight); Medics follow the teammate who needs them most, beam them
+  when they're hurt and overcharge in a fight; Shades cloak while moving in.
+- Quick start: `?offline=twin_spires&gamemode=core.ctf&classes=1`
+  (`classes=2`: at most two per class per team).
+
+## Disc Arena
+
+Ricochet-style free-for-all (`core.discs`, `sim/discs.ts`) on maps that list
+it. Everyone holds the **Arena Disc**: three discs that fly straight, bounce
+off walls (up to six times) and come back to you after 2.4 s or when they hit
+someone. Discs do **no damage**: a hit shoves the player away (and a little
+up). Fall into the void within 6 s of an enemy's hit and it's **their point**;
+fall on your own and you lose one. Your own discs never hit you, and discs
+glance off anyone who spawned (or started the round) in the last 2 s.
+
+- **Power discs** (pickups, `core.disc_fast`/`triple`/`split`/`freeze`) are
+  good for your next three throws: fast (1.7× speed, a harder shove), triple
+  (three discs in a fan; only the middle one comes back), splitting (it
+  becomes three at its first bounce) and freeze (freezes whoever it hits
+  for a moment, with only a nudge). The HUD shows the power and throws left.
+- No weapon, ammo or grenade pickups, no kill streaks. **Weapons: Discs
+  only** in the Arcade plays any mode (TDM too) with the same discs.
+- **Bots** lead their throws like any projectile, sidestep and hop discs
+  about to hit them (never off the edge), stop at edges, leave jump pad
+  flights alone, and steer back toward the deck when knocked out over the
+  void. In 3 simulated minutes of 6 bots on Grid Rings about 40 knock-offs
+  are credited and bots fall on their own about once.
+- **Grid Rings** (`maps/grid_rings.json`, script
+  `packages/server/src/tools/maps/grid_rings.ts`) is the demo arena: a hub,
+  four rings with bounce walls and four towers with the power discs, all
+  dark circuit decks rimmed in light under a night sky, joined only by jump
+  pads.
+- MapMaker: **Map properties → Mode → Disc Arena**. A map listing only Disc
+  Arena isn't asked for health pickups.
+
 ## Map requirements and MapMaker steps
 
 Flag bases and hills are map entities (map format v11): `flag` has `team` and
@@ -217,6 +305,10 @@ low-scoring CTF map: its bases are 108 m apart on a sniper causeway.
 
 ## Code
 
+- `sim/classes.ts` (class data, `ClassPlay`: spawn loadouts, abilities, damage
+  rules, dispensers, class bots) and `sim/discs.ts` (power discs, throws,
+  splitting, bots' dodging and edge sense); `match.ts` calls them at a few
+  hook points.
 - `packages/shared/src/sim/modes/`: `types.ts` (the `ModeLogic` hooks),
   `ctf.ts`, `ctfBots.ts`, `koth.ts`, `elim.ts`. `match.ts` calls them on
   step, kill, leave, round start, snapshot, team scores, vehicle entry and

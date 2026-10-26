@@ -21,7 +21,7 @@ const SHARDS = [
   ['maps', 'online', 'webgpu'],
   ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby'],
   ['vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'zombies'],
-  ['setpieces', 'physicsfx', 'teams', 'ctf', 'forts', 'arsenal', 'vehicles'],
+  ['setpieces', 'physicsfx', 'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'classes'],
 ];
 const T = (ms) => ms * SLOW;
 let failures = 0;
@@ -923,6 +923,69 @@ async function zombiesFlow(browser) {
   await page.context().close();
 }
 
+/** Classes on Twin Spires CTF (class screen, picking a class, bots' classes) and Disc Arena on Grid Rings. */
+async function classesFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=twin_spires&gamemode=core.ctf&classes=1`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(60000) });
+  const menu = await page.evaluate(() => {
+    const el = document.getElementById('class-menu');
+    return el && !el.hidden ? el.querySelectorAll('button').length : 0;
+  });
+  check(menu === 9, `the class screen opens on joining, with nine classes (${menu})`);
+  // Pick the Bulwark (5) with the keyboard: still at the spawn, so it swaps at once.
+  await page.keyboard.press('Digit5');
+  await page.waitForFunction(() => window.__match.slots[window.__cs.slot]?.cls?.id === 'bulwark', null, { timeout: T(10000) }).catch(() => {});
+  const me = await page.evaluate(() => {
+    const c = window.__match.slots[window.__cs.slot];
+    return { cls: c.cls?.id, hp: c.maxHealth, menu: document.getElementById('class-menu')?.hidden };
+  });
+  check(me.cls === 'bulwark' && me.hp === 200 && me.menu, `picking a class swaps your loadout and closes the screen (${me.cls}, ${me.hp} HP)`);
+  await page.waitForFunction(() => /BULWARK/.test(document.getElementById('powerups')?.textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
+  check(await page.evaluate(() => /BULWARK/.test(document.getElementById('powerups')?.textContent ?? '')), 'the HUD names your class');
+  const bots = await page.evaluate(() => window.__match.combatants().filter((c) => c.bot).map((c) => c.cls?.id));
+  check(bots.length > 4 && bots.every(Boolean) && new Set(bots).size >= 4, `bots take a mix of classes (${bots.join(', ')})`);
+  // Run the match on a while: a Mechanic bot builds its sentry, and the client draws it.
+  await page.evaluate(() => {
+    for (let i = 0; i < 60 * 20; i++) {
+      window.__match.step();
+      const c = window.__match.slots[window.__cs.slot];
+      if (c) c.health = c.maxHealth;
+    }
+  });
+  await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name)), null, { timeout: T(10000) }).catch(() => {});
+  check(await page.evaluate(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name))), 'a Mechanic bot builds a sentry and it is drawn');
+  await page.keyboard.down('Tab');
+  await page.waitForTimeout(400);
+  const board = await page.evaluate(() => document.getElementById('scoreboard')?.textContent ?? '');
+  await page.keyboard.up('Tab');
+  check(/Bulwark/i.test(board), 'the scoreboard shows classes');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+
+  // Disc Arena: discs only, power discs drawn, bots knock each other into the void.
+  const arena = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errs = [];
+  arena.on('pageerror', (e) => errs.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await arena.goto(`${CLIENT}/?offline=grid_rings`);
+  await arena.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match, null, { timeout: T(60000) });
+  const kit = await arena.evaluate(() => [...window.__match.slots[window.__cs.slot].weapons.values()].map((w) => w.def.id));
+  check(kit.length === 1 && kit[0] === 'core.arena_disc', `Disc Arena: you hold arena discs only (${kit.join(', ')})`);
+  const label = await arena.evaluate(() => document.getElementById('mode-label')?.textContent ?? '');
+  check(/Disc Arena/.test(label), `the HUD says Disc Arena (${label})`);
+  const kills = await arena.evaluate(() => {
+    let n = 0;
+    for (let i = 0; i < 60 * 60; i++) n += window.__match.step().filter((e) => e.e === 'kill' && e.killer !== null && e.weapon === 'core.arena_disc').length;
+    return n;
+  });
+  check(kills > 0, `bots knock each other into the void (${kills} in a minute)`);
+  await arena.waitForTimeout(500);
+  check(errs.length === 0, `no page errors (${errs.join('; ')})`);
+  await arena.context().close();
+}
+
 async function vehiclesFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
@@ -1321,7 +1384,7 @@ try {
   const shard = process.env.E2E_SHARD ? SHARDS[Number(process.env.E2E_SHARD.split('/')[0]) - 1] : null;
   if (process.env.E2E_SHARD && !shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
   const only = process.env.E2E_ONLY?.split(',') ?? shard;
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, zombies: zombiesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, zombies: zombiesFlow, classes: classesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
   // Every flow belongs to exactly one shard, so CI's parallel jobs between them run everything.
   const sharded = SHARDS.flat();
   const lost = Object.keys(flows).filter((f) => sharded.filter((x) => x === f).length !== 1);

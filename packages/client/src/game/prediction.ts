@@ -1,4 +1,6 @@
 import {
+  CLASS_DEFS,
+  CLASS_IDS,
   BUTTON_ALT,
   BUTTON_FIRE,
   OIL_TRACTION,
@@ -77,6 +79,8 @@ export class LocalPlayer {
   unarmed = false;
   /** Movement multiplier from status effects (server value). */
   statusSpeed = 1;
+  /** Classes: extra jumps in the air your class has (the Runner's double jump). */
+  airJumps = 0;
   /** Ground hazards from the latest snapshot (oil makes movement slick). */
   zones: readonly ZoneSnapshot[] = [];
   /** Trigger state mirrored from the server rules (semi-auto latch, spin-up, burst). */
@@ -161,7 +165,7 @@ export class LocalPlayer {
   /** Same order as the server: move with the current boost, then count the boost down. */
   private move(state: MoveState, input: PlayerInput): MoveState {
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
-    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity }));
+    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.airJumps ? { airJumps: this.airJumps } : {}) }));
     if (this.jetFuel !== null) this.jetFuel = stepJetFuel(this.jetFuel, !!next.jet);
     if (this.speedTicks > 0) this.speedTicks--;
     return next;
@@ -261,6 +265,7 @@ export class LocalPlayer {
       this.speedTicks = me.sp;
       this.damageTicks = me.dm;
       this.jetFuel = me.jp ?? null;
+      this.airJumps = me.cl ? (CLASS_DEFS[CLASS_IDS[me.cl[0]] ?? 'rocketeer'].airJumps ?? 0) : 0;
       this.reloadTicks = Math.max(0, me.rl - this.pending.length);
       this.raiseTicks = Math.max(0, me.rs - this.pending.length);
     }
@@ -277,6 +282,9 @@ export class LocalPlayer {
       ...(server.vx || server.vz ? { vx: server.vx ?? 0, vz: server.vz ?? 0 } : {}),
       ...(server.sn ? { stance: server.sn } : {}),
       ...(sta ? { ...(sta[0] < 1000 ? { stamina: sta[0] / 1000 } : {}), ...(sta[1] ? { rest: sta[1] } : {}), ...(sta[2] ? { winded: true } : {}) } : {}),
+      // Double jumps already used and whether jump was held, so a replay doesn't jump again.
+      ...(me?.cl && me.cl[4] & 3 ? { airJumps: me.cl[4] & 3 } : {}),
+      ...(me?.cl && me.cl[4] & 4 ? { jumpHeld: true } : {}),
     };
     if (this.alive && !this.mounted) {
       for (const input of this.pending) this.state = this.move(this.state, input);
