@@ -5,12 +5,14 @@ import {
   PROTOCOL_VERSION,
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
+  encodeSnapshots,
   getWeapon,
   initPhysics,
   parseClientMessage,
   sanitizeName,
   weaponCode,
   type BotDifficulty,
+  type CarryOver,
   type GameEvent,
   type MapDocument,
   type MatchRules,
@@ -35,6 +37,8 @@ export interface LocalMatchOptions {
   botFill: number;
   difficulty: BotDifficulty['id'];
   rules?: MatchRules;
+  /** Scenario chains: the score and weapons the local player brings from the previous map. */
+  carry?: CarryOver;
 }
 
 /**
@@ -51,6 +55,11 @@ export class LocalTransport implements Transport {
   private queueInputs?: (inputs: PlayerInput[]) => void;
   private markReady?: () => void;
   private teardown?: () => void;
+  private carryNow?: () => CarryOver;
+  /** What the local player would take into the next map of a chain (score and weapons), or null before the match runs. */
+  carry(): CarryOver | null {
+    return this.stopped ? null : (this.carryNow?.() ?? null);
+  }
   /** Time from start() to the welcome message, for the TEST transition budget. */
   startupMs = 0;
   /** Friends playing in this match (Host game), and the hook that lets them in once it's running. */
@@ -84,6 +93,8 @@ export class LocalTransport implements Transport {
     const rules = this.opts.rules ?? rulesForMap(this.map);
     const match = new Match(this.map, rules, Math.floor(Math.random() * 1e6), { startGate: true });
     const me = match.addHuman(this.opts.name, this.opts.look)!;
+    if (this.opts.carry) match.applyCarry(me, this.opts.carry);
+    this.carryNow = () => match.carryOf(me);
     // Automation hook for browser tests (give weapons, place players).
     (window as unknown as { __match: unknown; __give: (id: string) => void }).__match = match;
     (window as unknown as { __give: (id: string) => void }).__give = (id) => {
@@ -113,15 +124,13 @@ export class LocalTransport implements Transport {
             link.send(JSON.stringify({ t: 'reject', reason: `protocol ${msg.protocol} unsupported (host speaks ${PROTOCOL_VERSION})` }));
             return link.close();
           }
-          const bot = match.combatants().find((c) => c.kind === 'bot');
-          if (match.combatants().length >= MAX_PLAYER_SLOTS && bot) match.remove(bot.slot);
-          const player = match.addHuman(sanitizeName(msg.name), msg.look);
+          // The friend takes over a bot where it stands, on the team that needs a player.
+          const player = bots.join(sanitizeName(msg.name), msg.look, botFill);
           if (!player) {
             link.send(JSON.stringify({ t: 'reject', reason: 'match full' }));
             return link.close();
           }
           r.slot = player.slot;
-          bots.rebalance(botFill);
           link.send(JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() } satisfies ServerMessage));
           rosterToAll();
         } else if (msg.t === 'input' && r.slot !== null) match.queueInputs(r.slot, msg.inputs);
@@ -131,8 +140,8 @@ export class LocalTransport implements Transport {
       link.onClose(() => {
         this.remotes.delete(r);
         if (r.slot === null || this.stopped) return;
-        match.remove(r.slot);
-        bots.rebalance(botFill);
+        // A bot takes their place where they were.
+        bots.leave(r.slot, botFill);
         rosterToAll();
       });
     };
@@ -165,13 +174,10 @@ export class LocalTransport implements Transport {
           const snap = match.snapshot(events);
           onMessage({ t: 'snapshot', ack: me.lastSeq, me: match.privateState(me.slot), ...snap });
           if (this.remotes.size) {
-            // Serialise the shared part once; each guest gets its own ack and private state.
-            const body = JSON.stringify(snap);
-            for (const r of this.remotes) {
-              if (r.slot === null) continue;
-              const mine = match.privateState(r.slot);
-              r.link.send(`{"t":"snapshot","ack":${match.slots[r.slot]?.lastSeq ?? 0},${mine ? `"me":${JSON.stringify(mine)},` : ''}${body.slice(1)}`);
-            }
+            // Serialise the shared part once; each guest gets its own ack, private state and (big matches) nearby players.
+            const guests = [...this.remotes].filter((r): r is { link: RemoteLink; slot: number } => r.slot !== null);
+            const texts = encodeSnapshots(snap, guests.map((r) => ({ slot: r.slot, ack: match.slots[r.slot]?.lastSeq ?? 0, me: match.privateState(r.slot) })));
+            guests.forEach((r, i) => r.link.send(texts[i]!));
           }
           events = [];
         }

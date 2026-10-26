@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GAME_MODES, isGameMode, type GameMode } from '@tiletrigger/shared';
+import { GAME_MODES, isGameMode, parsePlaylist, type GameMode } from '@tiletrigger/shared';
 import { startServer } from './server.ts';
 
 const env = process.env;
@@ -10,16 +12,30 @@ if (difficulty && !['easy', 'normal', 'hard'].includes(difficulty)) throw new Er
 const mode = env.MODE || undefined;
 if (mode && !isGameMode(mode)) throw new Error(`MODE must be one of ${GAME_MODES.join('|')}`);
 
+// PLAYLIST=maps/playlists/night_shift.json plays a scenario chain (its maps in order, each once the one before is won).
+const playlist = env.PLAYLIST ? parsePlaylist(JSON.parse(readFileSync(resolve(env.INIT_CWD ?? process.cwd(), env.PLAYLIST), 'utf8'))) : undefined;
+if (playlist === null) throw new Error(`PLAYLIST ${env.PLAYLIST} is not a valid playlist`);
+
 const server = await startServer({
+  playlist,
   port: Number(env.PORT ?? 7777),
   host: env.HOST,
   map: env.MAP ?? defaultMap,
   botFill: Number(env.BOT_FILL ?? 4),
   botDifficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined,
   mode: mode as GameMode | undefined,
+  // BOT_TAKEBACK=0: a leaving player's slot empties (a fresh bot spawns) instead of a bot taking over where they were.
+  botTakeBack: env.BOT_TAKEBACK !== '0',
+  // LEADERS=on (team leaders) or LEADERS=vip (Leader variant: downing a leader scores extra).
+  leaders: env.LEADERS === 'vip' ? 'vip' : env.LEADERS === 'on' ? true : undefined,
+  name: env.SERVER_NAME,
+  // LAN_DISCOVERY=0 stops answering LAN discovery broadcasts (UDP 7790).
+  lanDiscovery: env.LAN_DISCOVERY !== '0',
   onStats: env.QUIET_STATS ? undefined : (line) => console.log(`[stats] ${line}`),
 });
 console.log(`Tile Trigger server listening on ws://localhost:${server.port}`);
+const lan = server.info().addresses.filter((a) => !a.includes('localhost'));
+if (lan.length) console.log(`On your network, join at: ${lan.join('  ')}  (Online → LAN finds it too)`);
 
 const shutdown = () => {
   void server.close().then(() => process.exit(0));

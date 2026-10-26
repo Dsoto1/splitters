@@ -593,6 +593,17 @@ export class Hud {
     window.setTimeout(() => line.remove(), 5000);
   }
 
+  /** A slot changed hands mid-match: "Ana took over Mildred" (a player joined), or "Mildred took over for Ana" (they left). */
+  takeover(slot: number, to: string, from: string, bot: boolean): void {
+    const line = document.createElement('div');
+    const color = this.team(slot)?.color ?? slotColor(slot);
+    line.className = 'say takeover';
+    line.innerHTML = `<span style="color:${color}">${escapeHtml(to)}</span> took over ${bot ? 'for ' : ''}<span style="color:${color}">${escapeHtml(from)}</span>`;
+    this.feed.prepend(line);
+    while (this.feed.children.length > 5) this.feed.lastChild?.remove();
+    window.setTimeout(() => line.remove(), 6000);
+  }
+
   /** A quick message in the feed: "Name: Enemy spotted!". */
   say(slot: number, text: string): void {
     if (!text) return;

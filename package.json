@@ -11,6 +11,7 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "bench": "pnpm --filter @tiletrigger/server bench",
+    "bench:96": "pnpm --filter @tiletrigger/server bench 96 60 maps/frost_basin.json --mode=core.tdm",
     "validate-map": "pnpm --filter @tiletrigger/server validate-map",
     "e2e": "node e2e/run.mjs",
     "content:build": "node tools/content/build.mjs",

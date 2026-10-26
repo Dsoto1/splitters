@@ -1,4 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { WebSocketServer, type WebSocket } from 'ws';
 import {
@@ -11,18 +14,25 @@ import {
   PROTOCOL_VERSION,
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
+  encodeSnapshots,
   initPhysics,
   loadMap,
   parseClientMessage,
   sanitizeName,
+  isMapId,
+  playlistNext,
   type BotDifficulty,
+  type CarryOver,
+  type Playlist,
   type GameEvent,
   type MapDocument,
   type MatchRules,
   type GameMode,
+  type ServerInfo,
   type ServerMessage,
 } from '@tiletrigger/shared';
 import { BotFiller, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
+import { answerDiscovery, lanAddresses } from './lan.ts';
 import { StatsWindow } from './stats.ts';
 
 export interface ServerOptions {
@@ -30,8 +40,12 @@ export interface ServerOptions {
   host?: string;
   /** Map file path or an already-parsed document. */
   map: string | MapDocument;
-  /** Fill the match with Player Bots up to this many total players. */
+  /** Fill the match with Player Bots up to this many total players (players joining take over bots). */
   botFill: number;
+  /** When a player leaves, a bot takes over where they were (default on); off, a fresh bot spawns instead. */
+  botTakeBack?: boolean;
+  /** Team leaders (team modes): true, or 'vip' for the Leader variant (see MatchRules.leaders). */
+  leaders?: boolean | 'vip';
   botDifficulty?: BotDifficulty['id'];
   rules?: MatchRules;
   /** Play this mode with its default rules (ignored when `rules` is given); default: the map's first mode. */
@@ -41,11 +55,25 @@ export interface ServerOptions {
   startGate?: boolean;
   /** Called once per second with instrumentation. */
   onStats?: (line: string) => void;
+  /** Server name in LAN discovery and /info (default "<map> server"). */
+  name?: string;
+  /**
+   * Scenario chains: play these maps in order, each once the one before is won
+   * (the server starts on the playlist's first map; `map` is then ignored).
+   */
+  playlist?: Playlist;
+  /** Our suite (where "Next map" and playlist IDs are looked up): default the repo's maps/ folder. */
+  mapsDir?: string;
+  /** Answer LAN discovery broadcasts (UDP, LAN_DISCOVERY_PORT unless a port is given). Off by default; main.ts turns it on. */
+  lanDiscovery?: boolean | number;
 }
 
 export interface RunningServer {
   port: number;
-  match: Match;
+  /** The running match (a new one after a scenario chain moves on to the next map). */
+  readonly match: Match;
+  /** What /info and LAN discovery say about this server right now. */
+  info(): ServerInfo;
   close(): Promise<void>;
 }
 
@@ -65,9 +93,30 @@ const HELLO_TIMEOUT_MS = 5000;
 export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   await Promise.all([initPhysics(), initNavigation()]);
 
-  const map = typeof opts.map === 'string' ? readMapFile(opts.map) : opts.map;
+  const mapsDir = opts.mapsDir ?? fileURLToPath(new URL('../../../maps/', import.meta.url));
+  /** A map of our suite by ID, or null: only files in the suite folder, never a path. */
+  const suiteMap = (id: string): MapDocument | null => {
+    const file = join(mapsDir, `${id}.json`);
+    if (!isMapId(id) || !existsSync(file)) return null;
+    try {
+      return readMapFile(file);
+    } catch {
+      return null;
+    }
+  };
+  let playIndex = 0;
+  const first = opts.playlist ? suiteMap(opts.playlist.maps[0]!.map) : null;
+  if (opts.playlist && !first) throw new Error(`playlist ${opts.playlist.id}: map ${opts.playlist.maps[0]!.map} is not in our suite`);
+  let map = first ?? (typeof opts.map === 'string' ? readMapFile(opts.map) : opts.map);
   if (opts.mode && !opts.rules && !mapCanRun(map, opts.mode)) throw new Error(`${map.metadata.name} can't host ${MODE_LABELS[opts.mode]} (it has no flag bases or hills for it)`);
-  const match = new Match(map, opts.rules ?? (opts.mode ? rulesForMode(map, opts.mode) : rulesForMap(map)), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
+  /** Rules for a chain's map: the playlist entry's mode, else co-op where the map has it, else the map's own. */
+  const chainRules = (m: MapDocument, mode?: GameMode): MatchRules => {
+    const want = mode ?? (mapCanRun(m, 'core.coop') ? 'core.coop' : undefined);
+    return want && mapCanRun(m, want) ? rulesForMode(m, want) : rulesForMap(m);
+  };
+  const baseRules = first ? chainRules(first, opts.playlist!.maps[0]!.mode) : (opts.rules ?? (opts.mode ? rulesForMode(map, opts.mode) : rulesForMap(map)));
+  const withLeaders = (r: MatchRules): MatchRules => (opts.leaders ? { ...r, leaders: opts.leaders } : r);
+  let match = new Match(map, withLeaders(baseRules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
   for (const issue of validateNavigation(map, match.nav)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
   const difficulty = BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'];
   const botFill = Math.min(opts.botFill, MAX_PLAYER_SLOTS);
@@ -75,7 +124,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const clients = new Set<Client>();
   const stats = new StatsWindow();
   let pendingEvents: GameEvent[] = [];
-  const bots = new BotFiller(match, difficulty);
+  let bots = new BotFiller(match, difficulty, { takeBack: opts.botTakeBack });
+  /** Scenario chains: what each player (by name) takes into the next map, until they rejoin. */
+  let carried = new Map<string, CarryOver>();
+  /** A won map with somewhere to go: travel at this tick (late in the intermission). */
+  let travel: { atTick: number; map: MapDocument; rules: MatchRules; index: number; carry: { score: boolean; loadout: boolean } } | null = null;
 
   const send = (c: Client, msg: ServerMessage | string) => {
     const data = typeof msg === 'string' ? msg : JSON.stringify(msg);
@@ -93,7 +146,22 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
 
   // Snapshots are JSON with lots of repetition: compressing them cuts the traffic several times over
   // (browsers decompress on their own). Small messages aren't worth it.
-  const wss = new WebSocketServer({ port: opts.port, host: opts.host, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
+  // One port for both: WebSocket play, and plain HTTP GET /info so browsers on the LAN can find the game.
+  const http = createServer((req, res) => {
+    const path = new URL(req.url ?? '/', 'http://server').pathname;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Chrome asks before a public page may reach a private address (Private Network Access).
+    res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Cache-Control', 'no-store');
+    if (req.method === 'OPTIONS') return void res.writeHead(204).end();
+    if (req.method === 'GET' && path === '/info') {
+      res.setHeader('Content-Type', 'application/json');
+      return void res.end(JSON.stringify(info()));
+    }
+    res.writeHead(404, { 'Content-Type': 'text/plain' }).end('Tile Trigger game server: join with the game (Online → Server), or GET /info.');
+  });
+  const wss = new WebSocketServer({ server: http, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
 
   wss.on('connection', (ws) => {
     const client: Client = { ws, slot: null, bytesOut: 0 };
@@ -112,17 +180,20 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           ws.close(4001, 'protocol');
           return;
         }
-        // Make room by dropping a bot if the server is full of them.
-        const bot = match.combatants().find((c) => c.kind === 'bot');
-        if (match.combatants().length >= MAX_PLAYER_SLOTS && bot) match.remove(bot.slot);
-        const player = match.addHuman(sanitizeName(msg.name), msg.look);
+        // Take over a bot where it stands (team that needs a player), or a free slot.
+        const player = bots.join(sanitizeName(msg.name), msg.look, botFill);
         if (!player) {
           send(client, { t: 'reject', reason: 'server full' });
           ws.close(4002, 'full');
           return;
         }
         client.slot = player.slot;
-        rebalanceBots();
+        // Back from a map change: pick up your score and weapons.
+        const carry = carried.get(player.name);
+        if (carry) {
+          match.applyCarry(player, carry);
+          carried.delete(player.name);
+        }
         send(client, {
           t: 'welcome',
           protocol: PROTOCOL_VERSION,
@@ -133,6 +204,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           map,
           rules: match.rules,
           sc: match.scenario.fullState(),
+          ...(lan.length ? { lan } : {}),
         });
         broadcast({ t: 'roster', players: match.roster() });
       } else if (msg.t === 'input' && client.slot !== null) {
@@ -148,32 +220,50 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       clearTimeout(helloTimer);
       clients.delete(client);
       if (client.slot !== null) {
-        match.remove(client.slot);
-        rebalanceBots();
+        // A bot takes the leaver's place where they were (unless botTakeBack is off).
+        bots.leave(client.slot, botFill);
         broadcast({ t: 'roster', players: match.roster() });
       }
     });
   });
 
-  await new Promise<void>((resolve) => wss.once('listening', () => resolve()));
-  const port = (wss.address() as AddressInfo).port;
+  await new Promise<void>((resolve, reject) => {
+    http.once('error', reject);
+    http.listen(opts.port, opts.host, () => resolve());
+  });
+  const port = (http.address() as AddressInfo).port;
+  const lan = lanAddresses(port);
+  function info(): ServerInfo {
+    const all = match.combatants();
+    return {
+      game: 'tiletrigger',
+      version: PROTOCOL_VERSION,
+      name: opts.name ?? `${map.metadata.name} server`,
+      map: map.metadata.name,
+      mode: match.rules.mode,
+      players: all.filter((c) => c.kind === 'human').length,
+      bots: all.filter((c) => c.kind === 'bot').length,
+      max: MAX_PLAYER_SLOTS,
+      addresses: lan.length ? lan : [`ws://localhost:${port}`],
+    };
+  }
+  const discovery = opts.lanDiscovery ? await answerDiscovery(info, typeof opts.lanDiscovery === 'number' ? opts.lanDiscovery : undefined).catch((e: Error) => (console.warn(`[lan] no LAN discovery: ${e.message}`), null)) : null;
 
   const sendSnapshots = () => {
     const ev = pendingEvents;
     pendingEvents = [];
-    // Everything but the per-recipient ack is shared, so serialise it once.
-    const body = JSON.stringify(match.snapshot(ev));
+    // Everything but the per-recipient ack, private state and (in big matches) far players is shared:
+    // encodeSnapshots serialises the pieces once and gives each client its own copy.
+    const body = match.snapshot(ev);
+    const to = [...clients].filter((c): c is Client & { slot: number } => c.slot !== null);
+    const texts = encodeSnapshots(body, to.map((c) => ({ slot: c.slot, ack: match.slots[c.slot]?.lastSeq ?? 0, me: match.privateState(c.slot) })));
     let total = 0;
     let n = 0;
-    for (const c of clients) {
-      if (c.slot === null) continue;
-      const ack = match.slots[c.slot]?.lastSeq ?? 0;
-      const me = match.privateState(c.slot);
-      const data = `{"t":"snapshot","ack":${ack},${me ? `"me":${JSON.stringify(me)},` : ''}${body.slice(1)}`;
-      send(c, data);
-      total += data.length;
+    to.forEach((c, i) => {
+      send(c, texts[i]!);
+      total += texts[i]!.length;
       n++;
-    }
+    });
     if (n) stats.recordSnapshot(total / n);
   };
 
@@ -184,14 +274,59 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   let stopped = false;
   let timer: NodeJS.Timeout;
 
+  /** A won co-op map moves on: the "Next map" it named (checked against our suite), else the playlist's next. */
+  const planTravel = (next: string | undefined) => {
+    const list = opts.playlist;
+    const at = list ? playlistNext(list, playIndex) : null;
+    const id = next ?? (list && at !== null ? list.maps[at]!.map : null);
+    if (!id) return;
+    const m = suiteMap(id);
+    if (!m) return void console.warn(`[chain] "${id}" is not a map of our suite: staying on ${map.metadata.name}`);
+    const entry = list && at !== null && list.maps[at]!.map === id ? list.maps[at]! : null;
+    travel = {
+      atTick: match.tick + Math.max(30, match.rules.intermissionTicks - 30),
+      map: m,
+      rules: chainRules(m, entry?.mode),
+      index: entry ? at! : playIndex,
+      carry: list?.carry ?? { score: true, loadout: true },
+    };
+  };
+  /** Change map: everyone gets `travel` and reconnects to the new match, keeping what the chain carries. */
+  const doTravel = () => {
+    const t = travel!;
+    travel = null;
+    carried = new Map();
+    for (const c of match.combatants()) {
+      if (c.kind !== 'human') continue;
+      const all = match.carryOf(c);
+      carried.set(c.name, { ...(t.carry.score ? { kills: all.kills, deaths: all.deaths } : {}), ...(t.carry.loadout ? { weapons: all.weapons } : {}) });
+    }
+    for (const c of clients) {
+      if (c.slot !== null) send(c, { t: 'travel', map: t.map.metadata.name });
+      c.slot = null;
+      c.ws.close(4005, 'travel');
+    }
+    pendingEvents = [];
+    match.destroy();
+    map = t.map;
+    playIndex = t.index;
+    match = new Match(map, withLeaders(t.rules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
+    bots = new BotFiller(match, difficulty, { takeBack: opts.botTakeBack });
+    bots.rebalance(botFill);
+    console.log(`[chain] now playing ${map.metadata.name}`);
+  };
+
   const loop = () => {
     if (stopped) return;
     const now = performance.now();
     let ran = 0;
     while (now >= nextTickAt && ran < 5) {
       const t0 = performance.now();
-      pendingEvents.push(...match.step());
+      const events = match.step();
+      pendingEvents.push(...events);
+      for (const ev of events) if (ev.e === 'round_end' && ev.outcome === 'victory') planTravel(ev.next);
       if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) sendSnapshots();
+      if (travel && match.tick >= travel.atTick) doTravel();
       stats.recordTick(performance.now() - t0, match.lastAiMs);
       nextTickAt += tickMs;
       ran++;
@@ -221,12 +356,17 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
 
   return {
     port,
-    match,
+    get match() {
+      return match;
+    },
+    info,
     close: async () => {
       stopped = true;
       clearTimeout(timer);
+      discovery?.close();
       for (const c of clients) c.ws.terminate();
       await new Promise<void>((resolve) => wss.close(() => resolve()));
+      await new Promise<void>((resolve) => http.close(() => resolve()));
       match.destroy();
     },
   };

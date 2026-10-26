@@ -91,6 +91,7 @@ export const ACTION_TYPES = [
   'encounter_start',
   'encounter_stop',
   'encounter_order',
+  'next_map',
 ] as const;
 export type ActionType = (typeof ACTION_TYPES)[number];
 
@@ -124,6 +125,8 @@ export const ACTION_INFO: Record<ActionType, { label: string; target: TargetKind
   encounter_start: { label: 'Start encounter', target: 'encounter' },
   encounter_stop: { label: 'Stop reinforcements', target: 'encounter' },
   encounter_order: { label: 'Order squad to', target: 'encounter', states: ['hold', 'attack', 'defend', 'patrol', 'follow', 'roam'] },
+  /** Wins the match and sends everyone on to another map of our suite (text: its ID, e.g. creature_lab). */
+  next_map: { label: 'Next map (wins, then loads it)', target: null, text: true },
 };
 
 export const LogicWhen = z.object({

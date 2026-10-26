@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { LOBBY_EXPIRY_SECONDS, parseAdvert, type LobbyAdvert, type LobbyListing } from '@tiletrigger/shared';
+import { LOBBY_EXPIRY_SECONDS, parseAdvert, type LobbyAdvert, type LobbyListing, type ServerInfo } from '@tiletrigger/shared';
 import type { IceConfig } from './ice.ts';
 
 interface Entry {
@@ -124,10 +124,12 @@ function readBody(req: IncomingMessage): Promise<unknown> {
  *   PUT    /lobby/games/<id>          (header X-Lobby-Secret) → 204
  *   DELETE /lobby/games/<id>          (header X-Lobby-Secret) → 204
  *   GET    /lobby/ice                 → { iceServers, relay } (short-lived relay credentials, see ice.ts)
+ *   GET    /lobby/lan                 → { addresses, servers } (the hub's own LAN addresses, and dedicated
+ *                                       servers that answered a UDP discovery broadcast; see lan.ts)
  * Open to any origin: the game's pages can be served from anywhere.
  * `trustProxy`: take the client address from X-Forwarded-For (behind a proxy).
  */
-export function lobbyHandler(store: LobbyStore, trustProxy = false, ice?: IceConfig) {
+export function lobbyHandler(store: LobbyStore, trustProxy = false, ice?: IceConfig, lan?: () => Promise<{ addresses: string[]; servers: ServerInfo[] }>) {
   return async (req: IncomingMessage & { originalUrl?: string }, res: ServerResponse, next?: () => void): Promise<void> => {
     const url = new URL(req.originalUrl ?? req.url ?? '/', 'http://hub');
     const path = url.pathname.replace(/\/+$/, '');
@@ -159,6 +161,11 @@ export function lobbyHandler(store: LobbyStore, trustProxy = false, ice?: IceCon
       } catch (e) {
         return send(502, { error: (e as Error).message });
       }
+    }
+    if (path === '/lobby/lan' && req.method === 'GET') {
+      if (!lan) return send(404, { error: 'no LAN discovery on this hub' });
+      if (!iceLimit(`lan:${ip}`)) return send(429, { error: 'slow down' });
+      return send(200, await lan());
     }
     if (path === '/lobby/games') {
       if (req.method === 'GET') {

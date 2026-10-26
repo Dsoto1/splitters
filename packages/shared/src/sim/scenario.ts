@@ -1,4 +1,5 @@
 import { SQUAD_ORDERS, type BlockEntity, type ButtonEntity, type DestructibleEntity, type DoorEntity, type MapDocument, type MapEntity, type SquadOrder, type TrapEntity, type ZoneEntity } from '../map/schema.ts';
+import { isMapId } from './playlist.ts';
 import { OBJECTIVE_STATES, type CompareOp, type EventType, type LogicAction, type LogicCondition, type ObjectiveState } from '../map/logic.ts';
 import { distance, viewDirection, type Vec3 } from '../math.ts';
 import { TRAP_ACTIVE, TRAP_ENABLED, TRAP_SPENT, TRAP_WARNING, type GameEvent, type ScenarioSnapshot } from '../protocol.ts';
@@ -35,8 +36,8 @@ export interface ScenarioHost {
   hurt(slot: number, amount: number, weapon: string): void;
   /** An explosion (barrel, mine) that hurts players and other destructibles. */
   blast(at: Vec3, radius: number, damage: number, edge: number, owner: number | null, weapon: string): void;
-  /** End the round; co-op missions pass an outcome. */
-  endRound(winner: number | null, outcome?: 'victory' | 'defeat'): void;
+  /** End the round; co-op missions pass an outcome; "Next map" a suite map ID to load next. */
+  endRound(winner: number | null, outcome?: 'victory' | 'defeat', next?: string): void;
   encounter(id: string, op: 'start' | 'stop' | 'order', order?: SquadOrder): void;
   encounterAlive(id: string): number;
   setPickupEnabled(id: string, enabled: boolean): void;
@@ -681,6 +682,11 @@ export class Scenario {
         if (a.state === 'players win' || a.state === 'players lose') this.host.endRound(null, a.state === 'players win' ? 'victory' : 'defeat');
         else this.host.endRound(a.state === 'nobody wins' ? null : instigator);
         break;
+      case 'next_map': {
+        const id = a.text.trim();
+        if (isMapId(id)) this.host.endRound(null, 'victory', id);
+        break;
+      }
       case 'encounter_start':
       case 'encounter_stop':
       case 'encounter_order':

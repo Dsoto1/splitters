@@ -27,6 +27,7 @@ import {
   SPEED_BOOST,
   TICK_DT,
   TICK_RATE,
+  type CarryOver,
   weaponByCode,
   DESTRUCTIBLE_SPECS,
   NPC_ROLES,
@@ -79,7 +80,7 @@ import { CoverState } from './coverState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import { RaceHud } from './raceHud.ts';
-import { LobbyAdvertiser, builtHub, hubSetting } from './hub.ts';
+import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { markerSetting } from './crosshair.ts';
@@ -108,12 +109,24 @@ export interface SessionOptions {
   exitOnF5: boolean;
   /** An in-browser match friends can be let into (pause menu → Host game). */
   hostable?: boolean;
-  /** Called when the player leaves or the transport closes. `reason` is set for unexpected closes. */
-  onExit: (reason?: string) => void;
+  /**
+   * Called when the player leaves or the transport closes. `reason` is set for unexpected closes.
+   * `travel`: a scenario chain moves on (a won co-op map with a next map, or the server changing map).
+   */
+  onExit: (reason?: string, travel?: Travel) => void;
+  /** Local matches in a playlist: a co-op win moves on even without a "Next map" link. */
+  chain?: boolean;
   /** Called once the map is loaded and the first frame can render. */
   onReady?: () => void;
   /** Your character's portrait for the HUD (rendered by the menus). */
   portrait?: Promise<string>;
+}
+
+/** Where a scenario chain goes next: a suite map ID (local "Next map"), or the server's new map (its name). */
+export interface Travel {
+  id?: string;
+  map?: string;
+  carry?: CarryOver;
 }
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -447,6 +460,7 @@ export class GameSession {
       info.hidden = false;
       info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${peerLink.hubRelay ? ' The hub provides a relay, so friends on strict networks can connect too.' : loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options and send a new link.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
       info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
+      if (onlyHere) void this.lanInvite(info, code, link);
       this.hud.showMessage(`Hosting: join code ${code}`, 5);
       this.updateListing();
     } catch (e) {
@@ -455,6 +469,81 @@ export class GameSession {
       btn.textContent = 'Host game (invite friends)';
       this.hud.showMessage(`Couldn't host: ${(e as Error).message}`, 5);
     }
+  }
+
+  /** A dedicated server's LAN join addresses in the pause menu, to pass on to people on the same network. */
+  private showLanAddresses(lan: readonly string[]): void {
+    const info = $('host-info');
+    info.hidden = false;
+    info.replaceChildren();
+    const head = document.createElement('div');
+    head.className = 'host-code';
+    head.textContent = 'LAN join address';
+    info.append(head);
+    for (const addr of lan) {
+      const row = document.createElement('div');
+      row.className = 'lan-address';
+      const input = document.createElement('input');
+      input.readOnly = true;
+      input.value = addr;
+      const copy = document.createElement('button');
+      copy.textContent = 'Copy';
+      copy.addEventListener('click', () => void navigator.clipboard?.writeText(addr).then(() => this.hud.pickup('LAN address copied')));
+      row.append(input, copy);
+      info.append(row);
+    }
+    const hint = document.createElement('p');
+    hint.className = 'hint';
+    hint.textContent = 'People on your network: Online → LAN finds this server, or paste the address under Online → Server.';
+    info.append(hint);
+  }
+
+  /**
+   * Host game on a page opened at localhost: a hub on this computer knows its
+   * network addresses, so offer the invite link at one of those instead.
+   */
+  private async lanInvite(info: HTMLElement, code: string, link: string): Promise<void> {
+    const hub = hubAddress();
+    if (!hub) return;
+    try {
+      const res = await fetch(`${hub.secure ? 'https' : 'http'}://${hub.host}:${hub.port}${hub.path}lobby/lan`, { cache: 'no-store', signal: AbortSignal.timeout(2500) });
+      const body = res.ok ? ((await res.json()) as { addresses?: string[] }) : {};
+      const ip = /^http:\/\/([\d.]+):/.exec(body.addresses?.[0] ?? '')?.[1];
+      if (!ip || this.closed) return;
+      const lanLink = link.replace(/^(\w+:\/\/)[^:/]+/, `$1${ip}`).replace(/([?&]hub=)[^&]*/, `$1${encodeURIComponent(`${ip}:${hub.port}`)}`);
+      const row = document.createElement('div');
+      row.className = 'lan-address';
+      const input = document.createElement('input');
+      input.readOnly = true;
+      input.value = lanLink;
+      const copy = document.createElement('button');
+      copy.textContent = 'Copy LAN link';
+      copy.addEventListener('click', () => void navigator.clipboard?.writeText(lanLink).then(() => this.hud.pickup(`LAN link for ${code} copied`)));
+      row.append(input, copy);
+      const hint = document.createElement('p');
+      hint.className = 'hint';
+      hint.textContent = 'Same network: this link uses your computer\'s network address (the game must be served there too, e.g. by the hub after pnpm build).';
+      info.append(row, hint);
+    } catch {
+      // No hub here: the localhost warning above stands.
+    }
+  }
+
+  /** Set when a chain moves on (see Travel). */
+  private travel: Travel | null = null;
+
+  /** A won co-op map in a local match: after a moment for the results, go on to the next map of the chain. */
+  private chainOn(next: string | undefined): void {
+    const local = this.opts.transport;
+    if (!(local instanceof LocalTransport) || (!next && !this.opts.chain) || this.travel) return;
+    this.travel = { ...(next ? { id: next } : {}) };
+    const wait = Math.max(1000, ((this.rules?.intermissionTicks ?? 300) / TICK_RATE) * 1000 - 600);
+    this.hud.showMessage(next ? 'Mission complete: on to the next map…' : 'Mission complete: next mission…', wait / 1000);
+    window.setTimeout(() => {
+      if (this.closed) return;
+      this.travel!.carry = local.carry() ?? undefined;
+      this.exit('travel');
+    }, wait);
   }
 
   private advertiser?: LobbyAdvertiser;
@@ -507,7 +596,7 @@ export class GameSession {
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
-    this.opts.onExit(reason);
+    this.opts.onExit(reason, this.travel ?? undefined);
   }
 
   private onMessage(msg: ServerMessage): void {
@@ -522,6 +611,7 @@ export class GameSession {
         }
         this.slot = msg.slot;
         this.rules = msg.rules;
+        if (msg.lan?.length) this.showLanAddresses(msg.lan);
         const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
         this.hud.setTeams(teams);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
@@ -581,7 +671,8 @@ export class GameSession {
         for (const p of msg.players) this.hp.set(p.s, p.hp / PLAYER.maxHealth);
         for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8], size: n[11] ?? 1 });
-        this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr);
+        this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr, msg.hold);
+        if (msg.ld) this.view.setLeaders(new Set(msg.ld.filter((s) => s >= 0)));
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt, msg.tick);
         this.covers?.apply(msg.cv);
@@ -592,7 +683,9 @@ export class GameSession {
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         if (this.classesOn) {
-          this.classOf = new Map(msg.players.filter((p) => p.cl !== undefined).map((p) => [p.s, p.cl!]));
+          // Players held back from this snapshot (far away in a big match) keep the class they had.
+          const kept = msg.hold ? [...this.classOf].filter(([slot]) => msg.hold!.includes(slot)) : [];
+          this.classOf = new Map([...kept, ...msg.players.filter((p) => p.cl !== undefined).map((p): [number, number] => [p.s, p.cl!])]);
           this.hud.setClasses(msg.players);
         }
         this.myClass = msg.me?.cl ?? null;
@@ -707,6 +800,7 @@ export class GameSession {
             if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2);
             if (ev.hs && ev.killer === this.slot) this.hud.headshot();
           } else if (ev.e === 'round_end') {
+            if (ev.outcome === 'victory') this.chainOn(ev.next);
             this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
             this.outcome = ev.outcome ?? null;
           } else if (ev.e === 'round_start') {
@@ -752,12 +846,25 @@ export class GameSession {
               this.view.breakProp(ev.i);
               if (def) this.view.debris({ x: e.position[0], y: e.position[1] + (def.size[1] * e.scale) / 2, z: e.position[2] }, def.breakable?.debris ?? '#8a5a32', Math.max(0.3, Math.min(1.2, (Math.max(...def.size) * e.scale) / 2)));
             }
+          } else if (ev.e === 'leader') {
+            const team = this.hud.teamById(ev.team);
+            if (ev.a === 'lead' && ev.s === this.slot) this.hud.showMessage('You lead your team: B then 1 "Follow me!" or 7 "Hold here!" orders all its bots', 5);
+            else if (ev.a === 'lead') this.hud.say(ev.s, `leads ${team?.name ?? 'the team'}`);
+            else this.hud.say(ev.s, `${team?.name ?? 'Team'} leader down!${ev.n ? ` (+${ev.n} to the other side)` : ''}`);
+          } else if (ev.e === 'takeover') {
+            this.hud.takeover(ev.s, ev.to, ev.from, !!ev.bot);
           } else if (ev.e === 'throw') {
             if (ev.s !== this.slot) this.view.avatarAction(ev.s, 'throw');
           }
         }
         break;
       }
+      case 'travel':
+        // The server is changing map: reconnect to play the next one.
+        this.travel = { map: msg.map };
+        this.hud.showMessage(`Next map: ${msg.map}`, 3);
+        this.exit('travel');
+        break;
       case 'stats':
         this.serverStats = msg;
         break;

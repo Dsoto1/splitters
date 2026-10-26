@@ -46,6 +46,13 @@ export interface MatchRules {
    * Absent: two teams, balanced as players join.
    */
   teamSizes?: number[];
+  /**
+   * Team leaders (team modes): each team's first person (else a bot) leads,
+   * marked for everyone; the leader's "Follow me!" / "Hold here!" orders the
+   * whole team's bots, wherever they are. 'vip': Leader variant of Team
+   * Deathmatch, where downing an enemy leader scores LEADER_BOUNTY extra.
+   */
+  leaders?: boolean | 'vip';
   /** Capture the Flag: seconds a dropped flag lies before it goes home on its own (default 30). */
   flagReturnSeconds?: number;
   /** King of the Hill: seconds before the hill moves to the next spot (default 60). */

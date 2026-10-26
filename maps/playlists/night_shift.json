@@ -1,0 +1,8 @@
+{
+  "format": "tiletrigger.playlist",
+  "id": "night_shift",
+  "name": "Night Shift",
+  "description": "Four co-op missions back to back: break the outpost siege, hold the creature lab, raid the blacked-out block, then survive the night at the Dead Reel. Win one to move on; your score and weapons come with you.",
+  "maps": [{ "map": "m4_outpost" }, { "map": "creature_lab" }, { "map": "blackout" }, { "map": "dead_reel" }],
+  "carry": { "score": true, "loadout": true }
+}

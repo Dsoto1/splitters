@@ -7,7 +7,7 @@ import type { MatchRules } from './sim/rules.ts';
  * are kept compact so a binary encoding can replace JSON after measurement
  * without changing gameplay code.
  */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 export type Tuple3 = [number, number, number];
 
@@ -141,7 +141,7 @@ export type GameEvent =
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit. */ hs?: 1 }
   | { e: 'spawn'; s: number }
   /** `outcome` is set when a co-op mission ends (victory or defeat). */
-  | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null }
+  | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null; /** "Next map" logic: the suite map ID everyone goes on to. */ next?: string }
   | { e: 'round_start' }
   // Objective modes. `team` is a team (faction) ID.
   /** Capture the Flag: `team`'s flag was taken, dropped, returned home or captured; `s` is who did it (null: it went home on its own). */
@@ -177,7 +177,11 @@ export type GameEvent =
   /** A destructible broke. */
   | { e: 'broken'; i: number }
   /** A player pressed a button, or was refused (locked door, disabled button). */
-  | { e: 'use'; s: number; i: number; ok: 0 | 1 };
+  | { e: 'use'; s: number; i: number; ok: 0 | 1 }
+  /** Team leaders: `s` now leads `team` ('lead'), or `team`'s leader went down ('down'; Leader variant: `n` points to the killer's side). */
+  | { e: 'leader'; a: 'lead' | 'down'; s: number; team: string; n?: number }
+  /** Slot `s` changed hands mid-match: `to` (a player who joined, or a bot when a player left) took over `from`, keeping the body, team and loadout. */
+  | { e: 'takeover'; s: number; from: string; to: string; bot?: 1 };
 
 /**
  * Scenario state. Sent as a delta (only what changed since the previous
@@ -327,6 +331,8 @@ export type ServerMessage =
       rules: MatchRules;
       /** Full scenario state at join time. */
       sc?: ScenarioSnapshot;
+      /** Dedicated servers: their LAN join addresses (ws://192.168.…:7777), for the pause menu to share. */
+      lan?: string[];
     }
   | { t: 'reject'; reason: string }
   | { t: 'roster'; players: RosterEntry[] }
@@ -359,6 +365,16 @@ export type ServerMessage =
       np: NpcSnapshot[];
       /** Objective mode state (CTF, KOTH, Elimination). */
       md?: ModeSnapshot;
+      /**
+       * Interest management (big matches): players left out of this snapshot
+       * because they are far from the receiver. They are still in the match:
+       * keep drawing them from the snapshots that had them (see net/interest.ts).
+       */
+      hold?: number[];
+      /** Team leaders (rules.leaders): each team's leader slot, in team order (-1: none). */
+      ld?: number[];
     }
   | { t: 'pong'; id: number; ct: number }
+  /** The server is changing map (a scenario chain): reconnect in a moment to play `map` (its display name). */
+  | { t: 'travel'; map: string }
   | ({ t: 'stats' } & ServerStats);

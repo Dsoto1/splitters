@@ -456,6 +456,14 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #host-info .host-code b { font-size: 26px; color: #00d1ff; margin-left: 8px; letter-spacing: 0.2em; }
 #host-info input { font: inherit; font-size: 12px; padding: 4px 6px; background: rgba(0, 0, 0, 0.35); color: #cfe; border: 1px solid rgba(255, 255, 255, 0.2); }
 #host-info .hint { margin: 0; font-size: 11px; opacity: 0.75; }
+#host-info .lan-address { display: flex; gap: 6px; }
+#host-info .lan-address input { flex: 1; min-width: 0; }
+#feed .takeover { font-style: normal; opacity: 0.9; }
+.lan-panel .gb-top { display: flex; align-items: center; gap: 8px; }
+.lan-panel .gb-top h4 { margin: 0; flex: 1; }
+.lan-row { grid-template-columns: 1fr 90px 90px 70px; }
+.lan-panel .gb-hub { display: flex; gap: 6px; margin-top: 8px; }
+.lan-panel .gb-hub input { flex: 1; min-width: 0; }
 
 #spectating { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); padding: 6px 14px; background: rgba(10, 14, 24, 0.75); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; font-size: 14px; letter-spacing: 0.04em; pointer-events: none; }
 

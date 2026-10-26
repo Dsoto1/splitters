@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import WebSocket from 'ws';
-import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, PLAYER, PROTOCOL_VERSION, lookAngles, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
+import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, MAX_PLAYER_SLOTS, PLAYER, PROTOCOL_VERSION, lookAngles, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
 import { startServer, type RunningServer } from '../src/server.ts';
 import { parseClientMessage } from '@tiletrigger/shared';
 
@@ -108,7 +108,7 @@ describe('dedicated server', () => {
     const b = new TestClient(server.port, 'Bob');
     const [wa, wb] = await Promise.all([a.waitFor('welcome'), b.waitFor('welcome')]);
     expect(wa.slot).not.toBe(wb.slot);
-    expect(wa.maxSlots).toBe(32);
+    expect(wa.maxSlots).toBe(MAX_PLAYER_SLOTS);
     expect(wa.map.metadata.id).toBe('test_room');
     await a.waitFor('roster', (r) => r.players.length === 2);
 
@@ -154,6 +154,27 @@ describe('dedicated server', () => {
     a.ws.close();
     await new Promise((r) => setTimeout(r, 50));
     expect(server.match.combatants().filter((c) => c.kind === 'bot')).toHaveLength(3);
+  });
+
+  it('a player joining a running match takes over a bot where it stands, and a bot takes their place back when they leave', async () => {
+    server = await startServer({ port: 0, map: room, botFill: 3, seed: 4, startGate: false });
+    await new Promise((r) => setTimeout(r, 100));
+    const bots = new Map(server.match.combatants().map((c) => [c.slot, { name: c.name, pos: { ...c.move.pos } }]));
+    const a = new TestClient(server.port, 'Alice');
+    const welcome = await a.waitFor('welcome');
+    const was = bots.get(welcome.slot)!;
+    expect(was).toBeDefined();
+    const me = server.match.slots[welcome.slot]!;
+    expect(me.kind).toBe('human');
+    expect(server.match.combatants()).toHaveLength(3);
+    // Still where the bot was (give or take a few ticks of its last move).
+    expect(Math.hypot(me.move.pos.x - was.pos.x, me.move.pos.z - was.pos.z)).toBeLessThan(2);
+    const snap = await a.waitFor('snapshot', (s) => s.ev.some((e) => e.e === 'takeover'));
+    expect(snap.ev.find((e) => e.e === 'takeover')).toEqual({ e: 'takeover', s: welcome.slot, from: was.name, to: 'Alice' });
+    a.ws.close();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(server.match.slots[welcome.slot]?.kind).toBe('bot');
+    expect(server.match.combatants()).toHaveLength(3);
   });
 
   it('rejects mismatched protocol versions', async () => {
