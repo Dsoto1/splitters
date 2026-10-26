@@ -285,6 +285,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #prompt { position: absolute; left: 50%; top: calc(50% + 34px); transform: translateX(-50%); font-weight: 600; text-shadow: 0 1px 3px #000; white-space: nowrap; }
 #prompt kbd { display: inline-block; min-width: 18px; padding: 0 5px; margin-right: 6px; border: 1px solid #ddd; border-radius: 4px; background: rgba(0, 0, 0, 0.5); font: inherit; }
 #prompt.denied { color: #f19a9a; }
+#prompt .prompt-hint { margin-left: 14px; opacity: 0.8; font-weight: 500; }
 #marker { position: absolute; transform: translate(-50%, -100%); color: var(--accent); font-weight: 700; text-shadow: 0 1px 3px #000; text-align: center; font-size: 12px; }
 #marker::before { content: '◆'; display: block; font-size: 20px; line-height: 20px; }
 #scoreboard table.team + table.team { margin-top: 12px; }

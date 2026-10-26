@@ -1089,6 +1089,32 @@ async function vehiclesFlow(browser) {
     const aboard = await page.waitForFunction(() => !!window.__match.slots[window.__cs.slot].mount, null, { timeout: T(8000) }).then(() => true, () => false);
     if (aboard) break;
   }
+  // The camera in the ride, in the vehicle's own frame (+Z forward), and where the seat's cockpit eye is.
+  const rideCam = () =>
+    page.evaluate(() => {
+      const cs = window.__cs;
+      const me = window.__match.slots[cs.slot];
+      const m = me.mount ? cs.mounts.mounts.get(window.__match.mounts[me.mount.index].index) : null;
+      const c = cs.view.camera.position;
+      if (!m) return { view: cs.rideView(), cam: [c.x, c.y, c.z] };
+      const d = { x: c.x - m.shown.pos.x, y: c.y - m.shown.pos.y, z: c.z - m.shown.pos.z };
+      const s = Math.sin(m.shown.yaw);
+      const k = Math.cos(m.shown.yaw);
+      const local = [d.x * k - d.z * s, d.y, d.x * s + d.z * k];
+      const seat = m.def.seats[me.mount.seat];
+      const eye = m.def.cockpitEye ?? [seat.offset[0], seat.offset[1] + 1, seat.offset[2] + 0.15];
+      const half = m.def.half;
+      const inBox = Math.abs(local[0]) < half[0] && local[1] > 0 && local[1] < half[1] * 2 && Math.abs(local[2]) < half[2];
+      const pivot = { x: m.shown.pos.x, y: m.shown.pos.y + half[1] * 2 + 0.5, z: m.shown.pos.z };
+      const phys = cs.local.physics;
+      const at = { x: c.x, y: c.y, z: c.z };
+      return { view: cs.rideView(), local, eye, half, inBox, clear: phys.boxClear(at, { x: 0.12, y: 0.12, z: 0.12 }), sight: phys.lineOfSight(pivot, at), dist: Math.hypot(d.x, d.z) };
+    });
+  // First person is the default: the eye sits at the driver's seat, inside the vehicle's footprint.
+  await page.waitForTimeout(T(600));
+  const cockpit = await rideCam();
+  const off = cockpit.eye ? Math.hypot(...cockpit.local.map((v, i) => v - cockpit.eye[i])) : Infinity;
+  check(cockpit.view === 'cockpit' && off < 0.5 && Math.abs(cockpit.local[0]) < cockpit.half[0] && Math.abs(cockpit.local[2]) < cockpit.half[2], `in the cockpit the eye is in the buggy at the driver's seat (${cockpit.view}, ${off.toFixed(2)} m from the seat eye, at ${cockpit.local?.map((v) => v.toFixed(2)).join(', ')})`);
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   // Headless frame rates vary: wait for the drive rather than a fixed time.
@@ -1101,6 +1127,18 @@ async function vehiclesFlow(browser) {
   });
   check(after.seat === 0, `you are in the driver's seat (${after.seat}${after.alive ? '' : ', dead'})`);
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
+  // H switches to the chase camera (remembered for ground vehicles): behind the buggy, outside it and clear of walls.
+  await page.keyboard.press('KeyH');
+  await page.waitForTimeout(T(800));
+  let worst = null;
+  for (let i = 0; i < 5; i++) {
+    const c = await rideCam();
+    if (!worst || c.inBox || !c.clear || !c.sight || c.view !== 'chase') worst = c;
+    await page.waitForTimeout(T(150));
+  }
+  const saved = await page.evaluate(() => localStorage.getItem('tiletrigger.vehicleCamera'));
+  check(worst.view === 'chase' && !worst.inBox && worst.clear && worst.sight && worst.dist > 1, `H gives a chase camera outside the buggy and not in a wall (${JSON.stringify({ view: worst.view, inBox: worst.inBox, clear: worst.clear, sight: worst.sight, dist: worst.dist?.toFixed(1) })})`);
+  check(/"ground":"chase"/.test(saved ?? ''), `the choice is remembered for ground vehicles (${saved})`);
   // Press E (again, if a slow frame swallowed the press) until we're out.
   for (let i = 0; i < 4; i++) {
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
@@ -1108,6 +1146,16 @@ async function vehiclesFlow(browser) {
     if (out) break;
   }
   check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
+  // Out of the chase camera: back at your own eye, level.
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.waitForTimeout(T(500));
+  const foot = await page.evaluate(() => {
+    const cs = window.__cs;
+    const c = cs.view.camera.position;
+    const e = cs.local.eye;
+    return { view: cs.rideView(), off: Math.hypot(c.x - e.x, c.y - e.y, c.z - e.z), roll: cs.view.camera.rotation.z };
+  });
+  check(foot.view === null && foot.off < 0.4 && Math.abs(foot.roll) < 1e-6, `after getting out the camera is at your eye and level (${foot.view}, ${foot.off.toFixed(2)} m off, roll ${foot.roll})`);
   // A blast next to you while looking up shakes the view; once it settles, turning and looking around stay level
   // (Babylon kept the up vector from the shake's last frame, which rolled the view and gun with every turn).
   await page.evaluate(() => {

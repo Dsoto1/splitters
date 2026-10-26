@@ -28,8 +28,26 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
 - **Driving.** W/S throttle and reverse, A/D steer (harder the faster you
   go). Vehicles slide along walls, lose half their speed in a crash and
   follow the ground (terrain included). At speed they run down enemies,
-  credited to the driver. Drivers see the vehicle from behind; the camera
-  swings round as it turns, and the mouse looks about.
+  credited to the driver.
+- **Cameras.** Drivers and pilots start in the **cockpit**: the eye sits at
+  the driver's seat (a seated head height, a little forward, or the
+  vehicle's own `cockpitEye` in `MOUNT_DEFS` where the model needs it), the
+  ridden model is drawn one-sided so the hood, nose and frame show without
+  the inside of the roof and doors in the way, and the view turns with the
+  vehicle while the mouse looks round within about 130° of the nose. The view
+  leans with the vehicle's drawn tilt only gently (damped, a third of it and
+  at most ~6° on the ground; flyers follow their bank and climb more, up to
+  ~20°), and getting out always gives back the level on-foot view. **H**
+  (controller: R3) switches the driver to the **chase camera**: a spring on
+  the orbit round the vehicle (so it stays steady on screen at speed), pulled
+  back and widened with speed, pulled in where a wall or the ground is in the
+  way (ignoring the vehicle's own box), with free look that swings back
+  behind the vehicle a second after you stop moving the mouse. The choice is
+  kept per class, ground or air, in the browser (`tiletrigger.vehicleCamera`).
+  Gunners and passengers always look from their seat: passengers turn with
+  the vehicle, gun seats hold their aim (within the gun's arc) and stay level
+  so the reticle is true. The use prompt shows the H key while you drive.
+  Your own weapon stays hidden while you drive or man a gun.
 - **Flying.** Skyfighters and dropships drive like hovercraft and also
   climb on jump and dive on crouch; let go and they hold their height. Left
   without a pilot they sink gently to the ground. Bots fly them at ground

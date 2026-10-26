@@ -21,6 +21,7 @@ import {
   mapLadders,
   mapPortals,
   mapPads,
+  cockpitEye,
   mountToWorld,
   viewDirection,
   type ZoneSnapshot,
@@ -94,6 +95,7 @@ import { SessionAudio } from './sessionAudio.ts';
 import { ScenarioState } from './scenarioState.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
+import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 
 /** Match events that only make effects, skipped while the tab is hidden. */
 /** Field of view while aiming down the sights, as a fraction of the normal one. */
@@ -201,6 +203,10 @@ export class GameSession {
   private uav = 0;
   /** H: a camera over your shoulder, to see your own character. */
   private thirdPerson = false;
+  /** Riding: the cockpit or chase camera (H switches while driving, remembered per ground / air). */
+  private readonly vehicleCam = new VehicleCamera();
+  /** The riding view this frame (cockpit, chase or a rider's seat), null on foot: for tests. */
+  private rideView: 'cockpit' | 'chase' | 'seat' | null = null;
   /** The join code's registration while this match is hosted for friends. */
   private peerHost?: { close(): void; code: string };
   /** The host has a relay set up (Options → Relay), for the game browser's badge. */
@@ -269,6 +275,15 @@ export class GameSession {
       if (this.local && !this.local.alive) this.spectateNext = true;
     });
     this.input.onToggle.set('KeyH', () => {
+      // In a vehicle H switches the driver between the cockpit and the chase camera; on foot, first and third person.
+      const ride = this.seat && this.local?.alive ? this.mounts?.mounts.get(this.seat[0]) : undefined;
+      if (ride && ride.def.kind === 'vehicle' && !ride.def.airplane) {
+        if (VehicleCamera.drives(ride.def, this.seat![1])) {
+          const view = this.vehicleCam.toggle(ride.def);
+          this.hud.pickup(view === 'chase' ? 'Chase camera (H for the cockpit)' : 'Cockpit view (H for the chase camera)');
+        } else this.hud.pickup('Riders look out from their seat (the driver can use the chase camera)');
+        return;
+      }
       this.thirdPerson = !this.thirdPerson;
       this.hud.pickup(this.thirdPerson ? 'Third-person view (H to go back)' : 'First-person view');
     });
@@ -669,7 +684,7 @@ export class GameSession {
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView };
         this.opts.onReady?.();
         void this.prepareMatch();
         break;
@@ -1054,7 +1069,8 @@ export class GameSession {
     const enter = local.alive && !this.seat ? this.mounts?.enterable(local.state.pos) : null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
-      this.hud.setPrompt(m?.def.airplane ? 'Jump out (E or Space), then Space to open your parachute' : `Get out of the ${m?.def.displayName ?? 'vehicle'}`);
+      const hint = m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]) ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
+      this.hud.setPrompt(m?.def.airplane ? 'Jump out (E or Space), then Space to open your parachute' : `Get out of the ${m?.def.displayName ?? 'vehicle'}`, false, hint);
     } else if (enter) {
       const seat = enter.mount.def.seats[enter.seat]!;
       const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';
@@ -1128,6 +1144,12 @@ export class GameSession {
       }
     }
     this.hud.setPingMarkers(list);
+  }
+
+  /** The turret you are gunning (hidden, as your own body is), or null. */
+  private mannedTurret(): number | null {
+    const m = this.seat ? this.mounts?.mounts.get(this.seat[0]) : undefined;
+    return m?.def.kind === 'turret' ? m.index : null;
   }
 
   private requestWeapon(slot: number): void {
@@ -1225,8 +1247,10 @@ export class GameSession {
       this.sfx.localWeapon(local);
       this.opts.audio.setListener(local.eye, this.input.yaw, this.input.pitch);
 
-      // Seated: the camera rides the vehicle (drivers watch from behind it); seat guns replace your own weapon.
+      // Seated: the camera rides the vehicle (cockpit or chase, see VehicleCamera); seat guns replace your own weapon.
       this.mounts?.smooth(dt);
+      // Vehicles are posed before the camera, so a cockpit view rides the model drawn this frame (no lag, no jitter).
+      if (this.mounts) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
       const ride = local.alive && this.seat ? this.mounts?.mounts.get(this.seat[0]) : undefined;
       const seatDef = ride?.def.seats[this.seat?.[1] ?? 0];
       const seatGun = seatDef?.weapon ? CORE_WEAPONS[seatDef.weapon] : undefined;
@@ -1247,22 +1271,47 @@ export class GameSession {
       const fov = this.fov;
       this.input.sensitivityScale = fov / DEFAULT_FOV;
       if (ride && seatDef) {
+        const seatIndex = this.seat![1];
         const feet = mountToWorld(ride.shown.pos, ride.shown.yaw, seatDef.offset);
-        const eye = { x: feet.x, y: feet.y + PLAYER.eyeHeight, z: feet.z };
-        if (ride.def.airplane) {
-          // Riding the plane: watch from behind and above it, looking wherever you like.
-          const back = viewDirection(this.input.yaw, this.input.pitch - 0.3);
-          const dist = 10 + ride.def.half[2] * 1.5;
-          this.view.setCamera({ x: ride.shown.pos.x - back.x * dist, y: ride.shown.pos.y - back.y * dist + 3, z: ride.shown.pos.z - back.z * dist }, this.input.yaw, this.input.pitch - 0.15, DEFAULT_FOV);
-        } else if (seatDef.role === 'driver' && ride.def.kind === 'vehicle') {
-          // The chase camera swings round behind the vehicle as it turns (the mouse can still look about).
-          const d = Math.atan2(Math.sin(ride.shown.yaw - this.input.yaw), Math.cos(ride.shown.yaw - this.input.yaw));
-          this.input.yaw += d * Math.min(1, dt * 2.5);
-          const back = viewDirection(this.input.yaw, this.input.pitch - 0.25);
-          const dist = 4 + ride.def.half[2] * 1.5;
-          this.view.setCamera({ x: eye.x - back.x * dist, y: eye.y - back.y * dist + 1, z: eye.z - back.z * dist }, this.input.yaw, this.input.pitch - 0.15, DEFAULT_FOV);
-        } else this.view.setCamera(eye, this.input.yaw, this.input.pitch, DEFAULT_FOV);
+        const body = ride.body.handle;
+        // The chase camera's ray ignores the ride's own box (it starts above it, but you can look up from under it).
+        const cast = (from: Vec3, dir: Vec3, len: number): number | null => {
+          let start = 0;
+          for (let i = 0; i < 4; i++) {
+            const o = { x: from.x + dir.x * start, y: from.y + dir.y * start, z: from.z + dir.z * start };
+            const hit = local.physics.raycastHit(o, dir, len - start);
+            if (!hit) return null;
+            if (hit.handle !== body) return start + hit.dist;
+            const exit = rayBoxExit(o, dir, { x: ride.pos.x, y: ride.pos.y + ride.def.half[1], z: ride.pos.z }, ride.def.half, ride.yaw);
+            start += Math.max(hit.dist, exit ?? 0) + 0.05;
+            if (start >= len) return null;
+          }
+          return null;
+        };
+        const pose = this.vehicleCam.update(
+          dt,
+          {
+            def: ride.def,
+            index: ride.index,
+            seat: seatIndex,
+            pos: ride.shown.pos,
+            yaw: ride.shown.yaw,
+            vel: ride.vel,
+            tilt: this.view.mountTilt(ride.index),
+            cockpitEye: this.view.mountPoint(ride.index, cockpitEye(ride.def, seatIndex)) ?? mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex)),
+            seatEye: { x: feet.x, y: feet.y + PLAYER.eyeHeight, z: feet.z },
+          },
+          this.input,
+          cast,
+          fov,
+        );
+        this.rideView = pose.mode;
+        this.view.setCockpit(pose.mode === 'cockpit' ? ride.index : null);
+        this.view.setCamera(pose.pos, pose.yaw, pose.pitch, pose.fov, pose.roll);
       } else {
+        this.vehicleCam.reset();
+        this.rideView = null;
+        this.view.setCockpit(null);
         // The view eases down and up as you crouch, go prone or stand; between ticks it glides.
         const eye = local.eye;
         const offset = eye.y - local.state.pos.y;
@@ -1366,7 +1415,7 @@ export class GameSession {
         if (at) bars.push({ id: m.index, x: at.x, y: at.y, pct: m.health });
       }
       this.hud.setVehicleBars(bars);
-      this.view.updateMounts(this.mounts.mounts.values(), manned?.def.kind === 'turret' ? manned.index : null);
+      if (!local) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
