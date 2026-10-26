@@ -1,0 +1,8118 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 20,
+  "metadata": {
+    "id": "obsidian_orb",
+    "name": "Obsidian Orb",
+    "author": "Tile Trigger",
+    "description": "A battle station built from the Orbital Station style pack and painted gunmetal grey. Grey grated corridors ring a bottomless reactor shaft whose four bridges retract from their consoles (strand whoever is chasing you), out to the reactor control in the middle. A hangar of skyfighters and a shuttle behind a force field; a trash compactor whose walls grind in on a timer; a detention block of team-locked cells; a tractor-beam pylon reached by narrow catwalks over the drop, where cutting the power coupling drops the hangar field; a dark throne room with a wall of windows onto the stars. Through the airlock, a long metal trench on the surface in low gravity, turret emplacements along its walls and the exhaust port at the end.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 12,
+      "max": 24
+    },
+    "supportedModes": [
+      "core.bomb",
+      "core.ctf",
+      "core.koth",
+      "core.tdm",
+      "core.deathmatch"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.orbital",
+    "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "core.room",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "windows"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_002",
+        "tile": "core.room",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_003",
+        "tile": "core.room",
+        "x": -2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "windows",
+          "0,0,0:S": "windows"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_004",
+        "tile": "core.room",
+        "x": -2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:N": "door"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_005",
+        "tile": "core.room",
+        "x": -1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "windows"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_006",
+        "tile": "core.room",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_007",
+        "tile": "core.room",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "door"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_008",
+        "tile": "core.room",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "door",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_009",
+        "tile": "core.room",
+        "x": 1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "windows"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_010",
+        "tile": "core.room",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:N": "wide"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_011",
+        "tile": "core.room",
+        "x": 2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "windows",
+          "0,0,0:S": "windows"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_012",
+        "tile": "core.room",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:S": "windows",
+          "0,0,0:N": "wall"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_013",
+        "tile": "core.room",
+        "x": 3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "windows"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_014",
+        "tile": "core.room",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "windows",
+          "0,0,0:N": "windows"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_015",
+        "tile": "core.room",
+        "x": -3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "window"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_016",
+        "tile": "core.room",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "window"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_017",
+        "tile": "core.room",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_018",
+        "tile": "core.room",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "door"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_019",
+        "tile": "core.room",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "window"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_020",
+        "tile": "core.room",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "window"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_021",
+        "tile": "orbital.hangar",
+        "x": -1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "1,2,0:N": "wide",
+          "0,2,0:N": "window",
+          "2,2,0:N": "window",
+          "0,0,0:S": "open",
+          "0,0,1:S": "open",
+          "1,0,0:S": "open",
+          "1,0,1:S": "open",
+          "2,0,0:S": "open",
+          "2,0,1:S": "open"
+        }
+      },
+      {
+        "id": "tile_022",
+        "tile": "core.room_long",
+        "x": -3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_023",
+        "tile": "core.room",
+        "x": -3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_024",
+        "tile": "core.room",
+        "x": -2,
+        "y": -5,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_025",
+        "tile": "core.room",
+        "x": -4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_026",
+        "tile": "core.room",
+        "x": -5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "bars",
+          "0,0,0:W": "window"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_027",
+        "tile": "core.room",
+        "x": -4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_028",
+        "tile": "core.room",
+        "x": -5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:N": "bars",
+          "0,0,0:W": "window"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_029",
+        "tile": "core.room",
+        "x": -4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_030",
+        "tile": "core.room",
+        "x": -5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:W": "window"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_031",
+        "tile": "core.room",
+        "x": -4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_032",
+        "tile": "core.room",
+        "x": -4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_033",
+        "tile": "core.room",
+        "x": -4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_034",
+        "tile": "core.hall",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "edges": {
+          "0,1,0:W": "door",
+          "0,2,0:N": "windows",
+          "1,2,0:N": "windows",
+          "2,2,0:N": "windows",
+          "2,0,0:E": "windows",
+          "2,1,0:E": "windows",
+          "2,2,0:E": "windows"
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "skylight",
+          "corners": "columns"
+        }
+      },
+      {
+        "id": "tile_035",
+        "tile": "core.room",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        },
+        "options": {
+          "layout": "empty",
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_036",
+        "tile": "core.platform",
+        "x": 5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_037",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_038",
+        "tile": "core.platform",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_039",
+        "tile": "core.platform",
+        "x": 6,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_040",
+        "tile": "core.platform",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_041",
+        "tile": "core.platform",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_042",
+        "tile": "core.platform",
+        "x": 7,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_043",
+        "tile": "core.platform",
+        "x": 7,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_044",
+        "tile": "core.platform",
+        "x": 7,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_045",
+        "tile": "core.platform",
+        "x": 8,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_046",
+        "tile": "core.platform",
+        "x": 8,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_047",
+        "tile": "core.platform",
+        "x": 8,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_048",
+        "tile": "core.platform",
+        "x": 9,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_049",
+        "tile": "core.platform",
+        "x": 9,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_050",
+        "tile": "core.platform",
+        "x": 9,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_051",
+        "tile": "core.platform",
+        "x": 10,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.platform",
+        "x": 10,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_053",
+        "tile": "core.platform",
+        "x": 10,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_054",
+        "tile": "core.platform",
+        "x": 11,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_055",
+        "tile": "core.platform",
+        "x": 11,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_056",
+        "tile": "core.platform",
+        "x": 11,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_057",
+        "tile": "core.platform",
+        "x": 12,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_058",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_059",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_060",
+        "tile": "core.platform",
+        "x": 13,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_061",
+        "tile": "core.platform",
+        "x": 13,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_062",
+        "tile": "core.platform",
+        "x": 13,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.platform",
+        "x": 14,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_064",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_065",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_066",
+        "tile": "core.platform",
+        "x": 15,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_067",
+        "tile": "core.platform",
+        "x": 15,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_068",
+        "tile": "core.platform",
+        "x": 15,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_069",
+        "tile": "core.platform",
+        "x": 16,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_070",
+        "tile": "core.platform",
+        "x": 16,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_071",
+        "tile": "core.platform",
+        "x": 16,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_072",
+        "tile": "core.platform",
+        "x": 17,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_073",
+        "tile": "core.platform",
+        "x": 17,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_074",
+        "tile": "core.platform",
+        "x": 17,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_075",
+        "tile": "core.platform",
+        "x": 18,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_076",
+        "tile": "core.platform",
+        "x": 18,
+        "y": 0,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      },
+      {
+        "id": "tile_077",
+        "tile": "core.platform",
+        "x": 18,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.grate",
+            "tint": "#8a9299"
+          },
+          "walls": {
+            "material": "core.orbital_panel",
+            "tint": "#80868e"
+          },
+          "solids": {
+            "material": "core.pbr_space_metal",
+            "tint": "#9aa0a8"
+          },
+          "underside": {
+            "material": "core.orbital_panel",
+            "tint": "#5c6168"
+          }
+        }
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "block_078",
+      "position": [
+        0,
+        -30,
+        -12.3
+      ],
+      "kind": "block",
+      "size": [
+        40.6,
+        30,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#8a9098",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_079",
+      "position": [
+        0,
+        -30,
+        12.3
+      ],
+      "kind": "block",
+      "size": [
+        40.6,
+        30,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#8a9098",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_080",
+      "position": [
+        -20.3,
+        -30,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        30,
+        24
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#8a9098",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_081",
+      "position": [
+        20.3,
+        -30,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        30,
+        24
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#8a9098",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_082",
+      "position": [
+        0,
+        -6,
+        -11.8
+      ],
+      "kind": "block",
+      "size": [
+        40,
+        0.4,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#ff7a3a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_083",
+      "position": [
+        0,
+        -6,
+        11.8
+      ],
+      "kind": "block",
+      "size": [
+        40,
+        0.4,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#ff7a3a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_084",
+      "position": [
+        0,
+        -16,
+        -11.8
+      ],
+      "kind": "block",
+      "size": [
+        40,
+        0.4,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#ff7a3a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_085",
+      "position": [
+        0,
+        -16,
+        11.8
+      ],
+      "kind": "block",
+      "size": [
+        40,
+        0.4,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#ff7a3a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_086",
+      "position": [
+        0,
+        -36,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        12,
+        1,
+        12
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5f66",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_087",
+      "position": [
+        0,
+        -35,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.os_reactor_core",
+      "yaw": 0,
+      "scale": 4,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_088",
+      "position": [
+        0,
+        -24,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff6a2a",
+      "intensity": 3,
+      "range": 30,
+      "fixture": "none"
+    },
+    {
+      "id": "light_089",
+      "position": [
+        0,
+        -8,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff8a4a",
+      "intensity": 1.6,
+      "range": 18,
+      "fixture": "none"
+    },
+    {
+      "id": "block_090",
+      "position": [
+        0,
+        -3,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        3,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#8a9098",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_091",
+      "position": [
+        0,
+        -0.05,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        8.1,
+        0.1,
+        8.1
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_092",
+      "position": [
+        -2.6,
+        0,
+        2.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_console_corner",
+      "yaw": 3.9269908169872414,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "position": [
+        2.6,
+        0,
+        2.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_terminal",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "position": [
+        2.8,
+        0,
+        -2.6
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "position": [
+        -2.8,
+        0,
+        -2.8
+      ],
+      "kind": "prop",
+      "model": "prop.os_power_unit",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "btn_island",
+      "position": [
+        -1.6,
+        1.2,
+        3.4
+      ],
+      "name": "Reactor control: bridges",
+      "kind": "button",
+      "yaw": 3.141592653589793,
+      "label": "Retract every bridge",
+      "once": false,
+      "cooldownSeconds": 20,
+      "startEnabled": true
+    },
+    {
+      "id": "light_096",
+      "position": [
+        0,
+        3.2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#9fd8ff",
+      "intensity": 1.4,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "blk_bw_out",
+      "position": [
+        -16,
+        -0.3,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        0.3,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mv_bw_out",
+      "position": [
+        -16,
+        -0.3,
+        0
+      ],
+      "name": "Bridge bw_out",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "blk_bw_out"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -0.7,
+          0
+        ],
+        [
+          -8.6,
+          -0.7,
+          0
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "blk_bw_in",
+      "position": [
+        -8,
+        -0.3,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        0.3,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mv_bw_in",
+      "position": [
+        -8,
+        -0.3,
+        0
+      ],
+      "name": "Bridge bw_in",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "blk_bw_in"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -0.7,
+          0
+        ],
+        [
+          8.6,
+          -0.7,
+          0
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "blk_be_out",
+      "position": [
+        16,
+        -0.3,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        0.3,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mv_be_out",
+      "position": [
+        16,
+        -0.3,
+        0
+      ],
+      "name": "Bridge be_out",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "blk_be_out"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -0.7,
+          0
+        ],
+        [
+          8.6,
+          -0.7,
+          0
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "blk_be_in",
+      "position": [
+        8,
+        -0.3,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        8,
+        0.3,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mv_be_in",
+      "position": [
+        8,
+        -0.3,
+        0
+      ],
+      "name": "Bridge be_in",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "blk_be_in"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -0.7,
+          0
+        ],
+        [
+          -8.6,
+          -0.7,
+          0
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "blk_bn",
+      "position": [
+        0,
+        -0.3,
+        8
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        0.3,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mv_bn",
+      "position": [
+        0,
+        -0.3,
+        8
+      ],
+      "name": "Bridge bn",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "blk_bn"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -0.7,
+          0
+        ],
+        [
+          0,
+          -0.7,
+          8.6
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "blk_bs",
+      "position": [
+        0,
+        -0.3,
+        -8
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        0.3,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mv_bs",
+      "position": [
+        0,
+        -0.3,
+        -8
+      ],
+      "name": "Bridge bs",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "blk_bs"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -0.7,
+          0
+        ],
+        [
+          0,
+          -0.7,
+          -8.6
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "btn_bw",
+      "position": [
+        -21.8,
+        1.2,
+        3
+      ],
+      "name": "Bridge console",
+      "kind": "button",
+      "yaw": 3.141592653589793,
+      "label": "Retract the bridge",
+      "once": false,
+      "cooldownSeconds": 12,
+      "startEnabled": true
+    },
+    {
+      "id": "btn_be",
+      "position": [
+        21.8,
+        1.2,
+        -3
+      ],
+      "name": "Bridge console",
+      "kind": "button",
+      "yaw": 0,
+      "label": "Retract the bridge",
+      "once": false,
+      "cooldownSeconds": 12,
+      "startEnabled": true
+    },
+    {
+      "id": "btn_bn",
+      "position": [
+        3,
+        1.2,
+        18.2
+      ],
+      "name": "Bridge console",
+      "kind": "button",
+      "yaw": -1.5707963267948966,
+      "label": "Retract the bridge",
+      "once": false,
+      "cooldownSeconds": 12,
+      "startEnabled": true
+    },
+    {
+      "id": "btn_bs",
+      "position": [
+        -3,
+        1.2,
+        -18.2
+      ],
+      "name": "Bridge console",
+      "kind": "button",
+      "yaw": 1.5707963267948966,
+      "label": "Retract the bridge",
+      "once": false,
+      "cooldownSeconds": 12,
+      "startEnabled": true
+    },
+    {
+      "id": "field_hangar",
+      "position": [
+        0,
+        0,
+        -44.1
+      ],
+      "kind": "block",
+      "size": [
+        24,
+        8,
+        0.2
+      ],
+      "yaw": 0,
+      "material": null,
+      "tint": "#5ad8ff",
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "field": true
+    },
+    {
+      "id": "prop_097",
+      "position": [
+        -12.2,
+        0,
+        -43.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_field_emitter",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_098",
+      "position": [
+        12.2,
+        0,
+        -43.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_field_emitter",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "mount_099",
+      "position": [
+        -7.5,
+        0,
+        -36
+      ],
+      "kind": "mount",
+      "model": "skyfighter",
+      "yaw": 3.141592653589793,
+      "faction": null,
+      "respawnSeconds": 60
+    },
+    {
+      "id": "mount_100",
+      "position": [
+        7.5,
+        0,
+        -36
+      ],
+      "kind": "mount",
+      "model": "skyfighter",
+      "yaw": 3.141592653589793,
+      "faction": null,
+      "respawnSeconds": 60
+    },
+    {
+      "id": "mount_101",
+      "position": [
+        0,
+        0.2,
+        -31
+      ],
+      "kind": "mount",
+      "model": "dropship",
+      "yaw": 3.141592653589793,
+      "faction": null,
+      "respawnSeconds": 90
+    },
+    {
+      "id": "prop_102",
+      "position": [
+        -9.5,
+        0,
+        -27
+      ],
+      "kind": "prop",
+      "model": "prop.os_cargo_crate",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "position": [
+        9.5,
+        0,
+        -27.5
+      ],
+      "kind": "prop",
+      "model": "prop.os_cargo_crate",
+      "yaw": -0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "position": [
+        10,
+        0,
+        -32
+      ],
+      "kind": "prop",
+      "model": "prop.os_generator",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "position": [
+        10.6,
+        0,
+        -38
+      ],
+      "kind": "prop",
+      "model": "prop.os_canister_rack",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_106",
+      "position": [
+        -6.5,
+        0,
+        -25.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_truss",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_107",
+      "position": [
+        6.5,
+        0,
+        -25.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_truss",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_108",
+      "position": [
+        3,
+        0,
+        -22.2
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "btn_hangar",
+      "position": [
+        11.4,
+        1.2,
+        -24
+      ],
+      "name": "Hangar launch console",
+      "kind": "button",
+      "yaw": -1.5707963267948966,
+      "label": "Launch clearance",
+      "once": false,
+      "cooldownSeconds": 30,
+      "startEnabled": true
+    },
+    {
+      "id": "lamp_hangar_w",
+      "position": [
+        -10,
+        6.5,
+        -41
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ff3020",
+      "intensity": 1.2,
+      "range": 12,
+      "fixture": "wall",
+      "off": true,
+      "blink": 3
+    },
+    {
+      "id": "lamp_hangar_e",
+      "position": [
+        10,
+        6.5,
+        -41
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ff3020",
+      "intensity": 1.2,
+      "range": 12,
+      "fixture": "wall",
+      "off": true,
+      "blink": 3
+    },
+    {
+      "id": "light_109",
+      "position": [
+        -6,
+        7.6,
+        -28
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#d8e4ee",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "strip"
+    },
+    {
+      "id": "light_110",
+      "position": [
+        6,
+        7.6,
+        -28
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#d8e4ee",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "strip"
+    },
+    {
+      "id": "light_111",
+      "position": [
+        -6,
+        7.6,
+        -38
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#d8e4ee",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "strip"
+    },
+    {
+      "id": "light_112",
+      "position": [
+        6,
+        7.6,
+        -38
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#d8e4ee",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "strip"
+    },
+    {
+      "id": "blk_comp_w",
+      "position": [
+        -27.5,
+        0,
+        -28
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        3.4,
+        15.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rusted_plate",
+      "tint": "#7a7064",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "blk_comp_e",
+      "position": [
+        -20.5,
+        0,
+        -28
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        3.4,
+        15.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_rusted_plate",
+      "tint": "#7a7064",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mv_comp_w",
+      "position": [
+        -27.5,
+        0,
+        -28
+      ],
+      "name": "Compactor west wall",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "blk_comp_w"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2.1,
+          0,
+          0
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 0.5,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "mv_comp_e",
+      "position": [
+        -20.5,
+        0,
+        -28
+      ],
+      "name": "Compactor east wall",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "blk_comp_e"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          -2.1,
+          0,
+          0
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 0.5,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "water_113",
+      "position": [
+        -24,
+        0,
+        -28
+      ],
+      "kind": "water",
+      "size": [
+        6.2,
+        0.5,
+        15
+      ],
+      "liquid": "swamp",
+      "tint": "#4a5038"
+    },
+    {
+      "id": "prop_114",
+      "position": [
+        -25.5,
+        0,
+        -31
+      ],
+      "kind": "prop",
+      "model": "prop.debris",
+      "yaw": 0.6,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_115",
+      "position": [
+        -22.6,
+        0,
+        -24
+      ],
+      "kind": "prop",
+      "model": "prop.debris",
+      "yaw": 2.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_116",
+      "position": [
+        -24,
+        0,
+        -34
+      ],
+      "kind": "prop",
+      "model": "prop.metal_panel",
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_117",
+      "position": [
+        -22.8,
+        0,
+        -32.5
+      ],
+      "kind": "prop",
+      "model": "prop.sf_pipe_rack",
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "door_comp_in",
+      "position": [
+        -24,
+        0,
+        -20
+      ],
+      "name": "Compactor way in",
+      "kind": "door",
+      "yaw": 0,
+      "startOpen": false,
+      "locked": false,
+      "auto": true
+    },
+    {
+      "id": "door_comp_out",
+      "position": [
+        -24,
+        0,
+        -36
+      ],
+      "name": "Compactor hatch",
+      "kind": "door",
+      "yaw": 0,
+      "style": "blast",
+      "startOpen": false,
+      "locked": true,
+      "auto": false
+    },
+    {
+      "id": "btn_comp",
+      "position": [
+        -27.6,
+        1.2,
+        -14
+      ],
+      "name": "Compactor console",
+      "kind": "button",
+      "yaw": 1.5707963267948966,
+      "label": "Start the compactor",
+      "once": false,
+      "cooldownSeconds": 30,
+      "startEnabled": true
+    },
+    {
+      "id": "light_118",
+      "position": [
+        -24,
+        3.3,
+        -28
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#c8d890",
+      "intensity": 0.8,
+      "range": 10,
+      "fixture": "strip"
+    },
+    {
+      "id": "lamp_comp",
+      "position": [
+        -24,
+        3,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff3020",
+      "intensity": 1.3,
+      "range": 10,
+      "fixture": "bulb",
+      "off": true,
+      "blink": 2.5
+    },
+    {
+      "id": "door_cell_a",
+      "position": [
+        -36,
+        0,
+        -8
+      ],
+      "name": "Cell 2187",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "startOpen": false,
+      "locked": false,
+      "auto": true,
+      "team": "tide"
+    },
+    {
+      "id": "prop_119",
+      "position": [
+        -42.6,
+        0,
+        -9.6
+      ],
+      "kind": "prop",
+      "model": "prop.space_bed",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_120",
+      "position": [
+        -40,
+        3.3,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd0a0",
+      "intensity": 0.7,
+      "range": 6,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "door_cell_b",
+      "position": [
+        -36,
+        0,
+        0
+      ],
+      "name": "Cell 2188",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "startOpen": false,
+      "locked": false,
+      "auto": true,
+      "team": "tide"
+    },
+    {
+      "id": "prop_121",
+      "position": [
+        -42.6,
+        0,
+        -1.6
+      ],
+      "kind": "prop",
+      "model": "prop.space_bed",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_122",
+      "position": [
+        -40,
+        3.3,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd0a0",
+      "intensity": 0.7,
+      "range": 6,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "door_cell_c",
+      "position": [
+        -36,
+        0,
+        8
+      ],
+      "name": "Cell 2189",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "startOpen": false,
+      "locked": false,
+      "auto": true,
+      "team": "tide"
+    },
+    {
+      "id": "prop_123",
+      "position": [
+        -42.6,
+        0,
+        6.4
+      ],
+      "kind": "prop",
+      "model": "prop.space_bed",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_124",
+      "position": [
+        -40,
+        3.3,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd0a0",
+      "intensity": 0.7,
+      "range": 6,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "prop_125",
+      "position": [
+        -34.8,
+        0,
+        18.8
+      ],
+      "kind": "prop",
+      "model": "prop.os_console_corner",
+      "yaw": 3.9269908169872414,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_126",
+      "position": [
+        -29.1,
+        0,
+        18.2
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_127",
+      "position": [
+        -35,
+        0,
+        13.8
+      ],
+      "kind": "prop",
+      "model": "prop.os_terminal",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "btn_cells",
+      "position": [
+        -35.6,
+        1.2,
+        16.6
+      ],
+      "name": "Detention control",
+      "kind": "button",
+      "yaw": 1.5707963267948966,
+      "label": "Open every cell",
+      "once": false,
+      "cooldownSeconds": 20,
+      "startEnabled": true
+    },
+    {
+      "id": "light_128",
+      "position": [
+        -32,
+        3.4,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe8c8",
+      "intensity": 0.9,
+      "range": 8,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_129",
+      "position": [
+        -28.6,
+        2.4,
+        -8
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_130",
+      "position": [
+        -28.6,
+        2.4,
+        8
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "block_131",
+      "position": [
+        -16,
+        -30,
+        19.7
+      ],
+      "kind": "block",
+      "size": [
+        24.6,
+        30,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#8a9098",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_132",
+      "position": [
+        -16,
+        -30,
+        44.3
+      ],
+      "kind": "block",
+      "size": [
+        24.6,
+        30,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#8a9098",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_133",
+      "position": [
+        -28.3,
+        -30,
+        32
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        30,
+        24
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#8a9098",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_134",
+      "position": [
+        -3.7,
+        -30,
+        32
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        30,
+        24
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#8a9098",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_135",
+      "position": [
+        -16,
+        -30,
+        32
+      ],
+      "kind": "block",
+      "size": [
+        4,
+        30,
+        4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#6a7078",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_136",
+      "position": [
+        -16,
+        0,
+        32
+      ],
+      "kind": "block",
+      "size": [
+        4,
+        12,
+        4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#6a7078",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_137",
+      "position": [
+        -16,
+        -0.4,
+        32
+      ],
+      "kind": "block",
+      "size": [
+        9,
+        0.4,
+        9
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_138",
+      "position": [
+        -16,
+        -0.3,
+        23.75
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.3,
+        7.5
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_139",
+      "position": [
+        -7.75,
+        -0.3,
+        32
+      ],
+      "kind": "block",
+      "size": [
+        7.5,
+        0.3,
+        2.4
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_140",
+      "position": [
+        -24.25,
+        -0.3,
+        32
+      ],
+      "kind": "block",
+      "size": [
+        7.5,
+        0.3,
+        2.4
+      ],
+      "yaw": 0,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_141",
+      "position": [
+        -16,
+        4,
+        32
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        0.3,
+        4.2
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#7fd0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_142",
+      "position": [
+        -16,
+        8,
+        32
+      ],
+      "kind": "block",
+      "size": [
+        4.2,
+        0.3,
+        4.2
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#7fd0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        -17.2,
+        0,
+        29.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_power_unit",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        -13.6,
+        0,
+        33.6
+      ],
+      "kind": "prop",
+      "model": "prop.os_coolant_pipe",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "btn_tractor",
+      "position": [
+        -15.2,
+        1.2,
+        29.9
+      ],
+      "name": "Tractor beam power coupling",
+      "kind": "button",
+      "yaw": 3.141592653589793,
+      "label": "Cut the power coupling",
+      "once": false,
+      "cooldownSeconds": 40,
+      "startEnabled": true
+    },
+    {
+      "id": "lamp_tractor",
+      "position": [
+        -16,
+        11,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#7fd0ff",
+      "intensity": 2.2,
+      "range": 16,
+      "fixture": "none"
+    },
+    {
+      "id": "light_145",
+      "position": [
+        -16,
+        -10,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4a8cff",
+      "intensity": 1.6,
+      "range": 18,
+      "fixture": "none"
+    },
+    {
+      "id": "light_146",
+      "position": [
+        -32,
+        3.4,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#e0ecf8",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_147",
+      "position": [
+        -32,
+        3.4,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#e0ecf8",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "block_148",
+      "position": [
+        8,
+        0,
+        40.8
+      ],
+      "kind": "block",
+      "size": [
+        10,
+        0.25,
+        4.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_marble_black",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_149",
+      "position": [
+        8,
+        0.25,
+        41.6
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.25,
+        2.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_marble_black",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        8,
+        0.5,
+        41.8
+      ],
+      "kind": "prop",
+      "model": "prop.space_chair",
+      "yaw": 3.141592653589793,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_151",
+      "position": [
+        5,
+        0.25,
+        41
+      ],
+      "kind": "prop",
+      "model": "prop.os_console_corner",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        11,
+        0.25,
+        41
+      ],
+      "kind": "prop",
+      "model": "prop.os_console_corner",
+      "yaw": 4.71238898038469,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_153",
+      "position": [
+        15,
+        0,
+        31
+      ],
+      "kind": "prop",
+      "model": "prop.holo_table",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        1.5,
+        0,
+        22.5
+      ],
+      "kind": "prop",
+      "model": "prop.os_holo_globe",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        -2.6,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.os_wall_column",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        18.6,
+        0,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.os_wall_column",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_157",
+      "position": [
+        2,
+        3.4,
+        26
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff5a4a",
+      "intensity": 0.8,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_158",
+      "position": [
+        14,
+        3.4,
+        26
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff5a4a",
+      "intensity": 0.8,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_159",
+      "position": [
+        2,
+        3.4,
+        38
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff5a4a",
+      "intensity": 0.8,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_160",
+      "position": [
+        14,
+        3.4,
+        38
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff5a4a",
+      "intensity": 0.8,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_161",
+      "position": [
+        8,
+        3.6,
+        43
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#c8d8ff",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "strip"
+    },
+    {
+      "id": "door_air_in",
+      "position": [
+        28,
+        0,
+        0
+      ],
+      "name": "Airlock inner door",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "startOpen": false,
+      "locked": false,
+      "auto": true
+    },
+    {
+      "id": "door_air_out",
+      "position": [
+        36,
+        0,
+        0
+      ],
+      "name": "Airlock outer door",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "startOpen": false,
+      "locked": false,
+      "auto": true
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        28.9,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.os_airlock_frame",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        35.1,
+        0,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.os_airlock_frame",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_164",
+      "position": [
+        32,
+        3,
+        3.4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb347",
+      "intensity": 0.8,
+      "range": 6,
+      "fixture": "wall",
+      "blink": 0.5
+    },
+    {
+      "id": "block_165",
+      "position": [
+        64,
+        0,
+        -13
+      ],
+      "kind": "block",
+      "size": [
+        56,
+        14,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_166",
+      "position": [
+        120,
+        0,
+        -13
+      ],
+      "kind": "block",
+      "size": [
+        56,
+        14,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_167",
+      "position": [
+        64,
+        0,
+        13
+      ],
+      "kind": "block",
+      "size": [
+        56,
+        14,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_168",
+      "position": [
+        120,
+        0,
+        13
+      ],
+      "kind": "block",
+      "size": [
+        56,
+        14,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_169",
+      "position": [
+        35,
+        0,
+        -8
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        14,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_170",
+      "position": [
+        35,
+        0,
+        8
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        14,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_171",
+      "position": [
+        149,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        14,
+        28
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_172",
+      "position": [
+        44,
+        0,
+        -11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_173",
+      "position": [
+        48,
+        0,
+        11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_174",
+      "position": [
+        56,
+        0,
+        11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_175",
+      "position": [
+        76,
+        0,
+        -11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_176",
+      "position": [
+        80,
+        0,
+        11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_177",
+      "position": [
+        84,
+        0,
+        -11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_178",
+      "position": [
+        104,
+        0,
+        11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_179",
+      "position": [
+        112,
+        0,
+        11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_180",
+      "position": [
+        116,
+        0,
+        -11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_181",
+      "position": [
+        136,
+        0,
+        11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_182",
+      "position": [
+        144,
+        0,
+        11.5
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        9,
+        1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#7e848c",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_183",
+      "position": [
+        48,
+        10,
+        -11.7
+      ],
+      "kind": "block",
+      "size": [
+        7.4,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#b8d0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_184",
+      "position": [
+        48,
+        10,
+        11.7
+      ],
+      "kind": "block",
+      "size": [
+        7.4,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#b8d0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_185",
+      "position": [
+        80,
+        10,
+        -11.7
+      ],
+      "kind": "block",
+      "size": [
+        7.4,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#b8d0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_186",
+      "position": [
+        80,
+        10,
+        11.7
+      ],
+      "kind": "block",
+      "size": [
+        7.4,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#b8d0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_187",
+      "position": [
+        112,
+        10,
+        -11.7
+      ],
+      "kind": "block",
+      "size": [
+        7.4,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#b8d0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_188",
+      "position": [
+        112,
+        10,
+        11.7
+      ],
+      "kind": "block",
+      "size": [
+        7.4,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#b8d0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_189",
+      "position": [
+        144,
+        10,
+        -11.7
+      ],
+      "kind": "block",
+      "size": [
+        7.4,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#b8d0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_190",
+      "position": [
+        144,
+        10,
+        11.7
+      ],
+      "kind": "block",
+      "size": [
+        7.4,
+        0.3,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#b8d0ff",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_191",
+      "position": [
+        64,
+        0,
+        -10.5
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        5,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5f66",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_192",
+      "position": [
+        56.5,
+        2.3,
+        -10.5
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.4,
+        10.3
+      ],
+      "yaw": 1.5707963267948966,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "pitch": 0.507098504392337
+    },
+    {
+      "id": "mount_193",
+      "position": [
+        65,
+        5,
+        -10.5
+      ],
+      "kind": "mount",
+      "model": "turret_rocket",
+      "yaw": 0,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "block_194",
+      "position": [
+        96,
+        0,
+        10.5
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        5,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5f66",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_195",
+      "position": [
+        88.5,
+        2.3,
+        10.5
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.4,
+        10.3
+      ],
+      "yaw": 1.5707963267948966,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "pitch": 0.507098504392337
+    },
+    {
+      "id": "mount_196",
+      "position": [
+        97,
+        5,
+        10.5
+      ],
+      "kind": "mount",
+      "model": "turret_mg",
+      "yaw": 3.141592653589793,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "block_197",
+      "position": [
+        104,
+        0,
+        -10.5
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        5,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5f66",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_198",
+      "position": [
+        96.5,
+        2.3,
+        -10.5
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.4,
+        10.3
+      ],
+      "yaw": 1.5707963267948966,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "pitch": 0.507098504392337
+    },
+    {
+      "id": "mount_199",
+      "position": [
+        105,
+        5,
+        -10.5
+      ],
+      "kind": "mount",
+      "model": "turret_mg",
+      "yaw": 0,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "block_200",
+      "position": [
+        128,
+        0,
+        10.5
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        5,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5f66",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_201",
+      "position": [
+        120.5,
+        2.3,
+        10.5
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.4,
+        10.3
+      ],
+      "yaw": 1.5707963267948966,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "pitch": 0.507098504392337
+    },
+    {
+      "id": "mount_202",
+      "position": [
+        129,
+        5,
+        10.5
+      ],
+      "kind": "mount",
+      "model": "turret_rocket",
+      "yaw": 3.141592653589793,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "block_203",
+      "position": [
+        72,
+        0,
+        10.5
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        5,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5f66",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_204",
+      "position": [
+        64.5,
+        2.3,
+        10.5
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.4,
+        10.3
+      ],
+      "yaw": 1.5707963267948966,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "pitch": 0.507098504392337
+    },
+    {
+      "id": "mount_205",
+      "position": [
+        73,
+        5,
+        10.5
+      ],
+      "kind": "mount",
+      "model": "turret_mg",
+      "yaw": 3.141592653589793,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "block_206",
+      "position": [
+        136,
+        0,
+        -10.5
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        5,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5f66",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_207",
+      "position": [
+        128.5,
+        2.3,
+        -10.5
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.4,
+        10.3
+      ],
+      "yaw": 1.5707963267948966,
+      "material": "core.grate",
+      "tint": "#9aa2aa",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "pitch": 0.507098504392337
+    },
+    {
+      "id": "mount_208",
+      "position": [
+        137,
+        5,
+        -10.5
+      ],
+      "kind": "mount",
+      "model": "turret_mg",
+      "yaw": 0,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "zone_209",
+      "position": [
+        64,
+        0,
+        0
+      ],
+      "name": "Trench low gravity",
+      "kind": "zone",
+      "size": [
+        56,
+        16,
+        24
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true,
+      "gravity": 0.5
+    },
+    {
+      "id": "zone_210",
+      "position": [
+        120,
+        0,
+        0
+      ],
+      "name": "Trench low gravity",
+      "kind": "zone",
+      "size": [
+        56,
+        16,
+        24
+      ],
+      "who": "any",
+      "count": 1,
+      "startEnabled": true,
+      "gravity": 0.5
+    },
+    {
+      "id": "block_211",
+      "position": [
+        142,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        4,
+        1.1,
+        4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_tread_plate",
+      "tint": "#5a5f66",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_212",
+      "position": [
+        142,
+        1.1,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2.4,
+        0.1,
+        2.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_space_metal",
+      "tint": "#101012",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_213",
+      "position": [
+        142,
+        2.6,
+        2.3
+      ],
+      "kind": "block",
+      "size": [
+        4.4,
+        0.3,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#ffb060",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_214",
+      "position": [
+        142,
+        2.6,
+        -2.3
+      ],
+      "kind": "block",
+      "size": [
+        4.4,
+        0.3,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.glow_trim",
+      "tint": "#ffb060",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "light_215",
+      "position": [
+        142,
+        1.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3a",
+      "intensity": 2,
+      "range": 9,
+      "fixture": "none",
+      "blink": 1.2
+    },
+    {
+      "id": "light_216",
+      "position": [
+        44,
+        7,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#c8d8ff",
+      "intensity": 1.1,
+      "range": 18,
+      "fixture": "none"
+    },
+    {
+      "id": "light_217",
+      "position": [
+        72,
+        7,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#c8d8ff",
+      "intensity": 1.1,
+      "range": 18,
+      "fixture": "none"
+    },
+    {
+      "id": "light_218",
+      "position": [
+        100,
+        7,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#c8d8ff",
+      "intensity": 1.1,
+      "range": 18,
+      "fixture": "none"
+    },
+    {
+      "id": "light_219",
+      "position": [
+        128,
+        7,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#c8d8ff",
+      "intensity": 1.1,
+      "range": 18,
+      "fixture": "none"
+    },
+    {
+      "id": "bombsite_220",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "bombsite",
+      "label": "A",
+      "radius": 3.5
+    },
+    {
+      "id": "bombsite_221",
+      "position": [
+        137,
+        0,
+        0
+      ],
+      "kind": "bombsite",
+      "label": "B",
+      "radius": 4
+    },
+    {
+      "id": "flag_222",
+      "position": [
+        -6,
+        0,
+        -22.5
+      ],
+      "kind": "flag",
+      "yaw": 3.141592653589793,
+      "team": "embers"
+    },
+    {
+      "id": "flag_223",
+      "position": [
+        -31,
+        0,
+        17
+      ],
+      "kind": "flag",
+      "yaw": 3.141592653589793,
+      "team": "tide"
+    },
+    {
+      "id": "hill_224",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "hill",
+      "radius": 4
+    },
+    {
+      "id": "hill_225",
+      "position": [
+        8,
+        0,
+        32
+      ],
+      "kind": "hill",
+      "radius": 6
+    },
+    {
+      "id": "hill_226",
+      "position": [
+        92,
+        0,
+        0
+      ],
+      "kind": "hill",
+      "radius": 7
+    },
+    {
+      "id": "spawn_227",
+      "position": [
+        -9.5,
+        0,
+        -23
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_228",
+      "position": [
+        9.5,
+        0,
+        -23
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_229",
+      "position": [
+        0,
+        0,
+        -24.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_230",
+      "position": [
+        -10,
+        0,
+        -40
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_231",
+      "position": [
+        10,
+        0,
+        -40
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_232",
+      "position": [
+        -3,
+        0,
+        -40.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_233",
+      "position": [
+        -10.2,
+        4,
+        -22
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_234",
+      "position": [
+        4,
+        4,
+        -21.8
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_235",
+      "position": [
+        -23,
+        0,
+        -40
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_236",
+      "position": [
+        -15,
+        0,
+        -39
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_237",
+      "position": [
+        2,
+        0,
+        -15
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_238",
+      "position": [
+        3.5,
+        0,
+        -40.5
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_239",
+      "position": [
+        -31,
+        0,
+        -9
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_240",
+      "position": [
+        -31,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_241",
+      "position": [
+        -31,
+        0,
+        9
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_242",
+      "position": [
+        -30,
+        0,
+        14
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_243",
+      "position": [
+        -31,
+        0,
+        25
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_244",
+      "position": [
+        -33,
+        0,
+        33
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_245",
+      "position": [
+        2,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_246",
+      "position": [
+        14,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_247",
+      "position": [
+        2,
+        0,
+        36
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_248",
+      "position": [
+        14,
+        0,
+        36
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_249",
+      "position": [
+        6,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_250",
+      "position": [
+        -8,
+        0,
+        17
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_251",
+      "position": [
+        -25,
+        0,
+        -17
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_252",
+      "position": [
+        25,
+        0,
+        -17
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_253",
+      "position": [
+        25,
+        0,
+        17
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_254",
+      "position": [
+        -25,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_255",
+      "position": [
+        25,
+        0,
+        -8
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_256",
+      "position": [
+        16,
+        0,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_257",
+      "position": [
+        -16,
+        0,
+        18
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_258",
+      "position": [
+        32,
+        0,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_259",
+      "position": [
+        48,
+        0,
+        4
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_260",
+      "position": [
+        84,
+        0,
+        -6
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_261",
+      "position": [
+        120,
+        0,
+        6
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_262",
+      "position": [
+        60,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "pickup_263",
+      "position": [
+        -16,
+        0,
+        35.6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_264",
+      "position": [
+        -34,
+        0,
+        30
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_cells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_265",
+      "position": [
+        140,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_266",
+      "position": [
+        100,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_267",
+      "position": [
+        16,
+        0,
+        42
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_268",
+      "position": [
+        26,
+        0,
+        18
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_269",
+      "position": [
+        -41,
+        0,
+        1.5
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_plasma",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_270",
+      "position": [
+        -41,
+        0,
+        9.5
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_271",
+      "position": [
+        -41,
+        0,
+        -6.5
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_272",
+      "position": [
+        -26,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_273",
+      "position": [
+        26,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_274",
+      "position": [
+        -2,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_275",
+      "position": [
+        2,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_276",
+      "position": [
+        -4,
+        0,
+        -30
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_277",
+      "position": [
+        -16,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_278",
+      "position": [
+        0,
+        4,
+        -21.8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_279",
+      "position": [
+        8,
+        0,
+        26
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_280",
+      "position": [
+        56,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_281",
+      "position": [
+        116,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_282",
+      "position": [
+        -8,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_283",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_284",
+      "position": [
+        8,
+        0,
+        -40
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_285",
+      "position": [
+        -33,
+        0,
+        -2
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_286",
+      "position": [
+        16,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_light",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_287",
+      "position": [
+        76,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_288",
+      "position": [
+        0,
+        0,
+        1.6
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_289",
+      "position": [
+        -24,
+        0,
+        -31
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_290",
+      "position": [
+        128,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_291",
+      "position": [
+        26,
+        0,
+        10
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_292",
+      "position": [
+        -10.2,
+        4,
+        -26
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_293",
+      "position": [
+        88,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_294",
+      "position": [
+        8,
+        0,
+        38.5
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_295",
+      "position": [
+        0,
+        0,
+        -40
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_296",
+      "position": [
+        64,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_297",
+      "position": [
+        -26,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_298",
+      "position": [
+        26,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_299",
+      "position": [
+        -8,
+        0,
+        18
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_300",
+      "position": [
+        8,
+        0,
+        -18
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_301",
+      "position": [
+        -24,
+        0,
+        -40
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_302",
+      "position": [
+        32,
+        0,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_303",
+      "position": [
+        100,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_304",
+      "position": [
+        44,
+        0,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_305",
+      "position": [
+        -16,
+        0,
+        28.3
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_306",
+      "position": [
+        -30.85,
+        0,
+        6.8
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_307",
+      "position": [
+        -34.65,
+        0,
+        21.48
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_308",
+      "position": [
+        -29.35,
+        0,
+        21.68
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_309",
+      "position": [
+        -28.97,
+        0,
+        27.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.5283,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_310",
+      "position": [
+        -35.03,
+        0,
+        27.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 2.2856,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_311",
+      "position": [
+        23.28,
+        0,
+        -18.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_312",
+      "position": [
+        21.29,
+        0,
+        -13.29
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": 2.2933,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_313",
+      "position": [
+        20.97,
+        0,
+        -19.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.7055,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_314",
+      "position": [
+        -21.55,
+        0,
+        13.09
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_315",
+      "position": [
+        -26.69,
+        0,
+        18.69
+      ],
+      "kind": "prop",
+      "model": "prop.powder_keg",
+      "yaw": 2.2153,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_316",
+      "position": [
+        -27.34,
+        1.4,
+        13.38
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_317",
+      "position": [
+        -24,
+        2.6,
+        -19.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_318",
+      "position": [
+        -24,
+        2.6,
+        19.5
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_319",
+      "position": [
+        -16,
+        2.6,
+        -19.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_320",
+      "position": [
+        -16,
+        2.6,
+        19.5
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_321",
+      "position": [
+        -8,
+        2.6,
+        -19.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_322",
+      "position": [
+        -8,
+        2.6,
+        19.5
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_323",
+      "position": [
+        0,
+        2.6,
+        -19.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_324",
+      "position": [
+        0,
+        2.6,
+        19.5
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_325",
+      "position": [
+        8,
+        2.6,
+        -19.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_326",
+      "position": [
+        8,
+        2.6,
+        19.5
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_327",
+      "position": [
+        16,
+        2.6,
+        -19.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_328",
+      "position": [
+        16,
+        2.6,
+        19.5
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_329",
+      "position": [
+        24,
+        2.6,
+        -19.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_330",
+      "position": [
+        24,
+        2.6,
+        19.5
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_331",
+      "position": [
+        -27.5,
+        2.6,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_332",
+      "position": [
+        27.5,
+        2.6,
+        -8
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_333",
+      "position": [
+        -27.5,
+        2.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_334",
+      "position": [
+        27.5,
+        2.6,
+        0
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_335",
+      "position": [
+        -27.5,
+        2.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    },
+    {
+      "id": "light_336",
+      "position": [
+        27.5,
+        2.6,
+        8
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#dbe6f0",
+      "intensity": 0.8,
+      "range": 8,
+      "fixture": "wall"
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [
+      {
+        "id": "var_comp",
+        "name": "Compactor running",
+        "initial": 0
+      }
+    ],
+    "timers": [
+      {
+        "id": "timer_comp",
+        "name": "Compactor cycle",
+        "seconds": 90,
+        "loop": true,
+        "visible": false
+      }
+    ],
+    "objectives": [],
+    "rules": [
+      {
+        "id": "rule_start",
+        "name": "Welcome",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Obsidian Orb. Mind the shafts: they have no bottom.",
+            "state": ""
+          },
+          {
+            "type": "timer_start",
+            "target": "timer_comp",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_btn_bw",
+        "name": "Retract a bridge",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_bw"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_out",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_out",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_in",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_in",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 6,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_out",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_out",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_in",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_in",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_btn_be",
+        "name": "Retract a bridge",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_be"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_out",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_out",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_in",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_in",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 6,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_out",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_out",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_in",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_in",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_btn_bn",
+        "name": "Retract a bridge",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_bn"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bn",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bn",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 6,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bn",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bn",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_btn_bs",
+        "name": "Retract a bridge",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_bs"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bs",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bs",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 6,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bs",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bs",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_island",
+        "name": "Retract every bridge",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_island"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "Bridges retracting!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_out",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_out",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_in",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_in",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_out",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_out",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_in",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_in",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bn",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bn",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bs",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bs",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 8,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_out",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_out",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_in",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bw_in",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_out",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_out",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_in",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_be_in",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bn",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bn",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bs",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_bs",
+            "value": 1,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_comp",
+        "name": "Trash compactor",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_comp"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_comp",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "set_var",
+            "target": "var_comp",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "light_on",
+            "target": "lamp_comp",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Compactor engaging! The hatch is open: get out!",
+            "state": ""
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_comp_out",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_comp_out",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_close",
+            "target": "door_comp_in",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_lock",
+            "target": "door_comp_in",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_comp_w",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_comp_e",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 9,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_comp_w",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_comp_e",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 5,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_comp_in",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_close",
+            "target": "door_comp_out",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_lock",
+            "target": "door_comp_out",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "lamp_comp",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_comp",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_comp_timer",
+        "name": "Trash compactor",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_comp"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_comp",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "set_var",
+            "target": "var_comp",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "light_on",
+            "target": "lamp_comp",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Compactor engaging! The hatch is open: get out!",
+            "state": ""
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_comp_out",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_comp_out",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_close",
+            "target": "door_comp_in",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_lock",
+            "target": "door_comp_in",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_comp_w",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_comp_e",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 9,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_comp_w",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "mv_comp_e",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 5,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_unlock",
+            "target": "door_comp_in",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_close",
+            "target": "door_comp_out",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_lock",
+            "target": "door_comp_out",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "lamp_comp",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_comp",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cells",
+        "name": "Open the cells",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_cells"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "Cell doors open for 10 seconds.",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_cell_a",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_cell_b",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_open",
+            "target": "door_cell_c",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 10,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_close",
+            "target": "door_cell_a",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_close",
+            "target": "door_cell_b",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "door_close",
+            "target": "door_cell_c",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_tractor",
+        "name": "Cut the tractor beam",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_tractor"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "light_on",
+            "target": "lamp_hangar_w",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "lamp_hangar_e",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Tractor beam down: the hangar field is open for 15 seconds!",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "field_hangar",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 15,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "field_hangar",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "lamp_hangar_w",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "lamp_hangar_e",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          }
+        ]
+      },
+      {
+        "id": "rule_tractor_lamp",
+        "name": "Tractor beam flickers",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_tractor"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "light_off",
+            "target": "lamp_tractor",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 15,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "lamp_tractor",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_hangar",
+        "name": "Launch clearance",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "btn_hangar"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "light_on",
+            "target": "lamp_hangar_w",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_on",
+            "target": "lamp_hangar_e",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "Launch clearance: hangar field down for 8 seconds.",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "field_hangar",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 8,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "field_hangar",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "lamp_hangar_w",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "light_off",
+            "target": "lamp_hangar_e",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -48,
+      -48
+    ],
+    "max": [
+      154,
+      48.5
+    ],
+    "style": "invisible",
+    "height": 8
+  },
+  "track": null,
+  "backdrop": {
+    "sky": "space",
+    "scenery": "none",
+    "ground": "none",
+    "haze": 0
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "dependencies": []
+}
