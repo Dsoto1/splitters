@@ -12,7 +12,8 @@ import { Match, initNavigation } from '@tiletrigger/shared/match';
  * --npcs adds N always-attacking enemy NPCs (spread over encounters at the
  * map's spawn points, endlessly reinforced) for mixed player + NPC load tests.
  * --mode plays that mode (with its default rules, no score or time limit) and
- * reports its objective events: flag takes and captures, hill holds, rounds.
+ * reports its objective events: flag takes and captures, hill holds, rounds,
+ * race checkpoints, laps and finishes.
  */
 const flags = process.argv.slice(2).filter((a) => a.startsWith('--'));
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
@@ -47,7 +48,7 @@ const aiMs: number[] = [];
 let kills = 0;
 const objective = new Map<string, number>();
 const count = (ev: GameEvent) => {
-  const key = ev.e === 'flag' ? `flag ${ev.a}` : ev.e === 'hill' ? `hill ${ev.a}` : ev.e === 'elim' ? `round ${ev.a}` : null;
+  const key = ev.e === 'flag' ? `flag ${ev.a}` : ev.e === 'hill' ? `hill ${ev.a}` : ev.e === 'elim' ? `round ${ev.a}` : ev.e === 'race' ? `race ${ev.a}` : ev.e === 'round_end' && mode === 'core.race' ? 'races won' : null;
   if (key) objective.set(key, (objective.get(key) ?? 0) + 1);
 };
 const start = performance.now();

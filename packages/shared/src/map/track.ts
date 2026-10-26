@@ -1,0 +1,445 @@
+import type { ValidationIssue } from './validate.ts';
+import type { MapDocument, MapEntity, MountEntity, Track } from './schema.ts';
+import { terrainHeightAt, TERRAIN_MATERIALS, type TerrainData } from './terrain.ts';
+
+/**
+ * Race tracks (map format v18). A track is a smooth road through ordered
+ * control points: a Catmull-Rom curve sampled every couple of metres. Every
+ * derived piece lives here as pure functions of the map, so the simulation,
+ * the client's road mesh, MapMaker's preview and the validator all agree:
+ *
+ * - the centre line (samples with tangent and distance along),
+ * - checkpoints (gates across the road, in order; gate 0 is the start line,
+ *   which is also the finish line of a circuit),
+ * - the start grid (two abreast behind the start line),
+ * - "on the road" lookups (vehicles grip better there),
+ * - laying the road into the terrain (flatten under it, blend the shoulders).
+ */
+
+/** One point on the centre line: position, unit tangent (x/z) and distance along the road. */
+export interface TrackSample {
+  x: number;
+  y: number;
+  z: number;
+  dx: number;
+  dz: number;
+  s: number;
+}
+
+/** A checkpoint: a line across the road at `s`, `half` metres either side of the centre. */
+export interface TrackGate {
+  index: number;
+  s: number;
+  x: number;
+  y: number;
+  z: number;
+  dx: number;
+  dz: number;
+  half: number;
+}
+
+/** A place on the start grid: where a vehicle stands and which way it faces. */
+export interface GridSlot {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+}
+
+/** Metres between centre-line samples. */
+const STEP = 2;
+/** Roughly how far apart checkpoints are. */
+const GATE_SPACING = 40;
+/** Extra reach either side of the road edge that still counts as passing a gate. */
+const GATE_MARGIN = 4;
+/** Grid rows are this far apart; the front row this far behind the line. */
+const GRID_ROW = 7;
+const GRID_FRONT = 6;
+/** Bucket size for the road lookup grid. */
+const CELL = 8;
+
+const catmull = (p0: number, p1: number, p2: number, p3: number, t: number): number => {
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
+};
+
+/** A track's geometry, built once per map (cheap: a few hundred samples). */
+export class TrackGeometry {
+  readonly samples: TrackSample[];
+  readonly length: number;
+  readonly loop: boolean;
+  readonly width: number;
+  readonly gates: TrackGate[];
+  /** Distance along the road of the start line (0 on a circuit; past the grid on a point-to-point run). */
+  readonly start: number;
+  private readonly buckets = new Map<string, number[]>();
+
+  constructor(readonly track: Track) {
+    this.loop = track.loop && track.points.length >= 3;
+    this.width = track.width;
+    this.samples = centreLine(track, this.loop);
+    const last = this.samples[this.samples.length - 1]!;
+    this.length = this.loop ? last.s + Math.hypot(this.samples[0]!.x - last.x, this.samples[0]!.z - last.z) : last.s;
+    const depth = GRID_FRONT + Math.ceil(track.grid / 2) * GRID_ROW + 4;
+    this.start = this.loop ? 0 : Math.min(depth, this.length * 0.4);
+    this.gates = this.buildGates();
+    this.samples.forEach((p, i) => {
+      // Each sample is listed in every bucket its stretch of road (half a width either side) touches.
+      const r = this.width / 2 + STEP;
+      for (let cx = Math.floor((p.x - r) / CELL); cx <= Math.floor((p.x + r) / CELL); cx++) {
+        for (let cz = Math.floor((p.z - r) / CELL); cz <= Math.floor((p.z + r) / CELL); cz++) {
+          const k = `${cx},${cz}`;
+          let list = this.buckets.get(k);
+          if (!list) this.buckets.set(k, (list = []));
+          list.push(i);
+        }
+      }
+    });
+  }
+
+  /** The point `s` metres along the centre line (wrapping on a circuit). */
+  at(s: number): TrackSample {
+    const n = this.samples.length;
+    if (this.loop) s = ((s % this.length) + this.length) % this.length;
+    else s = Math.max(0, Math.min(this.length, s));
+    // Binary search for the sample at or before s.
+    let lo = 0;
+    let hi = n - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (this.samples[mid]!.s <= s) lo = mid;
+      else hi = mid - 1;
+    }
+    const a = this.samples[lo]!;
+    const b = lo + 1 < n ? this.samples[lo + 1]! : this.loop ? { ...this.samples[0]!, s: this.length } : a;
+    const span = b.s - a.s;
+    const t = span > 1e-6 ? (s - a.s) / span : 0;
+    const dx = a.dx + (b.dx - a.dx) * t;
+    const dz = a.dz + (b.dz - a.dz) * t;
+    const l = Math.hypot(dx, dz) || 1;
+    return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t, dx: dx / l, dz: dz / l, s };
+  }
+
+  /**
+   * The nearest centre-line point to (x, z): its sample, how far off the
+   * centre (signed: + is right of the direction of travel) and the distance
+   * along. Null when nowhere near the road (beyond `reach` metres).
+   */
+  nearest(x: number, z: number, reach = 60): { sample: TrackSample; index: number; lateral: number; dist: number } | null {
+    let best = -1;
+    let bestD = reach * reach;
+    // On the road the point's bucket holds the answer; further out, every sample is checked.
+    const local = this.buckets.get(`${Math.floor(x / CELL)},${Math.floor(z / CELL)}`);
+    const sure = (this.width / 2 + STEP) ** 2;
+    const scan = (i: number) => {
+      const p = this.samples[i]!;
+      const d = (p.x - x) ** 2 + (p.z - z) ** 2;
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    };
+    if (local) for (const i of local) scan(i);
+    if (best < 0 || bestD > sure) for (let i = 0; i < this.samples.length; i++) scan(i);
+    if (best < 0) return null;
+    const p = this.samples[best]!;
+    const lateral = (x - p.x) * p.dz - (z - p.z) * p.dx;
+    return { sample: p, index: best, lateral, dist: Math.sqrt(bestD) };
+  }
+
+  /** Is (x, z) on the road surface (within its width, roughly at its height)? */
+  onRoad(x: number, y: number, z: number): boolean {
+    // Nowhere near any stretch of road: no bucket here.
+    if (!this.buckets.has(`${Math.floor(x / CELL)},${Math.floor(z / CELL)}`)) return false;
+    const near = this.nearest(x, z, this.width);
+    return !!near && Math.abs(near.lateral) <= this.width / 2 + 0.5 && Math.abs(near.sample.y - y) < 4;
+  }
+
+  /** Signed distance of a point past a gate's line (+ is beyond it, the way the race goes) and how far off its centre. */
+  gateSide(g: TrackGate, x: number, z: number): { along: number; lateral: number } {
+    return { along: (x - g.x) * g.dx + (z - g.z) * g.dz, lateral: (x - g.x) * g.dz - (z - g.z) * g.dx };
+  }
+
+  /** Did moving from `a` to `b` cross gate `g` forwards, within its width? */
+  crossed(g: TrackGate, a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }): boolean {
+    const before = this.gateSide(g, a.x, a.z);
+    const after = this.gateSide(g, b.x, b.z);
+    if (!(before.along < 0 && after.along >= 0)) return false;
+    // Where the move meets the line.
+    const t = before.along / (before.along - after.along);
+    const lateral = before.lateral + (after.lateral - before.lateral) * t;
+    return Math.abs(lateral) <= g.half + GATE_MARGIN && Math.abs((a.y + (b.y - a.y) * t) - g.y) < 8;
+  }
+
+  /** Start grid: `count` places two abreast behind the start line, facing down the road. */
+  grid(count = this.track.grid): GridSlot[] {
+    const out: GridSlot[] = [];
+    const side = Math.min(this.width * 0.25, 3.2);
+    for (let i = 0; i < count; i++) {
+      const row = Math.floor(i / 2);
+      const col = i % 2;
+      const p = this.at(this.start - (GRID_FRONT + row * GRID_ROW + col * (GRID_ROW / 2)));
+      const off = col ? side : -side;
+      const r = (v: number) => Math.round(v * 100) / 100;
+      out.push({ x: r(p.x + p.dz * off), y: r(p.y), z: r(p.z - p.dx * off), yaw: r(Math.atan2(p.dx, p.dz)) });
+    }
+    return out;
+  }
+
+  private buildGates(): TrackGate[] {
+    const half = this.width / 2;
+    const gate = (index: number, s: number): TrackGate => {
+      const p = this.at(s);
+      return { index, s, x: p.x, y: p.y, z: p.z, dx: p.dx, dz: p.dz, half };
+    };
+    if (this.loop) {
+      const n = Math.max(4, Math.round(this.length / GATE_SPACING));
+      return Array.from({ length: n }, (_, k) => gate(k, (k * this.length) / n));
+    }
+    const finish = Math.max(this.start + 1, this.length - 2);
+    const n = Math.max(2, Math.round((finish - this.start) / GATE_SPACING) + 1);
+    return Array.from({ length: n }, (_, k) => gate(k, this.start + ((finish - this.start) * k) / (n - 1)));
+  }
+}
+
+/** Centre-line samples: Catmull-Rom through the control points, heights eased along the road. */
+function centreLine(track: Track, loop: boolean): TrackSample[] {
+  // Repeated points would make zero-length spans.
+  const pts = track.points.filter((p, i, a) => i === 0 || Math.hypot(p[0] - a[i - 1]![0], p[2] - a[i - 1]![2]) > 0.05);
+  if (loop && pts.length > 2 && Math.hypot(pts[0]![0] - pts[pts.length - 1]![0], pts[0]![2] - pts[pts.length - 1]![2]) < 0.05) pts.pop();
+  if (pts.length < 2) {
+    const p = pts[0] ?? [0, 0, 0];
+    pts.push([p[0], p[1], p[2] + 1]);
+  }
+  const n = pts.length;
+  const get = (i: number) => (loop ? pts[((i % n) + n) % n]! : pts[Math.max(0, Math.min(n - 1, i))]!);
+  const raw: { x: number; y: number; z: number }[] = [];
+  const spans = loop ? n : n - 1;
+  for (let i = 0; i < spans; i++) {
+    const p0 = get(i - 1);
+    const p1 = get(i);
+    const p2 = get(i + 1);
+    const p3 = get(i + 2);
+    const steps = Math.max(1, Math.ceil(Math.hypot(p2[0] - p1[0], p2[2] - p1[2]) / STEP));
+    for (let k = 0; k < steps; k++) {
+      const t = k / steps;
+      raw.push({ x: catmull(p0[0], p1[0], p2[0], p3[0], t), y: catmull(p0[1], p1[1], p2[1], p3[1], t), z: catmull(p0[2], p1[2], p2[2], p3[2], t) });
+    }
+  }
+  if (!loop) {
+    const e = pts[n - 1]!;
+    raw.push({ x: e[0], y: e[1], z: e[2] });
+  }
+  // Ease heights along the road (a moving average over ~12 m), so a bumpy line of clicks gives a smooth road.
+  const m = raw.length;
+  const ys = raw.map((_, i) => {
+    let sum = 0;
+    let w = 0;
+    for (let k = -3; k <= 3; k++) {
+      const j = i + k;
+      const q = loop ? raw[((j % m) + m) % m] : raw[j];
+      if (!q) continue;
+      const wk = 4 - Math.abs(k);
+      sum += q.y * wk;
+      w += wk;
+    }
+    return sum / w;
+  });
+  const out: TrackSample[] = [];
+  let s = 0;
+  for (let i = 0; i < m; i++) {
+    const p = raw[i]!;
+    if (i > 0) s += Math.hypot(p.x - raw[i - 1]!.x, p.z - raw[i - 1]!.z);
+    const prev = loop ? raw[(i - 1 + m) % m]! : raw[Math.max(0, i - 1)]!;
+    const next = loop ? raw[(i + 1) % m]! : raw[Math.min(m - 1, i + 1)]!;
+    const dx = next.x - prev.x;
+    const dz = next.z - prev.z;
+    const l = Math.hypot(dx, dz) || 1;
+    out.push({ x: p.x, y: ys[i]!, z: p.z, dx: dx / l, dz: dz / l, s });
+  }
+  return out;
+}
+
+const cache = new WeakMap<Track, TrackGeometry>();
+
+/** The map's track geometry (cached per track object), or null when it has none. */
+export function trackGeometry(map: { track?: Track | null }): TrackGeometry | null {
+  const t = map.track;
+  if (!t || t.points.length < 2) return null;
+  let g = cache.get(t);
+  if (!g) cache.set(t, (g = new TrackGeometry(t)));
+  return g;
+}
+
+/** Prefix of the start-grid vehicles a race adds to the map (see raceGridEntities). */
+export const RACE_GRID_PREFIX = 'race_grid_';
+
+/**
+ * Race mode: the vehicles on the start grid, as mount entities appended after
+ * the map's own (the match and every client add the same ones, so mount
+ * indices agree). `vehicle` overrides the track's own choice (Arcade).
+ */
+export function raceGridEntities(map: MapDocument, vehicle?: string): MountEntity[] {
+  const g = trackGeometry(map);
+  if (!g) return [];
+  const model = (vehicle ?? g.track.vehicle) as MountEntity['model'];
+  return g.grid().map((p, i) => ({ id: `${RACE_GRID_PREFIX}${String(i).padStart(2, '0')}`, kind: 'mount', model, position: [p.x, p.y, p.z], yaw: p.yaw, faction: null, respawnSeconds: null }));
+}
+
+/** Prefix of the ambient cars a track adds to the map (see ambientCarEntities). */
+export const AMBIENT_CAR_PREFIX = 'ambient_car_';
+
+/**
+ * The track's ambient cars (any mode): where each starts out on the road
+ * (spread round the lap, alternating lanes) and its place in the pit lane,
+ * where it comes back after a wreck.
+ */
+export function ambientCarEntities(map: MapDocument): { entity: MountEntity; pit: [number, number, number]; pitYaw: number }[] {
+  const g = trackGeometry(map);
+  const t = map.track;
+  if (!g || !t || !t.ambient) return [];
+  const r = (v: number) => Math.round(v * 100) / 100;
+  const line = g.at(g.start);
+  const pitYaw = Math.atan2(line.dx, line.dz);
+  const pit = t.pit ?? [line.x + line.dz * (g.width / 2 + 8), line.y, line.z - line.dx * (g.width / 2 + 8)];
+  const span = g.loop ? g.length : g.length - g.start;
+  return Array.from({ length: t.ambient }, (_, i) => {
+    // Out on the road, clear of the start grid.
+    const p = g.at(g.start + span * (0.2 + (0.6 * (i + 0.5)) / t.ambient));
+    const off = (i % 2 ? 1 : -1) * Math.min(3, g.width / 4);
+    const entity: MountEntity = { id: `${AMBIENT_CAR_PREFIX}${String(i).padStart(2, '0')}`, kind: 'mount', model: t.ambientVehicle, position: [r(p.x + p.dz * off), r(p.y), r(p.z - p.dx * off)], yaw: r(Math.atan2(p.dx, p.dz)), faction: null, respawnSeconds: null };
+    return { entity, pit: [r(pit[0] - line.dx * 6 * i), r(pit[1]), r(pit[2] - line.dz * 6 * i)], pitYaw: r(pitYaw) };
+  });
+}
+
+/**
+ * The map as a match plays it: the start-grid vehicles in a race, then the
+ * track's ambient cars (any mode), after the map's own entities. The match
+ * builds its mounts in the same order, so mount indices agree.
+ */
+export function withTrackVehicles(map: MapDocument, rules: { mode: string; raceVehicle?: string }): MapDocument {
+  if (!map.track || map.entities.some((e) => e.id.startsWith(RACE_GRID_PREFIX) || e.id.startsWith(AMBIENT_CAR_PREFIX))) return map;
+  const grid = rules.mode === 'core.race' ? raceGridEntities(map, rules.raceVehicle) : [];
+  const ambient = ambientCarEntities(map).map((c) => c.entity);
+  if (!grid.length && !ambient.length) return map;
+  return { ...map, entities: [...map.entities, ...(grid as MapEntity[]), ...(ambient as MapEntity[])] };
+}
+
+/** Road height at a point for drawing: on the ground where there is terrain at about the road's height, else the centre line's. */
+export function roadSurfaceY(terrain: TerrainData | null, x: number, z: number, lineY: number): number {
+  const h = terrain ? terrainHeightAt(terrain, x, z) : null;
+  return h !== null && Math.abs(h - lineY) < 3 ? h : lineY;
+}
+
+/**
+ * The road as strips to draw: per centre-line sample, `cols + 1` points
+ * across from the left edge to the right (x, y, z), following the ground.
+ * Also used for the curbs (a narrow strip just outside each edge).
+ */
+export function roadStrip(map: MapDocument, from: number, to: number, cols: number, lift = 0.06): { rows: number[][]; s: number[] } {
+  const g = trackGeometry(map);
+  if (!g) return { rows: [], s: [] };
+  const rows: number[][] = [];
+  const s: number[] = [];
+  const ring = g.loop ? [...g.samples, g.samples[0]!] : g.samples;
+  ring.forEach((p, i) => {
+    const row: number[] = [];
+    for (let c = 0; c <= cols; c++) {
+      const off = from + ((to - from) * c) / cols;
+      const x = p.x + p.dz * off;
+      const z = p.z - p.dx * off;
+      row.push(x, roadSurfaceY(map.terrain, x, z, p.y) + lift, z);
+    }
+    rows.push(row);
+    s.push(i === ring.length - 1 && g.loop ? g.length : p.s);
+  });
+  return { rows, s };
+}
+
+/**
+ * Lay the road into the terrain: under the road the ground is set to the
+ * road's height (flat across), the shoulders blend back into the hills over
+ * `shoulder` metres, and the cells under the road are painted gravel (dirt
+ * for a dirt road) with no plants. Sim and client both read the result.
+ */
+export function conformTerrainToTrack(t: TerrainData, track: Track, shoulder = 6): TerrainData {
+  const g = new TrackGeometry(track);
+  const half = track.width / 2 + 1;
+  const heights = t.heights.slice();
+  for (let r = 0; r < t.rows; r++) {
+    for (let c = 0; c < t.cols; c++) {
+      const x = t.origin[0] + c * t.spacing;
+      const z = t.origin[1] + r * t.spacing;
+      const near = g.nearest(x, z, half + shoulder + 2);
+      if (!near) continue;
+      const d = Math.abs(near.lateral);
+      if (d > half + shoulder || near.dist > half + shoulder + 1) continue;
+      const i = r * t.cols + c;
+      const want = Math.round((near.sample.y - t.baseY) * 100);
+      const k = d <= half ? 1 : 1 - smoothstep((d - half) / shoulder);
+      heights[i] = Math.round(heights[i]! + (want - heights[i]!) * k);
+    }
+  }
+  const under = TERRAIN_MATERIALS.indexOf(track.surface === 'dirt' ? 'dirt' : 'gravel');
+  const materials = t.materials.slice();
+  const foliage = t.foliage.length ? t.foliage.slice() : [];
+  for (let i = 0; i < materials.length; i++) {
+    const c = i % (t.cols - 1);
+    const r = Math.floor(i / (t.cols - 1));
+    const x = t.origin[0] + (c + 0.5) * t.spacing;
+    const z = t.origin[1] + (r + 0.5) * t.spacing;
+    const near = g.nearest(x, z, half + 2);
+    if (!near || Math.abs(near.lateral) > half) continue;
+    materials[i] = under;
+    if (foliage.length) foliage[i] = 0;
+  }
+  return { ...t, heights, materials, foliage };
+}
+
+const smoothstep = (v: number): number => {
+  const t = Math.max(0, Math.min(1, v));
+  return t * t * (3 - 2 * t);
+};
+
+/** Ease a new control point's height onto the ground under it (MapMaker places points where you click). */
+export function trackPointAt(terrain: TerrainData | null, x: number, y: number, z: number): [number, number, number] {
+  const r = (v: number) => Math.round(v * 100) / 100;
+  const h = terrain ? terrainHeightAt(terrain, x, z) : null;
+  return [r(x), r(h ?? y), r(z)];
+}
+
+/**
+ * Creator-facing checks on the track (navigation reachability is checked in
+ * nav/, which needs Recast): enough control points, inside the boundary and
+ * on the terrain, long enough to race, a grid for the players, and Race mode
+ * listed only with a track.
+ */
+export function validateTrack(map: MapDocument): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const t = map.track;
+  if (!t) {
+    if (map.metadata.supportedModes.includes('core.race')) issues.push({ severity: 'error', code: 'race.no_track', message: 'Race is listed but the map has no track: draw one with the Road tool' });
+    return issues;
+  }
+  if (t.loop && t.points.length < 3) issues.push({ severity: 'error', code: 'track.points', message: 'a circuit needs at least 3 road points' });
+  if (map.bounds) {
+    const { min, max } = map.bounds;
+    t.points.forEach((p, i) => {
+      if (p[0] < min[0] || p[0] > max[0] || p[2] < min[1] || p[2] > max[1]) issues.push({ severity: 'error', code: 'track.outside', message: `road point ${i + 1} is outside the map boundary` });
+    });
+  }
+  const g = trackGeometry(map);
+  if (!g) return issues;
+  if (map.terrain) {
+    const off = g.samples.filter((p) => terrainHeightAt(map.terrain!, p.x, p.z) === null).length;
+    if (off) issues.push({ severity: 'warning', code: 'track.off_terrain', message: `${off * 2} m of road runs off the terrain` });
+  }
+  if (g.length < 80) issues.push({ severity: 'warning', code: 'track.short', message: `the road is only ${Math.round(g.length)} m long: races need 80 m or more` });
+  if (t.grid < map.metadata.recommendedPlayers.max) {
+    issues.push({ severity: 'warning', code: 'track.grid', message: `the start grid has ${t.grid} places for up to ${map.metadata.recommendedPlayers.max} players` });
+  }
+  // A grid longer than the road behind the start line would wrap round into the last corner.
+  if (g.loop && GRID_FRONT + Math.ceil(t.grid / 2) * GRID_ROW > g.length * 0.4) issues.push({ severity: 'warning', code: 'track.grid_long', message: 'the start grid is longer than the road can hold: fewer places or a longer track' });
+  return issues;
+}

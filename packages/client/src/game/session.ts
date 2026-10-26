@@ -1,6 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   QUICK_MESSAGES,
+  withTrackVehicles,
   BODY_SIZES,
   bodySizeOf,
   CORE_WEAPONS,
@@ -65,6 +66,7 @@ import { LocalTransport } from './localTransport.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
+import { RaceHud } from './raceHud.ts';
 import { LobbyAdvertiser, builtHub, hubSetting } from './hub.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
@@ -175,6 +177,8 @@ export class GameSession {
   private lastWeapon = 0;
   /** Capture the Flag, King of the Hill, Elimination: flags, hill, status line, markers, announcer. */
   private modeHud: ModeHud | null = null;
+  /** Race mode's lap counter, places, next-checkpoint marker and countdown. */
+  private raceHud: RaceHud | null = null;
 
   // Frame timing / instrumentation.
   private acc = 0;
@@ -478,6 +482,7 @@ export class GameSession {
     this.input.dispose();
     this.opts.audio.stopAll();
     this.modeHud?.dispose();
+    this.raceHud?.dispose();
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
@@ -488,7 +493,8 @@ export class GameSession {
     if (this.closed) return;
     switch (msg.t) {
       case 'welcome': {
-        const loaded = loadMap(msg.map);
+        // The race's start-grid vehicles and the track's ambient cars join the map's own mounts, as on the server.
+        const loaded = loadMap(withTrackVehicles(msg.map, msg.rules));
         if (!loaded.ok) {
           this.exit(`invalid map: ${loaded.issues[0]?.message}`);
           return;
@@ -507,6 +513,7 @@ export class GameSession {
         this.map = loaded.map;
         this.view.buildMap(loaded.map, geometry);
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
+        if (msg.rules.mode === 'core.race') this.raceHud = new RaceHud(this.hud, this.view, loaded.map, () => this.slot);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
@@ -523,7 +530,7 @@ export class GameSession {
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, transport: this.opts.transport, phase: () => this.phase };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, phase: () => this.phase };
         this.opts.onReady?.();
         void this.prepareMatch();
         break;
@@ -560,6 +567,7 @@ export class GameSession {
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         this.taken = new Set(msg.pk);
         this.modeHud?.snapshot(msg.md);
+        this.raceHud?.snapshot(msg.md?.rc);
         this.zombieHud(msg.md?.zb);
         // Door and crate colliders first, so reconciliation replays against the same world as the server.
         this.scenario?.apply(msg.sc);
@@ -581,6 +589,7 @@ export class GameSession {
           if (document.hidden && HIDDEN_SKIP.has(ev.e)) continue;
           if (!document.hidden) this.sfx.event(ev, posesNow, performance.now());
           this.modeHud?.event(ev);
+          this.raceHud?.event(ev);
           if (ev.e === 'shot') {
             const def = CORE_WEAPONS[ev.w];
             const mine = ev.s === this.slot;
@@ -1075,6 +1084,7 @@ export class GameSession {
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
+    this.raceHud?.frame(this.view.camera.position, this.view.camera.rotation.y);
     // Third person: your own character drawn where prediction has you (not the delayed server copy).
     const self = this.thirdPerson && !this.tpClose && local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
     if (self && local) Object.assign(self, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held });

@@ -9,7 +9,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
  * Tile Trigger map document, format version 6 (v2 added per-surface tile styles, v3 pickup
  * entities, v4 scenario entities and logic, v5 factions and NPC encounters, v6 per-side
  * wall styles, trim and props, v7 terrain, v8 map boundary and team setup, v11 flag bases
- * and hills for Capture the Flag and King of the Hill).
+ * and hills for Capture the Flag and King of the Hill, v18 the race `track`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -20,7 +20,7 @@ import { MOUNT_MODELS } from '../sim/mounts.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 17;
+export const MAP_FORMAT_VERSION = 18;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -451,6 +451,46 @@ export const MapBounds = z
   })
   .refine((b) => b.max[0] - b.min[0] >= 4 && b.max[1] - b.min[1] >= 4, 'the boundary must be at least 4 m across');
 
+/** Road surfaces a race track is drawn in. */
+export const TRACK_SURFACES = ['asphalt', 'dirt'] as const;
+/** Vehicles a race can be run in (the wheeled and hovering ones that drive the ground). */
+export const RACE_VEHICLES = ['kart', 'speeder', 'buggy'] as const;
+
+/**
+ * A race track (map format v18; see track.ts): a smooth road through ordered
+ * control points (world X, Y, Z of its centre line), `width` metres across,
+ * either a closed circuit or point to point. Checkpoints and the start grid
+ * are derived from it. Race mode needs one; other modes just drive on it.
+ */
+export const Track = z.object({
+  points: z.array(Vec3Tuple).min(2).max(200),
+  width: z.number().min(5).max(30).default(12),
+  loop: z.boolean().default(true),
+  /** Laps of a circuit (point to point is always one run). */
+  laps: z.number().int().min(1).max(20).default(3),
+  /** Places on the start grid (two abreast behind the start line). */
+  grid: z.number().int().min(2).max(16).default(8),
+  /** Vehicle everyone races in (Arcade can change it). */
+  vehicle: z.enum(RACE_VEHICLES).default('kart'),
+  /** Weapons, vehicle guns and the sideline sentries on (Arcade can change it). */
+  combat: z.boolean().default(false),
+  surface: z.enum(TRACK_SURFACES).default('asphalt'),
+  /** Red-and-white curbs along both edges. */
+  curbs: z.boolean().default(true),
+  /**
+   * Ambient cars: this many NPC-driven vehicles lapping the track in every
+   * mode (no team: they run anyone over, and anyone can shoot them up or
+   * take the wheel). Wrecked ones come back in the pit lane.
+   */
+  ambient: z.number().int().min(0).max(12).default(0),
+  ambientVehicle: z.enum(RACE_VEHICLES).default('kart'),
+  /** Where wrecked ambient cars come back (lined up behind it, facing down the road); null: just off the road by the start line. */
+  pit: Vec3Tuple.nullable().default(null),
+});
+export type Track = z.infer<typeof Track>;
+export type TrackSurface = (typeof TRACK_SURFACES)[number];
+export type RaceVehicle = (typeof RACE_VEHICLES)[number];
+
 /** Sky, distant scenery, ground past the border and haze (see backdrop.ts). */
 export const BackdropSchema = z.object({
   sky: z.enum(SKY_IDS),
@@ -494,6 +534,8 @@ export const MapDocument = z.object({
   terrain: Terrain.nullable().default(null),
   /** Walls round the play area, or none. */
   bounds: MapBounds.nullable().default(null),
+  /** Race track (road, checkpoints, start grid), or none. */
+  track: Track.nullable().default(null),
   /** What surrounds the play area, or none (the theme's backdrop). */
   backdrop: BackdropSchema.nullable().default(null),
   /** Gravity and fall damage for this map, or none (normal gravity, no fall damage). Matches can override both. */

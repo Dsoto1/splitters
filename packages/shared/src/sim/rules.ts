@@ -2,10 +2,10 @@ import type { MapDocument } from '../map/schema.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.zombies';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.zombies' | 'core.race';
 
 /** Every mode, in menu order. */
-export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.coop', 'core.zombies'];
+export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.coop', 'core.zombies', 'core.race'];
 
 export const MODE_LABELS: Record<GameMode, string> = {
   'core.deathmatch': 'Deathmatch',
@@ -17,6 +17,7 @@ export const MODE_LABELS: Record<GameMode, string> = {
   'core.hostage': 'Hostage Rescue',
   'core.coop': 'Co-op',
   'core.zombies': 'Zombies',
+  'core.race': 'Race',
 };
 
 /** Modes played in teams (factions from mapTeams). */
@@ -68,6 +69,12 @@ export interface MatchRules {
   teamColors?: string[];
   /** Spears only: everyone holds one throwing spear (one hit kills; fetch it back); no weapon, ammo or grenade pickups. */
   weapons?: 'normal' | 'spears';
+  /** Race: the vehicle everyone races in (absent: the track's own). */
+  raceVehicle?: 'kart' | 'speeder' | 'buggy';
+  /** Race: weapons, vehicle guns and sideline sentries on (absent: the track's own setting). */
+  raceCombat?: boolean;
+  /** Race: laps of a circuit (absent: the track's own). */
+  raceLaps?: number;
 }
 
 /** The gravity multiple and fall damage a match plays with: its own rules, else the map's, else normal / off. */
@@ -193,6 +200,21 @@ export const DEFAULT_BOMB_RULES: MatchRules = {
 /** Hostage Rescue: rounds; the first team brings hostages to a rescue zone, the second guards them. */
 export const DEFAULT_HOSTAGE_RULES: MatchRules = { ...DEFAULT_BOMB_RULES, mode: 'core.hostage' };
 
+/**
+ * Race: everyone starts on the grid in a vehicle; checkpoints in order, laps
+ * of the circuit, first over the line wins (sim/race.ts). The score limit is
+ * unused; the time limit is a safety net.
+ */
+export const DEFAULT_RACE_RULES: MatchRules = {
+  mode: 'core.race',
+  scoreLimit: 0,
+  timeLimitSeconds: 900,
+  respawnDelayTicks: Math.round(TICK_RATE * 1.5),
+  startingWeapons: ['core.knife', 'core.pistol'],
+  startingGrenades: 0,
+  intermissionTicks: TICK_RATE * 10,
+};
+
 export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.deathmatch': DEFAULT_DEATHMATCH_RULES,
   'core.tdm': DEFAULT_TDM_RULES,
@@ -203,7 +225,11 @@ export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.bomb': DEFAULT_BOMB_RULES,
   'core.hostage': DEFAULT_HOSTAGE_RULES,
   'core.zombies': DEFAULT_ZOMBIES_RULES,
+  'core.race': DEFAULT_RACE_RULES,
 };
+
+/** Race needs a track. */
+export const hasTrack = (map: MapDocument): boolean => !!map.track && map.track.points.length >= 2;
 
 /** Capture the Flag needs a flag base for each of its two teams. */
 export function hasFlagBases(map: MapDocument): boolean {
@@ -225,6 +251,7 @@ export function mapCanRun(map: MapDocument, mode: GameMode): boolean {
   if (mode === 'core.hostage') return hasHostages(map);
   if (mode === 'core.ctf') return hasFlagBases(map);
   if (mode === 'core.koth') return hasHills(map);
+  if (mode === 'core.race') return hasTrack(map);
   return true;
 }
 
@@ -241,6 +268,7 @@ export function playableModes(map: MapDocument): GameMode[] {
   if (out.includes('core.tdm') && !out.includes('core.elim')) out.push('core.elim');
   if (hasBombsites(map) && !out.includes('core.bomb')) out.push('core.bomb');
   if (hasHostages(map) && !out.includes('core.hostage')) out.push('core.hostage');
+  if (hasTrack(map) && !out.includes('core.race')) out.push('core.race');
   // Zombies plays anywhere: the horde rises from the map's spawners, spawn points or open floor.
   if (!out.includes('core.zombies')) out.push('core.zombies');
   return out;

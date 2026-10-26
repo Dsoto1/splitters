@@ -160,6 +160,7 @@ import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
+import { RoadTool } from './roadTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 import { drawMapPlan } from '../frontend/mapPlan.ts';
 
@@ -182,7 +183,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'road' };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -346,6 +347,8 @@ export class EditorApp {
   private spawnYaw = 0;
   private scenarioYaw = 0;
   readonly logic: LogicPanel;
+  /** The Road tool (race tracks). */
+  private readonly road: RoadTool;
   private level = 0;
   private showAll = false;
   /** The last placing tool, so the toolbar's Place button can pick it up again. */
@@ -400,6 +403,7 @@ export class EditorApp {
   constructor(private readonly host: EditorHost) {
     this.view = new EditorView(host.engine);
     this.thumbs = new ModelThumbnails(host.engine);
+    this.road = new RoadTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     const restored = readAutosave();
     this.history = new EditHistory(restored?.map ?? newMapDocument('Untitled Map'));
     this.logic = new LogicPanel({
@@ -480,6 +484,8 @@ export class EditorApp {
       this.updateHover();
       this.logic.render();
       this.syncTerrainUi();
+      this.road.refresh();
+      this.road.renderPane($('ed-road'));
       if (!force) this.scheduleAutosave();
     }
   }
@@ -514,7 +520,8 @@ export class EditorApp {
     this.tool = tool;
     if (PLACING.has(tool.kind)) this.lastPlace = tool;
     if (tool.kind === 'edge') this.edgeStyle = tool.style;
-    const pane: Partial<Record<Tool['kind'], string>> = { npc: 'npcs', paint: 'paint', edge: 'advanced', tile: 'tiles', prop: 'props', scatter: 'plants', terrain: 'terrain', spawn: 'entities', pickup: 'entities', scenario: 'scenario', mount: 'vehicles' };
+    const pane: Partial<Record<Tool['kind'], string>> = { npc: 'npcs', paint: 'paint', edge: 'advanced', tile: 'tiles', prop: 'props', scatter: 'plants', terrain: 'terrain', spawn: 'entities', pickup: 'entities', scenario: 'scenario', mount: 'vehicles', road: 'road' };
+    this.road.setActive(tool.kind === 'road');
     if (tool.kind === 'scenario' && GAMEPLAY_OBJECTS.has(tool.key)) this.showPane('entities');
     else if (pane[tool.kind]) this.showPane(pane[tool.kind]!);
     if (tool.kind !== 'terrain') {
@@ -555,6 +562,7 @@ export class EditorApp {
       mount: ['Place', 'Left-click places it · R turns it 15° · right-click erases · players get in and out with E'],
       terrain: ['Terrain', 'Hold left to sculpt or paint · [ ] brush size · Shift inverts raise/lower · T cycles brushes'],
       scatter: ['Place', 'Left-click plants a patch · Alt-click clears that kind of plant · [ ] brush size · right-click erases one'],
+      road: ['Road', 'Left-click adds a road point after the selected one · drag a point to move it · Shift-click the road inserts one · right-click or Del removes one'],
     };
     const [name, hint] = hints[tool.kind];
     const what = PLACING.has(tool.kind) ? `: ${this.toolName(tool)}` : tool.kind === 'edge' ? `: ${EDGE_STYLE_LABELS[tool.style]}` : '';
@@ -1128,6 +1136,7 @@ export class EditorApp {
         return;
       }
       this.updatePointer(e.clientX, e.clientY);
+      if (this.road.dragging) this.road.pointerMove(this.hoverPoint);
       if (this.drag) {
         if (Math.hypot(e.clientX - this.drag.pointerX, e.clientY - this.drag.pointerY) > 4) this.drag.moved = true;
         if (this.drag.moved) this.updateDrag();
@@ -1148,6 +1157,7 @@ export class EditorApp {
       if (this.tool.kind === 'terrain') return this.startStroke(e.shiftKey);
       if (this.tool.kind === 'scatter') return this.scatterAtHover(this.tool.set, e.altKey);
       if (this.tool.kind === 'erase') return this.eraseAtHover();
+      if (this.tool.kind === 'road') return this.road.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind !== 'select') return this.placeAtHover();
       const hit = this.pick();
       if (!hit) {
@@ -1177,6 +1187,9 @@ export class EditorApp {
         } else if (wasClick && this.tool.kind === 'edge') {
           this.updatePointer(e.clientX, e.clientY);
           this.edgeAtHover('auto');
+        } else if (wasClick && this.tool.kind === 'road') {
+          this.updatePointer(e.clientX, e.clientY);
+          this.road.erase(this.hoverPoint);
         } else if (wasClick && this.tool.kind !== 'select' && this.tool.kind !== 'terrain' && this.tool.kind !== 'erase') {
           this.updatePointer(e.clientX, e.clientY);
           this.eraseAtHover();
@@ -1186,6 +1199,7 @@ export class EditorApp {
       if (e.button === 0) {
         this.endStroke();
         this.endDrag();
+        this.road.pointerUp();
       }
     });
     window.addEventListener(
@@ -1272,6 +1286,7 @@ export class EditorApp {
           break;
         case 'Delete':
         case 'Backspace':
+          if (this.tool.kind === 'road' && this.road.deleteSelected()) break;
           this.deleteSelection();
           break;
         case 'PageUp':
@@ -1458,6 +1473,15 @@ export class EditorApp {
     this.buildPropPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
+    const roadBtn = document.createElement('button');
+    roadBtn.className = 'tile-btn';
+    roadBtn.dataset.tool = 'road';
+    roadBtn.dataset.search = 'road track race circuit lap checkpoint';
+    roadBtn.innerHTML = '<svg viewBox="0 0 56 56"><path d="M8 50 C8 20 48 36 48 6" stroke="#3a3f48" stroke-width="12" fill="none"/><path d="M8 50 C8 20 48 36 48 6" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/><path d="M40 4h12v4H40zM40 8h4v4h-4zM48 8h4v4h-4z" fill="#f2f2f2"/></svg>Road / Track';
+    roadBtn.title = 'Draw a race track: click road points, then set width, laps and the start grid';
+    roadBtn.addEventListener('click', () => this.setTool({ kind: 'road' }));
+    $('ed-road-tools').append(roadBtn);
+    this.road.renderPane($('ed-road'));
 
     // Palette (after the reference board): the top bar's workspace picks a row of sub-tabs, a sub-tab one pane;
     // search looks across all of them.
@@ -2133,7 +2157,7 @@ export class EditorApp {
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
       const mode = document.createElement('select');
       const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies']] as const) mode.append(new Option(label, id, false, id === current));
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.race', 'Race']] as const) mode.append(new Option(label, id, false, id === current));
       mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value] } }));
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
@@ -2146,6 +2170,7 @@ export class EditorApp {
         'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
         'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
         'core.elim': 'Elimination: round-based Team Deathmatch. No respawns until the next round; the last team standing wins it.',
+        'core.race': 'Race: draw a track with the Road tool (Entities → Road). Everyone starts on the grid behind the green point in the track\'s vehicle; checkpoints are spaced along the road. Spawn points are only used before the race puts you in your car.',
       };
       // Maps with flag bases or hills also offer those modes in the Arcade, whatever the main mode is.
       const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');

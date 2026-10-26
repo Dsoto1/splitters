@@ -63,6 +63,39 @@ Destructible entities expose health, damage-type acceptance/resistance, states, 
 ## 32-player-aware triggers
 Zone triggers support Any Player, Specific Faction, N Players, Percentage of living faction, All living players, NPC/object entry. This prevents one rushing co-op player from unintentionally advancing a 32-player scenario unless the creator wants that.
 
+## Road tool (race tracks)
+
+Entities → **Road**. A map has one track (map format v18, `map.track`):
+ordered road points, a width, circuit or point to point, laps, start-grid
+places, the race vehicle, combat on or off, surface (asphalt or dirt),
+curbs, and optional ambient cars with a pit lane.
+
+- **Draw.** Click the ground twice to lay a road, then keep clicking: each
+  click adds a point after the selected (orange) one, so you can extend
+  either end or the middle. Shift-click a stretch of road to add a point
+  there. Drag a point to move it. Right-click a point (or select it and
+  press Del) to delete it; deleting below two points removes the road.
+  Points sit on the ground where you click. Every change is one undo step.
+- **Preview.** The road is drawn as in the game (ribbon on the ground,
+  edge and centre lines, curbs, the chequered line and an arch over every
+  checkpoint), with the road points and their polyline shown while the tool
+  is active. The green point is the start line; the grid lines up behind it.
+- **Pane.** Width, circuit, laps, grid places, vehicle, surface, curbs,
+  combat race, ambient cars and their vehicle. **Start here** moves the
+  start line to the selected point; **Reverse** races the other way;
+  **Lay into terrain** flattens the ground under the road and blends the
+  shoulders (one undo step); **Pit lane here** puts the ambient cars' pit
+  beside the selected point; **Remove road** deletes the track.
+- **Mode.** Map properties → Mode → Race makes TEST a race. Any map with a
+  track also offers Race in the Arcade.
+- **Validation.** Race listed without a track, a circuit with fewer than 3
+  points and road points outside the boundary are errors. Road off the
+  terrain, under 80 m, fewer grid places than players, a grid longer than
+  the road holds, checkpoints not on drivable ground or not reachable from
+  the one before (navmesh), and grid places off it are warnings.
+- **Scripts.** `m.track({ points, width, laps, … })` in `mapkit.ts` (it lays
+  the road into the terrain too); see `tools/maps/sandsweep.ts`.
+
 ## Validation
 Show actionable errors/warnings for missing spawns, overlapping/unsafe spawns, disconnected critical navigation, unreachable objectives, broken references, impossible conditions, missing encounter spawn regions, faction loops, excessive active NPC estimates, asset/dependency failures, and mode incompatibility.
 

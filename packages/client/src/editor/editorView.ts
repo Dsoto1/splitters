@@ -19,6 +19,7 @@ import { DESTRUCTIBLE_SPECS, MAX_TEAMS, PLAYER, buildMapDecor, buildMapGeometry,
 import { ScenarioVisuals } from '../game/scenarioVisuals.ts';
 import { applyToneMapping } from '../game/atmosphere.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
+import { buildRoadMeshes, disposeRoadMeshes } from '../roadMeshes.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -72,6 +73,8 @@ export class EditorView {
   /** Hover highlight (erase: red, select: cyan) and what it was built for. */
   private pickBoxes: Mesh[] = [];
   private mapMeshes: Mesh[] = [];
+  /** The race track's road, curbs and arches (rebuilt with the map). */
+  private roadMeshes: Mesh[] = [];
   private dimMeshes: Mesh[] = [];
   private gizmo?: LinesMesh;
   private pickKey = '';
@@ -220,6 +223,8 @@ export class EditorView {
     const onLevel = (b: WorldBox) => Math.floor((b.min[1] + 0.3) / levelHeight) === level;
     this.mapMeshes = this.styler.buildBoxes(visible, drawn.filter(onLevel), 'edmap');
     this.styler.buildTerrain(doc, 'edmap');
+    disposeRoadMeshes(this.roadMeshes);
+    this.roadMeshes = buildRoadMeshes(this.scene, doc, this.styler, 'edroad');
     this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn.filter((b) => !onLevel(b)), 'edmapdim');
     for (const m of this.dimMeshes) m.visibility = 0.4;
     this.applyTileLayer();

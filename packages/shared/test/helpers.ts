@@ -14,7 +14,7 @@ export function loadArena(): MapDocument {
 export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns: [number, number, number][] = [[0, 0, 0]]): MapDocument {
   return {
     format: 'tiletrigger.map',
-    formatVersion: 17,
+    formatVersion: 18,
     metadata: {
       id: 'test_map',
       name: 'Test',
@@ -32,6 +32,7 @@ export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns:
     logic: { variables: [], timers: [], objectives: [], rules: [] },
     terrain: null,
     bounds: null,
+    track: null,
     teamSetup: null,
     backdrop: null,
     blood: null,

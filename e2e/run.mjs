@@ -21,7 +21,7 @@ const SHARDS = [
   ['maps', 'online', 'webgpu'],
   ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby'],
   ['vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'zombies'],
-  ['setpieces', 'physicsfx', 'teams', 'ctf', 'arsenal', 'vehicles'],
+  ['setpieces', 'physicsfx', 'teams', 'ctf', 'arsenal', 'vehicles', 'race'],
 ];
 const T = (ms) => ms * SLOW;
 let failures = 0;
@@ -922,6 +922,94 @@ async function vehiclesFlow(browser) {
   await page.context().close();
 }
 
+/** Race mode on Sandsweep Circuit, and drawing a track with MapMaker's Road tool. */
+async function raceFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  // MapMaker: lay a road with three clicks, drag a point, undo, set the laps, delete a point.
+  await page.goto(`${CLIENT}/?mode=editor`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await page.click('#ed-new');
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: -2 }));
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const at = (x, z) => page.evaluate(([x, z]) => window.__editor.view.project({ x, y: 0, z }), [x, z]);
+  const clickWorld = async (x, z) => {
+    const p = await at(x, z);
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.click(p.x, p.y);
+  };
+  await clickTool(page, '[data-tool="road"]');
+  // Let the new map settle (its first frame resets the view), then look at where the road goes.
+  await page.waitForTimeout(500);
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: -2 }));
+  await clickWorld(8, -6);
+  await clickWorld(16, -6);
+  await clickWorld(13, 4);
+  let d = await doc();
+  check(d.track?.points.length === 3 && d.track.loop, `three clicks lay a circuit (${d.track?.points.length ?? 0} points)`);
+  const from = await at(16, -6);
+  const to = await at(19, -8);
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 8 });
+  await page.mouse.up();
+  d = await doc();
+  check(d.track && Math.hypot(d.track.points[1][0] - 19, d.track.points[1][2] + 8) < 1.5, `dragging a road point moves it (${d.track?.points[1]?.join(', ')})`);
+  await page.keyboard.press('Control+KeyZ');
+  d = await doc();
+  check(d.track && Math.hypot(d.track.points[1][0] - 16, d.track.points[1][2] + 6) < 1, 'undo puts it back');
+  await page.fill('#ed-road-laps', '5');
+  await page.dispatchEvent('#ed-road-laps', 'change');
+  check((await doc()).track?.laps === 5, 'the Road pane sets the laps');
+  await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0), null, { timeout: T(5000) }).catch(() => {});
+  check(await page.evaluate(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0)), 'MapMaker draws the road ribbon');
+  const del = await at(13, 4);
+  await page.mouse.move(del.x, del.y);
+  await page.mouse.click(del.x, del.y, { button: 'right' });
+  d = await doc();
+  check(d.track?.points.length === 2, `right-click deletes a road point (${d.track?.points.length})`);
+  await page.keyboard.press('Escape');
+
+  // A race on Sandsweep Circuit: on the grid in a speeder, the countdown, then away.
+  await page.goto(`${CLIENT}/?offline=sandsweep&gamemode=core.race`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match?.race && window.__match.phase === 'playing' && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+  const start = await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    return { seat: me.mount?.seat, grid: me.mount ? m.mounts[me.mount.index].index >= m.map.entities.length : false, racers: m.combatants().length, seated: m.combatants().filter((c) => c.mount?.seat === 0).length, placed: m.combatants().filter((c) => m.race.status(c.slot)).length };
+  });
+  check(start.seat === 0 && start.grid, `you start at the wheel of a grid vehicle (seat ${start.seat})`);
+  // A combat race may already have wrecked someone (they are back in a moment): nearly everyone is at the wheel.
+  check(start.placed === start.racers && start.seated >= start.racers - 2, `every racer has a vehicle (${start.seated}/${start.racers} at the wheel)`);
+  const road = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => /^road_/.test(m.name)).length);
+  check(road > 5, `the road, curbs and arches are drawn (${road} meshes)`);
+  // Headless frame rates are slow: run the clock past the countdown.
+  await page.evaluate(() => {
+    for (let i = 0; i < 60 * 4 && window.__match.race.state === 0; i++) window.__match.step();
+  });
+  check(await page.evaluate(() => window.__match.race.state === 1), 'the countdown ends and the race is on');
+  await page.waitForFunction(() => /Lap 1\/3/.test(document.body.textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
+  check(await page.evaluate(() => /Lap 1\/3/.test(document.body.textContent ?? '')), 'the HUD shows the lap');
+  const rows = await page.evaluate(() => document.getElementById('race-order')?.children.length ?? 0);
+  check(rows === start.racers, `the running order lists every racer (${rows})`);
+  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
+  await page.waitForFunction(() => (window.__match.race.status(window.__cs.slot)?.passed ?? 0) >= 1, null, { timeout: T(20000) }).catch(() => {});
+  const me = await page.evaluate(() => window.__match.race.status(window.__cs.slot));
+  check(me?.lap === 1 && me.passed >= 1, `you drive over the start line onto lap 1 (passed ${me?.passed})`);
+  await page.waitForFunction(() => !!document.querySelector('.mode-marker[data-id="race_next"]'), null, { timeout: T(5000) }).catch(() => {});
+  check(await page.evaluate(() => !!document.querySelector('.mode-marker[data-id="race_next"]')), 'a marker points to the next checkpoint');
+  // The bots race too.
+  await page.evaluate(() => {
+    for (let i = 0; i < 60 * 12; i++) window.__match.step();
+  });
+  const bots = await page.evaluate(() => window.__match.combatants().filter((c) => c.bot).map((c) => window.__match.race.status(c.slot)?.passed ?? 0));
+  check(bots.length > 0 && bots.every((n) => n >= 2), `the bots drive the checkpoints (${bots.join(', ')})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 /** Every homage map (and any other map without a flow of its own) starts a match cleanly. */
 async function mapsFlow(browser) {
   const { readdirSync } = await import('node:fs');
@@ -1245,7 +1333,7 @@ try {
   const shard = process.env.E2E_SHARD ? SHARDS[Number(process.env.E2E_SHARD.split('/')[0]) - 1] : null;
   if (process.env.E2E_SHARD && !shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
   const only = process.env.E2E_ONLY?.split(',') ?? shard;
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, zombies: zombiesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
   // Every flow belongs to exactly one shard, so CI's parallel jobs between them run everything.
   const sharded = SHARDS.flat();
   const lost = Object.keys(flows).filter((f) => sharded.filter((x) => x === f).length !== 1);
