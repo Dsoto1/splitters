@@ -87,8 +87,9 @@ of the repo).
 
 ## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`)
 
-Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 04
-Orbital Station and 07 Neon Megacity, one registry (`STYLE_PACKS`). A Style
+Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
+Imperial Arena, 04 Orbital Station, 07 Neon Megacity and 09 Sands of Egypt
+(the Egypt theme asked for alongside the set), one registry (`STYLE_PACKS`). A Style
 Pack is a themed selection of the kit: the **Style Pack** picker under the
 MapMaker palette's search box narrows the tiles, props, gameplay pieces
 (Entities → Scenario), vehicles and pickups to one pack (headings left empty
@@ -217,6 +218,127 @@ Content: `tools/content/prepare-packs.mjs` models our own props and facade
 pieces in code (`tools/content/pieces.mjs`) and fits the Kenney towers;
 `prepare-props.mjs --downloads` builds the Kenney kit props (see
 CONTENT_PIPELINE.md and ASSET_SOURCES.md).
+
+### 03 Imperial Arena (Roman) and 09 Sands of Egypt
+
+| Pack | Theme | Facade | Own tiles (`map/packTilesAncient.ts`) | Own props | Demo map |
+|---|---|---|---|---|---|
+| 03 Imperial Arena | `core.imperial`: sand floor, Dressed Limestone walls, travertine, Roman Rubblework, White Marble trim (ambientCG Tiles139, Marble012, Bricks075A); also Marble Temple and Desert Town | **Roman limestone** (plinth, marble pilasters, cornice) | 15 | 17 (category *Imperial Arena*) plus the Quaternius ruins already in the game (columns, arches, walls, urns, cart) | Sandfall Colosseum |
+| 09 Sands of Egypt | `core.egypt`: sand, Sandstone Blocks walls, Rough Sandstone, lapis ceilings, Gold Leaf trim (ambientCG Tiles142, Bricks083); also Desert Tomb | **Egyptian temple** (a painted hieroglyph band under a gilded cavetto cornice) | 11 | 15 (category *Sands of Egypt*) | Pharaoh's Reach |
+
+Procedural materials of our own (`client/materials/patterns.ts`, painted at
+256 px): **Carved Hieroglyphs** and **Painted Hieroglyphs** (columns of signs
+between register lines, every sign a little shape of ours picked by hash: sun
+disc, eye, ankh, bird, water, reed, loaf, seated figure, cartouche, viper; no
+real text copied), **Roman Mosaic** (tesserae, a meander border and a
+lozenge), **Gold Leaf** and **Lapis Paint**.
+
+**Imperial Arena tiles.** *Arena Seating* (two storeys: a 2 m marble podium
+wall over the sand, too high to jump up, a walkway on it with a 0.75 m
+parapet, eight rows of 0.25 m seats, the top walkway 4 m up level with the
+floor above), *Arena Seating Corner* (the rows mitred round an outer corner),
+*Gladiator Gate* (seating cut by a 3.2 m passage onto the sand, roofed at the
+top walkway; hang a Portcullis in its arena end), *Emperor's Box* (a raised
+marble box under a canopy on four columns, steps up to the top walkway),
+*Arena Hatch* (sand with a 3.2 m hole over the hypogeum), *Outer Arcade* and
+*Arcade Stair* (two storeys of arches, a covered walk and an upper walkway
+meeting the seating's top walkway; stairs up in the stair bay), *Colonnade*
+(a portico of marble columns with a back wall), *Triumphal Arch*, *Aqueduct*
+(two tiers of arches, a water channel 9.6 m up), *Forum* (2 × 2: paving, a
+mosaic, a rostrum with steps, four statue plinths), *Temple* (1 × 2: steps up
+a 2 m podium, a portico, the cella), and under the sand *Hypogeum Tunnel*,
+*Hypogeum Pens* (barred beast pens round a crossing) and *Hypogeum Lift Shaft*
+(a room under an Arena Hatch for a Lift Cage). Props: Ionic column, bronze
+brazier, emperor statue, amphorae (breakable), gladius rack, training post,
+eagle standard, legion banner, racing chariot, beast cage, stake barricade
+(breakable), marble altar, bench and bust, forum fountain, velarium awning,
+imperial throne.
+
+**Sands of Egypt tiles.** *Temple Pylon* (3 × 1: two towers either side of a
+3.2 m gate, painted reliefs and glyph bands on the front, stairs at the back
+of each tower to a terrace 4 m up behind the battlements), *Hypostyle Hall*
+(four painted papyrus columns under an 8 m stone roof with a starry lapis
+ceiling: join them into a hall), *Sanctuary* (painted walls, a naos on a
+stepped dais), *Step Pyramid* (4 × 4: five 2 m tiers, a stair cut into the
+north face up to the 10 m platform and its gilded capstone), *Tomb Entrance*
+(placed on the level below the ground: a mastaba over stairs down),
+*Tomb Corridor* (a 3.2 m passage through the rock, painted walls, a starry
+ceiling: lay traps along it), *Burial Chamber* (a dais at the back for the
+sarcophagus, painted pilasters and walls), *Nile Quay* (an embankment with
+steps down to the river bed 2.5 m below), *River Bed* (flood a row of them
+with a Water body), *Sphinx Avenue* (a paved way between two plinths) and
+*Mud-Brick House* (a village house, stairs up to its roof terrace). Props:
+obelisk, sphinx, seated pharaoh (colossus), Anubis shrine, sarcophagus,
+canopic jars (breakable), papyrus column, felucca, reed boat, date palm,
+papyrus reeds, fire stand, gilded chest, stele, Bastet statue.
+
+**Gameplay pieces** (Entities → Scenario):
+
+| Piece | What it is |
+|---|---|
+| Portcullis | A door look (`style: 'portcullis'`): an iron grille between two stone piers that winds up into the lintel. Opens with E or logic (or by itself with *Auto*); blocks like any door. |
+| Portcullis Gate | A grille block (Floor Grate in dark iron) on a trigger mover rising 3.4 m: a rule raises and lowers it (*Send mover*, *Move mover to point*), for gates wider than a doorway. |
+| Lift Cage | A mover carrying a timber floor, iron bars on three sides and a sand hatch for a roof, riding one storey up and back: put it on the floor of a Hypogeum Lift Shaft under an Arena Hatch, and while it is down its roof closes the hole flush with the sand. Bots ride it (it is a lift). For a cage that comes up only on cue, use a trigger mover under a logic **Trapdoor** in the hatch: drop the trapdoor, send the mover, bring both back (Sandfall Colosseum's beast lift). |
+| Brazier | A warm flickering light preset; put a Bronze Brazier or Fire Stand prop under it. |
+| Portal Pair | See *Portals* below. |
+| Spike floors, fire jets, crushers, crumbling floors, trapdoors, sliding stone doors | The existing traps, blocks and movers, suggested by the pickers with notes for each pack (spike pits in the sand and the tomb corridors, the pharaoh's curse). |
+
+**Demo maps.** *Sandfall Colosseum* (`maps/sandfall_colosseum.json`, script
+`packages/server/src/tools/maps/sandfall_colosseum.ts`): a 40 × 24 m arena of
+sand ringed by seating with the emperor's box on the north, three gladiator
+gates (the main one a portcullis worked from a winch in its passage or a chain
+on the sand, the side ones rising as anyone comes), two lift cages rising from
+the hypogeum through hatches, a beast lift the emperor sends up through a
+logic trapdoor, spike traps and fire jets on the sand, outer arcades all round
+with four stairs up to the seating, a forum with a temple, colonnade and
+triumphal arch to the east, an aqueduct to the west, and a portal from the
+hypogeum's west tunnel to the forum that the emperor can seal for 15 s.
+*Pharaoh's Reach* (`maps/pharaohs_reach.json`): from the Nile quay a sphinx
+avenue leads between obelisks and seated colossi to the pylon (terrace up its
+back stairs), a hypostyle hall and the sanctuary; a step pyramid with a
+sniper's perch; a mastaba over the stairs down to a painted tomb of spike
+pits, a fire jet and a crushing ceiling, its burial chamber linked to the top
+of the pyramid by a portal that the pharaoh's curse (a zone at the
+sarcophagus: fire jets, a red light, the portal sealed for 10 s) shuts; a
+ferry carrying a felucca across the river to the village, and a reed boat
+drifting up and down.
+
+Content: `tools/content/prepare-ancient.mjs` models the 32 props in code
+(`tools/content/pieces.mjs`, licence Owned, `assets-src/tiletrigger-ancient/`);
+the five new texture sets come from ambientCG (CC0) through
+`prepare-textures.mjs --only`.
+
+### Portals (`sim/portals.ts`)
+
+A **portal** entity (`kind: 'portal'`) is one of a linked pair: `position`
+(the centre of its bottom edge), `yaw` (it faces the way you go in by),
+`size` [width, height] (2.4 × 3.2 m by default), `pair` (the two portals
+sharing it lead into each other), `startEnabled`, `color`. Walk, fall, fly or
+shoot into a portal's front, inside its opening, and you come out of the
+other portal's front, moving the same way relative to it: positions, push
+velocities and the view all turn by the difference in the two facings (plus a
+half turn), so speed is kept and you face out. Portals are one-sided (their
+backs do nothing) and can stand against a wall or in the open. Players are
+carried on the server and in client prediction alike (the view turns only in
+live prediction, never on a replay); bots, NPCs and projectiles (rockets,
+grenades, discs, spears) go through too.
+
+- **MapMaker:** palette *Portal Pair* places two linked portals (the second
+  8 m along the first's facing, turned to face back) with a fresh pair ID and
+  a pair of colours; the inspector sets facing, width, height, pair, colour
+  and *Starts on*, and says where it leads. Drawn as a stone frame round a
+  swirling disc of light in its colour (a stylised effect, no view through).
+- **Logic:** portals are toggleable (*Enable* / *Disable*, the *Is enabled*
+  condition); a pair works only while both are on, and the swirl drains away
+  while it is off. Replicated in the scenario snapshot.
+- **Bots:** every pair is a navmesh link each way (like lifts and pads), so
+  bots path through portals and walk into the surface; a pair that logic has
+  switched off shuts its link.
+- **Validator:** a portal without its other end (warning), a pair of more
+  than two (error), two ends on top of each other, a portal that starts off
+  with no rule to enable it, and ground in front of either end that nobody
+  can stand on (navigation).
+
 
 ## Materials and themes (`map/materials.ts`)
 

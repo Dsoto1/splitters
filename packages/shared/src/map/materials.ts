@@ -33,7 +33,13 @@ export type PatternId =
   | 'stripes'
   | 'hex'
   | 'marble'
-  | 'weave';
+  | 'weave'
+  /** Style Pack 09: columns of carved hieroglyphs between register lines (accent cut into the base). */
+  | 'glyphs'
+  /** Style Pack 09: hieroglyphs painted in ochre, turquoise and the accent on the base. */
+  | 'glyphs_painted'
+  /** Style Pack 03: small tesserae with a key-pattern border (Roman floor mosaic). */
+  | 'mosaic';
 
 export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
@@ -108,6 +114,12 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('orbital_panel', 'Station Panels', 'Tech', 'panels', '#eef1f4', '#c4ccd4', 2, 0.55),
   m('glow_trim', 'Glow Trim', 'Tech', 'plain', '#7fe6ff', '#7fe6ff', 1, 0.3, true),
   m('neon_tube', 'Neon Tube', 'Tech', 'plain', '#ff4fd8', '#ff4fd8', 1, 0.3, true),
+  // Style Packs 03 Imperial Arena and 09 Sands of Egypt: our own procedural paint.
+  m('hieroglyphs', 'Carved Hieroglyphs', 'Stone', 'glyphs', '#d8bf8c', '#7a5a34', 2.4),
+  m('hieroglyphs_painted', 'Painted Hieroglyphs', 'Stone', 'glyphs_painted', '#e2cb98', '#2a3a8a', 2.4),
+  m('mosaic', 'Roman Mosaic', 'Tile', 'mosaic', '#e8dcc0', '#8a2a1e', 2, 0.2),
+  m('gold_leaf', 'Gold Leaf', 'Metal', 'plain', '#d8a83a', '#c89830', 4, 0.8),
+  m('lapis', 'Lapis Paint', 'Paint', 'noise', '#2a4aa0', '#1e3478', 2, 0.3),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -161,6 +173,13 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   t('pbr_weathered_siding', 'Weathered Siding', 'Wood', 'WoodSiding013', '#665845', 2.5),
   t('pbr_adobe', 'Adobe', 'Stone', 'Clay005', '#9d785d', 3),
   t('pbr_dusty_road', 'Dusty Road', 'Ground', 'Ground109', '#7e6e54', 4),
+  // Style Pack 03 Imperial Arena.
+  t('pbr_limestone', 'Dressed Limestone', 'Stone', 'Tiles139', '#c9b8a2', 3),
+  t('pbr_white_marble', 'White Marble', 'Stone', 'Marble012', '#c9ccd2', 3, 0.5),
+  t('pbr_opus_incertum', 'Roman Rubblework', 'Brick', 'Bricks075A', '#8f8068', 2.5),
+  // Style Pack 09 Sands of Egypt.
+  t('pbr_sandstone_blocks', 'Sandstone Blocks', 'Stone', 'Tiles142', '#d8b88e', 3),
+  t('pbr_rough_sandstone', 'Rough Sandstone', 'Brick', 'Bricks083', '#b0a27a', 2.5),
 ];
 
 /** A textured material from a scanned set (see MaterialDefinition.texture). */
@@ -208,6 +227,8 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('neon_megacity', 'Neon Megacity', '#0d0820', 'pbr_wet_asphalt', ['pbr_concrete_dark', '#8a80a0'], 'pbr_glass_facade', 'pbr_concrete_dark', 'neon_tube'),
   theme('military', 'Military Compound', '#8fa0ae', ['pbr_concrete_dark', '#b4b0a6'], 'pbr_bunker_panels', ['pbr_olive_corrugated', '#d8dcc0'], 'pbr_concrete', ['pbr_steel', '#a8aca8']),
   theme('frontier', 'Frontier Dust', '#f0cc98', 'pbr_weathered_planks', 'pbr_weathered_siding', ['crate_wood', '#c8a070'], 'pbr_planks', 'pbr_charred_wood'),
+  theme('imperial', 'Imperial Arena', '#9fc8ec', ['pbr_sand', '#e8d4a8'], 'pbr_limestone', 'pbr_travertine', ['pbr_opus_incertum', '#d8c8b0'], 'pbr_white_marble'),
+  theme('egypt', 'Sands of Egypt', '#f2d8a0', 'pbr_sand', 'pbr_sandstone_blocks', ['pbr_rough_sandstone', '#f0dcb0'], 'lapis', ['gold_leaf', '#f0d070']),
   theme('adobe', 'Frontier Adobe', '#f4d2a0', ['pbr_floorboards', '#d8b890'], 'pbr_adobe', ['pbr_adobe', '#e8d0b0'], 'pbr_weathered_planks', 'pbr_walnut'),
 ];
 

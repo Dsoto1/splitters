@@ -154,8 +154,10 @@ type Tile = MapDocument['classicStructure']['tiles'][number];
 const t = (id: string, tile: string, x: number, y: number, z = 0, rotation: Rotation = 0, extra: Partial<Tile> = {}): Tile => ({ id, tile, x, y, z, rotation, ...extra });
 
 describe('Style Packs', () => {
-  it('lists Set 1 in order (01, 02, 04, 07), each with 25 or more pieces and its demo map', () => {
-    expect(STYLE_PACKS.map((p) => `${p.number} ${p.displayName}`)).toEqual(['01 Military Compound', '02 Frontier Dust', '04 Orbital Station', '07 Neon Megacity']);
+  it('lists Set 1 in number order, each with 25 or more pieces and its demo map', () => {
+    expect(STYLE_PACKS.map((p) => `${p.number} ${p.displayName}`)).toEqual(expect.arrayContaining(['01 Military Compound', '02 Frontier Dust', '03 Imperial Arena', '04 Orbital Station', '07 Neon Megacity', '09 Sands of Egypt']));
+    const numbers = STYLE_PACKS.map((p) => p.number);
+    expect(numbers).toEqual([...numbers].sort());
     expect(new Set(STYLE_PACKS.map((p) => p.id)).size).toBe(STYLE_PACKS.length);
     for (const p of STYLE_PACKS) {
       const own = p.tiles.filter((id) => id.startsWith(`${p.id}.`)).length + p.props.length;

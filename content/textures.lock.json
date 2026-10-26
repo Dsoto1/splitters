@@ -792,6 +792,86 @@
       "source": "https://ambientcg.com/get?file=WoodSiding013_1K-JPG.zip",
       "bytes": 16367,
       "sha256": "f74fdf2979ecc598"
+    },
+    {
+      "file": "textures/Tiles139_color.jpg",
+      "asset": "Tiles139",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Tiles139_1K-JPG.zip",
+      "bytes": 29588,
+      "sha256": "86963e3bd6084858"
+    },
+    {
+      "file": "textures/Tiles139_normal.jpg",
+      "asset": "Tiles139",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Tiles139_1K-JPG.zip",
+      "bytes": 5123,
+      "sha256": "8dc7be5c534224a1"
+    },
+    {
+      "file": "textures/Marble012_color.jpg",
+      "asset": "Marble012",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Marble012_1K-JPG.zip",
+      "bytes": 40118,
+      "sha256": "675e1308c809c35f"
+    },
+    {
+      "file": "textures/Marble012_normal.jpg",
+      "asset": "Marble012",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Marble012_1K-JPG.zip",
+      "bytes": 1109,
+      "sha256": "b8eac8e63163d9b3"
+    },
+    {
+      "file": "textures/Bricks075A_color.jpg",
+      "asset": "Bricks075A",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Bricks075A_1K-JPG.zip",
+      "bytes": 59953,
+      "sha256": "4d09a8b0e162d5fd"
+    },
+    {
+      "file": "textures/Bricks075A_normal.jpg",
+      "asset": "Bricks075A",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Bricks075A_1K-JPG.zip",
+      "bytes": 74756,
+      "sha256": "c2ac09b8ed05ae82"
+    },
+    {
+      "file": "textures/Tiles142_color.jpg",
+      "asset": "Tiles142",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Tiles142_1K-JPG.zip",
+      "bytes": 37171,
+      "sha256": "19bb268cf094e946"
+    },
+    {
+      "file": "textures/Tiles142_normal.jpg",
+      "asset": "Tiles142",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Tiles142_1K-JPG.zip",
+      "bytes": 1342,
+      "sha256": "952453f4b54fa96e"
+    },
+    {
+      "file": "textures/Bricks083_color.jpg",
+      "asset": "Bricks083",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Bricks083_1K-JPG.zip",
+      "bytes": 49406,
+      "sha256": "325b64463f540b98"
+    },
+    {
+      "file": "textures/Bricks083_normal.jpg",
+      "asset": "Bricks083",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Bricks083_1K-JPG.zip",
+      "bytes": 60079,
+      "sha256": "d649c957d72a25eb"
     }
   ]
 }

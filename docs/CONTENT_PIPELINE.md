@@ -101,6 +101,9 @@ accepts for our own work:
 - `node tools/content/build-kit-props.mjs` writes the Military Compound and
   Frontier Dust props (flat colours, a few hundred to 2,700 triangles each) to
   `assets-src/tiletrigger-kit/`.
+- `node tools/content/prepare-ancient.mjs` writes the Imperial Arena and Sands
+  of Egypt props (flat colours, built with `pieces.mjs`) to
+  `assets-src/tiletrigger-ancient/`.
 
 `prepare-props.mjs` then builds both like any in-repo pack.
 

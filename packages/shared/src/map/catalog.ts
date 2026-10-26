@@ -8,6 +8,7 @@
  */
 
 import { boxPackTiles } from './packTiles.ts';
+import { ancientPackTiles } from './packTilesAncient.ts';
 
 /** Sides in clockwise order; rotating a tile by k quarter turns maps side i to (i + k) % 4. */
 export const SIDES = ['N', 'E', 'S', 'W'] as const;
@@ -109,9 +110,11 @@ export type Corner = (typeof CORNERS)[number];
  * Station), a glass curtain wall and a neon-lit block (Neon Megacity), drawn
  * from models; and boxes in library materials: bunker concrete or corrugated
  * sheet (01 Military Compound), a plank false front with an awning and
- * boardwalk, or adobe with roof beams (02 Frontier Dust).
+ * boardwalk, or adobe with roof beams (02 Frontier Dust); dressed limestone
+ * with pilasters and a cornice (03 Imperial Arena), or sandstone with a
+ * painted hieroglyph band under a gilded cavetto cornice (09 Sands of Egypt).
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'roman', 'egyptian'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
@@ -126,6 +129,8 @@ export const FACADE_LABELS: Record<Facade, string> = {
   corrugated: 'Corrugated sheet',
   false_front: 'Frontier false front',
   adobe: 'Adobe',
+  roman: 'Roman limestone',
+  egyptian: 'Egyptian temple',
 };
 /** Facades drawn from models: the city kit's, and the Orbital and Neon packs' own pieces (the rest are boxes drawn with the level). */
 export const MODEL_FACADES: ReadonlySet<Facade> = new Set(['brick', 'storefront', 'plaster', 'hull', 'glass', 'neon']);
@@ -1176,6 +1181,8 @@ export const CORE_TILES: readonly TileDefinition[] = [
   },
   // Style Pack pieces (01 Military Compound, 02 Frontier Dust): see packTiles.ts and editor/stylePacks.ts.
   ...boxPackTiles(),
+  // Style Pack pieces (03 Imperial Arena, 09 Sands of Egypt): see packTilesAncient.ts.
+  ...ancientPackTiles(),
 ];
 
 // ---------------------------------------------------------------- buildings

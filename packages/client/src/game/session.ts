@@ -17,6 +17,7 @@ import {
   THROWABLE_DEFS,
   predictThrow,
   mapLadders,
+  mapPortals,
   mapPads,
   mountToWorld,
   viewDirection,
@@ -641,8 +642,10 @@ export class GameSession {
         this.local.gravity = matchPhysics(msg.rules, loaded.map).gravity;
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.local.gravityZones = mapGravityZones(loaded.map.entities);
+        this.local.portals = mapPortals(loaded.map.entities);
         this.scenario = new ScenarioState(loaded.map, physics);
         if (this.scenario.movers.defs.length) this.local.platforms = this.scenario;
+        if (this.local.portals.length) this.local.portalOn = this.scenario.portalOn;
         this.mounts = new MountState(loaded.map, physics);
         this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7));
         if (teams && msg.rules.mode === 'core.forts') this.forts = new FortsClient(this.view, physics, loaded.map, teams, () => this.hud.team(this.slot)?.id ?? null, this.opts.audio);
@@ -1138,6 +1141,11 @@ export class GameSession {
         moving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
         const { input: cmd, shot } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
+        if (local.portalTurn) {
+          // Through a portal: you face the way you came out.
+          this.input.yaw += local.portalTurn;
+          local.portalTurn = 0;
+        }
         if (this.forts) cmd.build = this.forts.code;
         this.outbox.push(cmd);
         this.sfx.localStep(local, before, local.speedTicks > 0 ? SPEED_BOOST : 1);

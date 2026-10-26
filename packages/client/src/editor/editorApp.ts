@@ -282,6 +282,11 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'light:sign': '<rect x="6" y="16" width="44" height="22" rx="2" fill="#15101e" stroke="#ff4fd8" stroke-width="2.5"/><text x="28" y="32" font-size="12" font-weight="bold" text-anchor="middle" fill="#ff4fd8">OPEN</text>',
   'light:billboard': '<rect x="4" y="8" width="48" height="28" fill="#4fe0ff" fill-opacity=".3" stroke="#4fe0ff" stroke-width="2"/><path d="M6 14h44M6 20h44M6 26h44M6 32h44" stroke="#4fe0ff" stroke-opacity=".45"/><rect x="25" y="36" width="6" height="14" fill="#3a3f48"/>',
   'mover:elevator': '<rect x="12" y="6" width="4" height="44" fill="#5a5f68"/><rect x="40" y="6" width="4" height="44" fill="#5a5f68"/><rect x="16" y="20" width="24" height="18" fill="#bfe6f5" fill-opacity=".35" stroke="#2ec4b6" stroke-width="2"/><path d="M28 10v8M24 14l4-4 4 4M28 48v-8M24 44l4 4 4-4" stroke="#2ec4b6" stroke-width="2" fill="none"/>',
+  portal: '<ellipse cx="17" cy="28" rx="9" ry="18" fill="#3aa8ff" fill-opacity=".35" stroke="#3aa8ff" stroke-width="3"/><ellipse cx="39" cy="28" rx="9" ry="18" fill="#ff8a2a" fill-opacity=".35" stroke="#ff8a2a" stroke-width="3"/><path d="M14 28q3-6 6 0t-3 4M36 28q3-6 6 0t-3 4" stroke="#fff" stroke-width="1.5" fill="none"/>',
+  'door:portcullis': '<rect x="6" y="6" width="44" height="6" fill="#6a6058"/><path d="M12 12v34M20 12v34M28 12v34M36 12v34M44 12v34" stroke="#4a4440" stroke-width="3"/><path d="M8 22h40M8 34h40" stroke="#4a4440" stroke-width="3"/><path d="M12 46l-1 4M20 46l-1 4M28 46l-1 4M36 46l-1 4M44 46l-1 4" stroke="#8a8078" stroke-width="2"/>',
+  'mover:portcullis': '<rect x="4" y="4" width="6" height="48" fill="#c8b48a"/><rect x="46" y="4" width="6" height="48" fill="#c8b48a"/><path d="M14 8v28M21 8v28M28 8v28M35 8v28M42 8v28M10 16h36M10 28h36" stroke="#4a4440" stroke-width="3"/><path d="M28 50V40M23 45l5-5 5 5" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
+  'mover:cage': '<rect x="6" y="32" width="44" height="4" fill="#d6bc84"/><rect x="16" y="14" width="24" height="3" fill="#d6bc84"/><path d="M18 17v30M24 17v30M30 17v30M36 17v30" stroke="#4a4440" stroke-width="2.5"/><rect x="16" y="46" width="24" height="3" fill="#8a6a42"/><path d="M46 46V38M42 42l4-4 4 4" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
+  'light:brazier': '<path d="M16 30h24l-4 8H20z" fill="#5a4a3a"/><path d="M26 38v10M20 50h16" stroke="#5a4a3a" stroke-width="3"/><path d="M20 30q-2-10 6-16-1 6 4 8 2-6 0-10 10 8 6 18z" fill="#ff8a2a"/><path d="M24 30q0-6 4-9 0 4 3 5 1-3 1-5 4 5 2 9z" fill="#ffe08a"/>',
   'mover:tram': '<path d="M4 14h48" stroke="#5a5f68" stroke-width="3"/><rect x="10" y="18" width="34" height="18" rx="3" fill="#e0412f"/><rect x="14" y="22" width="8" height="7" fill="#bfe6f5"/><rect x="25" y="22" width="8" height="7" fill="#bfe6f5"/><rect x="36" y="22" width="5" height="7" fill="#bfe6f5"/><path d="M14 44h28M37 40l5 4-5 4" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
 };
 
@@ -2718,6 +2723,33 @@ export class EditorApp {
         number('Push forward (m/s)', e.push, 1, (v) => ({ push: Math.max(0, Math.min(40, v)) }));
         el.append(small(`About ${((e.power * e.power) / (2 * 20)).toFixed(1)} m high and ${((e.push * 2 * e.power) / 20).toFixed(0)} m along, landing level. The arrows point the way it throws you.`));
         break;
+      case 'portal': {
+        const partner = doc.entities.find((o) => o.kind === 'portal' && o.pair === e.pair && o.id !== e.id);
+        const crowd = doc.entities.filter((o) => o.kind === 'portal' && o.pair === e.pair).length;
+        number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
+        number('Width (m)', e.size[0], 0.2, (v) => ({ size: [clamp(v, 1.2, 8), e.size[1]] }));
+        number('Height (m)', e.size[1], 0.2, (v) => ({ size: [e.size[0], clamp(v, 2.2, 8)] }));
+        {
+          const pair = document.createElement('input');
+          pair.type = 'text';
+          pair.maxLength = 32;
+          pair.value = e.pair;
+          pair.addEventListener('change', () => {
+            const v = pair.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            if (v) update('Pair portal', { pair: v });
+          });
+          el.append(row('Pair', pair));
+          const glow = document.createElement('input');
+          glow.type = 'color';
+          glow.value = e.color ?? '#3aa8ff';
+          glow.addEventListener('change', () => update('Colour portal', { color: glow.value.toLowerCase() }));
+          el.append(row('Colour', glow));
+        }
+        toggle('Starts on', e.startEnabled, (v) => ({ startEnabled: v }));
+        el.append(small(partner ? `Leads to ${entityLabel(doc, partner)}: walk (or shoot) into its front and you come out of the other, moving the same way relative to it. Turning one portal turns where you face coming out.` : crowd > 2 ? `Pair "${e.pair}" has ${crowd} portals: a pair links exactly two.` : `No other end yet: give a second portal the pair "${e.pair}" (the Portal Pair tool places both).`));
+        el.append(small('Logic switches portals on and off (Enable / Disable): a pair works only while both are on. Bots take portals as shortcuts. Leave room to stand in front of both.'));
+        break;
+      }
       case 'mount': {
         const def = MOUNT_DEFS[e.model];
         choose('Type', MOUNT_MODELS.map((m) => [m, MOUNT_DEFS[m].displayName] as const), e.model, (v) => ({ model: v as MountModel }));

@@ -13,7 +13,7 @@ const KIND_LABEL: Record<TargetKind, string> = {
   trap: 'trap',
   pickup: 'pickup',
   encounter: 'encounter',
-  toggleable: 'button, zone, trap, pickup, block, mover or light',
+  toggleable: 'button, zone, trap, pickup, block, mover, light or portal',
   light: 'light',
   block: 'block',
   mover: 'mover',
@@ -187,6 +187,24 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
     }
     if ((e.angles?.length ?? 0) > e.points.length) issues.push({ severity: 'warning', code: 'mover.angles', message: `mover ${e.id} has more angles than points; the extra ones are ignored`, targetId: e.id });
     if (e.mode === 'trigger' && !used.sent.has(e.id)) issues.push({ severity: 'warning', code: 'mover.never_moves', message: `mover ${e.id} only moves when logic sends it, but no rule does`, targetId: e.id });
+  }
+
+  // Portals: two to a pair, apart, and switched on by something if they start off.
+  const pairs = new Map<string, Extract<MapDocument['entities'][number], { kind: 'portal' }>[]>();
+  for (const e of map.entities) if (e.kind === 'portal') pairs.set(e.pair, [...(pairs.get(e.pair) ?? []), e]);
+  for (const [pair, list] of pairs) {
+    const first = list[0]!;
+    if (list.length === 1) issues.push({ severity: 'warning', code: 'portal.unpaired', message: `portal ${first.id} has no other end (pair "${pair}"): place a second portal with the same pair`, targetId: first.id });
+    else if (list.length > 2) issues.push({ severity: 'error', code: 'portal.pair_crowded', message: `pair "${pair}" has ${list.length} portals; a pair links exactly two`, targetId: list[2]!.id });
+    else {
+      const [a, b] = list as [typeof first, typeof first];
+      if (Math.hypot(a.position[0] - b.position[0], a.position[1] - b.position[1], a.position[2] - b.position[2]) < Math.max(a.size[0], b.size[0]) + 1) {
+        issues.push({ severity: 'warning', code: 'portal.too_close', message: `portals ${a.id} and ${b.id} (pair "${pair}") are on top of each other`, targetId: b.id });
+      }
+    }
+    for (const e of list) {
+      if (!e.startEnabled && !used.shown.has(e.id)) issues.push({ severity: 'warning', code: 'portal.never_opens', message: `portal ${e.id} starts off and no rule ever enables it`, targetId: e.id });
+    }
   }
 
   for (const e of map.entities) {

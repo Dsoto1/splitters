@@ -1,6 +1,7 @@
-import { SQUAD_ORDERS, type BlockEntity, type ButtonEntity, type DestructibleEntity, type DoorEntity, type LightEntity, type MapDocument, type MapEntity, type SquadOrder, type TrapEntity, type ZoneEntity } from '../map/schema.ts';
+import { SQUAD_ORDERS, type PortalEntity, type BlockEntity, type ButtonEntity, type DestructibleEntity, type DoorEntity, type LightEntity, type MapDocument, type MapEntity, type SquadOrder, type TrapEntity, type ZoneEntity } from '../map/schema.ts';
 import { dynamicBlockIds } from '../map/geometry.ts';
 import { Movers, legTicks, liftLinks } from './movers.ts';
+import { mapPortals, portalEntry, PORTAL_EXIT, type Portal } from './portals.ts';
 import { isMapId } from './playlist.ts';
 import { OBJECTIVE_STATES, type CompareOp, type EventType, type LogicAction, type LogicCondition, type ObjectiveState } from '../map/logic.ts';
 import { distance, viewDirection, type Vec3 } from '../math.ts';
@@ -129,6 +130,12 @@ interface LightRt {
   flashUntil: number;
 }
 
+interface PortalRt {
+  i: number;
+  e: PortalEntity;
+  enabled: boolean;
+}
+
 interface MoverRt {
   /** Index in Movers.defs. */
   k: number;
@@ -196,6 +203,9 @@ export class Scenario {
   /** Movers (lifts, drawbridges…): legs, poses and riders; shared with client prediction. */
   readonly movers: Movers;
   private readonly moverRt = new Map<number, MoverRt>();
+  /** Portals (pairs of linked surfaces): logic switches them on and off. */
+  readonly portals: Portal[];
+  private readonly portalRt = new Map<number, PortalRt>();
   private readonly dynamic: Set<string>;
   /** Lights some rule targets (or that start off or blinking): only these are replicated. */
   private readonly drivenLights = new Set<number>();
@@ -228,6 +238,7 @@ export class Scenario {
     this.dynamic = dynamicBlockIds(map);
     this.movers = new Movers(map);
     this.lifts = liftLinks(map);
+    this.portals = mapPortals(map.entities);
     map.entities.forEach((e, i) => this.index.set(e.id, i));
     const targets = new Set(map.logic.rules.flatMap((r) => r.do.map((a) => a.target)));
     map.entities.forEach((e, i) => {
@@ -272,6 +283,9 @@ export class Scenario {
           if (k !== undefined) this.moverRt.set(i, { k, enabled: e.startActive, dir: 1, queued: null });
           break;
         }
+        case 'portal':
+          this.portalRt.set(i, { i, e, enabled: e.startEnabled });
+          break;
         case 'zone':
           this.zones.set(i, { i, e, enabled: e.startEnabled, inside: new Set(), satisfied: false });
           break;
@@ -320,6 +334,18 @@ export class Scenario {
   strike(feet: Vec3, radius: number, height: number): number {
     if (!this.movers.defs.length) return 0;
     return this.movers.strike(feet, radius, height, this.host.tick, (i) => this.destructibles.get(i)?.alive !== false);
+  }
+
+  /** Whether a portal (entity index) is switched on. */
+  portalOn = (i: number): boolean => this.portalRt.get(i)?.enabled ?? false;
+
+  /** Portal pairs as bots see them: where to step in (a navmesh link's start), where it comes out, the surface to walk into, and whether it works now. */
+  portalViews(): { start: Vec3; end: Vec3; face: Vec3; on: boolean }[] {
+    return this.portals.flatMap((p) => {
+      if (p.link < 0) return [];
+      const b = this.portals[p.link]!;
+      return [{ start: portalEntry(p, 0.9), end: portalEntry(b, PORTAL_EXIT + 0.6), face: { x: p.pos.x, y: p.pos.y, z: p.pos.z }, on: this.portalOn(p.i) && this.portalOn(b.i) }];
+    });
   }
 
   /** Lifts as bots see them: the ride (navmesh link) and where the platform's top is now. */
@@ -801,14 +827,15 @@ export class Scenario {
     }
   }
 
-  private isEnabled(id: string | null): boolean | undefined {
+  /** Whether a toggleable entity is switched on (undefined: no such entity). */
+  isEnabled(id: string | null): boolean | undefined {
     const i = this.entityIndex(id);
     if (i === undefined) return undefined;
     const e = this.map.entities[i]!;
     if (e.kind === 'pickup') return this.isPickupEnabled(e.id);
     if (e.kind === 'block') return this.destructibles.get(i)?.alive;
     if (e.kind === 'light') return this.lights.get(i)?.on;
-    return (this.buttons.get(i) ?? this.zones.get(i) ?? this.traps.get(i) ?? this.moverRt.get(i))?.enabled;
+    return (this.buttons.get(i) ?? this.zones.get(i) ?? this.traps.get(i) ?? this.moverRt.get(i) ?? this.portalRt.get(i))?.enabled;
   }
 
   private setEnabled(id: string | null, enabled: boolean): void {
@@ -833,7 +860,7 @@ export class Scenario {
       if (l) l.on = enabled;
       return;
     }
-    const rt = this.buttons.get(i) ?? this.zones.get(i) ?? this.traps.get(i) ?? this.moverRt.get(i);
+    const rt = this.buttons.get(i) ?? this.zones.get(i) ?? this.traps.get(i) ?? this.moverRt.get(i) ?? this.portalRt.get(i);
     if (rt) rt.enabled = enabled;
   }
 
@@ -1080,6 +1107,7 @@ export class Scenario {
       if (this.drivenLights.has(l.i)) out.push([l.i, this.lightFlags(l, tick), l.color]);
     }
     for (const m of this.moverRt.values()) out.push(this.movers.encode(m.k));
+    for (const p of this.portalRt.values()) out.push([p.i, p.enabled ? 1 : 0, 0]);
     return out;
   }
 

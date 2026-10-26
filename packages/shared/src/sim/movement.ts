@@ -3,6 +3,7 @@ import type { Vec3 } from '../math.ts';
 import { PLAYER, SPRINT, STANCES, TICK_DT, quantize, type Stance } from './constants.ts';
 import type { PhysicsWorld } from './physics.ts';
 import { JET, LIQUID_SPECS, SWIM_DEPTH, liquidAt, type LiquidBox } from './liquids.ts';
+import { mapPortals, portalLinks } from './portals.ts';
 import { CHUTE_GLIDER, CHUTE_PARACHUTE, chuteVelY, chuteWish, wantsChute, type ChuteKind } from './parachute.ts';
 
 export const BUTTON_JUMP = 1;
@@ -469,7 +470,7 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gra
   return out;
 }
 
-/** Every one-way navmesh link a map needs for bots: jump pad flights and ladders up and down. */
-export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3 }[] {
-  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities)), ...ladderLinks(mapLadders(entities))];
+/** Every one-way navmesh link a map needs for bots: jump pad flights, ladders up and down, and portal pairs both ways. */
+export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0] & Parameters<typeof mapPortals>[0], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3; reach?: Vec3 }[] {
+  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities)), ...ladderLinks(mapLadders(entities)), ...portalLinks(mapPortals(entities))];
 }

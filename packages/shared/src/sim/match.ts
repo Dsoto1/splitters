@@ -49,6 +49,7 @@ import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_P
 import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
 import { liftLinks } from './movers.ts';
+import { applyPortals, portalCarry, portalSegment } from './portals.ts';
 import { Encounters } from './encounters.ts';
 import { ZombieSurvival } from './zombies.ts';
 import { RaceDirector, raceShot, roadHandling, type RaceVehicleView } from './race.ts';
@@ -1210,6 +1211,7 @@ export class Match {
     const buttonsBy = new Map<string | null, ReturnType<Scenario['doorButtons']>>();
     const doorButtonsFor = (team: string | null) => buttonsBy.get(team) ?? buttonsBy.set(team, this.scenario.doorButtons(team)).get(team)!;
     const lifts = this.scenario.liftViews();
+    const portals = this.scenario.portalViews();
     const hazards = this.scenario.hazards();
     const spawnPoints = this.spawnPoints.map((s) => s.pos);
     // Team Deathmatch bots roam toward the other side's spawns, so the teams meet in the middle.
@@ -1282,6 +1284,7 @@ export class Match {
         blockers: blockersFor(c.faction),
         doorButtons: doorButtonsFor(c.faction),
         ...(lifts.length ? { lifts } : {}),
+        ...(portals.length ? { portals } : {}),
         hazards,
         orderGoal,
         allies,
@@ -1592,6 +1595,13 @@ export class Match {
         const before = c.move;
         const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}), ...(c.jetFuel !== null ? { jetpack: true } : {}), ...(c.glider ? { glider: true } : {}), ...(c.kind !== 'human' ? { autoChute: true } : {}) });
         c.move = applyPads(this.pads, stepped);
+        // Into a portal: out of its partner, turned by the difference in their facings (as client prediction does).
+        const through = this.scenario.portals.length ? applyPortals(this.scenario.portals, before, c.move, this.scenario.portalOn, c.size, bodyHeightOf(c.move, c.size)) : null;
+        if (through) {
+          c.move = through.state;
+          c.yaw += through.turn;
+          c.bot?.turned(through.turn);
+        }
         this.trackFall(c, before, c.move !== stepped);
         c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / TICK_DT;
         if (c.jetFuel !== null) c.jetFuel = stepJetFuel(c.jetFuel, !!c.move.jet);
@@ -2010,6 +2020,16 @@ export class Match {
       const len = Math.hypot(delta.x, delta.y, delta.z);
       const dir = scale(delta, 1 / (len || 1));
       const wall = this.physics.raycastNormal(p.pos, dir, len);
+      // Through a portal (before whatever wall it is set in): out of its partner, turned with it.
+      const gate = this.scenario.portals.length ? portalSegment(this.scenario.portals, p.pos, add(p.pos, delta), this.scenario.portalOn) : null;
+      if (gate && (!wall || wall.dist >= gate.t * len - 0.15)) {
+        const at = add(p.pos, scale(delta, gate.t));
+        const out = portalCarry(gate.a, gate.b, at, p.vel);
+        p.pos = out.pos;
+        p.vel = out.vel;
+        keep.push(p);
+        continue;
+      }
       let hitDist = wall?.dist ?? null;
       let victim: Combatant | null = null;
       for (const c of this.actors()) {

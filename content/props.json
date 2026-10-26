@@ -251,6 +251,14 @@
       "license": "Owned",
       "licenseFile": "assets-src/tiletrigger-kit/License.txt",
       "retrieved": "2026-10-26"
+    },
+    "tiletrigger-ancient": {
+      "title": "Style Pack pieces (Imperial Arena, Sands of Egypt)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-ancient.mjs)",
+      "url": "tools/content/prepare-ancient.mjs",
+      "license": "Owned",
+      "licenseFile": "assets-src/tiletrigger-ancient/License.txt",
+      "retrieved": "2026-10-26"
     }
   },
   "budgets": {
@@ -6420,6 +6428,306 @@
       "category": "Frontier",
       "height": 9.26,
       "collide": "trunk"
+    },
+    {
+      "id": "im_column_ionic",
+      "pack": "tiletrigger-ancient",
+      "src": "im_column_ionic.glb",
+      "name": "Ionic Column",
+      "category": "Imperial Arena",
+      "height": 6.0,
+      "collide": "box"
+    },
+    {
+      "id": "im_brazier",
+      "pack": "tiletrigger-ancient",
+      "src": "im_brazier.glb",
+      "name": "Bronze Brazier",
+      "category": "Imperial Arena",
+      "height": 1.73,
+      "collide": "box"
+    },
+    {
+      "id": "im_statue_emperor",
+      "pack": "tiletrigger-ancient",
+      "src": "im_statue_emperor.glb",
+      "name": "Emperor Statue",
+      "category": "Imperial Arena",
+      "height": 3.27,
+      "collide": "box"
+    },
+    {
+      "id": "im_amphorae",
+      "pack": "tiletrigger-ancient",
+      "src": "im_amphorae.glb",
+      "name": "Amphorae",
+      "category": "Imperial Arena",
+      "height": 0.9,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#b8603a"
+      }
+    },
+    {
+      "id": "im_weapon_rack",
+      "pack": "tiletrigger-ancient",
+      "src": "im_weapon_rack.glb",
+      "name": "Gladius Rack",
+      "category": "Imperial Arena",
+      "height": 2.28,
+      "collide": "box"
+    },
+    {
+      "id": "im_training_post",
+      "pack": "tiletrigger-ancient",
+      "src": "im_training_post.glb",
+      "name": "Training Post",
+      "category": "Imperial Arena",
+      "height": 2.14,
+      "collide": "trunk"
+    },
+    {
+      "id": "im_aquila",
+      "pack": "tiletrigger-ancient",
+      "src": "im_aquila.glb",
+      "name": "Eagle Standard",
+      "category": "Imperial Arena",
+      "height": 2.92,
+      "collide": "trunk"
+    },
+    {
+      "id": "im_vexillum",
+      "pack": "tiletrigger-ancient",
+      "src": "im_vexillum.glb",
+      "name": "Legion Banner",
+      "category": "Imperial Arena",
+      "height": 3.18,
+      "collide": "trunk"
+    },
+    {
+      "id": "im_chariot",
+      "pack": "tiletrigger-ancient",
+      "src": "im_chariot.glb",
+      "name": "Racing Chariot",
+      "category": "Imperial Arena",
+      "height": 1.38,
+      "collide": "box"
+    },
+    {
+      "id": "im_lift_cage",
+      "pack": "tiletrigger-ancient",
+      "src": "im_lift_cage.glb",
+      "name": "Beast Cage",
+      "category": "Imperial Arena",
+      "height": 3.01,
+      "collide": "box"
+    },
+    {
+      "id": "im_stakes",
+      "pack": "tiletrigger-ancient",
+      "src": "im_stakes.glb",
+      "name": "Stake Barricade",
+      "category": "Imperial Arena",
+      "height": 1.25,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#7a5232"
+      }
+    },
+    {
+      "id": "im_altar",
+      "pack": "tiletrigger-ancient",
+      "src": "im_altar.glb",
+      "name": "Marble Altar",
+      "category": "Imperial Arena",
+      "height": 1.39,
+      "collide": "box"
+    },
+    {
+      "id": "im_bench",
+      "pack": "tiletrigger-ancient",
+      "src": "im_bench.glb",
+      "name": "Marble Bench",
+      "category": "Imperial Arena",
+      "height": 0.48,
+      "collide": "box"
+    },
+    {
+      "id": "im_fountain",
+      "pack": "tiletrigger-ancient",
+      "src": "im_fountain.glb",
+      "name": "Forum Fountain",
+      "category": "Imperial Arena",
+      "height": 1.75,
+      "collide": "box"
+    },
+    {
+      "id": "im_velarium",
+      "pack": "tiletrigger-ancient",
+      "src": "im_velarium.glb",
+      "name": "Velarium Awning",
+      "category": "Imperial Arena",
+      "height": 4.58,
+      "collide": "none"
+    },
+    {
+      "id": "im_bust",
+      "pack": "tiletrigger-ancient",
+      "src": "im_bust.glb",
+      "name": "Marble Bust",
+      "category": "Imperial Arena",
+      "height": 1.73,
+      "collide": "box"
+    },
+    {
+      "id": "im_throne",
+      "pack": "tiletrigger-ancient",
+      "src": "im_throne.glb",
+      "name": "Imperial Throne",
+      "category": "Imperial Arena",
+      "height": 1.95,
+      "collide": "box"
+    },
+    {
+      "id": "eg_obelisk",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_obelisk.glb",
+      "name": "Obelisk",
+      "category": "Sands of Egypt",
+      "height": 9.0,
+      "collide": "box"
+    },
+    {
+      "id": "eg_sphinx",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_sphinx.glb",
+      "name": "Sphinx",
+      "category": "Sands of Egypt",
+      "height": 3.35,
+      "collide": "box"
+    },
+    {
+      "id": "eg_statue_pharaoh",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_statue_pharaoh.glb",
+      "name": "Seated Pharaoh",
+      "category": "Sands of Egypt",
+      "height": 5.86,
+      "collide": "box"
+    },
+    {
+      "id": "eg_anubis",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_anubis.glb",
+      "name": "Anubis Shrine",
+      "category": "Sands of Egypt",
+      "height": 1.76,
+      "collide": "box"
+    },
+    {
+      "id": "eg_sarcophagus",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_sarcophagus.glb",
+      "name": "Sarcophagus",
+      "category": "Sands of Egypt",
+      "height": 1.12,
+      "collide": "box"
+    },
+    {
+      "id": "eg_canopic_jars",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_canopic_jars.glb",
+      "name": "Canopic Jars",
+      "category": "Sands of Egypt",
+      "height": 0.78,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#d8c8a6"
+      }
+    },
+    {
+      "id": "eg_column_papyrus",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_column_papyrus.glb",
+      "name": "Papyrus Column",
+      "category": "Sands of Egypt",
+      "height": 7.0,
+      "collide": "box"
+    },
+    {
+      "id": "eg_felucca",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_felucca.glb",
+      "name": "Felucca",
+      "category": "Sands of Egypt",
+      "height": 7.4,
+      "collide": "none"
+    },
+    {
+      "id": "eg_reed_boat",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_reed_boat.glb",
+      "name": "Reed Boat",
+      "category": "Sands of Egypt",
+      "height": 1.43,
+      "collide": "box"
+    },
+    {
+      "id": "eg_palm",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_palm.glb",
+      "name": "Date Palm",
+      "category": "Sands of Egypt",
+      "height": 7.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "eg_papyrus",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_papyrus.glb",
+      "name": "Papyrus Reeds",
+      "category": "Sands of Egypt",
+      "height": 2.06,
+      "collide": "none"
+    },
+    {
+      "id": "eg_torch",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_torch.glb",
+      "name": "Fire Stand",
+      "category": "Sands of Egypt",
+      "height": 2.36,
+      "collide": "trunk"
+    },
+    {
+      "id": "eg_chest",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_chest.glb",
+      "name": "Gilded Chest",
+      "category": "Sands of Egypt",
+      "height": 0.88,
+      "collide": "box"
+    },
+    {
+      "id": "eg_stele",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_stele.glb",
+      "name": "Stele",
+      "category": "Sands of Egypt",
+      "height": 2.45,
+      "collide": "box"
+    },
+    {
+      "id": "eg_cat_statue",
+      "pack": "tiletrigger-ancient",
+      "src": "eg_cat_statue.glb",
+      "name": "Bastet Statue",
+      "category": "Sands of Egypt",
+      "height": 1.12,
+      "collide": "box"
     }
   ]
 }
