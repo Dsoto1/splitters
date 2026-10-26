@@ -101,13 +101,14 @@
               <button id="go-online" class="primary" hidden title="Restart this match and list it in the game browser">Go online</button>
               <button id="go-offline" hidden title="Disconnect friends and stop listing this match">Go offline</button>
               <p class="hint" id="online-note" hidden></p>
+              <!-- Online: the join code and invite link come first, where they fit on small screens. -->
+              <div id="host-info" hidden></div>
               <button id="host-game" hidden title="Let friends join this match from their browsers with a code (not listed)">Host with code only (not listed)</button>
               <div id="host-public" hidden>
                 <label class="pause-row" title="Anyone can find and join this match from Online → Game browser"><span>List in the game browser</span> <input id="host-list" type="checkbox" /></label>
                 <input id="host-name" maxlength="40" placeholder="Server name" aria-label="Server name" />
                 <p class="hint" id="host-public-status"></p>
               </div>
-              <div id="host-info" hidden></div>
             </div>
             <div id="pause-host-slot"></div>
           </section>

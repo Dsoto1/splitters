@@ -385,7 +385,10 @@ export class GameSession {
     pub.hidden = hostBtn.hidden || !hubSetting();
     listBox.checked = false;
     listName.value = '';
-    listBox.addEventListener('change', () => this.updateListing(), { signal });
+    // The server name only matters when the match is listed.
+    const showName = () => (listName.hidden = !listBox.checked);
+    showName();
+    listBox.addEventListener('change', () => (showName(), this.updateListing()), { signal });
     listName.addEventListener('change', () => this.updateListing(), { signal });
     // Mouse sensitivity and invert, saved for next time.
     const sens = $('mouse-sens') as HTMLInputElement;
@@ -664,6 +667,7 @@ export class GameSession {
     note.hidden = !can || this.listable || !hubSetting();
     note.textContent = this.listable ? '' : "This map isn't one of our suite's, so it can't be listed publicly: host with a code instead.";
     ($('host-list') as HTMLInputElement).disabled = !this.listable;
+    ($('host-name') as HTMLInputElement).hidden = !($('host-list') as HTMLInputElement).checked;
     let badge = document.getElementById('online-badge');
     if (!badge) {
       badge = document.createElement('div');
