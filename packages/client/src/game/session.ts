@@ -84,6 +84,7 @@ import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
 import type { PeerHost } from './peerLink.ts';
 import { inSuite } from '../playlists.ts';
+import { PauseMenu } from './pauseMenu.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
 import { FortsClient } from './fortsClient.ts';
@@ -207,6 +208,10 @@ export class GameSession {
   private readonly hostPanel: HostPanel;
   private hostState: HostState | null = null;
   private mapPicker: HTMLElement | null = null;
+  /** The pause menu's tabs, keys and controller. */
+  private readonly pauseMenu: PauseMenu;
+  /** When the pause menu's scores were last drawn. */
+  private pauseDrawnAt = 0;
   /** The host has a relay set up (Options → Relay), for the game browser's badge. */
   private relayOn = false;
   private tpClose = false;
@@ -288,7 +293,7 @@ export class GameSession {
     };
     opts.canvas.addEventListener('click', lock, { signal });
     $('resume').addEventListener('click', lock, { signal });
-    $('exitmatch').addEventListener('click', () => this.exit(), { signal });
+    $('exitmatch').addEventListener('click', () => this.confirmLeave(), { signal });
     $('respawn-now').addEventListener(
       'click',
       () => {
@@ -298,6 +303,27 @@ export class GameSession {
       { signal },
     );
     $('exitmatch').textContent = opts.exitLabel;
+    this.pauseMenu = new PauseMenu(
+      {
+        resume: () => {
+          lock();
+          // The browser may refuse the mouse right after Esc: Resume (click) always works.
+          ($('resume') as HTMLButtonElement).focus();
+        },
+        overlay: () => document.getElementById('leave-confirm') ?? document.getElementById('online-confirm') ?? this.mapPicker,
+        opened: () => this.drawPause(true),
+      },
+      signal,
+    );
+    // Classes: pick your next class from the menu too.
+    $('pause-class').addEventListener(
+      'click',
+      () => {
+        this.input.classMenu = true;
+        lock();
+      },
+      { signal },
+    );
     // Host game: open a join code so friends' browsers can connect to this match.
     const hostBtn = $('host-game') as HTMLButtonElement;
     const hostInfo = $('host-info');
@@ -389,14 +415,24 @@ export class GameSession {
     window.addEventListener(
       'keydown',
       (e) => {
+        const paused = !$('pause').hidden;
+        if (paused && e.code !== 'Escape' && this.pauseMenu.key(e)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return;
+        }
         if (e.code !== 'Escape') return;
         // Normally the browser's own Esc releases the mouse (in Safari the first Esc only
         // closes its banner); only when the page holds Esc in fullscreen do we release it.
         if (this.input.locked) {
           if (pageHoldsEscape()) document.exitPointerLock();
-        } else if (this.local) this.exit();
+        } else if (paused) {
+          // In the menu: back a level (dialog, then tab), then resume.
+          e.preventDefault();
+          this.pauseMenu.back();
+        }
       },
-      { signal },
+      { signal, capture: true },
     );
 
     opts.transport.start(
@@ -466,7 +502,68 @@ export class GameSession {
   }
 
   private updatePause(): void {
+    const was = $('pause').hidden;
     $('pause').hidden = this.input.locked || !this.local || this.closed;
+    if (was && !$('pause').hidden) {
+      this.drawPause(true);
+      ($('resume') as HTMLButtonElement).focus({ preventScroll: true });
+    }
+  }
+
+  /** What the pause menu shows about the match: its line (map, mode, time), the scores, your online state. */
+  private drawPause(now = false): void {
+    if ($('pause').hidden) return;
+    const t = performance.now();
+    if (!now && t - this.pauseDrawnAt < 500) return;
+    this.pauseDrawnAt = t;
+    this.hud.pauseContext();
+    if (this.pauseMenu.tab === 'match') {
+      const html = this.hud.scoreHtml(this.scores, this.slot);
+      const box = $('pause-scores');
+      if (box.innerHTML !== html) box.innerHTML = html;
+    }
+    ($('pause-class') as HTMLButtonElement).hidden = !this.classesOn;
+  }
+
+  /** Leave: when friends play in this hosted match, it ends for them too, so ask first. */
+  private confirmLeave(): void {
+    const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
+    const friends = this.peerHost && local ? local.guests : 0;
+    if (!friends) return this.exit();
+    this.confirmBox('leave-confirm', 'Leave the match?', `You host this game: leaving ends it for ${friends === 1 ? 'your friend' : `${friends} friends`}.`, 'Leave', () => this.exit(), true);
+  }
+
+  /** A short confirm over the pause menu (Esc or Cancel closes it). */
+  private confirmBox(id: string, title: string, text: string, yes: string, onYes: () => void, danger = false): void {
+    if (document.getElementById(id)) return;
+    const box = document.createElement('div');
+    box.id = id;
+    box.className = 'panel confirm';
+    box.setAttribute('role', 'dialog');
+    const h = document.createElement('h3');
+    h.className = 'panel-title';
+    h.textContent = title;
+    const p = document.createElement('p');
+    p.textContent = text;
+    const cancel = document.createElement('button');
+    cancel.textContent = 'Cancel';
+    cancel.dataset.cancel = '1';
+    cancel.id = id.replace('-confirm', '-cancel');
+    const ok = document.createElement('button');
+    ok.className = danger ? 'danger' : 'primary';
+    ok.id = id.replace('-confirm', '-yes');
+    ok.textContent = yes;
+    const actions = document.createElement('div');
+    actions.className = 'confirm-actions';
+    actions.append(cancel, ok);
+    box.append(h, p, actions);
+    $('pause').append(box);
+    cancel.addEventListener('click', () => (box.remove(), ($('resume') as HTMLButtonElement).focus()));
+    ok.addEventListener('click', () => {
+      box.remove();
+      onYes();
+    });
+    ok.focus();
   }
 
   /** Open a join code for this match and show it (with an invite link) in the pause menu. */
@@ -529,9 +626,9 @@ export class GameSession {
     const goOff = $('go-offline') as HTMLButtonElement;
     const note = $('online-note');
     const listed = online && ($('host-list') as HTMLInputElement).checked && !!this.advertiser;
-    goOn.hidden = !can || (online && listed) || !hubSetting();
+    // Online already: the "List in the game browser" box below lists or unlists it.
+    goOn.hidden = !can || online || !hubSetting();
     goOn.disabled = !this.listable;
-    goOn.textContent = online ? 'List in the game browser' : 'Go online';
     goOff.hidden = !can || !online;
     note.hidden = !can || this.listable || !hubSetting();
     note.textContent = this.listable ? '' : "This map isn't one of our suite's, so it can't be listed publicly: host with a code instead.";
@@ -544,24 +641,18 @@ export class GameSession {
     }
     badge.hidden = !online || !local;
     if (online && local && this.peerHost) badge.textContent = `${listed ? 'Online · listed' : 'Online · code only'} · ${1 + local.guests}/${local.capacity} · ${this.peerHost.code}`;
+    // The Match tab says where you stand; the Host tab has the controls.
+    const state = $('pause-online-state');
+    state.hidden = !can;
+    state.textContent = online ? `${badge.textContent}. Host tab: invite link, Go offline.` : 'Offline: only you and bots. Host tab → Go online to let people join.';
+    state.classList.toggle('on', online);
+    this.pauseMenu.setTabVisible('host', !!local || this.hostPanel.controlling);
   }
 
   /** "Go online": a short confirm, then the match restarts and is listed (and joinable by code). */
   private confirmGoOnline(): void {
-    if (!this.listable || document.getElementById('online-confirm')) return;
-    const box = document.createElement('div');
-    box.id = 'online-confirm';
-    box.className = 'panel confirm';
-    box.setAttribute('role', 'dialog');
-    box.innerHTML = '<h3 class="panel-title">Go online?</h3><p>The match restarts on the same map and rules (scores reset) and is listed publicly in the game browser. Friends can also join with the code.</p><div class="confirm-actions"><button id="online-cancel">Cancel</button><button id="online-yes" class="primary">Go online</button></div>';
-    $('pause').append(box);
-    const close = () => box.remove();
-    box.querySelector('#online-cancel')!.addEventListener('click', close);
-    box.querySelector('#online-yes')!.addEventListener('click', () => {
-      close();
-      void this.goOnline();
-    });
-    (box.querySelector('#online-yes') as HTMLButtonElement).focus();
+    if (!this.listable) return;
+    this.confirmBox('online-confirm', 'Go online?', 'The match restarts on the same map and rules (scores reset) and is listed publicly in the game browser. Friends can also join with the code.', 'Go online', () => void this.goOnline());
   }
 
   private async goOnline(): Promise<void> {
@@ -615,7 +706,7 @@ export class GameSession {
       net ? 'Admin' : 'Host',
     );
     panel.root.hidden = true;
-    $('exitmatch').before(panel.root);
+    $(net ? 'pause-admin-slot' : 'pause-host-slot').append(panel.root);
     return panel;
   }
 
@@ -788,6 +879,8 @@ export class GameSession {
     this.hostPanel.root.remove();
     this.mapPicker?.remove();
     document.getElementById('online-confirm')?.remove();
+    document.getElementById('leave-confirm')?.remove();
+    $('pause-scores').replaceChildren();
     document.getElementById('online-badge')?.remove();
     if (document.pointerLockElement) document.exitPointerLock();
     this.opts.transport.close();
@@ -1072,6 +1165,10 @@ export class GameSession {
         if (msg.state || !this.hostPanel.controlling) {
           this.hostState = msg.state;
           this.hostPanel.setState(msg.state);
+          // Admins' controls go in the Host tab; the login stays in Match.
+          $(this.hostPanel.controlling ? 'pause-host-slot' : 'pause-admin-slot').append(this.hostPanel.root);
+          if (this.hostPanel.controlling) this.hostPanel.root.open = true;
+          this.pauseMenu.setTabVisible('host', this.opts.transport instanceof LocalTransport || this.hostPanel.controlling);
         }
         if (msg.error) {
           this.hostPanel.setStatus(msg.error, true);
@@ -1303,6 +1400,10 @@ export class GameSession {
   /** Advance prediction at a fixed 60 Hz and render one frame. */
   frame(): void {
     if (this.closed) return;
+    if (!$('pause').hidden) {
+      this.pauseMenu.pollPad();
+      this.drawPause();
+    }
     const now = performance.now();
     const dt = Math.min(0.25, (now - this.last) / 1000);
     this.frameMs = now - this.last;

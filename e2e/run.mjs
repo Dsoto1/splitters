@@ -1542,6 +1542,22 @@ async function hostcontrolsFlow(browser) {
   await page.waitForFunction(playing, null, { timeout: T(60000) });
   const state = await page.waitForFunction(() => window.__cs.host(), null, { timeout: T(10000) }).then((h) => h.jsonValue());
   check(state?.fill === 4 && state.teams === 0, `the offline player runs the match (${JSON.stringify(state)})`);
+  // The pause menu: Match first; Esc goes back from a tab to Match; the host gets a Host tab.
+  const menu = await page.evaluate(() => {
+    const tab = (id) => document.querySelector(`#pause .pause-tabs [data-tab="${id}"]`);
+    const open = () => [...document.querySelectorAll('#pause .pause-sec')].find((x) => !x.hidden)?.dataset.sec;
+    const first = open();
+    tab('settings').click();
+    const settings = open();
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', key: 'Escape', bubbles: true }));
+    return { first, settings, back: open(), host: !tab('host').hidden };
+  });
+  check(menu.first === 'match' && menu.settings === 'settings' && menu.back === 'match' && menu.host, `pause menu tabs: Match first, Esc back to it, a Host tab for the host (${JSON.stringify(menu)})`);
+  const fits = await page.evaluate(() => {
+    const r = document.querySelector('#pause .pause-card').getBoundingClientRect();
+    return r.top >= 0 && r.bottom <= innerHeight + 1 && r.right <= innerWidth + 1;
+  });
+  check(fits, 'the pause menu fits the window');
   await openPanel(page);
   await page.evaluate(() => {
     document.getElementById('hc-players-plus').click();
@@ -1592,8 +1608,9 @@ async function hostcontrolsFlow(browser) {
   const joined = await friend.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
   check(joined, `a friend joins the hosted match (${code})`);
   if (joined) {
-    const guestPanel = await friend.evaluate(() => document.getElementById('host-controls')?.hidden ?? true);
-    check(guestPanel, 'the friend gets no host controls');
+    const guest = await friend.evaluate(() => ({ panel: document.getElementById('host-controls')?.hidden ?? true, tab: document.querySelector('#pause .pause-tabs [data-tab="host"]').hidden, fits: document.querySelector('#pause .pause-card').getBoundingClientRect().bottom <= innerHeight + 1 }));
+    check(guest.panel && guest.tab, 'the friend gets no Host tab or host controls');
+    check(guest.fits, 'the pause menu fits at 640×360');
     // Everything the friend's feed shows from here on (the match moves on soon after the announcement).
     await friend.evaluate(() => {
       window.__notes = [];
