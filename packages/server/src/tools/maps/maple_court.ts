@@ -80,7 +80,7 @@ interface House {
   /** "x,y,z" -> what the cell is ('well'/'stairs' cells are the stair tile, given on z0 and z1). */
   cells: Record<string, Kind>;
   /** The stair tile: [x, y, rotation, kind]. */
-  stair: [number, number, number, 'stairwell' | 'stairs'];
+  stair: [number, number, 0 | 1 | 2 | 3, 'stairwell' | 'stairs'];
   /** Edge overrides, "x,y,z,Side" -> style (exterior defaults to a window, internal to a door). */
   edges: Record<string, EdgeStyle>;
   front: [number, number, Side];
