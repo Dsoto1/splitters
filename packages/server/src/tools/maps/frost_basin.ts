@@ -356,7 +356,7 @@ await m.fillTeamSpawns(8);
 m.lightRooms();
 m.meta({
   description:
-    'A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler, a skyfighter that flies and a tank below the cliff, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west. An homage in spirit to the great outdoor team maps of the early 2000s.',
+    'A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler, a skyfighter that flies and a tank below the cliff, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west.',
   modes: ['core.tdm', 'core.deathmatch'],
   players: [4, 16],
 });

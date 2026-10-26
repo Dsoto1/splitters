@@ -168,7 +168,7 @@ m.prop('sv_propane', at(5, 4, 0, -3.2, 3.2), 0.4).prop('sv_propane', at(7, 2, 0,
 m.prop('sv_gas_can', at(5, 2, 0, 2.3, -3.4), 0.3);
 m.meta({
   description:
-    'A sealed bottling works, in the spirit of GoldenEye\'s Facility: tiled washrooms with a ceiling vent you can drop through, long service corridors, a two-storey server lab, and the great tank hall where walkways cross between the tank tops. The railgun waits on the walkway junction; the gilded pistol hides in the stalls below the vent.',
+    'A sealed bottling works: tiled washrooms with a ceiling vent you can drop through, long service corridors, a two-storey server lab, and the great tank hall where walkways cross between the tank tops. The railgun waits on the walkway junction; the gilded pistol hides in the stalls below the vent.',
   modes: ['core.deathmatch', 'core.tdm'],
   players: [2, 10],
 });

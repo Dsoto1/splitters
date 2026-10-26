@@ -290,7 +290,7 @@ for (const [x, z] of [[-18, -6], [-14, -11], [-5, 12], [12, 12], [18, -11], [-18
 m.lightRooms();
 m.meta({
   description:
-    'A walled yard between brick buildings. The north block is two storeys of offices with windows over the yard; a railed walkway crosses to the south block upstairs, carrying the heavy armour. The garage roof holds the sniper rifle, the vent housing in the middle of the yard drops into the pump room and the rockets, and service tunnels loop from the garage under the south block to the loading dock. An homage in spirit to a classic compact deathmatch yard.',
+    'A walled yard between brick buildings. The north block is two storeys of offices with windows over the yard; a railed walkway crosses to the south block upstairs, carrying the heavy armour. The garage roof holds the sniper rifle, the vent housing in the middle of the yard drops into the pump room and the rockets, and service tunnels loop from the garage under the south block to the loading dock.',
   modes: ['core.deathmatch', 'core.tdm'],
   players: [2, 12],
 });

@@ -2,8 +2,8 @@
   "format": "tiletrigger.map",
   "formatVersion": 17,
   "metadata": {
-    "id": "blood_gulch",
-    "name": "Blood Gulch",
+    "id": "coldwater_gulch",
+    "name": "Coldwater Gulch",
     "author": "Tile Trigger",
     "description": "A long grassy box canyon walled in by sheer rock, with two squat concrete bunkers facing each other from the far ends: Red holds the north, Blue the south. Each bunker keeps its flag behind the dais on the ground floor, a sniper rifle on its roof deck (open stairs at the front corners, a long ramp up the back) and a buggy, two speeders, a tank and a skyfighter on the apron. A jump pad beside each base throws you onto the 10 m sniper ledge along the far side cliff; each ledge also has a ramp at one end. Rolling grass, boulders, rock outcrops by the cliffs and bushes to hide in fill the floor; rockets wait on the knoll in the middle. A layout homage to the classic two-base canyon of 2001.",
     "createdAt": "2026-10-23T00:00:00.000Z",

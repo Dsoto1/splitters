@@ -256,7 +256,7 @@ for (const [x, z] of [[-6, 30], [22, -22.5], [38, 12]] as const) plant('nt_birch
 m.lightRooms();
 m.meta({
   description:
-    'A two-storey restaurant on a neon-lit night street: a double-height dining hall with a gallery all round, a kitchen with a serving hatch and back stairs, private dining rooms with balconies over the street and the office upstairs (rockets). Outside, shopfronts line the street and an alley loops round the back from one end to the other. An homage in spirit to the classic restaurant-and-street map.',
+    'A two-storey restaurant on a neon-lit night street: a double-height dining hall with a gallery all round, a kitchen with a serving hatch and back stairs, private dining rooms with balconies over the street and the office upstairs (rockets). Outside, shopfronts line the street and an alley loops round the back from one end to the other.',
   modes: ['core.deathmatch', 'core.tdm'],
   players: [2, 12],
 });

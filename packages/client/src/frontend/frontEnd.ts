@@ -28,7 +28,7 @@ import {
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/peerLink.ts';
 import { installTooltips } from './tooltip.ts';
-import { GRAPHICS_QUALITIES, loadGraphicsQuality, saveGraphicsQuality, type GraphicsQuality } from '../game/atmosphere.ts';
+import { FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadGraphicsQuality, loadRenderScale, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/atmosphere.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
@@ -40,6 +40,36 @@ import type { PortraitRenderer } from './portraits.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
 
 /** A built-in map the Arcade offers. */
+/**
+ * A map's picture: its screenshot from the middle with the top-down shot inset
+ * (tools/content/capture-map-shots.mjs), or the drawn plan for maps without
+ * shots (imported ones). `top`: the top-down shot alone.
+ */
+function mapPicture(map: MapDocument, cls: string, top = false, shots = true): { el: HTMLElement; draw: () => void } {
+  const plan = el('canvas');
+  const wrap = el('div', { class: `map-pic ${cls}` }, plan);
+  const shot = (kind: 'view' | 'top') => `${import.meta.env.BASE_URL}maps/shots/${map.metadata.id}-${kind}.jpg`;
+  let drawn = false;
+  const draw = () => {
+    if (!drawn) drawMapPlan(plan, map);
+    drawn = true;
+  };
+  if (!shots) return { el: wrap, draw };
+  const main = el('img', { className: 'shot', alt: '' });
+  main.addEventListener('load', () => wrap.classList.add('has-shot'));
+  main.addEventListener('error', () => (main.remove(), draw()));
+  main.src = shot(top ? 'top' : 'view');
+  wrap.append(main);
+  if (!top) {
+    const inset = el('img', { className: 'shot-top', alt: '' });
+    inset.addEventListener('error', () => inset.remove());
+    inset.src = shot('top');
+    wrap.append(inset);
+  }
+  // The plan is only drawn if the shot fails to load.
+  return { el: wrap, draw: () => undefined };
+}
+
 /** The "Inspired by …" line for a homage map (nothing for our own designs). */
 function inspired(key: string): HTMLElement[] {
   const from = mapInspiration(key);
@@ -291,18 +321,18 @@ export class FrontEnd {
       nav.append(b);
     });
     const featured = this.maps.find((m) => m.key === 'sandgate') ?? this.maps[0]!;
-    const plan = el('canvas');
+    const featuredPic = mapPicture(featured.map, 'featured-pic');
     const card = el(
       'button',
       { class: 'featured panel', title: 'Play this map' },
-      plan,
+      featuredPic.el,
       el('div', { class: 'meta' }, el('div', { class: 'kicker', textContent: 'Featured map' }), el('h3', { textContent: featured.map.metadata.name }), ...inspired(featured.key), el('p', { textContent: `${featured.modes.map((m) => MODE_LABEL[m]).join(' · ')} — ${featured.blurb}` })),
     );
     card.addEventListener('click', () => {
       this.pickMap(featured.key);
       this.go('play');
     });
-    requestAnimationFrame(() => drawMapPlan(plan, featured.map));
+    requestAnimationFrame(featuredPic.draw);
     return el(
       'div',
       { class: 'screen home' },
@@ -364,7 +394,7 @@ export class FrontEnd {
         lazy!.unobserve(e.target);
         const m = this.maps.find((x) => x.key === (e.target as HTMLElement).dataset.map);
         const c = e.target.querySelector('canvas');
-        if (m && c) drawMapPlan(c, m.map);
+        if (m && c && !e.target.querySelector('.map-pic.has-shot')) drawMapPlan(c, m.map);
       }
     }, { root: cards });
     let group: string | undefined;
@@ -373,11 +403,11 @@ export class FrontEnd {
         group = m.group;
         if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
       }
-      const plan = el('canvas');
+      const pic = mapPicture(m.map, 'card-pic', false, !m.group);
       const card = el(
         'button',
         { class: `map-card${m.key === current.key ? ' on' : ''}` },
-        plan,
+        pic.el,
         el('div', { class: 'meta' }, el('b', { textContent: m.map.metadata.name }), ...inspired(m.key), el('small', { textContent: m.blurb }), el('div', { class: 'mode-tags' }, ...m.modes.map((x) => el('span', { textContent: MODE_LABEL[x] })))),
       );
       card.dataset.map = m.key;
@@ -387,7 +417,7 @@ export class FrontEnd {
       });
       cards.append(card);
       if (m.group && lazy) lazy.observe(card);
-      else requestAnimationFrame(() => drawMapPlan(plan, m.map));
+      else requestAnimationFrame(pic.draw);
     }
     const stepper = (value: number, step: number, min: number, max: number, set: (v: number) => void, fmt = (v: number) => String(v)) => {
       const minus = el('button', { textContent: '−' });
@@ -457,8 +487,9 @@ export class FrontEnd {
       }),
     );
     const about = [current.map.metadata.description, current.map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(current.map.metadata.author) ? `Map by ${current.map.metadata.author}` : ''].filter(Boolean).join('\n\n');
-    const plan = el('canvas', { class: 'setup-plan' });
-    requestAnimationFrame(() => drawMapPlan(plan, current.map));
+    const setupPic = mapPicture(current.map, 'setup-plan', true);
+    const plan = setupPic.el;
+    requestAnimationFrame(setupPic.draw);
     const panel = el(
       'div',
       { class: 'setup panel' },
@@ -768,6 +799,10 @@ export class FrontEnd {
     });
     const graphics = el('select', {}, ...GRAPHICS_QUALITIES.map((q) => el('option', { value: q, textContent: { low: 'Low — fastest', medium: 'Medium — sun shadows', high: 'High — far shadows, ambient occlusion, bloom' }[q], selected: q === loadGraphicsQuality() })));
     graphics.addEventListener('change', () => saveGraphicsQuality(graphics.value as GraphicsQuality));
+    const renderScale = el('select', {}, ...RENDER_SCALES.map((r) => el('option', { value: r, textContent: RENDER_SCALE_LABELS[r], selected: r === loadRenderScale() })));
+    renderScale.addEventListener('change', () => saveRenderScale(renderScale.value as RenderScale));
+    const frameCap = el('select', {}, ...FRAME_CAPS.map((c) => el('option', { value: String(c), textContent: c ? `${c} fps` : 'Unlimited (screen rate)', selected: c === currentFrameCap() })));
+    frameCap.addEventListener('change', () => saveFrameCap(Number(frameCap.value) as FrameCap));
     const fullscreen = el('button', { type: 'button' });
     bindFullscreenButton(fullscreen);
     const mouse = loadMousePrefs();
@@ -861,6 +896,8 @@ export class FrontEnd {
         el('label', {}, 'Volume', volume),
         el('label', {}, 'Display', fullscreen),
         el('label', {}, el('span', { class: 'row-label' }, 'Graphics', infoTip('Applies from your next match. Medium suits most computers; drop to Low if the game stutters, try High on a strong graphics card.')), graphics),
+        el('label', {}, el('span', { class: 'row-label' }, 'Render scale', infoTip('Pixels drawn per screen point. Retina screens have two per point: Native draws all of them (four times the work), Auto draws 1.25 (barely softer, much cooler and quieter on laptops). Applies at once.')), renderScale),
+        el('label', {}, el('span', { class: 'row-label' }, 'Frame cap', infoTip('Most frames drawn per second. 60 is smooth and keeps laptops cool; ProMotion screens would otherwise draw 120. Applies at once.')), frameCap),
         el('label', {}, 'Mouse sensitivity', el('span', { class: 'row' }, sens, sensVal)),
         el('label', {}, 'Invert look', invert),
         el('label', {}, 'Aim assist', assist),

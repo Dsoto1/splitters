@@ -240,6 +240,17 @@ export class GameView {
     this.brass.specularColor = new Color3(0.9, 0.8, 0.5);
   }
 
+  /** A free camera made the active one, for map screenshots (tools/content/capture-map-shots.mjs). */
+  photoCamera(): FreeCamera {
+    const cam = new FreeCamera('photo', this.camera.globalPosition.clone(), this.scene);
+    cam.minZ = 0.1;
+    cam.maxZ = 2000;
+    // The view model's overlay camera (and any pipeline) render through activeCameras when set.
+    this.scene.activeCameras = [cam];
+    this.scene.activeCamera = cam;
+    return cam;
+  }
+
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);

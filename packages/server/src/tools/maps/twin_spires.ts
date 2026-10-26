@@ -116,7 +116,7 @@ m.hill([0, 4, 0], 4).hill([-16, 0, 8], 4).hill([0, 0, 0], 4).hill([16, 0, -8], 4
 m.lightRooms();
 m.meta({
   description:
-    'Two spires at either end of a narrow causeway hanging in open space. Each team spawns in its own spire, climbs the switchback stairwells past the windows to a railed sniper deck, and fights for the railgun on the central bridge and the rockets beneath it. No walls and no railings on the causeway: one step too far and the void takes you. An homage in spirit to the classic tower-to-tower sniping duel above a planet.',
+    'Two spires at either end of a narrow causeway hanging in open space. Each team spawns in its own spire, climbs the switchback stairwells past the windows to a railed sniper deck, and fights for the railgun on the central bridge and the rockets beneath it. No walls and no railings on the causeway: one step too far and the void takes you.',
   modes: ['core.tdm', 'core.deathmatch', 'core.ctf', 'core.koth'],
   players: [4, 14],
 });

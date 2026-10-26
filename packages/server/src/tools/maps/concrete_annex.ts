@@ -1,5 +1,5 @@
 /**
- * Complex: a buried concrete works laid out in homage to GoldenEye 007's
+ * Concrete Annex: a buried concrete works laid out in homage to GoldenEye 007's
  * multiplayer Complex (our own tiles, props and name; the layout only). Two
  * high hangars face each other across a central hall crossed by a raised
  * walkway; long corridors with hard corners run round and between them, a
@@ -34,7 +34,7 @@
 import type { Side } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
-const m = new MapBuilder('complex', 'Complex');
+const m = new MapBuilder('concrete_annex', 'Concrete Annex');
 m.theme('bunker');
 m.backdrop('overcast', 'hills', 'gravel', 0.6);
 const P = Math.PI / 2;
@@ -276,7 +276,7 @@ for (const p of [at(3, 2, -1, -3.4, 0), at(4, 2, -1, 3.4, 0)]) m.light([p[0], -1
 
 m.meta({
   description:
-    'A buried concrete complex laid out in homage to the classic four-player Complex: two high hangars with galleries face each other across a central hall, where a raised walkway crosses over the pillars and a pit drops to tunnels underneath. Long hard-cornered corridors loop round everything on two levels, with windows and firing slits into every big room; ramps and stairwells at the corners tie the levels together. Heavy armour waits on the walkway, a rocket launcher at the bottom of the pit.',
+    'A buried concrete works: two high hangars with galleries face each other across a central hall, where a raised walkway crosses over the pillars and a pit drops to tunnels underneath. Long hard-cornered corridors loop round everything on two levels, with windows and firing slits into every big room; ramps and stairwells at the corners tie the levels together. Heavy armour waits on the walkway, a rocket launcher at the bottom of the pit.',
   modes: ['core.deathmatch', 'core.tdm', 'core.koth'],
   players: [2, 12],
 });

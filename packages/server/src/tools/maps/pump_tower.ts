@@ -1,5 +1,5 @@
 /**
- * Stack: a tall concrete works stacked round an open shaft (a layout homage
+ * Pump Tower: a tall concrete works stacked round an open shaft (a layout homage
  * to GoldenEye's multiplayer Stack; our own name, tiles and dressing).
  * Five floors of rooms and corridors ring a 2 × 2 shaft that runs from the
  * machinery floor at the bottom to the control rooms at the top. Railings,
@@ -26,7 +26,7 @@
 import type { Side, TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
-const m = new MapBuilder('stack', 'Stack');
+const m = new MapBuilder('pump_tower', 'Pump Tower');
 m.theme('bunker');
 m.backdrop('overcast', 'mountains', 'gravel', 0.6);
 m.teams([6, 6]);
@@ -197,7 +197,7 @@ m.light([12, 3.6, 12], { fixture: 'none', color: '#e8eeff', intensity: 1.1, rang
 m.bounds('invisible');
 m.meta({
   description:
-    'A tall concrete works stacked round an open shaft, a layout homage to GoldenEye\'s Stack. Five floors of rooms and corridors ring the shaft, with railings, glass and open edges to drop through; a catwalk crosses it halfway up. Stairwells alternate corners, so every climb is a run round the floor. Rockets wait in a corner room midway up, body armour in the control rooms at the top, and the machinery floor at the bottom is the hill.',
+    'A tall concrete works stacked round an open shaft. Five floors of rooms and corridors ring the shaft, with railings, glass and open edges to drop through; a catwalk crosses it halfway up. Stairwells alternate corners, so every climb is a run round the floor. Rockets wait in a corner room midway up, body armour in the control rooms at the top, and the machinery floor at the bottom is the hill.',
   modes: ['core.deathmatch', 'core.tdm', 'core.koth'],
   players: [2, 12],
 });

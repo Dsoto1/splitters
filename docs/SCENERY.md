@@ -32,8 +32,8 @@ fifth of the terrain, or the ground floor), in the horizon colour. On high
 graphics, sunny skies (clear, cloudy, sunrise, sunset, dusk, misty, snowy) cast
 shafts of light past whatever stands between you and the sun (volumetric light
 scattering from a sun disc kept far out along the sun's direction). Mist is set
-on Blood Gulch, Backwoods, Step Temple, Gallows Yard, Dead Reel, Ridge Camp,
-Temple and Elm Grove.
+on Coldwater Gulch, Backwoods, Step Temple, Gallows Yard, Dead Reel, Ridge Camp,
+Jade Sanctum and Elm Grove.
 
 How it's drawn (`packages/client/src/backdrop.ts`):
 

@@ -71,3 +71,19 @@ texture, and a simple collision box (`collide: box`, `trunk` or `none` in
 - Terrain plants are instanced in 32 m chunks and drawn only near the camera.
 - Distant scenery is built from a few large meshes and fades into haze.
 - Bots path on a navmesh built once per map.
+- City facades are GPU thin instances: one draw per piece and material, however many bays use it.
+
+### Player settings (Options)
+
+- **Render scale** (default Auto): pixels drawn per screen point. Retina
+  screens have two per point, so Native draws four times as many pixels as
+  Standard; Auto draws 1.25 per point (barely softer, much cooler on
+  laptops). Performance draws 0.75. Applies at once.
+- **Frame cap** (default 60 fps): ProMotion displays refresh at 120 Hz and the
+  game would otherwise draw every refresh; 30 fps for battery, Unlimited to
+  follow the screen. Applies at once.
+- **Graphics** (Low / Medium / High): shadows, then far shadows, ambient
+  occlusion, bloom and light shafts. Applies from the next match.
+
+On a MacBook (M1) the defaults (Auto, 60 fps, Medium) keep the fans quiet; High
+with Native scale at 120 fps is roughly six times the GPU work.

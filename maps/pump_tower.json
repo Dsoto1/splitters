@@ -2,10 +2,10 @@
   "format": "tiletrigger.map",
   "formatVersion": 17,
   "metadata": {
-    "id": "stack",
-    "name": "Stack",
+    "id": "pump_tower",
+    "name": "Pump Tower",
     "author": "Tile Trigger",
-    "description": "A tall concrete works stacked round an open shaft, a layout homage to GoldenEye's Stack. Five floors of rooms and corridors ring the shaft, with railings, glass and open edges to drop through; a catwalk crosses it halfway up. Stairwells alternate corners, so every climb is a run round the floor. Rockets wait in a corner room midway up, body armour in the control rooms at the top, and the machinery floor at the bottom is the hill.",
+    "description": "A tall concrete works stacked round an open shaft. Five floors of rooms and corridors ring the shaft, with railings, glass and open edges to drop through; a catwalk crosses it halfway up. Stairwells alternate corners, so every climb is a run round the floor. Rockets wait in a corner room midway up, body armour in the control rooms at the top, and the machinery floor at the bottom is the hill.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,

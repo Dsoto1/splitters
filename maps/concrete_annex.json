@@ -2,10 +2,10 @@
   "format": "tiletrigger.map",
   "formatVersion": 17,
   "metadata": {
-    "id": "complex",
-    "name": "Complex",
+    "id": "concrete_annex",
+    "name": "Concrete Annex",
     "author": "Tile Trigger",
-    "description": "A buried concrete complex laid out in homage to the classic four-player Complex: two high hangars with galleries face each other across a central hall, where a raised walkway crosses over the pillars and a pit drops to tunnels underneath. Long hard-cornered corridors loop round everything on two levels, with windows and firing slits into every big room; ramps and stairwells at the corners tie the levels together. Heavy armour waits on the walkway, a rocket launcher at the bottom of the pit.",
+    "description": "A buried concrete works: two high hangars with galleries face each other across a central hall, where a raised walkway crosses over the pillars and a pit drops to tunnels underneath. Long hard-cornered corridors loop round everything on two levels, with windows and firing slits into every big room; ramps and stairwells at the corners tie the levels together. Heavy armour waits on the walkway, a rocket launcher at the bottom of the pit.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,

@@ -347,35 +347,29 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
     const [x, y, z] = e.position;
     const c = Math.cos(e.yaw);
     const s = Math.sin(e.yaw);
+    // Boxes turn with the prop (yaw like a mesh's rotation.y: local +Z goes to (sin, cos)), so a prop
+    // turned at an angle collides with its own shape, not the much bigger square round it.
+    const turned = (px: number, pz: number, hw: number, hd: number, y0: number, y1: number): WorldBox =>
+      e.yaw ? { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, yaw: e.yaw } : { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id };
     if (def.boxes) {
-      // Each part box turned with the prop (exact at right angles, its bounds otherwise).
       for (const [x0, y0, z0, x1, y1, z1] of def.boxes) {
         const cx = ((x0 + x1) / 2) * e.scale;
         const cz = ((z0 + z1) / 2) * e.scale;
-        const hw = ((x1 - x0) / 2) * e.scale;
-        const hd = ((z1 - z0) / 2) * e.scale;
-        // Turned the way a mesh is by rotation.y = yaw: local +Z goes to (sin, cos).
-        const px = x + cx * c + cz * s;
-        const pz = z - cx * s + cz * c;
-        const hx = hw * Math.abs(c) + hd * Math.abs(s);
-        const hz = hw * Math.abs(s) + hd * Math.abs(c);
-        out.push({ min: [px - hx, y + y0 * e.scale, pz - hz], max: [px + hx, y + y1 * e.scale, pz + hz], kind: 'prop', sourceId: e.id });
+        out.push(turned(x + cx * c + cz * s, z - cx * s + cz * c, ((x1 - x0) / 2) * e.scale, ((z1 - z0) / 2) * e.scale, y + y0 * e.scale, y + y1 * e.scale));
       }
       continue;
     }
     const [w, h, d] = def.collision.map((v) => v * e.scale) as [number, number, number];
-    const hx = (w * Math.abs(c) + d * Math.abs(s)) / 2;
-    const hz = (w * Math.abs(s) + d * Math.abs(c)) / 2;
     if (isRock(def) && h > PLAYER.maxStepHeight) {
       // Rocks are round, not crates: a wide low tier you can hop onto and a narrower top,
       // so big rocks can be climbed over and their corners don't snag you.
       const low = Math.min(h * 0.5, 0.7);
-      out.push({ min: [x - hx * 0.85, y, z - hz * 0.85], max: [x + hx * 0.85, y + low, z + hz * 0.85], kind: 'prop', sourceId: e.id });
-      out.push({ min: [x - hx * 0.55, y + low, z - hz * 0.55], max: [x + hx * 0.55, y + h * 0.92, z + hz * 0.55], kind: 'prop', sourceId: e.id });
+      out.push(turned(x, z, (w / 2) * 0.85, (d / 2) * 0.85, y, y + low));
+      out.push(turned(x, z, (w / 2) * 0.55, (d / 2) * 0.55, y + low, y + h * 0.92));
       continue;
     }
     if (isRock(def)) continue; // pebbles: walk straight over them
-    out.push({ min: [x - hx, y, z - hz], max: [x + hx, y + h, z + hz], kind: 'prop', sourceId: e.id });
+    out.push(turned(x, z, w / 2, d / 2, y, y + h));
   }
   return out;
 }

@@ -218,11 +218,17 @@ describe('props', () => {
     const tree = boxes[2]!;
     expect(tree.max[0] - tree.min[0]).toBeCloseTo(1);
     expect(tree.max[1]).toBeCloseTo(10);
-    // Turned 45°, the collision covers the turned crate's footprint.
+    // Turned 45°, the collision turns with it: the rock's own size, not the bigger square round it.
     const turned = makeMap([t('r', 'core.room', 0, 0, 0)]);
     turned.entities.push(prop('p1', 'prop.rock_large', 0, 0, { yaw: Math.PI / 4 }));
     const b = tileGeometry(turned).find((x) => x.kind === 'prop')!;
-    expect(b.max[0] - b.min[0]).toBeGreaterThan(boxes[0]!.max[0] - boxes[0]!.min[0]);
+    expect(b.yaw).toBeCloseTo(Math.PI / 4);
+    expect(b.max[0] - b.min[0]).toBeCloseTo(boxes[0]!.max[0] - boxes[0]!.min[0]);
+    // A point just past the turned rock's flat side but inside the old square round it is free.
+    const half = (b.max[0] - b.min[0]) / 2;
+    const corner = { x: half * 0.98, z: half * 0.98 };
+    const [lx, lz] = yawXZ(corner.x, corner.z, -Math.PI / 4);
+    expect(Math.abs(lx) > half || Math.abs(lz) > half).toBe(true);
   });
 
   it('rejects unknown prop models', () => {

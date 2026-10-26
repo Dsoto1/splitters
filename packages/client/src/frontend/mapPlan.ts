@@ -1,4 +1,4 @@
-import { MAX_TEAMS, TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@tiletrigger/shared';
+import { MAX_TEAMS, TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, fitBounds, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@tiletrigger/shared';
 
 /** Fill a box's top-down outline (turned boxes as a quad). */
 export function fillBox(g: CanvasRenderingContext2D, b: WorldBox, px: (x: number) => number, py: (z: number) => number): void {
@@ -63,12 +63,16 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
   const g = canvas.getContext('2d');
   if (!g) return;
   const boxes = buildMapGeometry(map);
-  let [x0, z0, x1, z1] = [Infinity, Infinity, -Infinity, -Infinity];
-  for (const b of boxes) {
-    x0 = Math.min(x0, b.min[0]);
-    z0 = Math.min(z0, b.min[2]);
-    x1 = Math.max(x1, b.max[0]);
-    z1 = Math.max(z1, b.max[2]);
+  // Frame the play area (the boundary, else what's built), not the terrain round it.
+  const area = map.bounds ? { min: map.bounds.min, max: map.bounds.max } : fitBounds(map, 2);
+  let [x0, z0, x1, z1] = area ? [area.min[0], area.min[1], area.max[0], area.max[1]] : [Infinity, Infinity, -Infinity, -Infinity];
+  if (!area) {
+    for (const b of boxes) {
+      x0 = Math.min(x0, b.min[0]);
+      z0 = Math.min(z0, b.min[2]);
+      x1 = Math.max(x1, b.max[0]);
+      z1 = Math.max(z1, b.max[2]);
+    }
   }
   const pad = 10 * dpr;
   const s = Math.min((w - pad * 2) / (x1 - x0), (h - pad * 2) / (z1 - z0));
@@ -95,6 +99,10 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
     g.stroke();
   }
 
+  g.save();
+  g.beginPath();
+  g.rect(px(x0), py(z1), (x1 - x0) * s, (z1 - z0) * s);
+  g.clip();
   if (map.terrain) drawTerrainPlan(g, map.terrain, px, py, s);
   const floors = boxes.filter((b) => b.kind === 'floor').sort((a, b) => a.max[1] - b.max[1]);
   for (const b of floors) {
@@ -127,4 +135,5 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
       g.fill();
     }
   }
+  g.restore();
 }

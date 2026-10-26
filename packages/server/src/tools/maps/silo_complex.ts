@@ -134,7 +134,7 @@ m.prop('hm_fridge', at(0, 5, 0, -3.3, -1), P).prop('hm_rug', at(0, 5, 0, 0.5, 0.
 m.lightRooms();
 m.meta({
   description:
-    'A buried silo complex in the spirit of GoldenEye\'s Complex: one vast two-storey floor of pillars and crates, a catwalk ring a storey up, and a loop of concrete rooms and corridors with doorways in from all four sides. Open stairs climb to the catwalk landings; the railgun sits on the north landing, heavy armour on the south, and the auto shotgun in the dead centre of the floor.',
+    'A buried silo complex: one vast two-storey floor of pillars and crates, a catwalk ring a storey up, and a loop of concrete rooms and corridors with doorways in from all four sides. Open stairs climb to the catwalk landings; the railgun sits on the north landing, heavy armour on the south, and the auto shotgun in the dead centre of the floor.',
   modes: ['core.deathmatch', 'core.tdm'],
   players: [2, 12],
 });

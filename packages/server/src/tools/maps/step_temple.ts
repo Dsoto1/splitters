@@ -280,7 +280,7 @@ for (const f of frames) {
 m.lightRooms();
 m.meta({
   description:
-    'A stepped marble temple round a pillared court, in the spirit of GoldenEye\'s Temple. Cloisters and side chambers ring the court; stairs climb to galleries that look down over half walls, and four bridges meet on a railed platform above the dais. Take the railgun from the platform and you are in everyone\'s sights; the heavy armour waits at the foot of the dais below.',
+    'A stepped marble temple round a pillared court. Cloisters and side chambers ring the court; stairs climb to galleries that look down over half walls, and four bridges meet on a railed platform above the dais. Take the railgun from the platform and you are in everyone\'s sights; the heavy armour waits at the foot of the dais below.',
   modes: ['core.deathmatch', 'core.tdm'],
   players: [2, 12],
 });

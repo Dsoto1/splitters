@@ -5,7 +5,7 @@
     "id": "ridge_camp",
     "name": "Ridge Camp",
     "author": "Tile Trigger",
-    "description": "A stone keep round an open courtyard, four storeys of fighting: a sunken pit with the rocket launcher, the courtyard and its cloister, a U of railed ledges reached by stairs and a long ramp, and a high deck over the north colonnade that only the jump pad reaches, holding the railgun. An homage in spirit to the great multi-level stone arenas.",
+    "description": "A stone keep round an open courtyard, four storeys of fighting: a sunken pit with the rocket launcher, the courtyard and its cloister, a U of railed ledges reached by stairs and a long ramp, and a high deck over the north colonnade that only the jump pad reaches, holding the railgun.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -892,7 +892,7 @@
       "id": "prop_080",
       "position": [
         -6.8,
-        1.1,
+        -1.89,
         -3.4
       ],
       "kind": "prop",
@@ -1611,7 +1611,7 @@
     {
       "id": "hill_134",
       "position": [
-        3.6,
+        4.13,
         0.05,
         -3.4
       ],
@@ -1621,9 +1621,9 @@
     {
       "id": "hill_135",
       "position": [
-        -9.67,
+        -9.73,
         0.05,
-        -4.2
+        -4.13
       ],
       "kind": "hill",
       "radius": 5

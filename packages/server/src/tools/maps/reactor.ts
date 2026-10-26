@@ -250,7 +250,7 @@ for (const [x, z] of [[22, 50.3], [20, 5.2], [29, -2.6], [46, -2.8]] as const) {
 m.prop('sv_propane', [34.3, 0, 41.2], 0.5).prop('sv_trashcan_metal', [58.5, 0, -3], 0);
 m.meta({
   description:
-    'A cooling plant on the edge of a container yard, built in the spirit of the classic reactor-plant bomb map. Embers push in from the yard; Tide hold the control room between the two sites. Upstairs is the two-storey reactor hall with its gallery; downstairs, the coolant basement, reached by the ramp room, a long secret tunnel or the control stairwell. Climb onto the roof for the railgun and a hatch down into the plant.',
+    'A cooling plant on the edge of a container yard. Embers push in from the yard; Tide hold the control room between the two sites. Upstairs is the two-storey reactor hall with its gallery; downstairs, the coolant basement, reached by the ramp room, a long secret tunnel or the control stairwell. Climb onto the roof for the railgun and a hatch down into the plant.',
   modes: ['core.tdm', 'core.deathmatch'],
   players: [4, 12],
 });

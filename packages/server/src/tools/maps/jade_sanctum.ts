@@ -1,5 +1,5 @@
 /**
- * Temple: a compact sandstone temple round a two-storey hall with a sunken
+ * Jade Sanctum: a compact sandstone temple round a two-storey hall with a sunken
  * pit at its heart (a layout homage to GoldenEye's multiplayer Temple; our
  * own name, tiles and props). Two long colonnades run down the west and east
  * sides with galleries above them, a south vestibule and a north antechamber
@@ -27,7 +27,7 @@
 import type { Side, TileSurfaces } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
-const m = new MapBuilder('temple', 'Temple');
+const m = new MapBuilder('jade_sanctum', 'Jade Sanctum');
 m.theme('temple');
 // An old temple at dusk, the jungle hills dark beyond its walls.
 m.backdrop('dusk', 'forest', 'moss', 0.5, 0.3);
@@ -251,7 +251,7 @@ await m.teamBases(5, { hills: 0 });
 m.lightRooms({ color: '#ffc480', intensity: 0.85, skip: (x, y) => x >= 2 && x <= 4 && y >= 2 && y <= 4 });
 m.meta({
   description:
-    'A compact sandstone temple in the spirit of GoldenEye\'s Temple: a two-storey hall with a sunken pit at its heart, walkways and a balcony round it, long colonnades with galleries above, twin stairs to the altar at the north end and an overgrown courtyard on the east side. Body armour waits in the pit; the rockets sit on the altar.',
+    'A compact sandstone temple: a two-storey hall with a sunken pit at its heart, walkways and a balcony round it, long colonnades with galleries above, twin stairs to the altar at the north end and an overgrown courtyard on the east side. Body armour waits in the pit; the rockets sit on the altar.',
   modes: ['core.deathmatch', 'core.tdm', 'core.koth'],
   players: [2, 10],
 });

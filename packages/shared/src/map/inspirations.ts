@@ -5,9 +5,13 @@
  */
 export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   bottling: 'Facility (GoldenEye 007)',
-  temple: 'Temple (GoldenEye 007)',
-  complex: 'Complex (GoldenEye 007)',
-  stack: 'Stack (GoldenEye 007)',
+  step_temple: 'Temple (GoldenEye 007)',
+  silo_complex: 'Complex (GoldenEye 007)',
+  reactor: 'Nuke (Counter-Strike)',
+  lantern_quarter: 'Italy (Counter-Strike)',
+  jade_sanctum: 'Temple (GoldenEye 007)',
+  concrete_annex: 'Complex (GoldenEye 007)',
+  pump_tower: 'Stack (GoldenEye 007)',
   sandgate: 'Dust (Counter-Strike)',
   dockside_depot: 'Assault (Counter-Strike)',
   backwoods: 'Militia (Counter-Strike)',
@@ -18,7 +22,7 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   twin_spires: 'Facing Worlds (Unreal Tournament)',
   frost_basin: 'Katabatic (Tribes 2)',
   gallows_yard: "Hang 'Em High (Halo)",
-  blood_gulch: 'Blood Gulch (Halo)',
+  coldwater_gulch: 'Blood Gulch (Halo)',
   dead_reel: 'Kino der Toten (Call of Duty: Black Ops)',
   kanto_plaza: 'Nakatomi Plaza (Die Hard)',
 };

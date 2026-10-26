@@ -5,7 +5,7 @@
     "id": "felicity_yard",
     "name": "Felicity Yard",
     "author": "Tile Trigger",
-    "description": "A walled yard between brick buildings. The north block is two storeys of offices with windows over the yard; a railed walkway crosses to the south block upstairs, carrying the heavy armour. The garage roof holds the sniper rifle, the vent housing in the middle of the yard drops into the pump room and the rockets, and service tunnels loop from the garage under the south block to the loading dock. An homage in spirit to a classic compact deathmatch yard.",
+    "description": "A walled yard between brick buildings. The north block is two storeys of offices with windows over the yard; a railed walkway crosses to the south block upstairs, carrying the heavy armour. The garage roof holds the sniper rifle, the vent housing in the middle of the yard drops into the pump room and the rockets, and service tunnels loop from the garage under the south block to the loading dock.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -2006,7 +2006,7 @@
         -3.73
       ],
       "kind": "spawn",
-      "yaw": 1.5,
+      "yaw": 1.51,
       "faction": "embers"
     },
     {
@@ -2039,7 +2039,7 @@
         17.53
       ],
       "kind": "spawn",
-      "yaw": -2.23,
+      "yaw": -2.24,
       "faction": "tide"
     },
     {
@@ -2121,9 +2121,9 @@
     {
       "id": "hill_179",
       "position": [
-        -1.8,
+        -1.87,
         4.05,
-        -13.87
+        -13.4
       ],
       "kind": "hill",
       "radius": 5
@@ -2131,9 +2131,9 @@
     {
       "id": "hill_180",
       "position": [
-        1.4,
+        1.93,
         0.05,
-        11.47
+        10.93
       ],
       "kind": "hill",
       "radius": 5

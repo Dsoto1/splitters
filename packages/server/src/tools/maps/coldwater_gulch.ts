@@ -1,5 +1,5 @@
 /**
- * Blood Gulch: a long grassy box canyon walled in by steep rock, with two
+ * Coldwater Gulch: a long grassy box canyon walled in by steep rock, with two
  * squat concrete bunkers facing each other from the far ends (a layout homage
  * to the classic Halo: Combat Evolved map; our own name, tiles and props).
  *
@@ -26,7 +26,7 @@
 import { CORE_PROPS, TERRAIN_MATERIALS, newTerrain, paintSlopes, terrainHeightAt, type TerrainData, type TerrainMaterial } from '@tiletrigger/shared';
 import { MapBuilder } from '../mapkit.ts';
 
-const m = new MapBuilder('blood_gulch', 'Blood Gulch');
+const m = new MapBuilder('coldwater_gulch', 'Coldwater Gulch');
 m.theme('bunker');
 m.factions([
   { id: 'red', name: 'Red', color: '#d8344f', relations: {} },

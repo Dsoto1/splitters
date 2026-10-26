@@ -16,6 +16,7 @@ import citadelJson from '../../../maps/citadel.json';
 import canyonJson from '../../../maps/canyon.json';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
+import { currentFrameCap, loadRenderScale, renderRatio } from './game/atmosphere.ts';
 import { EditorApp, type TestRequest } from './editor/editorApp.ts';
 import { LocalTransport } from './game/localTransport.ts';
 import { NetTransport } from './game/netTransport.ts';
@@ -117,6 +118,8 @@ class App {
       // Physics is needed by every session for client prediction, online or local.
       const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), initPhysics()]);
       this.engine = created.engine;
+      this.applyRenderScale();
+      window.addEventListener('tiletrigger:render-scale', () => this.applyRenderScale());
       this.kind = created.kind;
       this.canvas = created.canvas;
       if (created.note) console.info(created.note);
@@ -145,8 +148,17 @@ class App {
     return this.ready;
   }
 
+  /** Draw at the chosen render scale (pixels per CSS pixel). */
+  applyRenderScale(): void {
+    this.engine.setHardwareScalingLevel(1 / renderRatio(loadRenderScale()));
+    this.engine.resize();
+  }
+
   private frame(): void {
     const now = performance.now();
+    // Frame cap: skip this display refresh if it comes too soon (ProMotion screens refresh at 120 Hz).
+    const cap = currentFrameCap();
+    if (cap && now - this.last < 1000 / cap - 1.5) return;
     const dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
     if (this.mode === 'menu') this.menuScene?.frame(dt);

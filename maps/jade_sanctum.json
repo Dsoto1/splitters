@@ -2,10 +2,10 @@
   "format": "tiletrigger.map",
   "formatVersion": 17,
   "metadata": {
-    "id": "temple",
-    "name": "Temple",
+    "id": "jade_sanctum",
+    "name": "Jade Sanctum",
     "author": "Tile Trigger",
-    "description": "A compact sandstone temple in the spirit of GoldenEye's Temple: a two-storey hall with a sunken pit at its heart, walkways and a balcony round it, long colonnades with galleries above, twin stairs to the altar at the north end and an overgrown courtyard on the east side. Body armour waits in the pit; the rockets sit on the altar.",
+    "description": "A compact sandstone temple: a two-storey hall with a sunken pit at its heart, walkways and a balcony round it, long colonnades with galleries above, twin stairs to the altar at the north end and an overgrown courtyard on the east side. Body armour waits in the pit; the rockets sit on the altar.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -3670,7 +3670,7 @@
         10.33
       ],
       "kind": "spawn",
-      "yaw": 1.05,
+      "yaw": 1.04,
       "faction": "embers"
     },
     {
@@ -3710,6 +3710,17 @@
       "id": "spawn_250",
       "position": [
         50.33,
+        0.05,
+        24.27
+      ],
+      "kind": "spawn",
+      "yaw": -1.51,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_251",
+      "position": [
+        50.33,
         4.05,
         24.8
       ],
@@ -3718,7 +3729,18 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_251",
+      "id": "spawn_252",
+      "position": [
+        50.33,
+        0.05,
+        40.27
+      ],
+      "kind": "spawn",
+      "yaw": -2.09,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_253",
       "position": [
         50.33,
         0.05,
@@ -3729,36 +3751,14 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_252",
-      "position": [
-        50.27,
-        0.05,
-        23.87
-      ],
-      "kind": "spawn",
-      "yaw": -1.49,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_253",
-      "position": [
-        50.27,
-        0.05,
-        40.27
-      ],
-      "kind": "spawn",
-      "yaw": -2.09,
-      "faction": "tide"
-    },
-    {
       "id": "spawn_254",
       "position": [
-        50.2,
+        50.27,
         0.05,
-        19.6
+        19.87
       ],
       "kind": "spawn",
-      "yaw": -1.33,
+      "yaw": -1.34,
       "faction": "tide"
     },
     {
