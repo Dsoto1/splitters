@@ -13,6 +13,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun } from './mountVisuals.ts';
+import { createViewCamera, poseCamera } from './cameraPose.ts';
 import { createCanopy, placeCanopy } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
@@ -246,7 +247,7 @@ export class GameView {
     this.scene = new Scene(engine);
     this.scene.clearColor = new Color4(0.52, 0.62, 0.72, 1);
     this.scene.skipPointerMovePicking = true;
-    this.camera = new FreeCamera('camera', new Vector3(0, 10, -10), this.scene);
+    this.camera = createViewCamera('camera', this.scene);
     // Not too near: the depth buffer has to stretch to the distant scenery (4 km).
     this.camera.minZ = 0.1;
     // Far enough for the backdrop's distant scenery.
@@ -615,18 +616,14 @@ export class GameView {
 
   setCamera(eye: Vec3, yaw: number, pitch: number, fov: number): void {
     this.camera.position.set(eye.x, eye.y, eye.z);
-    // Babylon: rotation.y is yaw (0 = +Z), positive rotation.x looks down.
-    this.camera.rotation.set(-pitch, yaw, 0);
     const shake = this.currentShake();
     if (shake > 0) {
       // Trauma squared: big blasts jolt, small ones barely tremble.
       const t = performance.now() / 1000;
       const k = shake * shake;
-      this.camera.rotation.x += Math.sin(t * 61) * 0.035 * k;
-      this.camera.rotation.y += Math.sin(t * 47 + 1.3) * 0.035 * k;
-      this.camera.rotation.z = Math.sin(t * 53 + 2.1) * 0.025 * k;
+      poseCamera(this.camera, yaw + Math.sin(t * 47 + 1.3) * 0.035 * k, pitch - Math.sin(t * 61) * 0.035 * k, Math.sin(t * 53 + 2.1) * 0.025 * k);
       this.camera.position.y += Math.sin(t * 71) * 0.06 * k;
-    }
+    } else poseCamera(this.camera, yaw, pitch);
     this.camera.fov = fov;
     this.foliage.update(this.camera.position);
     this.updateUnderwater();
