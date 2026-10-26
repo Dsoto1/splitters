@@ -7,3 +7,4 @@ export * from './nav/index.ts';
 export * from './sim/encounters.ts';
 export * from './sim/modes/index.ts';
 export * from './sim/profile.ts';
+export * from './sim/clump.ts';

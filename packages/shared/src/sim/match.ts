@@ -1428,6 +1428,7 @@ export class Match {
           : this.encounters.goalFor(c.slot)
         : (this.teammateOrder(c) ?? (zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null)));
       const allies = c.faction === null ? undefined : factionViews.get(c.faction);
+      const tt = simProfile.on ? performance.now() : 0;
       const input = c.bot.think({
         tick: this.tick,
         self: views.get(c.slot)!,
@@ -1456,6 +1457,10 @@ export class Match {
         seat: c.mount ? this.seatView(c) : null,
         squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
       });
+      if (simProfile.on) {
+        simProfile.add('botThink', performance.now() - tt);
+        simProfile.count('botThink');
+      }
       // Melee creatures rush the target they can see instead of keeping their distance.
       if (npc && NPC_ROLE_SPECS[npc.role].melee && c.alive) {
         const target = c.bot.target === null ? null : this.actor(c.bot.target);
@@ -1963,6 +1968,14 @@ export class Match {
   }
 
   private fire(shooter: Combatant, def: Trigger, viewTick: number): void {
+    if (!simProfile.on) return this.fireNow(shooter, def, viewTick);
+    const t0 = performance.now();
+    this.fireNow(shooter, def, viewTick);
+    simProfile.add('fire', performance.now() - t0);
+    simProfile.count('fire');
+  }
+
+  private fireNow(shooter: Combatant, def: Trigger, viewTick: number): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
     const aim = this.aimOf(shooter);
     const gp = gunplayOf(getWeapon(def.id));

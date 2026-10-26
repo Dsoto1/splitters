@@ -322,7 +322,15 @@ export class PhysicsWorld {
 
   /** True when nothing static blocks the segment a -> b. */
   lineOfSight(a: Vec3, b: Vec3): boolean {
-    if (simProfile.on) simProfile.count('los');
+    if (!simProfile.on) return this.lineOfSightNow(a, b);
+    const t0 = performance.now();
+    const r = this.lineOfSightNow(a, b);
+    simProfile.add('los', performance.now() - t0);
+    simProfile.count('los');
+    return r;
+  }
+
+  private lineOfSightNow(a: Vec3, b: Vec3): boolean {
     const d = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
     const len = Math.hypot(d.x, d.y, d.z);
     if (len < 1e-6) return true;

@@ -9,6 +9,7 @@ import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
 import { AimModel, type AimContext, type AimSolution } from './aim.ts';
 import { findCover, stillCovered, type CoverSpot } from './cover.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
+import { simProfile } from '../sim/profile.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
 import { fanPoints, isDoorway, solveThrow, turnAngle } from './tactics.ts';
 import { freshDrive, inArc, rideFor, steer, turretFor, vehicleFor, type DriveState, type MountView, type SeatView } from './vehicles.ts';
@@ -352,7 +353,9 @@ export class BotBrain {
     if (target) this.lastTargetTick = view.tick;
 
     const ctx = this.aimContext(view);
+    const ta = simProfile.on ? performance.now() : 0;
     this.aim.track(ctx, target ? { slot: target.slot, pos: target.pos, stance: target.stance } : null);
+    if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
 
     if (view.seat) return this.thinkMounted(view, seq, target, ctx);
     this.useLatch = false;
@@ -420,6 +423,13 @@ export class BotBrain {
   // ------------------------------------------------------------------ tactical decisions (~10 Hz)
 
   private decide(view: BotWorldView, target: CombatantView | undefined): void {
+    if (!simProfile.on) return this.decideNow(view, target);
+    const t0 = performance.now();
+    this.decideNow(view, target);
+    simProfile.add('botDecide', performance.now() - t0);
+  }
+
+  private decideNow(view: BotWorldView, target: CombatantView | undefined): void {
     const me = view.self;
     const tick = view.tick;
     const hurt = this.hurt(view);
@@ -526,7 +536,9 @@ export class BotBrain {
     }
 
     const aimAtTarget = (t: CombatantView) => {
+      const ta = simProfile.on ? performance.now() : 0;
       sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: t.stance });
+      if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
       this.turnToward(sol.yaw, sol.pitch);
       lookDone = true;
       wantFire = true;
@@ -836,8 +848,10 @@ export class BotBrain {
     // Fire through the aim model's trigger discipline.
     const reacted = target ? this.reacted(view, target) : true;
     let pull = false;
+    const ta = simProfile.on ? performance.now() : 0;
     if (wantFire && sol && !sprint) pull = this.aim.trigger(ctx, sol, this.yaw, this.pitch, reacted);
     else this.aim.trigger(ctx, { yaw: this.yaw + 9, pitch: 0, dist: 1, halfAngle: 0 }, this.yaw, this.pitch, false);
+    if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
     if (pull) buttons |= BUTTON_FIRE;
     // Scoped weapons are fired through the scope (they spray from the hip); not up close.
     const sDist = (sol as AimSolution | null)?.dist ?? 0;
@@ -1398,6 +1412,14 @@ export class BotBrain {
   // ------------------------------------------------------------------ perception
 
   private perceive(view: BotWorldView): void {
+    if (!simProfile.on) return this.perceiveNow(view);
+    const t0 = performance.now();
+    this.perceiveNow(view);
+    simProfile.add('botPerceive', performance.now() - t0);
+    simProfile.count('botPerceive');
+  }
+
+  private perceiveNow(view: BotWorldView): void {
     const me = view.self;
     const myEye = { x: me.pos.x, y: me.pos.y + STANCES[me.stance ?? 0].eye, z: me.pos.z };
     const facing = { x: Math.sin(this.yaw), z: Math.cos(this.yaw) };
@@ -1512,6 +1534,14 @@ export class BotBrain {
 
   /** Follow a navmesh path to `goal`; returns the world yaw to move along, or null when there is nowhere to go. */
   private followPathTo(view: BotWorldView, goal: Vec3, movingGoal: boolean): number | null {
+    if (!simProfile.on) return this.followPathNow(view, goal, movingGoal);
+    const t0 = performance.now();
+    const r = this.followPathNow(view, goal, movingGoal);
+    simProfile.add('botPath', performance.now() - t0);
+    return r;
+  }
+
+  private followPathNow(view: BotWorldView, goal: Vec3, movingGoal: boolean): number | null {
     const me = view.self;
     // A door in the way that a button opens: the button first.
     if (this.pressPlan) {
