@@ -722,6 +722,61 @@
       "modifications": []
     },
     {
+      "file": "sounds/explosion.vehicle_0.ogg",
+      "sha256": "cdda50600a4928f2",
+      "bytes": 9408,
+      "source": "kenney-sci-fi-sounds/Audio/lowFrequency_explosion_001.ogg",
+      "title": "Sci-Fi Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/explosion.vehicle_1.ogg",
+      "sha256": "3cb48d86dab63140",
+      "bytes": 14317,
+      "source": "kenney-sci-fi-sounds/Audio/lowFrequency_explosion_000.ogg",
+      "title": "Sci-Fi Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/vehicle.crash_0.ogg",
+      "sha256": "e07045693e4a2b3d",
+      "bytes": 6110,
+      "source": "kenney-impact-sounds/Audio/impactMetal_heavy_000.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/vehicle.crash_1.ogg",
+      "sha256": "83554049f81f4db9",
+      "bytes": 7279,
+      "source": "kenney-impact-sounds/Audio/impactMetal_heavy_001.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
+      "file": "sounds/vehicle.crash_2.ogg",
+      "sha256": "112d4f93ddcc370b",
+      "bytes": 10032,
+      "source": "kenney-impact-sounds/Audio/impactPlate_heavy_000.ogg",
+      "title": "Impact Sounds 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "modifications": []
+    },
+    {
       "file": "sounds/explosion.debris_0.ogg",
       "sha256": "4b597d658d0ae101",
       "bytes": 28274,

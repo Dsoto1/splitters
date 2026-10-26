@@ -113,6 +113,8 @@ export interface ArcadeSetup {
   friendlyFire?: 'half' | 'on';
   /** Spears only (absent: normal weapons). */
   spears?: boolean;
+  /** Vehicles take half damage, or none (absent: normal). */
+  vehicleDamage?: 'tough' | 'off';
 }
 
 export interface FrontEndHooks {
@@ -451,6 +453,7 @@ export class FrontEnd {
       { label: 'Gravity', tip: "Map: whatever the map was built with (normal unless its maker changed it).", changed: s.gravity !== undefined, value: `${s.gravity === 0.4 ? 'Low' : s.gravity === 1.6 ? 'Heavy' : 'Normal'} gravity`, control: tabs([['map', 'Map'], ['0.4', 'Low'], ['1', 'Normal'], ['1.6', 'Heavy']], s.gravity === undefined ? 'map' : String(s.gravity), (v) => (this.setup.gravity = v === 'map' ? undefined : Number(v))) },
       { label: 'Fall damage', tip: "Drops past about 5 m hurt; about 16 m kills. Map: the map's own setting.", changed: s.fallDamage !== undefined, value: `Fall damage ${s.fallDamage ? 'on' : 'off'}`, control: tabs([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => (this.setup.fallDamage = v === 'map' ? undefined : v === 'on')) },
       { label: 'Friendly fire', tip: 'Team modes and co-op: whether your shots and blasts hurt teammates. Team kills cost a point.', changed: !!s.friendlyFire, value: `Friendly fire ${s.friendlyFire === 'half' ? 'half' : 'full'}`, control: tabs([['off', 'Off'], ['half', 'Half'], ['on', 'Full']], s.friendlyFire ?? 'off', (v) => (this.setup.friendlyFire = v === 'off' ? undefined : (v as 'half' | 'on'))) },
+      { label: 'Vehicle damage', tip: 'Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can\'t be destroyed (except by falling off the map). Turrets and sentries always take full damage.', changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: tabs([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => (this.setup.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off'))) },
       { label: 'Kill streaks', tip: 'Rewards for kills without dying: 3 UAV, 5 Supply Pulse (heal + ammo for nearby teammates), 7 Counter-UAV (jams enemy minimaps), 9 Airstrike.', changed: s.killstreaks === false, value: 'No kill streaks', control: tabs([['on', 'On'], ['off', 'Off']], s.killstreaks === false ? 'off' : 'on', (v) => (this.setup.killstreaks = v === 'on')) },
       { label: 'Spawn on teammates', tip: 'Team modes: respawn beside a teammate who is out of the fight, when one is free.', changed: s.squadSpawn === false, value: 'No squad spawns', control: tabs([['on', 'On'], ['off', 'Off']], s.squadSpawn === false ? 'off' : 'on', (v) => (this.setup.squadSpawn = v === 'on')) },
       { label: 'Emotes & messages', tip: 'Quick messages (B, then 1-7; 1 "Follow me!" and 7 "Hold here!" also order your team\'s bots), the dance emote (N). Pings (T) always work.', changed: s.emotes === false, value: 'No emotes', control: tabs([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => (this.setup.emotes = v === 'on')) },
@@ -463,7 +466,7 @@ export class FrontEnd {
     reset.hidden = !changed.length;
     reset.addEventListener('click', (e) => {
       e.preventDefault();
-      for (const k of ['spears', 'botStyle', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes'] as const) delete this.setup[k];
+      for (const k of ['spears', 'botStyle', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'vehicleDamage'] as const) delete this.setup[k];
       this.saveSetup();
       this.go('play');
     });
@@ -520,7 +523,7 @@ export class FrontEnd {
   private start(): void {
     const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
     const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : {}) };
+    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : {}), ...(this.setup.vehicleDamage ? { vehicleDamage: this.setup.vehicleDamage } : {}) };
     this.saveSetup();
     if (isTeamMode(this.setup.mode)) {
       // Bots fill every team to its size; you take a place on one of them.

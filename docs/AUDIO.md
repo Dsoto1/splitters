@@ -7,7 +7,8 @@
 | Group | Source | Sounds |
 |---|---|---|
 | Weapon fire | **In-house synthesiser** (`packages/client/src/audio/synth.ts`) | pistol, rifle, shotgun (with pump), sniper (with echo and bolt), grenade launcher "foomp", knife swing, dry-fire click |
-| Explosions | Kenney Sci-Fi Sounds (CC0) | low-frequency boom plus a debris crunch layer |
+| Explosions | Kenney Sci-Fi Sounds (CC0) | low-frequency boom plus a debris crunch layer; a vehicle blowing up adds `explosion.vehicle` (the same booms pitched down) and a metal crash |
+| Vehicle crashes | Kenney Impact Sounds (CC0) | `vehicle.crash`: heavy metal and plate impacts for rams and run-overs, louder the harder the hit |
 | Impacts, bodies, footsteps, landing | Kenney Impact Sounds (CC0) | bullet hits on walls, deaths, concrete footsteps, the low thud under body hits |
 | Hits on players (flesh) | Freesound CC0: magnuswaker, modusmogulus, Pablobd, gprosser | `impact.body`, `impact.heavy` (45+ damage), `blood.splat` on kills; see [`PHYSICS_FX.md`](PHYSICS_FX.md) |
 | Reload, weapon raise, knife hits, ammo/weapon pickups | Kenney RPG Audio (CC0) | metal click/latch, belt handling, knife slices, coins |

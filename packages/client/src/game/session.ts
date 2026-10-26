@@ -53,6 +53,7 @@ import {
   PLAYER,
   getProp,
   mapTerrainMesh,
+  mountDamageState,
 } from '@tiletrigger/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
@@ -79,7 +80,7 @@ import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 /** Match events that only make effects, skipped while the tab is hidden. */
 /** Field of view while aiming down the sights, as a fraction of the normal one. */
 const ADS_FOV = 0.72;
-const HIDDEN_SKIP = new Set(['shot', 'melee', 'arc', 'explode', 'throw']);
+const HIDDEN_SKIP = new Set(['shot', 'melee', 'arc', 'explode', 'crash', 'throw']);
 
 export interface SessionOptions {
   engine: AbstractEngine;
@@ -523,7 +524,7 @@ export class GameSession {
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, transport: this.opts.transport, phase: () => this.phase };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, phase: () => this.phase };
         this.opts.onReady?.();
         void this.prepareMatch();
         break;
@@ -638,8 +639,21 @@ export class GameSession {
             this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })));
           } else if (ev.e === 'explode') {
             this.hurtFrom = { x: ev.p[0], z: ev.p[2], at: performance.now() };
-            this.view.explosion({ x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ev.r);
-            this.view.blast({ x: ev.p[0], y: ev.p[1], z: ev.p[2] }, ev.r);
+            const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
+            if (ev.m !== undefined) this.view.vehicleExplosion(at, ev.r);
+            else this.view.explosion(at, ev.r);
+            this.view.blast(at, ev.r);
+            // Blasts shake the camera of anyone near: a vehicle going up is felt from much further away.
+            const cam = this.view.cameraPosition();
+            const reach = ev.r * (ev.m !== undefined ? 6 : 3.5);
+            const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / reach;
+            if (near > 0) this.view.shake(near * (ev.m !== undefined ? 0.95 : 0.6));
+          } else if (ev.e === 'crash') {
+            const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
+            this.view.impacts.sparkBurst(at, Math.round(6 + ev.n * 18), 2 + ev.n * 5);
+            const cam = this.view.cameraPosition();
+            const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / 12;
+            if (near > 0) this.view.shake(near * ev.n * 0.6);
           } else if (ev.e === 'pickup') {
             if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
           } else if (ev.e === 'kill') {
@@ -1058,7 +1072,7 @@ export class GameSession {
     this.view.updateZones(this.zones, now);
     if (this.mounts) {
       const manned = this.seat ? this.mounts.mounts.get(this.seat[0]) : undefined;
-      this.hud.setVehicle(manned?.alive ? { name: manned.def.displayName, pct: manned.health } : null);
+      this.hud.setVehicle(manned?.alive ? { name: manned.def.displayName, pct: manned.health, burning: manned.def.kind === 'vehicle' && mountDamageState(manned.health / 100, manned.burning) === 'burning' } : null);
       // Health bars over damaged vehicles and turrets in sight.
       const cam = this.view.cameraPosition();
       const bars: { id: number; x: number; y: number; pct: number }[] = [];

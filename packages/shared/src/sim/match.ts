@@ -4,7 +4,10 @@ import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, ty
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
-import { getMountDef, mountToWorld, type MountDef, type SeatDef, type SeatRole } from './mounts.ts';
+import {
+  MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
+  footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
+} from './mounts.ts';
 import { NavWorld } from '../nav/index.ts';
 import {
   POWERUP_DAMAGE_BIT,
@@ -58,6 +61,9 @@ const OWNER_GRACE_TICKS = 8;
 /** Start gate: the longest a match waits for its players to load, and the countdown after. */
 export const START_WAIT_SECONDS = 30;
 export const COUNTDOWN_SECONDS = 3;
+/** Vehicle crashes: closing speed (m/s) below which nothing is hurt, and damage per m/s over it (split by weight). */
+const RAM_MIN_SPEED = 5;
+const RAM_DAMAGE = 8;
 /** Bots see hostile sentries as targets with these IDs (+ mount index); never a real actor ID. */
 const SENTRY_VIEW_BASE = 1_000_000;
 
@@ -110,6 +116,13 @@ interface MountRt {
   /** Who damaged it last (credit for the explosion). */
   lastHitBy: number | null;
   runOver: Map<number, number>;
+  /** On fire (health under MOUNT_BURN_FRACTION, or driven into lava): it loses health on its own until it blows. */
+  burning: boolean;
+  /** Destroyed vehicles: the charred wreck stays, solid but with no seats, until this tick (0: no wreck). */
+  wreckUntil: number;
+  /** Velocity (m/s) it was driven at last tick, for crashes; and the tick each other mount (by index) may crash into it again. */
+  vel: { x: number; z: number };
+  rammed: Map<number, number>;
 }
 
 export interface Combatant {
@@ -1752,6 +1765,10 @@ export class Match {
       cooldown: 0,
       lastHitBy: null,
       runOver: new Map(),
+      burning: false,
+      wreckUntil: 0,
+      vel: { x: 0, z: 0 },
+      rammed: new Map(),
     };
     this.mounts.push(m);
     this.mountBodies.set(body.handle, m);
@@ -1833,35 +1850,64 @@ export class Match {
     return true;
   }
 
-  private damageMount(m: MountRt, amount: number, attacker: Combatant | null): void {
+  /**
+   * Hurt a mount. Vehicles take the match's vehicle damage share (tough:
+   * half, off: none); `raw` skips that (fire, lava and water run on their
+   * own clock). The attacker gets the credit when it blows; damage from
+   * nobody (fire, crashes, water) leaves the last attacker's credit standing.
+   */
+  private damageMount(m: MountRt, amount: number, attacker: Combatant | null, raw = false): void {
     if (!m.alive || this.phase !== 'playing' || amount <= 0) return;
+    if (m.def.kind === 'vehicle' && !raw) amount *= VEHICLE_DAMAGE_SCALE[this.rules.vehicleDamage ?? 'normal'];
+    if (amount <= 0) return;
     m.health -= amount;
     if (attacker) m.lastHitBy = attacker.slot;
+    if (m.health > 0 && m.def.kind === 'vehicle' && m.health < m.def.health * MOUNT_BURN_FRACTION) m.burning = true;
     if (m.health <= 0) this.destroyMount(m);
   }
 
-  /** It blows up: everyone aboard is thrown out into the blast; it comes back at home later. */
-  private destroyMount(m: MountRt): void {
+  /**
+   * It blows up: everyone aboard is thrown out into the blast, which hurts
+   * people, other mounts and destructibles (so barrels and gas cans nearby go
+   * up too) and lights oil. A vehicle leaves a charred wreck that stays as
+   * solid cover for a while; it comes back where it was placed later.
+   * `wreck` false: nothing is left (it fell off the map).
+   */
+  private destroyMount(m: MountRt, wreck = true): void {
     m.alive = false;
     m.health = 0;
+    m.burning = false;
     m.respawnAt = this.tick + m.respawnTicks;
     const aboard = m.seats.map((slot) => (slot === null ? undefined : this.actor(slot))).filter((c): c is Combatant => !!c);
     for (const c of aboard) this.leaveMount(c, true);
+    const keep = wreck && m.def.vehicle ? Math.min(MOUNT_WRECK_SECONDS * TICK_RATE, m.respawnTicks - Math.round(MOUNT_WRECK_FADE_SECONDS * TICK_RATE)) : 0;
+    m.wreckUntil = keep > 0 ? this.tick + keep : 0;
+    m.speed *= 0.4;
+    m.slide *= 0.4;
+    // The blast starts inside the body: take it out of the world while it goes off, or it would shield everything.
     this.physics.setBoxEnabled(m.body, false);
     this.physics.commit();
     const at = { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z };
-    this.pendingEvents.push({ e: 'explode', s: m.lastHitBy ?? -1, p: tuple(at), r: m.def.blast.radius });
+    this.pendingEvents.push({ e: 'explode', s: m.lastHitBy ?? -1, p: tuple(at), r: m.def.blast.radius, m: m.index });
     const by = m.lastHitBy === null ? null : (this.actor(m.lastHitBy) ?? null);
     this.splash(at, m.def.blast.radius, m.def.blast.damage, m.def.blast.damage * 0.2, by, 'core.wreck', 1, 6);
+    this.ignite(at, m.def.blast.radius);
+    if (m.wreckUntil && !m.alive) {
+      this.physics.setBoxEnabled(m.body, true);
+      this.physics.commit();
+    }
   }
 
   private respawnMount(m: MountRt): void {
     m.alive = true;
     m.health = m.def.health;
+    m.burning = false;
+    m.wreckUntil = 0;
     m.pos = { ...m.home.pos };
     m.yaw = m.aimYaw = m.home.yaw;
     m.aimPitch = 0;
     m.speed = m.velY = m.slide = 0;
+    m.vel = { x: 0, z: 0 };
     m.airborne = false;
     m.push = { x: 0, z: 0 };
     m.lastHitBy = null;
@@ -1873,6 +1919,12 @@ export class Match {
   private stepMounts(): void {
     for (const m of this.mounts) {
       if (!m.alive) {
+        // The wreck settles where it fell, then stops being solid while it fades; the mount respawns at home later.
+        if (this.tick < m.wreckUntil) this.settleWreck(m);
+        else if (m.wreckUntil) {
+          m.wreckUntil = 0;
+          this.physics.setBoxEnabled(m.body, false);
+        }
         if (this.phase === 'playing' && this.tick >= m.respawnAt) this.respawnMount(m);
         continue;
       }
@@ -1884,6 +1936,8 @@ export class Match {
       }
       if (m.def.vehicle) this.driveVehicle(m);
       if (m.def.sentry) this.runSentry(m);
+      if (m.alive && m.def.vehicle) this.vehicleHazards(m);
+      if (!m.alive) continue;
       // Riders move with it.
       m.seats.forEach((slot, seat) => {
         const c = slot === null ? undefined : this.actor(slot);
@@ -1892,6 +1946,88 @@ export class Match {
     }
     // Moved bodies must be in place before this tick's shots and sight checks.
     if (this.mounts.length) this.physics.commit();
+  }
+
+  /**
+   * Fire, lava and water. A burning vehicle loses health on its own (from
+   * the burn threshold it blows in MOUNT_BURN_SECONDS), so it goes up unless
+   * someone finishes it first; lava sets it alight at once and eats it fast;
+   * acid corrodes it; a ground vehicle sunk in deep water floods. Credit goes
+   * to whoever hit it last.
+   */
+  private vehicleHazards(m: MountRt): void {
+    if (this.phase !== 'playing' || (this.rules.vehicleDamage ?? 'normal') === 'off') return;
+    const v = m.def.vehicle!;
+    const max = m.def.health;
+    if (this.liquids.length) {
+      const low = liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y + 0.2, z: m.pos.z });
+      if (low?.liquid === 'lava') {
+        m.burning = true;
+        this.damageMount(m, (max * 0.2) / TICK_RATE, null, true);
+      } else if (low?.liquid === 'acid') this.damageMount(m, (max * 0.06) / TICK_RATE, null, true);
+      const deep = !v.hover && !v.fly ? liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y + m.def.half[1] * 1.5, z: m.pos.z }) : null;
+      if (deep && deep.liquid !== 'lava') this.damageMount(m, (max * 0.12) / TICK_RATE, null, true);
+    }
+    if (m.alive && m.burning) this.damageMount(m, (max * MOUNT_BURN_FRACTION) / MOUNT_BURN_SECONDS / TICK_RATE, null, true);
+  }
+
+  /** A wreck coasts to a stop and drops to the ground (a downed flyer falls), staying solid. */
+  private settleWreck(m: MountRt): void {
+    if (!m.probe) return;
+    m.speed *= 0.9;
+    m.slide *= 0.8;
+    m.push = { x: m.push.x * 0.85, z: m.push.z * 0.85 };
+    const vx = Math.sin(m.yaw) * m.speed + Math.cos(m.yaw) * m.slide + m.push.x;
+    const vz = Math.cos(m.yaw) * m.speed - Math.sin(m.yaw) * m.slide + m.push.z;
+    // At rest on the ground: only look again now and then (something under it may have broken).
+    if (Math.abs(vx) + Math.abs(vz) < 0.05 && !m.airborne && this.tick % 15 !== m.index % 15) {
+      m.vel = { x: 0, z: 0 };
+      return;
+    }
+    m.velY = Math.max(-30, m.velY - PLAYER.gravity * TICK_DT);
+    const moved = this.physics.moveVehicle(m.probe, m.body, m.pos, { x: vx * TICK_DT, y: m.velY * TICK_DT, z: vz * TICK_DT });
+    if (moved.grounded) m.velY = 0;
+    m.airborne = !moved.grounded;
+    m.vel = { x: vx, z: vz };
+    m.pos = moved.feet;
+    this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
+    if (m.pos.y < this.killY) {
+      m.wreckUntil = 0;
+      this.physics.setBoxEnabled(m.body, false);
+    }
+  }
+
+  /**
+   * Crashes between mounts: a vehicle driven into another vehicle, a wreck
+   * or a turret hurts both, by how fast they closed and how heavy the other
+   * one is (a kart into a tank comes off far worse), and shoves the lighter
+   * one. Each side's driver gets the credit for the other's damage.
+   */
+  private ramMounts(m: MountRt, vx: number, vz: number, driver: Combatant | null): void {
+    if (Math.hypot(vx, vz) < RAM_MIN_SPEED) return;
+    for (const o of this.mounts) {
+      if (o === m || (!o.alive && this.tick >= o.wreckUntil) || (m.rammed.get(o.index) ?? 0) > this.tick) continue;
+      const c = footprintGap({ pos: m.pos, yaw: m.yaw, half: m.def.half }, { pos: o.pos, yaw: o.yaw, half: o.def.half });
+      if (!c || c.gap > 0.3) continue;
+      const closing = (vx - o.vel.x) * c.nx + (vz - o.vel.z) * c.nz;
+      if (closing < RAM_MIN_SPEED) continue;
+      m.rammed.set(o.index, this.tick + TICK_RATE / 2);
+      o.rammed.set(m.index, this.tick + TICK_RATE / 2);
+      const ma = mountMass(m.def);
+      const mb = mountMass(o.def);
+      const hit = (closing - 3) * RAM_DAMAGE;
+      const otherSlot = o.alive ? (o.seats[o.def.seats.findIndex((s) => s.role === 'driver')] ?? null) : null;
+      const other = otherSlot === null ? null : (this.actor(otherSlot) ?? null);
+      this.damageMount(o, (hit * 2 * ma) / (ma + mb), driver);
+      this.damageMount(m, (hit * 2 * mb) / (ma + mb), other);
+      if (o.def.vehicle) {
+        const shove = (closing * ma) / (ma + mb);
+        o.push = { x: o.push.x + c.nx * shove, z: o.push.z + c.nz * shove };
+      }
+      if (m.alive) m.speed *= mb > ma ? 0.3 : 0.6;
+      const at = { x: (m.pos.x + o.pos.x) / 2, y: m.pos.y + Math.min(m.def.half[1], o.def.half[1]), z: (m.pos.z + o.pos.z) / 2 };
+      this.pendingEvents.push({ e: 'crash', p: tuple(at), n: Math.min(1, closing / 25) });
+    }
   }
 
   /**
@@ -1954,13 +2090,16 @@ export class Match {
     m.push = { x: m.push.x * decay, z: m.push.z * decay };
     this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
     if (m.pos.y < this.killY) {
-      this.destroyMount(m);
+      this.destroyMount(m, false);
       return;
     }
-    // Running people over.
-    if (Math.abs(m.speed) < 5) return;
     const driverSlot = m.seats[m.def.seats.findIndex((s) => s.role === 'driver')] ?? null;
     const driver = driverSlot === null ? null : (this.actor(driverSlot) ?? null);
+    m.vel = { x: vx, z: vz };
+    this.ramMounts(m, vx, vz, driver);
+    if (!m.alive) return;
+    // Running people over.
+    if (Math.abs(m.speed) < 5) return;
     for (const c of this.actors()) {
       if (!c.alive || m.seats.includes(c.slot) || (m.runOver.get(c.slot) ?? 0) > this.tick) continue;
       const rel = { x: c.move.pos.x - m.pos.x, z: c.move.pos.z - m.pos.z };
@@ -1971,6 +2110,7 @@ export class Match {
       m.runOver.set(c.slot, this.tick + 30);
       this.push(c, { x: dir.x + (lx >= 0 ? 1 : -1) * Math.cos(m.yaw) * 0.6, y: 0.4, z: dir.z - (lx >= 0 ? 1 : -1) * Math.sin(m.yaw) * 0.6 }, Math.abs(m.speed) * 0.8);
       this.damage(c, Math.abs(m.speed) * 5, driver, 'core.roadkill');
+      this.pendingEvents.push({ e: 'crash', p: tuple(chest(c.move.pos)), n: Math.min(1, Math.abs(m.speed) / 40) });
     }
   }
 
@@ -2011,7 +2151,7 @@ export class Match {
 
   /** Mounts for snapshots (see MountSnapshot). */
   mountSnapshots(): MountSnapshot[] {
-    return this.mounts.map((m) => [m.index, r3(m.pos.x), r3(m.pos.y), r3(m.pos.z), r3(m.yaw), r3(m.aimYaw), r3(m.aimPitch), Math.ceil((Math.max(0, m.health) / m.def.health) * 100), m.alive ? 1 : 0, ...m.seats.map((s) => s ?? -1)]);
+    return this.mounts.map((m) => [m.index, r3(m.pos.x), r3(m.pos.y), r3(m.pos.z), r3(m.yaw), r3(m.aimYaw), r3(m.aimPitch), Math.ceil((Math.max(0, m.health) / m.def.health) * 100), (m.alive ? MOUNT_FLAG_ALIVE : 0) | (this.tick < m.wreckUntil ? MOUNT_FLAG_WRECK : 0) | (m.burning ? MOUNT_FLAG_BURNING : 0), ...m.seats.map((s) => s ?? -1)]);
   }
 
   // ---------------------------------------------------------------- hazards and status effects

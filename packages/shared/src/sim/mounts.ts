@@ -237,3 +237,66 @@ export function mountToWorld(pos: { x: number; y: number; z: number }, yaw: numb
   // Forward (+Z local) is (sin yaw, cos yaw); right (+X local) is (cos yaw, -sin yaw).
   return { x: pos.x + o[0] * c + o[2] * s, y: pos.y + o[1], z: pos.z - o[0] * s + o[2] * c };
 }
+
+// ---------------------------------------------------------------- damage states
+
+/** Health fractions where a mount starts to smoke, smokes black and throws sparks, and catches fire. */
+export const MOUNT_SMOKE_FRACTION = 0.6;
+export const MOUNT_HEAVY_SMOKE_FRACTION = 0.35;
+export const MOUNT_BURN_FRACTION = 0.15;
+/** A vehicle that catches fire at the burn threshold blows up this many seconds later, unless something finishes it first. */
+export const MOUNT_BURN_SECONDS = 5;
+/** Seconds a destroyed vehicle's charred wreck stays as cover (never longer than its respawn delay, less the fade). */
+export const MOUNT_WRECK_SECONDS = 20;
+/** Seconds the wreck takes to fade out on screen; it stops being solid when the fade starts. */
+export const MOUNT_WRECK_FADE_SECONDS = 1.5;
+
+/** The `alive` field of a mount snapshot carries these bits (0: gone). */
+export const MOUNT_FLAG_ALIVE = 1;
+export const MOUNT_FLAG_WRECK = 2;
+export const MOUNT_FLAG_BURNING = 4;
+
+export type MountDamageState = 'intact' | 'smoking' | 'heavy' | 'burning';
+
+/** How damaged a mount looks: from its health fraction (0..1), or burning (set alight, e.g. by lava) whatever its health. */
+export function mountDamageState(fraction: number, burning = false): MountDamageState {
+  if (burning || fraction < MOUNT_BURN_FRACTION) return 'burning';
+  if (fraction < MOUNT_HEAVY_SMOKE_FRACTION) return 'heavy';
+  if (fraction < MOUNT_SMOKE_FRACTION) return 'smoking';
+  return 'intact';
+}
+
+/** Weight in tonnes for crashes: vehicles their own; turrets and sentries are bolted down, so count as heavy. */
+export const mountMass = (def: MountDef): number => def.vehicle?.mass ?? 4;
+
+/** Match setting: how much damage vehicles take (turrets and sentries always take full damage). */
+export type VehicleDamage = 'normal' | 'tough' | 'off';
+export const VEHICLE_DAMAGE_SCALE: Record<VehicleDamage, number> = { normal: 1, tough: 0.5, off: 0 };
+
+/**
+ * Two mounts' footprints (boxes turned by yaw, seen from above) as a
+ * separating-axis test: the gap between them (negative when they overlap)
+ * and the unit normal pointing from `a` to `b` along the axis of least
+ * overlap. Null when they are apart vertically.
+ */
+export function footprintGap(
+  a: { pos: { x: number; y: number; z: number }; yaw: number; half: readonly [number, number, number] },
+  b: { pos: { x: number; y: number; z: number }; yaw: number; half: readonly [number, number, number] },
+): { gap: number; nx: number; nz: number } | null {
+  if (Math.abs(a.pos.y + a.half[1] - (b.pos.y + b.half[1])) > a.half[1] + b.half[1]) return null;
+  const axes = (yaw: number) => [
+    { x: Math.cos(yaw), z: -Math.sin(yaw) },
+    { x: Math.sin(yaw), z: Math.cos(yaw) },
+  ];
+  const ax = axes(a.yaw);
+  const bx = axes(b.yaw);
+  const radius = (half: readonly [number, number, number], own: { x: number; z: number }[], l: { x: number; z: number }) => half[0] * Math.abs(own[0]!.x * l.x + own[0]!.z * l.z) + half[2] * Math.abs(own[1]!.x * l.x + own[1]!.z * l.z);
+  const d = { x: b.pos.x - a.pos.x, z: b.pos.z - a.pos.z };
+  let best = { gap: -Infinity, nx: 0, nz: 1 };
+  for (const l of [...ax, ...bx]) {
+    const along = d.x * l.x + d.z * l.z;
+    const gap = Math.abs(along) - radius(a.half, ax, l) - radius(b.half, bx, l);
+    if (gap > best.gap) best = { gap, nx: along >= 0 ? l.x : -l.x, nz: along >= 0 ? l.z : -l.z };
+  }
+  return best;
+}

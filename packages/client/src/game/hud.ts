@@ -22,8 +22,12 @@ const HAZARD_DEATHS: Record<string, string> = {
   'core.lava': 'melted in lava',
   'core.acid': 'dissolved in acid',
   'core.drown': 'drowned',
+  'core.wreck': 'went up with a vehicle',
+  'core.roadkill': 'was run over',
 };
-const weaponLabel = (id: string) => CORE_WEAPONS[id]?.displayName ?? (id === 'core.barrel' ? 'Barrel' : '✕');
+/** Kill-feed labels for things that aren't weapons (no model to draw an icon from). */
+const OTHER_LABELS: Record<string, string> = { 'core.barrel': 'Barrel', 'core.wreck': '✹ Wreck', 'core.roadkill': 'Roadkill' };
+const weaponLabel = (id: string) => CORE_WEAPONS[id]?.displayName ?? OTHER_LABELS[id] ?? '✕';
 
 export class Hud {
   private readonly root = $('hud');
@@ -296,8 +300,8 @@ export class Hud {
   }
 
   /** Held weapon, ammo and the owned-weapons bar. */
-  /** The vehicle you're in: its name and health (null hides the panel). */
-  setVehicle(v: { name: string; pct: number } | null): void {
+  /** The vehicle you're in: its name and health (null hides the panel); `burning` adds the warning to bail out. */
+  setVehicle(v: { name: string; pct: number; burning?: boolean } | null): void {
     const el = document.getElementById('vehicle-hp');
     if (!el) return;
     el.hidden = !v;
@@ -306,6 +310,14 @@ export class Hud {
     const bar = el.querySelector('b')!;
     bar.style.setProperty('--hp', `${Math.max(0, Math.min(100, v.pct))}%`);
     bar.style.setProperty('--hp-color', hpColor(v.pct));
+    let warn = el.querySelector<HTMLElement>('em');
+    if (!warn) {
+      warn = document.createElement('em');
+      warn.textContent = 'Vehicle on fire — bail out!';
+      el.append(warn);
+    }
+    warn.hidden = !v.burning;
+    el.classList.toggle('burning', !!v.burning);
   }
 
   /** Small health bars over damaged vehicles (screen positions in CSS px). */

@@ -88,7 +88,8 @@ export const FX_SWIM = 64;
 
 /**
  * A turret, sentry or vehicle: [map entity index, x, y, z, yaw, aim yaw, aim
- * pitch, health %, alive 0/1, ...occupant slot per seat (-1 = empty)].
+ * pitch, health %, state bits (MOUNT_FLAG_ALIVE, MOUNT_FLAG_WRECK,
+ * MOUNT_FLAG_BURNING; 0 = gone), ...occupant slot per seat (-1 = empty)].
  */
 export type MountSnapshot = number[];
 /** Deployed cover (sandbags): [id, x, y (ground), z, yaw, health %]. */
@@ -110,7 +111,10 @@ export type GameEvent =
   /** Someone threw a grenade or mine. */
   | { e: 'throw'; s: number }
   | { e: 'melee'; s: number; hit: number | null }
-  | { e: 'explode'; s: number; p: Tuple3; r: number }
+  /** `m`: a mount (map entity index) blowing up, drawn as a bigger, layered vehicle explosion. */
+  | { e: 'explode'; s: number; p: Tuple3; r: number; m?: number }
+  /** A vehicle hit something hard (another vehicle, a wreck, a turret, a person): `n` 0..1 how hard. */
+  | { e: 'crash'; p: Tuple3; n: number }
   | { e: 'pickup'; s: number; id: string; item: string }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit. */ hs?: 1 }
   | { e: 'spawn'; s: number }

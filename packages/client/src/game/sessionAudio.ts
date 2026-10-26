@@ -170,8 +170,15 @@ export class SessionAudio {
       }
       case 'explode': {
         const at = tuple(ev.p);
+        // A vehicle going up: a deeper, longer boom under the usual crack, and metal raining down.
+        if (ev.m !== undefined) this.audio.play('explosion.vehicle', { at });
         this.audio.play('explosion', { at });
         this.audio.play('explosion.debris', { at });
+        if (ev.m !== undefined) this.audio.play('vehicle.crash', { at, gain: 0.7 });
+        break;
+      }
+      case 'crash': {
+        this.audio.play('vehicle.crash', { at: tuple(ev.p), gain: 0.4 + ev.n * 0.8 });
         break;
       }
       case 'pickup': {

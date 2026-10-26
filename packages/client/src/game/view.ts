@@ -17,6 +17,7 @@ import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
+import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
@@ -46,7 +47,11 @@ import {
   EffectsWorld,
   mapTerrainMesh,
   type MapEntity,
+  MOUNT_WRECK_FADE_SECONDS,
+  mountDamageState,
 } from '@tiletrigger/shared';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { Ragdoll } from './ragdoll.ts';
 import { Atmosphere } from './atmosphere.ts';
@@ -56,6 +61,7 @@ import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
+const SHAKE_MS = 650;
 import { MapStyler } from '../mapMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
@@ -535,6 +541,16 @@ export class GameView {
     this.camera.position.set(eye.x, eye.y, eye.z);
     // Babylon: rotation.y is yaw (0 = +Z), positive rotation.x looks down.
     this.camera.rotation.set(-pitch, yaw, 0);
+    const shake = this.currentShake();
+    if (shake > 0) {
+      // Trauma squared: big blasts jolt, small ones barely tremble.
+      const t = performance.now() / 1000;
+      const k = shake * shake;
+      this.camera.rotation.x += Math.sin(t * 61) * 0.035 * k;
+      this.camera.rotation.y += Math.sin(t * 47 + 1.3) * 0.035 * k;
+      this.camera.rotation.z = Math.sin(t * 53 + 2.1) * 0.025 * k;
+      this.camera.position.y += Math.sin(t * 71) * 0.06 * k;
+    }
     this.camera.fov = fov;
     this.foliage.update(this.camera.position);
     this.updateUnderwater();
@@ -1061,14 +1077,89 @@ export class GameView {
     });
   }
 
+  /**
+   * A vehicle blowing up, in layers: a white-hot flash, a fireball that
+   * swells past the blast radius with smaller balls of flame bursting round
+   * it, a shockwave ring racing out along the ground, a spray of sparks,
+   * charred chunks thrown out on the effects physics, and a column of black
+   * smoke. Nearby cameras shake (the caller does that and the sound).
+   */
+  vehicleExplosion(at: Vec3, radius: number): void {
+    const now = performance.now();
+    const ball = (name: string, hex: string, centre: Vec3, size: number, delay: number, ttl: number, alpha: number) => {
+      const mesh = CreateSphere(name, { diameter: 1, segments: 10 }, this.scene);
+      const mat = glow(this.scene, `${name}Mat`, hex, 1);
+      mesh.material = mat;
+      mesh.position.set(centre.x, centre.y, centre.z);
+      mesh.isPickable = false;
+      mesh.scaling.setAll(0.01);
+      this.effects.push({
+        mesh,
+        born: now + delay,
+        ttl,
+        update: (f) => {
+          if (f < 0) return void mesh.scaling.setAll(0.01);
+          mesh.scaling.setAll(size * (0.25 + 0.75 * Math.sqrt(f)));
+          mesh.position.y = centre.y + f * size * 0.25;
+          mat.alpha = alpha * (1 - f) * (1 - f * 0.3);
+        },
+      });
+    };
+    ball('boomFlash', '#fff4c8', at, radius * 1.1, 0, 160, 1);
+    ball('boomCore', '#ffb347', at, radius * 1.6, 20, 650, 0.9);
+    ball('boomOuter', '#e8541c', at, radius * 2.1, 60, 900, 0.55);
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2 + Math.random();
+      const d = radius * (0.35 + Math.random() * 0.4);
+      ball('boomBurst', i % 2 ? '#ff8a2a' : '#ffcf5a', { x: at.x + Math.cos(a) * d, y: at.y + Math.random() * radius * 0.5, z: at.z + Math.sin(a) * d }, radius * (0.6 + Math.random() * 0.4), 80 + i * 55, 520, 0.85);
+    }
+    // Shockwave: a flat ring racing out along the ground.
+    const ring = CreateTorus('boomRing', { diameter: 1, thickness: 0.06, tessellation: 40 }, this.scene);
+    const ringMat = glow(this.scene, 'boomRingMat', '#fff1d6', 1);
+    ring.material = ringMat;
+    ring.isPickable = false;
+    ring.position.set(at.x, at.y - 0.3, at.z);
+    this.effects.push({
+      mesh: ring,
+      born: now,
+      ttl: 480,
+      update: (f) => {
+        const r = radius * 0.5 + radius * 3 * Math.sqrt(f);
+        ring.scaling.set(r, 1 + 6 * (1 - f), r);
+        ringMat.alpha = 0.7 * (1 - f);
+      },
+    });
+    this.impacts.sparkBurst(at, 40, 9);
+    this.debris(at, '#26221f', Math.max(1, radius * 0.4), 16, 1.8);
+    this.debris(at, '#6b2a12', Math.max(0.8, radius * 0.3), 6, 2.2);
+    for (let i = 0; i < 10; i++) {
+      const p = { x: at.x + (Math.random() - 0.5) * radius, y: at.y + Math.random() * radius * 0.6, z: at.z + (Math.random() - 0.5) * radius };
+      this.impacts.puff(p, i % 3 ? '#1b1917' : '#3a3633', radius * (0.5 + Math.random() * 0.4), 2.2 + Math.random() * 1.5, 1.6 + Math.random());
+    }
+  }
+
+  // Camera shake: kicks add up (to 1) and settle over SHAKE_MS.
+  private shakeAmount = 0;
+  private shakeAt = 0;
+
+  /** Shake the camera (0..1; explosions and crashes near you). */
+  shake(amount: number): void {
+    this.shakeAmount = Math.min(1, this.currentShake() + amount);
+    this.shakeAt = performance.now();
+  }
+
+  private currentShake(): number {
+    return this.shakeAmount * Math.max(0, 1 - (performance.now() - this.shakeAt) / SHAKE_MS);
+  }
+
   /** Chunks flying out of a broken crate, barrel or wall: real little bodies that bounce and settle (falls back to a canned arc without physics). */
-  debris(at: Vec3, color: string, size: number): void {
-    for (let k = 0; k < 10; k++) {
+  debris(at: Vec3, color: string, size: number, count = 10, speed = 1): void {
+    for (let k = 0; k < count; k++) {
       const s = size * (0.15 + Math.random() * 0.2);
       const chunk = CreateBox('debris', { size: s }, this.scene);
       chunk.material = solid(this.scene, 'debrisMat', color);
       chunk.isPickable = false;
-      const v = new Vector3((Math.random() - 0.5) * 6, 2 + Math.random() * 4, (Math.random() - 0.5) * 6);
+      const v = new Vector3((Math.random() - 0.5) * 6 * speed, (2 + Math.random() * 4) * speed, (Math.random() - 0.5) * 6 * speed);
       const spin = new Vector3(Math.random() * 8, Math.random() * 8, Math.random() * 8);
       const start = new Vector3(at.x + (Math.random() - 0.5) * size, at.y + (Math.random() - 0.5) * size, at.z + (Math.random() - 0.5) * size);
       if (this.physics) {
@@ -1105,7 +1196,6 @@ export class GameView {
   }
 
   private readonly mountNodes = new Map<number, TransformNode>();
-  private readonly mountSmokeAt = new Map<number, number>();
 
   /** Turrets, sentries and vehicles at their smoothed poses; turret guns follow the aim. `manned` (the turret you are gunning) is hidden, as your own body is. */
   updateMounts(mounts: Iterable<ClientMount>, manned: number | null = null): void {
@@ -1115,25 +1205,106 @@ export class GameView {
         node = createMountNode(this.scene, this.models, m.model, `mount_${m.index}`);
         this.mountNodes.set(m.index, node);
       }
-      node.setEnabled(m.alive && m.index !== manned);
+      const now = performance.now();
+      const fade = m.wreckGoneAt ? (now - m.wreckGoneAt) / (MOUNT_WRECK_FADE_SECONDS * 1000) : 1;
+      const shown = m.alive || m.wreck || fade < 1;
+      node.setEnabled(shown && m.index !== manned);
       node.position.set(m.shown.pos.x, m.shown.pos.y, m.shown.pos.z);
-      // Damaged vehicles smoke; badly damaged ones burn.
-      if (m.alive && m.health < 50) {
-        const now = performance.now();
-        const next = this.mountSmokeAt.get(m.index) ?? 0;
-        if (now >= next) {
-          this.mountSmokeAt.set(m.index, now + (m.health < 25 ? 90 : 160));
-          const top = { x: m.shown.pos.x + (Math.random() - 0.5) * m.def.half[0], y: m.shown.pos.y + m.def.half[1] * 2, z: m.shown.pos.z + (Math.random() - 0.5) * m.def.half[2] };
-          this.impacts.puff(top, m.health < 25 ? '#2a2725' : '#5d5955', 1.2, 1.6, 1.8);
-          if (m.health < 25) this.impacts.puff(top, '#ff7a1a', 0.5, 0.35, 1.5, true);
-        }
-      }
+      this.charMount(m.index, node, !m.alive && shown, m.alive ? 1 : m.wreck ? 1 : Math.max(0, 1 - fade));
+      this.mountDamageFx(m, now);
       node.rotation.y = m.shown.yaw;
       if (m.def.kind === 'vehicle' && m.alive) this.suspend(m, node);
+      else if (!m.alive && shown) {
+        // The hulk sits low and askew, and sinks away as it fades.
+        node.rotation.x = 0.05;
+        node.rotation.z = 0.07;
+        node.position.y -= 0.15 + (m.wreck ? 0 : Math.min(1, fade) * 0.9);
+      }
       if (m.def.kind !== 'vehicle') {
         const gun = mountGun(node);
         if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
       }
+    }
+  }
+
+  /** Each charred mount's meshes and the materials they had (put back when it respawns). */
+  private readonly charred = new Map<number, { mesh: AbstractMesh; mat: Material | null }[]>();
+  private readonly charMats = new Map<Material, Material>();
+
+  /**
+   * Burn a wreck black: every mesh swaps to a darkened copy of its material
+   * (shared per source material, so other vehicles of the model keep their
+   * paint), and `visibility` fades it out. Undone when the mount is back.
+   */
+  private charMount(index: number, node: TransformNode, on: boolean, visibility: number): void {
+    const done = this.charred.get(index);
+    if (!on) {
+      if (!done) return;
+      for (const { mesh, mat } of done) {
+        mesh.material = mat;
+        mesh.visibility = 1;
+      }
+      this.charred.delete(index);
+      return;
+    }
+    let list = done;
+    if (!list) {
+      // Instances share their source's material: leave those be.
+      const meshes = node.getChildMeshes().filter((mesh) => !('sourceMesh' in mesh));
+      if (!meshes.length) return;
+      list = meshes.map((mesh) => ({ mesh, mat: mesh.material }));
+      for (const { mesh, mat } of list) {
+        if (!mat) continue;
+        let dark = this.charMats.get(mat);
+        if (!dark) {
+          dark = mat.clone(`${mat.name}_charred`) ?? mat;
+          const d = dark as Material & { albedoColor?: Color3; diffuseColor?: Color3; emissiveColor?: Color3; metallic?: number | null; roughness?: number | null };
+          d.albedoColor?.scaleInPlace(0.12);
+          d.diffuseColor?.scaleInPlace(0.12);
+          d.emissiveColor?.scaleInPlace(0);
+          if (d.roughness !== undefined) d.roughness = 1;
+          this.charMats.set(mat, dark);
+        }
+        mesh.material = dark;
+      }
+      this.charred.set(index, list);
+    }
+    for (const { mesh } of list) mesh.visibility = visibility;
+  }
+
+  private readonly mountFxAt = new Map<number, number>();
+
+  /**
+   * Damage you can read from across the map: light grey smoke under 60%
+   * health, thick black smoke and sparks under 35%, flames under 15% (or set
+   * alight); the wreck smoulders black. Drawing only.
+   */
+  private mountDamageFx(m: ClientMount, now: number): void {
+    if ((this.mountFxAt.get(m.index) ?? 0) > now) return;
+    const state = m.wreck ? 'wreck' : m.alive ? mountDamageState(m.health / 100, m.burning) : 'gone';
+    if (state === 'intact' || state === 'gone') return;
+    const [hx, hy, hz] = m.def.half;
+    const p = m.shown.pos;
+    const spot = (spread: number) => ({ x: p.x + (Math.random() - 0.5) * hx * spread, y: p.y + hy * 2 - 0.1, z: p.z + (Math.random() - 0.5) * hz * spread });
+    const size = Math.max(0.8, Math.min(2, (hx + hz) * 0.5));
+    if (state === 'smoking') {
+      this.impacts.puff(spot(0.8), '#8c8884', size * 0.8, 1.8, 1.6);
+      this.mountFxAt.set(m.index, now + 240);
+    } else if (state === 'heavy') {
+      this.impacts.puff(spot(0.9), '#2a2725', size * 1.2, 2.2, 2);
+      if (Math.random() < 0.3) this.impacts.sparkBurst(spot(1.4), 6, 2.5);
+      this.mountFxAt.set(m.index, now + 120);
+    } else if (state === 'burning') {
+      this.impacts.puff(spot(1.1), '#ff7a1a', size * 0.7, 0.45, 1.8, true);
+      this.impacts.puff(spot(0.8), Math.random() < 0.5 ? '#ffb347' : '#e8541c', size * 0.5, 0.35, 2.2, true);
+      this.impacts.puff(spot(0.9), '#151312', size * 1.5, 2.6, 2.4);
+      if (Math.random() < 0.35) this.impacts.sparkBurst(spot(1.2), 8, 3);
+      this.mountFxAt.set(m.index, now + 70);
+    } else {
+      // The wreck: a column of black smoke and the last licks of flame.
+      this.impacts.puff(spot(0.7), '#151312', size * 1.4, 3.2, 2.2);
+      if (Math.random() < 0.4) this.impacts.puff(spot(1), '#ff6a14', size * 0.4, 0.4, 1.2, true);
+      this.mountFxAt.set(m.index, now + 160);
     }
   }
 

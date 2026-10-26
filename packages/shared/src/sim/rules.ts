@@ -68,6 +68,8 @@ export interface MatchRules {
   teamColors?: string[];
   /** Spears only: everyone holds one throwing spear (one hit kills; fetch it back); no weapon, ammo or grenade pickups. */
   weapons?: 'normal' | 'spears';
+  /** How much damage vehicles take: normal, tough (half) or off (they can't be destroyed except by falling off the map). Default normal. */
+  vehicleDamage?: 'normal' | 'tough' | 'off';
 }
 
 /** The gravity multiple and fall damage a match plays with: its own rules, else the map's, else normal / off. */
