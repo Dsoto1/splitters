@@ -1,0 +1,8830 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 20,
+  "metadata": {
+    "id": "erosion",
+    "name": "Erosion",
+    "author": "Tile Trigger",
+    "description": "A sunken temple court of mossy stone tiles over a pit of green acid. Every tile crumbles a second after you step on it and never comes back, and the rings fall away on their own from the outside in: the upper deck first, then the one below. Fall through a hole and the lower deck may catch you; the pads in the corner wells throw you back up while there is anything to land on. Only the sun stone in the middle never goes: you spawn on altars round the rim that throw you onto it. Deathmatch and Disc Arena rebuild the court every two and a half minutes; in Elimination it rebuilds every round.",
+    "createdAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 4,
+      "max": 12
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.elim",
+      "core.discs"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.jungle_temple",
+    "tiles": []
+  },
+  "entities": [
+    {
+      "id": "up_01",
+      "position": [
+        -24,
+        7.4,
+        -18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_02",
+      "position": [
+        -24,
+        7.4,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_03",
+      "position": [
+        -24,
+        7.4,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_04",
+      "position": [
+        -24,
+        7.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_05",
+      "position": [
+        -24,
+        7.4,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_06",
+      "position": [
+        -24,
+        7.4,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_07",
+      "position": [
+        -24,
+        7.4,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_10",
+      "position": [
+        -18,
+        7.4,
+        -24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_11",
+      "position": [
+        -18,
+        7.4,
+        -18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_12",
+      "position": [
+        -18,
+        7.4,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_13",
+      "position": [
+        -18,
+        7.4,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_14",
+      "position": [
+        -18,
+        7.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_15",
+      "position": [
+        -18,
+        7.4,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_16",
+      "position": [
+        -18,
+        7.4,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_17",
+      "position": [
+        -18,
+        7.4,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_18",
+      "position": [
+        -18,
+        7.4,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_20",
+      "position": [
+        -12,
+        7.4,
+        -24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_21",
+      "position": [
+        -12,
+        7.4,
+        -18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_22",
+      "position": [
+        -12,
+        7.4,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_23",
+      "position": [
+        -12,
+        7.4,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_24",
+      "position": [
+        -12,
+        7.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_25",
+      "position": [
+        -12,
+        7.4,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_26",
+      "position": [
+        -12,
+        7.4,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_27",
+      "position": [
+        -12,
+        7.4,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_28",
+      "position": [
+        -12,
+        7.4,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_30",
+      "position": [
+        -6,
+        7.4,
+        -24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_31",
+      "position": [
+        -6,
+        7.4,
+        -18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_32",
+      "position": [
+        -6,
+        7.4,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_33",
+      "position": [
+        -6,
+        7.4,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_34",
+      "position": [
+        -6,
+        7.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_35",
+      "position": [
+        -6,
+        7.4,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_36",
+      "position": [
+        -6,
+        7.4,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_37",
+      "position": [
+        -6,
+        7.4,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_38",
+      "position": [
+        -6,
+        7.4,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_40",
+      "position": [
+        0,
+        7.4,
+        -24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_41",
+      "position": [
+        0,
+        7.4,
+        -18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_42",
+      "position": [
+        0,
+        7.4,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_43",
+      "position": [
+        0,
+        7.4,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_45",
+      "position": [
+        0,
+        7.4,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_46",
+      "position": [
+        0,
+        7.4,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_47",
+      "position": [
+        0,
+        7.4,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_48",
+      "position": [
+        0,
+        7.4,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_50",
+      "position": [
+        6,
+        7.4,
+        -24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_51",
+      "position": [
+        6,
+        7.4,
+        -18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_52",
+      "position": [
+        6,
+        7.4,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_53",
+      "position": [
+        6,
+        7.4,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_54",
+      "position": [
+        6,
+        7.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_55",
+      "position": [
+        6,
+        7.4,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_56",
+      "position": [
+        6,
+        7.4,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_57",
+      "position": [
+        6,
+        7.4,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_58",
+      "position": [
+        6,
+        7.4,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_60",
+      "position": [
+        12,
+        7.4,
+        -24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_61",
+      "position": [
+        12,
+        7.4,
+        -18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_62",
+      "position": [
+        12,
+        7.4,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_63",
+      "position": [
+        12,
+        7.4,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_64",
+      "position": [
+        12,
+        7.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_65",
+      "position": [
+        12,
+        7.4,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_66",
+      "position": [
+        12,
+        7.4,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_67",
+      "position": [
+        12,
+        7.4,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_68",
+      "position": [
+        12,
+        7.4,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_70",
+      "position": [
+        18,
+        7.4,
+        -24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_71",
+      "position": [
+        18,
+        7.4,
+        -18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_72",
+      "position": [
+        18,
+        7.4,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_73",
+      "position": [
+        18,
+        7.4,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_74",
+      "position": [
+        18,
+        7.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_75",
+      "position": [
+        18,
+        7.4,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_76",
+      "position": [
+        18,
+        7.4,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_77",
+      "position": [
+        18,
+        7.4,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_78",
+      "position": [
+        18,
+        7.4,
+        24
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_81",
+      "position": [
+        24,
+        7.4,
+        -18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_82",
+      "position": [
+        24,
+        7.4,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_83",
+      "position": [
+        24,
+        7.4,
+        -6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_84",
+      "position": [
+        24,
+        7.4,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_85",
+      "position": [
+        24,
+        7.4,
+        6
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_86",
+      "position": [
+        24,
+        7.4,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#e4ecd4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "up_87",
+      "position": [
+        24,
+        7.4,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#c8d4b4",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_00",
+      "position": [
+        -21,
+        1.4,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_01",
+      "position": [
+        -21,
+        1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_02",
+      "position": [
+        -21,
+        1.4,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_03",
+      "position": [
+        -21,
+        1.4,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_04",
+      "position": [
+        -21,
+        1.4,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_05",
+      "position": [
+        -21,
+        1.4,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_06",
+      "position": [
+        -21,
+        1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_07",
+      "position": [
+        -21,
+        1.4,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_10",
+      "position": [
+        -15,
+        1.4,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_11",
+      "position": [
+        -15,
+        1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_12",
+      "position": [
+        -15,
+        1.4,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_13",
+      "position": [
+        -15,
+        1.4,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_14",
+      "position": [
+        -15,
+        1.4,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_15",
+      "position": [
+        -15,
+        1.4,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_16",
+      "position": [
+        -15,
+        1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_17",
+      "position": [
+        -15,
+        1.4,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_20",
+      "position": [
+        -9,
+        1.4,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_21",
+      "position": [
+        -9,
+        1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_22",
+      "position": [
+        -9,
+        1.4,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_23",
+      "position": [
+        -9,
+        1.4,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_24",
+      "position": [
+        -9,
+        1.4,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_25",
+      "position": [
+        -9,
+        1.4,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_26",
+      "position": [
+        -9,
+        1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_27",
+      "position": [
+        -9,
+        1.4,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_30",
+      "position": [
+        -3,
+        1.4,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_31",
+      "position": [
+        -3,
+        1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_32",
+      "position": [
+        -3,
+        1.4,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_33",
+      "position": [
+        -3,
+        1.4,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_34",
+      "position": [
+        -3,
+        1.4,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_35",
+      "position": [
+        -3,
+        1.4,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_36",
+      "position": [
+        -3,
+        1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_37",
+      "position": [
+        -3,
+        1.4,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_40",
+      "position": [
+        3,
+        1.4,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_41",
+      "position": [
+        3,
+        1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_42",
+      "position": [
+        3,
+        1.4,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_43",
+      "position": [
+        3,
+        1.4,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_44",
+      "position": [
+        3,
+        1.4,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_45",
+      "position": [
+        3,
+        1.4,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_46",
+      "position": [
+        3,
+        1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_47",
+      "position": [
+        3,
+        1.4,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_50",
+      "position": [
+        9,
+        1.4,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_51",
+      "position": [
+        9,
+        1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_52",
+      "position": [
+        9,
+        1.4,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_53",
+      "position": [
+        9,
+        1.4,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_54",
+      "position": [
+        9,
+        1.4,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_55",
+      "position": [
+        9,
+        1.4,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_56",
+      "position": [
+        9,
+        1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_57",
+      "position": [
+        9,
+        1.4,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_60",
+      "position": [
+        15,
+        1.4,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_61",
+      "position": [
+        15,
+        1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_62",
+      "position": [
+        15,
+        1.4,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_63",
+      "position": [
+        15,
+        1.4,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_64",
+      "position": [
+        15,
+        1.4,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_65",
+      "position": [
+        15,
+        1.4,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_66",
+      "position": [
+        15,
+        1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_67",
+      "position": [
+        15,
+        1.4,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_70",
+      "position": [
+        21,
+        1.4,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_71",
+      "position": [
+        21,
+        1.4,
+        -15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_72",
+      "position": [
+        21,
+        1.4,
+        -9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_73",
+      "position": [
+        21,
+        1.4,
+        -3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_74",
+      "position": [
+        21,
+        1.4,
+        3
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_75",
+      "position": [
+        21,
+        1.4,
+        9
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_76",
+      "position": [
+        21,
+        1.4,
+        15
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#a4b090",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "lo_77",
+      "position": [
+        21,
+        1.4,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        0.6,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_mossy_cobble",
+      "tint": "#b8c4a0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 1,
+      "respawnSeconds": null,
+      "health": 120
+    },
+    {
+      "id": "water_001",
+      "position": [
+        0,
+        -0.9,
+        0
+      ],
+      "kind": "water",
+      "size": [
+        64,
+        0.9,
+        64
+      ],
+      "liquid": "acid",
+      "tint": "#5fd23a"
+    },
+    {
+      "id": "block_002",
+      "position": [
+        -17.25,
+        -16,
+        -33
+      ],
+      "kind": "block",
+      "size": [
+        34.5,
+        32,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#c8ccb0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_003",
+      "position": [
+        -33,
+        -16,
+        -15.75
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        32,
+        31.5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#c8ccb0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_004",
+      "position": [
+        17.25,
+        -16,
+        -33
+      ],
+      "kind": "block",
+      "size": [
+        34.5,
+        32,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#c8ccb0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_005",
+      "position": [
+        -33,
+        -16,
+        15.75
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        32,
+        31.5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#c8ccb0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_006",
+      "position": [
+        0,
+        11.5,
+        -31.4
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        0.4,
+        0.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_007",
+      "position": [
+        -31.4,
+        11.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.4,
+        60
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_008",
+      "position": [
+        -17.25,
+        -16,
+        33
+      ],
+      "kind": "block",
+      "size": [
+        34.5,
+        32,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#c8ccb0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_009",
+      "position": [
+        33,
+        -16,
+        -15.75
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        32,
+        31.5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#c8ccb0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_010",
+      "position": [
+        17.25,
+        -16,
+        33
+      ],
+      "kind": "block",
+      "size": [
+        34.5,
+        32,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#c8ccb0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_011",
+      "position": [
+        33,
+        -16,
+        15.75
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        32,
+        31.5
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": "#c8ccb0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_012",
+      "position": [
+        0,
+        11.5,
+        31.4
+      ],
+      "kind": "block",
+      "size": [
+        60,
+        0.4,
+        0.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_013",
+      "position": [
+        31.4,
+        11.5,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.4,
+        60
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_014",
+      "position": [
+        0,
+        6.8,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        5.94,
+        1.2,
+        5.94
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#f0d890",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_015",
+      "position": [
+        0,
+        7.92,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.1,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.brass",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_016",
+      "position": [
+        -12,
+        -16,
+        28
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_017",
+      "position": [
+        -12,
+        7.7,
+        28
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_018",
+      "position": [
+        -12,
+        8,
+        28
+      ],
+      "kind": "pad",
+      "yaw": 2.7366,
+      "power": 13,
+      "push": 31.82
+    },
+    {
+      "id": "spawn_019",
+      "position": [
+        -12,
+        8,
+        28
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "block_020",
+      "position": [
+        12,
+        -16,
+        -28
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_021",
+      "position": [
+        12,
+        7.7,
+        -28
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_022",
+      "position": [
+        12,
+        8,
+        -28
+      ],
+      "kind": "pad",
+      "yaw": -0.405,
+      "power": 13,
+      "push": 31.82
+    },
+    {
+      "id": "spawn_023",
+      "position": [
+        12,
+        8,
+        -28
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "block_024",
+      "position": [
+        28,
+        -16,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_025",
+      "position": [
+        28,
+        7.7,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_026",
+      "position": [
+        28,
+        8,
+        12
+      ],
+      "kind": "pad",
+      "yaw": -1.9758,
+      "power": 13,
+      "push": 31.82
+    },
+    {
+      "id": "spawn_027",
+      "position": [
+        28,
+        8,
+        12
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "block_028",
+      "position": [
+        -28,
+        -16,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_029",
+      "position": [
+        -28,
+        7.7,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_030",
+      "position": [
+        -28,
+        8,
+        -12
+      ],
+      "kind": "pad",
+      "yaw": 1.1658,
+      "power": 13,
+      "push": 31.82
+    },
+    {
+      "id": "spawn_031",
+      "position": [
+        -28,
+        8,
+        -12
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "block_032",
+      "position": [
+        0,
+        -16,
+        28
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_033",
+      "position": [
+        0,
+        7.7,
+        28
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_034",
+      "position": [
+        0,
+        8,
+        28
+      ],
+      "kind": "pad",
+      "yaw": 3.1416,
+      "power": 13,
+      "push": 29.13
+    },
+    {
+      "id": "spawn_035",
+      "position": [
+        0,
+        8,
+        28
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "block_036",
+      "position": [
+        0,
+        -16,
+        -28
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_037",
+      "position": [
+        0,
+        7.7,
+        -28
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_038",
+      "position": [
+        0,
+        8,
+        -28
+      ],
+      "kind": "pad",
+      "yaw": 0,
+      "power": 13,
+      "push": 29.13
+    },
+    {
+      "id": "spawn_039",
+      "position": [
+        0,
+        8,
+        -28
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "block_040",
+      "position": [
+        28,
+        -16,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_041",
+      "position": [
+        28,
+        7.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_042",
+      "position": [
+        28,
+        8,
+        0
+      ],
+      "kind": "pad",
+      "yaw": -1.5708,
+      "power": 13,
+      "push": 29.13
+    },
+    {
+      "id": "spawn_043",
+      "position": [
+        28,
+        8,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "block_044",
+      "position": [
+        -28,
+        -16,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_045",
+      "position": [
+        -28,
+        7.7,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_046",
+      "position": [
+        -28,
+        8,
+        0
+      ],
+      "kind": "pad",
+      "yaw": 1.5708,
+      "power": 13,
+      "push": 29.13
+    },
+    {
+      "id": "spawn_047",
+      "position": [
+        -28,
+        8,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "block_048",
+      "position": [
+        12,
+        -16,
+        28
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_049",
+      "position": [
+        12,
+        7.7,
+        28
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_050",
+      "position": [
+        12,
+        8,
+        28
+      ],
+      "kind": "pad",
+      "yaw": -2.7366,
+      "power": 13,
+      "push": 31.82
+    },
+    {
+      "id": "spawn_051",
+      "position": [
+        12,
+        8,
+        28
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "block_052",
+      "position": [
+        -12,
+        -16,
+        -28
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_053",
+      "position": [
+        -12,
+        7.7,
+        -28
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_054",
+      "position": [
+        -12,
+        8,
+        -28
+      ],
+      "kind": "pad",
+      "yaw": 0.405,
+      "power": 13,
+      "push": 31.82
+    },
+    {
+      "id": "spawn_055",
+      "position": [
+        -12,
+        8,
+        -28
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "block_056",
+      "position": [
+        28,
+        -16,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_057",
+      "position": [
+        28,
+        7.7,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_058",
+      "position": [
+        28,
+        8,
+        -12
+      ],
+      "kind": "pad",
+      "yaw": -1.1658,
+      "power": 13,
+      "push": 31.82
+    },
+    {
+      "id": "spawn_059",
+      "position": [
+        28,
+        8,
+        -12
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "block_060",
+      "position": [
+        -28,
+        -16,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        23.7,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_061",
+      "position": [
+        -28,
+        7.7,
+        12
+      ],
+      "kind": "block",
+      "size": [
+        2.2,
+        0.3,
+        2.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_travertine",
+      "tint": "#d8d0a8",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_062",
+      "position": [
+        -28,
+        8,
+        12
+      ],
+      "kind": "pad",
+      "yaw": 1.9758,
+      "power": 13,
+      "push": 31.82
+    },
+    {
+      "id": "spawn_063",
+      "position": [
+        -28,
+        8,
+        12
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "block_064",
+      "position": [
+        -25.5,
+        -16,
+        -25.5
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        18,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_065",
+      "position": [
+        -26,
+        2,
+        -26
+      ],
+      "kind": "pad",
+      "yaw": 0.7854,
+      "power": 26,
+      "push": 27.92
+    },
+    {
+      "id": "block_066",
+      "position": [
+        -25.5,
+        -16,
+        25.5
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        18,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_067",
+      "position": [
+        -26,
+        2,
+        26
+      ],
+      "kind": "pad",
+      "yaw": 2.3562,
+      "power": 26,
+      "push": 27.92
+    },
+    {
+      "id": "block_068",
+      "position": [
+        25.5,
+        -16,
+        -25.5
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        18,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_069",
+      "position": [
+        26,
+        2,
+        -26
+      ],
+      "kind": "pad",
+      "yaw": -0.7854,
+      "power": 26,
+      "push": 27.92
+    },
+    {
+      "id": "block_070",
+      "position": [
+        25.5,
+        -16,
+        25.5
+      ],
+      "kind": "block",
+      "size": [
+        3,
+        18,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_jungle_rock",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "pad_071",
+      "position": [
+        26,
+        2,
+        26
+      ],
+      "kind": "pad",
+      "yaw": -2.3562,
+      "power": 26,
+      "push": 27.92
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        -30.5,
+        -0.6,
+        -30.5
+      ],
+      "kind": "prop",
+      "model": "prop.jg_stone_idol",
+      "yaw": 0.8,
+      "scale": 2.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        30.5,
+        -0.6,
+        30.5
+      ],
+      "kind": "prop",
+      "model": "prop.jg_stone_idol",
+      "yaw": -2.4,
+      "scale": 2.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        30.5,
+        -0.6,
+        -30.5
+      ],
+      "kind": "prop",
+      "model": "prop.jg_stone_idol",
+      "yaw": -0.8,
+      "scale": 2.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        -30.5,
+        -0.6,
+        30.5
+      ],
+      "kind": "prop",
+      "model": "prop.jg_stone_idol",
+      "yaw": 2.4,
+      "scale": 2.2,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "position": [
+        -21,
+        9,
+        31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 3.141592653589793,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        21,
+        9,
+        -31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 0,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "position": [
+        31.45,
+        9,
+        21
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": -1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "position": [
+        -31.45,
+        9,
+        -21
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": 1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "position": [
+        -9,
+        9,
+        31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 3.141592653589793,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "position": [
+        9,
+        9,
+        -31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 0,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "position": [
+        31.45,
+        9,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": -1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "position": [
+        -31.45,
+        9,
+        -9
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": 1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "position": [
+        3,
+        9,
+        31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 3.141592653589793,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "position": [
+        -3,
+        9,
+        -31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 0,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "position": [
+        31.45,
+        9,
+        -3
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": -1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_087",
+      "position": [
+        -31.45,
+        9,
+        3
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": 1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "position": [
+        15,
+        9,
+        31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 3.141592653589793,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "position": [
+        -15,
+        9,
+        -31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 0,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "position": [
+        31.45,
+        9,
+        -15
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": -1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "position": [
+        -31.45,
+        9,
+        15
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": 1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "position": [
+        27,
+        9,
+        31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 3.141592653589793,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "position": [
+        -27,
+        9,
+        -31.45
+      ],
+      "kind": "prop",
+      "model": "prop.jg_vine_curtain",
+      "yaw": 0,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "position": [
+        31.45,
+        9,
+        -27
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": -1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "position": [
+        -31.45,
+        9,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.jg_liana",
+      "yaw": 1.5707963267948966,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_096",
+      "position": [
+        -20,
+        16,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_097",
+      "position": [
+        20,
+        16,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_098",
+      "position": [
+        -20,
+        16,
+        -33
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_099",
+      "position": [
+        20,
+        16,
+        -33
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_100",
+      "position": [
+        33,
+        16,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "position": [
+        33,
+        16,
+        -20
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_102",
+      "position": [
+        -33,
+        16,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "position": [
+        -33,
+        16,
+        -20
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 0,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "position": [
+        0,
+        16,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.jg_serpent_statue",
+      "yaw": -3.141592653589793,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "position": [
+        0,
+        16,
+        -33
+      ],
+      "kind": "prop",
+      "model": "prop.jg_serpent_statue",
+      "yaw": 0,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_106",
+      "position": [
+        33,
+        16,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.jg_serpent_statue",
+      "yaw": -1.5707963267948966,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_107",
+      "position": [
+        -33,
+        16,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.jg_serpent_statue",
+      "yaw": 1.5707963267948966,
+      "scale": 1.5,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "lamp_1",
+      "position": [
+        -16,
+        12.5,
+        31.4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb02e",
+      "intensity": 1.4,
+      "range": 16,
+      "fixture": "wall"
+    },
+    {
+      "id": "lamp_2",
+      "position": [
+        16,
+        12.5,
+        31.4
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb02e",
+      "intensity": 1.4,
+      "range": 16,
+      "fixture": "wall"
+    },
+    {
+      "id": "lamp_3",
+      "position": [
+        -16,
+        12.5,
+        -31.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb02e",
+      "intensity": 1.4,
+      "range": 16,
+      "fixture": "wall"
+    },
+    {
+      "id": "lamp_4",
+      "position": [
+        16,
+        12.5,
+        -31.4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb02e",
+      "intensity": 1.4,
+      "range": 16,
+      "fixture": "wall"
+    },
+    {
+      "id": "lamp_5",
+      "position": [
+        31.4,
+        12.5,
+        -16
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb02e",
+      "intensity": 1.4,
+      "range": 16,
+      "fixture": "wall"
+    },
+    {
+      "id": "lamp_6",
+      "position": [
+        31.4,
+        12.5,
+        16
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb02e",
+      "intensity": 1.4,
+      "range": 16,
+      "fixture": "wall"
+    },
+    {
+      "id": "lamp_7",
+      "position": [
+        -31.4,
+        12.5,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb02e",
+      "intensity": 1.4,
+      "range": 16,
+      "fixture": "wall"
+    },
+    {
+      "id": "lamp_8",
+      "position": [
+        -31.4,
+        12.5,
+        16
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb02e",
+      "intensity": 1.4,
+      "range": 16,
+      "fixture": "wall"
+    },
+    {
+      "id": "prop_108",
+      "position": [
+        -26,
+        16,
+        32.6
+      ],
+      "kind": "prop",
+      "model": "prop.jg_brazier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_109",
+      "position": [
+        -26,
+        17.2,
+        32.6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_110",
+      "position": [
+        26,
+        16,
+        32.6
+      ],
+      "kind": "prop",
+      "model": "prop.jg_brazier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_111",
+      "position": [
+        26,
+        17.2,
+        32.6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_112",
+      "position": [
+        -26,
+        16,
+        -32.6
+      ],
+      "kind": "prop",
+      "model": "prop.jg_brazier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_113",
+      "position": [
+        -26,
+        17.2,
+        -32.6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_114",
+      "position": [
+        26,
+        16,
+        -32.6
+      ],
+      "kind": "prop",
+      "model": "prop.jg_brazier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_115",
+      "position": [
+        26,
+        17.2,
+        -32.6
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_116",
+      "position": [
+        32.6,
+        16,
+        -26
+      ],
+      "kind": "prop",
+      "model": "prop.jg_brazier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_117",
+      "position": [
+        32.6,
+        17.2,
+        -26
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_118",
+      "position": [
+        32.6,
+        16,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.jg_brazier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_119",
+      "position": [
+        32.6,
+        17.2,
+        26
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_120",
+      "position": [
+        -32.6,
+        16,
+        -26
+      ],
+      "kind": "prop",
+      "model": "prop.jg_brazier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_121",
+      "position": [
+        -32.6,
+        17.2,
+        -26
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_122",
+      "position": [
+        -32.6,
+        16,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.jg_brazier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_123",
+      "position": [
+        -32.6,
+        17.2,
+        26
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "light_124",
+      "position": [
+        -18,
+        0.6,
+        -18
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#7dff5a",
+      "intensity": 1.1,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "light_125",
+      "position": [
+        18,
+        0.6,
+        -18
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#7dff5a",
+      "intensity": 1.1,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "light_126",
+      "position": [
+        -18,
+        0.6,
+        18
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#7dff5a",
+      "intensity": 1.1,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "light_127",
+      "position": [
+        18,
+        0.6,
+        18
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#7dff5a",
+      "intensity": 1.1,
+      "range": 14,
+      "fixture": "none"
+    },
+    {
+      "id": "pickup_128",
+      "position": [
+        0,
+        8,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": 30
+    },
+    {
+      "id": "pickup_129",
+      "position": [
+        -18,
+        8,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_130",
+      "position": [
+        18,
+        8,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_131",
+      "position": [
+        0,
+        8,
+        -18
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_132",
+      "position": [
+        0,
+        8,
+        18
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_133",
+      "position": [
+        -24,
+        8,
+        -12
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_134",
+      "position": [
+        24,
+        8,
+        12
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_135",
+      "position": [
+        -12,
+        8,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_136",
+      "position": [
+        12,
+        8,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_137",
+      "position": [
+        -12,
+        8,
+        -12
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_138",
+      "position": [
+        12,
+        8,
+        12
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_139",
+      "position": [
+        -12,
+        8,
+        12
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_140",
+      "position": [
+        12,
+        8,
+        -12
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_141",
+      "position": [
+        0,
+        8,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_142",
+      "position": [
+        6,
+        8,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_143",
+      "position": [
+        -6,
+        8,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_shells",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_144",
+      "position": [
+        -6,
+        8,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.disc_fast",
+      "respawnSeconds": 25
+    },
+    {
+      "id": "pickup_145",
+      "position": [
+        6,
+        8,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.disc_triple",
+      "respawnSeconds": 25
+    },
+    {
+      "id": "pickup_146",
+      "position": [
+        -6,
+        8,
+        6
+      ],
+      "kind": "pickup",
+      "item": "core.disc_split",
+      "respawnSeconds": 25
+    },
+    {
+      "id": "pickup_147",
+      "position": [
+        6,
+        8,
+        -6
+      ],
+      "kind": "pickup",
+      "item": "core.disc_freeze",
+      "respawnSeconds": 25
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [
+      {
+        "id": "var_stage",
+        "name": "Collapse stage",
+        "initial": 0
+      },
+      {
+        "id": "var_warn",
+        "name": "Warning",
+        "initial": 0
+      }
+    ],
+    "timers": [
+      {
+        "id": "timer_cycle",
+        "name": "Collapse cycle",
+        "seconds": 150,
+        "loop": true,
+        "visible": false
+      }
+    ],
+    "objectives": [],
+    "rules": [
+      {
+        "id": "rule_start",
+        "name": "Collapse clock (first cycle)",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "match_start",
+          "target": null
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "timer_start",
+            "target": "timer_cycle",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 4,
+            "text": "Erosion: every tile you step on is gone. The rings fall from the outside in.",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 42,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 5,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 5,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 6,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 6,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_cycle",
+        "name": "Collapse clock (rebuild and go again)",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "timer_done",
+          "target": "timer_cycle"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 42,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 4,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 5,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 5,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 12,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_warn",
+            "value": 6,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "wait",
+            "target": null,
+            "value": 3,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "set_var",
+            "target": "var_stage",
+            "value": 6,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_warn",
+        "name": "Warning lamps",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_warn"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_warn",
+            "op": ">",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "alarm"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_1",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_2",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_3",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_4",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_5",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_6",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_7",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_8",
+            "value": 4,
+            "text": "",
+            "state": "on"
+          }
+        ]
+      },
+      {
+        "id": "rule_warn_1",
+        "name": "Warning 1",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_warn"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_warn",
+            "op": "==",
+            "value": 1,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "The outer ring falls in 3 seconds!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_warn_2",
+        "name": "Warning 2",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_warn"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_warn",
+            "op": "==",
+            "value": 2,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "The lower outer ring falls in 3 seconds!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_warn_3",
+        "name": "Warning 3",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_warn"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_warn",
+            "op": "==",
+            "value": 3,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "The next ring falls in 3 seconds!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_warn_4",
+        "name": "Warning 4",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_warn"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_warn",
+            "op": "==",
+            "value": 4,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "The lower ring falls in 3 seconds!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_warn_5",
+        "name": "Warning 5",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_warn"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_warn",
+            "op": "==",
+            "value": 5,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "The ring round the middle falls in 3 seconds!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_warn_6",
+        "name": "Warning 6",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_warn"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_warn",
+            "op": "==",
+            "value": 6,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "message",
+            "target": null,
+            "value": 2,
+            "text": "The lower deck falls in 3 seconds!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_1",
+        "name": "Stage 1: lamps",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 1,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_1",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_2",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_3",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_4",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_5",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_6",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_7",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_8",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_1_1",
+        "name": "Stage 1: drop 1",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 1,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_drop",
+            "target": "up_01",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_02",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_03",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_04",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_05",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_06",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_07",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_10",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_18",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_20",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_28",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_30",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_38",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_40",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_48",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_50",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_58",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_60",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_68",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_70",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_78",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_81",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_82",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_83",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_84",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_85",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_86",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_87",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_2",
+        "name": "Stage 2: lamps",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 2,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_1",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_2",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_3",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_4",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_5",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_6",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_7",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_8",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_2_1",
+        "name": "Stage 2: drop 1",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 2,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_drop",
+            "target": "lo_00",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_01",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_02",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_03",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_04",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_05",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_06",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_07",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_10",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_17",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_20",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_27",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_30",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_37",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_40",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_47",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_50",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_57",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_60",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_67",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_70",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_71",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_72",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_73",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_74",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_75",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_76",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_77",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_3",
+        "name": "Stage 3: lamps",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 3,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_1",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_2",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_3",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_4",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_5",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_6",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_7",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_8",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_3_1",
+        "name": "Stage 3: drop 1",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 3,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_drop",
+            "target": "up_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_12",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_13",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_14",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_15",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_16",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_17",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_21",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_27",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_31",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_37",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_41",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_47",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_51",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_57",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_61",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_67",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_71",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_72",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_73",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_74",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_75",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_76",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_77",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_4",
+        "name": "Stage 4: lamps",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 4,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_1",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_2",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_3",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_4",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_5",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_6",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_7",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_8",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_4_1",
+        "name": "Stage 4: drop 1",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 4,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_drop",
+            "target": "lo_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_12",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_13",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_14",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_15",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_16",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_21",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_26",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_31",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_36",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_41",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_46",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_51",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_56",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_61",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_62",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_63",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_64",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_65",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_66",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_5",
+        "name": "Stage 5: lamps",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 5,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_1",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_2",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_3",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_4",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_5",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_6",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_7",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_8",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_5_1",
+        "name": "Stage 5: drop 1",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 5,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_drop",
+            "target": "up_22",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_23",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_24",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_25",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_26",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_32",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_36",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_42",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_46",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_52",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_56",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_62",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_63",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_64",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_65",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "up_66",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_6",
+        "name": "Stage 6: lamps",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 6,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "boom"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_1",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_2",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_3",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_4",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_5",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_6",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_7",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          },
+          {
+            "type": "light_blink",
+            "target": "lamp_8",
+            "value": 0,
+            "text": "",
+            "state": "off"
+          }
+        ]
+      },
+      {
+        "id": "rule_stage_6_1",
+        "name": "Stage 6: drop 1",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 6,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_drop",
+            "target": "lo_22",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_23",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_24",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_25",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_32",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_35",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_42",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_45",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_52",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_53",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_54",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_drop",
+            "target": "lo_55",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_rebuild",
+        "name": "Rebuild: message",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "chime"
+          },
+          {
+            "type": "message",
+            "target": null,
+            "value": 3,
+            "text": "The temple floor rises again!",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_rebuild_1",
+        "name": "Rebuild 1",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_restore",
+            "target": "up_01",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_02",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_03",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_04",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_05",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_06",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_07",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_10",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_12",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_13",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_14",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_15",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_16",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_17",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_18",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_20",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_21",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_22",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_23",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_24",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_25",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_26",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_27",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_28",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_30",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_31",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_32",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_33",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_34",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_rebuild_2",
+        "name": "Rebuild 2",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_restore",
+            "target": "up_35",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_36",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_37",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_38",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_40",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_41",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_42",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_43",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_45",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_46",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_47",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_48",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_50",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_51",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_52",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_53",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_54",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_55",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_56",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_57",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_58",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_60",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_61",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_62",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_63",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_64",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_65",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_66",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_67",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_68",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_rebuild_3",
+        "name": "Rebuild 3",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_restore",
+            "target": "up_70",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_71",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_72",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_73",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_74",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_75",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_76",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_77",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_78",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_81",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_82",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_83",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_84",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_85",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_86",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "up_87",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_00",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_01",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_02",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_03",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_04",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_05",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_06",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_07",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_10",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_11",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_12",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_13",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_14",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_15",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_rebuild_4",
+        "name": "Rebuild 4",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_restore",
+            "target": "lo_16",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_17",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_20",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_21",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_22",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_23",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_24",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_25",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_26",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_27",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_30",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_31",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_32",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_33",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_34",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_35",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_36",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_37",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_40",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_41",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_42",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_43",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_44",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_45",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_46",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_47",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_50",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_51",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_52",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_53",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      },
+      {
+        "id": "rule_rebuild_5",
+        "name": "Rebuild 5",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "variable_changed",
+          "target": "var_stage"
+        },
+        "if": [
+          {
+            "type": "variable",
+            "target": "var_stage",
+            "op": "==",
+            "value": 0,
+            "state": ""
+          }
+        ],
+        "do": [
+          {
+            "type": "block_restore",
+            "target": "lo_54",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_55",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_56",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_57",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_60",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_61",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_62",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_63",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_64",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_65",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_66",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_67",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_70",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_71",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_72",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_73",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_74",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_75",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_76",
+            "value": 0,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "block_restore",
+            "target": "lo_77",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -33,
+      -33
+    ],
+    "max": [
+      33,
+      33
+    ],
+    "style": "invisible",
+    "height": 24
+  },
+  "track": null,
+  "backdrop": {
+    "sky": "cloudy",
+    "scenery": "forest",
+    "ground": "moss",
+    "haze": 0.35,
+    "mist": 0.25
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
+  "dependencies": []
+}
