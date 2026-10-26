@@ -20,7 +20,7 @@ const SLOW = process.env.CI ? 3 : 1;
 const SHARDS = [
   ['maps', 'online', 'webgpu'],
   ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby'],
-  ['vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'zombies'],
+  ['maps2', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'zombies'],
   ['setpieces', 'physicsfx', 'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'classes', 'race'],
 ];
 const T = (ms) => ms * SLOW;
@@ -1191,10 +1191,13 @@ async function raceFlow(browser) {
 }
 
 /** Every homage map (and any other map without a flow of its own) starts a match cleanly. */
-async function mapsFlow(browser) {
+async function mapsFlow(browser, half = 0) {
   const { readdirSync } = await import('node:fs');
   const covered = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
-  const ids = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !covered.has(id) && (!process.env.E2E_MAPS || process.env.E2E_MAPS.split(',').includes(id)));
+  const only = process.env.E2E_MAPS?.split(',');
+  // The tour is long: CI splits it in two (every other map), 'maps' and 'maps2'. E2E_MAPS picks maps for 'maps' alone.
+  const all = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !covered.has(id));
+  const ids = only ? (half ? [] : all.filter((id) => only.includes(id))) : all.filter((_, i) => i % 2 === half);
   // Imported maps (maps/imported/, converted from TimeSplitters MapMaker saves) are many: spot-check 5 at random
   // (E2E_IMPORTED=all checks every one, E2E_IMPORTED=id1,id2 checks those).
   let imported = [];
@@ -1202,7 +1205,7 @@ async function mapsFlow(browser) {
     imported = readdirSync(new URL('../maps/imported/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
   } catch {}
   const pick = process.env.E2E_IMPORTED;
-  const chosen = pick === 'all' ? imported : pick ? pick.split(',') : imported.map((id) => [Math.random(), id]).sort((a, b) => a[0] - b[0]).slice(0, 5).map(([, id]) => id);
+  const chosen = half ? [] : pick === 'all' ? imported : pick ? pick.split(',') : imported.map((id) => [Math.random(), id]).sort((a, b) => a[0] - b[0]).slice(0, 5).map(([, id]) => id);
   if (imported.length) console.log(`imported maps checked: ${chosen.join(', ')}`);
   for (const id of [...ids, ...chosen]) {
     const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
@@ -1525,7 +1528,7 @@ try {
   const shard = process.env.E2E_SHARD ? SHARDS[Number(process.env.E2E_SHARD.split('/')[0]) - 1] : null;
   if (process.env.E2E_SHARD && !shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
   const only = process.env.E2E_ONLY?.split(',') ?? shard;
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, maps: mapsFlow, designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, maps: mapsFlow, maps2: (b) => mapsFlow(b, 1), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
   // Every flow belongs to exactly one shard, so CI's parallel jobs between them run everything.
   const sharded = SHARDS.flat();
   const lost = Object.keys(flows).filter((f) => sharded.filter((x) => x === f).length !== 1);
