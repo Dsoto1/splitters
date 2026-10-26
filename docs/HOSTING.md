@@ -101,10 +101,9 @@ Other settings (environment variables):
 - **Long routes** (`NavWorld.findPath`): Detour's default 2,048 search nodes
   ran out on long routes (round the lake on Norman Shores) and the partial
   path counted as no way there: 70% of path queries failed there and bots
-  stood about. Searches now have 65,535 nodes, routes found are shared by
-  everyone heading to the same place (a bot on one takes the rest of it),
-  routes that don't exist are remembered, and a bot that finds no way backs
-  off (0.2 s doubling to 4 s) instead of asking again every few ticks.
+  stood about. Searches now have 65,535 nodes, routes that don't exist are
+  remembered, and a bot that finds no way backs off (0.2 s doubling to 4 s)
+  instead of asking again every few ticks.
 - **Client**: past 24 characters on screen, ones over 45 m animate every other
   frame and over 120 m every fourth (meshes already drop to low detail past
   18 m), and ones outside the view aren't drawn (or drawn into the shadow

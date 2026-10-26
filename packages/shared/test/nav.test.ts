@@ -44,7 +44,7 @@ describe('navigation', () => {
 });
 
 describe('long routes', () => {
-  it('finds the way round the lake on Norman Shores (house to house across the basin, over the bridge) and shares it', () => {
+  it('finds the way round the lake on Norman Shores (house to house across the basin, over the bridge) from anywhere along it', () => {
     const loaded = loadMap(readFileSync(fileURLToPath(new URL('../../../maps/norman_shores.json', import.meta.url)), 'utf8'));
     if (!loaded.ok) throw new Error('Norman Shores failed to load');
     const map = loaded.map;
@@ -57,7 +57,7 @@ describe('long routes', () => {
     for (let i = 1; i < path!.length; i++) len += Math.hypot(path![i]!.x - path![i - 1]!.x, path![i]!.z - path![i - 1]!.z);
     expect(len).toBeGreaterThan(250);
     expect(Math.max(...path!.map((p) => p.z))).toBeGreaterThan(40);
-    // A teammate setting off from along the way takes the rest of that route (and still gets there).
+    // Setting off from along the way (a teammate who went ahead) gets there too.
     const mid = path![Math.floor(path!.length / 2)]!;
     const rest = nav.findPath(mid, b!);
     expect(rest).not.toBeNull();

@@ -94,7 +94,7 @@ budgets above:
   doorways (40% of Norman Shores' spawn pairs lost their route), so there is
   no per-map setting; keep big maps connected with wide openings (≥ 1.4 m)
   instead. Routes may be long: path searches have 65,535 nodes and 8,192
-  polygons, and teammates share routes to the same place.
+  polygons, and routes that don't exist are remembered.
 - **Water in the middle**: a lake or a canyon nobody can cross makes every
   route go round it; give it two crossings or more so bots spread out.
 - **Props**: instanced, so the count matters less than the number of
