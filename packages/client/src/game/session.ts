@@ -76,7 +76,7 @@ import { CoverState } from './coverState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import { RaceHud } from './raceHud.ts';
-import { LobbyAdvertiser, builtHub, hubSetting } from './hub.ts';
+import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { markerSetting } from './crosshair.ts';
@@ -444,6 +444,7 @@ export class GameSession {
       info.hidden = false;
       info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${peerLink.hubRelay ? ' The hub provides a relay, so friends on strict networks can connect too.' : loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options and send a new link.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
       info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
+      if (onlyHere) void this.lanInvite(info, code, link);
       this.hud.showMessage(`Hosting: join code ${code}`, 5);
       this.updateListing();
     } catch (e) {
@@ -451,6 +452,64 @@ export class GameSession {
       btn.disabled = false;
       btn.textContent = 'Host game (invite friends)';
       this.hud.showMessage(`Couldn't host: ${(e as Error).message}`, 5);
+    }
+  }
+
+  /** A dedicated server's LAN join addresses in the pause menu, to pass on to people on the same network. */
+  private showLanAddresses(lan: readonly string[]): void {
+    const info = $('host-info');
+    info.hidden = false;
+    info.replaceChildren();
+    const head = document.createElement('div');
+    head.className = 'host-code';
+    head.textContent = 'LAN join address';
+    info.append(head);
+    for (const addr of lan) {
+      const row = document.createElement('div');
+      row.className = 'lan-address';
+      const input = document.createElement('input');
+      input.readOnly = true;
+      input.value = addr;
+      const copy = document.createElement('button');
+      copy.textContent = 'Copy';
+      copy.addEventListener('click', () => void navigator.clipboard?.writeText(addr).then(() => this.hud.pickup('LAN address copied')));
+      row.append(input, copy);
+      info.append(row);
+    }
+    const hint = document.createElement('p');
+    hint.className = 'hint';
+    hint.textContent = 'People on your network: Online → LAN finds this server, or paste the address under Online → Server.';
+    info.append(hint);
+  }
+
+  /**
+   * Host game on a page opened at localhost: a hub on this computer knows its
+   * network addresses, so offer the invite link at one of those instead.
+   */
+  private async lanInvite(info: HTMLElement, code: string, link: string): Promise<void> {
+    const hub = hubAddress();
+    if (!hub) return;
+    try {
+      const res = await fetch(`${hub.secure ? 'https' : 'http'}://${hub.host}:${hub.port}${hub.path}lobby/lan`, { cache: 'no-store', signal: AbortSignal.timeout(2500) });
+      const body = res.ok ? ((await res.json()) as { addresses?: string[] }) : {};
+      const ip = /^http:\/\/([\d.]+):/.exec(body.addresses?.[0] ?? '')?.[1];
+      if (!ip || this.closed) return;
+      const lanLink = link.replace(/^(\w+:\/\/)[^:/]+/, `$1${ip}`).replace(/([?&]hub=)[^&]*/, `$1${encodeURIComponent(`${ip}:${hub.port}`)}`);
+      const row = document.createElement('div');
+      row.className = 'lan-address';
+      const input = document.createElement('input');
+      input.readOnly = true;
+      input.value = lanLink;
+      const copy = document.createElement('button');
+      copy.textContent = 'Copy LAN link';
+      copy.addEventListener('click', () => void navigator.clipboard?.writeText(lanLink).then(() => this.hud.pickup(`LAN link for ${code} copied`)));
+      row.append(input, copy);
+      const hint = document.createElement('p');
+      hint.className = 'hint';
+      hint.textContent = 'Same network: this link uses your computer\'s network address (the game must be served there too, e.g. by the hub after pnpm build).';
+      info.append(row, hint);
+    } catch {
+      // No hub here: the localhost warning above stands.
     }
   }
 
@@ -519,6 +578,7 @@ export class GameSession {
         }
         this.slot = msg.slot;
         this.rules = msg.rules;
+        if (msg.lan?.length) this.showLanAddresses(msg.lan);
         const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
         this.hud.setTeams(teams);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));

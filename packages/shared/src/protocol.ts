@@ -325,6 +325,8 @@ export type ServerMessage =
       rules: MatchRules;
       /** Full scenario state at join time. */
       sc?: ScenarioSnapshot;
+      /** Dedicated servers: their LAN join addresses (ws://192.168.…:7777), for the pause menu to share. */
+      lan?: string[];
     }
   | { t: 'reject'; reason: string }
   | { t: 'roster'; players: RosterEntry[] }

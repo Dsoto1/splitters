@@ -772,7 +772,44 @@ export class FrontEnd {
       storage('cs.name', this.name);
       this.hooks.joinCode(c, this.displayName);
     });
-    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), el('div', { class: 'online-grid' }, this.gameBrowser(), el('div', { class: 'online-side' }, codeForm, form)));
+    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), el('div', { class: 'online-grid' }, this.gameBrowser(), el('div', { class: 'online-side' }, codeForm, this.lanPanel(), form)));
+  }
+
+  /** Online → LAN: dedicated servers on your network (see game/lan.ts for how, and the limits). */
+  private lanPanel(): HTMLElement {
+    const list = el('div', { class: 'gb-list lan-list', id: 'lan-list' });
+    const status = el('span', { class: 'gb-status' });
+    const scan = el('button', { class: 'tab', id: 'lan-scan', textContent: 'Scan' });
+    const add = el('input', { id: 'lan-add', placeholder: '192.168.1.20 or host:port', autocomplete: 'off', title: 'Add a computer to look on' });
+    const addBtn = el('button', { class: 'tab', textContent: 'Add' });
+    const run = async () => {
+      status.textContent = 'Looking…';
+      const { scanLan } = await import('../game/lan.ts');
+      const { games, blocked } = await scanLan();
+      status.textContent = `${games.length} found`;
+      list.replaceChildren(
+        ...(games.length
+          ? games.map((g) => {
+              const join = el('button', { class: 'primary', textContent: 'Join' });
+              join.addEventListener('click', () => this.hooks.playOnline(g.url, this.displayName));
+              return el('div', { class: 'gb-row lan-row' }, el('div', { class: 'gb-name' }, el('b', { textContent: g.info.name }), el('small', { textContent: `${g.url.replace(/^ws:\/\//, '')} · ${MODE_LABEL[g.info.mode] ?? g.info.mode}` })), el('span', { class: 'gb-map', textContent: g.info.map }), el('span', { class: 'gb-players', textContent: `${g.info.players} + ${g.info.bots} bots` }), join);
+            })
+          : [el('p', { class: 'gb-empty', textContent: 'No servers found. Start one with `pnpm dev:server` (it prints its LAN address), add that computer above, or run a community hub on your network (`pnpm dev:hub`) to search the whole network.' })]),
+        ...(blocked ? [el('p', { class: 'hint', textContent: 'This page is on https, so it can only reach servers on this computer directly; open the game over http on your network (or run a hub) to see the others.' })] : []),
+      );
+    };
+    addBtn.addEventListener('click', () => {
+      const v = add.value.trim();
+      if (!v) return;
+      void import('../game/lan.ts').then(({ saveLanHosts, savedLanHosts }) => {
+        saveLanHosts([...savedLanHosts(), v]);
+        add.value = '';
+        void run();
+      });
+    });
+    scan.addEventListener('click', () => void run());
+    void run();
+    return el('div', { class: 'form panel lan-panel' }, el('div', { class: 'gb-top' }, el('h4', { textContent: 'On your network (LAN)' }), status, scan), list, el('div', { class: 'gb-hub' }, add, addBtn));
   }
 
   /** Public games players are hosting from their browsers (Host game → List in the game browser). */

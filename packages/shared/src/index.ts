@@ -35,6 +35,7 @@ export * from './protocol.ts';
 export * from './net/clientMessages.ts';
 export * from './net/lobby.ts';
 export * from './net/interest.ts';
+export * from './net/lan.ts';
 export * from './bots/profile.ts';
 export * from './editor/commands.ts';
 export * from './editor/operations.ts';

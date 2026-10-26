@@ -21,9 +21,14 @@ const server = await startServer({
   botTakeBack: env.BOT_TAKEBACK !== '0',
   // LEADERS=on (team leaders) or LEADERS=vip (Leader variant: downing a leader scores extra).
   leaders: env.LEADERS === 'vip' ? 'vip' : env.LEADERS === 'on' ? true : undefined,
+  name: env.SERVER_NAME,
+  // LAN_DISCOVERY=0 stops answering LAN discovery broadcasts (UDP 7787).
+  lanDiscovery: env.LAN_DISCOVERY !== '0',
   onStats: env.QUIET_STATS ? undefined : (line) => console.log(`[stats] ${line}`),
 });
 console.log(`Tile Trigger server listening on ws://localhost:${server.port}`);
+const lan = server.info().addresses.filter((a) => !a.includes('localhost'));
+if (lan.length) console.log(`On your network, join at: ${lan.join('  ')}  (Online → LAN finds it too)`);
 
 const shutdown = () => {
   void server.close().then(() => process.exit(0));

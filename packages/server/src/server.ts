@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { WebSocketServer, type WebSocket } from 'ws';
 import {
@@ -21,9 +22,11 @@ import {
   type MapDocument,
   type MatchRules,
   type GameMode,
+  type ServerInfo,
   type ServerMessage,
 } from '@tiletrigger/shared';
 import { BotFiller, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
+import { answerDiscovery, lanAddresses } from './lan.ts';
 import { StatsWindow } from './stats.ts';
 
 export interface ServerOptions {
@@ -46,11 +49,17 @@ export interface ServerOptions {
   startGate?: boolean;
   /** Called once per second with instrumentation. */
   onStats?: (line: string) => void;
+  /** Server name in LAN discovery and /info (default "<map> server"). */
+  name?: string;
+  /** Answer LAN discovery broadcasts (UDP, LAN_DISCOVERY_PORT unless a port is given). Off by default; main.ts turns it on. */
+  lanDiscovery?: boolean | number;
 }
 
 export interface RunningServer {
   port: number;
   match: Match;
+  /** What /info and LAN discovery say about this server right now. */
+  info(): ServerInfo;
   close(): Promise<void>;
 }
 
@@ -99,7 +108,22 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
 
   // Snapshots are JSON with lots of repetition: compressing them cuts the traffic several times over
   // (browsers decompress on their own). Small messages aren't worth it.
-  const wss = new WebSocketServer({ port: opts.port, host: opts.host, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
+  // One port for both: WebSocket play, and plain HTTP GET /info so browsers on the LAN can find the game.
+  const http = createServer((req, res) => {
+    const path = new URL(req.url ?? '/', 'http://server').pathname;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Chrome asks before a public page may reach a private address (Private Network Access).
+    res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Cache-Control', 'no-store');
+    if (req.method === 'OPTIONS') return void res.writeHead(204).end();
+    if (req.method === 'GET' && path === '/info') {
+      res.setHeader('Content-Type', 'application/json');
+      return void res.end(JSON.stringify(info()));
+    }
+    res.writeHead(404, { 'Content-Type': 'text/plain' }).end('Tile Trigger game server: join with the game (Online → Server), or GET /info.');
+  });
+  const wss = new WebSocketServer({ server: http, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
 
   wss.on('connection', (ws) => {
     const client: Client = { ws, slot: null, bytesOut: 0 };
@@ -136,6 +160,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           map,
           rules: match.rules,
           sc: match.scenario.fullState(),
+          ...(lan.length ? { lan } : {}),
         });
         broadcast({ t: 'roster', players: match.roster() });
       } else if (msg.t === 'input' && client.slot !== null) {
@@ -158,8 +183,27 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     });
   });
 
-  await new Promise<void>((resolve) => wss.once('listening', () => resolve()));
-  const port = (wss.address() as AddressInfo).port;
+  await new Promise<void>((resolve, reject) => {
+    http.once('error', reject);
+    http.listen(opts.port, opts.host, () => resolve());
+  });
+  const port = (http.address() as AddressInfo).port;
+  const lan = lanAddresses(port);
+  function info(): ServerInfo {
+    const all = match.combatants();
+    return {
+      game: 'tiletrigger',
+      version: PROTOCOL_VERSION,
+      name: opts.name ?? `${map.metadata.name} server`,
+      map: map.metadata.name,
+      mode: match.rules.mode,
+      players: all.filter((c) => c.kind === 'human').length,
+      bots: all.filter((c) => c.kind === 'bot').length,
+      max: MAX_PLAYER_SLOTS,
+      addresses: lan.length ? lan : [`ws://localhost:${port}`],
+    };
+  }
+  const discovery = opts.lanDiscovery ? await answerDiscovery(info, typeof opts.lanDiscovery === 'number' ? opts.lanDiscovery : undefined).catch((e: Error) => (console.warn(`[lan] no LAN discovery: ${e.message}`), null)) : null;
 
   const sendSnapshots = () => {
     const ev = pendingEvents;
@@ -224,11 +268,14 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   return {
     port,
     match,
+    info,
     close: async () => {
       stopped = true;
       clearTimeout(timer);
+      discovery?.close();
       for (const c of clients) c.ws.terminate();
       await new Promise<void>((resolve) => wss.close(() => resolve()));
+      await new Promise<void>((resolve) => http.close(() => resolve()));
       match.destroy();
     },
   };
