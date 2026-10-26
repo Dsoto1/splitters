@@ -81,6 +81,8 @@ folder can sit directly in it or one level down), and run:
 | Kenney Modular Space Kit, Space Kit and City Kit Roads, each unzipped into a folder named after its zip (`kenney_modular-space-kit_1.0`, `kenney_space-kit`, `kenney_city-kit-roads`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the Orbital Station and Neon Megacity `os_*` / `nc_*` kit props in `public/props`, `content/props.lock.json`, `shared/src/content/props.generated.ts` |
 | Kenney Retro Urban Kit, City Kit (Industrial), Train Kit (`kenney_retro-urban-kit`, `kenney_city-kit-industrial_2.0`, `kenney_train-kit`, the zips from kenney.nl unzipped) | `node tools/content/prepare-props.mjs --downloads <dir>` | the Military Compound and Frontier Dust Kenney props in `public/props`, `content/props.lock.json`, `shared/src/content/props.generated.ts` |
 | Kenney City Kit (Commercial) (`kenney_city-kit-commercial_2.1`) | `node tools/content/prepare-packs.mjs --downloads <dir>` | the Neon Megacity towers in `public/packs`, `content/packs.lock.json` |
+| Designersoup Low Poly Car Pack 1 and its extras (`Designersoup_Low_Poly_Car_Pack_Volume_1_updated`, `extras`: each zip unzipped into a folder of that name), Low Poly Household Items (`Low_Poly_Household_Items`), Elbolillo's Gas station, Metro and House (the rars unpacked: `Gas_station`, `Metro_PSX`, `House`), loafbrr's Mines and Caves Set (`MinesAndCaves_Set_blend_gltf_fbx`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `car_*`, `ds_*`, `hh_*`, `gs_*`, `mt_*`, `hs_*` and `mc_*` props: FBX read by `tools/content/fbx.mjs`, the Elbolillo textures swapped for flat colours by `tools/content/flatten.mjs` |
+| Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 
 Then `pnpm content:build` (provenance) and `pnpm content:check`. Without
 `--downloads` (or when a pack's folder is not in the downloads directory),
@@ -112,6 +114,16 @@ and its top), `yaw` turns the piece so it faces +Z, `scale` replaces `height`
 steps toward +Z, at most 0.25 m each), `frame` (a doorway open in the middle)
 and `shell` (boxes following the footprint, for corners and curved railings),
 written as `boxes` in the prop definition.
+
+Packs with `convert: true` (FBX-only packs and one-scene sets) are read with
+`tools/content/fbx.mjs` (three.js' FBXLoader, world transforms baked in) or as
+GLB; `src` is a file, or `file#<regex>` to keep only the scene objects whose
+name (or a parent's) matches. The pack's `scale` (or the prop's) takes the
+model to metres, `yaw` turns it to face +Z, `simplify` decimates it (normals
+are dropped first and each face gets its own again), and `flatten` packs lose
+their textures for one colour per face. `maps` attaches colour maps a download leaves
+unlinked (by material name), `textureSize` keeps them as JPEGs of that size, and
+`dropVertexColors` drops painting masks exported as vertex colours. Vertices are quantized.
 
 ### Starting budgets (to be tuned by profiling)
 

@@ -1,0 +1,16 @@
+FREE - Low Poly Car Pack 1 (Volume 1, updated) and its "extras" archive
+Models by Designersoup - https://designersoup.itch.io/
+Source page: https://designersoup.itch.io/low-poly-car-pack-1
+
+License (as stated on the source page, "More information" > License):
+Creative Commons Zero v1.0 Universal (CC0 1.0)
+https://creativecommons.org/publicdomain/zero/1.0/
+The page describes the pack as free low poly vehicles "for you to use as you
+would like". Blender 2.9x / 3.0 FBX exports with one shared palette texture.
+
+Not used: "docLorean" (a homage to a film's time-machine car).
+
+Raw pack files are not kept in this repository. tools/content/prepare-props.mjs
+builds the game-ready props in packages/client/public/props from the
+extracted downloads (see docs/CONTENT_PIPELINE.md), and content/props.lock.json
+records what it wrote.

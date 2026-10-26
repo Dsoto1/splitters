@@ -1,0 +1,18 @@
+Free CC0 Guns & Explosives Pack (Guns&Explosives.rar: 19 firearms and explosives)
+Models by 3DModelsCC0 - https://3dmodelscc0.itch.io/
+Source page: https://3dmodelscc0.itch.io/free-cc0-guns-explosives-pack
+
+License (as stated on the source page and its tags): Creative Commons Zero
+v1.0 Universal (CC0 1.0), https://creativecommons.org/publicdomain/zero/1.0/
+The models were first hosted on the author's own site (3DModelsCC0, now
+closed); the author confirms in the page's comments that they modelled every
+asset they share. The download holds Cinema 4D FBX exports with separate
+Substance-style PBR maps and no licence file.
+
+Used: the anti-tank mine (the thrown mine's model). The other models are
+realistic PBR pieces that do not match the game's low-poly look; the flare
+gun is modelled broken open for loading.
+
+Raw pack files are not kept in this repository. tools/content/prepare-guns.mjs
+builds the game-ready model from the extracted download (see
+docs/CONTENT_PIPELINE.md), and content/guns.lock.json records what it wrote.

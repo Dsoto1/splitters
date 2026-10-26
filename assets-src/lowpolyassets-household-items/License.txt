@@ -1,0 +1,17 @@
+Low Poly Household Items Pack ("Over 100 game ready assets")
+Models by LowPolyAssets - https://lowpolyassets.itch.io/
+Source page: https://lowpolyassets.itch.io/low-poly-household-item-pack
+
+Terms (as stated by the author on the source page and repeated in its
+comments): the models are free to use in any project, commercial or
+personal. No licence file ships in the download (Low Poly Household
+Items.zip, FBX files made in Blender) and the page names no standard
+licence; no condition (attribution or otherwise) is attached. We credit the
+author anyway (docs/ASSET_SOURCES.md, in-game credits). Recorded as
+LicenseRef-Free-Use: a permissive grant with no conditions, accepted like
+the credit-only tier. Remove the pack from content/props.json if that
+reading is ever withdrawn.
+
+Raw pack files are not kept in this repository. tools/content/prepare-props.mjs
+builds the game-ready props from the extracted download (see
+docs/CONTENT_PIPELINE.md), and content/props.lock.json records what it wrote.

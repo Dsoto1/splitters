@@ -382,7 +382,9 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
     }
     if (!existsSync(join(ROOT, pack.licenseFile))) problems.push(`${f.file}: licence file missing (${pack.licenseFile})`);
     // `Owned`: pieces the team made itself (the Style Pack props and facades, modelled in code).
-    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$|^Owned$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
+    // `LicenseRef-Free-Use`: an author's grant to use the models in any project with no conditions at all
+    // (the household items); accepted like the credit-only tier, and credited the same way.
+    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$|^Owned$|^LicenseRef-Free-Use$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
     const path = join(ROOT, 'packages/client/public', f.file);
     if (!existsSync(path)) problems.push(`${f.file}: missing (run ${prepare})`);
     else if (createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${f.file}: does not match ${lockPath}`);
@@ -413,7 +415,7 @@ const propCount = checkLocked(
   'props',
   (f) => propManifest.packs[f.source],
   propManifest.budgets,
-  (f, pack) => (pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? [`built in code by ${pack.url}`, 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
+  (f, pack) => (pack.convert ? ['converted to glTF (FBX via three.js FBXLoader)', 'turned to face +Z, centred, stood on the ground and scaled to metres', pack.flatten ? 'photo textures replaced by one flat colour per face (no image shipped)' : 'palette texture embedded'] : pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? [`built in code by ${pack.url}`, 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
   'node tools/content/prepare-props.mjs',
 );
 const skyManifest = JSON.parse(readFileSync(join(ROOT, 'content/skies.json'), 'utf8'));
@@ -432,7 +434,16 @@ const packFileCount = checkLocked(
   (f, pack) => (pack.download ? ['fitted to whole cells (centred, stood on the ground, uniform scale)', 'colour map embedded as a palette PNG and reused as a faint emissive map (night city)'] : ['modelled in code by tools/content/prepare-packs.mjs']),
   'node tools/content/prepare-packs.mjs [--downloads <dir>]',
 );
-console.log(`checked ${textureCount} texture files, ${propCount} props, ${skyCount} skies, ${cityCount} city files and ${packFileCount} style pack files`);
+const gunsManifest = JSON.parse(readFileSync(join(ROOT, 'content/guns.json'), 'utf8'));
+const gunCount = checkLocked(
+  'content/guns.lock.json',
+  'models/guns',
+  (f) => gunsManifest.packs[f.source],
+  gunsManifest.budgets,
+  ['turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, normal map to 256 px, matte material'],
+  'node tools/content/prepare-guns.mjs --downloads <dir>',
+);
+console.log(`checked ${textureCount} texture files, ${propCount} props, ${skyCount} skies, ${cityCount} city files, ${packFileCount} style pack files and ${gunCount} gun models`);
 
 const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
 if (check) {

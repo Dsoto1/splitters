@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 20,
   "metadata": {
     "id": "fallout_lane",
     "name": "Fallout Lane",
@@ -2553,87 +2553,63 @@
       "health": 120
     },
     {
-      "id": "block_095",
+      "id": "prop_095",
       "position": [
-        13.15,
+        14,
         0,
-        26.5
+        25
       ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": 1.57,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "kind": "prop",
+      "model": "prop.car_beetle",
+      "yaw": 3.14,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "block_096",
+      "id": "prop_096",
       "position": [
-        14.85,
+        16,
         0,
-        26.5
+        -29
       ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": 1.57,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "kind": "prop",
+      "model": "prop.car_racer",
+      "yaw": 3.14,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "block_097",
+      "id": "prop_097",
       "position": [
-        13.15,
+        -28,
         0,
-        23.5
+        -1.8
       ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": 1.57,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "kind": "prop",
+      "model": "prop.car_pickup",
+      "yaw": 1.51,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
       "id": "block_098",
       "position": [
-        14.85,
-        0,
-        23.5
+        10.4,
+        -0.15,
+        20.4
       ],
       "kind": "block",
       "size": [
-        0.75,
-        0.6,
+        0.3,
+        3.15,
         0.3
       ],
-      "yaw": 1.57,
+      "yaw": 0,
       "material": "core.pbr_steel",
-      "tint": "#232323",
+      "tint": "#e8e4da",
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
@@ -2643,19 +2619,19 @@
     {
       "id": "block_099",
       "position": [
-        14,
-        0.3,
-        25
+        17.6,
+        -0.15,
+        20.4
       ],
       "kind": "block",
       "size": [
-        4.8,
-        0.65,
-        2
+        0.3,
+        3.15,
+        0.3
       ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#d0574a",
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#e8e4da",
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
@@ -2665,19 +2641,19 @@
     {
       "id": "block_100",
       "position": [
-        14,
-        0.95,
-        25.3
+        10.4,
+        -0.15,
+        29.6
       ],
       "kind": "block",
       "size": [
-        2.3,
-        0.55,
-        1.8
+        0.3,
+        3.15,
+        0.3
       ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#26323a",
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#e8e4da",
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
@@ -2687,19 +2663,19 @@
     {
       "id": "block_101",
       "position": [
-        14,
-        1.5,
-        25.3
+        17.6,
+        -0.15,
+        29.6
       ],
       "kind": "block",
       "size": [
-        2.4,
-        0.1,
-        1.85
+        0.3,
+        3.15,
+        0.3
       ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#f2efe6",
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#e8e4da",
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
@@ -2708,534 +2684,6 @@
     },
     {
       "id": "block_102",
-      "position": [
-        13.2,
-        0.95,
-        27.2
-      ],
-      "kind": "block",
-      "size": [
-        0.6,
-        0.25,
-        0.2
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#d0574a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_103",
-      "position": [
-        14.8,
-        0.95,
-        27.2
-      ],
-      "kind": "block",
-      "size": [
-        0.6,
-        0.25,
-        0.2
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#d0574a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_104",
-      "position": [
-        15.15,
-        0,
-        -27.5
-      ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": 1.57,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_105",
-      "position": [
-        16.85,
-        0,
-        -27.5
-      ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": 1.57,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_106",
-      "position": [
-        15.15,
-        0,
-        -30.5
-      ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": 1.57,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_107",
-      "position": [
-        16.85,
-        0,
-        -30.5
-      ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": 1.57,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_108",
-      "position": [
-        16,
-        0.3,
-        -29
-      ],
-      "kind": "block",
-      "size": [
-        4.8,
-        0.65,
-        2
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#6a8ab8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_109",
-      "position": [
-        16,
-        0.95,
-        -28.7
-      ],
-      "kind": "block",
-      "size": [
-        2.3,
-        0.55,
-        1.8
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#26323a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_110",
-      "position": [
-        16,
-        1.5,
-        -28.7
-      ],
-      "kind": "block",
-      "size": [
-        2.4,
-        0.1,
-        1.85
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#f2efe6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_111",
-      "position": [
-        15.2,
-        0.95,
-        -26.8
-      ],
-      "kind": "block",
-      "size": [
-        0.6,
-        0.25,
-        0.2
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#6a8ab8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_112",
-      "position": [
-        16.8,
-        0.95,
-        -26.8
-      ],
-      "kind": "block",
-      "size": [
-        0.6,
-        0.25,
-        0.2
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_gloss",
-      "tint": "#6a8ab8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_113",
-      "position": [
-        -29.45,
-        0,
-        -2.74
-      ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": -0.06,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_114",
-      "position": [
-        -29.55,
-        0,
-        -1.04
-      ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": -0.06,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_115",
-      "position": [
-        -26.45,
-        0,
-        -2.56
-      ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": -0.06,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_116",
-      "position": [
-        -26.55,
-        0,
-        -0.86
-      ],
-      "kind": "block",
-      "size": [
-        0.75,
-        0.6,
-        0.3
-      ],
-      "yaw": -0.06,
-      "material": "core.pbr_steel",
-      "tint": "#232323",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_117",
-      "position": [
-        -28,
-        0.3,
-        -1.8
-      ],
-      "kind": "block",
-      "size": [
-        4.8,
-        0.65,
-        2
-      ],
-      "yaw": -0.06,
-      "material": "core.paint_gloss",
-      "tint": "#8fb88a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_118",
-      "position": [
-        -28.3,
-        0.95,
-        -1.82
-      ],
-      "kind": "block",
-      "size": [
-        2.3,
-        0.55,
-        1.8
-      ],
-      "yaw": -0.06,
-      "material": "core.paint_gloss",
-      "tint": "#26323a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_119",
-      "position": [
-        -28.3,
-        1.5,
-        -1.82
-      ],
-      "kind": "block",
-      "size": [
-        2.4,
-        0.1,
-        1.85
-      ],
-      "yaw": -0.06,
-      "material": "core.paint_gloss",
-      "tint": "#f2efe6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_120",
-      "position": [
-        -30.15,
-        0.95,
-        -2.73
-      ],
-      "kind": "block",
-      "size": [
-        0.6,
-        0.25,
-        0.2
-      ],
-      "yaw": -0.06,
-      "material": "core.paint_gloss",
-      "tint": "#8fb88a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_121",
-      "position": [
-        -30.24,
-        0.95,
-        -1.13
-      ],
-      "kind": "block",
-      "size": [
-        0.6,
-        0.25,
-        0.2
-      ],
-      "yaw": -0.06,
-      "material": "core.paint_gloss",
-      "tint": "#8fb88a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_122",
-      "position": [
-        10.4,
-        -0.15,
-        20.4
-      ],
-      "kind": "block",
-      "size": [
-        0.3,
-        3.15,
-        0.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#e8e4da",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_123",
-      "position": [
-        17.6,
-        -0.15,
-        20.4
-      ],
-      "kind": "block",
-      "size": [
-        0.3,
-        3.15,
-        0.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#e8e4da",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_124",
-      "position": [
-        10.4,
-        -0.15,
-        29.6
-      ],
-      "kind": "block",
-      "size": [
-        0.3,
-        3.15,
-        0.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#e8e4da",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_125",
-      "position": [
-        17.6,
-        -0.15,
-        29.6
-      ],
-      "kind": "block",
-      "size": [
-        0.3,
-        3.15,
-        0.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#e8e4da",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_126",
       "position": [
         14,
         3,
@@ -3257,7 +2705,7 @@
       "health": 120
     },
     {
-      "id": "block_127",
+      "id": "block_103",
       "position": [
         30,
         -0.15,
@@ -3279,7 +2727,7 @@
       "health": 120
     },
     {
-      "id": "block_128",
+      "id": "block_104",
       "position": [
         30,
         2.6,
@@ -3301,7 +2749,7 @@
       "health": 120
     },
     {
-      "id": "block_129",
+      "id": "block_105",
       "position": [
         -30,
         -0.15,
@@ -3323,7 +2771,7 @@
       "health": 120
     },
     {
-      "id": "block_130",
+      "id": "block_106",
       "position": [
         -30,
         2.2,
@@ -3345,7 +2793,7 @@
       "health": 120
     },
     {
-      "id": "block_131",
+      "id": "block_107",
       "position": [
         -34,
         -0.2,
@@ -3367,7 +2815,7 @@
       "health": 120
     },
     {
-      "id": "block_132",
+      "id": "block_108",
       "position": [
         -12,
         -0.15,
@@ -3389,7 +2837,7 @@
       "health": 40
     },
     {
-      "id": "block_133",
+      "id": "block_109",
       "position": [
         -12,
         0.75,
@@ -3411,7 +2859,7 @@
       "health": 40
     },
     {
-      "id": "block_134",
+      "id": "block_110",
       "position": [
         -12,
         1.11,
@@ -3424,6 +2872,534 @@
         0.2
       ],
       "yaw": 0.3,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_111",
+      "position": [
+        -12,
+        1.41,
+        13
+      ],
+      "kind": "block",
+      "size": [
+        0.22,
+        0.27,
+        0.22
+      ],
+      "yaw": 0.3,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_112",
+      "position": [
+        -10.5,
+        -0.15,
+        14.2
+      ],
+      "kind": "block",
+      "size": [
+        0.38,
+        0.88,
+        0.22
+      ],
+      "yaw": -0.2,
+      "material": "core.paint_matte",
+      "tint": "#4a6ab0",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_113",
+      "position": [
+        -10.5,
+        0.75,
+        14.2
+      ],
+      "kind": "block",
+      "size": [
+        0.46,
+        0.62,
+        0.26
+      ],
+      "yaw": -0.2,
+      "material": "core.paint_matte",
+      "tint": "#4a6ab0",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_114",
+      "position": [
+        -10.5,
+        1.11,
+        14.2
+      ],
+      "kind": "block",
+      "size": [
+        0.86,
+        0.2,
+        0.2
+      ],
+      "yaw": -0.2,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_115",
+      "position": [
+        -10.5,
+        1.41,
+        14.2
+      ],
+      "kind": "block",
+      "size": [
+        0.22,
+        0.27,
+        0.22
+      ],
+      "yaw": -0.2,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_116",
+      "position": [
+        12,
+        -0.15,
+        -13
+      ],
+      "kind": "block",
+      "size": [
+        0.38,
+        0.88,
+        0.22
+      ],
+      "yaw": 3.44,
+      "material": "core.paint_matte",
+      "tint": "#3a8a5a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_117",
+      "position": [
+        12,
+        0.75,
+        -13
+      ],
+      "kind": "block",
+      "size": [
+        0.46,
+        0.62,
+        0.26
+      ],
+      "yaw": 3.44,
+      "material": "core.paint_matte",
+      "tint": "#3a8a5a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_118",
+      "position": [
+        12,
+        1.11,
+        -13
+      ],
+      "kind": "block",
+      "size": [
+        0.86,
+        0.2,
+        0.2
+      ],
+      "yaw": 3.44,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_119",
+      "position": [
+        12,
+        1.41,
+        -13
+      ],
+      "kind": "block",
+      "size": [
+        0.22,
+        0.27,
+        0.22
+      ],
+      "yaw": 3.44,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_120",
+      "position": [
+        10.5,
+        -0.15,
+        -14.2
+      ],
+      "kind": "block",
+      "size": [
+        0.38,
+        0.88,
+        0.22
+      ],
+      "yaw": 2.94,
+      "material": "core.paint_matte",
+      "tint": "#b07a3a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_121",
+      "position": [
+        10.5,
+        0.75,
+        -14.2
+      ],
+      "kind": "block",
+      "size": [
+        0.46,
+        0.62,
+        0.26
+      ],
+      "yaw": 2.94,
+      "material": "core.paint_matte",
+      "tint": "#b07a3a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_122",
+      "position": [
+        10.5,
+        1.11,
+        -14.2
+      ],
+      "kind": "block",
+      "size": [
+        0.86,
+        0.2,
+        0.2
+      ],
+      "yaw": 2.94,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_123",
+      "position": [
+        10.5,
+        1.41,
+        -14.2
+      ],
+      "kind": "block",
+      "size": [
+        0.22,
+        0.27,
+        0.22
+      ],
+      "yaw": 2.94,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_124",
+      "position": [
+        -10.5,
+        0,
+        25.5
+      ],
+      "kind": "block",
+      "size": [
+        0.38,
+        0.88,
+        0.22
+      ],
+      "yaw": 3.14,
+      "material": "core.paint_matte",
+      "tint": "#7a4a8a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_125",
+      "position": [
+        -10.5,
+        0.9,
+        25.5
+      ],
+      "kind": "block",
+      "size": [
+        0.46,
+        0.62,
+        0.26
+      ],
+      "yaw": 3.14,
+      "material": "core.paint_matte",
+      "tint": "#7a4a8a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_126",
+      "position": [
+        -10.5,
+        1.26,
+        25.5
+      ],
+      "kind": "block",
+      "size": [
+        0.86,
+        0.2,
+        0.2
+      ],
+      "yaw": 3.14,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_127",
+      "position": [
+        -10.5,
+        1.56,
+        25.5
+      ],
+      "kind": "block",
+      "size": [
+        0.22,
+        0.27,
+        0.22
+      ],
+      "yaw": 3.14,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_128",
+      "position": [
+        2.6,
+        0,
+        -26.6
+      ],
+      "kind": "block",
+      "size": [
+        0.38,
+        0.88,
+        0.22
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#8a3a4a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_129",
+      "position": [
+        2.6,
+        0.9,
+        -26.6
+      ],
+      "kind": "block",
+      "size": [
+        0.46,
+        0.62,
+        0.26
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#8a3a4a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_130",
+      "position": [
+        2.6,
+        1.26,
+        -26.6
+      ],
+      "kind": "block",
+      "size": [
+        0.86,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_131",
+      "position": [
+        2.6,
+        1.56,
+        -26.6
+      ],
+      "kind": "block",
+      "size": [
+        0.22,
+        0.27,
+        0.22
+      ],
+      "yaw": 0,
+      "material": "core.paint_matte",
+      "tint": "#e2cfb4",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_132",
+      "position": [
+        -24,
+        -0.15,
+        7.4
+      ],
+      "kind": "block",
+      "size": [
+        0.38,
+        0.88,
+        0.22
+      ],
+      "yaw": 1.57,
+      "material": "core.paint_matte",
+      "tint": "#5a5a5a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_133",
+      "position": [
+        -24,
+        0.75,
+        7.4
+      ],
+      "kind": "block",
+      "size": [
+        0.46,
+        0.62,
+        0.26
+      ],
+      "yaw": 1.57,
+      "material": "core.paint_matte",
+      "tint": "#5a5a5a",
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 40
+    },
+    {
+      "id": "block_134",
+      "position": [
+        -24,
+        1.11,
+        7.4
+      ],
+      "kind": "block",
+      "size": [
+        0.86,
+        0.2,
+        0.2
+      ],
+      "yaw": 1.57,
       "material": "core.paint_matte",
       "tint": "#e2cfb4",
       "behaviour": "breakable",
@@ -3435,9 +3411,9 @@
     {
       "id": "block_135",
       "position": [
-        -12,
+        -24,
         1.41,
-        13
+        7.4
       ],
       "kind": "block",
       "size": [
@@ -3445,7 +3421,7 @@
         0.27,
         0.22
       ],
-      "yaw": 0.3,
+      "yaw": 1.57,
       "material": "core.paint_matte",
       "tint": "#e2cfb4",
       "behaviour": "breakable",
@@ -3457,9 +3433,9 @@
     {
       "id": "block_136",
       "position": [
-        -10.5,
-        -0.15,
-        14.2
+        24,
+        0,
+        -7.6
       ],
       "kind": "block",
       "size": [
@@ -3467,9 +3443,9 @@
         0.88,
         0.22
       ],
-      "yaw": -0.2,
+      "yaw": -1.57,
       "material": "core.paint_matte",
-      "tint": "#4a6ab0",
+      "tint": "#2a4a6a",
       "behaviour": "breakable",
       "trigger": "step",
       "delaySeconds": 0.8,
@@ -3479,9 +3455,9 @@
     {
       "id": "block_137",
       "position": [
-        -10.5,
-        0.75,
-        14.2
+        24,
+        0.9,
+        -7.6
       ],
       "kind": "block",
       "size": [
@@ -3489,9 +3465,9 @@
         0.62,
         0.26
       ],
-      "yaw": -0.2,
+      "yaw": -1.57,
       "material": "core.paint_matte",
-      "tint": "#4a6ab0",
+      "tint": "#2a4a6a",
       "behaviour": "breakable",
       "trigger": "step",
       "delaySeconds": 0.8,
@@ -3501,9 +3477,9 @@
     {
       "id": "block_138",
       "position": [
-        -10.5,
-        1.11,
-        14.2
+        24,
+        1.26,
+        -7.6
       ],
       "kind": "block",
       "size": [
@@ -3511,7 +3487,7 @@
         0.2,
         0.2
       ],
-      "yaw": -0.2,
+      "yaw": -1.57,
       "material": "core.paint_matte",
       "tint": "#e2cfb4",
       "behaviour": "breakable",
@@ -3523,9 +3499,9 @@
     {
       "id": "block_139",
       "position": [
-        -10.5,
-        1.41,
-        14.2
+        24,
+        1.56,
+        -7.6
       ],
       "kind": "block",
       "size": [
@@ -3533,7 +3509,7 @@
         0.27,
         0.22
       ],
-      "yaw": -0.2,
+      "yaw": -1.57,
       "material": "core.paint_matte",
       "tint": "#e2cfb4",
       "behaviour": "breakable",
@@ -3544,534 +3520,6 @@
     },
     {
       "id": "block_140",
-      "position": [
-        12,
-        -0.15,
-        -13
-      ],
-      "kind": "block",
-      "size": [
-        0.38,
-        0.88,
-        0.22
-      ],
-      "yaw": 3.44,
-      "material": "core.paint_matte",
-      "tint": "#3a8a5a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_141",
-      "position": [
-        12,
-        0.75,
-        -13
-      ],
-      "kind": "block",
-      "size": [
-        0.46,
-        0.62,
-        0.26
-      ],
-      "yaw": 3.44,
-      "material": "core.paint_matte",
-      "tint": "#3a8a5a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_142",
-      "position": [
-        12,
-        1.11,
-        -13
-      ],
-      "kind": "block",
-      "size": [
-        0.86,
-        0.2,
-        0.2
-      ],
-      "yaw": 3.44,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_143",
-      "position": [
-        12,
-        1.41,
-        -13
-      ],
-      "kind": "block",
-      "size": [
-        0.22,
-        0.27,
-        0.22
-      ],
-      "yaw": 3.44,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_144",
-      "position": [
-        10.5,
-        -0.15,
-        -14.2
-      ],
-      "kind": "block",
-      "size": [
-        0.38,
-        0.88,
-        0.22
-      ],
-      "yaw": 2.94,
-      "material": "core.paint_matte",
-      "tint": "#b07a3a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_145",
-      "position": [
-        10.5,
-        0.75,
-        -14.2
-      ],
-      "kind": "block",
-      "size": [
-        0.46,
-        0.62,
-        0.26
-      ],
-      "yaw": 2.94,
-      "material": "core.paint_matte",
-      "tint": "#b07a3a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_146",
-      "position": [
-        10.5,
-        1.11,
-        -14.2
-      ],
-      "kind": "block",
-      "size": [
-        0.86,
-        0.2,
-        0.2
-      ],
-      "yaw": 2.94,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_147",
-      "position": [
-        10.5,
-        1.41,
-        -14.2
-      ],
-      "kind": "block",
-      "size": [
-        0.22,
-        0.27,
-        0.22
-      ],
-      "yaw": 2.94,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_148",
-      "position": [
-        -10.5,
-        0,
-        25.5
-      ],
-      "kind": "block",
-      "size": [
-        0.38,
-        0.88,
-        0.22
-      ],
-      "yaw": 3.14,
-      "material": "core.paint_matte",
-      "tint": "#7a4a8a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_149",
-      "position": [
-        -10.5,
-        0.9,
-        25.5
-      ],
-      "kind": "block",
-      "size": [
-        0.46,
-        0.62,
-        0.26
-      ],
-      "yaw": 3.14,
-      "material": "core.paint_matte",
-      "tint": "#7a4a8a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_150",
-      "position": [
-        -10.5,
-        1.26,
-        25.5
-      ],
-      "kind": "block",
-      "size": [
-        0.86,
-        0.2,
-        0.2
-      ],
-      "yaw": 3.14,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_151",
-      "position": [
-        -10.5,
-        1.56,
-        25.5
-      ],
-      "kind": "block",
-      "size": [
-        0.22,
-        0.27,
-        0.22
-      ],
-      "yaw": 3.14,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_152",
-      "position": [
-        2.6,
-        0,
-        -26.6
-      ],
-      "kind": "block",
-      "size": [
-        0.38,
-        0.88,
-        0.22
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#8a3a4a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_153",
-      "position": [
-        2.6,
-        0.9,
-        -26.6
-      ],
-      "kind": "block",
-      "size": [
-        0.46,
-        0.62,
-        0.26
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#8a3a4a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_154",
-      "position": [
-        2.6,
-        1.26,
-        -26.6
-      ],
-      "kind": "block",
-      "size": [
-        0.86,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_155",
-      "position": [
-        2.6,
-        1.56,
-        -26.6
-      ],
-      "kind": "block",
-      "size": [
-        0.22,
-        0.27,
-        0.22
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_156",
-      "position": [
-        -24,
-        -0.15,
-        7.4
-      ],
-      "kind": "block",
-      "size": [
-        0.38,
-        0.88,
-        0.22
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_matte",
-      "tint": "#5a5a5a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_157",
-      "position": [
-        -24,
-        0.75,
-        7.4
-      ],
-      "kind": "block",
-      "size": [
-        0.46,
-        0.62,
-        0.26
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_matte",
-      "tint": "#5a5a5a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_158",
-      "position": [
-        -24,
-        1.11,
-        7.4
-      ],
-      "kind": "block",
-      "size": [
-        0.86,
-        0.2,
-        0.2
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_159",
-      "position": [
-        -24,
-        1.41,
-        7.4
-      ],
-      "kind": "block",
-      "size": [
-        0.22,
-        0.27,
-        0.22
-      ],
-      "yaw": 1.57,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_160",
-      "position": [
-        24,
-        0,
-        -7.6
-      ],
-      "kind": "block",
-      "size": [
-        0.38,
-        0.88,
-        0.22
-      ],
-      "yaw": -1.57,
-      "material": "core.paint_matte",
-      "tint": "#2a4a6a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_161",
-      "position": [
-        24,
-        0.9,
-        -7.6
-      ],
-      "kind": "block",
-      "size": [
-        0.46,
-        0.62,
-        0.26
-      ],
-      "yaw": -1.57,
-      "material": "core.paint_matte",
-      "tint": "#2a4a6a",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_162",
-      "position": [
-        24,
-        1.26,
-        -7.6
-      ],
-      "kind": "block",
-      "size": [
-        0.86,
-        0.2,
-        0.2
-      ],
-      "yaw": -1.57,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_163",
-      "position": [
-        24,
-        1.56,
-        -7.6
-      ],
-      "kind": "block",
-      "size": [
-        0.22,
-        0.27,
-        0.22
-      ],
-      "yaw": -1.57,
-      "material": "core.paint_matte",
-      "tint": "#e2cfb4",
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 40
-    },
-    {
-      "id": "block_164",
       "position": [
         2.5,
         4,
@@ -4093,7 +3541,7 @@
       "health": 40
     },
     {
-      "id": "block_165",
+      "id": "block_141",
       "position": [
         2.5,
         4.9,
@@ -4115,7 +3563,7 @@
       "health": 40
     },
     {
-      "id": "block_166",
+      "id": "block_142",
       "position": [
         2.5,
         5.26,
@@ -4137,7 +3585,7 @@
       "health": 40
     },
     {
-      "id": "block_167",
+      "id": "block_143",
       "position": [
         2.5,
         5.56,
@@ -4159,7 +3607,7 @@
       "health": 40
     },
     {
-      "id": "block_168",
+      "id": "block_144",
       "position": [
         -18,
         -0.15,
@@ -4181,7 +3629,7 @@
       "health": 40
     },
     {
-      "id": "block_169",
+      "id": "block_145",
       "position": [
         -18,
         0.75,
@@ -4203,7 +3651,7 @@
       "health": 40
     },
     {
-      "id": "block_170",
+      "id": "block_146",
       "position": [
         -18,
         1.11,
@@ -4225,7 +3673,7 @@
       "health": 40
     },
     {
-      "id": "block_171",
+      "id": "block_147",
       "position": [
         -18,
         1.41,
@@ -4247,7 +3695,7 @@
       "health": 40
     },
     {
-      "id": "prop_172",
+      "id": "prop_148",
       "position": [
         -16.8,
         0,
@@ -4261,7 +3709,7 @@
       "tint": null
     },
     {
-      "id": "prop_173",
+      "id": "prop_149",
       "position": [
         -14.8,
         0,
@@ -4275,7 +3723,7 @@
       "tint": null
     },
     {
-      "id": "prop_174",
+      "id": "prop_150",
       "position": [
         -17.8,
         0,
@@ -4289,7 +3737,7 @@
       "tint": null
     },
     {
-      "id": "prop_175",
+      "id": "prop_151",
       "position": [
         -19.5,
         0,
@@ -4303,7 +3751,7 @@
       "tint": null
     },
     {
-      "id": "prop_176",
+      "id": "prop_152",
       "position": [
         -19.5,
         0.6,
@@ -4317,7 +3765,7 @@
       "tint": null
     },
     {
-      "id": "prop_177",
+      "id": "prop_153",
       "position": [
         -19.3,
         0,
@@ -4331,7 +3779,7 @@
       "tint": null
     },
     {
-      "id": "prop_178",
+      "id": "prop_154",
       "position": [
         -12.8,
         0,
@@ -4345,7 +3793,7 @@
       "tint": null
     },
     {
-      "id": "prop_179",
+      "id": "prop_155",
       "position": [
         -4.9,
         0,
@@ -4359,7 +3807,7 @@
       "tint": null
     },
     {
-      "id": "prop_180",
+      "id": "prop_156",
       "position": [
         -10.6,
         0,
@@ -4373,7 +3821,7 @@
       "tint": null
     },
     {
-      "id": "prop_181",
+      "id": "prop_157",
       "position": [
         -5.2,
         0,
@@ -4387,7 +3835,7 @@
       "tint": null
     },
     {
-      "id": "prop_182",
+      "id": "prop_158",
       "position": [
         -2.2,
         0,
@@ -4401,7 +3849,7 @@
       "tint": null
     },
     {
-      "id": "prop_183",
+      "id": "prop_159",
       "position": [
         -2.85,
         0,
@@ -4415,7 +3863,7 @@
       "tint": null
     },
     {
-      "id": "prop_184",
+      "id": "prop_160",
       "position": [
         2.1,
         0,
@@ -4429,7 +3877,7 @@
       "tint": null
     },
     {
-      "id": "prop_185",
+      "id": "prop_161",
       "position": [
         2.7,
         0,
@@ -4443,7 +3891,7 @@
       "tint": null
     },
     {
-      "id": "prop_186",
+      "id": "prop_162",
       "position": [
         3,
         0,
@@ -4457,7 +3905,7 @@
       "tint": null
     },
     {
-      "id": "prop_187",
+      "id": "prop_163",
       "position": [
         -3.3,
         0,
@@ -4471,7 +3919,7 @@
       "tint": null
     },
     {
-      "id": "prop_188",
+      "id": "prop_164",
       "position": [
         0,
         0,
@@ -4485,7 +3933,7 @@
       "tint": null
     },
     {
-      "id": "prop_189",
+      "id": "prop_165",
       "position": [
         -1.75,
         0,
@@ -4499,7 +3947,7 @@
       "tint": null
     },
     {
-      "id": "prop_190",
+      "id": "prop_166",
       "position": [
         1.75,
         0,
@@ -4513,7 +3961,7 @@
       "tint": null
     },
     {
-      "id": "prop_191",
+      "id": "prop_167",
       "position": [
         -16.5,
         0,
@@ -4527,7 +3975,7 @@
       "tint": null
     },
     {
-      "id": "prop_192",
+      "id": "prop_168",
       "position": [
         -17.4,
         0,
@@ -4541,7 +3989,7 @@
       "tint": null
     },
     {
-      "id": "prop_193",
+      "id": "prop_169",
       "position": [
         -17.4,
         0,
@@ -4555,7 +4003,7 @@
       "tint": null
     },
     {
-      "id": "prop_194",
+      "id": "prop_170",
       "position": [
         -15.6,
         0,
@@ -4569,7 +4017,7 @@
       "tint": null
     },
     {
-      "id": "prop_195",
+      "id": "prop_171",
       "position": [
         -15.6,
         0,
@@ -4583,7 +4031,7 @@
       "tint": null
     },
     {
-      "id": "prop_196",
+      "id": "prop_172",
       "position": [
         -19.6,
         0,
@@ -4597,7 +4045,7 @@
       "tint": null
     },
     {
-      "id": "prop_197",
+      "id": "prop_173",
       "position": [
         -19.2,
         0,
@@ -4611,7 +4059,7 @@
       "tint": null
     },
     {
-      "id": "prop_198",
+      "id": "prop_174",
       "position": [
         -3.3,
         0,
@@ -4625,7 +4073,7 @@
       "tint": null
     },
     {
-      "id": "prop_199",
+      "id": "prop_175",
       "position": [
         -3.3,
         0,
@@ -4639,7 +4087,7 @@
       "tint": null
     },
     {
-      "id": "prop_200",
+      "id": "prop_176",
       "position": [
         -2.4,
         0,
@@ -4653,7 +4101,7 @@
       "tint": null
     },
     {
-      "id": "prop_201",
+      "id": "prop_177",
       "position": [
         3.2,
         0,
@@ -4667,7 +4115,7 @@
       "tint": null
     },
     {
-      "id": "prop_202",
+      "id": "prop_178",
       "position": [
         -17.9,
         4,
@@ -4681,7 +4129,7 @@
       "tint": null
     },
     {
-      "id": "prop_203",
+      "id": "prop_179",
       "position": [
         -19.3,
         4,
@@ -4695,7 +4143,7 @@
       "tint": null
     },
     {
-      "id": "prop_204",
+      "id": "prop_180",
       "position": [
         -13.8,
         4,
@@ -4709,7 +4157,7 @@
       "tint": null
     },
     {
-      "id": "prop_205",
+      "id": "prop_181",
       "position": [
         -12.7,
         4,
@@ -4723,7 +4171,7 @@
       "tint": null
     },
     {
-      "id": "prop_206",
+      "id": "prop_182",
       "position": [
         -10.2,
         4,
@@ -4737,7 +4185,7 @@
       "tint": null
     },
     {
-      "id": "prop_207",
+      "id": "prop_183",
       "position": [
         -8.7,
         4,
@@ -4751,7 +4199,7 @@
       "tint": null
     },
     {
-      "id": "prop_208",
+      "id": "prop_184",
       "position": [
         -6.25,
         4,
@@ -4765,7 +4213,7 @@
       "tint": null
     },
     {
-      "id": "prop_209",
+      "id": "prop_185",
       "position": [
         2.8,
         4,
@@ -4779,7 +4227,7 @@
       "tint": null
     },
     {
-      "id": "prop_210",
+      "id": "prop_186",
       "position": [
         -2.8,
         4,
@@ -4793,7 +4241,7 @@
       "tint": null
     },
     {
-      "id": "prop_211",
+      "id": "prop_187",
       "position": [
         -2.8,
         4.6,
@@ -4807,7 +4255,7 @@
       "tint": null
     },
     {
-      "id": "prop_212",
+      "id": "prop_188",
       "position": [
         -19.3,
         4,
@@ -4821,7 +4269,7 @@
       "tint": null
     },
     {
-      "id": "prop_213",
+      "id": "prop_189",
       "position": [
         -12.8,
         4,
@@ -4835,7 +4283,7 @@
       "tint": null
     },
     {
-      "id": "prop_214",
+      "id": "prop_190",
       "position": [
         -14.6,
         4,
@@ -4849,7 +4297,7 @@
       "tint": null
     },
     {
-      "id": "prop_215",
+      "id": "prop_191",
       "position": [
         3.2,
         4,
@@ -4863,7 +4311,7 @@
       "tint": null
     },
     {
-      "id": "prop_216",
+      "id": "prop_192",
       "position": [
         3.6,
         4,
@@ -4877,7 +4325,7 @@
       "tint": null
     },
     {
-      "id": "prop_217",
+      "id": "prop_193",
       "position": [
         -2.4,
         0,
@@ -4891,7 +4339,7 @@
       "tint": null
     },
     {
-      "id": "prop_218",
+      "id": "prop_194",
       "position": [
         -2.6,
         0,
@@ -4905,7 +4353,7 @@
       "tint": null
     },
     {
-      "id": "prop_219",
+      "id": "prop_195",
       "position": [
         1.8,
         0,
@@ -4919,7 +4367,7 @@
       "tint": null
     },
     {
-      "id": "prop_220",
+      "id": "prop_196",
       "position": [
         -2.6,
         0,
@@ -4933,7 +4381,7 @@
       "tint": null
     },
     {
-      "id": "prop_221",
+      "id": "prop_197",
       "position": [
         -2.6,
         0.6,
@@ -4947,7 +4395,7 @@
       "tint": null
     },
     {
-      "id": "prop_222",
+      "id": "prop_198",
       "position": [
         -3.5,
         0,
@@ -4961,7 +4409,7 @@
       "tint": null
     },
     {
-      "id": "prop_223",
+      "id": "prop_199",
       "position": [
         3.3,
         0,
@@ -4975,7 +4423,7 @@
       "tint": null
     },
     {
-      "id": "prop_224",
+      "id": "prop_200",
       "position": [
         5.8,
         0,
@@ -4989,7 +4437,7 @@
       "tint": null
     },
     {
-      "id": "prop_225",
+      "id": "prop_201",
       "position": [
         10.1,
         0,
@@ -5003,7 +4451,7 @@
       "tint": null
     },
     {
-      "id": "prop_226",
+      "id": "prop_202",
       "position": [
         10.7,
         0,
@@ -5017,7 +4465,7 @@
       "tint": null
     },
     {
-      "id": "prop_227",
+      "id": "prop_203",
       "position": [
         11.3,
         0,
@@ -5031,7 +4479,7 @@
       "tint": null
     },
     {
-      "id": "prop_228",
+      "id": "prop_204",
       "position": [
         8,
         0,
@@ -5045,7 +4493,7 @@
       "tint": null
     },
     {
-      "id": "prop_229",
+      "id": "prop_205",
       "position": [
         6.25,
         0,
@@ -5059,7 +4507,7 @@
       "tint": null
     },
     {
-      "id": "prop_230",
+      "id": "prop_206",
       "position": [
         9.75,
         0,
@@ -5073,7 +4521,7 @@
       "tint": null
     },
     {
-      "id": "prop_231",
+      "id": "prop_207",
       "position": [
         -2.2,
         0,
@@ -5087,7 +4535,7 @@
       "tint": null
     },
     {
-      "id": "prop_232",
+      "id": "prop_208",
       "position": [
         -0.3,
         0,
@@ -5101,7 +4549,7 @@
       "tint": null
     },
     {
-      "id": "prop_233",
+      "id": "prop_209",
       "position": [
         2.6,
         0,
@@ -5115,7 +4563,7 @@
       "tint": null
     },
     {
-      "id": "prop_234",
+      "id": "prop_210",
       "position": [
         5.4,
         0,
@@ -5129,7 +4577,7 @@
       "tint": null
     },
     {
-      "id": "prop_235",
+      "id": "prop_211",
       "position": [
         11,
         0,
@@ -5143,7 +4591,7 @@
       "tint": null
     },
     {
-      "id": "prop_236",
+      "id": "prop_212",
       "position": [
         11.3,
         0,
@@ -5157,7 +4605,7 @@
       "tint": null
     },
     {
-      "id": "prop_237",
+      "id": "prop_213",
       "position": [
         11.4,
         0,
@@ -5171,7 +4619,7 @@
       "tint": null
     },
     {
-      "id": "prop_238",
+      "id": "prop_214",
       "position": [
         19.2,
         0,
@@ -5185,7 +4633,7 @@
       "tint": null
     },
     {
-      "id": "prop_239",
+      "id": "prop_215",
       "position": [
         19,
         0,
@@ -5199,7 +4647,7 @@
       "tint": null
     },
     {
-      "id": "prop_240",
+      "id": "prop_216",
       "position": [
         12.9,
         0,
@@ -5213,7 +4661,7 @@
       "tint": null
     },
     {
-      "id": "prop_241",
+      "id": "prop_217",
       "position": [
         19.2,
         0,
@@ -5227,7 +4675,7 @@
       "tint": null
     },
     {
-      "id": "prop_242",
+      "id": "prop_218",
       "position": [
         -24,
         -0.18,
@@ -5241,7 +4689,7 @@
       "tint": null
     },
     {
-      "id": "prop_243",
+      "id": "prop_219",
       "position": [
         24,
         -0.18,
@@ -5255,7 +4703,7 @@
       "tint": null
     },
     {
-      "id": "prop_244",
+      "id": "prop_220",
       "position": [
         26,
         -0.18,
@@ -5269,7 +4717,7 @@
       "tint": null
     },
     {
-      "id": "prop_245",
+      "id": "prop_221",
       "position": [
         -26,
         -0.18,
@@ -5283,7 +4731,7 @@
       "tint": null
     },
     {
-      "id": "prop_246",
+      "id": "prop_222",
       "position": [
         -17,
         -0.18,
@@ -5297,7 +4745,7 @@
       "tint": null
     },
     {
-      "id": "prop_247",
+      "id": "prop_223",
       "position": [
         3,
         -0.18,
@@ -5311,7 +4759,7 @@
       "tint": null
     },
     {
-      "id": "prop_248",
+      "id": "prop_224",
       "position": [
         17,
         0,
@@ -5325,7 +4773,7 @@
       "tint": null
     },
     {
-      "id": "prop_249",
+      "id": "prop_225",
       "position": [
         -3,
         -0.18,
@@ -5339,7 +4787,7 @@
       "tint": null
     },
     {
-      "id": "prop_250",
+      "id": "prop_226",
       "position": [
         -34,
         -0.18,
@@ -5353,7 +4801,7 @@
       "tint": null
     },
     {
-      "id": "prop_251",
+      "id": "prop_227",
       "position": [
         34,
         -0.18,
@@ -5367,7 +4815,7 @@
       "tint": null
     },
     {
-      "id": "prop_252",
+      "id": "prop_228",
       "position": [
         -26,
         -0.18,
@@ -5381,7 +4829,7 @@
       "tint": null
     },
     {
-      "id": "prop_253",
+      "id": "prop_229",
       "position": [
         26,
         -0.18,
@@ -5395,7 +4843,7 @@
       "tint": null
     },
     {
-      "id": "prop_254",
+      "id": "prop_230",
       "position": [
         -2,
         -0.18,
@@ -5409,7 +4857,7 @@
       "tint": null
     },
     {
-      "id": "prop_255",
+      "id": "prop_231",
       "position": [
         2,
         -0.18,
@@ -5423,7 +4871,7 @@
       "tint": null
     },
     {
-      "id": "prop_256",
+      "id": "prop_232",
       "position": [
         -12,
         -0.18,
@@ -5437,7 +4885,7 @@
       "tint": null
     },
     {
-      "id": "prop_257",
+      "id": "prop_233",
       "position": [
         -12,
         -0.18,
@@ -5451,7 +4899,7 @@
       "tint": null
     },
     {
-      "id": "prop_258",
+      "id": "prop_234",
       "position": [
         -12,
         -0.18,
@@ -5465,7 +4913,7 @@
       "tint": null
     },
     {
-      "id": "prop_259",
+      "id": "prop_235",
       "position": [
         -12,
         -0.18,
@@ -5479,7 +4927,7 @@
       "tint": null
     },
     {
-      "id": "prop_260",
+      "id": "prop_236",
       "position": [
         12,
         -0.18,
@@ -5493,7 +4941,7 @@
       "tint": null
     },
     {
-      "id": "prop_261",
+      "id": "prop_237",
       "position": [
         12,
         -0.18,
@@ -5507,7 +4955,7 @@
       "tint": null
     },
     {
-      "id": "prop_262",
+      "id": "prop_238",
       "position": [
         12,
         -0.18,
@@ -5521,7 +4969,7 @@
       "tint": null
     },
     {
-      "id": "prop_263",
+      "id": "prop_239",
       "position": [
         12,
         -0.18,
@@ -5535,7 +4983,7 @@
       "tint": null
     },
     {
-      "id": "prop_264",
+      "id": "prop_240",
       "position": [
         2,
         -0.18,
@@ -5549,7 +4997,7 @@
       "tint": null
     },
     {
-      "id": "prop_265",
+      "id": "prop_241",
       "position": [
         -2,
         -0.18,
@@ -5563,7 +5011,7 @@
       "tint": null
     },
     {
-      "id": "prop_266",
+      "id": "prop_242",
       "position": [
         2,
         -0.18,
@@ -5577,7 +5025,7 @@
       "tint": null
     },
     {
-      "id": "prop_267",
+      "id": "prop_243",
       "position": [
         -2,
         -0.18,
@@ -5591,7 +5039,7 @@
       "tint": null
     },
     {
-      "id": "prop_268",
+      "id": "prop_244",
       "position": [
         -17.5,
         -0.18,
@@ -5605,7 +5053,7 @@
       "tint": null
     },
     {
-      "id": "prop_269",
+      "id": "prop_245",
       "position": [
         17.5,
         -0.18,
@@ -5619,7 +5067,7 @@
       "tint": null
     },
     {
-      "id": "block_270",
+      "id": "block_246",
       "position": [
         24,
         -0.15,
@@ -5641,7 +5089,7 @@
       "health": 120
     },
     {
-      "id": "block_271",
+      "id": "block_247",
       "position": [
         -24,
         -0.15,
@@ -5663,7 +5111,7 @@
       "health": 120
     },
     {
-      "id": "prop_272",
+      "id": "prop_248",
       "position": [
         -33,
         -0.18,
@@ -5677,7 +5125,7 @@
       "tint": null
     },
     {
-      "id": "prop_273",
+      "id": "prop_249",
       "position": [
         33,
         -0.18,
@@ -5691,7 +5139,7 @@
       "tint": null
     },
     {
-      "id": "destructible_274",
+      "id": "destructible_250",
       "position": [
         22,
         0,
@@ -5704,7 +5152,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_275",
+      "id": "destructible_251",
       "position": [
         -22,
         0,
@@ -5717,7 +5165,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "block_276",
+      "id": "block_252",
       "position": [
         -22,
         -0.15,
@@ -5739,7 +5187,7 @@
       "health": 120
     },
     {
-      "id": "block_277",
+      "id": "block_253",
       "position": [
         -22,
         -0.15,
@@ -5761,7 +5209,7 @@
       "health": 120
     },
     {
-      "id": "block_278",
+      "id": "block_254",
       "position": [
         -24,
         -0.15,
@@ -5783,7 +5231,7 @@
       "health": 120
     },
     {
-      "id": "block_279",
+      "id": "block_255",
       "position": [
         -20,
         -0.15,
@@ -5805,7 +5253,7 @@
       "health": 120
     },
     {
-      "id": "block_280",
+      "id": "block_256",
       "position": [
         -14,
         -0.15,
@@ -5827,7 +5275,7 @@
       "health": 120
     },
     {
-      "id": "block_281",
+      "id": "block_257",
       "position": [
         -14,
         -0.15,
@@ -5849,7 +5297,7 @@
       "health": 120
     },
     {
-      "id": "block_282",
+      "id": "block_258",
       "position": [
         -14,
         2.6,
@@ -5871,7 +5319,7 @@
       "health": 120
     },
     {
-      "id": "block_283",
+      "id": "block_259",
       "position": [
         -28,
         -0.15,
@@ -5893,7 +5341,7 @@
       "health": 120
     },
     {
-      "id": "prop_284",
+      "id": "prop_260",
       "position": [
         24,
         -0.18,
@@ -5907,7 +5355,7 @@
       "tint": null
     },
     {
-      "id": "prop_285",
+      "id": "prop_261",
       "position": [
         25.5,
         -0.18,
@@ -5921,7 +5369,7 @@
       "tint": null
     },
     {
-      "id": "prop_286",
+      "id": "prop_262",
       "position": [
         21,
         -0.18,
@@ -5935,7 +5383,7 @@
       "tint": null
     },
     {
-      "id": "prop_287",
+      "id": "prop_263",
       "position": [
         -24,
         -0.18,
@@ -5949,7 +5397,7 @@
       "tint": null
     },
     {
-      "id": "prop_288",
+      "id": "prop_264",
       "position": [
         -21,
         -0.18,
@@ -5963,7 +5411,7 @@
       "tint": null
     },
     {
-      "id": "prop_289",
+      "id": "prop_265",
       "position": [
         -22,
         -0.18,
@@ -5977,7 +5425,7 @@
       "tint": null
     },
     {
-      "id": "prop_290",
+      "id": "prop_266",
       "position": [
         -33,
         0,
@@ -5991,7 +5439,7 @@
       "tint": null
     },
     {
-      "id": "prop_291",
+      "id": "prop_267",
       "position": [
         -32,
         0,
@@ -6005,7 +5453,7 @@
       "tint": null
     },
     {
-      "id": "prop_292",
+      "id": "prop_268",
       "position": [
         -32,
         0,
@@ -6019,7 +5467,7 @@
       "tint": null
     },
     {
-      "id": "prop_293",
+      "id": "prop_269",
       "position": [
         33,
         0,
@@ -6033,7 +5481,7 @@
       "tint": null
     },
     {
-      "id": "prop_294",
+      "id": "prop_270",
       "position": [
         33,
         0,
@@ -6047,7 +5495,7 @@
       "tint": null
     },
     {
-      "id": "prop_295",
+      "id": "prop_271",
       "position": [
         -14,
         0,
@@ -6061,7 +5509,7 @@
       "tint": null
     },
     {
-      "id": "prop_296",
+      "id": "prop_272",
       "position": [
         14,
         0,
@@ -6075,7 +5523,7 @@
       "tint": null
     },
     {
-      "id": "block_297",
+      "id": "block_273",
       "position": [
         -11,
         -0.15,
@@ -6097,7 +5545,7 @@
       "health": 120
     },
     {
-      "id": "block_298",
+      "id": "block_274",
       "position": [
         -11,
         1.1,
@@ -6119,7 +5567,7 @@
       "health": 120
     },
     {
-      "id": "block_299",
+      "id": "block_275",
       "position": [
         11,
         -0.15,
@@ -6141,7 +5589,7 @@
       "health": 120
     },
     {
-      "id": "block_300",
+      "id": "block_276",
       "position": [
         11,
         1.1,
@@ -6163,7 +5611,7 @@
       "health": 120
     },
     {
-      "id": "spawn_301",
+      "id": "spawn_277",
       "position": [
         -30,
         0,
@@ -6174,7 +5622,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_302",
+      "id": "spawn_278",
       "position": [
         -20,
         0,
@@ -6185,7 +5633,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_303",
+      "id": "spawn_279",
       "position": [
         -6,
         0,
@@ -6196,7 +5644,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_304",
+      "id": "spawn_280",
       "position": [
         6,
         0,
@@ -6207,7 +5655,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_305",
+      "id": "spawn_281",
       "position": [
         20,
         0,
@@ -6218,7 +5666,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_306",
+      "id": "spawn_282",
       "position": [
         30,
         0,
@@ -6229,7 +5677,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_307",
+      "id": "spawn_283",
       "position": [
         30,
         0,
@@ -6240,7 +5688,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_308",
+      "id": "spawn_284",
       "position": [
         20,
         0,
@@ -6251,7 +5699,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_309",
+      "id": "spawn_285",
       "position": [
         6,
         0,
@@ -6262,7 +5710,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_310",
+      "id": "spawn_286",
       "position": [
         -6,
         0,
@@ -6273,7 +5721,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_311",
+      "id": "spawn_287",
       "position": [
         -20,
         0,
@@ -6284,7 +5732,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_312",
+      "id": "spawn_288",
       "position": [
         -30,
         0,
@@ -6295,7 +5743,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_313",
+      "id": "spawn_289",
       "position": [
         -28,
         0,
@@ -6306,7 +5754,7 @@
       "faction": null
     },
     {
-      "id": "spawn_314",
+      "id": "spawn_290",
       "position": [
         28,
         0,
@@ -6317,7 +5765,7 @@
       "faction": null
     },
     {
-      "id": "spawn_315",
+      "id": "spawn_291",
       "position": [
         28,
         0,
@@ -6328,7 +5776,7 @@
       "faction": null
     },
     {
-      "id": "spawn_316",
+      "id": "spawn_292",
       "position": [
         -28,
         0,
@@ -6339,7 +5787,7 @@
       "faction": null
     },
     {
-      "id": "spawn_317",
+      "id": "spawn_293",
       "position": [
         -14,
         4,
@@ -6350,7 +5798,7 @@
       "faction": null
     },
     {
-      "id": "spawn_318",
+      "id": "spawn_294",
       "position": [
         3,
         0,
@@ -6361,7 +5809,7 @@
       "faction": null
     },
     {
-      "id": "spawn_319",
+      "id": "spawn_295",
       "position": [
         33,
         0,
@@ -6372,7 +5820,7 @@
       "faction": null
     },
     {
-      "id": "spawn_320",
+      "id": "spawn_296",
       "position": [
         -33,
         0,
@@ -6383,7 +5831,7 @@
       "faction": null
     },
     {
-      "id": "spawn_321",
+      "id": "spawn_297",
       "position": [
         -3,
         0,
@@ -6394,7 +5842,7 @@
       "faction": null
     },
     {
-      "id": "spawn_322",
+      "id": "spawn_298",
       "position": [
         -6,
         0,
@@ -6405,7 +5853,7 @@
       "faction": null
     },
     {
-      "id": "flag_323",
+      "id": "flag_299",
       "position": [
         0,
         0,
@@ -6416,7 +5864,7 @@
       "team": "embers"
     },
     {
-      "id": "flag_324",
+      "id": "flag_300",
       "position": [
         1.8,
         0,
@@ -6427,7 +5875,7 @@
       "team": "tide"
     },
     {
-      "id": "hill_325",
+      "id": "hill_301",
       "position": [
         6,
         0,
@@ -6437,7 +5885,7 @@
       "radius": 5
     },
     {
-      "id": "hill_326",
+      "id": "hill_302",
       "position": [
         -26,
         0,
@@ -6447,7 +5895,7 @@
       "radius": 5
     },
     {
-      "id": "hill_327",
+      "id": "hill_303",
       "position": [
         26,
         0,
@@ -6457,7 +5905,7 @@
       "radius": 5
     },
     {
-      "id": "pickup_328",
+      "id": "pickup_304",
       "position": [
         6,
         0,
@@ -6468,7 +5916,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_329",
+      "id": "pickup_305",
       "position": [
         -3,
         0,
@@ -6479,7 +5927,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_330",
+      "id": "pickup_306",
       "position": [
         3,
         0,
@@ -6490,7 +5938,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_331",
+      "id": "pickup_307",
       "position": [
         -14.6,
         4,
@@ -6501,7 +5949,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_332",
+      "id": "pickup_308",
       "position": [
         6,
         4.15,
@@ -6512,7 +5960,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_333",
+      "id": "pickup_309",
       "position": [
         1,
         0,
@@ -6523,7 +5971,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_334",
+      "id": "pickup_310",
       "position": [
         7,
         0,
@@ -6534,7 +5982,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_335",
+      "id": "pickup_311",
       "position": [
         -28,
         0,
@@ -6545,7 +5993,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_336",
+      "id": "pickup_312",
       "position": [
         28,
         0,
@@ -6556,7 +6004,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_337",
+      "id": "pickup_313",
       "position": [
         -14,
         0,
@@ -6567,7 +6015,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_338",
+      "id": "pickup_314",
       "position": [
         14,
         0,
@@ -6578,7 +6026,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_339",
+      "id": "pickup_315",
       "position": [
         26,
         0,
@@ -6589,7 +6037,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_340",
+      "id": "pickup_316",
       "position": [
         -26,
         0,
@@ -6600,7 +6048,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_341",
+      "id": "pickup_317",
       "position": [
         33,
         0,
@@ -6611,7 +6059,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_342",
+      "id": "pickup_318",
       "position": [
         -33,
         0,
@@ -6622,7 +6070,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_343",
+      "id": "pickup_319",
       "position": [
         30,
         0,
@@ -6633,7 +6081,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_344",
+      "id": "pickup_320",
       "position": [
         -30,
         0,
@@ -6644,7 +6092,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_345",
+      "id": "pickup_321",
       "position": [
         -7,
         4,
@@ -6655,7 +6103,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_346",
+      "id": "pickup_322",
       "position": [
         7,
         0,
@@ -6666,7 +6114,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_347",
+      "id": "pickup_323",
       "position": [
         -30,
         0,
@@ -6677,7 +6125,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_348",
+      "id": "pickup_324",
       "position": [
         30,
         0,
@@ -6688,7 +6136,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_349",
+      "id": "pickup_325",
       "position": [
         -1.5,
         4,
@@ -6699,7 +6147,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_350",
+      "id": "pickup_326",
       "position": [
         14.5,
         0,
@@ -6710,7 +6158,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_351",
+      "id": "pickup_327",
       "position": [
         0,
         0,
@@ -6721,7 +6169,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_352",
+      "id": "pickup_328",
       "position": [
         0,
         0,
@@ -6732,7 +6180,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_353",
+      "id": "pickup_329",
       "position": [
         -1,
         4,
@@ -6743,7 +6191,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_354",
+      "id": "pickup_330",
       "position": [
         -8,
         0,
@@ -6754,7 +6202,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_355",
+      "id": "pickup_331",
       "position": [
         8,
         0,
@@ -6765,7 +6213,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "light_356",
+      "id": "light_332",
       "position": [
         -16,
         3.45,
@@ -6779,7 +6227,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_357",
+      "id": "light_333",
       "position": [
         -8,
         3.45,
@@ -6793,7 +6241,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_358",
+      "id": "light_334",
       "position": [
         0,
         3.45,
@@ -6807,7 +6255,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_359",
+      "id": "light_335",
       "position": [
         -16,
         3.45,
@@ -6821,7 +6269,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_360",
+      "id": "light_336",
       "position": [
         0,
         3.45,
@@ -6835,7 +6283,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_361",
+      "id": "light_337",
       "position": [
         -16,
         7.45,
@@ -6849,7 +6297,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_362",
+      "id": "light_338",
       "position": [
         -16,
         7.45,
@@ -6863,7 +6311,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_363",
+      "id": "light_339",
       "position": [
         -8,
         7.45,
@@ -6877,7 +6325,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_364",
+      "id": "light_340",
       "position": [
         -8,
         7.45,
@@ -6891,7 +6339,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_365",
+      "id": "light_341",
       "position": [
         0,
         7.45,
@@ -6905,7 +6353,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_366",
+      "id": "light_342",
       "position": [
         0,
         7.45,
@@ -6919,7 +6367,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_367",
+      "id": "light_343",
       "position": [
         0,
         3.45,
@@ -6933,7 +6381,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_368",
+      "id": "light_344",
       "position": [
         8,
         3.45,
@@ -6947,7 +6395,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_369",
+      "id": "light_345",
       "position": [
         0,
         3.45,
@@ -6961,7 +6409,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_370",
+      "id": "light_346",
       "position": [
         8,
         3.45,
@@ -6975,7 +6423,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_371",
+      "id": "light_347",
       "position": [
         16,
         3.45,
@@ -6989,7 +6437,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_372",
+      "id": "light_348",
       "position": [
         16,
         3.45,
@@ -7003,7 +6451,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_373",
+      "id": "light_349",
       "position": [
         -1,
         0,
@@ -7017,7 +6465,7 @@
       "fixture": "wall"
     },
     {
-      "id": "light_374",
+      "id": "light_350",
       "position": [
         0,
         0,
@@ -7031,535 +6479,535 @@
       "fixture": "wall"
     },
     {
+      "id": "block_351",
+      "position": [
+        -80,
+        11.29,
+        90
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        15.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_352",
+      "position": [
+        -80,
+        26.54,
+        90
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        15.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_353",
+      "position": [
+        -76,
+        11.29,
+        90
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        15.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_354",
+      "position": [
+        -76,
+        26.54,
+        90
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        15.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_355",
+      "position": [
+        -80,
+        11.29,
+        94
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        15.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_356",
+      "position": [
+        -80,
+        26.54,
+        94
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        15.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_357",
+      "position": [
+        -76,
+        11.29,
+        94
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        15.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_358",
+      "position": [
+        -76,
+        26.54,
+        94
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        15.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_359",
+      "position": [
+        -78,
+        17.29,
+        90
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_360",
+      "position": [
+        -78,
+        17.29,
+        94
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_361",
+      "position": [
+        -80,
+        17.29,
+        92
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_362",
+      "position": [
+        -76,
+        17.29,
+        92
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_363",
+      "position": [
+        -78,
+        23.29,
+        90
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_364",
+      "position": [
+        -78,
+        23.29,
+        94
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_365",
+      "position": [
+        -80,
+        23.29,
+        92
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_366",
+      "position": [
+        -76,
+        23.29,
+        92
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_367",
+      "position": [
+        -78,
+        29.29,
+        90
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_368",
+      "position": [
+        -78,
+        29.29,
+        94
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_369",
+      "position": [
+        -80,
+        29.29,
+        92
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_370",
+      "position": [
+        -76,
+        29.29,
+        92
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_371",
+      "position": [
+        -78,
+        35.29,
+        90
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_372",
+      "position": [
+        -78,
+        35.29,
+        94
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_373",
+      "position": [
+        -80,
+        35.29,
+        92
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_374",
+      "position": [
+        -76,
+        35.29,
+        92
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
       "id": "block_375",
-      "position": [
-        -80,
-        11.29,
-        90
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        15.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_376",
-      "position": [
-        -80,
-        26.54,
-        90
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        15.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_377",
-      "position": [
-        -76,
-        11.29,
-        90
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        15.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_378",
-      "position": [
-        -76,
-        26.54,
-        90
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        15.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_379",
-      "position": [
-        -80,
-        11.29,
-        94
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        15.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_380",
-      "position": [
-        -80,
-        26.54,
-        94
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        15.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_381",
-      "position": [
-        -76,
-        11.29,
-        94
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        15.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_382",
-      "position": [
-        -76,
-        26.54,
-        94
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        15.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_383",
-      "position": [
-        -78,
-        17.29,
-        90
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_384",
-      "position": [
-        -78,
-        17.29,
-        94
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_385",
-      "position": [
-        -80,
-        17.29,
-        92
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_386",
-      "position": [
-        -76,
-        17.29,
-        92
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_387",
-      "position": [
-        -78,
-        23.29,
-        90
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_388",
-      "position": [
-        -78,
-        23.29,
-        94
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_389",
-      "position": [
-        -80,
-        23.29,
-        92
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_390",
-      "position": [
-        -76,
-        23.29,
-        92
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_391",
-      "position": [
-        -78,
-        29.29,
-        90
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_392",
-      "position": [
-        -78,
-        29.29,
-        94
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_393",
-      "position": [
-        -80,
-        29.29,
-        92
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_394",
-      "position": [
-        -76,
-        29.29,
-        92
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_395",
-      "position": [
-        -78,
-        35.29,
-        90
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_396",
-      "position": [
-        -78,
-        35.29,
-        94
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_397",
-      "position": [
-        -80,
-        35.29,
-        92
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_398",
-      "position": [
-        -76,
-        35.29,
-        92
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_399",
       "position": [
         -78,
         41.29,
@@ -7581,7 +7029,7 @@
       "health": 120
     },
     {
-      "id": "block_400",
+      "id": "block_376",
       "position": [
         -78,
         41.589999999999996,
@@ -7603,7 +7051,7 @@
       "health": 120
     },
     {
-      "id": "block_401",
+      "id": "block_377",
       "position": [
         94,
         10.34,
@@ -7625,7 +7073,7 @@
       "health": 120
     },
     {
-      "id": "block_402",
+      "id": "block_378",
       "position": [
         94,
         28.59,
@@ -7647,7 +7095,7 @@
       "health": 120
     },
     {
-      "id": "block_403",
+      "id": "block_379",
       "position": [
         98,
         10.34,
@@ -7658,6 +7106,534 @@
         0.35,
         18.25,
         0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_380",
+      "position": [
+        98,
+        28.59,
+        62
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        18.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_381",
+      "position": [
+        94,
+        10.34,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        18.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_382",
+      "position": [
+        94,
+        28.59,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        18.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_383",
+      "position": [
+        98,
+        10.34,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        18.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_384",
+      "position": [
+        98,
+        28.59,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        18.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_385",
+      "position": [
+        96,
+        16.34,
+        62
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_386",
+      "position": [
+        96,
+        16.34,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_387",
+      "position": [
+        94,
+        16.34,
+        64
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_388",
+      "position": [
+        98,
+        16.34,
+        64
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_389",
+      "position": [
+        96,
+        22.34,
+        62
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_390",
+      "position": [
+        96,
+        22.34,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_391",
+      "position": [
+        94,
+        22.34,
+        64
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_392",
+      "position": [
+        98,
+        22.34,
+        64
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_393",
+      "position": [
+        96,
+        28.34,
+        62
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_394",
+      "position": [
+        96,
+        28.34,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_395",
+      "position": [
+        94,
+        28.34,
+        64
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_396",
+      "position": [
+        98,
+        28.34,
+        64
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_397",
+      "position": [
+        96,
+        34.34,
+        62
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_398",
+      "position": [
+        96,
+        34.34,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_399",
+      "position": [
+        94,
+        34.34,
+        64
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_400",
+      "position": [
+        98,
+        34.34,
+        64
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_401",
+      "position": [
+        96,
+        40.34,
+        62
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_402",
+      "position": [
+        96,
+        40.34,
+        66
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_403",
+      "position": [
+        94,
+        40.34,
+        64
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
       ],
       "yaw": 0,
       "material": "core.pbr_steel",
@@ -7672,14 +7648,14 @@
       "id": "block_404",
       "position": [
         98,
-        28.59,
-        62
+        40.34,
+        64
       ],
       "kind": "block",
       "size": [
-        0.35,
-        18.25,
-        0.35
+        0.2,
+        0.2,
+        4.3
       ],
       "yaw": 0,
       "material": "core.pbr_steel",
@@ -7692,534 +7668,6 @@
     },
     {
       "id": "block_405",
-      "position": [
-        94,
-        10.34,
-        66
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        18.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_406",
-      "position": [
-        94,
-        28.59,
-        66
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        18.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_407",
-      "position": [
-        98,
-        10.34,
-        66
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        18.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_408",
-      "position": [
-        98,
-        28.59,
-        66
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        18.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_409",
-      "position": [
-        96,
-        16.34,
-        62
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_410",
-      "position": [
-        96,
-        16.34,
-        66
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_411",
-      "position": [
-        94,
-        16.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_412",
-      "position": [
-        98,
-        16.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_413",
-      "position": [
-        96,
-        22.34,
-        62
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_414",
-      "position": [
-        96,
-        22.34,
-        66
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_415",
-      "position": [
-        94,
-        22.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_416",
-      "position": [
-        98,
-        22.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_417",
-      "position": [
-        96,
-        28.34,
-        62
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_418",
-      "position": [
-        96,
-        28.34,
-        66
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_419",
-      "position": [
-        94,
-        28.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_420",
-      "position": [
-        98,
-        28.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_421",
-      "position": [
-        96,
-        34.34,
-        62
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_422",
-      "position": [
-        96,
-        34.34,
-        66
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_423",
-      "position": [
-        94,
-        34.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_424",
-      "position": [
-        98,
-        34.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_425",
-      "position": [
-        96,
-        40.34,
-        62
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_426",
-      "position": [
-        96,
-        40.34,
-        66
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_427",
-      "position": [
-        94,
-        40.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_428",
-      "position": [
-        98,
-        40.34,
-        64
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_429",
       "position": [
         96,
         46.34,
@@ -8241,7 +7689,7 @@
       "health": 120
     },
     {
-      "id": "block_430",
+      "id": "block_406",
       "position": [
         96,
         46.64,
@@ -8263,535 +7711,535 @@
       "health": 120
     },
     {
+      "id": "block_407",
+      "position": [
+        -102,
+        15.28,
+        -72
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        13.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_408",
+      "position": [
+        -102,
+        28.53,
+        -72
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        13.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_409",
+      "position": [
+        -98,
+        15.28,
+        -72
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        13.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_410",
+      "position": [
+        -98,
+        28.53,
+        -72
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        13.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_411",
+      "position": [
+        -102,
+        15.28,
+        -68
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        13.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_412",
+      "position": [
+        -102,
+        28.53,
+        -68
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        13.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_413",
+      "position": [
+        -98,
+        15.28,
+        -68
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        13.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_414",
+      "position": [
+        -98,
+        28.53,
+        -68
+      ],
+      "kind": "block",
+      "size": [
+        0.35,
+        13.25,
+        0.35
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_415",
+      "position": [
+        -100,
+        21.28,
+        -72
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_416",
+      "position": [
+        -100,
+        21.28,
+        -68
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_417",
+      "position": [
+        -102,
+        21.28,
+        -70
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_418",
+      "position": [
+        -98,
+        21.28,
+        -70
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_419",
+      "position": [
+        -100,
+        27.28,
+        -72
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_420",
+      "position": [
+        -100,
+        27.28,
+        -68
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_421",
+      "position": [
+        -102,
+        27.28,
+        -70
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_422",
+      "position": [
+        -98,
+        27.28,
+        -70
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_423",
+      "position": [
+        -100,
+        33.28,
+        -72
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_424",
+      "position": [
+        -100,
+        33.28,
+        -68
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_425",
+      "position": [
+        -102,
+        33.28,
+        -70
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_426",
+      "position": [
+        -98,
+        33.28,
+        -70
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_427",
+      "position": [
+        -100,
+        39.28,
+        -72
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_428",
+      "position": [
+        -100,
+        39.28,
+        -68
+      ],
+      "kind": "block",
+      "size": [
+        4.3,
+        0.2,
+        0.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_429",
+      "position": [
+        -102,
+        39.28,
+        -70
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_430",
+      "position": [
+        -98,
+        39.28,
+        -70
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.2,
+        4.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_steel",
+      "tint": "#8a8478",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
       "id": "block_431",
-      "position": [
-        -102,
-        15.28,
-        -72
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        13.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_432",
-      "position": [
-        -102,
-        28.53,
-        -72
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        13.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_433",
-      "position": [
-        -98,
-        15.28,
-        -72
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        13.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_434",
-      "position": [
-        -98,
-        28.53,
-        -72
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        13.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_435",
-      "position": [
-        -102,
-        15.28,
-        -68
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        13.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_436",
-      "position": [
-        -102,
-        28.53,
-        -68
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        13.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_437",
-      "position": [
-        -98,
-        15.28,
-        -68
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        13.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_438",
-      "position": [
-        -98,
-        28.53,
-        -68
-      ],
-      "kind": "block",
-      "size": [
-        0.35,
-        13.25,
-        0.35
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_439",
-      "position": [
-        -100,
-        21.28,
-        -72
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_440",
-      "position": [
-        -100,
-        21.28,
-        -68
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_441",
-      "position": [
-        -102,
-        21.28,
-        -70
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_442",
-      "position": [
-        -98,
-        21.28,
-        -70
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_443",
-      "position": [
-        -100,
-        27.28,
-        -72
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_444",
-      "position": [
-        -100,
-        27.28,
-        -68
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_445",
-      "position": [
-        -102,
-        27.28,
-        -70
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_446",
-      "position": [
-        -98,
-        27.28,
-        -70
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_447",
-      "position": [
-        -100,
-        33.28,
-        -72
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_448",
-      "position": [
-        -100,
-        33.28,
-        -68
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_449",
-      "position": [
-        -102,
-        33.28,
-        -70
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_450",
-      "position": [
-        -98,
-        33.28,
-        -70
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_451",
-      "position": [
-        -100,
-        39.28,
-        -72
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_452",
-      "position": [
-        -100,
-        39.28,
-        -68
-      ],
-      "kind": "block",
-      "size": [
-        4.3,
-        0.2,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_453",
-      "position": [
-        -102,
-        39.28,
-        -70
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_454",
-      "position": [
-        -98,
-        39.28,
-        -70
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.2,
-        4.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#8a8478",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_455",
       "position": [
         -100,
         41.28,
@@ -8813,7 +8261,7 @@
       "health": 120
     },
     {
-      "id": "block_456",
+      "id": "block_432",
       "position": [
         -100,
         41.58,
@@ -8835,7 +8283,7 @@
       "health": 120
     },
     {
-      "id": "prop_457",
+      "id": "prop_433",
       "position": [
         63.31,
         3.8,
@@ -8849,7 +8297,7 @@
       "tint": null
     },
     {
-      "id": "prop_458",
+      "id": "prop_434",
       "position": [
         39.39,
         0.26,
@@ -8863,7 +8311,7 @@
       "tint": null
     },
     {
-      "id": "prop_459",
+      "id": "prop_435",
       "position": [
         -55.03,
         2.26,
@@ -8877,7 +8325,7 @@
       "tint": null
     },
     {
-      "id": "prop_460",
+      "id": "prop_436",
       "position": [
         38.26,
         -0.03,
@@ -8891,7 +8339,7 @@
       "tint": null
     },
     {
-      "id": "prop_461",
+      "id": "prop_437",
       "position": [
         15.44,
         3.25,
@@ -8905,7 +8353,7 @@
       "tint": null
     },
     {
-      "id": "prop_462",
+      "id": "prop_438",
       "position": [
         -53.29,
         1.76,
@@ -8919,7 +8367,7 @@
       "tint": null
     },
     {
-      "id": "prop_463",
+      "id": "prop_439",
       "position": [
         51.75,
         1.93,
@@ -8933,7 +8381,7 @@
       "tint": null
     },
     {
-      "id": "prop_464",
+      "id": "prop_440",
       "position": [
         60.27,
         4.25,
@@ -8947,7 +8395,7 @@
       "tint": null
     },
     {
-      "id": "prop_465",
+      "id": "prop_441",
       "position": [
         57.98,
         1.86,
@@ -8961,7 +8409,7 @@
       "tint": null
     },
     {
-      "id": "prop_466",
+      "id": "prop_442",
       "position": [
         -16.17,
         0.03,
@@ -8975,7 +8423,7 @@
       "tint": null
     },
     {
-      "id": "prop_467",
+      "id": "prop_443",
       "position": [
         39.57,
         1.34,
@@ -8989,7 +8437,7 @@
       "tint": null
     },
     {
-      "id": "prop_468",
+      "id": "prop_444",
       "position": [
         79.22,
         0.84,
@@ -9003,7 +8451,7 @@
       "tint": null
     },
     {
-      "id": "prop_469",
+      "id": "prop_445",
       "position": [
         76.97,
         2.7,
@@ -9017,7 +8465,7 @@
       "tint": null
     },
     {
-      "id": "prop_470",
+      "id": "prop_446",
       "position": [
         73.18,
         1.71,
@@ -9031,7 +8479,7 @@
       "tint": null
     },
     {
-      "id": "prop_471",
+      "id": "prop_447",
       "position": [
         -28.45,
         0.75,
@@ -9045,7 +8493,7 @@
       "tint": null
     },
     {
-      "id": "prop_472",
+      "id": "prop_448",
       "position": [
         79.15,
         0.85,
@@ -9059,7 +8507,7 @@
       "tint": null
     },
     {
-      "id": "prop_473",
+      "id": "prop_449",
       "position": [
         -53.29,
         2.06,
@@ -9073,7 +8521,7 @@
       "tint": null
     },
     {
-      "id": "prop_474",
+      "id": "prop_450",
       "position": [
         -40.23,
         0.58,
@@ -9087,7 +8535,7 @@
       "tint": null
     },
     {
-      "id": "prop_475",
+      "id": "prop_451",
       "position": [
         47.38,
         0.89,
@@ -9101,7 +8549,7 @@
       "tint": null
     },
     {
-      "id": "prop_476",
+      "id": "prop_452",
       "position": [
         -80.55,
         1.97,
@@ -9115,7 +8563,7 @@
       "tint": null
     },
     {
-      "id": "prop_477",
+      "id": "prop_453",
       "position": [
         77.99,
         1.07,
@@ -9129,7 +8577,7 @@
       "tint": null
     },
     {
-      "id": "prop_478",
+      "id": "prop_454",
       "position": [
         46.47,
         2.06,

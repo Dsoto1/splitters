@@ -13319,6 +13319,1910 @@
       ]
     },
     {
+      "file": "props/car_beetle.glb",
+      "sha256": "3d110003033a6641",
+      "triangles": 5707,
+      "bytes": 390828,
+      "source": "designersoup-car-pack-1/Beatall.fbx",
+      "title": "FREE - Low Poly Car Pack 1",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/car_offroader.glb",
+      "sha256": "ef39e668683eb30b",
+      "triangles": 5912,
+      "bytes": 384752,
+      "source": "designersoup-car-pack-1/Landyroamer.fbx",
+      "title": "FREE - Low Poly Car Pack 1",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/car_pickup.glb",
+      "sha256": "191bd93d570ddd41",
+      "triangles": 5831,
+      "bytes": 377528,
+      "source": "designersoup-car-pack-1/Toyoyo Highlight.fbx",
+      "title": "FREE - Low Poly Car Pack 1",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/car_racer.glb",
+      "sha256": "51b27f8539a23f52",
+      "triangles": 4792,
+      "bytes": 146624,
+      "source": "designersoup-car-pack-1/Tristar Racer.fbx",
+      "title": "FREE - Low Poly Car Pack 1",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ds_traffic_cone.glb",
+      "sha256": "65ffea174887fe95",
+      "triangles": 134,
+      "bytes": 11268,
+      "source": "designersoup-car-pack-1-extras/cone.fbx",
+      "title": "FREE - Low Poly Car Pack 1 (extras)",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ds_oil_drum.glb",
+      "sha256": "2ea206e8db1e774a",
+      "triangles": 236,
+      "bytes": 14844,
+      "source": "designersoup-car-pack-1-extras/oildrum.fbx",
+      "title": "FREE - Low Poly Car Pack 1 (extras)",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ds_tyre_rack.glb",
+      "sha256": "9cf8752046e62348",
+      "triangles": 5548,
+      "bytes": 339404,
+      "source": "designersoup-car-pack-1-extras/tireRack.fbx",
+      "title": "FREE - Low Poly Car Pack 1 (extras)",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ds_spare_wheel.glb",
+      "sha256": "fc36f2fa08d09144",
+      "triangles": 632,
+      "bytes": 27864,
+      "source": "designersoup-car-pack-1-extras/offroadSpareWheel.fbx",
+      "title": "FREE - Low Poly Car Pack 1 (extras)",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ds_air_pump.glb",
+      "sha256": "31c2356c6620c496",
+      "triangles": 404,
+      "bytes": 22240,
+      "source": "designersoup-car-pack-1-extras/airgun.fbx",
+      "title": "FREE - Low Poly Car Pack 1 (extras)",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/ds_windsock.glb",
+      "sha256": "d5fcd5bb1a78a65e",
+      "triangles": 552,
+      "bytes": 29140,
+      "source": "designersoup-car-pack-1-extras/windsock.fbx",
+      "title": "FREE - Low Poly Car Pack 1 (extras)",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_fridge.glb",
+      "sha256": "c5ebca9fd0b9e635",
+      "triangles": 744,
+      "bytes": 29760,
+      "source": "lowpolyassets-household-items/Kitchen/Fridge A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_fridge_freezer.glb",
+      "sha256": "f12f6086f3584148",
+      "triangles": 1288,
+      "bytes": 48052,
+      "source": "lowpolyassets-household-items/Kitchen/Fridge B.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_oven.glb",
+      "sha256": "aa91529f192ff41b",
+      "triangles": 1348,
+      "bytes": 59072,
+      "source": "lowpolyassets-household-items/Kitchen/Oven.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_dishwasher.glb",
+      "sha256": "d8155ba7c928ce36",
+      "triangles": 1528,
+      "bytes": 59380,
+      "source": "lowpolyassets-household-items/Kitchen/Dishwasher.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_washing_machine.glb",
+      "sha256": "298a7878dbedb006",
+      "triangles": 472,
+      "bytes": 26588,
+      "source": "lowpolyassets-household-items/Kitchen/Washing Machine.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_cupboard.glb",
+      "sha256": "c431f0569fc9630f",
+      "triangles": 368,
+      "bytes": 16380,
+      "source": "lowpolyassets-household-items/Kitchen/Cupboard A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_cupboard_double.glb",
+      "sha256": "753c9fc33a014cb8",
+      "triangles": 584,
+      "bytes": 22800,
+      "source": "lowpolyassets-household-items/Kitchen/Cupboard B.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_cupboard_sink.glb",
+      "sha256": "560f482f981f6238",
+      "triangles": 1836,
+      "bytes": 77948,
+      "source": "lowpolyassets-household-items/Kitchen/Cupboard Sink.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_cupboard_drawers.glb",
+      "sha256": "92acb858a46ab58e",
+      "triangles": 628,
+      "bytes": 21384,
+      "source": "lowpolyassets-household-items/Kitchen/Cupboard C.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_microwave.glb",
+      "sha256": "eb9d6ffb2eb19a28",
+      "triangles": 332,
+      "bytes": 20184,
+      "source": "lowpolyassets-household-items/Kitchen/Microwave.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_kettle.glb",
+      "sha256": "2b9d2fe3167bee9b",
+      "triangles": 558,
+      "bytes": 27576,
+      "source": "lowpolyassets-household-items/Kitchen/Kettle.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_toaster.glb",
+      "sha256": "2411e382ee6f1907",
+      "triangles": 248,
+      "bytes": 14968,
+      "source": "lowpolyassets-household-items/Kitchen/Toaster.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_bath.glb",
+      "sha256": "c1cba53b11ea0795",
+      "triangles": 1200,
+      "bytes": 46928,
+      "source": "lowpolyassets-household-items/Bathroom/Bath.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_shower.glb",
+      "sha256": "78d0b4a1668be7ac",
+      "triangles": 716,
+      "bytes": 31140,
+      "source": "lowpolyassets-household-items/Bathroom/Shower.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_basin.glb",
+      "sha256": "ec7ef1b38cd66a92",
+      "triangles": 1248,
+      "bytes": 48572,
+      "source": "lowpolyassets-household-items/Bathroom/Sink.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_toilet.glb",
+      "sha256": "c77e3895e764bd62",
+      "triangles": 576,
+      "bytes": 25604,
+      "source": "lowpolyassets-household-items/Bathroom/Toilet.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_bed_double.glb",
+      "sha256": "0632a7d080df52e8",
+      "triangles": 1134,
+      "bytes": 46832,
+      "source": "lowpolyassets-household-items/Beds/Bed Double.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_bed_single.glb",
+      "sha256": "149e114509318754",
+      "triangles": 946,
+      "bytes": 39712,
+      "source": "lowpolyassets-household-items/Beds/Bed Single.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_bunk_bed.glb",
+      "sha256": "5809eb4132e7547b",
+      "triangles": 2040,
+      "bytes": 71776,
+      "source": "lowpolyassets-household-items/Beds/Bunk Bed.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_chair.glb",
+      "sha256": "5c91a507cfd27973",
+      "triangles": 516,
+      "bytes": 23016,
+      "source": "lowpolyassets-household-items/Chairs/Chair A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_stool.glb",
+      "sha256": "9b5d891a67a6b4dd",
+      "triangles": 286,
+      "bytes": 11728,
+      "source": "lowpolyassets-household-items/Chairs/Chair C.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_office_chair.glb",
+      "sha256": "206743828246c5d7",
+      "triangles": 1558,
+      "bytes": 67596,
+      "source": "lowpolyassets-household-items/Chairs/Chair E.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_table.glb",
+      "sha256": "304d68e9eb93723c",
+      "triangles": 220,
+      "bytes": 10396,
+      "source": "lowpolyassets-household-items/Tables/Table A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_table_small.glb",
+      "sha256": "5b2dc0043276327e",
+      "triangles": 220,
+      "bytes": 10400,
+      "source": "lowpolyassets-household-items/Tables/Table B.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_coffee_table.glb",
+      "sha256": "f05fb3c8923f105e",
+      "triangles": 252,
+      "bytes": 12616,
+      "source": "lowpolyassets-household-items/Tables/Table C.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_round_table.glb",
+      "sha256": "c11778bc57513f3b",
+      "triangles": 420,
+      "bytes": 18784,
+      "source": "lowpolyassets-household-items/Tables/Rounded Table B.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_desk.glb",
+      "sha256": "d4cc13dc8145ba27",
+      "triangles": 820,
+      "bytes": 35296,
+      "source": "lowpolyassets-household-items/Tables/Desk.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_sofa.glb",
+      "sha256": "5abc4b67d3b36c23",
+      "triangles": 1220,
+      "bytes": 50768,
+      "source": "lowpolyassets-household-items/Sofas/Sofa A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_sofa_small.glb",
+      "sha256": "302145e0124fbc7a",
+      "triangles": 844,
+      "bytes": 34772,
+      "source": "lowpolyassets-household-items/Sofas/Sofa B.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_armchair.glb",
+      "sha256": "7a086ade9a741c9d",
+      "triangles": 800,
+      "bytes": 30660,
+      "source": "lowpolyassets-household-items/Sofas/Sofa C.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_corner_sofa.glb",
+      "sha256": "e65dead71ffae195",
+      "triangles": 1740,
+      "bytes": 66216,
+      "source": "lowpolyassets-household-items/Sofas/Sofa D.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_bookcase.glb",
+      "sha256": "3ffeb45fbf555a11",
+      "triangles": 376,
+      "bytes": 18696,
+      "source": "lowpolyassets-household-items/Shelves/Shelf A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_bookcase_wide.glb",
+      "sha256": "6222f42d55acfe04",
+      "triangles": 512,
+      "bytes": 21440,
+      "source": "lowpolyassets-household-items/Shelves/Shelf B.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_wall_shelf.glb",
+      "sha256": "1ff06e0cf2c00adb",
+      "triangles": 220,
+      "bytes": 10408,
+      "source": "lowpolyassets-household-items/Shelves/Wall Shelf A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_chest_drawers.glb",
+      "sha256": "927577f6d4abac52",
+      "triangles": 1216,
+      "bytes": 40760,
+      "source": "lowpolyassets-household-items/Drawers/Drawer A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_bedside.glb",
+      "sha256": "4fdb06cd650cacc6",
+      "triangles": 608,
+      "bytes": 13068,
+      "source": "lowpolyassets-household-items/Drawers/Drawer B.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_tv.glb",
+      "sha256": "b1a3a4ae8aab5654",
+      "triangles": 192,
+      "bytes": 10044,
+      "source": "lowpolyassets-household-items/Electronics/TV B.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_monitor.glb",
+      "sha256": "eb7a3a8c89f6dde3",
+      "triangles": 192,
+      "bytes": 11432,
+      "source": "lowpolyassets-household-items/Electronics/Monitor.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_pc.glb",
+      "sha256": "21e116057364bfa1",
+      "triangles": 72,
+      "bytes": 5416,
+      "source": "lowpolyassets-household-items/Electronics/Pc.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_laptop.glb",
+      "sha256": "e0da6a5250348c87",
+      "triangles": 396,
+      "bytes": 17748,
+      "source": "lowpolyassets-household-items/Electronics/Laptop.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_floor_lamp.glb",
+      "sha256": "734e5ad99e9f3e6f",
+      "triangles": 510,
+      "bytes": 20264,
+      "source": "lowpolyassets-household-items/Lights/Lamp A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_desk_lamp.glb",
+      "sha256": "76c2993f1944db74",
+      "triangles": 526,
+      "bytes": 21192,
+      "source": "lowpolyassets-household-items/Lights/Lamp C.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_plant.glb",
+      "sha256": "3a7652105e1d0a96",
+      "triangles": 312,
+      "bytes": 17084,
+      "source": "lowpolyassets-household-items/Miscellaneous/Plant A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_bin.glb",
+      "sha256": "46a1985e14909b71",
+      "triangles": 116,
+      "bytes": 5440,
+      "source": "lowpolyassets-household-items/Miscellaneous/Bin.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_radiator.glb",
+      "sha256": "40b3b804a6aff9a8",
+      "triangles": 740,
+      "bytes": 30192,
+      "source": "lowpolyassets-household-items/Miscellaneous/Radiator A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_safe.glb",
+      "sha256": "ca1a2afec3fd69f7",
+      "triangles": 436,
+      "bytes": 19652,
+      "source": "lowpolyassets-household-items/Miscellaneous/Safe B.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_books.glb",
+      "sha256": "1f91376493018641",
+      "triangles": 588,
+      "bytes": 26272,
+      "source": "lowpolyassets-household-items/Miscellaneous/Books A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_globe.glb",
+      "sha256": "52d372038dbcbe52",
+      "triangles": 408,
+      "bytes": 33240,
+      "source": "lowpolyassets-household-items/Miscellaneous/Globe.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_speaker.glb",
+      "sha256": "aab62ad0039e4a68",
+      "triangles": 276,
+      "bytes": 22448,
+      "source": "lowpolyassets-household-items/Miscellaneous/Speaker.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_fan.glb",
+      "sha256": "c3a3e5184bcd39f3",
+      "triangles": 2400,
+      "bytes": 92452,
+      "source": "lowpolyassets-household-items/Miscellaneous/Fan.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_wall_clock.glb",
+      "sha256": "9ebd4273269e1fe6",
+      "triangles": 184,
+      "bytes": 9908,
+      "source": "lowpolyassets-household-items/Miscellaneous/Clock.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_mirror.glb",
+      "sha256": "c52be3d43b2a7fbd",
+      "triangles": 44,
+      "bytes": 4032,
+      "source": "lowpolyassets-household-items/Miscellaneous/Mirror A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_rug.glb",
+      "sha256": "819f852affd23dc8",
+      "triangles": 140,
+      "bytes": 7284,
+      "source": "lowpolyassets-household-items/Carpets/Carpet A.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hh_rug_small.glb",
+      "sha256": "402045b059368e7b",
+      "triangles": 28,
+      "bytes": 2388,
+      "source": "lowpolyassets-household-items/Carpets/Carpet C.fbx",
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/gs_fuel_pump.glb",
+      "sha256": "892b44015c28114f",
+      "triangles": 924,
+      "bytes": 53660,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^Fuel_pump$",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_fuel_pump_slim.glb",
+      "sha256": "fdea622d2d15fb71",
+      "triangles": 212,
+      "bytes": 14764,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^(Fuel_pump_|Dispenser)$",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_dumpster.glb",
+      "sha256": "40d54b697dc6bee9",
+      "triangles": 156,
+      "bytes": 12512,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^Dumpster",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_ice_chest.glb",
+      "sha256": "8067ad96b71a5c9f",
+      "triangles": 32,
+      "bytes": 3400,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^ICE$",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_slush_machine.glb",
+      "sha256": "6fb4124d7951d7dd",
+      "triangles": 384,
+      "bytes": 25604,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^ice_slush_machine$",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_coffee_machine.glb",
+      "sha256": "4493a1b44a1cf1d1",
+      "triangles": 106,
+      "bytes": 8436,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^Coffee_machine$",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_drinks_fridge.glb",
+      "sha256": "5c1a8f031a5d5b1e",
+      "triangles": 140,
+      "bytes": 9916,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^Fridge",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_shop_shelving.glb",
+      "sha256": "13df7e800cbc3bf5",
+      "triangles": 160,
+      "bytes": 11988,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^Shelving003$",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_metal_shelf.glb",
+      "sha256": "cb70deb8af663cf5",
+      "triangles": 120,
+      "bytes": 9348,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^Shelf_Metal$",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_trash_bags.glb",
+      "sha256": "b8b5ce314040024e",
+      "triangles": 110,
+      "bytes": 8628,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^Trash$",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/gs_shop_counter.glb",
+      "sha256": "c1b6b6af6a897601",
+      "triangles": 82,
+      "bytes": 6820,
+      "source": "elbolillo-gas-station/Gas_station_Props.fbx#^Desk$",
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/mt_subway_car.glb",
+      "sha256": "7832f4b30881a5d5",
+      "triangles": 5304,
+      "bytes": 333852,
+      "source": "elbolillo-metro/Metro.glb#^(subway_car|seats(\\.\\d+)?|Railing_V(\\.\\d+)?|Door(\\.\\d+)?|Glass\\.\\d+)$",
+      "title": "Metro",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/metro",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/mt_ticket_gate.glb",
+      "sha256": "bedafdf0c21c3e4f",
+      "triangles": 242,
+      "bytes": 18568,
+      "source": "elbolillo-metro/Metro.glb#^automatic_ticket_gate$",
+      "title": "Metro",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/metro",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/mt_ticket_machine.glb",
+      "sha256": "30cf1f8f2c72cff6",
+      "triangles": 22,
+      "bytes": 3048,
+      "source": "elbolillo-metro/Metro.glb#^ticket_machine$",
+      "title": "Metro",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/metro",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/mt_vending_machine.glb",
+      "sha256": "4d5bc2fb7a4a9a93",
+      "triangles": 68,
+      "bytes": 5932,
+      "source": "elbolillo-metro/Metro.glb#^Vending_machine$",
+      "title": "Metro",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/metro",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/mt_bin.glb",
+      "sha256": "73c8aa4a78a5a22a",
+      "triangles": 694,
+      "bytes": 47120,
+      "source": "elbolillo-metro/Metro.glb#^trash_can$",
+      "title": "Metro",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/metro",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/mt_bench.glb",
+      "sha256": "ba5829e99e08db44",
+      "triangles": 352,
+      "bytes": 24812,
+      "source": "elbolillo-metro/Metro.glb#^Chair$",
+      "title": "Metro",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/metro",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/mt_light.glb",
+      "sha256": "561bad54eac8c1c7",
+      "triangles": 76,
+      "bytes": 5444,
+      "source": "elbolillo-metro/Metro.glb#^light$",
+      "title": "Metro",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/metro",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/mc_cart.glb",
+      "sha256": "123dd73427a26949",
+      "triangles": 1156,
+      "bytes": 57872,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Mine_Cart_AB_grp$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cart_empty.glb",
+      "sha256": "fc9677647a2ba5a1",
+      "triangles": 1160,
+      "bytes": 57940,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Mine_Cart_BB_grp$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cart_tipper.glb",
+      "sha256": "d87051522a8c015b",
+      "triangles": 1504,
+      "bytes": 69360,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Mine_Cart_CB_grp$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_rail.glb",
+      "sha256": "c0227f6806d70821",
+      "triangles": 72,
+      "bytes": 30912,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Rail_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_rail_curve.glb",
+      "sha256": "cff9ed57552280ce",
+      "triangles": 128,
+      "bytes": 32232,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Rails_Corner_90Deg_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_rail_end.glb",
+      "sha256": "b99d7a74c06b9e73",
+      "triangles": 22,
+      "bytes": 29092,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Rail_End$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_ladder.glb",
+      "sha256": "35888854de29573b",
+      "triangles": 100,
+      "bytes": 32064,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Ladder_Tall$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_support_frame.glb",
+      "sha256": "0e8f84763af82ad8",
+      "triangles": 32,
+      "bytes": 29532,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Post_Reinforced_F$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_support_post.glb",
+      "sha256": "54141c5185db7cbc",
+      "triangles": 8,
+      "bytes": 28548,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Post_Reinforced_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_beam.glb",
+      "sha256": "23c0e033ed87fefb",
+      "triangles": 8,
+      "bytes": 28492,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Beam_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_mine_wall.glb",
+      "sha256": "c6b45877e80316c8",
+      "triangles": 62,
+      "bytes": 13808,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Wall_Mines_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_mine_entrance.glb",
+      "sha256": "5bbc0e1a1f74475f",
+      "triangles": 214,
+      "bytes": 17596,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Wall_Mines_Entrance_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_mine_tunnel.glb",
+      "sha256": "16703c1463a4fe8f",
+      "triangles": 157,
+      "bytes": 17352,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Wall_Mines_Tunnel_Mid$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_wall.glb",
+      "sha256": "72815aa27d7caed4",
+      "triangles": 86,
+      "bytes": 14884,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Wall_Caves_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_entrance.glb",
+      "sha256": "950b05390f3b0227",
+      "triangles": 192,
+      "bytes": 18336,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Wall_Caves_Entrance_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_rock_wall.glb",
+      "sha256": "e4fbb858cab52cdd",
+      "triangles": 124,
+      "bytes": 15540,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Cave_Wall_Rocks_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_rocks_a.glb",
+      "sha256": "8b6e45665d5b9ec2",
+      "triangles": 98,
+      "bytes": 15380,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Cave_Rocks_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_rocks_b.glb",
+      "sha256": "5e673344d989d14e",
+      "triangles": 162,
+      "bytes": 17092,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Cave_Rocks_B$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_rocks_c.glb",
+      "sha256": "ee00bfffd17424aa",
+      "triangles": 144,
+      "bytes": 15556,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Cave_Rocks_C$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_rocks_d.glb",
+      "sha256": "952c186ebdb4ad63",
+      "triangles": 134,
+      "bytes": 15868,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Cave_Rocks_D$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_pillar.glb",
+      "sha256": "f733f49c24891efa",
+      "triangles": 194,
+      "bytes": 18052,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Cave_Pillar_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_pillar_wide.glb",
+      "sha256": "ac306c0f17a3ccaa",
+      "triangles": 226,
+      "bytes": 18612,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Cave_Pillar_C$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_cave_ledge.glb",
+      "sha256": "e623d6c431422f55",
+      "triangles": 96,
+      "bytes": 35132,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Cave_Platform_G$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_mound.glb",
+      "sha256": "57be9d3dc63c5b26",
+      "triangles": 58,
+      "bytes": 22536,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Ground_Mound_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_plank_wall.glb",
+      "sha256": "aa2d806854d25879",
+      "triangles": 112,
+      "bytes": 32580,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Panel_Wood_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mc_plank_entrance.glb",
+      "sha256": "86373dc73bb5042c",
+      "triangles": 220,
+      "bytes": 36620,
+      "source": "loafbrr-mines-and-caves/Modular_Mine_Set.glb#^Panel_Wood_Entrance_A$",
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/hs_mower.glb",
+      "sha256": "28e486bbb8d87439",
+      "triangles": 294,
+      "bytes": 19976,
+      "source": "elbolillo-house/House.fbx#^Mower$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_tool_cabinet.glb",
+      "sha256": "e9c7618fdb6b4eb4",
+      "triangles": 88,
+      "bytes": 7232,
+      "source": "elbolillo-house/House.fbx#^Tool_Cabinet$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_toolbox.glb",
+      "sha256": "98ad64f6030c4bb8",
+      "triangles": 92,
+      "bytes": 7488,
+      "source": "elbolillo-house/House.fbx#^Toolbox$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_petrol_can.glb",
+      "sha256": "447d1356c0fe9571",
+      "triangles": 102,
+      "bytes": 8168,
+      "source": "elbolillo-house/House.fbx#^Petrol_Can001$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_paint_pot.glb",
+      "sha256": "1d15141f22612055",
+      "triangles": 52,
+      "bytes": 4856,
+      "source": "elbolillo-house/House.fbx#^Paint_pot$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_wheelie_bin.glb",
+      "sha256": "d179f9566d2a85a1",
+      "triangles": 384,
+      "bytes": 27548,
+      "source": "elbolillo-house/House.fbx#^trash_can(_cover)?$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_wardrobe.glb",
+      "sha256": "bb765d05b32d82ce",
+      "triangles": 96,
+      "bytes": 7752,
+      "source": "elbolillo-house/House.fbx#^Wardrobe$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_fridge.glb",
+      "sha256": "cfb35ecfa8f843c6",
+      "triangles": 338,
+      "bytes": 17800,
+      "source": "elbolillo-house/House.fbx#^Refrigerator(_Door(_01)?)?001$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_stove.glb",
+      "sha256": "fb368e14a93cfbb9",
+      "triangles": 28,
+      "bytes": 3260,
+      "source": "elbolillo-house/House.fbx#^Stove$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_lamppost.glb",
+      "sha256": "1c6a270f2b3e3c2f",
+      "triangles": 113,
+      "bytes": 12920,
+      "source": "elbolillo-house/House.fbx#^Lamppost$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/hs_garden_gate.glb",
+      "sha256": "7e67d046df531a00",
+      "triangles": 46,
+      "bytes": 5548,
+      "source": "elbolillo-house/House.fbx#^garden_gate$",
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
       "file": "skies/clear.jpg",
       "sha256": "4ba9d3b02f1b3acf",
       "bytes": 37359,
@@ -13670,6 +15574,111 @@
       "modifications": [
         "fitted to whole cells (centred, stood on the ground, uniform scale)",
         "colour map embedded as a palette PNG and reused as a faint emissive map (night city)"
+      ]
+    },
+    {
+      "file": "models/guns/ak47.glb",
+      "sha256": "c214269d23dd0f29",
+      "triangles": 2373,
+      "bytes": 149564,
+      "source": "styloo-guns/ak47.glb",
+      "title": "Guns Asset Pack",
+      "creator": "Styloo",
+      "url": "https://styloo.itch.io/guns-asset-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, normal map to 256 px, matte material"
+      ]
+    },
+    {
+      "file": "models/guns/awp.glb",
+      "sha256": "2413e3cbbde93e6f",
+      "triangles": 2246,
+      "bytes": 123148,
+      "source": "styloo-guns/awp.glb",
+      "title": "Guns Asset Pack",
+      "creator": "Styloo",
+      "url": "https://styloo.itch.io/guns-asset-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, normal map to 256 px, matte material"
+      ]
+    },
+    {
+      "file": "models/guns/mac10.glb",
+      "sha256": "e9f38b843ccb7d87",
+      "triangles": 1770,
+      "bytes": 117244,
+      "source": "styloo-guns/mac10.glb",
+      "title": "Guns Asset Pack",
+      "creator": "Styloo",
+      "url": "https://styloo.itch.io/guns-asset-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, normal map to 256 px, matte material"
+      ]
+    },
+    {
+      "file": "models/guns/shotgun.glb",
+      "sha256": "e31aa4ef4f42f2d1",
+      "triangles": 1980,
+      "bytes": 99744,
+      "source": "styloo-guns/shotgun.glb",
+      "title": "Guns Asset Pack",
+      "creator": "Styloo",
+      "url": "https://styloo.itch.io/guns-asset-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, normal map to 256 px, matte material"
+      ]
+    },
+    {
+      "file": "models/guns/rocket_launcher.glb",
+      "sha256": "d8fff517e630589d",
+      "triangles": 3502,
+      "bytes": 161348,
+      "source": "styloo-guns/rocketlaucher.glb",
+      "title": "Guns Asset Pack",
+      "creator": "Styloo",
+      "url": "https://styloo.itch.io/guns-asset-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, normal map to 256 px, matte material"
+      ]
+    },
+    {
+      "file": "models/guns/frag.glb",
+      "sha256": "03940328e2f57c27",
+      "triangles": 532,
+      "bytes": 51788,
+      "source": "styloo-guns/nade_low.glb",
+      "title": "Guns Asset Pack",
+      "creator": "Styloo",
+      "url": "https://styloo.itch.io/guns-asset-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, normal map to 256 px, matte material"
+      ]
+    },
+    {
+      "file": "models/guns/at_mine.glb",
+      "sha256": "f27f417bba8bb528",
+      "triangles": 736,
+      "bytes": 46512,
+      "source": "3dmodelscc0-guns-explosives/AT_MINE/AT_MINE.fbx",
+      "title": "Free CC0 Guns & Explosives Pack",
+      "creator": "3DModelsCC0",
+      "url": "https://3dmodelscc0.itch.io/free-cc0-guns-explosives-pack",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, normal map to 256 px, matte material"
       ]
     }
   ]

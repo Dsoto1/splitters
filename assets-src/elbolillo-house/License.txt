@@ -1,0 +1,18 @@
+House (PSX-style house, garage and garden)
+Models by Elbolillo (Elbolilloduro) - https://elbolilloduro.itch.io/
+Source page: https://elbolilloduro.itch.io/house
+
+License: the itch.io page states "The models in this package are under the
+CC0 license" (Creative Commons Zero v1.0 Universal,
+https://creativecommons.org/publicdomain/zero/1.0/); the project owner
+confirmed the pack is CC0 (2026-10-26). Same packaging and texture naming as
+the author's Gas station and Metro sets (Blender 3.6 FBX, Models/ and
+Textures/ folders).
+
+Textures: the page says some were taken from pexels.com, and many are photos
+of branded goods. We ship none of them: tools/content/flatten.mjs replaces
+every texture with one flat colour per triangle and only the geometry ships.
+
+Raw pack files are not kept in this repository. tools/content/prepare-props.mjs
+builds the game-ready props from the extracted download (see
+docs/CONTENT_PIPELINE.md), and content/props.lock.json records what it wrote.

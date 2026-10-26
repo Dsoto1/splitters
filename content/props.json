@@ -251,6 +251,98 @@
       "license": "Owned",
       "licenseFile": "assets-src/tiletrigger-kit/License.txt",
       "retrieved": "2026-10-26"
+    },
+    "designersoup-car-pack-1": {
+      "title": "FREE - Low Poly Car Pack 1",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/designersoup-car-pack-1/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Designersoup_Low_Poly_Car_Pack_Volume_1_updated",
+      "models": ".",
+      "convert": true
+    },
+    "designersoup-car-pack-1-extras": {
+      "title": "FREE - Low Poly Car Pack 1 (extras)",
+      "creator": "Designersoup",
+      "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/designersoup-car-pack-1/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "extras",
+      "models": ".",
+      "convert": true
+    },
+    "lowpolyassets-household-items": {
+      "title": "Low Poly Household Items Pack",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+      "license": "LicenseRef-Free-Use",
+      "licenseFile": "assets-src/lowpolyassets-household-items/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Low_Poly_Household_Items",
+      "models": "Low Poly Furniture",
+      "convert": true,
+      "scale": 0.002
+    },
+    "elbolillo-gas-station": {
+      "title": "Gas station",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/gas-station",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/elbolillo-gas-station/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Gas_station",
+      "models": "Models",
+      "convert": true,
+      "flatten": true,
+      "scale": 0.01
+    },
+    "elbolillo-metro": {
+      "title": "Metro",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/metro",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/elbolillo-metro/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Metro_PSX",
+      "models": "Models",
+      "convert": true,
+      "flatten": true,
+      "scale": 0.85
+    },
+    "loafbrr-mines-and-caves": {
+      "title": "Mines and Caves Set",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/loafbrr-mines-and-caves/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "MinesAndCaves_Set_blend_gltf_fbx",
+      "models": "gltf",
+      "convert": true,
+      "dropVertexColors": true,
+      "textureSize": 512,
+      "maps": {
+        "Mine_Carts": "Textures/MineCarts/Mine_Carts_1k_Diffuse.png",
+        "MinesTrim": "Textures/MineTrim/MineTrim_1k_Diffuse.png",
+        "Mines_Ground": "Textures/MinesGround/Mines_Ground_1k_Diffuse.png",
+        "Mines_Walls": "Textures/MineWalls/Mine_Walls_1k_Diffuse.png"
+      }
+    },
+    "elbolillo-house": {
+      "title": "House",
+      "creator": "Elbolillo",
+      "url": "https://elbolilloduro.itch.io/house",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/elbolillo-house/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "House",
+      "models": "Models",
+      "convert": true,
+      "flatten": true,
+      "scale": 0.01
     }
   },
   "budgets": {
@@ -6420,6 +6512,982 @@
       "category": "Frontier",
       "height": 9.26,
       "collide": "trunk"
+    },
+    {
+      "id": "car_beetle",
+      "pack": "designersoup-car-pack-1",
+      "src": "Beatall.fbx",
+      "name": "Beetle Car",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "yaw": 90,
+      "simplify": 0.85
+    },
+    {
+      "id": "car_offroader",
+      "pack": "designersoup-car-pack-1",
+      "src": "Landyroamer.fbx",
+      "name": "Offroader",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "yaw": 90,
+      "simplify": 0.65
+    },
+    {
+      "id": "car_pickup",
+      "pack": "designersoup-car-pack-1",
+      "src": "Toyoyo Highlight.fbx",
+      "name": "Desert Pickup",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "yaw": 90,
+      "simplify": 0.6
+    },
+    {
+      "id": "car_racer",
+      "pack": "designersoup-car-pack-1",
+      "src": "Tristar Racer.fbx",
+      "name": "Sports Racer",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "yaw": 90
+    },
+    {
+      "id": "ds_traffic_cone",
+      "pack": "designersoup-car-pack-1-extras",
+      "src": "cone.fbx",
+      "name": "Traffic Cone",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01
+    },
+    {
+      "id": "ds_oil_drum",
+      "pack": "designersoup-car-pack-1-extras",
+      "src": "oildrum.fbx",
+      "name": "Oil Drum",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01
+    },
+    {
+      "id": "ds_tyre_rack",
+      "pack": "designersoup-car-pack-1-extras",
+      "src": "tireRack.fbx",
+      "name": "Tyre Rack",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "simplify": 0.8
+    },
+    {
+      "id": "ds_spare_wheel",
+      "pack": "designersoup-car-pack-1-extras",
+      "src": "offroadSpareWheel.fbx",
+      "name": "Spare Wheel",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01
+    },
+    {
+      "id": "ds_air_pump",
+      "pack": "designersoup-car-pack-1-extras",
+      "src": "airgun.fbx",
+      "name": "Air Pump",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01
+    },
+    {
+      "id": "ds_windsock",
+      "pack": "designersoup-car-pack-1-extras",
+      "src": "windsock.fbx",
+      "name": "Windsock",
+      "category": "Vehicles",
+      "collide": "trunk",
+      "scale": 0.01
+    },
+    {
+      "id": "hh_fridge",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Fridge A.fbx",
+      "name": "Tall Fridge",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_fridge_freezer",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Fridge B.fbx",
+      "name": "Fridge Freezer",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_oven",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Oven.fbx",
+      "name": "Cooker",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_dishwasher",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Dishwasher.fbx",
+      "name": "Dishwasher",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_washing_machine",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Washing Machine.fbx",
+      "name": "Washing Machine",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_cupboard",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Cupboard A.fbx",
+      "name": "Kitchen Unit",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_cupboard_double",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Cupboard B.fbx",
+      "name": "Double Kitchen Unit",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_cupboard_sink",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Cupboard Sink.fbx",
+      "name": "Sink Unit",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_cupboard_drawers",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Cupboard C.fbx",
+      "name": "Kitchen Drawers",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_microwave",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Microwave.fbx",
+      "name": "Microwave",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_kettle",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Kettle.fbx",
+      "name": "Kettle",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_toaster",
+      "pack": "lowpolyassets-household-items",
+      "src": "Kitchen/Toaster.fbx",
+      "name": "Toaster",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_bath",
+      "pack": "lowpolyassets-household-items",
+      "src": "Bathroom/Bath.fbx",
+      "name": "Bath",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_shower",
+      "pack": "lowpolyassets-household-items",
+      "src": "Bathroom/Shower.fbx",
+      "name": "Shower",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_basin",
+      "pack": "lowpolyassets-household-items",
+      "src": "Bathroom/Sink.fbx",
+      "name": "Wash Basin",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_toilet",
+      "pack": "lowpolyassets-household-items",
+      "src": "Bathroom/Toilet.fbx",
+      "name": "Toilet",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bed_double",
+      "pack": "lowpolyassets-household-items",
+      "src": "Beds/Bed Double.fbx",
+      "name": "Double Bed",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bed_single",
+      "pack": "lowpolyassets-household-items",
+      "src": "Beds/Bed Single.fbx",
+      "name": "Single Bed",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bunk_bed",
+      "pack": "lowpolyassets-household-items",
+      "src": "Beds/Bunk Bed.fbx",
+      "name": "Bunk Bed",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_chair",
+      "pack": "lowpolyassets-household-items",
+      "src": "Chairs/Chair A.fbx",
+      "name": "Dining Chair",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_stool",
+      "pack": "lowpolyassets-household-items",
+      "src": "Chairs/Chair C.fbx",
+      "name": "Bar Stool",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_office_chair",
+      "pack": "lowpolyassets-household-items",
+      "src": "Chairs/Chair E.fbx",
+      "name": "Swivel Chair",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_table",
+      "pack": "lowpolyassets-household-items",
+      "src": "Tables/Table A.fbx",
+      "name": "Dining Table",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_table_small",
+      "pack": "lowpolyassets-household-items",
+      "src": "Tables/Table B.fbx",
+      "name": "Small Table",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_coffee_table",
+      "pack": "lowpolyassets-household-items",
+      "src": "Tables/Table C.fbx",
+      "name": "Coffee Table",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_round_table",
+      "pack": "lowpolyassets-household-items",
+      "src": "Tables/Rounded Table B.fbx",
+      "name": "Round Table",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_desk",
+      "pack": "lowpolyassets-household-items",
+      "src": "Tables/Desk.fbx",
+      "name": "Writing Desk",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_sofa",
+      "pack": "lowpolyassets-household-items",
+      "src": "Sofas/Sofa A.fbx",
+      "name": "Three-Seat Sofa",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_sofa_small",
+      "pack": "lowpolyassets-household-items",
+      "src": "Sofas/Sofa B.fbx",
+      "name": "Two-Seat Sofa",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_armchair",
+      "pack": "lowpolyassets-household-items",
+      "src": "Sofas/Sofa C.fbx",
+      "name": "Blue Armchair",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_corner_sofa",
+      "pack": "lowpolyassets-household-items",
+      "src": "Sofas/Sofa D.fbx",
+      "name": "Long Sofa",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bookcase",
+      "pack": "lowpolyassets-household-items",
+      "src": "Shelves/Shelf A.fbx",
+      "name": "Tall Bookcase",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bookcase_wide",
+      "pack": "lowpolyassets-household-items",
+      "src": "Shelves/Shelf B.fbx",
+      "name": "Wide Bookcase",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_wall_shelf",
+      "pack": "lowpolyassets-household-items",
+      "src": "Shelves/Wall Shelf A.fbx",
+      "name": "Long Wall Shelf",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_chest_drawers",
+      "pack": "lowpolyassets-household-items",
+      "src": "Drawers/Drawer A.fbx",
+      "name": "Chest of Drawers",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bedside",
+      "pack": "lowpolyassets-household-items",
+      "src": "Drawers/Drawer B.fbx",
+      "name": "Bedside Drawers",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_tv",
+      "pack": "lowpolyassets-household-items",
+      "src": "Electronics/TV B.fbx",
+      "name": "Flat TV",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_monitor",
+      "pack": "lowpolyassets-household-items",
+      "src": "Electronics/Monitor.fbx",
+      "name": "Monitor",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_pc",
+      "pack": "lowpolyassets-household-items",
+      "src": "Electronics/Pc.fbx",
+      "name": "PC Tower",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_laptop",
+      "pack": "lowpolyassets-household-items",
+      "src": "Electronics/Laptop.fbx",
+      "name": "Laptop",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_floor_lamp",
+      "pack": "lowpolyassets-household-items",
+      "src": "Lights/Lamp A.fbx",
+      "name": "Red Floor Lamp",
+      "category": "Household",
+      "collide": "trunk"
+    },
+    {
+      "id": "hh_desk_lamp",
+      "pack": "lowpolyassets-household-items",
+      "src": "Lights/Lamp C.fbx",
+      "name": "Table Lamp",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_plant",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Plant A.fbx",
+      "name": "Pot Plant",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bin",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Bin.fbx",
+      "name": "Pedal Bin",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_radiator",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Radiator A.fbx",
+      "name": "Radiator",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_safe",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Safe B.fbx",
+      "name": "Safe",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_books",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Books A.fbx",
+      "name": "Row of Books",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_globe",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Globe.fbx",
+      "name": "Globe",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_speaker",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Speaker.fbx",
+      "name": "Speaker",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_fan",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Fan.fbx",
+      "name": "Desk Fan",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_wall_clock",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Clock.fbx",
+      "name": "Wall Clock",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_mirror",
+      "pack": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Mirror A.fbx",
+      "name": "Wall Mirror",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_rug",
+      "pack": "lowpolyassets-household-items",
+      "src": "Carpets/Carpet A.fbx",
+      "name": "Patterned Rug",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_rug_small",
+      "pack": "lowpolyassets-household-items",
+      "src": "Carpets/Carpet C.fbx",
+      "name": "Small Rug",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "gs_fuel_pump",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Fuel_pump$",
+      "name": "Fuel Pump",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_fuel_pump_slim",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^(Fuel_pump_|Dispenser)$",
+      "name": "Slim Fuel Pump",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_dumpster",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Dumpster",
+      "name": "Dumpster",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_ice_chest",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^ICE$",
+      "name": "Ice Chest",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_slush_machine",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^ice_slush_machine$",
+      "name": "Slush Machine",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_coffee_machine",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Coffee_machine$",
+      "name": "Coffee Machine",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_drinks_fridge",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Fridge",
+      "name": "Drinks Chest Freezer",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_shop_shelving",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Shelving003$",
+      "name": "Shop Shelving",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_metal_shelf",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Shelf_Metal$",
+      "name": "Stockroom Shelf",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_trash_bags",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Trash$",
+      "name": "Rubbish Bags",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_shop_counter",
+      "pack": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Desk$",
+      "name": "Shop Counter",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "mt_subway_car",
+      "pack": "elbolillo-metro",
+      "src": "Metro.glb#^(subway_car|seats(\\.\\d+)?|Railing_V(\\.\\d+)?|Door(\\.\\d+)?|Glass\\.\\d+)$",
+      "name": "Metro Car",
+      "category": "Metro",
+      "collide": "box",
+      "scale": 0.75
+    },
+    {
+      "id": "mt_ticket_gate",
+      "pack": "elbolillo-metro",
+      "src": "Metro.glb#^automatic_ticket_gate$",
+      "name": "Ticket Gate",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_ticket_machine",
+      "pack": "elbolillo-metro",
+      "src": "Metro.glb#^ticket_machine$",
+      "name": "Ticket Machine",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_vending_machine",
+      "pack": "elbolillo-metro",
+      "src": "Metro.glb#^Vending_machine$",
+      "name": "Vending Machine",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_bin",
+      "pack": "elbolillo-metro",
+      "src": "Metro.glb#^trash_can$",
+      "name": "Platform Bin",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_bench",
+      "pack": "elbolillo-metro",
+      "src": "Metro.glb#^Chair$",
+      "name": "Platform Seats",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_light",
+      "pack": "elbolillo-metro",
+      "src": "Metro.glb#^light$",
+      "name": "Strip Light",
+      "category": "Metro",
+      "collide": "none"
+    },
+    {
+      "id": "mc_cart",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Mine_Cart_AB_grp$",
+      "name": "Mine Cart (Ore)",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cart_empty",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Mine_Cart_BB_grp$",
+      "name": "Mine Cart (Low)",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cart_tipper",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Mine_Cart_CB_grp$",
+      "name": "Mine Cart (Tipper)",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_rail",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Rail_A$",
+      "name": "Mine Rail (4 m)",
+      "category": "Mines & Caves",
+      "collide": "none"
+    },
+    {
+      "id": "mc_rail_curve",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Rails_Corner_90Deg_A$",
+      "name": "Mine Rail Curve",
+      "category": "Mines & Caves",
+      "collide": "none"
+    },
+    {
+      "id": "mc_rail_end",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Rail_End$",
+      "name": "Mine Rail Stop",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_ladder",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Ladder_Tall$",
+      "name": "Mine Ladder",
+      "category": "Mines & Caves",
+      "collide": "none"
+    },
+    {
+      "id": "mc_support_frame",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Post_Reinforced_F$",
+      "name": "Mine Support Frame",
+      "category": "Mines & Caves",
+      "collide": "frame"
+    },
+    {
+      "id": "mc_support_post",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Post_Reinforced_A$",
+      "name": "Mine Support Post",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_beam",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Beam_A$",
+      "name": "Mine Beam",
+      "category": "Mines & Caves",
+      "collide": "none"
+    },
+    {
+      "id": "mc_mine_wall",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Mines_A$",
+      "name": "Mine Wall",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_mine_entrance",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Mines_Entrance_A$",
+      "name": "Mine Entrance",
+      "category": "Mines & Caves",
+      "collide": "frame"
+    },
+    {
+      "id": "mc_mine_tunnel",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Mines_Tunnel_Mid$",
+      "name": "Mine Tunnel Mouth",
+      "category": "Mines & Caves",
+      "collide": "shell"
+    },
+    {
+      "id": "mc_cave_wall",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Caves_A$",
+      "name": "Cave Wall",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_entrance",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Caves_Entrance_A$",
+      "name": "Cave Entrance",
+      "category": "Mines & Caves",
+      "collide": "frame"
+    },
+    {
+      "id": "mc_cave_rock_wall",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Wall_Rocks_A$",
+      "name": "Cave Rock Wall",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_rocks_a",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_A$",
+      "name": "Cave Rocks A",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_rocks_b",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_B$",
+      "name": "Cave Rocks B",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_rocks_c",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_C$",
+      "name": "Cave Rocks C",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_rocks_d",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_D$",
+      "name": "Cave Rocks D",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_pillar",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Pillar_A$",
+      "name": "Cave Pillar",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_pillar_wide",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Pillar_C$",
+      "name": "Wide Cave Pillar",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_ledge",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Platform_G$",
+      "name": "Cave Ledge",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_mound",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Ground_Mound_A$",
+      "name": "Spoil Mound",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_plank_wall",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Panel_Wood_A$",
+      "name": "Plank Wall",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_plank_entrance",
+      "pack": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Panel_Wood_Entrance_A$",
+      "name": "Plank Entrance",
+      "category": "Mines & Caves",
+      "collide": "frame"
+    },
+    {
+      "id": "hs_mower",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^Mower$",
+      "name": "Lawn Mower",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_tool_cabinet",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^Tool_Cabinet$",
+      "name": "Tool Cabinet",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_toolbox",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^Toolbox$",
+      "name": "Toolbox",
+      "category": "Garage & Garden",
+      "collide": "none"
+    },
+    {
+      "id": "hs_petrol_can",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^Petrol_Can001$",
+      "name": "Petrol Can",
+      "category": "Garage & Garden",
+      "collide": "none"
+    },
+    {
+      "id": "hs_paint_pot",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^Paint_pot$",
+      "name": "Paint Pot",
+      "category": "Garage & Garden",
+      "collide": "none"
+    },
+    {
+      "id": "hs_wheelie_bin",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^trash_can(_cover)?$",
+      "name": "Wheelie Bin",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_wardrobe",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^Wardrobe$",
+      "name": "Wardrobe",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_fridge",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^Refrigerator(_Door(_01)?)?001$",
+      "name": "Old Fridge",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_stove",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^Stove$",
+      "name": "Old Cooker",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_lamppost",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^Lamppost$",
+      "name": "Double Street Lamp",
+      "category": "Garage & Garden",
+      "collide": "trunk"
+    },
+    {
+      "id": "hs_garden_gate",
+      "pack": "elbolillo-house",
+      "src": "House.fbx#^garden_gate$",
+      "name": "Garden Gate",
+      "category": "Garage & Garden",
+      "collide": "box"
     }
   ]
 }

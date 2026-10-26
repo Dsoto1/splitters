@@ -5103,6 +5103,1553 @@
       "triangles": 524,
       "bytes": 28856,
       "sha256": "b6f2704907bc6d10"
+    },
+    {
+      "file": "props/car_beetle.glb",
+      "source": "designersoup-car-pack-1",
+      "src": "Beatall.fbx",
+      "triangles": 5707,
+      "bytes": 390828,
+      "sha256": "3d110003033a6641",
+      "size": [
+        1.324,
+        1.297,
+        3.45
+      ]
+    },
+    {
+      "file": "props/car_offroader.glb",
+      "source": "designersoup-car-pack-1",
+      "src": "Landyroamer.fbx",
+      "triangles": 5912,
+      "bytes": 384752,
+      "sha256": "ef39e668683eb30b",
+      "size": [
+        1.612,
+        2.053,
+        3.882
+      ]
+    },
+    {
+      "file": "props/car_pickup.glb",
+      "source": "designersoup-car-pack-1",
+      "src": "Toyoyo Highlight.fbx",
+      "triangles": 5831,
+      "bytes": 377528,
+      "sha256": "191bd93d570ddd41",
+      "size": [
+        2.196,
+        2.241,
+        4.594
+      ]
+    },
+    {
+      "file": "props/car_racer.glb",
+      "source": "designersoup-car-pack-1",
+      "src": "Tristar Racer.fbx",
+      "triangles": 4792,
+      "bytes": 146624,
+      "sha256": "51b27f8539a23f52",
+      "size": [
+        1.93,
+        1.533,
+        4.298
+      ]
+    },
+    {
+      "file": "props/ds_traffic_cone.glb",
+      "source": "designersoup-car-pack-1-extras",
+      "src": "cone.fbx",
+      "triangles": 134,
+      "bytes": 11268,
+      "sha256": "65ffea174887fe95",
+      "size": [
+        0.297,
+        0.344,
+        0.297
+      ]
+    },
+    {
+      "file": "props/ds_oil_drum.glb",
+      "source": "designersoup-car-pack-1-extras",
+      "src": "oildrum.fbx",
+      "triangles": 236,
+      "bytes": 14844,
+      "sha256": "2ea206e8db1e774a",
+      "size": [
+        0.628,
+        0.931,
+        0.628
+      ]
+    },
+    {
+      "file": "props/ds_tyre_rack.glb",
+      "source": "designersoup-car-pack-1-extras",
+      "src": "tireRack.fbx",
+      "triangles": 5548,
+      "bytes": 339404,
+      "sha256": "9cf8752046e62348",
+      "size": [
+        2.035,
+        1.664,
+        0.963
+      ]
+    },
+    {
+      "file": "props/ds_spare_wheel.glb",
+      "source": "designersoup-car-pack-1-extras",
+      "src": "offroadSpareWheel.fbx",
+      "triangles": 632,
+      "bytes": 27864,
+      "sha256": "fc36f2fa08d09144",
+      "size": [
+        0.801,
+        0.404,
+        0.801
+      ]
+    },
+    {
+      "file": "props/ds_air_pump.glb",
+      "source": "designersoup-car-pack-1-extras",
+      "src": "airgun.fbx",
+      "triangles": 404,
+      "bytes": 22240,
+      "sha256": "31c2356c6620c496",
+      "size": [
+        1.036,
+        0.17,
+        1.401
+      ]
+    },
+    {
+      "file": "props/ds_windsock.glb",
+      "source": "designersoup-car-pack-1-extras",
+      "src": "windsock.fbx",
+      "triangles": 552,
+      "bytes": 29140,
+      "sha256": "d5fcd5bb1a78a65e",
+      "size": [
+        0.472,
+        2.972,
+        1.229
+      ]
+    },
+    {
+      "file": "props/hh_fridge.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Fridge A.fbx",
+      "triangles": 744,
+      "bytes": 29760,
+      "sha256": "c5ebca9fd0b9e635",
+      "size": [
+        0.876,
+        1.894,
+        0.609
+      ]
+    },
+    {
+      "file": "props/hh_fridge_freezer.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Fridge B.fbx",
+      "triangles": 1288,
+      "bytes": 48052,
+      "sha256": "f12f6086f3584148",
+      "size": [
+        0.795,
+        2.01,
+        0.575
+      ]
+    },
+    {
+      "file": "props/hh_oven.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Oven.fbx",
+      "triangles": 1348,
+      "bytes": 59072,
+      "sha256": "aa91529f192ff41b",
+      "size": [
+        0.719,
+        0.904,
+        0.674
+      ]
+    },
+    {
+      "file": "props/hh_dishwasher.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Dishwasher.fbx",
+      "triangles": 1528,
+      "bytes": 59380,
+      "sha256": "d8155ba7c928ce36",
+      "size": [
+        0.61,
+        0.875,
+        0.689
+      ]
+    },
+    {
+      "file": "props/hh_washing_machine.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Washing Machine.fbx",
+      "triangles": 472,
+      "bytes": 26588,
+      "sha256": "298a7878dbedb006",
+      "size": [
+        0.61,
+        0.875,
+        0.76
+      ]
+    },
+    {
+      "file": "props/hh_cupboard.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Cupboard A.fbx",
+      "triangles": 368,
+      "bytes": 16380,
+      "sha256": "c431f0569fc9630f",
+      "size": [
+        0.504,
+        0.875,
+        0.651
+      ]
+    },
+    {
+      "file": "props/hh_cupboard_double.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Cupboard B.fbx",
+      "triangles": 584,
+      "bytes": 22800,
+      "sha256": "753c9fc33a014cb8",
+      "size": [
+        0.938,
+        0.875,
+        0.651
+      ]
+    },
+    {
+      "file": "props/hh_cupboard_sink.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Cupboard Sink.fbx",
+      "triangles": 1836,
+      "bytes": 77948,
+      "sha256": "560f482f981f6238",
+      "size": [
+        0.949,
+        1.013,
+        0.652
+      ]
+    },
+    {
+      "file": "props/hh_cupboard_drawers.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Cupboard C.fbx",
+      "triangles": 628,
+      "bytes": 21384,
+      "sha256": "92acb858a46ab58e",
+      "size": [
+        0.949,
+        0.903,
+        0.652
+      ]
+    },
+    {
+      "file": "props/hh_microwave.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Microwave.fbx",
+      "triangles": 332,
+      "bytes": 20184,
+      "sha256": "eb9d6ffb2eb19a28",
+      "size": [
+        0.755,
+        0.384,
+        0.418
+      ]
+    },
+    {
+      "file": "props/hh_kettle.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Kettle.fbx",
+      "triangles": 558,
+      "bytes": 27576,
+      "sha256": "2b9d2fe3167bee9b",
+      "size": [
+        0.413,
+        0.547,
+        0.303
+      ]
+    },
+    {
+      "file": "props/hh_toaster.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Kitchen/Toaster.fbx",
+      "triangles": 248,
+      "bytes": 14968,
+      "sha256": "2411e382ee6f1907",
+      "size": [
+        0.466,
+        0.338,
+        0.242
+      ]
+    },
+    {
+      "file": "props/hh_bath.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Bathroom/Bath.fbx",
+      "triangles": 1200,
+      "bytes": 46928,
+      "sha256": "c1cba53b11ea0795",
+      "size": [
+        1.412,
+        0.78,
+        0.781
+      ]
+    },
+    {
+      "file": "props/hh_shower.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Bathroom/Shower.fbx",
+      "triangles": 716,
+      "bytes": 31140,
+      "sha256": "78d0b4a1668be7ac",
+      "size": [
+        0.698,
+        1.813,
+        0.698
+      ]
+    },
+    {
+      "file": "props/hh_basin.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Bathroom/Sink.fbx",
+      "triangles": 1248,
+      "bytes": 48572,
+      "sha256": "ec7ef1b38cd66a92",
+      "size": [
+        0.444,
+        0.759,
+        0.29
+      ]
+    },
+    {
+      "file": "props/hh_toilet.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Bathroom/Toilet.fbx",
+      "triangles": 576,
+      "bytes": 25604,
+      "sha256": "c77e3895e764bd62",
+      "size": [
+        0.593,
+        1.013,
+        0.765
+      ]
+    },
+    {
+      "file": "props/hh_bed_double.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Beds/Bed Double.fbx",
+      "triangles": 1134,
+      "bytes": 46832,
+      "sha256": "0632a7d080df52e8",
+      "size": [
+        1.719,
+        0.714,
+        2.22
+      ]
+    },
+    {
+      "file": "props/hh_bed_single.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Beds/Bed Single.fbx",
+      "triangles": 946,
+      "bytes": 39712,
+      "sha256": "149e114509318754",
+      "size": [
+        0.992,
+        0.714,
+        2.22
+      ]
+    },
+    {
+      "file": "props/hh_bunk_bed.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Beds/Bunk Bed.fbx",
+      "triangles": 2040,
+      "bytes": 71776,
+      "sha256": "5809eb4132e7547b",
+      "size": [
+        1.037,
+        1.714,
+        2.22
+      ]
+    },
+    {
+      "file": "props/hh_chair.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Chairs/Chair A.fbx",
+      "triangles": 516,
+      "bytes": 23016,
+      "sha256": "5c91a507cfd27973",
+      "size": [
+        0.412,
+        0.973,
+        0.506
+      ]
+    },
+    {
+      "file": "props/hh_stool.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Chairs/Chair C.fbx",
+      "triangles": 286,
+      "bytes": 11728,
+      "sha256": "9b5d891a67a6b4dd",
+      "size": [
+        0.367,
+        0.622,
+        0.367
+      ]
+    },
+    {
+      "file": "props/hh_office_chair.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Chairs/Chair E.fbx",
+      "triangles": 1558,
+      "bytes": 67596,
+      "sha256": "206743828246c5d7",
+      "size": [
+        0.859,
+        1.133,
+        0.664
+      ]
+    },
+    {
+      "file": "props/hh_table.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Tables/Table A.fbx",
+      "triangles": 220,
+      "bytes": 10396,
+      "sha256": "304d68e9eb93723c",
+      "size": [
+        1.659,
+        0.796,
+        0.712
+      ]
+    },
+    {
+      "file": "props/hh_table_small.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Tables/Table B.fbx",
+      "triangles": 220,
+      "bytes": 10400,
+      "sha256": "5b2dc0043276327e",
+      "size": [
+        0.66,
+        0.37,
+        0.712
+      ]
+    },
+    {
+      "file": "props/hh_coffee_table.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Tables/Table C.fbx",
+      "triangles": 252,
+      "bytes": 12616,
+      "sha256": "f05fb3c8923f105e",
+      "size": [
+        1.345,
+        0.37,
+        0.712
+      ]
+    },
+    {
+      "file": "props/hh_round_table.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Tables/Rounded Table B.fbx",
+      "triangles": 420,
+      "bytes": 18784,
+      "sha256": "c11778bc57513f3b",
+      "size": [
+        1.149,
+        0.71,
+        1.149
+      ]
+    },
+    {
+      "file": "props/hh_desk.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Tables/Desk.fbx",
+      "triangles": 820,
+      "bytes": 35296,
+      "sha256": "d4cc13dc8145ba27",
+      "size": [
+        1.897,
+        0.854,
+        0.895
+      ]
+    },
+    {
+      "file": "props/hh_sofa.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Sofas/Sofa A.fbx",
+      "triangles": 1220,
+      "bytes": 50768,
+      "sha256": "5abc4b67d3b36c23",
+      "size": [
+        2.081,
+        0.88,
+        0.874
+      ]
+    },
+    {
+      "file": "props/hh_sofa_small.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Sofas/Sofa B.fbx",
+      "triangles": 844,
+      "bytes": 34772,
+      "sha256": "302145e0124fbc7a",
+      "size": [
+        1.233,
+        0.871,
+        0.874
+      ]
+    },
+    {
+      "file": "props/hh_armchair.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Sofas/Sofa C.fbx",
+      "triangles": 800,
+      "bytes": 30660,
+      "sha256": "7a086ade9a741c9d",
+      "size": [
+        1.115,
+        0.543,
+        0.815
+      ]
+    },
+    {
+      "file": "props/hh_corner_sofa.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Sofas/Sofa D.fbx",
+      "triangles": 1740,
+      "bytes": 66216,
+      "sha256": "e65dead71ffae195",
+      "size": [
+        2.571,
+        0.734,
+        0.827
+      ]
+    },
+    {
+      "file": "props/hh_bookcase.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Shelves/Shelf A.fbx",
+      "triangles": 376,
+      "bytes": 18696,
+      "sha256": "3ffeb45fbf555a11",
+      "size": [
+        0.653,
+        2.151,
+        0.474
+      ]
+    },
+    {
+      "file": "props/hh_bookcase_wide.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Shelves/Shelf B.fbx",
+      "triangles": 512,
+      "bytes": 21440,
+      "sha256": "6222f42d55acfe04",
+      "size": [
+        1.229,
+        2.151,
+        0.493
+      ]
+    },
+    {
+      "file": "props/hh_wall_shelf.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Shelves/Wall Shelf A.fbx",
+      "triangles": 220,
+      "bytes": 10408,
+      "sha256": "1ff06e0cf2c00adb",
+      "size": [
+        1.59,
+        0.355,
+        0.4
+      ]
+    },
+    {
+      "file": "props/hh_chest_drawers.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Drawers/Drawer A.fbx",
+      "triangles": 1216,
+      "bytes": 40760,
+      "sha256": "927577f6d4abac52",
+      "size": [
+        1.546,
+        0.756,
+        0.596
+      ]
+    },
+    {
+      "file": "props/hh_bedside.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Drawers/Drawer B.fbx",
+      "triangles": 608,
+      "bytes": 13068,
+      "sha256": "4fdb06cd650cacc6",
+      "size": [
+        0.508,
+        0.707,
+        0.525
+      ]
+    },
+    {
+      "file": "props/hh_tv.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Electronics/TV B.fbx",
+      "triangles": 192,
+      "bytes": 10044,
+      "sha256": "b1a3a4ae8aab5654",
+      "size": [
+        1.877,
+        1.193,
+        0.315
+      ]
+    },
+    {
+      "file": "props/hh_monitor.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Electronics/Monitor.fbx",
+      "triangles": 192,
+      "bytes": 11432,
+      "sha256": "eb7a3a8c89f6dde3",
+      "size": [
+        0.907,
+        0.794,
+        0.203
+      ]
+    },
+    {
+      "file": "props/hh_pc.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Electronics/Pc.fbx",
+      "triangles": 72,
+      "bytes": 5416,
+      "sha256": "21e116057364bfa1",
+      "size": [
+        0.346,
+        0.76,
+        0.663
+      ]
+    },
+    {
+      "file": "props/hh_laptop.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Electronics/Laptop.fbx",
+      "triangles": 396,
+      "bytes": 17748,
+      "sha256": "e0da6a5250348c87",
+      "size": [
+        0.56,
+        0.399,
+        0.465
+      ]
+    },
+    {
+      "file": "props/hh_floor_lamp.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Lights/Lamp A.fbx",
+      "triangles": 510,
+      "bytes": 20264,
+      "sha256": "734e5ad99e9f3e6f",
+      "size": [
+        0.731,
+        1.677,
+        0.731
+      ]
+    },
+    {
+      "file": "props/hh_desk_lamp.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Lights/Lamp C.fbx",
+      "triangles": 526,
+      "bytes": 21192,
+      "sha256": "76c2993f1944db74",
+      "size": [
+        0.321,
+        0.516,
+        0.321
+      ]
+    },
+    {
+      "file": "props/hh_plant.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Plant A.fbx",
+      "triangles": 312,
+      "bytes": 17084,
+      "sha256": "3a7652105e1d0a96",
+      "size": [
+        0.524,
+        1.185,
+        0.55
+      ]
+    },
+    {
+      "file": "props/hh_bin.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Bin.fbx",
+      "triangles": 116,
+      "bytes": 5440,
+      "sha256": "46a1985e14909b71",
+      "size": [
+        0.395,
+        0.573,
+        0.395
+      ]
+    },
+    {
+      "file": "props/hh_radiator.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Radiator A.fbx",
+      "triangles": 740,
+      "bytes": 30192,
+      "sha256": "40b3b804a6aff9a8",
+      "size": [
+        1.787,
+        0.707,
+        0.194
+      ]
+    },
+    {
+      "file": "props/hh_safe.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Safe B.fbx",
+      "triangles": 436,
+      "bytes": 19652,
+      "sha256": "ca1a2afec3fd69f7",
+      "size": [
+        0.339,
+        0.48,
+        0.348
+      ]
+    },
+    {
+      "file": "props/hh_books.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Books A.fbx",
+      "triangles": 588,
+      "bytes": 26272,
+      "sha256": "1f91376493018641",
+      "size": [
+        0.51,
+        0.297,
+        0.176
+      ]
+    },
+    {
+      "file": "props/hh_globe.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Globe.fbx",
+      "triangles": 408,
+      "bytes": 33240,
+      "sha256": "52d372038dbcbe52",
+      "size": [
+        0.331,
+        0.426,
+        0.277
+      ]
+    },
+    {
+      "file": "props/hh_speaker.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Speaker.fbx",
+      "triangles": 276,
+      "bytes": 22448,
+      "sha256": "aab62ad0039e4a68",
+      "size": [
+        0.158,
+        0.289,
+        0.156
+      ]
+    },
+    {
+      "file": "props/hh_fan.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Fan.fbx",
+      "triangles": 2400,
+      "bytes": 92452,
+      "sha256": "c3a3e5184bcd39f3",
+      "size": [
+        0.44,
+        0.587,
+        0.309
+      ]
+    },
+    {
+      "file": "props/hh_wall_clock.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Clock.fbx",
+      "triangles": 184,
+      "bytes": 9908,
+      "sha256": "9ebd4273269e1fe6",
+      "size": [
+        0.35,
+        0.35,
+        0.049
+      ]
+    },
+    {
+      "file": "props/hh_mirror.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Miscellaneous/Mirror A.fbx",
+      "triangles": 44,
+      "bytes": 4032,
+      "sha256": "c52be3d43b2a7fbd",
+      "size": [
+        0.663,
+        1.42,
+        0.078
+      ]
+    },
+    {
+      "file": "props/hh_rug.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Carpets/Carpet A.fbx",
+      "triangles": 140,
+      "bytes": 7284,
+      "sha256": "819f852affd23dc8",
+      "size": [
+        2.345,
+        0.06,
+        1.273
+      ]
+    },
+    {
+      "file": "props/hh_rug_small.glb",
+      "source": "lowpolyassets-household-items",
+      "src": "Carpets/Carpet C.fbx",
+      "triangles": 28,
+      "bytes": 2388,
+      "sha256": "402045b059368e7b",
+      "size": [
+        0.976,
+        0.052,
+        0.514
+      ]
+    },
+    {
+      "file": "props/gs_fuel_pump.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Fuel_pump$",
+      "triangles": 924,
+      "bytes": 53660,
+      "sha256": "892b44015c28114f",
+      "size": [
+        0.828,
+        2.808,
+        1.286
+      ]
+    },
+    {
+      "file": "props/gs_fuel_pump_slim.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^(Fuel_pump_|Dispenser)$",
+      "triangles": 212,
+      "bytes": 14764,
+      "sha256": "fdea622d2d15fb71",
+      "size": [
+        1.12,
+        2.808,
+        0.624
+      ]
+    },
+    {
+      "file": "props/gs_dumpster.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Dumpster",
+      "triangles": 156,
+      "bytes": 12512,
+      "sha256": "40d54b697dc6bee9",
+      "size": [
+        1.962,
+        1.231,
+        1.271
+      ]
+    },
+    {
+      "file": "props/gs_ice_chest.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^ICE$",
+      "triangles": 32,
+      "bytes": 3400,
+      "sha256": "8067ad96b71a5c9f",
+      "size": [
+        1.966,
+        2.024,
+        0.811
+      ]
+    },
+    {
+      "file": "props/gs_slush_machine.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^ice_slush_machine$",
+      "triangles": 384,
+      "bytes": 25604,
+      "sha256": "6fb4124d7951d7dd",
+      "size": [
+        0.486,
+        1.007,
+        0.638
+      ]
+    },
+    {
+      "file": "props/gs_coffee_machine.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Coffee_machine$",
+      "triangles": 106,
+      "bytes": 8436,
+      "sha256": "4493a1b44a1cf1d1",
+      "size": [
+        0.369,
+        1.002,
+        0.804
+      ]
+    },
+    {
+      "file": "props/gs_drinks_fridge.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Fridge",
+      "triangles": 140,
+      "bytes": 9916,
+      "sha256": "5c1a8f031a5d5b1e",
+      "size": [
+        1.686,
+        1.061,
+        1.033
+      ]
+    },
+    {
+      "file": "props/gs_shop_shelving.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Shelving003$",
+      "triangles": 160,
+      "bytes": 11988,
+      "sha256": "13df7e800cbc3bf5",
+      "size": [
+        2.402,
+        1.64,
+        0.628
+      ]
+    },
+    {
+      "file": "props/gs_metal_shelf.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Shelf_Metal$",
+      "triangles": 120,
+      "bytes": 9348,
+      "sha256": "cb70deb8af663cf5",
+      "size": [
+        2.746,
+        2.522,
+        0.843
+      ]
+    },
+    {
+      "file": "props/gs_trash_bags.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Trash$",
+      "triangles": 110,
+      "bytes": 8628,
+      "sha256": "b8b5ce314040024e",
+      "size": [
+        0.951,
+        0.634,
+        0.774
+      ]
+    },
+    {
+      "file": "props/gs_shop_counter.glb",
+      "source": "elbolillo-gas-station",
+      "src": "Gas_station_Props.fbx#^Desk$",
+      "triangles": 82,
+      "bytes": 6820,
+      "sha256": "c1b6b6af6a897601",
+      "size": [
+        1.382,
+        0.919,
+        0.758
+      ]
+    },
+    {
+      "file": "props/mt_subway_car.glb",
+      "source": "elbolillo-metro",
+      "src": "Metro.glb#^(subway_car|seats(\\.\\d+)?|Railing_V(\\.\\d+)?|Door(\\.\\d+)?|Glass\\.\\d+)$",
+      "triangles": 5304,
+      "bytes": 333852,
+      "sha256": "7832f4b30881a5d5",
+      "size": [
+        2.874,
+        3.996,
+        17.543
+      ]
+    },
+    {
+      "file": "props/mt_ticket_gate.glb",
+      "source": "elbolillo-metro",
+      "src": "Metro.glb#^automatic_ticket_gate$",
+      "triangles": 242,
+      "bytes": 18568,
+      "sha256": "bedafdf0c21c3e4f",
+      "size": [
+        0.825,
+        0.924,
+        1.21
+      ]
+    },
+    {
+      "file": "props/mt_ticket_machine.glb",
+      "source": "elbolillo-metro",
+      "src": "Metro.glb#^ticket_machine$",
+      "triangles": 22,
+      "bytes": 3048,
+      "sha256": "30cf1f8f2c72cff6",
+      "size": [
+        0.824,
+        1.902,
+        0.352
+      ]
+    },
+    {
+      "file": "props/mt_vending_machine.glb",
+      "source": "elbolillo-metro",
+      "src": "Metro.glb#^Vending_machine$",
+      "triangles": 68,
+      "bytes": 5932,
+      "sha256": "4d5bc2fb7a4a9a93",
+      "size": [
+        1.272,
+        2.02,
+        0.576
+      ]
+    },
+    {
+      "file": "props/mt_bin.glb",
+      "source": "elbolillo-metro",
+      "src": "Metro.glb#^trash_can$",
+      "triangles": 694,
+      "bytes": 47120,
+      "sha256": "73c8aa4a78a5a22a",
+      "size": [
+        0.839,
+        1.064,
+        0.845
+      ]
+    },
+    {
+      "file": "props/mt_bench.glb",
+      "source": "elbolillo-metro",
+      "src": "Metro.glb#^Chair$",
+      "triangles": 352,
+      "bytes": 24812,
+      "sha256": "ba5829e99e08db44",
+      "size": [
+        1.93,
+        0.811,
+        0.459
+      ]
+    },
+    {
+      "file": "props/mt_light.glb",
+      "source": "elbolillo-metro",
+      "src": "Metro.glb#^light$",
+      "triangles": 76,
+      "bytes": 5444,
+      "sha256": "561bad54eac8c1c7",
+      "size": [
+        0.317,
+        0.162,
+        1.731
+      ]
+    },
+    {
+      "file": "props/mc_cart.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Mine_Cart_AB_grp$",
+      "triangles": 1156,
+      "bytes": 57872,
+      "sha256": "123dd73427a26949",
+      "size": [
+        1.52,
+        1.22,
+        0.82
+      ]
+    },
+    {
+      "file": "props/mc_cart_empty.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Mine_Cart_BB_grp$",
+      "triangles": 1160,
+      "bytes": 57940,
+      "sha256": "fc9677647a2ba5a1",
+      "size": [
+        1.42,
+        0.853,
+        0.82
+      ]
+    },
+    {
+      "file": "props/mc_cart_tipper.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Mine_Cart_CB_grp$",
+      "triangles": 1504,
+      "bytes": 69360,
+      "sha256": "d87051522a8c015b",
+      "size": [
+        1.404,
+        1.159,
+        0.82
+      ]
+    },
+    {
+      "file": "props/mc_rail.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Rail_A$",
+      "triangles": 72,
+      "bytes": 30912,
+      "sha256": "c0227f6806d70821",
+      "size": [
+        4,
+        0.12,
+        0.95
+      ]
+    },
+    {
+      "file": "props/mc_rail_curve.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Rails_Corner_90Deg_A$",
+      "triangles": 128,
+      "bytes": 32232,
+      "sha256": "cff9ed57552280ce",
+      "size": [
+        2.475,
+        0.12,
+        2.475
+      ]
+    },
+    {
+      "file": "props/mc_rail_end.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Rail_End$",
+      "triangles": 22,
+      "bytes": 29092,
+      "sha256": "b99d7a74c06b9e73",
+      "size": [
+        0.378,
+        0.48,
+        1.224
+      ]
+    },
+    {
+      "file": "props/mc_ladder.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Ladder_Tall$",
+      "triangles": 100,
+      "bytes": 32064,
+      "sha256": "35888854de29573b",
+      "size": [
+        0.8,
+        4.02,
+        0.121
+      ]
+    },
+    {
+      "file": "props/mc_support_frame.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Post_Reinforced_F$",
+      "triangles": 32,
+      "bytes": 29532,
+      "sha256": "0e8f84763af82ad8",
+      "size": [
+        1.983,
+        3.8,
+        1.092
+      ]
+    },
+    {
+      "file": "props/mc_support_post.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Post_Reinforced_A$",
+      "triangles": 8,
+      "bytes": 28548,
+      "sha256": "54141c5185db7cbc",
+      "size": [
+        0.2,
+        3.8,
+        0.2
+      ]
+    },
+    {
+      "file": "props/mc_beam.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Beam_A$",
+      "triangles": 8,
+      "bytes": 28492,
+      "sha256": "23c0e033ed87fefb",
+      "size": [
+        4,
+        0.2,
+        0.2
+      ]
+    },
+    {
+      "file": "props/mc_mine_wall.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Mines_A$",
+      "triangles": 62,
+      "bytes": 13808,
+      "sha256": "c6b45877e80316c8",
+      "size": [
+        4.596,
+        4.614,
+        0.403
+      ]
+    },
+    {
+      "file": "props/mc_mine_entrance.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Mines_Entrance_A$",
+      "triangles": 214,
+      "bytes": 17596,
+      "sha256": "5bbc0e1a1f74475f",
+      "size": [
+        4.387,
+        4.341,
+        0.736
+      ]
+    },
+    {
+      "file": "props/mc_mine_tunnel.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Mines_Tunnel_Mid$",
+      "triangles": 157,
+      "bytes": 17352,
+      "sha256": "16703c1463a4fe8f",
+      "size": [
+        2.512,
+        4.484,
+        1.645
+      ]
+    },
+    {
+      "file": "props/mc_cave_wall.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Caves_A$",
+      "triangles": 86,
+      "bytes": 14884,
+      "sha256": "72815aa27d7caed4",
+      "size": [
+        4.912,
+        4.854,
+        0.917
+      ]
+    },
+    {
+      "file": "props/mc_cave_entrance.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Wall_Caves_Entrance_A$",
+      "triangles": 192,
+      "bytes": 18336,
+      "sha256": "950b05390f3b0227",
+      "size": [
+        4.887,
+        4.676,
+        1.115
+      ]
+    },
+    {
+      "file": "props/mc_cave_rock_wall.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Wall_Rocks_A$",
+      "triangles": 124,
+      "bytes": 15540,
+      "sha256": "e4fbb858cab52cdd",
+      "size": [
+        2.293,
+        5.023,
+        1.007
+      ]
+    },
+    {
+      "file": "props/mc_cave_rocks_a.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_A$",
+      "triangles": 98,
+      "bytes": 15380,
+      "sha256": "8b6e45665d5b9ec2",
+      "size": [
+        1.681,
+        2.478,
+        1.299
+      ]
+    },
+    {
+      "file": "props/mc_cave_rocks_b.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_B$",
+      "triangles": 162,
+      "bytes": 17092,
+      "sha256": "5e673344d989d14e",
+      "size": [
+        2.048,
+        2.385,
+        1.309
+      ]
+    },
+    {
+      "file": "props/mc_cave_rocks_c.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_C$",
+      "triangles": 144,
+      "bytes": 15556,
+      "sha256": "ee00bfffd17424aa",
+      "size": [
+        1.941,
+        1.418,
+        1.521
+      ]
+    },
+    {
+      "file": "props/mc_cave_rocks_d.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_D$",
+      "triangles": 134,
+      "bytes": 15868,
+      "sha256": "952c186ebdb4ad63",
+      "size": [
+        2.261,
+        1.532,
+        1.818
+      ]
+    },
+    {
+      "file": "props/mc_cave_pillar.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Pillar_A$",
+      "triangles": 194,
+      "bytes": 18052,
+      "sha256": "f733f49c24891efa",
+      "size": [
+        1.669,
+        5.237,
+        1.92
+      ]
+    },
+    {
+      "file": "props/mc_cave_pillar_wide.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Pillar_C$",
+      "triangles": 226,
+      "bytes": 18612,
+      "sha256": "ac306c0f17a3ccaa",
+      "size": [
+        1.999,
+        4.797,
+        2.251
+      ]
+    },
+    {
+      "file": "props/mc_cave_ledge.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Cave_Platform_G$",
+      "triangles": 96,
+      "bytes": 35132,
+      "sha256": "e623d6c431422f55",
+      "size": [
+        6.076,
+        2.916,
+        5.007
+      ]
+    },
+    {
+      "file": "props/mc_mound.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Ground_Mound_A$",
+      "triangles": 58,
+      "bytes": 22536,
+      "sha256": "57be9d3dc63c5b26",
+      "size": [
+        5.51,
+        1.901,
+        5.236
+      ]
+    },
+    {
+      "file": "props/mc_plank_wall.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Panel_Wood_A$",
+      "triangles": 112,
+      "bytes": 32580,
+      "sha256": "aa2d806854d25879",
+      "size": [
+        4,
+        3.975,
+        0.05
+      ]
+    },
+    {
+      "file": "props/mc_plank_entrance.glb",
+      "source": "loafbrr-mines-and-caves",
+      "src": "Modular_Mine_Set.glb#^Panel_Wood_Entrance_A$",
+      "triangles": 220,
+      "bytes": 36620,
+      "sha256": "86373dc73bb5042c",
+      "size": [
+        4,
+        4,
+        0.31
+      ]
+    },
+    {
+      "file": "props/hs_mower.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^Mower$",
+      "triangles": 294,
+      "bytes": 19976,
+      "sha256": "28e486bbb8d87439",
+      "size": [
+        0.667,
+        1.137,
+        1.442
+      ]
+    },
+    {
+      "file": "props/hs_tool_cabinet.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^Tool_Cabinet$",
+      "triangles": 88,
+      "bytes": 7232,
+      "sha256": "e9c7618fdb6b4eb4",
+      "size": [
+        0.494,
+        1.435,
+        1.004
+      ]
+    },
+    {
+      "file": "props/hs_toolbox.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^Toolbox$",
+      "triangles": 92,
+      "bytes": 7488,
+      "sha256": "98ad64f6030c4bb8",
+      "size": [
+        0.318,
+        0.282,
+        0.569
+      ]
+    },
+    {
+      "file": "props/hs_petrol_can.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^Petrol_Can001$",
+      "triangles": 102,
+      "bytes": 8168,
+      "sha256": "447d1356c0fe9571",
+      "size": [
+        0.312,
+        0.516,
+        0.394
+      ]
+    },
+    {
+      "file": "props/hs_paint_pot.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^Paint_pot$",
+      "triangles": 52,
+      "bytes": 4856,
+      "sha256": "1d15141f22612055",
+      "size": [
+        0.374,
+        0.378,
+        0.365
+      ]
+    },
+    {
+      "file": "props/hs_wheelie_bin.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^trash_can(_cover)?$",
+      "triangles": 384,
+      "bytes": 27548,
+      "sha256": "d179f9566d2a85a1",
+      "size": [
+        0.8,
+        1.209,
+        0.878
+      ]
+    },
+    {
+      "file": "props/hs_wardrobe.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^Wardrobe$",
+      "triangles": 96,
+      "bytes": 7752,
+      "sha256": "bb765d05b32d82ce",
+      "size": [
+        1.398,
+        1.924,
+        0.424
+      ]
+    },
+    {
+      "file": "props/hs_fridge.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^Refrigerator(_Door(_01)?)?001$",
+      "triangles": 338,
+      "bytes": 17800,
+      "sha256": "cfb35ecfa8f843c6",
+      "size": [
+        0.864,
+        2.087,
+        0.958
+      ]
+    },
+    {
+      "file": "props/hs_stove.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^Stove$",
+      "triangles": 28,
+      "bytes": 3260,
+      "sha256": "fb368e14a93cfbb9",
+      "size": [
+        0.685,
+        1.088,
+        0.787
+      ]
+    },
+    {
+      "file": "props/hs_lamppost.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^Lamppost$",
+      "triangles": 113,
+      "bytes": 12920,
+      "sha256": "1c6a270f2b3e3c2f",
+      "size": [
+        2.902,
+        8.645,
+        0.344
+      ]
+    },
+    {
+      "file": "props/hs_garden_gate.glb",
+      "source": "elbolillo-house",
+      "src": "House.fbx#^garden_gate$",
+      "triangles": 46,
+      "bytes": 5548,
+      "sha256": "7e67d046df531a00",
+      "size": [
+        1.138,
+        2.689,
+        0.126
+      ]
     }
   ]
 }

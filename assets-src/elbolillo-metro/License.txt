@@ -1,0 +1,20 @@
+Metro (Metro_PSX, PSX-style subway set)
+Models by Elbolillo (Elbolilloduro) - https://elbolilloduro.itch.io/
+Source page: https://elbolilloduro.itch.io/metro
+(also on Sketchfab: https://sketchfab.com/3d-models/metro-b2017b6b23844e79a72b473b516a577e)
+
+License: the itch.io page states "The models in this package are under the
+CC0 license" (Creative Commons Zero v1.0 Universal,
+https://creativecommons.org/publicdomain/zero/1.0/). The Sketchfab copy is
+listed as CC Attribution, so we credit "Elbolillo" either way.
+
+Textures: the page credits some textures to ambientCG, TextureLib and
+Textures.com, and several are photos (a vending machine with branded snacks,
+posters). Textures.com's terms do not allow passing its textures on, so we
+ship none of the pack's textures: tools/content/flatten.mjs replaces every
+texture with one flat colour per triangle and only the geometry ships. The
+posters and the metro map are not used.
+
+Raw pack files are not kept in this repository. tools/content/prepare-props.mjs
+builds the game-ready props from the extracted download (see
+docs/CONTENT_PIPELINE.md), and content/props.lock.json records what it wrote.

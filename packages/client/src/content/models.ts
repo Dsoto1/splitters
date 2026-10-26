@@ -7,6 +7,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 // Side-effect import: registers the glTF 2.0 loader plugin.
 import '@babylonjs/loaders/glTF/2.0';
+import { MODEL_FALLBACKS } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
 
 /** Base URL of built content (packages/client/public/models). */
@@ -31,6 +32,9 @@ export class ModelLibrary {
     }
     if (!p) {
       p = LoadAssetContainerAsync(versioned(/^(props|creatures|city|packs)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB);
+      // Models from pack downloads (content/guns.json) fall back to the ones they replaced.
+      const fallback = MODEL_FALLBACKS[path];
+      if (fallback) p = p.catch(() => this.load(fallback));
       this.containers.set(path, p);
     }
     return p;

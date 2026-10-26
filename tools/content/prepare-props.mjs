@@ -14,6 +14,13 @@
 // directory holding the extracted download (directly or one level down);
 // otherwise (or when that pack's folder is not there) the props already built
 // from them are kept as they are.
+//
+// Packs with `convert: true` (FBX-only packs and one-scene sets: Designersoup's
+// cars, the household items, Elbolillo's gas station and metro) are read with
+// tools/content/fbx.mjs (or as GLB), one prop per `src`: `file.fbx` or
+// `file.fbx#<regex>` to keep only the scene's objects whose name (or a parent's)
+// matches. `flatten` packs lose their (third-party photo) textures for a flat
+// colour per face (tools/content/flatten.mjs).
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -21,9 +28,11 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Logger, NodeIO, getBounds } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { dedup, mergeDocuments, prune, simplify, weld } from '@gltf-transform/functions';
+import { dedup, mergeDocuments, normals, prune, quantize, simplify, unweld, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
+import { fbxToDocument } from './fbx.mjs';
+import { flattenTextures } from './flatten.mjs';
 
 await MeshoptSimplifier.ready;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -149,7 +158,10 @@ function sceneTriangles(scene) {
     const mesh = node.getMesh();
     if (mesh)
       for (const prim of mesh.listPrimitives()) {
-        const a = prim.getAttribute('POSITION').getArray();
+        // Element reads, so quantized (normalized) positions come back in model units.
+        const acc = prim.getAttribute('POSITION');
+        const a = new Float32Array(acc.getCount() * 3);
+        for (let i = 0, e = [0, 0, 0]; i < acc.getCount(); i++) a.set(acc.getElement(i, e), i * 3);
         const at = (i) => {
           const [x, y, z] = [a[i * 3], a[i * 3 + 1], a[i * 3 + 2]];
           return [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]];
@@ -265,6 +277,74 @@ async function normaliseGlb(src, p) {
   return { glb: Buffer.from(await io.writeBinary(doc)), size: [round((b.max[0] - b.min[0]) * s), round(p.height), round((b.max[2] - b.min[2]) * s)] };
 }
 
+/** A prop from a `convert` pack: picked from its FBX/GLB, flattened if asked, turned, centred, stood on the ground and scaled. */
+async function convertPiece(dir, pack, p) {
+  const [file, pickSrc] = p.src.split('#');
+  const path = join(dir, pack.models ?? '.', file);
+  const pick = pickSrc ? new RegExp(pickSrc) : null;
+  let doc;
+  if (/\.fbx$/i.test(file)) ({ doc } = await fbxToDocument(path, { pick }));
+  else {
+    doc = await io.read(path);
+    doc.setLogger(quiet);
+    // Drop whole subtrees: the objects not picked, and collision-only meshes (Unity's `-colonly` convention).
+    const drop = (n) => {
+      for (const c of n.listChildren()) drop(c);
+      n.dispose();
+    };
+    for (const n of doc.getRoot().listScenes()[0].listChildren()) if (pick && !pick.test(n.getName())) drop(n);
+    for (const n of doc.getRoot().listNodes()) if (/-colonly$/.test(n.getName())) drop(n);
+    await doc.transform(prune());
+  }
+  doc.setLogger(quiet);
+  // `maps`: colour maps that sit beside the model unlinked (the Mines and Caves set), by material name.
+  for (const [name, file] of Object.entries(pack.maps ?? {})) {
+    const mats = doc.getRoot().listMaterials().filter((m) => m.getName() === name);
+    if (!mats.length) continue;
+    const tex = doc.createTexture(name).setImage(readFileSync(join(dir, file))).setMimeType('image/png');
+    for (const m of mats) m.setBaseColorTexture(tex).setBaseColorFactor([1, 1, 1, 1]);
+  }
+  // Vertex colours some exports carry as painting masks, not colours.
+  if (pack.dropVertexColors) for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) prim.setAttribute('COLOR_0', null);
+  if (pack.flatten) await flattenTextures(doc);
+  for (const mat of doc.getRoot().listMaterials()) {
+    mat.setMetallicRoughnessTexture(null).setNormalTexture(null).setOcclusionTexture(null).setMetallicFactor(0).setRoughnessFactor(0.8);
+    for (const ext of mat.listExtensions()) ext.dispose();
+    if (/glass/i.test(mat.getName())) mat.setBaseColorFactor([0.3, 0.38, 0.42, 0.45]).setAlphaMode('BLEND').setRoughnessFactor(0.15);
+  }
+  const scene = doc.getRoot().listScenes()[0];
+  const turn = doc.createNode('turn').setRotation(yawQuat(p.yaw ?? 0));
+  for (const child of scene.listChildren()) {
+    scene.removeChild(child);
+    turn.addChild(child);
+  }
+  scene.addChild(turn);
+  const b = getBounds(scene);
+  const s = p.height ? p.height / Math.max(1e-6, b.max[1] - b.min[1]) : (p.scale ?? pack.scale ?? 1);
+  const root = doc.createNode('prop').setScale([s, s, s]).setTranslation([(-(b.min[0] + b.max[0]) / 2) * s, -b.min[1] * s + (p.lift ?? 0), (-(b.min[2] + b.max[2]) / 2) * s]);
+  scene.removeChild(turn);
+  root.addChild(turn);
+  scene.addChild(root);
+  if (p.simplify) {
+    // Flat-shaded exports split every face apart by its normal, which leaves the simplifier nothing to
+    // collapse: drop the normals, simplify the welded mesh, then give each face its own normal again.
+    for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) prim.setAttribute('NORMAL', null);
+    await doc.transform(weld(), simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.01 }), unweld(), normals({ overwrite: true }));
+  }
+  await doc.transform(weld(), dedup(), prune(), quantize());
+  // Embedded textures: palettes (the cars') as small PNGs, painted maps (`textureSize`) as JPEGs.
+  for (const t of doc.getRoot().listTextures()) {
+    if (pack.textureSize) {
+      const img = sharp(Buffer.from(t.getImage())).resize(pack.textureSize, pack.textureSize, { fit: 'inside', kernel: 'lanczos3' });
+      t.setImage(await img.removeAlpha().jpeg({ quality: 80, mozjpeg: true }).toBuffer()).setMimeType('image/jpeg').setURI('');
+      continue;
+    }
+    const img = sharp(Buffer.from(t.getImage())).resize(128, 128, { fit: 'inside', kernel: 'nearest' });
+    t.setImage(await img.png({ palette: true }).toBuffer()).setMimeType('image/png').setURI('');
+  }
+  return Buffer.from(await io.writeBinary(doc));
+}
+
 for (const p of manifest.props) {
   const pack = manifest.packs[p.pack];
   const file = `props/${p.id}.glb`;
@@ -276,6 +356,7 @@ for (const p of manifest.props) {
   // Packs with an `images` folder (the MegaKit's glTF, the Orbital and Neon Kenney kits) get their materials
   // baked and shrunk; other GLB kits are normalised as they are.
   const gltfKit = external && !!pack.images;
+  const converted = external && !!pack.convert;
   const dir = external && downloads ? downloadDir(pack.download) : null;
   let glb;
   let size;
@@ -298,6 +379,9 @@ for (const p of manifest.props) {
     scene.addChild(root);
     await doc.transform(weld(), dedup(), ...(p.simplify ? [simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.002 })] : []), prune());
     glb = Buffer.from(await io.writeBinary(doc));
+    writeFileSync(path, glb);
+  } else if (converted && dir) {
+    glb = await convertPiece(dir, pack, p);
     writeFileSync(path, glb);
   } else if (external && dir) {
     ({ glb, size } = await normaliseGlb(join(dir, pack.models, p.src), p));
@@ -324,7 +408,7 @@ for (const p of manifest.props) {
     size = [round(b.max[0] - b.min[0]), round(Math.max(b.max[1], 0.01)), round(b.max[2] - b.min[2])];
   }
   const thick = (v) => round(Math.max(v, MIN_THICKNESS));
-  const collision = p.collide === 'none' ? null : p.collide === 'trunk' ? [Math.min(0.5, size[0]), size[1], Math.min(0.5, size[2])] : gltfKit ? [thick(size[0]), size[1], thick(size[2])] : size;
+  const collision = p.collide === 'none' ? null : p.collide === 'trunk' ? [Math.min(0.5, size[0]), size[1], Math.min(0.5, size[2])] : gltfKit || converted ? [thick(size[0]), size[1], thick(size[2])] : size;
   // The game draws glTF models mirrored in x (Babylon's import into its left-handed space), so the boxes are too.
   const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene))?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
   defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}) });

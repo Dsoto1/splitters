@@ -90,6 +90,10 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'hitching_post', 'water_trough', 'wagon_wheel', 'wanted_board', 'outhouse', 'tumbleweed', 'covered_wagon', 'wind_pump',
       'barrel', 'barrel_open', 'crate_small', 'crate_large', 'hay_bale', 'cart', 'woodpile', 'planks_stack', 'signpost', 'bucket',
       'cactus', 'cactus_tall', 'nt_saguaro', 'nt_cactus_round', 'coffin', 'gravestone_cross', 'bar_stool', 'table', 'chair', 'dg_coin_pile', 'dg_coin_bag',
+      // loafbrr's Mines and Caves set (CC0).
+      'mc_cart', 'mc_cart_empty', 'mc_cart_tipper', 'mc_rail', 'mc_rail_curve', 'mc_rail_end', 'mc_ladder', 'mc_support_frame', 'mc_support_post', 'mc_beam',
+      'mc_mine_wall', 'mc_mine_entrance', 'mc_mine_tunnel', 'mc_cave_wall', 'mc_cave_entrance', 'mc_cave_rock_wall', 'mc_cave_rocks_a', 'mc_cave_rocks_b',
+      'mc_cave_rocks_c', 'mc_cave_rocks_d', 'mc_cave_pillar', 'mc_cave_pillar_wide', 'mc_cave_ledge', 'mc_mound', 'mc_plank_wall', 'mc_plank_entrance',
     ),
     materials: ['core.pbr_weathered_planks', 'core.pbr_weathered_siding', 'core.pbr_adobe', 'core.pbr_dusty_road'],
     facades: ['false_front', 'adobe'],

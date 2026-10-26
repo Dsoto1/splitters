@@ -541,6 +541,8 @@ for (const x of [-20, 20]) m.prop('bush_large', [x, 0, -16], 0, 1.2);
 for (let x = -132; x <= 60; x += 16) m.prop('lightpost', [x, 0, 50], PI);
 for (let x = -124; x <= 52; x += 24) m.prop('bench', [x + 8, 0, 49.6], PI, 2.4);
 for (const z of [-60, -36, -12, 12, 36]) m.prop('lightpost', [-91.5, 0, z], P);
+// The motorcade parked down West Executive Avenue (Designersoup's offroader and pickup, CC0).
+for (const [z, model] of [[-44, 'car_offroader'], [-20, 'car_pickup'], [0, 'car_offroader']] as const) m.prop(model, [-89.3, 0, z], 0);
 
 // ================================================================ VEHICLES
 
