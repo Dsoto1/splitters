@@ -405,6 +405,40 @@ export class ScenarioVisuals {
         offset = new Vector3(0, 0, board ? 1.5 : 0.8);
         break;
       }
+      case 'candle':
+      case 'chandelier': {
+        // A three-branch candelabrum standing where the light is, or a brass ring of candles hanging below it.
+        const brass = this.mat('candleBrass', '#b08d3a', { spec: 0.6 });
+        const wax = this.mat('candleWax', '#efe6cf');
+        const hanging = e.fixture === 'chandelier';
+        const spots: [number, number, number][] = [];
+        if (hanging) {
+          const chain = CreateCylinder(`${name}_chain`, { diameter: 0.05, height: 0.7, tessellation: 6 }, this.scene);
+          chain.material = brass;
+          chain.position.y = -0.35;
+          chain.parent = root;
+          const ring = CreateCylinder(`${name}_ring`, { diameter: 1.3, height: 0.06, tessellation: 20 }, this.scene);
+          ring.material = brass;
+          ring.position.y = -0.8;
+          ring.parent = root;
+          for (let i = 0; i < 6; i++) spots.push([Math.cos((i / 6) * Math.PI * 2) * 0.6, -0.77, Math.sin((i / 6) * Math.PI * 2) * 0.6]);
+          offset = new Vector3(0, -0.6, 0);
+        } else {
+          this.box(`${name}_stem`, root, [0.05, 0.36, 0.05], [0, 0.18, 0], brass);
+          this.box(`${name}_arm`, root, [0.46, 0.04, 0.04], [0, 0.36, 0], brass);
+          for (const x of [-0.22, 0, 0.22]) spots.push([x, 0.38, 0]);
+          offset = new Vector3(0, 0.6, 0);
+        }
+        spots.forEach(([x, y, z], i) => {
+          this.box(`${name}_wax${i}`, root, [0.05, 0.16, 0.05], [x, y + 0.08, z], wax);
+          const flame = CreateSphere(`${name}_flame${i}`, { diameter: 0.06, segments: 4 }, this.scene);
+          flame.scaling.y = 1.8;
+          flame.position.set(x, y + 0.2, z);
+          flame.material = glow;
+          flame.parent = root;
+        });
+        break;
+      }
       case 'none':
         if (this.opts.editor) {
           const marker = CreateSphere(`${name}_marker`, { diameter: 0.35, segments: 8 }, this.scene);
@@ -423,12 +457,16 @@ export class ScenarioVisuals {
     }
     const container = this.container();
     let light: PointLight | null = null;
+    // Candles flicker; blinking candles gutter and flare at random (seeded by the light, so each one is its own).
+    const candle = e.fixture === 'candle' || e.fixture === 'chandelier';
+    const seed = [...e.id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 997, 7);
     const update = (flags: number, rgb: number, now: number) => {
       const blink = lightBlinkOf(flags);
-      const on = (flags & LIGHT_ON) !== 0 && (!blink || Math.floor((now / 1000) * blink * 2) % 2 === 0);
+      const on = (flags & LIGHT_ON) !== 0 && (candle || !blink || Math.floor((now / 1000) * blink * 2) % 2 === 0);
       const flash = (flags & LIGHT_FLASH) !== 0;
       const c = new Color3(((rgb >> 16) & 255) / 255, ((rgb >> 8) & 255) / 255, (rgb & 255) / 255);
-      const level = flash ? 2.5 : on ? 1 : 0;
+      let level = flash ? 2.5 : on ? 1 : 0;
+      if (candle && on && !flash) level *= candleFlicker(now / 1000, blink, seed);
       if (ownGlow) {
         ownGlow.emissiveColor = level ? c.scale(1.4 * Math.min(level, 1.6)) : c.scale(0.08);
         ownGlow.diffuseColor = c;
@@ -459,7 +497,7 @@ export class ScenarioVisuals {
       lit.dispose();
     });
     // Off or blinking from the start: show that before the first update arrives.
-    if (e.off || e.blink) update((e.off ? 0 : LIGHT_ON) | (Math.round((e.blink ?? 0) * 10) << 2), parseInt(e.color.slice(1), 16), performance.now());
+    if (e.off || e.blink || candle) update((e.off ? 0 : LIGHT_ON) | (Math.round((e.blink ?? 0) * 10) << 2), parseInt(e.color.slice(1), 16), performance.now());
     return { root, update };
   }
 
@@ -796,10 +834,32 @@ export class ScenarioVisuals {
   /** Two wooden rails and rungs every 30 cm, standing just off the wall. */
   private ladder(name: string, e: Extract<MapEntity, { kind: 'ladder' }>): Visual {
     const root = new TransformNode(name, this.scene);
+    if (e.style === 'vines') return this.vines(name, e, root);
     const wood = this.mat('ladderWood', '#8a5d33');
     const h = e.height + 0.9;
     for (const x of [-e.width / 2, e.width / 2]) this.box(`${name}_rail${x}`, root, [0.08, h, 0.08], [x, h / 2, 0.1], wood);
     for (let y = 0.3, i = 0; y < h - 0.1; y += 0.3, i++) this.box(`${name}_rung${i}`, root, [e.width, 0.05, 0.05], [0, y, 0.1], wood);
+    return { root };
+  }
+
+  /** Climbing vines: twisting strands across the ladder's width, thick with leaves, hugging the wall. */
+  private vines(name: string, e: Extract<MapEntity, { kind: 'ladder' }>, root: TransformNode): Visual {
+    const stem = this.mat('vineStem', '#2e5a1a');
+    const leafMats = [this.mat('vineLeaf', '#3c7a24'), this.mat('vineLeafLight', '#5a9a30'), this.mat('vineLeafDark', '#24561a')];
+    const h = e.height + 0.6;
+    const strands = Math.max(3, Math.round(e.width / 0.3));
+    let n = 0;
+    for (let k = 0; k < strands; k++) {
+      const x0 = -e.width / 2 + (k + 0.5) * (e.width / strands);
+      for (let y = 0; y < h - 0.05; y += 0.4, n++) {
+        const seg = this.box(`${name}_v${n}`, root, [0.05, 0.44, 0.05], [x0 + Math.sin(y * 2.3 + k) * 0.08, y + 0.2, 0.06], stem);
+        seg.rotation.z = Math.cos(y * 2.3 + k) * 0.25;
+        if ((n + k) % 2 === 0) {
+          const leaf = this.box(`${name}_l${n}`, root, [0.22, 0.02, 0.14], [x0 + (n % 3 === 0 ? 0.1 : -0.1), y + 0.25, 0.12], leafMats[n % 3]!);
+          leaf.rotation.set(-0.6, n * 0.9, 0.3);
+        }
+      }
+    }
     return { root };
   }
 
@@ -1222,7 +1282,7 @@ export class ScenarioVisuals {
       case 'flames':
         return this.flames(name);
       case 'crusher':
-        return this.crusher(name);
+        return e.style === 'rockfall' ? this.rockfall(name) : this.crusher(name);
       case 'mine':
         return this.mine(name);
       case 'laser':
@@ -1357,6 +1417,37 @@ export class ScenarioVisuals {
     };
   }
 
+  /** Falling rocks: boulders lodged overhead that shudder, drop when it fires and are back up there once it rearms. */
+  private rockfall(name: string): Visual {
+    const root = new TransformNode(name, this.scene);
+    const rocks = new TransformNode(`${name}_rocks`, this.scene);
+    rocks.parent = root;
+    const rock = [this.mat('rockfall', '#767261'), this.mat('rockfallDark', '#5e5e48')];
+    for (const [i, [x, z, d]] of ([[-0.8, -0.5, 1.3], [0.7, -0.3, 1.1], [0.1, 0.7, 1.4], [-0.6, 0.9, 0.9], [0.9, 0.9, 0.8]] as const).entries()) {
+      const r = CreateSphere(`${name}_rock${i}`, { diameter: d, segments: 3 }, this.scene);
+      r.scaling.set(1, 0.75, 0.9);
+      r.rotation.y = i;
+      r.position.set(x, d * 0.35, z);
+      r.material = rock[i % 2]!;
+      r.parent = rocks;
+    }
+    for (const [x, z] of [[-1.2, 1.1], [1.0, -1.2], [0.3, 0.2]] as const) this.box(`${name}_scree${x}`, root, [0.4, 0.12, 0.3], [x, 0.06, z], rock[1]!);
+    if (this.opts.editor) this.dangerArea(name, root, 'crusher');
+    const top = 3.2;
+    rocks.position.y = top;
+    let y = top;
+    return {
+      root,
+      update: (flags, _b, now, dt) => {
+        const active = !!(flags & TRAP_ACTIVE);
+        // Down fast when it fires; once it rearms the rocks are simply back up there.
+        y = active ? Math.max(0.05, y - dt * 18) : top;
+        rocks.position.x = flags & TRAP_WARNING ? Math.sin(now * 0.07) * 0.05 : 0;
+        rocks.position.y = y;
+      },
+    };
+  }
+
   private mine(name: string): Visual {
     const root = new TransformNode(name, this.scene);
     const disc = CreateCylinder(`${name}_disc`, { diameter: 0.55, height: 0.12, tessellation: 16 }, this.scene);
@@ -1397,4 +1488,18 @@ export class ScenarioVisuals {
       },
     };
   }
+}
+
+/**
+ * Candle light: a gentle flicker round full brightness; with `blink` (per
+ * second) it gutters, dropping near dark and flaring back at random moments.
+ */
+function candleFlicker(t: number, blink: number, seed: number): number {
+  let k = 0.9 + 0.06 * Math.sin(t * 13 + seed) + 0.04 * Math.sin(t * 31 + seed * 2);
+  if (blink) {
+    const step = Math.floor(t * blink * 3);
+    const r = Math.abs(Math.sin(step * 12.9898 + seed * 78.233) * 43758.5453) % 1;
+    k *= r < 0.45 ? 0.08 + 0.25 * r : 1.1;
+  }
+  return k;
 }

@@ -179,6 +179,14 @@
       "licenseFile": "assets-src/tiletrigger-stylepacks/License.txt",
       "retrieved": "2026-10-26"
     },
+    "tiletrigger-styleprops": {
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "licenseFile": "assets-src/tiletrigger-styleprops/License.txt",
+      "retrieved": "2026-10-26"
+    },
     "quaternius-survival-pack": {
       "title": "Survival Pack",
       "creator": "Quaternius",
@@ -4549,6 +4557,600 @@
       "name": "Neon Barrier",
       "category": "Neon Megacity",
       "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "ge_bookcase_tall",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_bookcase_tall.glb",
+      "name": "Tall Bookcase",
+      "category": "Gothic Estate",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "ge_chandelier",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_chandelier.glb",
+      "name": "Candle Chandelier",
+      "category": "Gothic Estate",
+      "height": 1.79,
+      "collide": "none"
+    },
+    {
+      "id": "ge_candelabra",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_candelabra.glb",
+      "name": "Floor Candelabra",
+      "category": "Gothic Estate",
+      "height": 1.76,
+      "collide": "trunk"
+    },
+    {
+      "id": "ge_grandfather_clock",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_grandfather_clock.glb",
+      "name": "Grandfather Clock",
+      "category": "Gothic Estate",
+      "height": 2.32,
+      "collide": "box"
+    },
+    {
+      "id": "ge_wingback_chair",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_wingback_chair.glb",
+      "name": "Wingback Chair",
+      "category": "Gothic Estate",
+      "height": 1.25,
+      "collide": "box"
+    },
+    {
+      "id": "ge_grand_piano",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_grand_piano.glb",
+      "name": "Grand Piano",
+      "category": "Gothic Estate",
+      "height": 1.82,
+      "collide": "box"
+    },
+    {
+      "id": "ge_portrait",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_portrait.glb",
+      "name": "Portrait",
+      "category": "Gothic Estate",
+      "height": 1.35,
+      "collide": "none"
+    },
+    {
+      "id": "ge_suit_of_armour",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_suit_of_armour.glb",
+      "name": "Suit of Armour",
+      "category": "Gothic Estate",
+      "height": 2.25,
+      "collide": "trunk",
+      "breakable": {
+        "health": 60,
+        "debris": "#8c9298"
+      }
+    },
+    {
+      "id": "ge_four_poster_bed",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_four_poster_bed.glb",
+      "name": "Four-Poster Bed",
+      "category": "Gothic Estate",
+      "height": 2.45,
+      "collide": "box"
+    },
+    {
+      "id": "ge_writing_desk",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_writing_desk.glb",
+      "name": "Writing Desk",
+      "category": "Gothic Estate",
+      "height": 1.09,
+      "collide": "box"
+    },
+    {
+      "id": "ge_sarcophagus",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_sarcophagus.glb",
+      "name": "Sarcophagus",
+      "category": "Gothic Estate",
+      "height": 1.16,
+      "collide": "box"
+    },
+    {
+      "id": "ge_angel_statue",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_angel_statue.glb",
+      "name": "Weeping Angel",
+      "category": "Gothic Estate",
+      "height": 2.79,
+      "collide": "box"
+    },
+    {
+      "id": "ge_headstone_tall",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_headstone_tall.glb",
+      "name": "Tall Headstone",
+      "category": "Gothic Estate",
+      "height": 1.82,
+      "collide": "box",
+      "breakable": {
+        "health": 90,
+        "debris": "#8a8680"
+      }
+    },
+    {
+      "id": "ge_iron_fence",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_iron_fence.glb",
+      "name": "Wrought-Iron Railing",
+      "category": "Gothic Estate",
+      "height": 1.87,
+      "collide": "box"
+    },
+    {
+      "id": "ge_iron_gate",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_iron_gate.glb",
+      "name": "Wrought-Iron Gates",
+      "category": "Gothic Estate",
+      "height": 3.34,
+      "collide": "frame"
+    },
+    {
+      "id": "ge_hedge_wall",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_hedge_wall.glb",
+      "name": "Box Hedge",
+      "category": "Gothic Estate",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "ge_hedge_arch",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_hedge_arch.glb",
+      "name": "Hedge Arch",
+      "category": "Gothic Estate",
+      "height": 3.2,
+      "collide": "frame"
+    },
+    {
+      "id": "ge_topiary",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_topiary.glb",
+      "name": "Topiary",
+      "category": "Gothic Estate",
+      "height": 2.45,
+      "collide": "trunk"
+    },
+    {
+      "id": "ge_gas_lamp",
+      "pack": "tiletrigger-styleprops",
+      "src": "ge_gas_lamp.glb",
+      "name": "Gas Lamp",
+      "category": "Gothic Estate",
+      "height": 3.66,
+      "collide": "trunk"
+    },
+    {
+      "id": "jg_stone_idol",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_stone_idol.glb",
+      "name": "Colossal Head",
+      "category": "Jungle Ruins",
+      "height": 3.25,
+      "collide": "box"
+    },
+    {
+      "id": "jg_serpent_statue",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_serpent_statue.glb",
+      "name": "Serpent Head",
+      "category": "Jungle Ruins",
+      "height": 2.94,
+      "collide": "box"
+    },
+    {
+      "id": "jg_carved_pillar",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_carved_pillar.glb",
+      "name": "Carved Pillar",
+      "category": "Jungle Ruins",
+      "height": 4.05,
+      "collide": "box"
+    },
+    {
+      "id": "jg_altar_stone",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_altar_stone.glb",
+      "name": "Altar Stone",
+      "category": "Jungle Ruins",
+      "height": 1.25,
+      "collide": "box"
+    },
+    {
+      "id": "jg_stele",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_stele.glb",
+      "name": "Carved Stele",
+      "category": "Jungle Ruins",
+      "height": 3.6,
+      "collide": "box"
+    },
+    {
+      "id": "jg_vine_curtain",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_vine_curtain.glb",
+      "name": "Vine Curtain",
+      "category": "Jungle Ruins",
+      "height": 3.72,
+      "collide": "none"
+    },
+    {
+      "id": "jg_liana",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_liana.glb",
+      "name": "Liana",
+      "category": "Jungle Ruins",
+      "height": 6.74,
+      "collide": "none"
+    },
+    {
+      "id": "jg_bridge_post",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_bridge_post.glb",
+      "name": "Rope Bridge Anchor",
+      "category": "Jungle Ruins",
+      "height": 1.6,
+      "collide": "none"
+    },
+    {
+      "id": "jg_waterfall",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_waterfall.glb",
+      "name": "Waterfall",
+      "category": "Jungle Ruins",
+      "height": 8.02,
+      "collide": "none"
+    },
+    {
+      "id": "jg_giant_root",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_giant_root.glb",
+      "name": "Giant Root",
+      "category": "Jungle Ruins",
+      "height": 1.49,
+      "collide": "box"
+    },
+    {
+      "id": "jg_banana_plant",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_banana_plant.glb",
+      "name": "Banana Plant",
+      "category": "Jungle Ruins",
+      "height": 2.2,
+      "collide": "none"
+    },
+    {
+      "id": "jg_giant_fern",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_giant_fern.glb",
+      "name": "Giant Fern",
+      "category": "Jungle Ruins",
+      "height": 1.05,
+      "collide": "none"
+    },
+    {
+      "id": "jg_monstera",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_monstera.glb",
+      "name": "Monstera",
+      "category": "Jungle Ruins",
+      "height": 1.43,
+      "collide": "none"
+    },
+    {
+      "id": "jg_bamboo",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_bamboo.glb",
+      "name": "Bamboo Stand",
+      "category": "Jungle Ruins",
+      "height": 5.72,
+      "collide": "trunk"
+    },
+    {
+      "id": "jg_brazier",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_brazier.glb",
+      "name": "Fire Brazier",
+      "category": "Jungle Ruins",
+      "height": 1.85,
+      "collide": "trunk"
+    },
+    {
+      "id": "jg_rubble_blocks",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_rubble_blocks.glb",
+      "name": "Fallen Blocks",
+      "category": "Jungle Ruins",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "jg_gold_idol",
+      "pack": "tiletrigger-styleprops",
+      "src": "jg_gold_idol.glb",
+      "name": "Golden Idol",
+      "category": "Jungle Ruins",
+      "height": 1.62,
+      "collide": "box"
+    },
+    {
+      "id": "sb_microwave",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_microwave.glb",
+      "name": "Microwave",
+      "category": "Suburban Chaos",
+      "height": 0.3,
+      "collide": "box",
+      "breakable": {
+        "health": 15,
+        "debris": "#eeeeea",
+        "blast": {
+          "radius": 2.5,
+          "damage": 45,
+          "edge": 10
+        }
+      }
+    },
+    {
+      "id": "sb_fridge",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_fridge.glb",
+      "name": "Fridge Freezer",
+      "category": "Suburban Chaos",
+      "height": 1.8,
+      "collide": "box",
+      "breakable": {
+        "health": 90,
+        "debris": "#b8bcc0"
+      }
+    },
+    {
+      "id": "sb_bbq_grill",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_bbq_grill.glb",
+      "name": "Gas Barbecue",
+      "category": "Suburban Chaos",
+      "height": 1.35,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#c0302a",
+        "blast": {
+          "radius": 4.5,
+          "damage": 110,
+          "edge": 20
+        }
+      }
+    },
+    {
+      "id": "sb_propane_tank",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_propane_tank.glb",
+      "name": "Propane Tank (large)",
+      "category": "Suburban Chaos",
+      "height": 1.34,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#eeeeea",
+        "blast": {
+          "radius": 5.5,
+          "damage": 140,
+          "edge": 25
+        }
+      }
+    },
+    {
+      "id": "sb_washing_machine",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_washing_machine.glb",
+      "name": "Washing Machine",
+      "category": "Suburban Chaos",
+      "height": 0.85,
+      "collide": "box",
+      "breakable": {
+        "health": 70,
+        "debris": "#eeeeea"
+      }
+    },
+    {
+      "id": "sb_tv_flat",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_tv_flat.glb",
+      "name": "Flat-Screen TV",
+      "category": "Suburban Chaos",
+      "height": 1.3,
+      "collide": "box",
+      "breakable": {
+        "health": 15,
+        "debris": "#2a2c30"
+      }
+    },
+    {
+      "id": "sb_mailbox",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_mailbox.glb",
+      "name": "Mailbox",
+      "category": "Suburban Chaos",
+      "height": 1.38,
+      "collide": "trunk",
+      "breakable": {
+        "health": 20,
+        "debris": "#2a5aa8"
+      }
+    },
+    {
+      "id": "sb_wheelie_bin",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_wheelie_bin.glb",
+      "name": "Wheelie Bin",
+      "category": "Suburban Chaos",
+      "height": 1.06,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#6e7276"
+      }
+    },
+    {
+      "id": "sb_lawnmower",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_lawnmower.glb",
+      "name": "Lawnmower",
+      "category": "Suburban Chaos",
+      "height": 0.98,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#c0302a",
+        "blast": {
+          "radius": 3,
+          "damage": 60,
+          "edge": 10
+        }
+      }
+    },
+    {
+      "id": "sb_garden_gnome",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_garden_gnome.glb",
+      "name": "Garden Gnome",
+      "category": "Suburban Chaos",
+      "height": 0.7,
+      "collide": "box",
+      "breakable": {
+        "health": 5,
+        "debris": "#c0302a"
+      }
+    },
+    {
+      "id": "sb_picket_fence",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_picket_fence.glb",
+      "name": "Picket Fence",
+      "category": "Suburban Chaos",
+      "height": 1.05,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#eeeeea"
+      }
+    },
+    {
+      "id": "sb_swing_set",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_swing_set.glb",
+      "name": "Swing Set",
+      "category": "Suburban Chaos",
+      "height": 2.47,
+      "collide": "none"
+    },
+    {
+      "id": "sb_slide",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_slide.glb",
+      "name": "Playground Slide",
+      "category": "Suburban Chaos",
+      "height": 2.6,
+      "collide": "none"
+    },
+    {
+      "id": "sb_trampoline",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_trampoline.glb",
+      "name": "Trampoline",
+      "category": "Suburban Chaos",
+      "height": 0.86,
+      "collide": "none"
+    },
+    {
+      "id": "sb_basketball_hoop",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_basketball_hoop.glb",
+      "name": "Basketball Hoop",
+      "category": "Suburban Chaos",
+      "height": 3.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "sb_gas_pump",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_gas_pump.glb",
+      "name": "Petrol Pump",
+      "category": "Suburban Chaos",
+      "height": 1.95,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#c0302a",
+        "blast": {
+          "radius": 5,
+          "damage": 120,
+          "edge": 20
+        }
+      }
+    },
+    {
+      "id": "sb_sedan",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_sedan.glb",
+      "name": "Family Car",
+      "category": "Suburban Chaos",
+      "height": 1.35,
+      "collide": "box",
+      "breakable": {
+        "health": 250,
+        "debris": "#7a1e22",
+        "blast": {
+          "radius": 5,
+          "damage": 120,
+          "edge": 20
+        }
+      }
+    },
+    {
+      "id": "sb_patio_set",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_patio_set.glb",
+      "name": "Patio Set",
+      "category": "Suburban Chaos",
+      "height": 2.35,
+      "collide": "trunk"
+    },
+    {
+      "id": "sb_sun_lounger",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_sun_lounger.glb",
+      "name": "Sun Lounger",
+      "category": "Suburban Chaos",
+      "height": 0.87,
+      "collide": "box"
+    },
+    {
+      "id": "sb_fire_hydrant",
+      "pack": "tiletrigger-styleprops",
+      "src": "sb_fire_hydrant.glb",
+      "name": "Fire Hydrant",
+      "category": "Suburban Chaos",
+      "height": 0.77,
       "collide": "box"
     },
     {

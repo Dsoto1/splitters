@@ -3402,6 +3402,454 @@
       "sha256": "3068fdb4e492b8c8"
     },
     {
+      "file": "props/ge_bookcase_tall.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_bookcase_tall.glb",
+      "triangles": 1596,
+      "bytes": 91688,
+      "sha256": "d32d6e0de7d70e6b"
+    },
+    {
+      "file": "props/ge_chandelier.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_chandelier.glb",
+      "triangles": 2200,
+      "bytes": 72012,
+      "sha256": "dc12e746ed403aa9"
+    },
+    {
+      "file": "props/ge_candelabra.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_candelabra.glb",
+      "triangles": 880,
+      "bytes": 24020,
+      "sha256": "61d9fad14c6ef9fd"
+    },
+    {
+      "file": "props/ge_grandfather_clock.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_grandfather_clock.glb",
+      "triangles": 404,
+      "bytes": 20308,
+      "sha256": "ce998d5332323ec4"
+    },
+    {
+      "file": "props/ge_wingback_chair.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_wingback_chair.glb",
+      "triangles": 132,
+      "bytes": 9484,
+      "sha256": "4b687152b90e9a25"
+    },
+    {
+      "file": "props/ge_grand_piano.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_grand_piano.glb",
+      "triangles": 444,
+      "bytes": 25180,
+      "sha256": "2901ace2a9e1fae6"
+    },
+    {
+      "file": "props/ge_portrait.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_portrait.glb",
+      "triangles": 180,
+      "bytes": 8092,
+      "sha256": "63fadf07af4db16d"
+    },
+    {
+      "file": "props/ge_suit_of_armour.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_suit_of_armour.glb",
+      "triangles": 496,
+      "bytes": 18524,
+      "sha256": "4ed1bb16b5a18ed8"
+    },
+    {
+      "file": "props/ge_four_poster_bed.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_four_poster_bed.glb",
+      "triangles": 204,
+      "bytes": 14664,
+      "sha256": "54176d48f0b4e5cb"
+    },
+    {
+      "file": "props/ge_writing_desk.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_writing_desk.glb",
+      "triangles": 296,
+      "bytes": 17008,
+      "sha256": "f86e88a26f2343e0"
+    },
+    {
+      "file": "props/ge_sarcophagus.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_sarcophagus.glb",
+      "triangles": 264,
+      "bytes": 12340,
+      "sha256": "a21c232257adfe21"
+    },
+    {
+      "file": "props/ge_angel_statue.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_angel_statue.glb",
+      "triangles": 292,
+      "bytes": 12096,
+      "sha256": "3a2c2217dfff62e3"
+    },
+    {
+      "file": "props/ge_headstone_tall.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_headstone_tall.glb",
+      "triangles": 284,
+      "bytes": 10936,
+      "sha256": "a09341f8de14f864"
+    },
+    {
+      "file": "props/ge_iron_fence.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_iron_fence.glb",
+      "triangles": 840,
+      "bytes": 38868,
+      "sha256": "d68cc9b4faf7049b"
+    },
+    {
+      "file": "props/ge_iron_gate.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_iron_gate.glb",
+      "triangles": 1104,
+      "bytes": 47556,
+      "sha256": "21452343dead0940"
+    },
+    {
+      "file": "props/ge_hedge_wall.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_hedge_wall.glb",
+      "triangles": 1692,
+      "bytes": 33652,
+      "sha256": "d4ae09d9e3df8578"
+    },
+    {
+      "file": "props/ge_hedge_arch.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_hedge_arch.glb",
+      "triangles": 1116,
+      "bytes": 23500,
+      "sha256": "b1675911c0316fbc"
+    },
+    {
+      "file": "props/ge_topiary.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_topiary.glb",
+      "triangles": 318,
+      "bytes": 10712,
+      "sha256": "5cfe14ab9847a52b"
+    },
+    {
+      "file": "props/ge_gas_lamp.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "ge_gas_lamp.glb",
+      "triangles": 332,
+      "bytes": 13952,
+      "sha256": "31ce24f195bcc26b"
+    },
+    {
+      "file": "props/jg_stone_idol.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_stone_idol.glb",
+      "triangles": 636,
+      "bytes": 18332,
+      "sha256": "8b25c5d3ca191fca"
+    },
+    {
+      "file": "props/jg_serpent_statue.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_serpent_statue.glb",
+      "triangles": 372,
+      "bytes": 15872,
+      "sha256": "e538b3b76b629a00"
+    },
+    {
+      "file": "props/jg_carved_pillar.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_carved_pillar.glb",
+      "triangles": 420,
+      "bytes": 16552,
+      "sha256": "f0828c385829abcd"
+    },
+    {
+      "file": "props/jg_altar_stone.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_altar_stone.glb",
+      "triangles": 120,
+      "bytes": 7728,
+      "sha256": "daf66d62d1df356a"
+    },
+    {
+      "file": "props/jg_stele.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_stele.glb",
+      "triangles": 288,
+      "bytes": 12452,
+      "sha256": "f8bfe2858977b79b"
+    },
+    {
+      "file": "props/jg_vine_curtain.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_vine_curtain.glb",
+      "triangles": 1356,
+      "bytes": 75704,
+      "sha256": "2eb19fd7e371e845"
+    },
+    {
+      "file": "props/jg_liana.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_liana.glb",
+      "triangles": 252,
+      "bytes": 15440,
+      "sha256": "09ca0d4f682e1244"
+    },
+    {
+      "file": "props/jg_bridge_post.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_bridge_post.glb",
+      "triangles": 380,
+      "bytes": 18856,
+      "sha256": "37b589653a1959fe"
+    },
+    {
+      "file": "props/jg_waterfall.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_waterfall.glb",
+      "triangles": 1572,
+      "bytes": 35180,
+      "sha256": "0fecd8c45b8f09b1"
+    },
+    {
+      "file": "props/jg_giant_root.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_giant_root.glb",
+      "triangles": 240,
+      "bytes": 10472,
+      "sha256": "41c7ce2df8fb6091"
+    },
+    {
+      "file": "props/jg_banana_plant.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_banana_plant.glb",
+      "triangles": 164,
+      "bytes": 9712,
+      "sha256": "5b921bef260cfe0c"
+    },
+    {
+      "file": "props/jg_giant_fern.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_giant_fern.glb",
+      "triangles": 184,
+      "bytes": 9528,
+      "sha256": "d95ba0fd0c1e278d"
+    },
+    {
+      "file": "props/jg_monstera.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_monstera.glb",
+      "triangles": 312,
+      "bytes": 13508,
+      "sha256": "a8b1164faa685751"
+    },
+    {
+      "file": "props/jg_bamboo.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_bamboo.glb",
+      "triangles": 1004,
+      "bytes": 40172,
+      "sha256": "83926031dccf2446"
+    },
+    {
+      "file": "props/jg_brazier.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_brazier.glb",
+      "triangles": 223,
+      "bytes": 9932,
+      "sha256": "0d40560031239178"
+    },
+    {
+      "file": "props/jg_rubble_blocks.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_rubble_blocks.glb",
+      "triangles": 168,
+      "bytes": 6904,
+      "sha256": "7eb4091739175938"
+    },
+    {
+      "file": "props/jg_gold_idol.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "jg_gold_idol.glb",
+      "triangles": 84,
+      "bytes": 6968,
+      "sha256": "f095d214cedd4619"
+    },
+    {
+      "file": "props/sb_microwave.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_microwave.glb",
+      "triangles": 60,
+      "bytes": 4824,
+      "sha256": "e25c68e5612ae585"
+    },
+    {
+      "file": "props/sb_fridge.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_fridge.glb",
+      "triangles": 84,
+      "bytes": 7020,
+      "sha256": "cd565de360c4337e"
+    },
+    {
+      "file": "props/sb_bbq_grill.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_bbq_grill.glb",
+      "triangles": 228,
+      "bytes": 14616,
+      "sha256": "c042789ed3153f91"
+    },
+    {
+      "file": "props/sb_propane_tank.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_propane_tank.glb",
+      "triangles": 396,
+      "bytes": 14272,
+      "sha256": "7a2faf1d8d02e56a"
+    },
+    {
+      "file": "props/sb_washing_machine.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_washing_machine.glb",
+      "triangles": 280,
+      "bytes": 14076,
+      "sha256": "c63b8cfef925a138"
+    },
+    {
+      "file": "props/sb_tv_flat.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_tv_flat.glb",
+      "triangles": 72,
+      "bytes": 5828,
+      "sha256": "16b47966185f3d30"
+    },
+    {
+      "file": "props/sb_mailbox.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_mailbox.glb",
+      "triangles": 88,
+      "bytes": 6024,
+      "sha256": "ee5ca11195829e62"
+    },
+    {
+      "file": "props/sb_wheelie_bin.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_wheelie_bin.glb",
+      "triangles": 116,
+      "bytes": 6452,
+      "sha256": "1b1475832c9d4850"
+    },
+    {
+      "file": "props/sb_lawnmower.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_lawnmower.glb",
+      "triangles": 300,
+      "bytes": 14668,
+      "sha256": "eb96f98a1688939a"
+    },
+    {
+      "file": "props/sb_garden_gnome.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_garden_gnome.glb",
+      "triangles": 248,
+      "bytes": 9636,
+      "sha256": "500f9b665b76f6d3"
+    },
+    {
+      "file": "props/sb_picket_fence.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_picket_fence.glb",
+      "triangles": 432,
+      "bytes": 20952,
+      "sha256": "73685d619b5337a9"
+    },
+    {
+      "file": "props/sb_swing_set.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_swing_set.glb",
+      "triangles": 152,
+      "bytes": 10012,
+      "sha256": "de044469465bc499"
+    },
+    {
+      "file": "props/sb_slide.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_slide.glb",
+      "triangles": 168,
+      "bytes": 11308,
+      "sha256": "17776288dba59c66"
+    },
+    {
+      "file": "props/sb_trampoline.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_trampoline.glb",
+      "triangles": 360,
+      "bytes": 17352,
+      "sha256": "2982830a0a515909"
+    },
+    {
+      "file": "props/sb_basketball_hoop.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_basketball_hoop.glb",
+      "triangles": 192,
+      "bytes": 10960,
+      "sha256": "0bb038e404edede3"
+    },
+    {
+      "file": "props/sb_gas_pump.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_gas_pump.glb",
+      "triangles": 96,
+      "bytes": 7440,
+      "sha256": "f3609be6dfb3135e"
+    },
+    {
+      "file": "props/sb_sedan.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_sedan.glb",
+      "triangles": 496,
+      "bytes": 21376,
+      "sha256": "8cfea35202457e9d"
+    },
+    {
+      "file": "props/sb_patio_set.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_patio_set.glb",
+      "triangles": 432,
+      "bytes": 22752,
+      "sha256": "afd74e72190126dd"
+    },
+    {
+      "file": "props/sb_sun_lounger.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_sun_lounger.glb",
+      "triangles": 84,
+      "bytes": 6956,
+      "sha256": "f7dc13c8d899ac83"
+    },
+    {
+      "file": "props/sb_fire_hydrant.glb",
+      "source": "tiletrigger-styleprops",
+      "src": "sb_fire_hydrant.glb",
+      "triangles": 244,
+      "bytes": 8496,
+      "sha256": "e74d4f6a402720dd"
+    },
+    {
       "file": "props/sv_backpack.glb",
       "source": "quaternius-survival-pack",
       "src": "Backpack.glb",

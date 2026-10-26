@@ -238,6 +238,12 @@ export const TrapEntity = EntityBase.extend({
   damage: z.number().min(1).max(1000).nullable().default(null),
   /** Electric fence (`shock`): length of the run in metres along its local X, posts every 4 m (absent: 12). */
   length: z.number().min(2).max(96).optional(),
+  /**
+   * Look (Style Packs): a crusher drawn as `rockfall` is a clump of boulders
+   * hanging over the spot (no frame) that drops when it fires: falling rocks
+   * (06 Jungle Ruins). Looks only: it hurts and times like any crusher.
+   */
+  style: z.enum(['rockfall']).optional(),
 });
 
 /** Faction IDs are short lowercase words; `players` is the built-in faction of every player in co-op. */
@@ -377,11 +383,18 @@ export const PadEntity = EntityBase.extend({
  * climbs `height` metres. Walk into it to climb, back off or look down to go
  * down, jump to let go.
  */
+/** How a ladder looks (Style Packs): wooden `rungs` (the default) or climbing `vines` (06 Jungle Ruins). Looks only: both climb the same. */
+export const LADDER_STYLES = ['rungs', 'vines'] as const;
+export type LadderStyle = (typeof LADDER_STYLES)[number];
+export const LADDER_STYLE_LABELS: Record<LadderStyle, string> = { rungs: 'Wooden ladder', vines: 'Climbing vines' };
+
 export const LadderEntity = EntityBase.extend({
   kind: z.literal('ladder'),
   yaw: Yaw,
   height: z.number().min(1).max(24).default(4),
   width: z.number().min(0.5).max(3).default(0.9),
+  /** Look (absent: rungs). */
+  style: z.enum(LADDER_STYLES).optional(),
 });
 
 /**
@@ -476,8 +489,14 @@ export const RescueEntity = EntityBase.extend({
   radius: z.number().min(2).max(12).default(4),
 });
 
-/** What a light looks like where it hangs: nothing, a ceiling panel, a wall lamp, a bare bulb, a long strip, a neon sign or a holographic billboard. */
-export const LIGHT_FIXTURES = ['none', 'ceiling', 'wall', 'bulb', 'strip', 'sign', 'billboard'] as const;
+/**
+ * What a light looks like where it hangs: nothing, a ceiling panel, a wall
+ * lamp, a bare bulb, a long strip, a neon sign, a holographic billboard, or
+ * (05 Gothic Estate) a candelabra or a candle chandelier. Candle fixtures
+ * flicker gently; set blinking (or logic "Blink light"), they gutter and
+ * flare instead of flashing on and off.
+ */
+export const LIGHT_FIXTURES = ['none', 'ceiling', 'wall', 'bulb', 'strip', 'sign', 'billboard', 'candle', 'chandelier'] as const;
 export type LightFixture = (typeof LIGHT_FIXTURES)[number];
 
 /** A light: a glow of `color` fading out over `range` metres, drawn as its fixture (lighting only; no gameplay). */

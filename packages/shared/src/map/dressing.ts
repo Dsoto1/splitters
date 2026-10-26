@@ -50,6 +50,11 @@ export const ROOM_TYPES = [
   'server',
   'lobby',
   'conference',
+  // Style Packs 05 Gothic Estate and 06 Jungle Ruins.
+  'parlour',
+  'crypt',
+  'conservatory',
+  'shrine',
 ] as const;
 export type RoomType = (typeof ROOM_TYPES)[number];
 
@@ -75,6 +80,10 @@ export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
   server: 'Server room',
   lobby: 'Lobby / reception',
   conference: 'Conference room',
+  parlour: 'Victorian parlour',
+  crypt: 'Crypt',
+  conservatory: 'Conservatory',
+  shrine: 'Temple shrine',
 };
 
 export const DRESS_DENSITIES = ['sparse', 'normal', 'full'] as const;
@@ -494,6 +503,29 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     wall([onTop('tv_cabinet', 'tv')], 1, 1, { place: 'front' }),
     wall(ones(['hm_shelf_large', 'bookcase']), 0.6, 2),
     corner(ones(['potted_plant', 'hm_houseplant_tall', 'speaker']), 1.5, 4),
+  ],
+  parlour: [
+    centre([lounge('hm_couch', 'hm_side_table', 'ge_wingback_chair', 'hm_rug'), nook()], 0.8, 1, { min: 1, face: 'axis', gap: 0.5 }),
+    wall([one('hm_fireplace'), one('ge_grand_piano')], 0.6, 1, { place: 'mid' }),
+    wall(ones(['ge_grandfather_clock', 'ge_bookcase_tall', 'ge_writing_desk']), 1, 3),
+    corner(ones(['ge_candelabra', 'hm_floor_lamp', 'ge_suit_of_armour']), 1.5, 4),
+    decor([one('ge_portrait')], 1, 3, 1.5),
+  ],
+  crypt: [
+    centre([one('ge_sarcophagus'), one('coffin')], 0.8, 2, { min: 1, face: 'axis', gap: 0.9 }),
+    wall(ones(['coffin', 'coffin_old', 'ge_headstone_tall']), 1.5, 5, { min: 1 }),
+    corner(ones(['candles', 'rn_candles', 'urn', 'dg_skull']), 2, 4),
+  ],
+  conservatory: [
+    centre([seated('hm_table_round', 'hm_chair_wood'), nook()], 0.6, 1, { min: 1, face: 'axis', gap: 0.6 }),
+    wall(ones(['hm_potted_palm', 'jg_monstera', 'hm_houseplant_tall', 'ge_topiary']), 2.5, 8, { min: 2 }),
+    corner(ones(['jg_banana_plant', 'jg_giant_fern', 'hm_potted_palm']), 2, 4),
+  ],
+  shrine: [
+    wall([one('jg_altar_stone'), one('jg_stone_idol')], 1, 1, { min: 1, place: 'front' }),
+    centre([one('jg_rubble_blocks'), one('jg_altar_stone')], 0.6, 2, { min: 1, face: 'axis', gap: 0.9 }),
+    wall(ones(['jg_stele', 'jg_carved_pillar', 'jg_serpent_statue']), 1, 3),
+    corner(ones(['jg_brazier', 'rn_urn', 'rn_urn_broken']), 2, 4),
   ],
 };
 
@@ -1209,6 +1241,7 @@ const THEME_FAMILY: Record<string, keyof typeof GUESS> = {
   bunker: 'military', arctic: 'military', canyon: 'military', forest: 'military',
   castle: 'tavern', desert: 'tavern', tomb: 'tavern', ruins: 'tavern', temple: 'tavern',
   factory: 'industry', prototype: 'industry', volcano: 'industry',
+  gothic_estate: 'home', suburban: 'home', jungle_temple: 'tavern',
 };
 
 /** A plausible room type for a room of this size in this theme (`pick` 0..1 chooses among the candidates). */

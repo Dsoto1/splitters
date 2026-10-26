@@ -3551,6 +3551,34 @@
       ]
     },
     {
+      "file": "textures/PavingStones138_color.jpg",
+      "sha256": "97281d4ab6dc510c",
+      "bytes": 58815,
+      "source": "ambientcg:PavingStones138",
+      "title": "ambientCG PBR materials: PavingStones138",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=PavingStones138",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/PavingStones138_normal.jpg",
+      "sha256": "12c1c68c5ab66eec",
+      "bytes": 34980,
+      "source": "ambientcg:PavingStones138",
+      "title": "ambientCG PBR materials: PavingStones138",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=PavingStones138",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
       "file": "textures/Planks037A_color.jpg",
       "sha256": "fc62d614d3a0e52f",
       "bytes": 30098,
@@ -3635,6 +3663,34 @@
       ]
     },
     {
+      "file": "textures/Rock051_color.jpg",
+      "sha256": "7b430c93b19a7b5e",
+      "bytes": 58680,
+      "source": "ambientcg:Rock051",
+      "title": "ambientCG PBR materials: Rock051",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Rock051",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Rock051_normal.jpg",
+      "sha256": "187195d44f4767ad",
+      "bytes": 62515,
+      "source": "ambientcg:Rock051",
+      "title": "ambientCG PBR materials: Rock051",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Rock051",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
       "file": "textures/Rock064_color.jpg",
       "sha256": "bf7ba5649094dedf",
       "bytes": 63936,
@@ -3656,6 +3712,34 @@
       "title": "ambientCG PBR materials: Rock064",
       "creator": "Lennart Demes (ambientCG)",
       "url": "https://ambientcg.com/view?id=Rock064",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/RoofingTiles002_color.jpg",
+      "sha256": "5abf77b62f07a084",
+      "bytes": 37403,
+      "source": "ambientcg:RoofingTiles002",
+      "title": "ambientCG PBR materials: RoofingTiles002",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=RoofingTiles002",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/RoofingTiles002_normal.jpg",
+      "sha256": "1ed8c704f9691b92",
+      "bytes": 56132,
+      "source": "ambientcg:RoofingTiles002",
+      "title": "ambientCG PBR materials: RoofingTiles002",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=RoofingTiles002",
       "license": "CC0-1.0",
       "modifications": [
         "downscaled to 512 px",
@@ -3859,6 +3943,34 @@
       ]
     },
     {
+      "file": "textures/Tiles132A_color.jpg",
+      "sha256": "14d25938cb854a0e",
+      "bytes": 27779,
+      "source": "ambientcg:Tiles132A",
+      "title": "ambientCG PBR materials: Tiles132A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles132A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Tiles132A_normal.jpg",
+      "sha256": "cb88b6f4100c371e",
+      "bytes": 31131,
+      "source": "ambientcg:Tiles132A",
+      "title": "ambientCG PBR materials: Tiles132A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Tiles132A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
       "file": "textures/Travertine009_color.jpg",
       "sha256": "bf9f3c2a766d0e5d",
       "bytes": 23409,
@@ -3964,6 +4076,34 @@
       "title": "ambientCG PBR materials: WoodSiding008",
       "creator": "Lennart Demes (ambientCG)",
       "url": "https://ambientcg.com/view?id=WoodSiding008",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/WoodSiding009_color.jpg",
+      "sha256": "7ebf94f8357eeeeb",
+      "bytes": 32091,
+      "source": "ambientcg:WoodSiding009",
+      "title": "ambientCG PBR materials: WoodSiding009",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=WoodSiding009",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/WoodSiding009_normal.jpg",
+      "sha256": "a163f93145944bf4",
+      "bytes": 25653,
+      "source": "ambientcg:WoodSiding009",
+      "title": "ambientCG PBR materials: WoodSiding009",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=WoodSiding009",
       "license": "CC0-1.0",
       "modifications": [
         "downscaled to 512 px",
@@ -10375,6 +10515,846 @@
       "license": "Owned",
       "modifications": [
         "built in code by tools/content/prepare-packs.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_bookcase_tall.glb",
+      "sha256": "d32d6e0de7d70e6b",
+      "triangles": 1596,
+      "bytes": 91688,
+      "source": "tiletrigger-styleprops/ge_bookcase_tall.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_chandelier.glb",
+      "sha256": "dc12e746ed403aa9",
+      "triangles": 2200,
+      "bytes": 72012,
+      "source": "tiletrigger-styleprops/ge_chandelier.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_candelabra.glb",
+      "sha256": "61d9fad14c6ef9fd",
+      "triangles": 880,
+      "bytes": 24020,
+      "source": "tiletrigger-styleprops/ge_candelabra.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_grandfather_clock.glb",
+      "sha256": "ce998d5332323ec4",
+      "triangles": 404,
+      "bytes": 20308,
+      "source": "tiletrigger-styleprops/ge_grandfather_clock.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_wingback_chair.glb",
+      "sha256": "4b687152b90e9a25",
+      "triangles": 132,
+      "bytes": 9484,
+      "source": "tiletrigger-styleprops/ge_wingback_chair.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_grand_piano.glb",
+      "sha256": "2901ace2a9e1fae6",
+      "triangles": 444,
+      "bytes": 25180,
+      "source": "tiletrigger-styleprops/ge_grand_piano.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_portrait.glb",
+      "sha256": "63fadf07af4db16d",
+      "triangles": 180,
+      "bytes": 8092,
+      "source": "tiletrigger-styleprops/ge_portrait.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_suit_of_armour.glb",
+      "sha256": "4ed1bb16b5a18ed8",
+      "triangles": 496,
+      "bytes": 18524,
+      "source": "tiletrigger-styleprops/ge_suit_of_armour.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_four_poster_bed.glb",
+      "sha256": "54176d48f0b4e5cb",
+      "triangles": 204,
+      "bytes": 14664,
+      "source": "tiletrigger-styleprops/ge_four_poster_bed.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_writing_desk.glb",
+      "sha256": "f86e88a26f2343e0",
+      "triangles": 296,
+      "bytes": 17008,
+      "source": "tiletrigger-styleprops/ge_writing_desk.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_sarcophagus.glb",
+      "sha256": "a21c232257adfe21",
+      "triangles": 264,
+      "bytes": 12340,
+      "source": "tiletrigger-styleprops/ge_sarcophagus.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_angel_statue.glb",
+      "sha256": "3a2c2217dfff62e3",
+      "triangles": 292,
+      "bytes": 12096,
+      "source": "tiletrigger-styleprops/ge_angel_statue.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_headstone_tall.glb",
+      "sha256": "a09341f8de14f864",
+      "triangles": 284,
+      "bytes": 10936,
+      "source": "tiletrigger-styleprops/ge_headstone_tall.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_iron_fence.glb",
+      "sha256": "d68cc9b4faf7049b",
+      "triangles": 840,
+      "bytes": 38868,
+      "source": "tiletrigger-styleprops/ge_iron_fence.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_iron_gate.glb",
+      "sha256": "21452343dead0940",
+      "triangles": 1104,
+      "bytes": 47556,
+      "source": "tiletrigger-styleprops/ge_iron_gate.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_hedge_wall.glb",
+      "sha256": "d4ae09d9e3df8578",
+      "triangles": 1692,
+      "bytes": 33652,
+      "source": "tiletrigger-styleprops/ge_hedge_wall.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_hedge_arch.glb",
+      "sha256": "b1675911c0316fbc",
+      "triangles": 1116,
+      "bytes": 23500,
+      "source": "tiletrigger-styleprops/ge_hedge_arch.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_topiary.glb",
+      "sha256": "5cfe14ab9847a52b",
+      "triangles": 318,
+      "bytes": 10712,
+      "source": "tiletrigger-styleprops/ge_topiary.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ge_gas_lamp.glb",
+      "sha256": "31ce24f195bcc26b",
+      "triangles": 332,
+      "bytes": 13952,
+      "source": "tiletrigger-styleprops/ge_gas_lamp.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_stone_idol.glb",
+      "sha256": "8b25c5d3ca191fca",
+      "triangles": 636,
+      "bytes": 18332,
+      "source": "tiletrigger-styleprops/jg_stone_idol.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_serpent_statue.glb",
+      "sha256": "e538b3b76b629a00",
+      "triangles": 372,
+      "bytes": 15872,
+      "source": "tiletrigger-styleprops/jg_serpent_statue.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_carved_pillar.glb",
+      "sha256": "f0828c385829abcd",
+      "triangles": 420,
+      "bytes": 16552,
+      "source": "tiletrigger-styleprops/jg_carved_pillar.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_altar_stone.glb",
+      "sha256": "daf66d62d1df356a",
+      "triangles": 120,
+      "bytes": 7728,
+      "source": "tiletrigger-styleprops/jg_altar_stone.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_stele.glb",
+      "sha256": "f8bfe2858977b79b",
+      "triangles": 288,
+      "bytes": 12452,
+      "source": "tiletrigger-styleprops/jg_stele.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_vine_curtain.glb",
+      "sha256": "2eb19fd7e371e845",
+      "triangles": 1356,
+      "bytes": 75704,
+      "source": "tiletrigger-styleprops/jg_vine_curtain.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_liana.glb",
+      "sha256": "09ca0d4f682e1244",
+      "triangles": 252,
+      "bytes": 15440,
+      "source": "tiletrigger-styleprops/jg_liana.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_bridge_post.glb",
+      "sha256": "37b589653a1959fe",
+      "triangles": 380,
+      "bytes": 18856,
+      "source": "tiletrigger-styleprops/jg_bridge_post.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_waterfall.glb",
+      "sha256": "0fecd8c45b8f09b1",
+      "triangles": 1572,
+      "bytes": 35180,
+      "source": "tiletrigger-styleprops/jg_waterfall.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_giant_root.glb",
+      "sha256": "41c7ce2df8fb6091",
+      "triangles": 240,
+      "bytes": 10472,
+      "source": "tiletrigger-styleprops/jg_giant_root.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_banana_plant.glb",
+      "sha256": "5b921bef260cfe0c",
+      "triangles": 164,
+      "bytes": 9712,
+      "source": "tiletrigger-styleprops/jg_banana_plant.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_giant_fern.glb",
+      "sha256": "d95ba0fd0c1e278d",
+      "triangles": 184,
+      "bytes": 9528,
+      "source": "tiletrigger-styleprops/jg_giant_fern.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_monstera.glb",
+      "sha256": "a8b1164faa685751",
+      "triangles": 312,
+      "bytes": 13508,
+      "source": "tiletrigger-styleprops/jg_monstera.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_bamboo.glb",
+      "sha256": "83926031dccf2446",
+      "triangles": 1004,
+      "bytes": 40172,
+      "source": "tiletrigger-styleprops/jg_bamboo.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_brazier.glb",
+      "sha256": "0d40560031239178",
+      "triangles": 223,
+      "bytes": 9932,
+      "source": "tiletrigger-styleprops/jg_brazier.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_rubble_blocks.glb",
+      "sha256": "7eb4091739175938",
+      "triangles": 168,
+      "bytes": 6904,
+      "source": "tiletrigger-styleprops/jg_rubble_blocks.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jg_gold_idol.glb",
+      "sha256": "f095d214cedd4619",
+      "triangles": 84,
+      "bytes": 6968,
+      "source": "tiletrigger-styleprops/jg_gold_idol.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_microwave.glb",
+      "sha256": "e25c68e5612ae585",
+      "triangles": 60,
+      "bytes": 4824,
+      "source": "tiletrigger-styleprops/sb_microwave.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_fridge.glb",
+      "sha256": "cd565de360c4337e",
+      "triangles": 84,
+      "bytes": 7020,
+      "source": "tiletrigger-styleprops/sb_fridge.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_bbq_grill.glb",
+      "sha256": "c042789ed3153f91",
+      "triangles": 228,
+      "bytes": 14616,
+      "source": "tiletrigger-styleprops/sb_bbq_grill.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_propane_tank.glb",
+      "sha256": "7a2faf1d8d02e56a",
+      "triangles": 396,
+      "bytes": 14272,
+      "source": "tiletrigger-styleprops/sb_propane_tank.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_washing_machine.glb",
+      "sha256": "c63b8cfef925a138",
+      "triangles": 280,
+      "bytes": 14076,
+      "source": "tiletrigger-styleprops/sb_washing_machine.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_tv_flat.glb",
+      "sha256": "16b47966185f3d30",
+      "triangles": 72,
+      "bytes": 5828,
+      "source": "tiletrigger-styleprops/sb_tv_flat.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_mailbox.glb",
+      "sha256": "ee5ca11195829e62",
+      "triangles": 88,
+      "bytes": 6024,
+      "source": "tiletrigger-styleprops/sb_mailbox.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_wheelie_bin.glb",
+      "sha256": "1b1475832c9d4850",
+      "triangles": 116,
+      "bytes": 6452,
+      "source": "tiletrigger-styleprops/sb_wheelie_bin.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_lawnmower.glb",
+      "sha256": "eb96f98a1688939a",
+      "triangles": 300,
+      "bytes": 14668,
+      "source": "tiletrigger-styleprops/sb_lawnmower.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_garden_gnome.glb",
+      "sha256": "500f9b665b76f6d3",
+      "triangles": 248,
+      "bytes": 9636,
+      "source": "tiletrigger-styleprops/sb_garden_gnome.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_picket_fence.glb",
+      "sha256": "73685d619b5337a9",
+      "triangles": 432,
+      "bytes": 20952,
+      "source": "tiletrigger-styleprops/sb_picket_fence.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_swing_set.glb",
+      "sha256": "de044469465bc499",
+      "triangles": 152,
+      "bytes": 10012,
+      "source": "tiletrigger-styleprops/sb_swing_set.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_slide.glb",
+      "sha256": "17776288dba59c66",
+      "triangles": 168,
+      "bytes": 11308,
+      "source": "tiletrigger-styleprops/sb_slide.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_trampoline.glb",
+      "sha256": "2982830a0a515909",
+      "triangles": 360,
+      "bytes": 17352,
+      "source": "tiletrigger-styleprops/sb_trampoline.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_basketball_hoop.glb",
+      "sha256": "0bb038e404edede3",
+      "triangles": 192,
+      "bytes": 10960,
+      "source": "tiletrigger-styleprops/sb_basketball_hoop.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_gas_pump.glb",
+      "sha256": "f3609be6dfb3135e",
+      "triangles": 96,
+      "bytes": 7440,
+      "source": "tiletrigger-styleprops/sb_gas_pump.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_sedan.glb",
+      "sha256": "8cfea35202457e9d",
+      "triangles": 496,
+      "bytes": 21376,
+      "source": "tiletrigger-styleprops/sb_sedan.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_patio_set.glb",
+      "sha256": "afd74e72190126dd",
+      "triangles": 432,
+      "bytes": 22752,
+      "source": "tiletrigger-styleprops/sb_patio_set.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_sun_lounger.glb",
+      "sha256": "f7dc13c8d899ac83",
+      "triangles": 84,
+      "bytes": 6956,
+      "source": "tiletrigger-styleprops/sb_sun_lounger.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sb_fire_hydrant.glb",
+      "sha256": "e74d4f6a402720dd",
+      "triangles": 244,
+      "bytes": 8496,
+      "source": "tiletrigger-styleprops/sb_fire_hydrant.glb",
+      "title": "Style Pack pieces (Gothic Estate, Jungle Ruins, Suburban Chaos)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/build-style-props.mjs)",
+      "url": "tools/content/build-style-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-style-props.mjs",
         "centred, stood on the ground and scaled to metres"
       ]
     },
