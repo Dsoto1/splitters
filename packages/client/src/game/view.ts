@@ -614,16 +614,17 @@ export class GameView {
   private underLiquid: Liquid | null = null;
   private dryFog: { mode: number; color: Color3; density: number } | null = null;
 
-  setCamera(eye: Vec3, yaw: number, pitch: number, fov: number): void {
+  /** Place the view. `roll` is only ever set riding a vehicle (its gentle lean); on foot the view is always level. */
+  setCamera(eye: Vec3, yaw: number, pitch: number, fov: number, roll = 0): void {
     this.camera.position.set(eye.x, eye.y, eye.z);
     const shake = this.currentShake();
     if (shake > 0) {
       // Trauma squared: big blasts jolt, small ones barely tremble.
       const t = performance.now() / 1000;
       const k = shake * shake;
-      poseCamera(this.camera, yaw + Math.sin(t * 47 + 1.3) * 0.035 * k, pitch - Math.sin(t * 61) * 0.035 * k, Math.sin(t * 53 + 2.1) * 0.025 * k);
+      poseCamera(this.camera, yaw + Math.sin(t * 47 + 1.3) * 0.035 * k, pitch - Math.sin(t * 61) * 0.035 * k, roll + Math.sin(t * 53 + 2.1) * 0.025 * k);
       this.camera.position.y += Math.sin(t * 71) * 0.06 * k;
-    } else poseCamera(this.camera, yaw, pitch);
+    } else poseCamera(this.camera, yaw, pitch, roll);
     this.camera.fov = fov;
     this.foliage.update(this.camera.position);
     this.updateUnderwater();
@@ -1383,11 +1384,69 @@ export class GameView {
         node.rotation.z = 0.07;
         node.position.y -= 0.15 + (m.wreck ? 0 : Math.min(1, fade) * 0.9);
       }
+      this.cullCockpit(m.index, node, m.index === this.cockpit && m.alive);
       if (m.def.kind !== 'vehicle') {
         const gun = mountGun(node);
         if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
       }
     }
+  }
+
+  /** The vehicle you are looking out of in the cockpit view (its inner faces are culled), or null. */
+  private cockpit: number | null = null;
+  private readonly culled = new Map<number, { mesh: AbstractMesh; mat: Material | null }[]>();
+  private readonly cullMats = new Map<Material, Material>();
+
+  /** Set (or clear) the vehicle the cockpit view looks out of; applied with the next updateMounts. */
+  setCockpit(index: number | null): void {
+    this.cockpit = index;
+  }
+
+  /**
+   * Most vehicle models are drawn double-sided, so from a seat inside a closed
+   * body you would look at the inside of its roof and doors. In the cockpit
+   * the ridden vehicle gets one-sided copies of its materials (shared per
+   * source material): the hood, bonnet and frame in front of you still show,
+   * the shell around your head doesn't. Put back when you leave the cockpit.
+   */
+  private cullCockpit(index: number, node: TransformNode, on: boolean): void {
+    const done = this.culled.get(index);
+    if (!on) {
+      if (!done) return;
+      for (const { mesh, mat } of done) mesh.material = mat;
+      this.culled.delete(index);
+      return;
+    }
+    if (done) return;
+    const meshes = node.getChildMeshes().filter((mesh) => !('sourceMesh' in mesh) && mesh.material);
+    // The model is still loading: try again next frame.
+    if (!meshes.length) return;
+    const list = meshes.map((mesh) => ({ mesh, mat: mesh.material }));
+    for (const { mesh, mat } of list) {
+      if (!mat || mat.backFaceCulling) continue;
+      let one = this.cullMats.get(mat);
+      if (!one) {
+        one = mat.clone(`${mat.name}_cockpit`) ?? mat;
+        one.backFaceCulling = true;
+        this.cullMats.set(mat, one);
+      }
+      mesh.material = one;
+    }
+    this.culled.set(index, list);
+  }
+
+  /** A vehicle's drawn tilt (its model's rotation.x, + nose down, and rotation.z), for the cockpit camera. */
+  mountTilt(index: number): { pitch: number; roll: number } {
+    const node = this.mountNodes.get(index);
+    return node ? { pitch: node.rotation.x, roll: node.rotation.z } : { pitch: 0, roll: 0 };
+  }
+
+  /** A point in a mount's own frame (+Z forward), where its model is drawn now (tilt and springs included). */
+  mountPoint(index: number, local: readonly [number, number, number]): Vec3 | null {
+    const node = this.mountNodes.get(index);
+    if (!node) return null;
+    const p = Vector3.TransformCoordinates(new Vector3(local[0], local[1], local[2]), node.computeWorldMatrix(true));
+    return { x: p.x, y: p.y, z: p.z };
   }
 
   /** Each charred mount's meshes and the materials they had (put back when it respawns). */
@@ -1513,8 +1572,12 @@ export class GameView {
     } else pitch = st.pitch * 0.98;
     // Squat under power, dive under brakes, lean out of the turn; hovercraft bank into it instead.
     const hover = !!m.def.vehicle?.hover;
+    const fly = !!m.def.vehicle?.fly;
     pitch += Math.max(-0.08, Math.min(0.08, -accel * 0.006));
-    roll += Math.max(-0.12, Math.min(0.12, yawRate * speed * (hover ? -0.006 : 0.004)));
+    // Flyers bank harder and raise the nose to climb (lower it to dive): their attitude, which the cockpit view follows.
+    if (fly) pitch += Math.max(-0.25, Math.min(0.25, -m.vel.y * 0.04));
+    const bank = fly ? 0.3 : 0.12;
+    roll += Math.max(-bank, Math.min(bank, yawRate * speed * (hover ? (fly ? -0.012 : -0.006) : 0.004)));
     // Springs: landing compresses them, then it rocks back.
     if (st.air && !air) st.bounceVel -= Math.min(4, Math.max(1, fell * 0.25));
     st.bounceVel += (-st.bounce * 90 - st.bounceVel * 9) * dt;

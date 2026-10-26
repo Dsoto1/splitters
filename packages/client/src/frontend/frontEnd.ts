@@ -939,7 +939,8 @@ export class FrontEnd {
         ['Throw grenade or mine', 'Hold G to aim, let go to throw'],
         ['Hold breath (scoped)', 'Shift'],
         ['Reload', 'R'],
-        ['Use', 'E'],
+        ['Use · get in or out of a vehicle', 'E'],
+        ['Third person · in a vehicle: cockpit or chase camera', 'H'],
         ['Weapons', '1–9 · Wheel · Q'],
         ['Scores', 'Tab'],
         ['Fullscreen', 'F11 · Alt+Enter'],
@@ -949,6 +950,7 @@ export class FrontEnd {
         ['Controller: reload / next weapon', 'X / Y'],
         ['Controller: use / throw', 'RB / hold LB'],
         ['Controller: sprint / ping', 'L3 / D-pad up'],
+        ['Controller: third person / vehicle camera', 'R3'],
       ].map(([a, k]) => el('div', {}, el('span', { textContent: a! }), kbd(k!))),
     );
     // Crosshair styles and colours (reference board: crosshair styles).

@@ -643,12 +643,14 @@ export class Hud {
   }
 
   /** "[E] Open the gate" under the crosshair; `denied` shows a refusal (locked). */
-  setPrompt(text: string | null, denied = false): void {
-    const key = `${text}|${denied}`;
+  /** The use prompt (E), and optionally a second key to show beside it (H: the vehicle camera). */
+  setPrompt(text: string | null, denied = false, hint?: { key: string; text: string }): void {
+    const key = `${text}|${denied}|${hint?.key}|${hint?.text}`;
     if (key === this.lastPrompt) return;
     this.lastPrompt = key;
     this.prompt.classList.toggle('denied', denied);
-    this.prompt.innerHTML = text === null ? '' : denied ? escapeHtml(text) : `<kbd>E</kbd>${escapeHtml(text)}`;
+    const extra = hint ? `<span class="prompt-hint"><kbd>${escapeHtml(hint.key)}</kbd>${escapeHtml(hint.text)}</span>` : '';
+    this.prompt.innerHTML = text === null ? '' : denied ? escapeHtml(text) : `<kbd>E</kbd>${escapeHtml(text)}${extra}`;
   }
 
   setTimers(lines: string[]): void {

@@ -101,6 +101,11 @@ export interface MountDef {
   airplane?: boolean;
   /** Drawn this far above the ground (m) instead of the class default (hovercraft float 0.35 m; sleds sit on the snow). */
   rideHeight?: number;
+  /**
+   * The driver's eye in the cockpit view, in the mount's frame (drawing only).
+   * Absent: a seated head height above the driver's seat, a little forward (see cockpitEye).
+   */
+  cockpitEye?: [number, number, number];
   /** One line for MapMaker. */
   blurb: string;
 }
@@ -217,6 +222,8 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     respawnSeconds: 60,
     blast: { radius: 5, damage: 100 },
     vehicle: { maxSpeed: 13, reverseSpeed: 5, accel: 6, turnRate: 1.1, hover: true, grip: 0.05, mass: 3 },
+    // The Dispatcher's canopy sits behind its long nose prongs.
+    cockpitEye: [0, 1.95, -0.8],
     blurb: 'A slow hovering transport for six: a pilot, a rocket gunner and four passengers',
   },
   skyfighter: {
@@ -252,6 +259,8 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     respawnSeconds: 70,
     blast: { radius: 6, damage: 110 },
     vehicle: { maxSpeed: 15, reverseSpeed: 5, accel: 5, turnRate: 0.9, hover: true, grip: 0.05, mass: 3.5, fly: { climb: 4, ceiling: 25 } },
+    // Low over the deck, looking down the nose.
+    cockpitEye: [0, 2.3, 2.6],
     blurb: 'A flying troop carrier for six: a pilot, a door gunner and four riding on the deck',
   },
   tank: {
@@ -270,6 +279,8 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     respawnSeconds: 75,
     blast: { radius: 6, damage: 120 },
     vehicle: { maxSpeed: 11, reverseSpeed: 5, accel: 5, turnRate: 1.0, grip: 0.45, mass: 6 },
+    // The driver's hatch: the hull's front edge below, the gun barrel off to the right.
+    cockpitEye: [-0.5, 2.3, 1.4],
     blurb: 'A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun',
   },
   gun_jeep: {
@@ -340,6 +351,8 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     respawnSeconds: 80,
     blast: { radius: 6, damage: 120 },
     vehicle: { maxSpeed: 17, reverseSpeed: 6, accel: 6, turnRate: 1.1, hover: true, grip: 0.06, mass: 3, fly: { climb: 5, ceiling: 30 } },
+    // In the cockpit between its frames, not on the roof.
+    cockpitEye: [0, 2.9, 2.8],
     blurb: 'A flying gunship (the dropship\'s flight model): the pilot fires blasters ahead, two door gunners cover the sides',
   },
   ice_cream_truck: {
@@ -408,6 +421,23 @@ export function mountToWorld(pos: { x: number; y: number; z: number }, yaw: numb
   const c = Math.cos(yaw);
   // Forward (+Z local) is (sin yaw, cos yaw); right (+X local) is (cos yaw, -sin yaw).
   return { x: pos.x + o[0] * c + o[2] * s, y: pos.y + o[1], z: pos.z - o[0] * s + o[2] * c };
+}
+
+/** A seated rider's eye above the seat's feet point, and how far forward of it (cockpit camera). */
+export const SEATED_EYE_HEIGHT = 1.0;
+export const SEATED_EYE_FORWARD = 0.15;
+
+/**
+ * Where a rider's eye is in the cockpit view, in the mount's frame: the
+ * mount's own `cockpitEye` for the driver, otherwise a seated head height
+ * above the seat and slightly forward. Drawing only: shots still leave from
+ * the rider's standing eye on the server.
+ */
+export function cockpitEye(def: MountDef, seat: number): [number, number, number] {
+  const s = def.seats[seat];
+  if (!s) return [0, def.half[1] * 2 + SEATED_EYE_HEIGHT, 0];
+  if (s.role === 'driver' && def.cockpitEye) return [...def.cockpitEye];
+  return [s.offset[0], s.offset[1] + SEATED_EYE_HEIGHT, s.offset[2] + SEATED_EYE_FORWARD];
 }
 
 // ---------------------------------------------------------------- damage states
