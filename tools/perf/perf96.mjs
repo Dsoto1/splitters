@@ -125,6 +125,32 @@ for (const id of maps) {
         window.__perf.on = false;
         return window.__perf.frames;
       });
+      // What rendering draws now (2 s of frames): draw calls, active meshes, triangles, skinned characters, particles.
+      const scene = await page.evaluate(async () => {
+        const sc = window.__cs.view.scene;
+        const engine = sc.getEngine();
+        const counter = engine._drawCalls;
+        const add = counter?.addCount;
+        let frameDraws = 0;
+        const s = { draws: [], meshes: [], tris: [], skinned: [] };
+        if (counter && add) counter.addCount = (n, f) => ((frameDraws += n), add.call(counter, n, f));
+        const before = sc.onBeforeRenderObservable.add(() => (frameDraws = 0));
+        const after = sc.onAfterRenderObservable.add(() => {
+          const active = sc.getActiveMeshes();
+          let skinned = 0;
+          for (let i = 0; i < active.length; i++) if (active.data[i].skeleton) skinned++;
+          s.draws.push(frameDraws);
+          s.meshes.push(active.length);
+          s.tris.push(sc.getActiveIndices() / 3);
+          s.skinned.push(skinned);
+        });
+        await new Promise((r) => setTimeout(r, 2000));
+        sc.onBeforeRenderObservable.remove(before);
+        sc.onAfterRenderObservable.remove(after);
+        if (counter && add) counter.addCount = add;
+        const avg = (a) => Math.round(a.reduce((x, v) => x + v, 0) / Math.max(1, a.length));
+        return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length };
+      });
       const prof = await sim(PROFILE, false);
       const wall = (Date.now() - t0) / 1000;
       const avg = (k) => frames.reduce((s, f) => s + f[k], 0) / Math.max(1, frames.length);
@@ -154,10 +180,11 @@ for (const id of maps) {
         msgShare: frames.reduce((a, f) => a + f.msg, 0) / wall,
         tick: { bots: per('bots'), physics, nav: per('nav'), move: per('move'), rest: total / ticks - per('bots') - physics, total: total / ticks },
         wake: prof.wake,
+        scene,
       };
       const r = row[scenario];
       console.log(
-        `${id} ${graphics} ${mode} ${scenario}: ${r.fps.toFixed(1)} fps, frame ${r.dt.toFixed(1)} ms (p50 ${r.p50.toFixed(1)}, p95 ${r.p95.toFixed(1)}, max ${r.max.toFixed(0)}) = sim ${r.sim.toFixed(1)} (${r.ticksPerFrame.toFixed(2)} ticks, max ${r.maxBatch}; ${r.simShare.toFixed(0)} ms/s) + msg ${r.msg.toFixed(1)} (${r.msgShare.toFixed(0)} ms/s) + js ${r.js.toFixed(1)} + render ${r.render.toFixed(1)} + other ${r.other.toFixed(1)} | ${r.tickRate.toFixed(1)} ticks/s, tick ${r.tick.total.toFixed(2)} ms = bots ${r.tick.bots.toFixed(2)} + physics ${r.tick.physics.toFixed(2)} + rest ${r.tick.rest.toFixed(2)}${prof.wake ? ` | worker wakes: ${JSON.stringify(prof.wake)}` : ''}${scenario === 'clump' ? ` | ${row.placed} placed` : ''}`,
+        `${id} ${graphics} ${mode} ${scenario}: ${r.fps.toFixed(1)} fps, frame ${r.dt.toFixed(1)} ms (p50 ${r.p50.toFixed(1)}, p95 ${r.p95.toFixed(1)}, max ${r.max.toFixed(0)}) = sim ${r.sim.toFixed(1)} (${r.ticksPerFrame.toFixed(2)} ticks, max ${r.maxBatch}; ${r.simShare.toFixed(0)} ms/s) + msg ${r.msg.toFixed(1)} (${r.msgShare.toFixed(0)} ms/s) + js ${r.js.toFixed(1)} + render ${r.render.toFixed(1)} + other ${r.other.toFixed(1)} | ${r.tickRate.toFixed(1)} ticks/s, tick ${r.tick.total.toFixed(2)} ms = bots ${r.tick.bots.toFixed(2)} + physics ${r.tick.physics.toFixed(2)} + rest ${r.tick.rest.toFixed(2)}${prof.wake ? ` | worker wakes: ${JSON.stringify(prof.wake)}` : ''}${scenario === 'clump' ? ` | ${row.placed} placed` : ''} | scene ${JSON.stringify(scene)}`,
       );
     }
     if (errors.length) console.log(`  page errors: ${errors.slice(0, 3).join('; ')}`);
