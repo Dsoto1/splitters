@@ -461,9 +461,10 @@ export class GameSession {
         if (this.input.locked) {
           if (pageHoldsEscape()) document.exitPointerLock();
         } else if (paused) {
-          // In the menu: back a level (dialog, then tab), then resume.
+          // In the menu: back a level (dialog, then tab), then resume; a MapMaker test goes back to MapMaker instead.
           e.preventDefault();
-          this.pauseMenu.back();
+          if (this.opts.exitOnF5 && this.pauseMenu.atTop) this.exit();
+          else this.pauseMenu.back();
         }
       },
       { signal, capture: true },

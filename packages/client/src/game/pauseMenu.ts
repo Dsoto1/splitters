@@ -60,6 +60,11 @@ export class PauseMenu {
   }
 
   /** Esc / B: close the dialog, else back to Match, else resume. */
+  /** On the Match tab with no dialog open: one more Esc would leave the menu. */
+  get atTop(): boolean {
+    return !this.hooks.overlay() && this.tab === 'match';
+  }
+
   back(): void {
     const overlay = this.hooks.overlay();
     if (overlay) {
