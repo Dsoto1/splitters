@@ -4,6 +4,7 @@ import type { RemoteLink } from './localTransport.ts';
 import type { Transport } from './transport.ts';
 import { CHUNK, Unzipper, Zipper } from './peerZip.ts';
 import { fetchIce, hubAddress, hubSetting } from './hub.ts';
+import { makeJoinCode } from './joinCode.ts';
 
 /**
  * Host game / Join by code: friends connect straight to the host's browser
@@ -12,9 +13,7 @@ import { fetchIce, hubAddress, hubSetting } from './hub.ts';
  * `?peer=host:port` (a `peer` server, e.g. `npx peer --port 9000`).
  */
 const PREFIX = 'tiletrigger-';
-/** Codes skip look-alike letters (no I, L, O, 0, 1). */
-const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-export const makeJoinCode = (): string => Array.from({ length: 6 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join('');
+export { makeJoinCode };
 export const cleanJoinCode = (code: string): string => code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 
 /**
