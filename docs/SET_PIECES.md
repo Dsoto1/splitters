@@ -47,6 +47,18 @@ and back, an 8 m deck hinged at the marker that starts raised and comes down
 when logic sends it. Tick more blocks in the mover's *Carries* list to move
 them together (a train car, a moving room). See SCENARIO.md, *Movers*.
 
+### Style Pack movers and doors
+
+**Steam Train** and **Mine Cart** (Style Packs, see BUILDING_KIT.md) are
+movers whose blocks are hidden inside models that ride along
+(`MoverEntity.props`): a locomotive and two flatbeds running 60 m and back
+at 8 m/s, a mine cart running 12 m and back at 3 m/s. Stand on a carried
+block to ride. Movers set to **4 m/s or more** run over whoever their blocks
+sweep into (`Movers.strike`, the "was run over" kill), so stay off the line
+or ride on top. Doors take a look (*Blast*, *Saloon*, *Vault*); **Alarm Light**,
+**Destructible Barrier** and **Breakable Planks** are presets of lights and
+blocks.
+
 ## Liquids (Entities tab)
 
 Water, Lava, Acid and Swamp are boxes of liquid; *Height* is the floor and
@@ -91,5 +103,6 @@ m.water([x, y, z], [width, depth, length], 'water', '#3a4a2a'); // murky sewer w
 m.light([x, y, z], { fixture: 'bulb', color: '#ff3020', id: 'lamp_alarm', blink: 3 });
 m.block([x, y, z], [3, 0.3, 3], 'solid', { id: 'lift_1' });
 m.mover('mover_lift', [x, y, z], ['lift_1'], [[0, 0, 0], [0, 4, 0]], { speed: 2, wait: 2 });
+m.mover('train', [x, y, z], ['train_cab', 'train_deck'], [[0, 0, 0], [120, 0, 0]], { speed: 9, props: ['train_loco', 'train_flatbed'] }); // models ride along (not solid)
 m.pickup('jetpack', [x, y, z]);
 ```

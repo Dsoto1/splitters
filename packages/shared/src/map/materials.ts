@@ -146,6 +146,16 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   t('pbr_ice', 'Ice', 'Ground', 'Ice002', '#4a8a86', 3, 0.8),
   t('pbr_asphalt', 'Asphalt', 'Ground', 'Asphalt031', '#7a7a7a', 4),
   t('pbr_lava', 'Lava', 'Ground', 'Lava004', '#b4421c', 4, 0.2, true),
+  // Style Pack 01 Military Compound.
+  t('pbr_bunker_panels', 'Bunker Concrete', 'Stone', 'Concrete031', '#64615c', 4),
+  t('pbr_olive_corrugated', 'Olive Corrugated', 'Metal', 'CorrugatedSteel006A', '#255626', 2, 0.35),
+  t('pbr_grey_corrugated', 'Grey Corrugated', 'Metal', 'CorrugatedSteel009', '#818080', 2, 0.35),
+  t('pbr_burlap', 'Burlap', 'Fabric', 'Fabric061', '#8d8882', 1.5),
+  // Style Pack 02 Frontier Dust.
+  t('pbr_weathered_planks', 'Weathered Planks', 'Wood', 'Planks039', '#b49467', 2.5),
+  t('pbr_weathered_siding', 'Weathered Siding', 'Wood', 'WoodSiding013', '#665845', 2.5),
+  t('pbr_adobe', 'Adobe', 'Stone', 'Clay005', '#9d785d', 3),
+  t('pbr_dusty_road', 'Dusty Road', 'Ground', 'Ground109', '#7e6e54', 4),
 ];
 
 /** A textured material from a scanned set (see MaterialDefinition.texture). */
@@ -188,6 +198,10 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('forest', 'Forest Camp', '#8ab08a', 'pbr_forest', 'pbr_planks', 'pbr_rock', 'pbr_siding', 'pbr_walnut'),
   theme('canyon', 'Canyon Outpost', '#8fb8dc', 'pbr_tread_plate', 'pbr_concrete', 'pbr_rusted_plate', 'pbr_steel', 'hazard'),
   theme('garden', 'Walled Garden', '#b8d8f0', 'pbr_grass', 'pbr_brick_red', 'pbr_hex_paving', 'pbr_brick_old', 'stone_trim'),
+  // Style Pack themes (see stylePacks.ts).
+  theme('military', 'Military Compound', '#8fa0ae', ['pbr_concrete_dark', '#b4b0a6'], 'pbr_bunker_panels', ['pbr_olive_corrugated', '#d8dcc0'], 'pbr_concrete', ['pbr_steel', '#a8aca8']),
+  theme('frontier', 'Frontier Dust', '#f0cc98', 'pbr_weathered_planks', 'pbr_weathered_siding', ['crate_wood', '#c8a070'], 'pbr_planks', 'pbr_charred_wood'),
+  theme('adobe', 'Frontier Adobe', '#f4d2a0', ['pbr_floorboards', '#d8b890'], 'pbr_adobe', ['pbr_adobe', '#e8d0b0'], 'pbr_weathered_planks', 'pbr_walnut'),
 ];
 
 /** Shorthand for a theme: each slot is a material name or [material, tint]. */

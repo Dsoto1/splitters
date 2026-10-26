@@ -4160,6 +4160,565 @@
       "triangles": 1420,
       "bytes": 72356,
       "sha256": "e1dcf265dec56ec7"
+    },
+    {
+      "file": "props/jersey_barrier.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "detail-barrier-strong-type-a.glb",
+      "triangles": 28,
+      "bytes": 7680,
+      "sha256": "ee53bf64ee50d1cb",
+      "size": [
+        2,
+        1,
+        0.75
+      ]
+    },
+    {
+      "file": "props/jersey_barrier_striped.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "detail-barrier-strong-type-b.glb",
+      "triangles": 28,
+      "bytes": 10248,
+      "sha256": "88fdea75329671bd",
+      "size": [
+        2,
+        1,
+        0.75
+      ]
+    },
+    {
+      "file": "props/jersey_barrier_broken.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "detail-barrier-strong-damaged.glb",
+      "triangles": 40,
+      "bytes": 8116,
+      "sha256": "01ea5ada5874e567",
+      "size": [
+        2,
+        1,
+        0.75
+      ]
+    },
+    {
+      "file": "props/road_barrier.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "detail-barrier-type-b.glb",
+      "triangles": 44,
+      "bytes": 10716,
+      "sha256": "4b3b39133b0ce8ed",
+      "size": [
+        1.984,
+        1.05,
+        0.469
+      ]
+    },
+    {
+      "file": "props/concrete_block.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "detail-block.glb",
+      "triangles": 12,
+      "bytes": 6940,
+      "sha256": "4bc92c2b69dc647e",
+      "size": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    },
+    {
+      "file": "props/brick_rubble.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "detail-bricks-type-b.glb",
+      "triangles": 88,
+      "bytes": 10304,
+      "sha256": "526ebf70c77dae43",
+      "size": [
+        1.45,
+        0.45,
+        0.958
+      ]
+    },
+    {
+      "file": "props/floodlight.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "detail-light-double.glb",
+      "triangles": 96,
+      "bytes": 10012,
+      "sha256": "201b2ad74bf72c58",
+      "size": [
+        0.494,
+        5.5,
+        2.533
+      ]
+    },
+    {
+      "file": "props/yard_lamp.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "detail-light-single.glb",
+      "triangles": 68,
+      "bytes": 8968,
+      "sha256": "6f33910b66b53487",
+      "size": [
+        0.413,
+        4.6,
+        1.266
+      ]
+    },
+    {
+      "file": "props/pallet.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "pallet.glb",
+      "triangles": 84,
+      "bytes": 10256,
+      "sha256": "e494bf7ed12562ed",
+      "size": [
+        1,
+        0.15,
+        1
+      ]
+    },
+    {
+      "file": "props/supply_truck.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "truck-green.glb",
+      "triangles": 48,
+      "bytes": 15188,
+      "sha256": "c4bbee1f31ad564b",
+      "size": [
+        2.475,
+        3,
+        4.901
+      ]
+    },
+    {
+      "file": "props/flatbed_truck.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "truck-flat.glb",
+      "triangles": 68,
+      "bytes": 22264,
+      "sha256": "64a5f2d3443644b8",
+      "size": [
+        2.475,
+        3,
+        4.901
+      ]
+    },
+    {
+      "file": "props/dumpster.glb",
+      "source": "kenney-retro-urban-kit",
+      "src": "detail-dumpster-closed.glb",
+      "triangles": 22,
+      "bytes": 18308,
+      "sha256": "95196eb51eab7d34",
+      "size": [
+        1.652,
+        1.5,
+        1.249
+      ]
+    },
+    {
+      "file": "props/shipping_container_red.glb",
+      "source": "kenney-city-kit-industrial",
+      "src": "shipping-container-a.glb",
+      "triangles": 402,
+      "bytes": 36524,
+      "sha256": "b1964c11c7b25014",
+      "size": [
+        2.783,
+        2.6,
+        6.144
+      ]
+    },
+    {
+      "file": "props/shipping_container_blue.glb",
+      "source": "kenney-city-kit-industrial",
+      "src": "shipping-container-b.glb",
+      "triangles": 402,
+      "bytes": 37148,
+      "sha256": "5b8d3150d80528b4",
+      "size": [
+        2.783,
+        2.6,
+        6.144
+      ]
+    },
+    {
+      "file": "props/shipping_container_green.glb",
+      "source": "kenney-city-kit-industrial",
+      "src": "shipping-container-c.glb",
+      "triangles": 402,
+      "bytes": 36524,
+      "sha256": "f778568c4e30a733",
+      "size": [
+        2.783,
+        2.6,
+        6.144
+      ]
+    },
+    {
+      "file": "props/fuel_tank.glb",
+      "source": "kenney-city-kit-industrial",
+      "src": "detail-tank.glb",
+      "triangles": 310,
+      "bytes": 31688,
+      "sha256": "436a6bccba39df2f",
+      "size": [
+        4.492,
+        2.2,
+        2.73
+      ]
+    },
+    {
+      "file": "props/storage_tank.glb",
+      "source": "kenney-city-kit-industrial",
+      "src": "detail-tank-large.glb",
+      "triangles": 566,
+      "bytes": 41888,
+      "sha256": "81b1b7e77597ab3b",
+      "size": [
+        6.275,
+        4,
+        6.857
+      ]
+    },
+    {
+      "file": "props/steel_water_tower.glb",
+      "source": "kenney-city-kit-industrial",
+      "src": "water-tower.glb",
+      "triangles": 968,
+      "bytes": 66404,
+      "sha256": "1e343606688167e7",
+      "size": [
+        4.377,
+        11,
+        4.272
+      ]
+    },
+    {
+      "file": "props/locomotive_red.glb",
+      "source": "kenney-train-kit",
+      "src": "train-locomotive-b.glb",
+      "triangles": 1456,
+      "bytes": 92592,
+      "sha256": "4b25b109ef7b776e",
+      "size": [
+        3.411,
+        4.3,
+        6.737
+      ]
+    },
+    {
+      "file": "props/passenger_car.glb",
+      "source": "kenney-train-kit",
+      "src": "train-locomotive-passenger-a.glb",
+      "triangles": 992,
+      "bytes": 66756,
+      "sha256": "3e22a916fd4b6582",
+      "size": [
+        3.113,
+        4.3,
+        6.779
+      ]
+    },
+    {
+      "file": "props/ore_wagon.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-dirt.glb",
+      "triangles": 868,
+      "bytes": 63072,
+      "sha256": "8b9c69b4038bc0a9",
+      "size": [
+        3.121,
+        4.28,
+        7.022
+      ]
+    },
+    {
+      "file": "props/hopper_wagon.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-box.glb",
+      "triangles": 760,
+      "bytes": 55164,
+      "sha256": "4ed8d70876db6ed3",
+      "size": [
+        3.116,
+        3.37,
+        7.012
+      ]
+    },
+    {
+      "file": "props/timber_wagon.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-wood.glb",
+      "triangles": 820,
+      "bytes": 59324,
+      "sha256": "e5b45bd708771b9a",
+      "size": [
+        3.124,
+        4.1,
+        7.029
+      ]
+    },
+    {
+      "file": "props/flatbed_wagon.glb",
+      "source": "kenney-train-kit",
+      "src": "train-carriage-flatbed-wood.glb",
+      "triangles": 778,
+      "bytes": 57976,
+      "sha256": "64ef5f8e92642428",
+      "size": [
+        2.856,
+        3.01,
+        7.009
+      ]
+    },
+    {
+      "file": "props/railroad.glb",
+      "source": "kenney-train-kit",
+      "src": "railroad-straight.glb",
+      "triangles": 376,
+      "bytes": 35448,
+      "sha256": "4e7ff1da24999c51",
+      "size": [
+        2.6,
+        0.26,
+        10.4
+      ]
+    },
+    {
+      "file": "props/railroad_broken.glb",
+      "source": "kenney-train-kit",
+      "src": "railroad-damaged-straight.glb",
+      "triangles": 376,
+      "bytes": 37296,
+      "sha256": "8635b16d035aef9f",
+      "size": [
+        2.672,
+        0.26,
+        10.4
+      ]
+    },
+    {
+      "file": "props/mine_rails.glb",
+      "source": "kenney-train-kit",
+      "src": "railroad-rail-straight.glb",
+      "triangles": 160,
+      "bytes": 21908,
+      "sha256": "957f0ea6a510da96",
+      "size": [
+        1.05,
+        0.15,
+        6
+      ]
+    },
+    {
+      "file": "props/sandbag_wall.glb",
+      "source": "tiletrigger-kit",
+      "src": "sandbag_wall.glb",
+      "triangles": 2240,
+      "bytes": 44776,
+      "sha256": "9af7fa5971be8eca"
+    },
+    {
+      "file": "props/sandbag_wall_low.glb",
+      "source": "tiletrigger-kit",
+      "src": "sandbag_wall_low.glb",
+      "triangles": 1120,
+      "bytes": 23280,
+      "sha256": "c7dfbd5fe30856d1"
+    },
+    {
+      "file": "props/sandbag_corner.glb",
+      "source": "tiletrigger-kit",
+      "src": "sandbag_corner.glb",
+      "triangles": 1280,
+      "bytes": 26500,
+      "sha256": "83fbbdb63624761d"
+    },
+    {
+      "file": "props/sandbag_nest.glb",
+      "source": "tiletrigger-kit",
+      "src": "sandbag_nest.glb",
+      "triangles": 2720,
+      "bytes": 51272,
+      "sha256": "147c1d7d78197c55"
+    },
+    {
+      "file": "props/hesco_wall.glb",
+      "source": "tiletrigger-kit",
+      "src": "hesco_wall.glb",
+      "triangles": 240,
+      "bytes": 14484,
+      "sha256": "0a946b1be07bccb5"
+    },
+    {
+      "file": "props/hedgehog.glb",
+      "source": "tiletrigger-kit",
+      "src": "hedgehog.glb",
+      "triangles": 36,
+      "bytes": 3828,
+      "sha256": "dfa4a19c7d4f340b"
+    },
+    {
+      "file": "props/dragon_tooth.glb",
+      "source": "tiletrigger-kit",
+      "src": "dragon_tooth.glb",
+      "triangles": 28,
+      "bytes": 2252,
+      "sha256": "05ac1d4be11e289d"
+    },
+    {
+      "file": "props/ammo_crate.glb",
+      "source": "tiletrigger-kit",
+      "src": "ammo_crate.glb",
+      "triangles": 60,
+      "bytes": 5320,
+      "sha256": "a9c105329dd0c5a5"
+    },
+    {
+      "file": "props/ammo_stack.glb",
+      "source": "tiletrigger-kit",
+      "src": "ammo_stack.glb",
+      "triangles": 180,
+      "bytes": 10400,
+      "sha256": "21fafe37e79a78a4"
+    },
+    {
+      "file": "props/fuel_drum.glb",
+      "source": "tiletrigger-kit",
+      "src": "fuel_drum.glb",
+      "triangles": 268,
+      "bytes": 10252,
+      "sha256": "d57b833869b6f16c"
+    },
+    {
+      "file": "props/razor_wire.glb",
+      "source": "tiletrigger-kit",
+      "src": "razor_wire.glb",
+      "triangles": 1416,
+      "bytes": 30224,
+      "sha256": "c8b26b6254a017f0"
+    },
+    {
+      "file": "props/camo_net.glb",
+      "source": "tiletrigger-kit",
+      "src": "camo_net.glb",
+      "triangles": 348,
+      "bytes": 21312,
+      "sha256": "aaf5c36335f38417"
+    },
+    {
+      "file": "props/mine_cart.glb",
+      "source": "tiletrigger-kit",
+      "src": "mine_cart.glb",
+      "triangles": 300,
+      "bytes": 14412,
+      "sha256": "5016bba6affa510f"
+    },
+    {
+      "file": "props/ore_cart.glb",
+      "source": "tiletrigger-kit",
+      "src": "ore_cart.glb",
+      "triangles": 732,
+      "bytes": 24076,
+      "sha256": "b92e1fe1d83502bd"
+    },
+    {
+      "file": "props/dynamite_crate.glb",
+      "source": "tiletrigger-kit",
+      "src": "dynamite_crate.glb",
+      "triangles": 336,
+      "bytes": 15388,
+      "sha256": "7f9a4aa826d4a665"
+    },
+    {
+      "file": "props/dynamite_bundle.glb",
+      "source": "tiletrigger-kit",
+      "src": "dynamite_bundle.glb",
+      "triangles": 264,
+      "bytes": 10100,
+      "sha256": "ae08574d8fc7ba27"
+    },
+    {
+      "file": "props/hitching_post.glb",
+      "source": "tiletrigger-kit",
+      "src": "hitching_post.glb",
+      "triangles": 132,
+      "bytes": 6676,
+      "sha256": "6a24b8728218408c"
+    },
+    {
+      "file": "props/water_trough.glb",
+      "source": "tiletrigger-kit",
+      "src": "water_trough.glb",
+      "triangles": 96,
+      "bytes": 7580,
+      "sha256": "e9cf6bb8e2bfad52"
+    },
+    {
+      "file": "props/wagon_wheel.glb",
+      "source": "tiletrigger-kit",
+      "src": "wagon_wheel.glb",
+      "triangles": 272,
+      "bytes": 11048,
+      "sha256": "5f90ae399c419bff"
+    },
+    {
+      "file": "props/wanted_board.glb",
+      "source": "tiletrigger-kit",
+      "src": "wanted_board.glb",
+      "triangles": 120,
+      "bytes": 9656,
+      "sha256": "330acc31df241ea9"
+    },
+    {
+      "file": "props/outhouse.glb",
+      "source": "tiletrigger-kit",
+      "src": "outhouse.glb",
+      "triangles": 96,
+      "bytes": 6388,
+      "sha256": "4e93bb674111956d"
+    },
+    {
+      "file": "props/rail_buffer.glb",
+      "source": "tiletrigger-kit",
+      "src": "rail_buffer.glb",
+      "triangles": 96,
+      "bytes": 8220,
+      "sha256": "a36b511f1ff9a2ab"
+    },
+    {
+      "file": "props/mine_frame.glb",
+      "source": "tiletrigger-kit",
+      "src": "mine_frame.glb",
+      "triangles": 84,
+      "bytes": 6740,
+      "sha256": "6d201301642f0011"
+    },
+    {
+      "file": "props/tumbleweed.glb",
+      "source": "tiletrigger-kit",
+      "src": "tumbleweed.glb",
+      "triangles": 840,
+      "bytes": 17456,
+      "sha256": "516f87cb94da087a"
+    },
+    {
+      "file": "props/covered_wagon.glb",
+      "source": "tiletrigger-kit",
+      "src": "covered_wagon.glb",
+      "triangles": 1348,
+      "bytes": 47400,
+      "sha256": "07446150dd1674d2"
+    },
+    {
+      "file": "props/wind_pump.glb",
+      "source": "tiletrigger-kit",
+      "src": "wind_pump.glb",
+      "triangles": 524,
+      "bytes": 28856,
+      "sha256": "b6f2704907bc6d10"
     }
   ]
 }

@@ -82,6 +82,38 @@
       "sha256": "9935eaa968866907"
     },
     {
+      "file": "textures/Clay005_color.jpg",
+      "asset": "Clay005",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Clay005_1K-JPG.zip",
+      "bytes": 7939,
+      "sha256": "382c7c34f3fe66ea"
+    },
+    {
+      "file": "textures/Clay005_normal.jpg",
+      "asset": "Clay005",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Clay005_1K-JPG.zip",
+      "bytes": 20925,
+      "sha256": "96444321fadbbc25"
+    },
+    {
+      "file": "textures/Concrete031_color.jpg",
+      "asset": "Concrete031",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Concrete031_1K-JPG.zip",
+      "bytes": 19517,
+      "sha256": "349d0fed5bbddf37"
+    },
+    {
+      "file": "textures/Concrete031_normal.jpg",
+      "asset": "Concrete031",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Concrete031_1K-JPG.zip",
+      "bytes": 22208,
+      "sha256": "38a95ce1dd594961"
+    },
+    {
       "file": "textures/Concrete034_color.jpg",
       "asset": "Concrete034",
       "map": "color",
@@ -114,6 +146,22 @@
       "sha256": "e4c6fcaeb6e3fb68"
     },
     {
+      "file": "textures/CorrugatedSteel006A_color.jpg",
+      "asset": "CorrugatedSteel006A",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=CorrugatedSteel006A_1K-JPG.zip",
+      "bytes": 6855,
+      "sha256": "7289e869b241d37e"
+    },
+    {
+      "file": "textures/CorrugatedSteel006A_normal.jpg",
+      "asset": "CorrugatedSteel006A",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=CorrugatedSteel006A_1K-JPG.zip",
+      "bytes": 26305,
+      "sha256": "75d3f92f98361d06"
+    },
+    {
       "file": "textures/CorrugatedSteel007A_color.jpg",
       "asset": "CorrugatedSteel007A",
       "map": "color",
@@ -130,6 +178,22 @@
       "sha256": "6f141f6180f35371"
     },
     {
+      "file": "textures/CorrugatedSteel009_color.jpg",
+      "asset": "CorrugatedSteel009",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=CorrugatedSteel009_1K-JPG.zip",
+      "bytes": 29813,
+      "sha256": "5eb97999a53e9da4"
+    },
+    {
+      "file": "textures/CorrugatedSteel009_normal.jpg",
+      "asset": "CorrugatedSteel009",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=CorrugatedSteel009_1K-JPG.zip",
+      "bytes": 30495,
+      "sha256": "d8e27ec3e717a89f"
+    },
+    {
       "file": "textures/Fabric028_color.jpg",
       "asset": "Fabric028",
       "map": "color",
@@ -144,6 +208,22 @@
       "source": "https://ambientcg.com/get?file=Fabric028_1K-JPG.zip",
       "bytes": 32399,
       "sha256": "d4e25f92cc080641"
+    },
+    {
+      "file": "textures/Fabric061_color.jpg",
+      "asset": "Fabric061",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Fabric061_1K-JPG.zip",
+      "bytes": 63325,
+      "sha256": "cfb9b1188acb1864"
+    },
+    {
+      "file": "textures/Fabric061_normal.jpg",
+      "asset": "Fabric061",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Fabric061_1K-JPG.zip",
+      "bytes": 41596,
+      "sha256": "5d5e1a4746ca831d"
     },
     {
       "file": "textures/Facade006_color.jpg",
@@ -224,6 +304,22 @@
       "source": "https://ambientcg.com/get?file=Ground054_1K-JPG.zip",
       "bytes": 52128,
       "sha256": "23a4ba1edf57be47"
+    },
+    {
+      "file": "textures/Ground109_color.jpg",
+      "asset": "Ground109",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Ground109_1K-JPG.zip",
+      "bytes": 46990,
+      "sha256": "c754048ebec73e8e"
+    },
+    {
+      "file": "textures/Ground109_normal.jpg",
+      "asset": "Ground109",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Ground109_1K-JPG.zip",
+      "bytes": 45252,
+      "sha256": "0ad4c426529b1947"
     },
     {
       "file": "textures/Ice002_color.jpg",
@@ -458,6 +554,22 @@
       "sha256": "1966cb9d9961bc2d"
     },
     {
+      "file": "textures/Planks039_color.jpg",
+      "asset": "Planks039",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=Planks039_1K-JPG.zip",
+      "bytes": 47396,
+      "sha256": "d82508119fbbb95a"
+    },
+    {
+      "file": "textures/Planks039_normal.jpg",
+      "asset": "Planks039",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=Planks039_1K-JPG.zip",
+      "bytes": 17272,
+      "sha256": "0f09607eb3bb0dfc"
+    },
+    {
       "file": "textures/Plaster001_color.jpg",
       "asset": "Plaster001",
       "map": "color",
@@ -664,6 +776,22 @@
       "source": "https://ambientcg.com/get?file=WoodSiding008_1K-JPG.zip",
       "bytes": 57383,
       "sha256": "62174a321406f541"
+    },
+    {
+      "file": "textures/WoodSiding013_color.jpg",
+      "asset": "WoodSiding013",
+      "map": "color",
+      "source": "https://ambientcg.com/get?file=WoodSiding013_1K-JPG.zip",
+      "bytes": 26927,
+      "sha256": "f67b62da6a42ee5d"
+    },
+    {
+      "file": "textures/WoodSiding013_normal.jpg",
+      "asset": "WoodSiding013",
+      "map": "normal",
+      "source": "https://ambientcg.com/get?file=WoodSiding013_1K-JPG.zip",
+      "bytes": 16367,
+      "sha256": "f74fdf2979ecc598"
     }
   ]
 }

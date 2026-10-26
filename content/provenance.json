@@ -2753,6 +2753,62 @@
       ]
     },
     {
+      "file": "textures/Clay005_color.jpg",
+      "sha256": "382c7c34f3fe66ea",
+      "bytes": 7939,
+      "source": "ambientcg:Clay005",
+      "title": "ambientCG PBR materials: Clay005",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Clay005",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Clay005_normal.jpg",
+      "sha256": "96444321fadbbc25",
+      "bytes": 20925,
+      "source": "ambientcg:Clay005",
+      "title": "ambientCG PBR materials: Clay005",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Clay005",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Concrete031_color.jpg",
+      "sha256": "349d0fed5bbddf37",
+      "bytes": 19517,
+      "source": "ambientcg:Concrete031",
+      "title": "ambientCG PBR materials: Concrete031",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Concrete031",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Concrete031_normal.jpg",
+      "sha256": "38a95ce1dd594961",
+      "bytes": 22208,
+      "source": "ambientcg:Concrete031",
+      "title": "ambientCG PBR materials: Concrete031",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Concrete031",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
       "file": "textures/Concrete034_color.jpg",
       "sha256": "f68bc38b91bedd5d",
       "bytes": 17464,
@@ -2809,6 +2865,34 @@
       ]
     },
     {
+      "file": "textures/CorrugatedSteel006A_color.jpg",
+      "sha256": "7289e869b241d37e",
+      "bytes": 6855,
+      "source": "ambientcg:CorrugatedSteel006A",
+      "title": "ambientCG PBR materials: CorrugatedSteel006A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=CorrugatedSteel006A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/CorrugatedSteel006A_normal.jpg",
+      "sha256": "75d3f92f98361d06",
+      "bytes": 26305,
+      "source": "ambientcg:CorrugatedSteel006A",
+      "title": "ambientCG PBR materials: CorrugatedSteel006A",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=CorrugatedSteel006A",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
       "file": "textures/CorrugatedSteel007A_color.jpg",
       "sha256": "7fbf363963062aa5",
       "bytes": 6976,
@@ -2837,6 +2921,34 @@
       ]
     },
     {
+      "file": "textures/CorrugatedSteel009_color.jpg",
+      "sha256": "5eb97999a53e9da4",
+      "bytes": 29813,
+      "source": "ambientcg:CorrugatedSteel009",
+      "title": "ambientCG PBR materials: CorrugatedSteel009",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=CorrugatedSteel009",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/CorrugatedSteel009_normal.jpg",
+      "sha256": "d8e27ec3e717a89f",
+      "bytes": 30495,
+      "source": "ambientcg:CorrugatedSteel009",
+      "title": "ambientCG PBR materials: CorrugatedSteel009",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=CorrugatedSteel009",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
       "file": "textures/Fabric028_color.jpg",
       "sha256": "2d5d6615675b29ec",
       "bytes": 54451,
@@ -2858,6 +2970,34 @@
       "title": "ambientCG PBR materials: Fabric028",
       "creator": "Lennart Demes (ambientCG)",
       "url": "https://ambientcg.com/view?id=Fabric028",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Fabric061_color.jpg",
+      "sha256": "cfb9b1188acb1864",
+      "bytes": 63325,
+      "source": "ambientcg:Fabric061",
+      "title": "ambientCG PBR materials: Fabric061",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Fabric061",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Fabric061_normal.jpg",
+      "sha256": "5d5e1a4746ca831d",
+      "bytes": 41596,
+      "source": "ambientcg:Fabric061",
+      "title": "ambientCG PBR materials: Fabric061",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Fabric061",
       "license": "CC0-1.0",
       "modifications": [
         "downscaled to 512 px",
@@ -2998,6 +3138,34 @@
       "title": "ambientCG PBR materials: Ground054",
       "creator": "Lennart Demes (ambientCG)",
       "url": "https://ambientcg.com/view?id=Ground054",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Ground109_color.jpg",
+      "sha256": "c754048ebec73e8e",
+      "bytes": 46990,
+      "source": "ambientcg:Ground109",
+      "title": "ambientCG PBR materials: Ground109",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Ground109",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Ground109_normal.jpg",
+      "sha256": "0ad4c426529b1947",
+      "bytes": 45252,
+      "source": "ambientcg:Ground109",
+      "title": "ambientCG PBR materials: Ground109",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Ground109",
       "license": "CC0-1.0",
       "modifications": [
         "downscaled to 512 px",
@@ -3411,6 +3579,34 @@
       ]
     },
     {
+      "file": "textures/Planks039_color.jpg",
+      "sha256": "d82508119fbbb95a",
+      "bytes": 47396,
+      "source": "ambientcg:Planks039",
+      "title": "ambientCG PBR materials: Planks039",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Planks039",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/Planks039_normal.jpg",
+      "sha256": "0f09607eb3bb0dfc",
+      "bytes": 17272,
+      "source": "ambientcg:Planks039",
+      "title": "ambientCG PBR materials: Planks039",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=Planks039",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
       "file": "textures/Plaster001_color.jpg",
       "sha256": "1ed8b17d57b7984c",
       "bytes": 11017,
@@ -3768,6 +3964,34 @@
       "title": "ambientCG PBR materials: WoodSiding008",
       "creator": "Lennart Demes (ambientCG)",
       "url": "https://ambientcg.com/view?id=WoodSiding008",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/WoodSiding013_color.jpg",
+      "sha256": "f67b62da6a42ee5d",
+      "bytes": 26927,
+      "source": "ambientcg:WoodSiding013",
+      "title": "ambientCG PBR materials: WoodSiding013",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=WoodSiding013",
+      "license": "CC0-1.0",
+      "modifications": [
+        "downscaled to 512 px",
+        "colour, normal and emission maps only"
+      ]
+    },
+    {
+      "file": "textures/WoodSiding013_normal.jpg",
+      "sha256": "f74fdf2979ecc598",
+      "bytes": 16367,
+      "source": "ambientcg:WoodSiding013",
+      "title": "ambientCG PBR materials: WoodSiding013",
+      "creator": "Lennart Demes (ambientCG)",
+      "url": "https://ambientcg.com/view?id=WoodSiding013",
       "license": "CC0-1.0",
       "modifications": [
         "downscaled to 512 px",
@@ -11577,6 +11801,801 @@
       "modifications": [
         "centred, stood on the ground and scaled to metres",
         "texture embedded"
+      ]
+    },
+    {
+      "file": "props/jersey_barrier.glb",
+      "sha256": "ee53bf64ee50d1cb",
+      "triangles": 28,
+      "bytes": 7680,
+      "source": "kenney-retro-urban-kit/detail-barrier-strong-type-a.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/jersey_barrier_striped.glb",
+      "sha256": "88fdea75329671bd",
+      "triangles": 28,
+      "bytes": 10248,
+      "source": "kenney-retro-urban-kit/detail-barrier-strong-type-b.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/jersey_barrier_broken.glb",
+      "sha256": "01ea5ada5874e567",
+      "triangles": 40,
+      "bytes": 8116,
+      "source": "kenney-retro-urban-kit/detail-barrier-strong-damaged.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/road_barrier.glb",
+      "sha256": "4b3b39133b0ce8ed",
+      "triangles": 44,
+      "bytes": 10716,
+      "source": "kenney-retro-urban-kit/detail-barrier-type-b.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/concrete_block.glb",
+      "sha256": "4bc92c2b69dc647e",
+      "triangles": 12,
+      "bytes": 6940,
+      "source": "kenney-retro-urban-kit/detail-block.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/brick_rubble.glb",
+      "sha256": "526ebf70c77dae43",
+      "triangles": 88,
+      "bytes": 10304,
+      "source": "kenney-retro-urban-kit/detail-bricks-type-b.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/floodlight.glb",
+      "sha256": "201b2ad74bf72c58",
+      "triangles": 96,
+      "bytes": 10012,
+      "source": "kenney-retro-urban-kit/detail-light-double.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/yard_lamp.glb",
+      "sha256": "6f33910b66b53487",
+      "triangles": 68,
+      "bytes": 8968,
+      "source": "kenney-retro-urban-kit/detail-light-single.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/pallet.glb",
+      "sha256": "e494bf7ed12562ed",
+      "triangles": 84,
+      "bytes": 10256,
+      "source": "kenney-retro-urban-kit/pallet.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/supply_truck.glb",
+      "sha256": "c4bbee1f31ad564b",
+      "triangles": 48,
+      "bytes": 15188,
+      "source": "kenney-retro-urban-kit/truck-green.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/flatbed_truck.glb",
+      "sha256": "64a5f2d3443644b8",
+      "triangles": 68,
+      "bytes": 22264,
+      "source": "kenney-retro-urban-kit/truck-flat.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/dumpster.glb",
+      "sha256": "95196eb51eab7d34",
+      "triangles": 22,
+      "bytes": 18308,
+      "source": "kenney-retro-urban-kit/detail-dumpster-closed.glb",
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/shipping_container_red.glb",
+      "sha256": "b1964c11c7b25014",
+      "triangles": 402,
+      "bytes": 36524,
+      "source": "kenney-city-kit-industrial/shipping-container-a.glb",
+      "title": "City Kit (Industrial) 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-industrial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/shipping_container_blue.glb",
+      "sha256": "5b8d3150d80528b4",
+      "triangles": 402,
+      "bytes": 37148,
+      "source": "kenney-city-kit-industrial/shipping-container-b.glb",
+      "title": "City Kit (Industrial) 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-industrial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/shipping_container_green.glb",
+      "sha256": "f778568c4e30a733",
+      "triangles": 402,
+      "bytes": 36524,
+      "source": "kenney-city-kit-industrial/shipping-container-c.glb",
+      "title": "City Kit (Industrial) 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-industrial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/fuel_tank.glb",
+      "sha256": "436a6bccba39df2f",
+      "triangles": 310,
+      "bytes": 31688,
+      "source": "kenney-city-kit-industrial/detail-tank.glb",
+      "title": "City Kit (Industrial) 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-industrial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/storage_tank.glb",
+      "sha256": "81b1b7e77597ab3b",
+      "triangles": 566,
+      "bytes": 41888,
+      "source": "kenney-city-kit-industrial/detail-tank-large.glb",
+      "title": "City Kit (Industrial) 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-industrial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/steel_water_tower.glb",
+      "sha256": "1e343606688167e7",
+      "triangles": 968,
+      "bytes": 66404,
+      "source": "kenney-city-kit-industrial/water-tower.glb",
+      "title": "City Kit (Industrial) 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-industrial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/locomotive_red.glb",
+      "sha256": "4b25b109ef7b776e",
+      "triangles": 1456,
+      "bytes": 92592,
+      "source": "kenney-train-kit/train-locomotive-b.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/passenger_car.glb",
+      "sha256": "3e22a916fd4b6582",
+      "triangles": 992,
+      "bytes": 66756,
+      "source": "kenney-train-kit/train-locomotive-passenger-a.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/ore_wagon.glb",
+      "sha256": "8b9c69b4038bc0a9",
+      "triangles": 868,
+      "bytes": 63072,
+      "source": "kenney-train-kit/train-carriage-dirt.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/hopper_wagon.glb",
+      "sha256": "4ed8d70876db6ed3",
+      "triangles": 760,
+      "bytes": 55164,
+      "source": "kenney-train-kit/train-carriage-box.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/timber_wagon.glb",
+      "sha256": "e5b45bd708771b9a",
+      "triangles": 820,
+      "bytes": 59324,
+      "source": "kenney-train-kit/train-carriage-wood.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/flatbed_wagon.glb",
+      "sha256": "64ef5f8e92642428",
+      "triangles": 778,
+      "bytes": 57976,
+      "source": "kenney-train-kit/train-carriage-flatbed-wood.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/railroad.glb",
+      "sha256": "4e7ff1da24999c51",
+      "triangles": 376,
+      "bytes": 35448,
+      "source": "kenney-train-kit/railroad-straight.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/railroad_broken.glb",
+      "sha256": "8635b16d035aef9f",
+      "triangles": 376,
+      "bytes": 37296,
+      "source": "kenney-train-kit/railroad-damaged-straight.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/mine_rails.glb",
+      "sha256": "957f0ea6a510da96",
+      "triangles": 160,
+      "bytes": 21908,
+      "source": "kenney-train-kit/railroad-rail-straight.glb",
+      "title": "Train Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/train-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/sandbag_wall.glb",
+      "sha256": "9af7fa5971be8eca",
+      "triangles": 2240,
+      "bytes": 44776,
+      "source": "tiletrigger-kit/sandbag_wall.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sandbag_wall_low.glb",
+      "sha256": "c7dfbd5fe30856d1",
+      "triangles": 1120,
+      "bytes": 23280,
+      "source": "tiletrigger-kit/sandbag_wall_low.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sandbag_corner.glb",
+      "sha256": "83fbbdb63624761d",
+      "triangles": 1280,
+      "bytes": 26500,
+      "source": "tiletrigger-kit/sandbag_corner.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/sandbag_nest.glb",
+      "sha256": "147c1d7d78197c55",
+      "triangles": 2720,
+      "bytes": 51272,
+      "source": "tiletrigger-kit/sandbag_nest.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hesco_wall.glb",
+      "sha256": "0a946b1be07bccb5",
+      "triangles": 240,
+      "bytes": 14484,
+      "source": "tiletrigger-kit/hesco_wall.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hedgehog.glb",
+      "sha256": "dfa4a19c7d4f340b",
+      "triangles": 36,
+      "bytes": 3828,
+      "source": "tiletrigger-kit/hedgehog.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dragon_tooth.glb",
+      "sha256": "05ac1d4be11e289d",
+      "triangles": 28,
+      "bytes": 2252,
+      "source": "tiletrigger-kit/dragon_tooth.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ammo_crate.glb",
+      "sha256": "a9c105329dd0c5a5",
+      "triangles": 60,
+      "bytes": 5320,
+      "source": "tiletrigger-kit/ammo_crate.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ammo_stack.glb",
+      "sha256": "21fafe37e79a78a4",
+      "triangles": 180,
+      "bytes": 10400,
+      "source": "tiletrigger-kit/ammo_stack.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/fuel_drum.glb",
+      "sha256": "d57b833869b6f16c",
+      "triangles": 268,
+      "bytes": 10252,
+      "source": "tiletrigger-kit/fuel_drum.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/razor_wire.glb",
+      "sha256": "c8b26b6254a017f0",
+      "triangles": 1416,
+      "bytes": 30224,
+      "source": "tiletrigger-kit/razor_wire.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/camo_net.glb",
+      "sha256": "aaf5c36335f38417",
+      "triangles": 348,
+      "bytes": 21312,
+      "source": "tiletrigger-kit/camo_net.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mine_cart.glb",
+      "sha256": "5016bba6affa510f",
+      "triangles": 300,
+      "bytes": 14412,
+      "source": "tiletrigger-kit/mine_cart.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/ore_cart.glb",
+      "sha256": "b92e1fe1d83502bd",
+      "triangles": 732,
+      "bytes": 24076,
+      "source": "tiletrigger-kit/ore_cart.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dynamite_crate.glb",
+      "sha256": "7f9a4aa826d4a665",
+      "triangles": 336,
+      "bytes": 15388,
+      "source": "tiletrigger-kit/dynamite_crate.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dynamite_bundle.glb",
+      "sha256": "ae08574d8fc7ba27",
+      "triangles": 264,
+      "bytes": 10100,
+      "source": "tiletrigger-kit/dynamite_bundle.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hitching_post.glb",
+      "sha256": "6a24b8728218408c",
+      "triangles": 132,
+      "bytes": 6676,
+      "source": "tiletrigger-kit/hitching_post.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/water_trough.glb",
+      "sha256": "e9cf6bb8e2bfad52",
+      "triangles": 96,
+      "bytes": 7580,
+      "source": "tiletrigger-kit/water_trough.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/wagon_wheel.glb",
+      "sha256": "5f90ae399c419bff",
+      "triangles": 272,
+      "bytes": 11048,
+      "source": "tiletrigger-kit/wagon_wheel.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/wanted_board.glb",
+      "sha256": "330acc31df241ea9",
+      "triangles": 120,
+      "bytes": 9656,
+      "source": "tiletrigger-kit/wanted_board.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/outhouse.glb",
+      "sha256": "4e93bb674111956d",
+      "triangles": 96,
+      "bytes": 6388,
+      "source": "tiletrigger-kit/outhouse.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/rail_buffer.glb",
+      "sha256": "a36b511f1ff9a2ab",
+      "triangles": 96,
+      "bytes": 8220,
+      "source": "tiletrigger-kit/rail_buffer.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mine_frame.glb",
+      "sha256": "6d201301642f0011",
+      "triangles": 84,
+      "bytes": 6740,
+      "source": "tiletrigger-kit/mine_frame.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/tumbleweed.glb",
+      "sha256": "516f87cb94da087a",
+      "triangles": 840,
+      "bytes": 17456,
+      "source": "tiletrigger-kit/tumbleweed.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/covered_wagon.glb",
+      "sha256": "07446150dd1674d2",
+      "triangles": 1348,
+      "bytes": 47400,
+      "source": "tiletrigger-kit/covered_wagon.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/wind_pump.glb",
+      "sha256": "b6f2704907bc6d10",
+      "triangles": 524,
+      "bytes": 28856,
+      "source": "tiletrigger-kit/wind_pump.glb",
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/build-kit-props.mjs",
+        "centred, stood on the ground and scaled to metres"
       ]
     },
     {

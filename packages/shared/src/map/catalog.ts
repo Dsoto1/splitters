@@ -7,6 +7,8 @@
  * ports auto-cap into solid walls.
  */
 
+import { stylePackTiles } from './packTiles.ts';
+
 /** Sides in clockwise order; rotating a tile by k quarter turns maps side i to (i + k) % 4. */
 export const SIDES = ['N', 'E', 'S', 'W'] as const;
 export type Side = (typeof SIDES)[number];
@@ -99,19 +101,28 @@ export const CEILING_LABELS: Record<Ceiling, string> = {
 export const CORNERS = ['square', 'posts', 'columns', 'chamfered', 'rounded'] as const;
 export type Corner = (typeof CORNERS)[number];
 /**
- * City facades (Quaternius' Downtown City MegaKit at 4/3 scale): the outside of
- * a room's walls dressed in brick, a shopfront ground floor or painted
- * plaster, with a cornice along the top and columns on the outer corners.
- * Purely visual: doorways and windows stay our own openings.
+ * Facades: the outside of a room's walls dressed, purely visual (doorways and
+ * windows stay our own openings). City facades (Quaternius' Downtown City
+ * MegaKit at 4/3 scale): brick, a shopfront ground floor or painted plaster,
+ * with a cornice along the top and columns on the outer corners. Style Pack
+ * facades are built from boxes in library materials: bunker concrete or
+ * corrugated sheet (01 Military Compound), a plank false front with an
+ * awning and boardwalk, or adobe with roof beams (02 Frontier Dust).
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'concrete', 'corrugated', 'false_front', 'adobe'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
   brick: 'City brick',
   storefront: 'Shopfront and brick',
   plaster: 'Painted plaster',
+  concrete: 'Bunker concrete',
+  corrugated: 'Corrugated sheet',
+  false_front: 'Frontier false front',
+  adobe: 'Adobe',
 };
+/** Facades drawn with the city kit's models (the rest are boxes drawn with the level). */
+export const CITY_FACADES: ReadonlySet<Facade> = new Set(['brick', 'storefront', 'plaster']);
 
 export const CORNER_LABELS: Record<Corner, string> = {
   square: 'Square',
@@ -133,6 +144,12 @@ export interface LocalBox {
   yaw?: number;
   /** What the box is built as (default `solid`; curved walls use `wall` so they take the walls' paint, `trim` is visual only). */
   kind?: 'solid' | 'wall' | 'floor' | 'trim' | 'prop';
+  /**
+   * A library material (and tint) on every face instead of the theme's paint:
+   * Style Pack pieces whose sandbags, corrugated roofs or rails should look
+   * the part in any theme.
+   */
+  surface?: { material: string; tint?: string | null };
 }
 
 export interface TileDefinition {
@@ -1150,6 +1167,8 @@ export const CORE_TILES: readonly TileDefinition[] = [
     extraFloors: [box(-4, -0.5, 1.5, 4, 0, 4)],
     solids: [rail(-4, 1.5, -1.6, 1.5), rail(1.6, 1.5, 4, 1.5)],
   },
+  // Style Pack pieces (01 Military Compound, 02 Frontier Dust): see packTiles.ts and stylePacks.ts.
+  ...stylePackTiles(),
 ];
 
 // ---------------------------------------------------------------- buildings

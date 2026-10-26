@@ -41,7 +41,7 @@ function mat(scene: Scene, hex: string, emissive = 0, alpha = 1): StandardMateri
 }
 
 /** Projectile looks this module draws; others are drawn by the view. */
-export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear']);
+export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite']);
 
 export function createArsenalProjectile(scene: Scene, id: number, look: ProjectileVisual): TransformNode {
   const node = new TransformNode(`proj_${id}`, scene);
@@ -117,6 +117,18 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
       const l = add(CreateSphere(`sticky_${id}_light`, { diameter: 0.07, segments: 6 }, scene));
       l.position.y = 0.1;
       l.material = mat(scene, '#ff3b3b', 1.2);
+      break;
+    }
+    case 'dynamite': {
+      // A red stick with a sparking fuse.
+      const b = add(CreateCylinder(`dynamite_${id}`, { diameter: 0.08, height: 0.28, tessellation: 8 }, scene));
+      b.material = mat(scene, '#b3261e', 0.15);
+      const fuse = add(CreateCylinder(`dynamiteFuse_${id}`, { diameter: 0.012, height: 0.1, tessellation: 4 }, scene));
+      fuse.position.y = 0.18;
+      fuse.material = mat(scene, '#d9cfae');
+      const spark = add(CreateSphere(`dynamite_${id}_light`, { diameter: 0.06, segments: 4 }, scene));
+      spark.position.y = 0.24;
+      spark.material = mat(scene, '#ffd24a', 1.4);
       break;
     }
     case 'molotov': {
@@ -220,6 +232,12 @@ export function animateArsenalProjectile(node: TransformNode, look: ProjectileVi
     }
     case 'molotov':
     case 'gas':
+    case 'dynamite': {
+      node.rotation.x += 0.2;
+      const spark = node.getChildMeshes().find((m) => m.name.endsWith('_light'));
+      spark?.scaling.setAll(0.6 + Math.abs(Math.sin(now * 0.05)) * 0.9);
+      break;
+    }
     case 'banana':
     case 'holy':
       node.rotation.x += 0.25;

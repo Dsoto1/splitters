@@ -1,5 +1,5 @@
 import { boxQuat, quatMul, quatRotate, type Rot } from '../map/geometry.ts';
-import type { BlockEntity, MapDocument, MoverEntity } from '../map/schema.ts';
+import type { BlockEntity, MapDocument, MoverEntity, PropEntity } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
 import { TICK_RATE } from './constants.ts';
 
@@ -26,6 +26,15 @@ export interface MoverBlock {
   half: Vec3;
 }
 
+/** A prop riding a mover (drawn only: carried props never collide). */
+export interface MoverProp {
+  /** Entity index of the prop. */
+  i: number;
+  e: PropEntity;
+  /** The prop's base relative to the mover's hinge (its position), at point 1. */
+  local: Vec3;
+}
+
 export interface MoverDef {
   /** Entity index of the mover. */
   i: number;
@@ -36,6 +45,7 @@ export interface MoverDef {
   /** Hinge axis (horizontal, square to the facing). */
   axis: Vec3;
   blocks: MoverBlock[];
+  props: MoverProp[];
 }
 
 /** A leg from point `from` to point `to` (indices) that began at `start`; from === to: parked there (since `start`). */
@@ -69,6 +79,14 @@ export function moverDefs(map: MapDocument): MoverDef[] {
       const [w, h, d] = b.size;
       blocks.push({ i: bi, e: b, local: { x: b.position[0] - pivot.x, y: b.position[1] + h / 2 - pivot.y, z: b.position[2] - pivot.z }, rot: boxQuat(b.yaw, b.pitch, b.roll), half: { x: w / 2, y: h / 2, z: d / 2 } });
     }
+    const props: MoverProp[] = [];
+    for (const id of e.props ?? []) {
+      const pi = index.get(id);
+      const p = pi === undefined ? undefined : map.entities[pi];
+      if (pi === undefined || p?.kind !== 'prop' || taken.has(id)) continue;
+      taken.add(id);
+      props.push({ i: pi, e: p, local: { x: p.position[0] - pivot.x, y: p.position[1] - pivot.y, z: p.position[2] - pivot.z } });
+    }
     out.push({
       i,
       e,
@@ -77,6 +95,7 @@ export function moverDefs(map: MapDocument): MoverDef[] {
       angles: e.points.map((_, k) => e.angles?.[k] ?? 0),
       axis: { x: Math.cos(e.yaw), y: 0, z: -Math.sin(e.yaw) },
       blocks,
+      props,
     });
   });
   return out;
@@ -119,6 +138,18 @@ export function carriedTransform(def: MoverDef, block: MoverBlock, pose: MoverPo
   const [x, y, z] = pose.angle ? quatRotate(h, block.local.x, block.local.y, block.local.z) : [block.local.x, block.local.y, block.local.z];
   return { center: { x: def.pivot.x + pose.offset.x + x, y: def.pivot.y + pose.offset.y + y, z: def.pivot.z + pose.offset.z + z }, rot: pose.angle ? quatMul(h, block.rot) : block.rot };
 }
+
+/** A carried prop's base position and rotation at a pose (its own yaw, then the hinge's turn). */
+export function carriedPropTransform(def: MoverDef, prop: MoverProp, pose: MoverPose): { position: Vec3; rot: Rot } {
+  const yaw = boxQuat(prop.e.yaw);
+  if (!pose.angle) return { position: { x: def.pivot.x + pose.offset.x + prop.local.x, y: def.pivot.y + pose.offset.y + prop.local.y, z: def.pivot.z + pose.offset.z + prop.local.z }, rot: yaw };
+  const h = hingeQuat(def, pose.angle);
+  const [x, y, z] = quatRotate(h, prop.local.x, prop.local.y, prop.local.z);
+  return { position: { x: def.pivot.x + pose.offset.x + x, y: def.pivot.y + pose.offset.y + y, z: def.pivot.z + pose.offset.z + z }, rot: quatMul(h, yaw) };
+}
+
+/** Movers set to at least this speed (m/s) run over whoever their blocks sweep into (trains, not lifts or mine carts). */
+export const MOVER_STRIKE_SPEED = 4;
 
 const conj = (q: Rot): Rot => ({ x: -q.x, y: -q.y, z: -q.z, w: q.w });
 
@@ -189,6 +220,42 @@ export class Movers {
     const to = packed % 64;
     if (from >= def.points.length || to >= def.points.length) return;
     this.legs[k] = { from, to, start };
+  }
+
+  /** Every carried prop's base position and rotation at `tick` (for drawing). */
+  *propTransforms(tick: number): Generator<{ prop: MoverProp; position: Vec3; rot: Rot }> {
+    for (let k = 0; k < this.defs.length; k++) {
+      const def = this.defs[k]!;
+      if (!def.props.length) continue;
+      const pose = this.pose(k, tick);
+      for (const prop of def.props) yield { prop, ...carriedPropTransform(def, prop, pose) };
+    }
+  }
+
+  /**
+   * Run over: a body (feet, radius, height) that a carried block of a mover
+   * set to MOVER_STRIKE_SPEED or more sweeps into at `tick` while under way,
+   * without standing on it. Returns the block's speed (m/s), or 0.
+   */
+  strike(feet: Vec3, radius: number, height: number, tick: number, present: (entity: number) => boolean = () => true): number {
+    for (let k = 0; k < this.defs.length; k++) {
+      const def = this.defs[k]!;
+      const before = this.pose(k, tick - 1);
+      const after = this.pose(k, tick);
+      const speed = Math.hypot(after.offset.x - before.offset.x, after.offset.y - before.offset.y, after.offset.z - before.offset.z) * TICK_RATE;
+      // Set to run fast (trains), and under way (not easing out of or into a stop).
+      if (def.e.speed < MOVER_STRIKE_SPEED || speed < 1) continue;
+      for (const block of def.blocks) {
+        if (!present(block.i)) continue;
+        const t = carriedTransform(def, block, after);
+        const [lx, ly, lz] = quatRotate(conj(t.rot), feet.x - t.center.x, feet.y + height / 2 - t.center.y, feet.z - t.center.z);
+        const h = block.half;
+        // Riding on top is fine; anywhere else inside the swept block is a hit.
+        if (feet.y >= t.center.y + h.y - 0.3) continue;
+        if (Math.abs(lx) < h.x + radius && Math.abs(lz) < h.z + radius && Math.abs(ly) < h.y + height / 2) return speed;
+      }
+    }
+    return 0;
   }
 
   /**

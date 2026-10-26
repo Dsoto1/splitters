@@ -144,6 +144,11 @@
           <button class="tab" data-ws="environment" data-pane="terrain" hidden>Terrain</button>
         </div>
         <input id="ed-search" placeholder="Search tiles, props, NPCs…" autocomplete="off" />
+        <div id="ed-pack-row" class="ed-pack-row">
+          <select id="ed-pack" title="Style Pack: show only one pack's tiles, props and gameplay pieces"><option value="">All pieces</option></select>
+          <button id="ed-pack-theme" title="Use the pack's theme for this map" hidden>Use theme</button>
+        </div>
+        <div id="ed-pack-note" class="ed-note" hidden></div>
         <div class="ed-pane" data-pane="tiles">
           <div id="ed-tiles" class="tiles"></div>
         </div>

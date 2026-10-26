@@ -351,13 +351,14 @@ export class MapBuilder {
    * to `yaw` (drawbridges). `loop`/`pingpong` run by themselves; `trigger`
    * waits for logic ("mover_go", "mover_to"). See docs/BUILDING_KIT.md.
    */
-  mover(id: string, at: V3, blocks: string[], points: V3[], o: { mode?: 'loop' | 'pingpong' | 'trigger'; speed?: number; turnSpeed?: number; wait?: number; yaw?: number; angles?: number[]; startActive?: boolean; name?: string } = {}): this {
+  mover(id: string, at: V3, blocks: string[], points: V3[], o: { mode?: 'loop' | 'pingpong' | 'trigger'; speed?: number; turnSpeed?: number; wait?: number; yaw?: number; angles?: number[]; startActive?: boolean; name?: string; props?: string[] } = {}): this {
     return this.add({
       kind: 'mover',
       id,
       position: at,
       yaw: o.yaw ?? 0,
       blocks,
+      ...(o.props?.length ? { props: o.props } : {}),
       points,
       ...(o.angles ? { angles: o.angles } : {}),
       mode: o.mode ?? 'pingpong',

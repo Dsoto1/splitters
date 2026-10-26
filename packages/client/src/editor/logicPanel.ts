@@ -7,6 +7,7 @@ import {
   EVENT_INFO,
   EVENT_TYPES,
   entityFitsTarget,
+  isBreakableProp,
   PLAYERS_FACTION,
   RELATIONS,
   entityLabel,
@@ -320,7 +321,7 @@ export class LogicPanel {
     else if (kind === 'objective') for (const o of logic.objectives) options.push([o.id, o.text]);
     else {
       for (const e of doc.entities) {
-        const ok = entityFitsTarget(e.kind, kind);
+        const ok = entityFitsTarget(e.kind, kind, isBreakableProp(e));
         if (ok) options.push([e.id, entityLabel(doc, e)]);
       }
     }

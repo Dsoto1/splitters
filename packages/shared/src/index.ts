@@ -45,6 +45,7 @@ export * from './net/lan.ts';
 export * from './bots/profile.ts';
 export * from './editor/commands.ts';
 export * from './editor/operations.ts';
+export * from './editor/stylePacks.ts';
 export * from './editor/scatter.ts';
 export * from './editor/npcs.ts';
 export * from './sim/forts.ts';

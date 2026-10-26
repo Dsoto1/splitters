@@ -370,7 +370,7 @@ console.log(`checked ${creatureLock.files.length} creatures`);
 // ---------------------------------------------------------------- textures and props
 // Prepared by tools/content/prepare-textures.mjs and prepare-props.mjs; their
 // lock files record what they wrote, and this checks the shipped files against them.
-function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
+function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare, licences = /^CC0-1\.0$|^CC-BY-(3|4)\.0$/) {
   const lockFile = JSON.parse(readFileSync(join(ROOT, lockPath), 'utf8'));
   const files = new Set();
   for (const f of lockFile.files) {
@@ -381,7 +381,7 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
       continue;
     }
     if (!existsSync(join(ROOT, pack.licenseFile))) problems.push(`${f.file}: licence file missing (${pack.licenseFile})`);
-    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
+    if (!licences.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
     const path = join(ROOT, 'packages/client/public', f.file);
     if (!existsSync(path)) problems.push(`${f.file}: missing (run ${prepare})`);
     else if (createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${f.file}: does not match ${lockPath}`);
@@ -412,8 +412,10 @@ const propCount = checkLocked(
   'props',
   (f) => propManifest.packs[f.source],
   propManifest.budgets,
-  (f, pack) => (pack.download ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
+  (f, pack) => (pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? ['built in code by tools/content/build-kit-props.mjs', 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
   'node tools/content/prepare-props.mjs',
+  // Props may also be our own pieces built in code (assets-src/tiletrigger-kit), owned outright.
+  /^CC0-1\.0$|^CC-BY-(3|4)\.0$|^Owned$/,
 );
 const skyManifest = JSON.parse(readFileSync(join(ROOT, 'content/skies.json'), 'utf8'));
 const skyPacks = Object.fromEntries(

@@ -146,10 +146,22 @@ const TeamFilter = z
   .regex(/^[a-z0-9_.]{2,64}$/)
   .optional();
 
+/**
+ * How a door looks (Style Packs): `sliding` steel leaves (the default),
+ * `blast` a heavy hazard-striped blast door, `saloon` swinging louvred
+ * half-doors, `vault` a round bank-vault door that swings open. Looks only:
+ * every style opens, locks and blocks the same way.
+ */
+export const DOOR_STYLES = ['sliding', 'blast', 'saloon', 'vault'] as const;
+export type DoorStyle = (typeof DOOR_STYLES)[number];
+export const DOOR_STYLE_LABELS: Record<DoorStyle, string> = { sliding: 'Sliding steel', blast: 'Blast door', saloon: 'Saloon doors', vault: 'Vault door' };
+
 /** A sliding double door, sized for a Classic Grid doorway (3 m × 3 m). */
 export const DoorEntity = EntityBase.extend({
   kind: z.literal('door'),
   yaw: Yaw,
+  /** Look (absent: sliding). */
+  style: z.enum(DOOR_STYLES).optional(),
   startOpen: z.boolean().default(false),
   locked: z.boolean().default(false),
   /** Opens by itself when a player comes close (if unlocked). Otherwise players press E, or logic opens it. */
@@ -489,6 +501,12 @@ export const MoverEntity = EntityBase.extend({
   kind: z.literal('mover'),
   yaw: Yaw,
   blocks: z.array(StableId).min(1).max(32),
+  /**
+   * Props that ride along (Style Packs: a locomotive on its chassis blocks, a
+   * mine cart): drawn moving with the blocks, never colliding themselves (they
+   * must not be solid; the blocks are what you stand on and bump into).
+   */
+  props: z.array(StableId).max(16).optional(),
   points: z.array(Vec3Tuple).min(2).max(16),
   angles: z.array(z.number().min(-Math.PI).max(Math.PI)).max(16).optional(),
   mode: z.enum(MOVER_MODES).default('pingpong'),

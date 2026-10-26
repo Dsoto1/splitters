@@ -82,8 +82,9 @@ are unchanged; each has a pickup like every weapon):
 | 1 | Medi-Beam | Medkit | Heals the teammate in your sights 6 HP five times a second, 9 m (Medic) |
 
 **Grenades (G):** frag, proximity mine, sticky (rides on whoever it hits),
-incendiary (a pool of fire), gas (a toxic cloud) and vortex (a small
-singularity).
+incendiary (a pool of fire), gas (a toxic cloud), vortex (a small
+singularity) and dynamite (Style Pack 02 Frontier Dust: a 3 s fuse, a 6 m
+blast that throws people about; pickup `core.dynamite`).
 
 **Mechanics** (all data on `WeaponDefinition` / `ProjectileSpec`):
 

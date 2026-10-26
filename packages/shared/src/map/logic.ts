@@ -243,9 +243,10 @@ export const emptyLogic = (): ScenarioLogic => ({ variables: [], timers: [], obj
 export const TOGGLEABLE_KINDS = ['button', 'zone', 'trap', 'pickup', 'block', 'mover', 'light'] as const;
 
 /** Whether an entity of `kind` can be the target of a logic field expecting `target`. Blocks count as destructibles (destroy / destroyed). */
-export function entityFitsTarget(kind: string, target: TargetKind): boolean {
+/** Whether an entity of `kind` can be a rule's target of this kind (`breakable`: a prop that can be shot apart, which fires "destroyed" too). */
+export function entityFitsTarget(kind: string, target: TargetKind, breakable = false): boolean {
   if (target === 'toggleable') return (TOGGLEABLE_KINDS as readonly string[]).includes(kind);
-  if (target === 'destructible') return kind === 'destructible' || kind === 'block';
+  if (target === 'destructible') return kind === 'destructible' || kind === 'block' || (kind === 'prop' && breakable);
   return kind === target;
 }
 

@@ -95,7 +95,9 @@
       "url": "https://kenney.nl/assets/train-kit",
       "license": "CC0-1.0",
       "licenseFile": "assets-src/kenney-train-kit/License.txt",
-      "retrieved": "2026-10-23"
+      "retrieved": "2026-10-23",
+      "download": "kenney_train-kit",
+      "models": "Models/GLB format"
     },
     "kenney-mini-market": {
       "title": "Mini Market",
@@ -171,6 +173,34 @@
       "licenseFile": "assets-src/quaternius-modular-dungeon/License.txt",
       "retrieved": "2026-10-25",
       "objSource": "Updated Modular Dungeon - May 2019/OBJ"
+    },
+    "kenney-retro-urban-kit": {
+      "title": "Retro Urban Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/retro-urban-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-retro-urban-kit/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "kenney_retro-urban-kit",
+      "models": "Models/GLB format"
+    },
+    "kenney-city-kit-industrial": {
+      "title": "City Kit (Industrial) 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-industrial",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-city-kit-industrial/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "kenney_city-kit-industrial_2.0",
+      "models": "Models/GLB format"
+    },
+    "tiletrigger-kit": {
+      "title": "Tile Trigger kit pieces (built in code)",
+      "creator": "Tile Trigger",
+      "url": "tools/content/build-kit-props.mjs",
+      "license": "Owned",
+      "licenseFile": "assets-src/tiletrigger-kit/License.txt",
+      "retrieved": "2026-10-26"
     }
   },
   "budgets": {
@@ -5354,6 +5384,559 @@
       "category": "Dungeon",
       "height": 2,
       "collide": "stairs"
+    },
+    {
+      "id": "jersey_barrier",
+      "pack": "kenney-retro-urban-kit",
+      "src": "detail-barrier-strong-type-a.glb",
+      "name": "Concrete Barrier",
+      "category": "Military",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 400,
+        "debris": "#9c9a94"
+      }
+    },
+    {
+      "id": "jersey_barrier_striped",
+      "pack": "kenney-retro-urban-kit",
+      "src": "detail-barrier-strong-type-b.glb",
+      "name": "Striped Barrier",
+      "category": "Military",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 400,
+        "debris": "#9c9a94"
+      }
+    },
+    {
+      "id": "jersey_barrier_broken",
+      "pack": "kenney-retro-urban-kit",
+      "src": "detail-barrier-strong-damaged.glb",
+      "name": "Broken Barrier",
+      "category": "Military",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "road_barrier",
+      "pack": "kenney-retro-urban-kit",
+      "src": "detail-barrier-type-b.glb",
+      "name": "Road Barrier",
+      "category": "Military",
+      "height": 1.05,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#d8b020"
+      }
+    },
+    {
+      "id": "concrete_block",
+      "pack": "kenney-retro-urban-kit",
+      "src": "detail-block.glb",
+      "name": "Concrete Block",
+      "category": "Military",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 300,
+        "debris": "#9c9a94"
+      }
+    },
+    {
+      "id": "brick_rubble",
+      "pack": "kenney-retro-urban-kit",
+      "src": "detail-bricks-type-b.glb",
+      "name": "Brick Rubble",
+      "category": "Military",
+      "height": 0.45,
+      "collide": "none"
+    },
+    {
+      "id": "floodlight",
+      "pack": "kenney-retro-urban-kit",
+      "src": "detail-light-double.glb",
+      "name": "Floodlight Mast",
+      "category": "Military",
+      "height": 5.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "yard_lamp",
+      "pack": "kenney-retro-urban-kit",
+      "src": "detail-light-single.glb",
+      "name": "Yard Lamp",
+      "category": "Military",
+      "height": 4.6,
+      "collide": "trunk"
+    },
+    {
+      "id": "pallet",
+      "pack": "kenney-retro-urban-kit",
+      "src": "pallet.glb",
+      "name": "Pallet",
+      "category": "Military",
+      "height": 0.15,
+      "collide": "box"
+    },
+    {
+      "id": "supply_truck",
+      "pack": "kenney-retro-urban-kit",
+      "src": "truck-green.glb",
+      "name": "Supply Truck",
+      "category": "Military",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "flatbed_truck",
+      "pack": "kenney-retro-urban-kit",
+      "src": "truck-flat.glb",
+      "name": "Flatbed Truck",
+      "category": "Military",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "dumpster",
+      "pack": "kenney-retro-urban-kit",
+      "src": "detail-dumpster-closed.glb",
+      "name": "Dumpster",
+      "category": "Industrial",
+      "height": 1.5,
+      "collide": "box"
+    },
+    {
+      "id": "shipping_container_red",
+      "pack": "kenney-city-kit-industrial",
+      "src": "shipping-container-a.glb",
+      "name": "Shipping Container (Red)",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "shipping_container_blue",
+      "pack": "kenney-city-kit-industrial",
+      "src": "shipping-container-b.glb",
+      "name": "Shipping Container (Blue)",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "shipping_container_green",
+      "pack": "kenney-city-kit-industrial",
+      "src": "shipping-container-c.glb",
+      "name": "Shipping Container (Green)",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "fuel_tank",
+      "pack": "kenney-city-kit-industrial",
+      "src": "detail-tank.glb",
+      "name": "Fuel Tank",
+      "category": "Industrial",
+      "height": 2.2,
+      "collide": "box",
+      "breakable": {
+        "health": 150,
+        "debris": "#c8a040",
+        "blast": {
+          "radius": 6,
+          "damage": 120,
+          "edge": 20
+        }
+      }
+    },
+    {
+      "id": "storage_tank",
+      "pack": "kenney-city-kit-industrial",
+      "src": "detail-tank-large.glb",
+      "name": "Storage Tank",
+      "category": "Industrial",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "steel_water_tower",
+      "pack": "kenney-city-kit-industrial",
+      "src": "water-tower.glb",
+      "name": "Steel Water Tower",
+      "category": "Industrial",
+      "height": 11.0,
+      "collide": "box"
+    },
+    {
+      "id": "locomotive_red",
+      "pack": "kenney-train-kit",
+      "src": "train-locomotive-b.glb",
+      "name": "Steam Locomotive (Red)",
+      "category": "Trains & Rail",
+      "height": 4.3,
+      "collide": "box"
+    },
+    {
+      "id": "passenger_car",
+      "pack": "kenney-train-kit",
+      "src": "train-locomotive-passenger-a.glb",
+      "name": "Passenger Car",
+      "category": "Trains & Rail",
+      "height": 4.3,
+      "collide": "box"
+    },
+    {
+      "id": "ore_wagon",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-dirt.glb",
+      "name": "Ore Wagon",
+      "category": "Trains & Rail",
+      "height": 4.28,
+      "collide": "box"
+    },
+    {
+      "id": "hopper_wagon",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-box.glb",
+      "name": "Hopper Wagon",
+      "category": "Trains & Rail",
+      "height": 3.37,
+      "collide": "box"
+    },
+    {
+      "id": "timber_wagon",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-wood.glb",
+      "name": "Timber Wagon",
+      "category": "Trains & Rail",
+      "height": 4.1,
+      "collide": "box"
+    },
+    {
+      "id": "flatbed_wagon",
+      "pack": "kenney-train-kit",
+      "src": "train-carriage-flatbed-wood.glb",
+      "name": "Wooden Flatbed",
+      "category": "Trains & Rail",
+      "height": 3.01,
+      "collide": "box"
+    },
+    {
+      "id": "railroad",
+      "pack": "kenney-train-kit",
+      "src": "railroad-straight.glb",
+      "name": "Railroad",
+      "category": "Trains & Rail",
+      "height": 0.26,
+      "collide": "none"
+    },
+    {
+      "id": "railroad_broken",
+      "pack": "kenney-train-kit",
+      "src": "railroad-damaged-straight.glb",
+      "name": "Broken Railroad",
+      "category": "Trains & Rail",
+      "height": 0.26,
+      "collide": "none"
+    },
+    {
+      "id": "mine_rails",
+      "pack": "kenney-train-kit",
+      "src": "railroad-rail-straight.glb",
+      "name": "Mine Rails",
+      "category": "Trains & Rail",
+      "height": 0.15,
+      "collide": "none"
+    },
+    {
+      "id": "sandbag_wall",
+      "pack": "tiletrigger-kit",
+      "src": "sandbag_wall.glb",
+      "name": "Sandbag Wall",
+      "category": "Military",
+      "height": 0.82,
+      "collide": "box"
+    },
+    {
+      "id": "sandbag_wall_low",
+      "pack": "tiletrigger-kit",
+      "src": "sandbag_wall_low.glb",
+      "name": "Low Sandbags",
+      "category": "Military",
+      "height": 0.42,
+      "collide": "box"
+    },
+    {
+      "id": "sandbag_corner",
+      "pack": "tiletrigger-kit",
+      "src": "sandbag_corner.glb",
+      "name": "Sandbag Corner",
+      "category": "Military",
+      "height": 0.82,
+      "collide": "shell"
+    },
+    {
+      "id": "sandbag_nest",
+      "pack": "tiletrigger-kit",
+      "src": "sandbag_nest.glb",
+      "name": "Sandbag Nest",
+      "category": "Military",
+      "height": 0.82,
+      "collide": "shell"
+    },
+    {
+      "id": "hesco_wall",
+      "pack": "tiletrigger-kit",
+      "src": "hesco_wall.glb",
+      "name": "Blast Wall (Gabions)",
+      "category": "Military",
+      "height": 1.36,
+      "collide": "box",
+      "breakable": {
+        "health": 600,
+        "debris": "#8a7350"
+      }
+    },
+    {
+      "id": "hedgehog",
+      "pack": "tiletrigger-kit",
+      "src": "hedgehog.glb",
+      "name": "Steel Hedgehog",
+      "category": "Military",
+      "height": 1.38,
+      "collide": "box"
+    },
+    {
+      "id": "dragon_tooth",
+      "pack": "tiletrigger-kit",
+      "src": "dragon_tooth.glb",
+      "name": "Concrete Tank Trap",
+      "category": "Military",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "ammo_crate",
+      "pack": "tiletrigger-kit",
+      "src": "ammo_crate.glb",
+      "name": "Ammo Crate",
+      "category": "Military",
+      "height": 0.45,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#56603a"
+      }
+    },
+    {
+      "id": "ammo_stack",
+      "pack": "tiletrigger-kit",
+      "src": "ammo_stack.glb",
+      "name": "Ammo Crates (Stack)",
+      "category": "Military",
+      "height": 0.9,
+      "collide": "box",
+      "breakable": {
+        "health": 90,
+        "debris": "#56603a"
+      }
+    },
+    {
+      "id": "fuel_drum",
+      "pack": "tiletrigger-kit",
+      "src": "fuel_drum.glb",
+      "name": "Fuel Drum",
+      "category": "Military",
+      "height": 0.93,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#56603a",
+        "blast": {
+          "radius": 5,
+          "damage": 100,
+          "edge": 15
+        }
+      }
+    },
+    {
+      "id": "razor_wire",
+      "pack": "tiletrigger-kit",
+      "src": "razor_wire.glb",
+      "name": "Razor Wire",
+      "category": "Military",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8f959b"
+      }
+    },
+    {
+      "id": "camo_net",
+      "pack": "tiletrigger-kit",
+      "src": "camo_net.glb",
+      "name": "Camouflage Net",
+      "category": "Military",
+      "height": 2.69,
+      "collide": "none"
+    },
+    {
+      "id": "mine_cart",
+      "pack": "tiletrigger-kit",
+      "src": "mine_cart.glb",
+      "name": "Mine Cart",
+      "category": "Frontier",
+      "height": 1.01,
+      "collide": "box"
+    },
+    {
+      "id": "ore_cart",
+      "pack": "tiletrigger-kit",
+      "src": "ore_cart.glb",
+      "name": "Ore Cart",
+      "category": "Frontier",
+      "height": 1.22,
+      "collide": "box"
+    },
+    {
+      "id": "dynamite_crate",
+      "pack": "tiletrigger-kit",
+      "src": "dynamite_crate.glb",
+      "name": "Dynamite Crate",
+      "category": "Frontier",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#a77a4c",
+        "blast": {
+          "radius": 6.5,
+          "damage": 150,
+          "edge": 25
+        }
+      }
+    },
+    {
+      "id": "dynamite_bundle",
+      "pack": "tiletrigger-kit",
+      "src": "dynamite_bundle.glb",
+      "name": "Dynamite Bundle",
+      "category": "Frontier",
+      "height": 0.18,
+      "collide": "box",
+      "breakable": {
+        "health": 10,
+        "debris": "#b3261e",
+        "blast": {
+          "radius": 4.5,
+          "damage": 110,
+          "edge": 15
+        }
+      }
+    },
+    {
+      "id": "hitching_post",
+      "pack": "tiletrigger-kit",
+      "src": "hitching_post.glb",
+      "name": "Hitching Post",
+      "category": "Frontier",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "water_trough",
+      "pack": "tiletrigger-kit",
+      "src": "water_trough.glb",
+      "name": "Water Trough",
+      "category": "Frontier",
+      "height": 0.76,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5f3a"
+      }
+    },
+    {
+      "id": "wagon_wheel",
+      "pack": "tiletrigger-kit",
+      "src": "wagon_wheel.glb",
+      "name": "Wagon Wheel",
+      "category": "Frontier",
+      "height": 1.26,
+      "collide": "none"
+    },
+    {
+      "id": "wanted_board",
+      "pack": "tiletrigger-kit",
+      "src": "wanted_board.glb",
+      "name": "Wanted Board",
+      "category": "Frontier",
+      "height": 2.1,
+      "collide": "trunk"
+    },
+    {
+      "id": "outhouse",
+      "pack": "tiletrigger-kit",
+      "src": "outhouse.glb",
+      "name": "Outhouse",
+      "category": "Frontier",
+      "height": 2.5,
+      "collide": "box",
+      "breakable": {
+        "health": 120,
+        "debris": "#a77a4c"
+      }
+    },
+    {
+      "id": "rail_buffer",
+      "pack": "tiletrigger-kit",
+      "src": "rail_buffer.glb",
+      "name": "Buffer Stop",
+      "category": "Frontier",
+      "height": 1.24,
+      "collide": "box"
+    },
+    {
+      "id": "mine_frame",
+      "pack": "tiletrigger-kit",
+      "src": "mine_frame.glb",
+      "name": "Mine Timber Frame",
+      "category": "Frontier",
+      "height": 3.55,
+      "collide": "frame"
+    },
+    {
+      "id": "tumbleweed",
+      "pack": "tiletrigger-kit",
+      "src": "tumbleweed.glb",
+      "name": "Tumbleweed",
+      "category": "Frontier",
+      "height": 0.62,
+      "collide": "none"
+    },
+    {
+      "id": "covered_wagon",
+      "pack": "tiletrigger-kit",
+      "src": "covered_wagon.glb",
+      "name": "Covered Wagon",
+      "category": "Frontier",
+      "height": 2.37,
+      "collide": "box"
+    },
+    {
+      "id": "wind_pump",
+      "pack": "tiletrigger-kit",
+      "src": "wind_pump.glb",
+      "name": "Wind Pump",
+      "category": "Frontier",
+      "height": 9.26,
+      "collide": "trunk"
     }
   ]
 }

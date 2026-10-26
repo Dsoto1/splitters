@@ -79,6 +79,7 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   item('sheep', 'Sheep', { kind: 'throwable', throwable: 'sheep', count: 1 }, 45, 0.55),
   item('airstrike', 'Airstrike Flare', { kind: 'throwable', throwable: 'airstrike', count: 1 }, 60, 0.5),
   item('sandbags', 'Sandbags', { kind: 'throwable', throwable: 'sandbag', count: 2 }, 30, 0.35),
+  item('dynamite', 'Dynamite', { kind: 'throwable', throwable: 'dynamite', count: 2 }, 30, 0.5),
   item('powerup_speed', 'Speed Boost', { kind: 'powerup', powerup: 'speed', seconds: 15 }, 60, 0.6),
   item('powerup_damage', 'Double Damage', { kind: 'powerup', powerup: 'damage', seconds: 15 }, 60, 0.85),
   item('jetpack', 'Jetpack', { kind: 'jetpack' }, 45, 0.6),

@@ -1,0 +1,17 @@
+Tile Trigger kit pieces (built in code)
+
+These models are original to Tile Trigger. They are not taken from any pack
+and no generative AI service made them: each one is assembled from plain
+geometry (boxes, cylinders, rounded bags, rings) by
+tools/content/build-kit-props.mjs, which writes the GLB files in this folder.
+Re-run that script to rebuild them; the same code writes the same files.
+
+They belong to the Tile Trigger owner and ship as part of the game
+(licence "Owned" in content/props.json and the provenance ledger).
+
+Pieces: sandbag walls, corner and nest, gabion blast wall, steel hedgehog,
+concrete tank trap, ammo crates, fuel drum, razor wire and a camouflage net
+(Style Pack 01 Military Compound); mine cart and ore cart, dynamite crate and
+bundle, hitching post, water trough, wagon wheel, wanted board, outhouse,
+buffer stop, mine timber frame, tumbleweed, covered wagon and wind pump
+(Style Pack 02 Frontier Dust).

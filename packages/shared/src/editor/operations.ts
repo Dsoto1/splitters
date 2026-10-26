@@ -313,12 +313,21 @@ export const SCENARIO_PALETTE = [
   { key: 'mover:lift', label: 'Lift', search: 'mover lift elevator platform moving up down ride' },
   { key: 'mover:slider', label: 'Sliding Wall', search: 'mover sliding wall door gate moving platform train car shuttle' },
   { key: 'mover:drawbridge', label: 'Drawbridge', search: 'mover drawbridge bridge hinge lower raise castle moat' },
+  // Style Pack gameplay pieces (01 Military Compound, 02 Frontier Dust), built on the same systems.
+  { key: 'door:blast', label: 'Blast Door', search: 'door blast security bunker military compound heavy steel hazard' },
+  { key: 'door:saloon', label: 'Saloon Doors', search: 'door saloon swinging batwing western frontier' },
+  { key: 'door:vault', label: 'Vault Door', search: 'door vault bank safe locked round steel heist frontier' },
+  { key: 'light:alarm', label: 'Alarm Light', search: 'light alarm red blinking beacon siren security military logic' },
+  { key: 'block:barrier', label: 'Destructible Barrier', search: 'block barrier destructible concrete breakable military cover' },
+  { key: 'block:planks', label: 'Breakable Planks', search: 'block planks wood breakable boards wall western frontier' },
+  { key: 'mover:minecart', label: 'Mine Cart', search: 'mover mine cart rails ride ore western frontier' },
+  { key: 'mover:train', label: 'Steam Train', search: 'mover train locomotive railroad rails ride western frontier wagon' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 
 /** Entities that sit in a doorway and snap to cell edges. */
-export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser';
+export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser';
 
 /**
  * What a palette entry places: one entity, or for movers a block and the
@@ -329,6 +338,34 @@ export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, 
   const block = (size: [number, number, number], at: [number, number, number]): Extract<MapEntity, { kind: 'block' }> => ({ id: newId('block'), kind: 'block', position: at, yaw, size, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
   const mover = (blocks: string[], points: [number, number, number][], extra: Partial<Extract<MapEntity, { kind: 'mover' }>>): Extract<MapEntity, { kind: 'mover' }> => ({ id: newId('mover'), kind: 'mover', position, yaw, blocks, points, mode: 'pingpong', speed: 2, turnSpeed: 45, wait: 2, startActive: true, ...extra });
   const [x, y, z] = position;
+  // Along the facing: local +Z goes to (sin yaw, cos yaw), like props.
+  const along = (d: number): [number, number] => [Math.round(Math.sin(yaw) * d * 100) / 100, Math.round(Math.cos(yaw) * d * 100) / 100];
+  const prop = (model: string, d: number, turn = 0): Extract<MapEntity, { kind: 'prop' }> => {
+    const [dx, dz] = along(d);
+    return { id: newId('prop'), kind: 'prop', model, position: [x + dx, y, z + dz], yaw: yaw + turn, scale: 1, solid: false, tint: null };
+  };
+  /** A block `size` (x across, y up, z along) centred `d` along the facing, `y0` up. */
+  const hull = (size: [number, number, number], d: number, y0: number, material: string, tint: string | null): Extract<MapEntity, { kind: 'block' }> => {
+    const [dx, dz] = along(d);
+    return { ...block(size, [x + dx, y + y0, z + dz]), material, tint };
+  };
+  if (key === 'mover:minecart') {
+    // A cart on a block you can stand on (the ore in the tub), rolling 12 m along the facing and back.
+    const b = hull([0.96, 0.72, 1.24], 0, 0.14, 'core.pbr_rock', '#5a5048');
+    const cart = prop('prop.mine_cart', 0);
+    const [ex, ez] = along(12);
+    return [b, cart, { ...mover([b.id], [[0, 0, 0], [ex, 0, ez]], { speed: 3, wait: 2 }), props: [cart.id] }];
+  }
+  if (key === 'mover:train') {
+    // A locomotive and two flatbed wagons on hidden chassis blocks, running 60 m along the facing and back.
+    // The locomotive model's chimney end is its -Z, so it is turned to lead.
+    const loco = prop('prop.locomotive_red', 0, Math.PI);
+    const cars = [prop('prop.flatbed_wagon', -7.4), prop('prop.flatbed_wagon', -14.9)];
+    const dark = '#2e2c2a';
+    const blocks = [hull([2.0, 2.0, 3.6], 1.5, 0.6, 'core.pbr_steel', dark), hull([2.9, 3.1, 2.8], -1.8, 0.6, 'core.pbr_steel', dark), ...cars.map((c, i) => hull([2.7, 0.35, 6.6], -7.4 - 7.5 * i, 0.55, 'core.pbr_weathered_planks', null))];
+    const [ex, ez] = along(60);
+    return [...blocks, loco, ...cars, { ...mover(blocks.map((b) => b.id), [[0, 0, 0], [ex, 0, ez]], { speed: 8, wait: 6 }), props: [loco.id, ...cars.map((c) => c.id)] }];
+  }
   if (key === 'mover:lift') {
     // A 3 m platform that rides one storey up and back.
     const b = block([3, 0.4, 3], [x, y, z]);
@@ -371,6 +408,19 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'door':
     case 'door_locked':
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: key === 'door_locked', auto: key === 'door' };
+    case 'door:blast':
+      // Opened by logic or E (wire it to a button and an alarm light).
+      return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: false, auto: false, style: 'blast' };
+    case 'door:saloon':
+      return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: false, auto: true, style: 'saloon' };
+    case 'door:vault':
+      return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: true, auto: false, style: 'vault' };
+    case 'light:alarm':
+      return { id: newId('light'), kind: 'light', position, yaw, color: '#ff3020', intensity: 1.6, range: 12, fixture: 'bulb', off: true, blink: 2.5 };
+    case 'block:barrier':
+      return { id: newId('block'), kind: 'block', position, yaw, size: [3, 1.1, 0.8], material: 'core.pbr_bunker_panels', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 30, health: 400 };
+    case 'block:planks':
+      return { id: newId('block'), kind: 'block', position, yaw, size: [3, 3, 0.25], material: 'core.pbr_weathered_planks', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 20, health: 80 };
     case 'button':
       return { id: newId('button'), kind: 'button', ...base, label: 'Press', once: false, cooldownSeconds: 1, startEnabled: true };
     case 'pad':
@@ -441,7 +491,11 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'mover:lift':
     case 'mover:slider':
     case 'mover:drawbridge':
-      return newScenarioEntities(key, position, yaw, doc)[1]!;
+    case 'mover:minecart':
+    case 'mover:train': {
+      const all = newScenarioEntities(key, position, yaw, doc);
+      return all[all.length - 1]!;
+    }
     default: {
       const trap = key.slice(5) as TrapKind;
       const d = TRAP_SPECS[trap].defaults;

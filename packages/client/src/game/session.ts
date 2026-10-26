@@ -1273,7 +1273,11 @@ export class GameSession {
     if (this.scenario) {
       this.view.scenario.apply(this.scenario.entities);
       // Platforms are drawn where you are in time (your predicted tick), so what you stand on stays under your feet.
-      if (this.scenario.movers.defs.length && this.local) this.view.scenario.applyMovers(this.scenario.movers, this.local.predTick - 1 + this.acc / TICK_DT);
+      if (this.scenario.movers.defs.length && this.local) {
+        const tick = this.local.predTick - 1 + this.acc / TICK_DT;
+        this.view.scenario.applyMovers(this.scenario.movers, tick);
+        this.view.applyMoverProps(this.scenario.movers, tick);
+      }
       this.view.applyPropStates(this.scenario.entities);
     }
     this.view.updatePickups(this.taken, now);

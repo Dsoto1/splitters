@@ -51,6 +51,7 @@ import {
   EffectsWorld,
   mapTerrainMesh,
   type MapEntity,
+  type Movers,
   MOUNT_WRECK_FADE_SECONDS,
   mountDamageState,
 } from '@tiletrigger/shared';
@@ -304,8 +305,10 @@ export class GameView {
     this.scenario.surface = (m, t) => styler.surfaceMaterial(doc, m, t);
     void this.foliage.grow(doc.terrain, boxes, doc.metadata.id);
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
+    // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
+    const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
     doc.entities.forEach((e, i) => {
-      if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`, true, true, doc.terrain));
+      if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain));
     });
     this.scenario.build(doc.entities, doc);
     this.entrances = doc.entities.filter((e): e is Extract<MapEntity, { kind: 'encounter' }> => e.kind === 'encounter' && (e.entrance ?? 'none') !== 'none');
@@ -1095,6 +1098,17 @@ export class GameView {
     for (const [i, node] of this.props) {
       const s = states.get(i);
       if (s) node.setEnabled(s[0] > 0);
+    }
+  }
+
+  /** Props carried by movers follow them (`tick` fractional, like the blocks they ride). */
+  applyMoverProps(movers: Movers, tick: number): void {
+    for (const t of movers.propTransforms(tick)) {
+      const node = this.props.get(t.prop.i);
+      if (!node) continue;
+      node.position.set(t.position.x, t.position.y, t.position.z);
+      const q = (node.rotationQuaternion ??= new Quaternion());
+      q.set(t.rot.x, t.rot.y, t.rot.z, t.rot.w);
     }
   }
 

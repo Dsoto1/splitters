@@ -76,7 +76,7 @@ of the repo).
   other, courtyards and plazas without walls. The kerbs are flattened to a
   few centimetres, so the whole tile is walked at floor height.
 - **Facades** (room option *Facade*: city brick, shopfront and brick, or
-  painted plaster): the outside of a room's walls is dressed bay by bay,
+  painted plaster; the Style Pack facades are below): the outside of a room's walls is dressed bay by bay,
   windows and plain wall in turn on upper floors (a shopfront or brick base
   on the ground floor), bands over doorways and under windows, a cornice
   where nothing is built above and columns on the outer corners. The facade
@@ -85,12 +85,78 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`)
+
+Sprint 7, Set 1 "Foundation". A Style Pack is a themed selection of the kit:
+the **Style Pack** picker under the MapMaker palette's search box narrows
+the tiles, props, gameplay pieces (Entities → Scenario), vehicles and
+pickups to one pack (headings left empty hide), shows its blurb, and **Use
+theme** sets the pack's theme. Packs only group content: everything in a pack
+mixes with anything else, and *All pieces* shows the lot. Pack tiles are box
+geometry like the core buildings (walls take the theme's wall paint,
+furniture its solid paint); the parts that must look the part in any theme
+(sandbags, earth berms, corrugated roofs, rails, rock) carry a library
+material of their own (`LocalBox.surface`). Every climbable pack piece is
+tested for bot paths in all four rotations (`test/stylePacks.test.ts`).
+
+### 01 Military Compound (modern industrial)
+
+Theme **Military Compound** (`core.military`: dark concrete floor, bunker
+concrete walls, olive corrugated pillars and steps, steel trim); also
+Bunker and Canyon Outpost. Materials: Bunker Concrete, Olive Corrugated, Grey
+Corrugated, Burlap (ambientCG).
+
+| Kind | Pieces |
+|---|---|
+| Tiles (16 new) | Barracks (2 × 1: bunks, lockers, corrugated roof), Guard Tower (stairs to a sandbagged 3 m lookout under a roof: sees over the 4 m wall), Pillbox (slits all round), Vehicle Shed (2 × 1, open front), Compound Wall, Compound Wall Corner, Compound Gate (a 3 m gateway for a blast door), Catwalk Gantry (1 × 2: stairs to a railed deck 4 m up meeting the level above), Helipad (2 × 2); plus core Bunker, Warehouse, Catwalk |
+| Trenches (modular) | Trench, Trench Corner, Trench Junction, Trench Crossing, Trench Mouth (opens out; steps down the berm ends), Trench Fire Step (plank steps up through the berm), Trench Dugout (roofed): 3 m channels between 1.25 m earth berms (a step short of a jump) with a 0.3 m sandbag lip, so a standing player just sees over; open tiles, so they join into networks |
+| Facades | Bunker concrete (plinth and cap), Corrugated sheet (flashing) |
+| Props (39: 30 new) | Sandbag Wall, Low Sandbags, Sandbag Corner, Sandbag Nest, Blast Wall (gabions), Steel Hedgehog, Concrete Tank Trap, Razor Wire, Camouflage Net, Ammo Crate(s), Fuel Drum, Concrete / Striped / Broken Barrier, Road Barrier, Concrete Block, Brick Rubble, Floodlight Mast, Yard Lamp, Pallet, Supply Truck, Flatbed Truck, Dumpster, Shipping Containers (red, blue, green), Fuel Tank, Storage Tank, Steel Water Tower; plus supply containers, metal crate, tents, radio, gas can, warning sign, cone, bunk bed |
+| Gameplay | **Blast Door** (a door variant: thick, chevroned, in a heavy frame, slower; E or logic opens it), **Alarm Light** (a red bulb that starts off and blinks when a rule switches it on), **Destructible Barrier** (a breakable concrete block, 400 HP, back after 30 s); concrete barriers, gabions, razor wire and ammo crates break, fuel drums and tanks explode; mounted guns are the turret mounts (MG, rockets, sentry); jeep, rover, tank; breakable walls, gas cylinders, laser fences and mines |
+
+### 02 Frontier Dust (Wild West)
+
+Theme **Frontier Dust** (`core.frontier`: weathered planks and siding) and
+**Frontier Adobe** (`core.adobe`); also Frontier Saloon and Desert Town.
+Materials: Weathered Planks, Weathered Siding, Adobe, Dusty Road (ambientCG).
+
+| Kind | Pieces |
+|---|---|
+| Tiles (15 new) | Saloon (2 × 2, two storeys: porch and false front, a double-height bar room, stairs to a gallery and rooms over the street), Bank (barred teller counter, a thick-walled vault with a 3 m doorway for a vault door), Jail (office, three barred cells off a corridor), General Store, Chapel (1 × 2: pews, dais, bell tower), Livery Stable (2 × 2: stalls, hay loft up the stairs), Rail Station (ticket office, covered platform), Water Tower (three storeys tall), Mine Entrance and Mine Tunnel (timbered, with cart rails), Main Street, Boardwalk Street, Rail Line, Rail Crossing, Corral (2 × 2) |
+| Facades | Frontier false front (siding; a plank front over the street door, stepped up in the middle, with an awning and boardwalk), Adobe (vigas under a rounded parapet) |
+| Props (48: 23 new) | Mine Cart, Ore Cart, Dynamite Crate, Dynamite Bundle, Mine Timber Frame, Mine Rails, Buffer Stop, Steam Locomotive (Red), Passenger Car, Ore / Hopper / Timber Wagons, Wooden Flatbed, Railroad, Broken Railroad, Hitching Post, Water Trough, Wagon Wheel, Wanted Board, Outhouse, Tumbleweed, Covered Wagon, Wind Pump; plus barrels, crates, powder keg, hay, cart, woodpile, signpost, cacti, coffin, gravestones, saloon furniture, gold |
+| Gameplay | **Saloon Doors** and **Vault Door** (door variants: louvred half-doors swinging on both posts; a round steel door swinging on one hinge, locked), **Steam Train** (a locomotive and two flatbeds riding chassis blocks on a mover; ride the flatbed, and get out of its way: movers set to 4 m/s or more run over whoever they sweep into), **Mine Cart** (a cart on a block you can stand on, rolling along its rails and back), **Breakable Planks** (a breakable block in weathered planks), **Dynamite** (a throwable: 3 s fuse, 6 m blast; pick it up as an item), dynamite crates, bundles and powder kegs that go up when shot; board barricades, crates |
+
+Props can ride movers (`MoverEntity.props`, map format v20, optional): they
+are drawn following the mover and never collide (the validator makes them
+non-solid; the mover's blocks are what you stand on and bump into). The
+Steam Train and Mine Cart palette entries place the blocks, the models and
+the mover in one step; the mover inspector lists nearby props under *Props
+riding along*. Doors take a *Look* (`DoorEntity.style`: sliding, blast,
+saloon or vault); the look never changes how a door opens, locks or blocks.
+Breakable props are rule targets for *Object destroyed* (a dynamite crate by
+the vault door can blow it open).
+
+**Demo maps.** *Iron Compound* (`maps/iron_compound.json`,
+`tools/maps/iron_compound.ts`): a walled compound (barracks, command bunker,
+armoury pillbox behind a garrison-only blast door, vehicle shed, helipad,
+two guard towers with mounted guns, a gantry onto the barracks roof) facing
+a trench line; the main gate's blast door is worked from buttons inside and
+out, with alarm lights blinking while it stands open. *Dustwater*
+(`maps/dustwater.json`, `tools/maps/dustwater.ts`): a town on one main
+street (saloon with swinging doors, bank and vault, jail, store, barber,
+hotel, adobe cantina and houses, chapel and graveyard, livery and corral,
+water tower), a train through the station all match, and a mine tunnel up
+the hill with a cart running in and out; blow the dynamite crate by the
+vault (or work the combination) to open it.
+
 ## Materials and themes (`map/materials.ts`)
 
-28 procedural materials plus 41 scanned sets from ambientCG (CC0), prepared by
+28 procedural materials plus 49 scanned sets from ambientCG (CC0), prepared by
 `node tools/content/prepare-textures.mjs` into `public/textures` (512 px colour,
-normal and emission maps). 19 themes assign a material to each slot (floor,
-walls, pillars/cover/steps, underside, trim).
+normal and emission maps; `--only <ids>` fetches just new sets). 22 themes
+assign a material to each slot (floor, walls, pillars/cover/steps, underside,
+trim).
 
 ## Props (`content/props.json`)
 

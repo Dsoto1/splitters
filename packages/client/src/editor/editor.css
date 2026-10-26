@@ -252,6 +252,10 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 .ed-pal-tabs .tab { flex: 1; padding: 7px 2px; font-size: 11px; letter-spacing: 0.06em; }
 .ed-pal-tabs .tab[hidden] { display: none; }
 #ed-search { box-sizing: border-box; margin-bottom: 4px; }
+.ed-pack-row { display: flex; gap: 4px; margin-bottom: 4px; }
+.ed-pack-row select { flex: 1; min-width: 0; font: inherit; padding: 5px 6px; border-radius: 6px; border: 1px solid rgba(142, 162, 192, 0.28); background: var(--deep-space); color: var(--fg); }
+.ed-pack-row button { font: inherit; font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+#ed-pack-note { margin: 0 0 6px; }
 
 /* Cards: three to a row, a big thumbnail over the name. */
 #ed-palette .tiles { grid-template-columns: repeat(3, 1fr); gap: 6px; }

@@ -1,4 +1,5 @@
 import { ACTION_INFO, CONDITION_INFO, EVENT_INFO, entityFitsTarget, type TargetKind } from './logic.ts';
+import { isBreakableProp } from './geometry.ts';
 import { isMapId } from '../sim/playlist.ts';
 import { PLAYERS_FACTION, type MapDocument } from './schema.ts';
 import { MAX_TEAMS, mapFactions, mapTeams, rosterSize } from '../sim/npc.ts';
@@ -7,7 +8,7 @@ import type { ValidationIssue } from './validate.ts';
 const KIND_LABEL: Record<TargetKind, string> = {
   door: 'door',
   button: 'button',
-  destructible: 'destructible or block',
+  destructible: 'destructible, block or breakable prop',
   zone: 'zone',
   trap: 'trap',
   pickup: 'pickup',
@@ -47,7 +48,7 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
     if (kind === 'variable' || kind === 'timer' || kind === 'objective') return lists[kind].has(id);
     const e = entities.get(id);
     if (!e) return false;
-    return entityFitsTarget(e.kind, kind);
+    return entityFitsTarget(e.kind, kind, isBreakableProp(e));
   };
   const checkTarget = (ruleId: string, ruleName: string, where: string, target: string | null, kind: TargetKind | null): void => {
     if (!kind) return;
@@ -174,6 +175,14 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
       const b = entities.get(id);
       if (b?.kind !== 'block') issues.push({ severity: 'warning', code: 'mover.block', message: `mover ${e.id} carries a missing block (${id})`, targetId: e.id });
       else if (carriedBy.has(id)) issues.push({ severity: 'error', code: 'mover.shared_block', message: `block ${id} is carried by two movers (${carriedBy.get(id)} and ${e.id})`, targetId: e.id });
+      else carriedBy.set(id, e.id);
+    }
+    // Props riding along are drawn only: they must exist and not be solid (the blocks are what collides).
+    for (const id of e.props ?? []) {
+      const p = entities.get(id);
+      if (p?.kind !== 'prop') issues.push({ severity: 'warning', code: 'mover.prop', message: `mover ${e.id} carries a missing prop (${id})`, targetId: e.id });
+      else if (carriedBy.has(id)) issues.push({ severity: 'error', code: 'mover.shared_prop', message: `prop ${id} is carried by two movers (${carriedBy.get(id)} and ${e.id})`, targetId: e.id });
+      else if (p.solid) issues.push({ severity: 'error', code: 'mover.solid_prop', message: `mover ${e.id} carries prop ${id}, which is solid: carried props never collide, so untick Solid (its blocks are what you stand on)`, targetId: e.id });
       else carriedBy.set(id, e.id);
     }
     if ((e.angles?.length ?? 0) > e.points.length) issues.push({ severity: 'warning', code: 'mover.angles', message: `mover ${e.id} has more angles than points; the extra ones are ignored`, targetId: e.id });

@@ -43,14 +43,15 @@ const STEP_RISE = 0.25;
 /** Thinnest collision box: single-sided kit walls are planes. */
 const MIN_THICKNESS = 0.2;
 
-/** The folder of an extracted download: directly under the downloads dir or one level down. */
+/** The folder of an extracted download: directly under the downloads dir or one level down (null: not there). */
 function downloadDir(folder) {
   const direct = join(downloads, folder);
   if (existsSync(direct)) return direct;
   for (const d of readdirSync(downloads, { withFileTypes: true })) {
     if (d.isDirectory() && existsSync(join(downloads, d.name, folder))) return join(downloads, d.name, folder);
   }
-  throw new Error(`${folder} not found in ${downloads}`);
+  // Not in this downloads directory: keep that pack's props as built.
+  return null;
 }
 
 /** Read a .gltf from a download whose images live in a separate folder (and whose buffer names may be off). */
@@ -236,58 +237,74 @@ function collisionBoxes(p, size, tris) {
 }
 
 const built = new Map(oldLock.files.map((f) => [f.file, f]));
+
+/**
+ * A single-file GLB (the Kenney kits and our own code-built pieces): centred on
+ * its footprint, stood on y = 0 and scaled to the prop's `height`.
+ */
+async function normaliseGlb(src, p) {
+  const doc = await io.read(src);
+  const scene = doc.getRoot().listScenes()[0];
+  const b = getBounds(scene);
+  const s = p.height / Math.max(1e-6, b.max[1] - b.min[1]);
+  const cx = (b.min[0] + b.max[0]) / 2;
+  const cz = (b.min[2] + b.max[2]) / 2;
+  const root = doc.createNode('prop').setScale([s, s, s]).setTranslation([-cx * s, -b.min[1] * s, -cz * s]);
+  for (const child of scene.listChildren()) {
+    scene.removeChild(child);
+    root.addChild(child);
+  }
+  scene.addChild(root);
+  await doc.transform(weld(), dedup(), prune());
+  return { glb: Buffer.from(await io.writeBinary(doc)), size: [round((b.max[0] - b.min[0]) * s), round(p.height), round((b.max[2] - b.min[2]) * s)] };
+}
+
 for (const p of manifest.props) {
   const pack = manifest.packs[p.pack];
   const file = `props/${p.id}.glb`;
   const path = join(ROOT, 'packages/client/public', file);
-  const external = !!pack.download;
+  // A pack with a `download` folder is rebuilt only from a downloads directory (it stays out of the
+  // repo), except for pieces of it already kept in assets-src/ (older imports of the same kit).
+  const local = !Array.isArray(p.src) && existsSync(join(ROOT, 'assets-src', p.pack, p.src));
+  const external = !!pack.download && !local;
+  // Kits shipped as glTF with separate textures (the MegaKit) get their materials baked; GLB kits load as they are.
+  const gltfKit = external && !!pack.images;
+  const dir = external && downloads ? downloadDir(pack.download) : null;
   let glb;
   let size;
-  if (external) {
-    if (downloads) {
-      const dir = downloadDir(pack.download);
-      const srcs = Array.isArray(p.src) ? p.src : [p.src];
-      const doc = await readPieces(srcs.map((s) => join(dir, pack.models, s)), join(dir, pack.images));
-      await bakeKitMaterials(doc, pack);
-      const scene = doc.getRoot().listScenes()[0];
-      const turn = doc.createNode('turn').setRotation(yawQuat(p.yaw ?? 0));
-      for (const child of scene.listChildren()) {
-        scene.removeChild(child);
-        turn.addChild(child);
-      }
-      scene.addChild(turn);
-      const b = getBounds(scene);
-      const s = p.height ? p.height / Math.max(1e-6, b.max[1] - b.min[1]) : (p.scale ?? 1);
-      const root = doc.createNode('prop').setScale([s, s, s]).setTranslation([(-(b.min[0] + b.max[0]) / 2) * s, -b.min[1] * s + (p.lift ?? 0), (-(b.min[2] + b.max[2]) / 2) * s]);
-      scene.removeChild(turn);
-      root.addChild(turn);
-      scene.addChild(root);
-      await doc.transform(weld(), dedup(), ...(p.simplify ? [simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.002 })] : []), prune());
-      glb = Buffer.from(await io.writeBinary(doc));
-      writeFileSync(path, glb);
-    } else {
-      // Not rebuilding this pack: keep the prop as built (already normalised) and measure it again.
-      if (!existsSync(path)) throw new Error(`${file} is missing; rebuild it with --downloads <dir> (see docs/CONTENT_PIPELINE.md)`);
-      glb = readFileSync(path);
-      if (built.get(file)?.sha256 !== createHash('sha256').update(glb).digest('hex').slice(0, 16)) throw new Error(`${file} does not match content/props.lock.json; rebuild it with --downloads <dir>`);
-    }
-  } else {
-    const doc = await io.read(join(ROOT, 'assets-src', p.pack, p.src));
+  if (gltfKit && dir) {
+    const srcs = Array.isArray(p.src) ? p.src : [p.src];
+    const doc = await readPieces(srcs.map((s) => join(dir, pack.models, s)), join(dir, pack.images));
+    await bakeKitMaterials(doc, pack);
     const scene = doc.getRoot().listScenes()[0];
-    const b = getBounds(scene);
-    const s = p.height / Math.max(1e-6, b.max[1] - b.min[1]);
-    const cx = (b.min[0] + b.max[0]) / 2;
-    const cz = (b.min[2] + b.max[2]) / 2;
-    const root = doc.createNode('prop').setScale([s, s, s]).setTranslation([-cx * s, -b.min[1] * s, -cz * s]);
+    const turn = doc.createNode('turn').setRotation(yawQuat(p.yaw ?? 0));
     for (const child of scene.listChildren()) {
       scene.removeChild(child);
-      root.addChild(child);
+      turn.addChild(child);
     }
+    scene.addChild(turn);
+    const b = getBounds(scene);
+    const s = p.height ? p.height / Math.max(1e-6, b.max[1] - b.min[1]) : (p.scale ?? 1);
+    const root = doc.createNode('prop').setScale([s, s, s]).setTranslation([(-(b.min[0] + b.max[0]) / 2) * s, -b.min[1] * s + (p.lift ?? 0), (-(b.min[2] + b.max[2]) / 2) * s]);
+    scene.removeChild(turn);
+    root.addChild(turn);
     scene.addChild(root);
-    await doc.transform(weld(), dedup(), prune());
+    await doc.transform(weld(), dedup(), ...(p.simplify ? [simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.002 })] : []), prune());
     glb = Buffer.from(await io.writeBinary(doc));
     writeFileSync(path, glb);
-    size = [round((b.max[0] - b.min[0]) * s), round(p.height), round((b.max[2] - b.min[2]) * s)];
+  } else if (external && dir) {
+    ({ glb, size } = await normaliseGlb(join(dir, pack.models, p.src), p));
+    writeFileSync(path, glb);
+  } else if (external) {
+    // Not rebuilding this pack: keep the prop as built (already normalised) and measure it again.
+    if (!existsSync(path)) throw new Error(`${file} is missing; rebuild it with --downloads <dir> (see docs/CONTENT_PIPELINE.md)`);
+    glb = readFileSync(path);
+    const was = built.get(file);
+    if (was?.sha256 !== createHash('sha256').update(glb).digest('hex').slice(0, 16)) throw new Error(`${file} does not match content/props.lock.json; rebuild it with --downloads <dir>`);
+    if (was.size) size = was.size;
+  } else {
+    ({ glb, size } = await normaliseGlb(join(ROOT, 'assets-src', p.pack, p.src), p));
+    writeFileSync(path, glb);
   }
   // Measure what was written (the same whether it was just built or kept).
   const doc = await io.readBinary(new Uint8Array(glb));
@@ -300,11 +317,11 @@ for (const p of manifest.props) {
     size = [round(b.max[0] - b.min[0]), round(Math.max(b.max[1], 0.01)), round(b.max[2] - b.min[2])];
   }
   const thick = (v) => round(Math.max(v, MIN_THICKNESS));
-  const collision = p.collide === 'none' ? null : p.collide === 'trunk' ? [Math.min(0.5, size[0]), size[1], Math.min(0.5, size[2])] : external ? [thick(size[0]), size[1], thick(size[2])] : size;
+  const collision = p.collide === 'none' ? null : p.collide === 'trunk' ? [Math.min(0.5, size[0]), size[1], Math.min(0.5, size[2])] : gltfKit ? [thick(size[0]), size[1], thick(size[2])] : size;
   // The game draws glTF models mirrored in x (Babylon's import into its left-handed space), so the boxes are too.
   const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene))?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
   defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}) });
-  lock.files.push({ file, source: p.pack, src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) });
+  lock.files.push({ file, source: p.pack, src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
 }
 
 // Files left behind by renamed or removed props.

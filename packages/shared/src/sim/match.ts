@@ -1580,6 +1580,11 @@ export class Match {
         // Standing on a moving platform: go where it goes.
         const ridden = this.scenario.carry(c.move.pos);
         if (ridden) c.move = { ...c.move, pos: ridden };
+        // In the way of a train: run over.
+        else if (this.scenario.strike(c.move.pos, PLAYER.radius * c.size, PLAYER.height * c.size) > 0) {
+          this.damage(c, 500, null, 'core.roadkill');
+          if (!c.alive) continue;
+        }
         const was = c.move.pos;
         const before = c.move;
         const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}), ...(c.jetFuel !== null ? { jetpack: true } : {}), ...(c.glider ? { glider: true } : {}), ...(c.kind !== 'human' ? { autoChute: true } : {}) });

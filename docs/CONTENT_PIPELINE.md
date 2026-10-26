@@ -78,11 +78,19 @@ folder can sit directly in it or one level down), and run:
 | Universal Base Characters, Modular Outfits – Fantasy, Universal Animation Library 1 + 2 | `node tools/content/prepare-characters.mjs <dir>` | `public/characters`, `content/characters.lock.json` |
 | Modular SciFi MegaKit (`Modular SciFi MegaKit[Standard]`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `sf_*` props in `public/props`, `content/props.lock.json`, `shared/src/content/props.generated.ts` |
 | Bestiary – Dungeon Monsters Kit (`Bestiary - Dungeon Monsters Kit[Standard]`) and the MegaKit's aliens | `node tools/content/prepare-creatures.mjs <dir>` | `public/creatures`, `content/creatures.lock.json` |
+| Kenney Retro Urban Kit, City Kit (Industrial), Train Kit (`kenney_retro-urban-kit`, `kenney_city-kit-industrial_2.0`, `kenney_train-kit`, the zips from kenney.nl unzipped) | `node tools/content/prepare-props.mjs --downloads <dir>` | the Style Pack Kenney props in `public/props`, `content/props.lock.json`, `shared/src/content/props.generated.ts` |
 
 Then `pnpm content:build` (provenance) and `pnpm content:check`. Without
 `--downloads`, `prepare-props.mjs` rebuilds the in-repo packs and keeps the
-kit props as built (checking them against the lock file). Never copy the raw
-downloads into the repo.
+kit props as built (checking them against the lock file); a downloads
+directory holding only some of the kits rebuilds just those. Never copy the
+raw downloads into the repo. (Older Train Kit props whose source GLB is in
+`assets-src/kenney-train-kit/` keep building from there.)
+
+The Style Pack pieces we model ourselves are code:
+`node tools/content/build-kit-props.mjs` writes their GLBs (flat colours, a
+few hundred to 2,700 triangles each) to `assets-src/tiletrigger-kit/`, and
+`prepare-props.mjs` normalises them like any pack (licence `Owned`).
 
 Kit props (`content/props.json` entries of a pack with a `download` folder)
 take extra fields: `src` may list several pieces merged in kit space (a wall

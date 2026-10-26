@@ -747,18 +747,41 @@ export class ScenarioVisuals {
   }
 
   private door(name: string, e: Extract<MapEntity, { kind: 'door' }>): Visual {
+    const style = e.style ?? 'sliding';
+    if (style === 'saloon' || style === 'vault') return this.swingDoor(name, e, style);
     const root = new TransformNode(name, this.scene);
     const w = DOOR.width / 2;
-    const steel = this.mat('door', '#6f7884', { spec: 0.4 });
+    const blast = style === 'blast';
+    // Blast doors (Style Pack 01): thicker, darker, chevroned, in a heavy frame, and slower to move.
+    const steel = blast ? this.mat('blastDoor', '#4c535b', { spec: 0.5 }) : this.mat('door', '#6f7884', { spec: 0.4 });
     const stripe = this.mat('hazard', '#e3b021');
+    const dark = this.mat('doorRib', '#4b525c');
+    const thick = blast ? DOOR.thickness + 0.2 : DOOR.thickness;
     const leaves = [-1, 1].map((side) => {
       const leaf = new TransformNode(`${name}_leaf${side}`, this.scene);
       leaf.parent = root;
-      this.box(`${name}_panel${side}`, leaf, [w - 0.02, DOOR.height, DOOR.thickness], [0, DOOR.height / 2, 0], steel);
-      this.box(`${name}_stripe${side}`, leaf, [w - 0.1, 0.18, DOOR.thickness + 0.02], [0, 1.1, 0], stripe);
-      this.box(`${name}_rib${side}`, leaf, [0.08, DOOR.height - 0.3, DOOR.thickness + 0.03], [side * -(w / 2 - 0.1), DOOR.height / 2, 0], this.mat('doorRib', '#4b525c'));
+      this.box(`${name}_panel${side}`, leaf, [w - 0.02, DOOR.height, thick], [0, DOOR.height / 2, 0], steel);
+      if (blast) {
+        for (const y of [0.35, DOOR.height - 0.35]) {
+          this.box(`${name}_band${side}${y}`, leaf, [w - 0.06, 0.4, thick + 0.02], [0, y, 0], stripe);
+          for (let k = 0; k < 3; k++) this.box(`${name}_chev${side}${y}${k}`, leaf, [0.12, 0.56, thick + 0.04], [-w / 2 + 0.3 + k * 0.45, y, 0], dark).rotation.z = 0.7 * side;
+        }
+        for (const y of [1.1, 1.9]) this.box(`${name}_bolt${side}${y}`, leaf, [0.22, 0.22, thick + 0.08], [side * -(w / 2 - 0.2), y, 0], dark);
+      } else {
+        this.box(`${name}_stripe${side}`, leaf, [w - 0.1, 0.18, DOOR.thickness + 0.02], [0, 1.1, 0], stripe);
+        this.box(`${name}_rib${side}`, leaf, [0.08, DOOR.height - 0.3, DOOR.thickness + 0.03], [side * -(w / 2 - 0.1), DOOR.height / 2, 0], dark);
+      }
       return { leaf, side };
     });
+    if (blast) {
+      // The frame: posts either side and a lintel, hazard-striped.
+      const frame = this.mat('blastFrame', '#3a3f45', { spec: 0.3 });
+      for (const side of [-1, 1]) {
+        this.box(`${name}_post${side}`, root, [0.35, DOOR.height + 0.4, thick + 0.3], [side * (w + 0.17), (DOOR.height + 0.4) / 2, 0], frame);
+        this.box(`${name}_postStripe${side}`, root, [0.37, 0.25, thick + 0.32], [side * (w + 0.17), 0.8, 0], stripe);
+      }
+      this.box(`${name}_lintel`, root, [DOOR.width + 0.7, 0.4, thick + 0.3], [0, DOOR.height + 0.2, 0], frame);
+    }
     const lamp = CreateSphere(`${name}_lamp`, { diameter: 0.22, segments: 8 }, this.scene);
     lamp.parent = root;
     lamp.position.set(0, DOOR.height + 0.25, 0);
@@ -774,11 +797,92 @@ export class ScenarioVisuals {
       update: (a, b, _now, dt) => {
         // Ease toward the replicated opening so 30 Hz updates look smooth.
         const target = a / 100;
-        shown += Math.sign(target - shown) * Math.min(Math.abs(target - shown), dt * 2.5);
+        shown += Math.sign(target - shown) * Math.min(Math.abs(target - shown), dt * (blast ? 1.8 : 2.5));
         place(shown);
         const c = Color3.FromHexString(b ? '#e0412f' : e.auto ? '#3fd26b' : '#f2c14e');
         lampMat.diffuseColor = c;
         lampMat.emissiveColor = c.scale(0.9);
+      },
+    };
+  }
+
+  /**
+   * Doors that swing on hinges (Style Pack 02): `saloon` louvred half-doors
+   * hinged at both posts, or a round `vault` door hinged on one side. The
+   * collider is the same as any door's; only the look differs.
+   */
+  private swingDoor(name: string, e: Extract<MapEntity, { kind: 'door' }>, style: 'saloon' | 'vault'): Visual {
+    const root = new TransformNode(name, this.scene);
+    const w = DOOR.width / 2;
+    const hinges: { node: TransformNode; dir: number }[] = [];
+    let lampMat: StandardMaterial | null = null;
+    if (style === 'saloon') {
+      const wood = this.mat('saloonDoor', '#8a5a32');
+      const slat = this.mat('saloonSlat', '#5e3c20');
+      for (const side of [-1, 1]) {
+        const hinge = new TransformNode(`${name}_hinge${side}`, this.scene);
+        hinge.parent = root;
+        hinge.position.x = side * w;
+        const leafW = w - 0.06;
+        const cx = -side * (leafW / 2 + 0.03);
+        this.box(`${name}_rail${side}a`, hinge, [leafW, 0.12, 0.06], [cx, 0.75, 0], wood);
+        this.box(`${name}_rail${side}b`, hinge, [leafW, 0.12, 0.06], [cx, 2.05, 0], wood);
+        this.box(`${name}_stile${side}a`, hinge, [0.1, 1.42, 0.06], [cx - leafW / 2 + 0.05, 1.4, 0], wood);
+        this.box(`${name}_stile${side}b`, hinge, [0.1, 1.42, 0.06], [cx + leafW / 2 - 0.05, 1.4, 0], wood);
+        for (let k = 0; k < 8; k++) this.box(`${name}_slat${side}${k}`, hinge, [leafW - 0.16, 0.05, 0.03], [cx, 0.9 + k * 0.145, 0], slat).rotation.x = 0.5;
+        hinges.push({ node: hinge, dir: side });
+      }
+    } else {
+      // A round steel door in a square frame, its locking wheel on the front.
+      const steel = this.mat('vaultDoor', '#8c939b', { spec: 0.7 });
+      const dark = this.mat('vaultDark', '#41464c', { spec: 0.5 });
+      const brass = this.mat('vaultBrass', '#b08d3a', { spec: 0.6 });
+      for (const side of [-1, 1]) this.box(`${name}_post${side}`, root, [0.3, DOOR.height + 0.3, 0.7], [side * (w + 0.15), (DOOR.height + 0.3) / 2, 0], dark);
+      this.box(`${name}_lintel`, root, [DOOR.width + 0.6, 0.3, 0.7], [0, DOOR.height + 0.15, 0], dark);
+      const hinge = new TransformNode(`${name}_hinge`, this.scene);
+      hinge.parent = root;
+      hinge.position.set(w, 0, 0);
+      const slab = CreateCylinder(`${name}_slab`, { diameter: DOOR.height - 0.05, height: 0.55, tessellation: 28 }, this.scene);
+      slab.parent = hinge;
+      slab.rotation.x = Math.PI / 2;
+      slab.position.set(-w, DOOR.height / 2, 0);
+      slab.scaling.x = (DOOR.width - 0.05) / (DOOR.height - 0.05);
+      slab.material = steel;
+      const ring = CreateCylinder(`${name}_ring`, { diameter: DOOR.height * 0.62, height: 0.12, tessellation: 24 }, this.scene);
+      ring.parent = hinge;
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(-w, DOOR.height / 2, -0.33);
+      ring.material = dark;
+      for (let k = 0; k < 3; k++) this.box(`${name}_spoke${k}`, hinge, [1.5, 0.09, 0.09], [-w, DOOR.height / 2, -0.42], brass).rotation.z = (k * Math.PI) / 3;
+      for (let k = 0; k < 8; k++) {
+        const a = (k * Math.PI) / 4;
+        this.box(`${name}_bolt${k}`, hinge, [0.14, 0.14, 0.62], [-w + Math.cos(a) * 1.25, DOOR.height / 2 + Math.sin(a) * 1.25, 0], brass);
+      }
+      hinges.push({ node: hinge, dir: 1 });
+      const lamp = CreateSphere(`${name}_lamp`, { diameter: 0.22, segments: 8 }, this.scene);
+      lamp.parent = root;
+      lamp.position.set(0, DOOR.height + 0.45, 0);
+      lampMat = this.ownMat(e.locked ? '#e0412f' : '#3fd26b', 0.9);
+      lamp.material = lampMat;
+    }
+    // Saloon doors swing both halves out; the vault door swings wide on its one hinge.
+    const swing = style === 'saloon' ? Math.PI / 2 : Math.PI * 0.6;
+    const place = (open: number) => {
+      for (const h of hinges) h.node.rotation.y = h.dir * open * swing;
+    };
+    place(e.startOpen ? 1 : 0);
+    let shown = e.startOpen ? 1 : 0;
+    return {
+      root,
+      update: (a, b, _now, dt) => {
+        const target = a / 100;
+        shown += Math.sign(target - shown) * Math.min(Math.abs(target - shown), dt * (style === 'vault' ? 1.2 : 4));
+        place(shown);
+        if (lampMat) {
+          const c = Color3.FromHexString(b ? '#e0412f' : e.auto ? '#3fd26b' : '#f2c14e');
+          lampMat.diffuseColor = c;
+          lampMat.emissiveColor = c.scale(0.9);
+        }
       },
     };
   }
