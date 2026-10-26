@@ -537,7 +537,7 @@ m.pickup('health_small', [-32, 4, 40]).pickup('health_small', [32, 4, 40]).picku
 m.pickup('grenades', [-12, 4, 6]).pickup('grenades', [12, 4, 6]).pickup('grenades', [16, 0, 58]).pickup('grenades', [0, 0, -7 - 3]);
 m.pickup('ammo_light', [-36, 0, 2]).pickup('ammo_shells', [36, 0, 2]);
 // A pad from the sidewalk up onto the marquee canopy.
-m.padTo([-18, 0, -12], [-10, 5.1, -7], 14);
+m.padTo([-18, 0, -12], [-10, 5.1, -7], 17);
 // Fire extinguisher-red barrels and a gas bottle in the scene shop and on the dock.
 m.breakable('barrel', [-12, 0, 68]).breakable('barrel', [-11, 0, 69]).breakable('gas', [4, 0, 69]);
 
