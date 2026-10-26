@@ -1,11 +1,11 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 19,
   "metadata": {
     "id": "frost_basin",
     "name": "Frost Basin",
     "author": "Tile Trigger",
-    "description": "A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler, a skyfighter that flies and a tank below the cliff, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west.",
+    "description": "A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler, a skyfighter that flies and a tank below the cliff, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Snow sleds wait on the plateau flanks and a glider on each roof; every round starts in a transport plane looping over the basin, so pick your drop and parachute in. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -148,7 +148,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_051",
+        "id": "tile_054",
         "tile": "core.hall",
         "x": -1,
         "y": 12,
@@ -168,33 +168,9 @@
         }
       },
       {
-        "id": "tile_052",
-        "tile": "core.platform_rail",
-        "x": -1,
-        "y": 12,
-        "z": 4,
-        "rotation": 0
-      },
-      {
-        "id": "tile_053",
-        "tile": "core.platform_rail",
-        "x": -1,
-        "y": 13,
-        "z": 4,
-        "rotation": 0
-      },
-      {
-        "id": "tile_054",
-        "tile": "core.platform_rail",
-        "x": -1,
-        "y": 14,
-        "z": 4,
-        "rotation": 0
-      },
-      {
         "id": "tile_055",
         "tile": "core.platform_rail",
-        "x": 0,
+        "x": -1,
         "y": 12,
         "z": 4,
         "rotation": 0
@@ -202,7 +178,7 @@
       {
         "id": "tile_056",
         "tile": "core.platform_rail",
-        "x": 0,
+        "x": -1,
         "y": 13,
         "z": 4,
         "rotation": 0
@@ -210,7 +186,7 @@
       {
         "id": "tile_057",
         "tile": "core.platform_rail",
-        "x": 0,
+        "x": -1,
         "y": 14,
         "z": 4,
         "rotation": 0
@@ -218,7 +194,7 @@
       {
         "id": "tile_058",
         "tile": "core.platform_rail",
-        "x": 1,
+        "x": 0,
         "y": 12,
         "z": 4,
         "rotation": 0
@@ -226,7 +202,7 @@
       {
         "id": "tile_059",
         "tile": "core.platform_rail",
-        "x": 1,
+        "x": 0,
         "y": 13,
         "z": 4,
         "rotation": 0
@@ -234,13 +210,37 @@
       {
         "id": "tile_060",
         "tile": "core.platform_rail",
-        "x": 1,
+        "x": 0,
         "y": 14,
         "z": 4,
         "rotation": 0
       },
       {
         "id": "tile_061",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 12,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_062",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 13,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_063",
+        "tile": "core.platform_rail",
+        "x": 1,
+        "y": 14,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_064",
         "tile": "core.stairs_open",
         "x": 2,
         "y": 12,
@@ -248,7 +248,7 @@
         "rotation": 2
       },
       {
-        "id": "tile_062",
+        "id": "tile_065",
         "tile": "core.stairs_open",
         "x": -2,
         "y": 12,
@@ -256,7 +256,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_063",
+        "id": "tile_066",
         "tile": "core.platform",
         "x": 3,
         "y": 12,
@@ -264,7 +264,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_064",
+        "id": "tile_067",
         "tile": "core.platform",
         "x": -3,
         "y": 12,
@@ -272,7 +272,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_101",
+        "id": "tile_107",
         "tile": "core.room",
         "x": -1,
         "y": 0,
@@ -285,7 +285,7 @@
         }
       },
       {
-        "id": "tile_102",
+        "id": "tile_108",
         "tile": "core.room_cover",
         "x": 0,
         "y": 0,
@@ -297,7 +297,7 @@
         }
       },
       {
-        "id": "tile_103",
+        "id": "tile_109",
         "tile": "core.stairwell",
         "x": 1,
         "y": 0,
@@ -308,7 +308,7 @@
         }
       },
       {
-        "id": "tile_104",
+        "id": "tile_110",
         "tile": "core.room",
         "x": 0,
         "y": 0,
@@ -320,7 +320,7 @@
         }
       },
       {
-        "id": "tile_105",
+        "id": "tile_111",
         "tile": "core.stairwell",
         "x": -1,
         "y": 0,
@@ -332,7 +332,7 @@
         }
       },
       {
-        "id": "tile_106",
+        "id": "tile_112",
         "tile": "core.platform_rail",
         "x": 0,
         "y": 0,
@@ -340,7 +340,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_107",
+        "id": "tile_113",
         "tile": "core.platform_rail",
         "x": 1,
         "y": 0,
@@ -431,6 +431,32 @@
     {
       "id": "mount_021",
       "position": [
+        -31,
+        11.85,
+        -102
+      ],
+      "kind": "mount",
+      "model": "snow_sled",
+      "yaw": 0,
+      "faction": "embers",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_022",
+      "position": [
+        31,
+        11.85,
+        -102
+      ],
+      "kind": "mount",
+      "model": "snow_sled",
+      "yaw": 0,
+      "faction": "embers",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_023",
+      "position": [
         -40,
         7.62,
         -68
@@ -442,7 +468,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pad_022",
+      "id": "pad_024",
       "position": [
         -7,
         0.1,
@@ -454,7 +480,7 @@
       "push": 14
     },
     {
-      "id": "pad_023",
+      "id": "pad_025",
       "position": [
         7,
         0.48,
@@ -466,7 +492,7 @@
       "push": 14
     },
     {
-      "id": "spawn_024",
+      "id": "spawn_026",
       "position": [
         -9,
         12,
@@ -477,7 +503,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_025",
+      "id": "spawn_027",
       "position": [
         9,
         12,
@@ -488,7 +514,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_026",
+      "id": "spawn_028",
       "position": [
         -4,
         12,
@@ -499,7 +525,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_027",
+      "id": "spawn_029",
       "position": [
         4,
         12,
@@ -510,7 +536,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_028",
+      "id": "spawn_030",
       "position": [
         -27,
         11.85,
@@ -521,7 +547,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_029",
+      "id": "spawn_031",
       "position": [
         27,
         11.85,
@@ -532,7 +558,7 @@
       "faction": "embers"
     },
     {
-      "id": "prop_030",
+      "id": "prop_032",
       "position": [
         -15,
         11.82,
@@ -546,7 +572,7 @@
       "tint": null
     },
     {
-      "id": "prop_031",
+      "id": "prop_033",
       "position": [
         -15.5,
         11.82,
@@ -560,7 +586,7 @@
       "tint": null
     },
     {
-      "id": "prop_032",
+      "id": "prop_034",
       "position": [
         15,
         11.82,
@@ -574,7 +600,7 @@
       "tint": null
     },
     {
-      "id": "prop_033",
+      "id": "prop_035",
       "position": [
         17,
         11.82,
@@ -588,7 +614,7 @@
       "tint": null
     },
     {
-      "id": "prop_034",
+      "id": "prop_036",
       "position": [
         -17,
         11.82,
@@ -602,7 +628,7 @@
       "tint": null
     },
     {
-      "id": "prop_035",
+      "id": "prop_037",
       "position": [
         17,
         11.82,
@@ -616,7 +642,7 @@
       "tint": null
     },
     {
-      "id": "prop_036",
+      "id": "prop_038",
       "position": [
         0,
         11.82,
@@ -630,7 +656,7 @@
       "tint": null
     },
     {
-      "id": "destructible_037",
+      "id": "destructible_039",
       "position": [
         -20,
         11.85,
@@ -643,7 +669,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_038",
+      "id": "destructible_040",
       "position": [
         20,
         11.85,
@@ -656,7 +682,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "prop_039",
+      "id": "prop_041",
       "position": [
         -30,
         11.82,
@@ -670,7 +696,7 @@
       "tint": null
     },
     {
-      "id": "prop_040",
+      "id": "prop_042",
       "position": [
         30,
         11.82,
@@ -684,7 +710,7 @@
       "tint": null
     },
     {
-      "id": "pickup_041",
+      "id": "pickup_043",
       "position": [
         0,
         12,
@@ -695,7 +721,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_042",
+      "id": "pickup_044",
       "position": [
         -9,
         12,
@@ -706,7 +732,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_043",
+      "id": "pickup_045",
       "position": [
         9,
         12,
@@ -717,7 +743,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_044",
+      "id": "pickup_046",
       "position": [
         -10,
         12,
@@ -728,7 +754,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_045",
+      "id": "pickup_047",
       "position": [
         10,
         12,
@@ -739,7 +765,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_046",
+      "id": "pickup_048",
       "position": [
         0,
         12,
@@ -750,7 +776,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_047",
+      "id": "pickup_049",
       "position": [
         -26,
         11.85,
@@ -761,7 +787,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_048",
+      "id": "pickup_050",
       "position": [
         0,
         16,
@@ -772,7 +798,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_049",
+      "id": "pickup_051",
       "position": [
         -8,
         16,
@@ -783,7 +809,18 @@
       "respawnSeconds": null
     },
     {
-      "id": "flag_050",
+      "id": "pickup_052",
+      "position": [
+        8,
+        16,
+        -100
+      ],
+      "kind": "pickup",
+      "item": "core.glider",
+      "respawnSeconds": null
+    },
+    {
+      "id": "flag_053",
       "position": [
         0,
         12,
@@ -794,7 +831,7 @@
       "team": "embers"
     },
     {
-      "id": "mount_065",
+      "id": "mount_068",
       "position": [
         0,
         16,
@@ -807,7 +844,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_066",
+      "id": "mount_069",
       "position": [
         9,
         16,
@@ -820,7 +857,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_067",
+      "id": "mount_070",
       "position": [
         -26,
         11.85,
@@ -833,7 +870,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_068",
+      "id": "mount_071",
       "position": [
         26,
         11.85,
@@ -846,7 +883,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_069",
+      "id": "mount_072",
       "position": [
         25,
         11.85,
@@ -859,7 +896,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_070",
+      "id": "mount_073",
       "position": [
         -25,
         11.85,
@@ -872,7 +909,33 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_071",
+      "id": "mount_074",
+      "position": [
+        31,
+        11.85,
+        102
+      ],
+      "kind": "mount",
+      "model": "snow_sled",
+      "yaw": 3.141592653589793,
+      "faction": "tide",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_075",
+      "position": [
+        -31,
+        11.85,
+        102
+      ],
+      "kind": "mount",
+      "model": "snow_sled",
+      "yaw": 3.141592653589793,
+      "faction": "tide",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_076",
       "position": [
         40,
         7.62,
@@ -885,7 +948,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pad_072",
+      "id": "pad_077",
       "position": [
         -7,
         0.48,
@@ -897,7 +960,7 @@
       "push": 14
     },
     {
-      "id": "pad_073",
+      "id": "pad_078",
       "position": [
         7,
         0.1,
@@ -909,7 +972,7 @@
       "push": 14
     },
     {
-      "id": "spawn_074",
+      "id": "spawn_079",
       "position": [
         -9,
         12,
@@ -920,7 +983,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_075",
+      "id": "spawn_080",
       "position": [
         9,
         12,
@@ -931,7 +994,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_076",
+      "id": "spawn_081",
       "position": [
         -4,
         12,
@@ -942,7 +1005,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_077",
+      "id": "spawn_082",
       "position": [
         4,
         12,
@@ -953,7 +1016,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_078",
+      "id": "spawn_083",
       "position": [
         -27,
         11.85,
@@ -964,7 +1027,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_079",
+      "id": "spawn_084",
       "position": [
         27,
         11.85,
@@ -975,7 +1038,7 @@
       "faction": "tide"
     },
     {
-      "id": "prop_080",
+      "id": "prop_085",
       "position": [
         -15,
         11.82,
@@ -989,7 +1052,7 @@
       "tint": null
     },
     {
-      "id": "prop_081",
+      "id": "prop_086",
       "position": [
         -15.5,
         11.82,
@@ -1003,7 +1066,7 @@
       "tint": null
     },
     {
-      "id": "prop_082",
+      "id": "prop_087",
       "position": [
         15,
         11.82,
@@ -1017,7 +1080,7 @@
       "tint": null
     },
     {
-      "id": "prop_083",
+      "id": "prop_088",
       "position": [
         17,
         11.82,
@@ -1031,7 +1094,7 @@
       "tint": null
     },
     {
-      "id": "prop_084",
+      "id": "prop_089",
       "position": [
         -17,
         11.82,
@@ -1045,7 +1108,7 @@
       "tint": null
     },
     {
-      "id": "prop_085",
+      "id": "prop_090",
       "position": [
         17,
         11.82,
@@ -1059,7 +1122,7 @@
       "tint": null
     },
     {
-      "id": "prop_086",
+      "id": "prop_091",
       "position": [
         0,
         11.82,
@@ -1073,7 +1136,7 @@
       "tint": null
     },
     {
-      "id": "destructible_087",
+      "id": "destructible_092",
       "position": [
         -20,
         11.85,
@@ -1086,7 +1149,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_088",
+      "id": "destructible_093",
       "position": [
         20,
         11.85,
@@ -1099,7 +1162,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "prop_089",
+      "id": "prop_094",
       "position": [
         -30,
         11.82,
@@ -1113,7 +1176,7 @@
       "tint": null
     },
     {
-      "id": "prop_090",
+      "id": "prop_095",
       "position": [
         30,
         11.82,
@@ -1127,7 +1190,7 @@
       "tint": null
     },
     {
-      "id": "pickup_091",
+      "id": "pickup_096",
       "position": [
         0,
         12,
@@ -1138,7 +1201,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_092",
+      "id": "pickup_097",
       "position": [
         -9,
         12,
@@ -1149,7 +1212,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_093",
+      "id": "pickup_098",
       "position": [
         9,
         12,
@@ -1160,7 +1223,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_094",
+      "id": "pickup_099",
       "position": [
         -10,
         12,
@@ -1171,7 +1234,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_095",
+      "id": "pickup_100",
       "position": [
         10,
         12,
@@ -1182,7 +1245,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_096",
+      "id": "pickup_101",
       "position": [
         0,
         12,
@@ -1193,7 +1256,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_097",
+      "id": "pickup_102",
       "position": [
         -26,
         11.85,
@@ -1204,7 +1267,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_098",
+      "id": "pickup_103",
       "position": [
         0,
         16,
@@ -1215,7 +1278,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_099",
+      "id": "pickup_104",
       "position": [
         -8,
         16,
@@ -1226,7 +1289,18 @@
       "respawnSeconds": null
     },
     {
-      "id": "flag_100",
+      "id": "pickup_105",
+      "position": [
+        8,
+        16,
+        100
+      ],
+      "kind": "pickup",
+      "item": "core.glider",
+      "respawnSeconds": null
+    },
+    {
+      "id": "flag_106",
       "position": [
         0,
         12,
@@ -1237,7 +1311,7 @@
       "team": "tide"
     },
     {
-      "id": "pickup_108",
+      "id": "pickup_114",
       "position": [
         6,
         8,
@@ -1248,7 +1322,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_109",
+      "id": "pickup_115",
       "position": [
         -8,
         0,
@@ -1259,7 +1333,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_110",
+      "id": "pickup_116",
       "position": [
         0,
         4,
@@ -1270,7 +1344,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_111",
+      "id": "pickup_117",
       "position": [
         -3,
         8,
@@ -1281,7 +1355,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "spawn_112",
+      "id": "spawn_118",
       "position": [
         -8,
         0,
@@ -1292,7 +1366,7 @@
       "faction": null
     },
     {
-      "id": "spawn_113",
+      "id": "spawn_119",
       "position": [
         0,
         4,
@@ -1303,7 +1377,7 @@
       "faction": null
     },
     {
-      "id": "prop_114",
+      "id": "prop_120",
       "position": [
         -18,
         -0.09,
@@ -1317,7 +1391,7 @@
       "tint": null
     },
     {
-      "id": "prop_115",
+      "id": "prop_121",
       "position": [
         18,
         -0.09,
@@ -1331,7 +1405,7 @@
       "tint": null
     },
     {
-      "id": "prop_116",
+      "id": "prop_122",
       "position": [
         6,
         -0.16,
@@ -1345,7 +1419,7 @@
       "tint": null
     },
     {
-      "id": "prop_117",
+      "id": "prop_123",
       "position": [
         -6,
         -0.16,
@@ -1359,7 +1433,7 @@
       "tint": null
     },
     {
-      "id": "prop_118",
+      "id": "prop_124",
       "position": [
         14,
         -0.17,
@@ -1373,7 +1447,7 @@
       "tint": null
     },
     {
-      "id": "prop_119",
+      "id": "prop_125",
       "position": [
         -14,
         -0.17,
@@ -1387,7 +1461,7 @@
       "tint": null
     },
     {
-      "id": "hill_120",
+      "id": "hill_126",
       "position": [
         4,
         8,
@@ -1397,7 +1471,7 @@
       "radius": 5
     },
     {
-      "id": "hill_121",
+      "id": "hill_127",
       "position": [
         0,
         -0.15,
@@ -1407,7 +1481,7 @@
       "radius": 6
     },
     {
-      "id": "hill_122",
+      "id": "hill_128",
       "position": [
         0,
         -0.15,
@@ -1417,7 +1491,7 @@
       "radius": 6
     },
     {
-      "id": "pad_123",
+      "id": "pad_129",
       "position": [
         31.27,
         7.57,
@@ -1429,7 +1503,7 @@
       "push": 6
     },
     {
-      "id": "pad_124",
+      "id": "pad_130",
       "position": [
         36.73,
         1.51,
@@ -1441,7 +1515,7 @@
       "push": 6
     },
     {
-      "id": "pad_125",
+      "id": "pad_131",
       "position": [
         -36.73,
         0.85,
@@ -1453,7 +1527,7 @@
       "push": 6
     },
     {
-      "id": "pad_126",
+      "id": "pad_132",
       "position": [
         -31.27,
         0.91,
@@ -1465,7 +1539,7 @@
       "push": 6
     },
     {
-      "id": "pad_127",
+      "id": "pad_133",
       "position": [
         -31.27,
         7.57,
@@ -1477,7 +1551,7 @@
       "push": 6
     },
     {
-      "id": "pad_128",
+      "id": "pad_134",
       "position": [
         -36.73,
         1.51,
@@ -1489,7 +1563,7 @@
       "push": 6
     },
     {
-      "id": "pad_129",
+      "id": "pad_135",
       "position": [
         36.73,
         0.85,
@@ -1501,7 +1575,7 @@
       "push": 6
     },
     {
-      "id": "pad_130",
+      "id": "pad_136",
       "position": [
         31.27,
         0.91,
@@ -1513,7 +1587,7 @@
       "push": 6
     },
     {
-      "id": "pickup_131",
+      "id": "pickup_137",
       "position": [
         -40,
         6.74,
@@ -1524,7 +1598,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_132",
+      "id": "pickup_138",
       "position": [
         28,
         8.22,
@@ -1535,7 +1609,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_133",
+      "id": "pickup_139",
       "position": [
         40,
         6.74,
@@ -1546,7 +1620,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_134",
+      "id": "pickup_140",
       "position": [
         -28,
         8.22,
@@ -1557,7 +1631,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_135",
+      "id": "pickup_141",
       "position": [
         74,
         0.17,
@@ -1568,7 +1642,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_136",
+      "id": "pickup_142",
       "position": [
         -74,
         0.17,
@@ -1579,7 +1653,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_137",
+      "id": "pickup_143",
       "position": [
         50,
         0.49,
@@ -1590,7 +1664,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_138",
+      "id": "pickup_144",
       "position": [
         -50,
         0.49,
@@ -1601,7 +1675,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_139",
+      "id": "pickup_145",
       "position": [
         -10,
         -0.15,
@@ -1612,7 +1686,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_140",
+      "id": "pickup_146",
       "position": [
         10,
         -0.15,
@@ -1623,7 +1697,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_141",
+      "id": "pickup_147",
       "position": [
         60,
         2.94,
@@ -1634,7 +1708,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_142",
+      "id": "pickup_148",
       "position": [
         -60,
         2.94,
@@ -1645,7 +1719,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_143",
+      "id": "pickup_149",
       "position": [
         -14,
         0.8,
@@ -1656,7 +1730,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_144",
+      "id": "pickup_150",
       "position": [
         14,
         0.8,
@@ -1667,7 +1741,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_145",
+      "id": "pickup_151",
       "position": [
         70,
         0.73,
@@ -1678,7 +1752,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_146",
+      "id": "pickup_152",
       "position": [
         -70,
         0.73,
@@ -1689,7 +1763,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_147",
+      "id": "pickup_153",
       "position": [
         56,
         0.34,
@@ -1700,7 +1774,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_148",
+      "id": "pickup_154",
       "position": [
         -56,
         0.34,
@@ -1711,7 +1785,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_149",
+      "id": "pickup_155",
       "position": [
         20,
         1.91,
@@ -1722,7 +1796,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_150",
+      "id": "pickup_156",
       "position": [
         -20,
         1.91,
@@ -1733,7 +1807,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_151",
+      "id": "pickup_157",
       "position": [
         88,
         0.84,
@@ -1744,7 +1818,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_152",
+      "id": "pickup_158",
       "position": [
         -88,
         0.84,
@@ -1755,7 +1829,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_153",
+      "id": "pickup_159",
       "position": [
         -30,
         1.05,
@@ -1766,7 +1840,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_154",
+      "id": "pickup_160",
       "position": [
         30,
         1.05,
@@ -1777,7 +1851,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_155",
+      "id": "pickup_161",
       "position": [
         0,
         0,
@@ -1788,7 +1862,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_156",
+      "id": "pickup_162",
       "position": [
         0,
         0,
@@ -1799,7 +1873,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_157",
+      "id": "pickup_163",
       "position": [
         -50,
         0.66,
@@ -1810,7 +1884,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_158",
+      "id": "pickup_164",
       "position": [
         50,
         0.66,
@@ -1821,7 +1895,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "spawn_159",
+      "id": "spawn_165",
       "position": [
         -66,
         0.91,
@@ -1832,7 +1906,7 @@
       "faction": null
     },
     {
-      "id": "spawn_160",
+      "id": "spawn_166",
       "position": [
         66,
         0.91,
@@ -1843,7 +1917,7 @@
       "faction": null
     },
     {
-      "id": "prop_161",
+      "id": "prop_167",
       "position": [
         -47.12,
         1.68,
@@ -1857,7 +1931,7 @@
       "tint": null
     },
     {
-      "id": "prop_162",
+      "id": "prop_168",
       "position": [
         47.12,
         1.75,
@@ -1871,7 +1945,7 @@
       "tint": null
     },
     {
-      "id": "prop_163",
+      "id": "prop_169",
       "position": [
         72.67,
         0.67,
@@ -1885,7 +1959,7 @@
       "tint": null
     },
     {
-      "id": "prop_164",
+      "id": "prop_170",
       "position": [
         -72.67,
         0.67,
@@ -1899,7 +1973,7 @@
       "tint": null
     },
     {
-      "id": "prop_165",
+      "id": "prop_171",
       "position": [
         31.72,
         0.52,
@@ -1913,7 +1987,7 @@
       "tint": null
     },
     {
-      "id": "prop_166",
+      "id": "prop_172",
       "position": [
         -31.72,
         0.52,
@@ -1927,7 +2001,7 @@
       "tint": null
     },
     {
-      "id": "prop_167",
+      "id": "prop_173",
       "position": [
         -96.45,
         0.31,
@@ -1941,7 +2015,7 @@
       "tint": null
     },
     {
-      "id": "prop_168",
+      "id": "prop_174",
       "position": [
         96.45,
         0.32,
@@ -1955,7 +2029,7 @@
       "tint": null
     },
     {
-      "id": "prop_169",
+      "id": "prop_175",
       "position": [
         29.99,
         0.96,
@@ -1969,7 +2043,7 @@
       "tint": null
     },
     {
-      "id": "prop_170",
+      "id": "prop_176",
       "position": [
         -29.99,
         0.88,
@@ -1983,7 +2057,7 @@
       "tint": null
     },
     {
-      "id": "prop_171",
+      "id": "prop_177",
       "position": [
         -7.57,
         0.26,
@@ -1997,7 +2071,7 @@
       "tint": null
     },
     {
-      "id": "prop_172",
+      "id": "prop_178",
       "position": [
         7.57,
         0.27,
@@ -2011,7 +2085,7 @@
       "tint": null
     },
     {
-      "id": "prop_173",
+      "id": "prop_179",
       "position": [
         -62.91,
         0.69,
@@ -2025,7 +2099,7 @@
       "tint": null
     },
     {
-      "id": "prop_174",
+      "id": "prop_180",
       "position": [
         62.91,
         0.7,
@@ -2039,7 +2113,7 @@
       "tint": null
     },
     {
-      "id": "prop_175",
+      "id": "prop_181",
       "position": [
         15.28,
         0.57,
@@ -2053,7 +2127,7 @@
       "tint": null
     },
     {
-      "id": "prop_176",
+      "id": "prop_182",
       "position": [
         -15.28,
         0.57,
@@ -2067,7 +2141,7 @@
       "tint": null
     },
     {
-      "id": "prop_177",
+      "id": "prop_183",
       "position": [
         -53.58,
         1.96,
@@ -2081,7 +2155,7 @@
       "tint": null
     },
     {
-      "id": "prop_178",
+      "id": "prop_184",
       "position": [
         53.58,
         2.07,
@@ -2095,7 +2169,7 @@
       "tint": null
     },
     {
-      "id": "prop_179",
+      "id": "prop_185",
       "position": [
         43.96,
         0.45,
@@ -2109,7 +2183,7 @@
       "tint": null
     },
     {
-      "id": "prop_180",
+      "id": "prop_186",
       "position": [
         -43.96,
         0.46,
@@ -2123,7 +2197,7 @@
       "tint": null
     },
     {
-      "id": "prop_181",
+      "id": "prop_187",
       "position": [
         21.08,
         0.93,
@@ -2137,7 +2211,7 @@
       "tint": null
     },
     {
-      "id": "prop_182",
+      "id": "prop_188",
       "position": [
         -21.08,
         0.99,
@@ -2151,7 +2225,7 @@
       "tint": null
     },
     {
-      "id": "prop_183",
+      "id": "prop_189",
       "position": [
         23.1,
         0.15,
@@ -2165,7 +2239,7 @@
       "tint": null
     },
     {
-      "id": "prop_184",
+      "id": "prop_190",
       "position": [
         -23.1,
         0.13,
@@ -2179,7 +2253,7 @@
       "tint": null
     },
     {
-      "id": "prop_185",
+      "id": "prop_191",
       "position": [
         -95.2,
         1.84,
@@ -2193,7 +2267,7 @@
       "tint": null
     },
     {
-      "id": "prop_186",
+      "id": "prop_192",
       "position": [
         95.2,
         1.37,
@@ -2207,7 +2281,7 @@
       "tint": null
     },
     {
-      "id": "prop_187",
+      "id": "prop_193",
       "position": [
         -58.67,
         0.53,
@@ -2221,7 +2295,7 @@
       "tint": null
     },
     {
-      "id": "prop_188",
+      "id": "prop_194",
       "position": [
         58.67,
         0.53,
@@ -2235,7 +2309,7 @@
       "tint": null
     },
     {
-      "id": "prop_189",
+      "id": "prop_195",
       "position": [
         -66.15,
         -0.09,
@@ -2249,7 +2323,7 @@
       "tint": null
     },
     {
-      "id": "prop_190",
+      "id": "prop_196",
       "position": [
         66.15,
         -0.1,
@@ -2263,7 +2337,7 @@
       "tint": null
     },
     {
-      "id": "prop_191",
+      "id": "prop_197",
       "position": [
         -16.52,
         0.17,
@@ -2277,7 +2351,7 @@
       "tint": null
     },
     {
-      "id": "prop_192",
+      "id": "prop_198",
       "position": [
         16.52,
         0.27,
@@ -2291,7 +2365,7 @@
       "tint": null
     },
     {
-      "id": "prop_193",
+      "id": "prop_199",
       "position": [
         -61.43,
         0.01,
@@ -2305,7 +2379,7 @@
       "tint": null
     },
     {
-      "id": "prop_194",
+      "id": "prop_200",
       "position": [
         61.43,
         -0.02,
@@ -2319,7 +2393,7 @@
       "tint": null
     },
     {
-      "id": "prop_195",
+      "id": "prop_201",
       "position": [
         77.51,
         0.19,
@@ -2333,7 +2407,7 @@
       "tint": null
     },
     {
-      "id": "prop_196",
+      "id": "prop_202",
       "position": [
         -77.51,
         0.18,
@@ -2347,7 +2421,7 @@
       "tint": null
     },
     {
-      "id": "prop_197",
+      "id": "prop_203",
       "position": [
         -48.64,
         0.28,
@@ -2361,7 +2435,7 @@
       "tint": null
     },
     {
-      "id": "prop_198",
+      "id": "prop_204",
       "position": [
         48.64,
         0.29,
@@ -2375,7 +2449,7 @@
       "tint": null
     },
     {
-      "id": "prop_199",
+      "id": "prop_205",
       "position": [
         60.2,
         0.2,
@@ -2389,7 +2463,7 @@
       "tint": null
     },
     {
-      "id": "prop_200",
+      "id": "prop_206",
       "position": [
         -60.2,
         0.22,
@@ -2403,7 +2477,7 @@
       "tint": null
     },
     {
-      "id": "prop_201",
+      "id": "prop_207",
       "position": [
         -42.29,
         0.91,
@@ -2417,7 +2491,7 @@
       "tint": null
     },
     {
-      "id": "prop_202",
+      "id": "prop_208",
       "position": [
         42.29,
         0.84,
@@ -2431,7 +2505,7 @@
       "tint": null
     },
     {
-      "id": "prop_203",
+      "id": "prop_209",
       "position": [
         -35.29,
         1.9,
@@ -2445,7 +2519,7 @@
       "tint": null
     },
     {
-      "id": "prop_204",
+      "id": "prop_210",
       "position": [
         35.29,
         1.86,
@@ -2459,7 +2533,7 @@
       "tint": null
     },
     {
-      "id": "prop_205",
+      "id": "prop_211",
       "position": [
         -7.26,
         -0.13,
@@ -2473,7 +2547,7 @@
       "tint": null
     },
     {
-      "id": "prop_206",
+      "id": "prop_212",
       "position": [
         -91.64,
         5.25,
@@ -2487,7 +2561,7 @@
       "tint": null
     },
     {
-      "id": "prop_207",
+      "id": "prop_213",
       "position": [
         20.84,
         0.67,
@@ -2501,7 +2575,7 @@
       "tint": null
     },
     {
-      "id": "prop_208",
+      "id": "prop_214",
       "position": [
         -86.41,
         1.62,
@@ -2515,7 +2589,7 @@
       "tint": null
     },
     {
-      "id": "prop_209",
+      "id": "prop_215",
       "position": [
         16.88,
         -0.18,
@@ -2529,7 +2603,7 @@
       "tint": null
     },
     {
-      "id": "prop_210",
+      "id": "prop_216",
       "position": [
         6.41,
         -0.08,
@@ -2543,7 +2617,7 @@
       "tint": null
     },
     {
-      "id": "prop_211",
+      "id": "prop_217",
       "position": [
         -64.84,
         0.21,
@@ -2557,7 +2631,7 @@
       "tint": null
     },
     {
-      "id": "prop_212",
+      "id": "prop_218",
       "position": [
         77,
         2.33,
@@ -2571,7 +2645,7 @@
       "tint": null
     },
     {
-      "id": "prop_213",
+      "id": "prop_219",
       "position": [
         82.77,
         3.62,
@@ -2585,7 +2659,7 @@
       "tint": null
     },
     {
-      "id": "prop_214",
+      "id": "prop_220",
       "position": [
         -75.7,
         0.99,
@@ -2599,7 +2673,7 @@
       "tint": null
     },
     {
-      "id": "prop_215",
+      "id": "prop_221",
       "position": [
         94.69,
         2.82,
@@ -2613,7 +2687,7 @@
       "tint": null
     },
     {
-      "id": "prop_216",
+      "id": "prop_222",
       "position": [
         -79.78,
         7.74,
@@ -2627,7 +2701,7 @@
       "tint": null
     },
     {
-      "id": "prop_217",
+      "id": "prop_223",
       "position": [
         -7.25,
         -0.18,
@@ -2641,7 +2715,7 @@
       "tint": null
     },
     {
-      "id": "prop_218",
+      "id": "prop_224",
       "position": [
         45.11,
         4.68,
@@ -2655,7 +2729,7 @@
       "tint": null
     },
     {
-      "id": "prop_219",
+      "id": "prop_225",
       "position": [
         -33.92,
         2.58,
@@ -2669,7 +2743,7 @@
       "tint": null
     },
     {
-      "id": "prop_220",
+      "id": "prop_226",
       "position": [
         84.37,
         12.75,
@@ -2683,7 +2757,7 @@
       "tint": null
     },
     {
-      "id": "prop_221",
+      "id": "prop_227",
       "position": [
         99.65,
         34.33,
@@ -2697,7 +2771,7 @@
       "tint": null
     },
     {
-      "id": "prop_222",
+      "id": "prop_228",
       "position": [
         92.75,
         18.96,
@@ -2711,7 +2785,7 @@
       "tint": null
     },
     {
-      "id": "prop_223",
+      "id": "prop_229",
       "position": [
         83.68,
         20.13,
@@ -2725,7 +2799,7 @@
       "tint": null
     },
     {
-      "id": "prop_224",
+      "id": "prop_230",
       "position": [
         -100.78,
         33.59,
@@ -2739,7 +2813,7 @@
       "tint": null
     },
     {
-      "id": "prop_225",
+      "id": "prop_231",
       "position": [
         -87.51,
         13.08,
@@ -2753,7 +2827,7 @@
       "tint": null
     },
     {
-      "id": "prop_226",
+      "id": "prop_232",
       "position": [
         -81.31,
         5.44,
@@ -2767,7 +2841,7 @@
       "tint": null
     },
     {
-      "id": "prop_227",
+      "id": "prop_233",
       "position": [
         -91.01,
         12.79,
@@ -2781,7 +2855,7 @@
       "tint": null
     },
     {
-      "id": "prop_228",
+      "id": "prop_234",
       "position": [
         -90.78,
         22.47,
@@ -2795,7 +2869,7 @@
       "tint": null
     },
     {
-      "id": "prop_229",
+      "id": "prop_235",
       "position": [
         -101.33,
         31.49,
@@ -2809,7 +2883,7 @@
       "tint": null
     },
     {
-      "id": "prop_230",
+      "id": "prop_236",
       "position": [
         -47.35,
         4.73,
@@ -2823,7 +2897,7 @@
       "tint": null
     },
     {
-      "id": "prop_231",
+      "id": "prop_237",
       "position": [
         -41.15,
         2.52,
@@ -2837,7 +2911,7 @@
       "tint": null
     },
     {
-      "id": "prop_232",
+      "id": "prop_238",
       "position": [
         39.84,
         3.61,
@@ -2851,7 +2925,7 @@
       "tint": null
     },
     {
-      "id": "prop_233",
+      "id": "prop_239",
       "position": [
         -101.05,
         6.79,
@@ -2865,7 +2939,7 @@
       "tint": null
     },
     {
-      "id": "prop_234",
+      "id": "prop_240",
       "position": [
         -107.32,
         14.9,
@@ -2879,7 +2953,7 @@
       "tint": null
     },
     {
-      "id": "prop_235",
+      "id": "prop_241",
       "position": [
         -91.64,
         0.31,
@@ -2893,7 +2967,7 @@
       "tint": null
     },
     {
-      "id": "prop_236",
+      "id": "prop_242",
       "position": [
         -109.11,
         19.88,
@@ -2907,7 +2981,7 @@
       "tint": null
     },
     {
-      "id": "prop_237",
+      "id": "prop_243",
       "position": [
         -93.11,
         0.65,
@@ -2921,7 +2995,7 @@
       "tint": null
     },
     {
-      "id": "prop_238",
+      "id": "prop_244",
       "position": [
         110.11,
         23.92,
@@ -2935,7 +3009,7 @@
       "tint": null
     },
     {
-      "id": "prop_239",
+      "id": "prop_245",
       "position": [
         96.91,
         2.89,
@@ -2949,7 +3023,7 @@
       "tint": null
     },
     {
-      "id": "prop_240",
+      "id": "prop_246",
       "position": [
         70.89,
         6.88,
@@ -2963,7 +3037,7 @@
       "tint": null
     },
     {
-      "id": "prop_241",
+      "id": "prop_247",
       "position": [
         -70,
         29.07,
@@ -2977,7 +3051,7 @@
       "tint": null
     },
     {
-      "id": "prop_242",
+      "id": "prop_248",
       "position": [
         -68.89,
         10.93,
@@ -2991,7 +3065,7 @@
       "tint": null
     },
     {
-      "id": "prop_243",
+      "id": "prop_249",
       "position": [
         -11.71,
         0.47,
@@ -3005,7 +3079,7 @@
       "tint": null
     },
     {
-      "id": "prop_244",
+      "id": "prop_250",
       "position": [
         -28.45,
         0.24,
@@ -3019,7 +3093,7 @@
       "tint": null
     },
     {
-      "id": "prop_245",
+      "id": "prop_251",
       "position": [
         33.67,
         2.51,
@@ -3033,7 +3107,7 @@
       "tint": null
     },
     {
-      "id": "prop_246",
+      "id": "prop_252",
       "position": [
         -15.18,
         -0.18,
@@ -3047,7 +3121,7 @@
       "tint": null
     },
     {
-      "id": "prop_247",
+      "id": "prop_253",
       "position": [
         -19.49,
         -0.04,
@@ -3061,7 +3135,7 @@
       "tint": null
     },
     {
-      "id": "prop_248",
+      "id": "prop_254",
       "position": [
         16.1,
         1.49,
@@ -3075,7 +3149,7 @@
       "tint": null
     },
     {
-      "id": "prop_249",
+      "id": "prop_255",
       "position": [
         -78.62,
         0.6,
@@ -3089,7 +3163,7 @@
       "tint": null
     },
     {
-      "id": "prop_250",
+      "id": "prop_256",
       "position": [
         -66.32,
         0.74,
@@ -3103,7 +3177,7 @@
       "tint": null
     },
     {
-      "id": "prop_251",
+      "id": "prop_257",
       "position": [
         -11.23,
         -0.18,
@@ -3117,7 +3191,7 @@
       "tint": null
     },
     {
-      "id": "prop_252",
+      "id": "prop_258",
       "position": [
         -59.71,
         2.08,
@@ -3131,7 +3205,7 @@
       "tint": null
     },
     {
-      "id": "prop_253",
+      "id": "prop_259",
       "position": [
         -12.71,
         0.72,
@@ -3145,7 +3219,7 @@
       "tint": null
     },
     {
-      "id": "prop_254",
+      "id": "prop_260",
       "position": [
         83.76,
         0.57,
@@ -3159,7 +3233,7 @@
       "tint": null
     },
     {
-      "id": "prop_255",
+      "id": "prop_261",
       "position": [
         -39.14,
         3.37,
@@ -3173,7 +3247,7 @@
       "tint": null
     },
     {
-      "id": "prop_256",
+      "id": "prop_262",
       "position": [
         27.01,
         1.19,
@@ -3187,7 +3261,7 @@
       "tint": null
     },
     {
-      "id": "prop_257",
+      "id": "prop_263",
       "position": [
         -76.59,
         0.14,
@@ -3201,7 +3275,7 @@
       "tint": null
     },
     {
-      "id": "prop_258",
+      "id": "prop_264",
       "position": [
         -8.51,
         0.45,
@@ -3215,7 +3289,7 @@
       "tint": null
     },
     {
-      "id": "prop_259",
+      "id": "prop_265",
       "position": [
         -78.66,
         0.47,
@@ -3229,7 +3303,7 @@
       "tint": null
     },
     {
-      "id": "prop_260",
+      "id": "prop_266",
       "position": [
         31.61,
         0.6,
@@ -3243,7 +3317,7 @@
       "tint": null
     },
     {
-      "id": "prop_261",
+      "id": "prop_267",
       "position": [
         38.25,
         0.74,
@@ -3257,7 +3331,7 @@
       "tint": null
     },
     {
-      "id": "prop_262",
+      "id": "prop_268",
       "position": [
         -7.41,
         -0.04,
@@ -3271,7 +3345,7 @@
       "tint": null
     },
     {
-      "id": "prop_263",
+      "id": "prop_269",
       "position": [
         -6.7,
         0.3,
@@ -3285,7 +3359,7 @@
       "tint": null
     },
     {
-      "id": "prop_264",
+      "id": "prop_270",
       "position": [
         45.51,
         1.03,
@@ -3299,7 +3373,7 @@
       "tint": null
     },
     {
-      "id": "prop_265",
+      "id": "prop_271",
       "position": [
         92.23,
         1.96,
@@ -3313,7 +3387,7 @@
       "tint": null
     },
     {
-      "id": "prop_266",
+      "id": "prop_272",
       "position": [
         28.9,
         0.09,
@@ -3327,7 +3401,7 @@
       "tint": null
     },
     {
-      "id": "prop_267",
+      "id": "prop_273",
       "position": [
         -95.93,
         0.9,
@@ -3341,7 +3415,7 @@
       "tint": null
     },
     {
-      "id": "prop_268",
+      "id": "prop_274",
       "position": [
         62.92,
         0.1,
@@ -3355,7 +3429,7 @@
       "tint": null
     },
     {
-      "id": "prop_269",
+      "id": "prop_275",
       "position": [
         -43.57,
         0.79,
@@ -3369,7 +3443,7 @@
       "tint": null
     },
     {
-      "id": "prop_270",
+      "id": "prop_276",
       "position": [
         -59.5,
         0.24,
@@ -3383,7 +3457,7 @@
       "tint": null
     },
     {
-      "id": "prop_271",
+      "id": "prop_277",
       "position": [
         -64.63,
         0.73,
@@ -3397,7 +3471,7 @@
       "tint": null
     },
     {
-      "id": "prop_272",
+      "id": "prop_278",
       "position": [
         -27.72,
         0.98,
@@ -3411,7 +3485,7 @@
       "tint": null
     },
     {
-      "id": "prop_273",
+      "id": "prop_279",
       "position": [
         -95.17,
         0.93,
@@ -3425,7 +3499,7 @@
       "tint": null
     },
     {
-      "id": "prop_274",
+      "id": "prop_280",
       "position": [
         10.16,
         0.98,
@@ -3439,7 +3513,7 @@
       "tint": null
     },
     {
-      "id": "prop_275",
+      "id": "prop_281",
       "position": [
         -9.18,
         0.99,
@@ -3453,7 +3527,7 @@
       "tint": null
     },
     {
-      "id": "prop_276",
+      "id": "prop_282",
       "position": [
         -89.21,
         0.94,
@@ -3467,7 +3541,7 @@
       "tint": null
     },
     {
-      "id": "prop_277",
+      "id": "prop_283",
       "position": [
         -82.41,
         0.4,
@@ -3481,7 +3555,7 @@
       "tint": null
     },
     {
-      "id": "prop_278",
+      "id": "prop_284",
       "position": [
         -75.06,
         0.81,
@@ -3495,7 +3569,7 @@
       "tint": null
     },
     {
-      "id": "prop_279",
+      "id": "prop_285",
       "position": [
         51.03,
         0.86,
@@ -3509,7 +3583,7 @@
       "tint": null
     },
     {
-      "id": "prop_280",
+      "id": "prop_286",
       "position": [
         60.78,
         0.29,
@@ -3523,7 +3597,7 @@
       "tint": null
     },
     {
-      "id": "prop_281",
+      "id": "prop_287",
       "position": [
         97.18,
         2.48,
@@ -3537,7 +3611,7 @@
       "tint": null
     },
     {
-      "id": "prop_282",
+      "id": "prop_288",
       "position": [
         90.14,
         0.65,
@@ -3551,7 +3625,7 @@
       "tint": null
     },
     {
-      "id": "prop_283",
+      "id": "prop_289",
       "position": [
         68.65,
         0.47,
@@ -3565,7 +3639,7 @@
       "tint": null
     },
     {
-      "id": "prop_284",
+      "id": "prop_290",
       "position": [
         -67.93,
         1.01,
@@ -3579,7 +3653,7 @@
       "tint": null
     },
     {
-      "id": "prop_285",
+      "id": "prop_291",
       "position": [
         -17.58,
         0.9,
@@ -3593,7 +3667,7 @@
       "tint": null
     },
     {
-      "id": "prop_286",
+      "id": "prop_292",
       "position": [
         68.35,
         0.39,
@@ -3607,7 +3681,7 @@
       "tint": null
     },
     {
-      "id": "prop_287",
+      "id": "prop_293",
       "position": [
         -70.97,
         1.89,
@@ -3621,7 +3695,7 @@
       "tint": null
     },
     {
-      "id": "prop_288",
+      "id": "prop_294",
       "position": [
         -20.85,
         0.97,
@@ -3635,7 +3709,7 @@
       "tint": null
     },
     {
-      "id": "prop_289",
+      "id": "prop_295",
       "position": [
         -78.01,
         0.03,
@@ -3649,7 +3723,7 @@
       "tint": null
     },
     {
-      "id": "prop_290",
+      "id": "prop_296",
       "position": [
         22.94,
         0.92,
@@ -3663,7 +3737,7 @@
       "tint": null
     },
     {
-      "id": "prop_291",
+      "id": "prop_297",
       "position": [
         8.68,
         0.36,
@@ -3677,7 +3751,7 @@
       "tint": null
     },
     {
-      "id": "prop_292",
+      "id": "prop_298",
       "position": [
         -70.93,
         0.48,
@@ -3691,7 +3765,7 @@
       "tint": null
     },
     {
-      "id": "prop_293",
+      "id": "prop_299",
       "position": [
         -77.51,
         1.92,
@@ -3705,7 +3779,7 @@
       "tint": null
     },
     {
-      "id": "prop_294",
+      "id": "prop_300",
       "position": [
         -35.97,
         0.27,
@@ -3719,7 +3793,7 @@
       "tint": null
     },
     {
-      "id": "prop_295",
+      "id": "prop_301",
       "position": [
         -39.2,
         0.93,
@@ -3733,7 +3807,7 @@
       "tint": null
     },
     {
-      "id": "prop_296",
+      "id": "prop_302",
       "position": [
         64.73,
         0.45,
@@ -3747,7 +3821,7 @@
       "tint": null
     },
     {
-      "id": "prop_297",
+      "id": "prop_303",
       "position": [
         74.01,
         0.83,
@@ -3761,7 +3835,7 @@
       "tint": null
     },
     {
-      "id": "prop_298",
+      "id": "prop_304",
       "position": [
         34.26,
         1.2,
@@ -3775,7 +3849,7 @@
       "tint": null
     },
     {
-      "id": "prop_299",
+      "id": "prop_305",
       "position": [
         85.24,
         1.09,
@@ -3789,7 +3863,7 @@
       "tint": null
     },
     {
-      "id": "prop_300",
+      "id": "prop_306",
       "position": [
         71.98,
         0.02,
@@ -3803,7 +3877,7 @@
       "tint": null
     },
     {
-      "id": "prop_301",
+      "id": "prop_307",
       "position": [
         47.25,
         0.51,
@@ -3817,7 +3891,7 @@
       "tint": null
     },
     {
-      "id": "prop_302",
+      "id": "prop_308",
       "position": [
         93.81,
         1.6,
@@ -3831,7 +3905,7 @@
       "tint": null
     },
     {
-      "id": "prop_303",
+      "id": "prop_309",
       "position": [
         -17.33,
         0.79,
@@ -3845,7 +3919,7 @@
       "tint": null
     },
     {
-      "id": "prop_304",
+      "id": "prop_310",
       "position": [
         -33.38,
         0.48,
@@ -3859,7 +3933,7 @@
       "tint": null
     },
     {
-      "id": "prop_305",
+      "id": "prop_311",
       "position": [
         18.38,
         1,
@@ -3873,7 +3947,7 @@
       "tint": null
     },
     {
-      "id": "prop_306",
+      "id": "prop_312",
       "position": [
         33.98,
         0.17,
@@ -3887,7 +3961,7 @@
       "tint": null
     },
     {
-      "id": "prop_307",
+      "id": "prop_313",
       "position": [
         33.05,
         0.95,
@@ -3901,7 +3975,7 @@
       "tint": null
     },
     {
-      "id": "prop_308",
+      "id": "prop_314",
       "position": [
         89.51,
         0.97,
@@ -3915,7 +3989,7 @@
       "tint": null
     },
     {
-      "id": "prop_309",
+      "id": "prop_315",
       "position": [
         4.96,
         -0.18,
@@ -3929,7 +4003,7 @@
       "tint": null
     },
     {
-      "id": "prop_310",
+      "id": "prop_316",
       "position": [
         80.24,
         0.04,
@@ -3943,7 +4017,7 @@
       "tint": null
     },
     {
-      "id": "prop_311",
+      "id": "prop_317",
       "position": [
         69.58,
         0.27,
@@ -3957,7 +4031,7 @@
       "tint": null
     },
     {
-      "id": "prop_312",
+      "id": "prop_318",
       "position": [
         -39.21,
         3.43,
@@ -3971,7 +4045,7 @@
       "tint": null
     },
     {
-      "id": "prop_313",
+      "id": "prop_319",
       "position": [
         -73.42,
         2.24,
@@ -3985,7 +4059,7 @@
       "tint": null
     },
     {
-      "id": "prop_314",
+      "id": "prop_320",
       "position": [
         80.71,
         2.16,
@@ -3999,7 +4073,7 @@
       "tint": null
     },
     {
-      "id": "prop_315",
+      "id": "prop_321",
       "position": [
         48.09,
         1.79,
@@ -4013,7 +4087,7 @@
       "tint": null
     },
     {
-      "id": "prop_316",
+      "id": "prop_322",
       "position": [
         53.27,
         0.22,
@@ -4027,7 +4101,7 @@
       "tint": null
     },
     {
-      "id": "prop_317",
+      "id": "prop_323",
       "position": [
         77.61,
         0.25,
@@ -4041,7 +4115,7 @@
       "tint": null
     },
     {
-      "id": "prop_318",
+      "id": "prop_324",
       "position": [
         67.13,
         0.63,
@@ -4055,7 +4129,7 @@
       "tint": null
     },
     {
-      "id": "prop_319",
+      "id": "prop_325",
       "position": [
         -72.6,
         0.32,
@@ -4069,7 +4143,7 @@
       "tint": null
     },
     {
-      "id": "prop_320",
+      "id": "prop_326",
       "position": [
         -69.02,
         0.28,
@@ -4083,7 +4157,7 @@
       "tint": null
     },
     {
-      "id": "prop_321",
+      "id": "prop_327",
       "position": [
         -4.62,
         0.45,
@@ -4097,7 +4171,7 @@
       "tint": null
     },
     {
-      "id": "prop_322",
+      "id": "prop_328",
       "position": [
         52.82,
         3.58,
@@ -4111,7 +4185,7 @@
       "tint": null
     },
     {
-      "id": "prop_323",
+      "id": "prop_329",
       "position": [
         -52.82,
         3.61,
@@ -4125,7 +4199,7 @@
       "tint": null
     },
     {
-      "id": "prop_324",
+      "id": "prop_330",
       "position": [
         46.46,
         3.04,
@@ -4139,7 +4213,7 @@
       "tint": null
     },
     {
-      "id": "prop_325",
+      "id": "prop_331",
       "position": [
         -46.46,
         3.03,
@@ -4153,7 +4227,7 @@
       "tint": null
     },
     {
-      "id": "prop_326",
+      "id": "prop_332",
       "position": [
         52.15,
         3.11,
@@ -4167,7 +4241,7 @@
       "tint": null
     },
     {
-      "id": "prop_327",
+      "id": "prop_333",
       "position": [
         -52.15,
         3.09,
@@ -4181,7 +4255,7 @@
       "tint": null
     },
     {
-      "id": "prop_328",
+      "id": "prop_334",
       "position": [
         -37.8,
         3.17,
@@ -4195,7 +4269,7 @@
       "tint": null
     },
     {
-      "id": "prop_329",
+      "id": "prop_335",
       "position": [
         37.8,
         3.13,
@@ -4209,7 +4283,7 @@
       "tint": null
     },
     {
-      "id": "prop_330",
+      "id": "prop_336",
       "position": [
         -32.66,
         2.31,
@@ -4223,7 +4297,7 @@
       "tint": null
     },
     {
-      "id": "prop_331",
+      "id": "prop_337",
       "position": [
         32.66,
         2.28,
@@ -4237,7 +4311,7 @@
       "tint": null
     },
     {
-      "id": "prop_332",
+      "id": "prop_338",
       "position": [
         -35.07,
         2.36,
@@ -4251,7 +4325,7 @@
       "tint": null
     },
     {
-      "id": "prop_333",
+      "id": "prop_339",
       "position": [
         35.07,
         2.39,
@@ -4265,7 +4339,7 @@
       "tint": null
     },
     {
-      "id": "prop_334",
+      "id": "prop_340",
       "position": [
         97.79,
         21.72,
@@ -4279,7 +4353,7 @@
       "tint": null
     },
     {
-      "id": "prop_335",
+      "id": "prop_341",
       "position": [
         -97.79,
         26.12,
@@ -4293,7 +4367,7 @@
       "tint": null
     },
     {
-      "id": "prop_336",
+      "id": "prop_342",
       "position": [
         92.98,
         22.47,
@@ -4307,7 +4381,7 @@
       "tint": null
     },
     {
-      "id": "prop_337",
+      "id": "prop_343",
       "position": [
         -92.98,
         21.85,
@@ -4321,7 +4395,7 @@
       "tint": null
     },
     {
-      "id": "prop_338",
+      "id": "prop_344",
       "position": [
         84.54,
         8.11,
@@ -4335,7 +4409,7 @@
       "tint": null
     },
     {
-      "id": "prop_339",
+      "id": "prop_345",
       "position": [
         -84.54,
         7.58,
@@ -4349,7 +4423,7 @@
       "tint": null
     },
     {
-      "id": "prop_340",
+      "id": "prop_346",
       "position": [
         -97.65,
         28.29,
@@ -4363,7 +4437,7 @@
       "tint": null
     },
     {
-      "id": "prop_341",
+      "id": "prop_347",
       "position": [
         97.65,
         25.37,
@@ -4377,7 +4451,7 @@
       "tint": null
     },
     {
-      "id": "prop_342",
+      "id": "prop_348",
       "position": [
         -93.21,
         24.8,
@@ -4391,7 +4465,7 @@
       "tint": null
     },
     {
-      "id": "prop_343",
+      "id": "prop_349",
       "position": [
         93.21,
         30.53,
@@ -4405,7 +4479,7 @@
       "tint": null
     },
     {
-      "id": "prop_344",
+      "id": "prop_350",
       "position": [
         -89.45,
         18.6,
@@ -4419,7 +4493,7 @@
       "tint": null
     },
     {
-      "id": "prop_345",
+      "id": "prop_351",
       "position": [
         89.45,
         21.78,
@@ -4433,7 +4507,7 @@
       "tint": null
     },
     {
-      "id": "prop_346",
+      "id": "prop_352",
       "position": [
         -54.86,
         2.26,
@@ -4447,7 +4521,7 @@
       "tint": null
     },
     {
-      "id": "prop_347",
+      "id": "prop_353",
       "position": [
         54.86,
         2.22,
@@ -4461,7 +4535,7 @@
       "tint": null
     },
     {
-      "id": "prop_348",
+      "id": "prop_354",
       "position": [
         -49.24,
         3.72,
@@ -4475,7 +4549,7 @@
       "tint": null
     },
     {
-      "id": "prop_349",
+      "id": "prop_355",
       "position": [
         49.24,
         3.72,
@@ -4489,7 +4563,7 @@
       "tint": null
     },
     {
-      "id": "prop_350",
+      "id": "prop_356",
       "position": [
         -49.61,
         4.48,
@@ -4503,7 +4577,7 @@
       "tint": null
     },
     {
-      "id": "prop_351",
+      "id": "prop_357",
       "position": [
         49.61,
         4.4,
@@ -4517,7 +4591,7 @@
       "tint": null
     },
     {
-      "id": "prop_352",
+      "id": "prop_358",
       "position": [
         37.93,
         2.95,
@@ -4531,7 +4605,7 @@
       "tint": null
     },
     {
-      "id": "prop_353",
+      "id": "prop_359",
       "position": [
         -37.93,
         2.94,
@@ -4545,7 +4619,7 @@
       "tint": null
     },
     {
-      "id": "prop_354",
+      "id": "prop_360",
       "position": [
         37.07,
         3.13,
@@ -4559,7 +4633,7 @@
       "tint": null
     },
     {
-      "id": "prop_355",
+      "id": "prop_361",
       "position": [
         -37.07,
         3.11,
@@ -4573,7 +4647,7 @@
       "tint": null
     },
     {
-      "id": "prop_356",
+      "id": "prop_362",
       "position": [
         40.73,
         3.33,
@@ -4587,7 +4661,7 @@
       "tint": null
     },
     {
-      "id": "prop_357",
+      "id": "prop_363",
       "position": [
         -40.73,
         3.34,
@@ -4601,7 +4675,7 @@
       "tint": null
     },
     {
-      "id": "prop_358",
+      "id": "prop_364",
       "position": [
         26.23,
         0.71,
@@ -4615,7 +4689,7 @@
       "tint": null
     },
     {
-      "id": "prop_359",
+      "id": "prop_365",
       "position": [
         -26.23,
         0.71,
@@ -4629,7 +4703,7 @@
       "tint": null
     },
     {
-      "id": "prop_360",
+      "id": "prop_366",
       "position": [
         22.15,
         0.55,
@@ -4643,7 +4717,7 @@
       "tint": null
     },
     {
-      "id": "prop_361",
+      "id": "prop_367",
       "position": [
         -22.15,
         0.53,
@@ -4657,7 +4731,7 @@
       "tint": null
     },
     {
-      "id": "prop_362",
+      "id": "prop_368",
       "position": [
         32.39,
         1.07,
@@ -4671,7 +4745,7 @@
       "tint": null
     },
     {
-      "id": "prop_363",
+      "id": "prop_369",
       "position": [
         -32.39,
         1.08,
@@ -4685,7 +4759,7 @@
       "tint": null
     },
     {
-      "id": "prop_364",
+      "id": "prop_370",
       "position": [
         -27.41,
         4.85,
@@ -4699,7 +4773,7 @@
       "tint": null
     },
     {
-      "id": "prop_365",
+      "id": "prop_371",
       "position": [
         27.41,
         4.79,
@@ -4713,7 +4787,7 @@
       "tint": null
     },
     {
-      "id": "prop_366",
+      "id": "prop_372",
       "position": [
         -26.96,
         0.8,
@@ -4727,7 +4801,7 @@
       "tint": null
     },
     {
-      "id": "prop_367",
+      "id": "prop_373",
       "position": [
         26.96,
         0.81,
@@ -4741,7 +4815,7 @@
       "tint": null
     },
     {
-      "id": "prop_368",
+      "id": "prop_374",
       "position": [
         -32.97,
         2.97,
@@ -4755,7 +4829,7 @@
       "tint": null
     },
     {
-      "id": "prop_369",
+      "id": "prop_375",
       "position": [
         32.97,
         2.59,
@@ -4769,7 +4843,7 @@
       "tint": null
     },
     {
-      "id": "prop_370",
+      "id": "prop_376",
       "position": [
         62.19,
         0.43,
@@ -4783,7 +4857,7 @@
       "tint": null
     },
     {
-      "id": "prop_371",
+      "id": "prop_377",
       "position": [
         -62.19,
         0.43,
@@ -4797,7 +4871,7 @@
       "tint": null
     },
     {
-      "id": "prop_372",
+      "id": "prop_378",
       "position": [
         55.44,
         0.44,
@@ -4811,7 +4885,7 @@
       "tint": null
     },
     {
-      "id": "prop_373",
+      "id": "prop_379",
       "position": [
         -55.44,
         0.43,
@@ -4825,7 +4899,7 @@
       "tint": null
     },
     {
-      "id": "prop_374",
+      "id": "prop_380",
       "position": [
         57.63,
         0.85,
@@ -4839,7 +4913,7 @@
       "tint": null
     },
     {
-      "id": "prop_375",
+      "id": "prop_381",
       "position": [
         -57.63,
         0.85,
@@ -4853,7 +4927,7 @@
       "tint": null
     },
     {
-      "id": "prop_376",
+      "id": "prop_382",
       "position": [
         -61.96,
         5.81,
@@ -4867,7 +4941,7 @@
       "tint": null
     },
     {
-      "id": "prop_377",
+      "id": "prop_383",
       "position": [
         61.96,
         5.79,
@@ -4881,7 +4955,7 @@
       "tint": null
     },
     {
-      "id": "prop_378",
+      "id": "prop_384",
       "position": [
         -52.95,
         7.84,
@@ -4895,7 +4969,7 @@
       "tint": null
     },
     {
-      "id": "prop_379",
+      "id": "prop_385",
       "position": [
         52.95,
         7.86,
@@ -4909,7 +4983,7 @@
       "tint": null
     },
     {
-      "id": "prop_380",
+      "id": "prop_386",
       "position": [
         -59.7,
         7.63,
@@ -4923,7 +4997,7 @@
       "tint": null
     },
     {
-      "id": "prop_381",
+      "id": "prop_387",
       "position": [
         59.7,
         7.45,
@@ -4937,7 +5011,46 @@
       "tint": null
     },
     {
-      "id": "prop_382",
+      "id": "airplane_388",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "kind": "airplane",
+      "route": [
+        [
+          0,
+          -110
+        ],
+        [
+          50,
+          -60
+        ],
+        [
+          50,
+          60
+        ],
+        [
+          0,
+          110
+        ],
+        [
+          -50,
+          60
+        ],
+        [
+          -50,
+          -60
+        ]
+      ],
+      "altitude": 70,
+      "loopSeconds": 45,
+      "closed": true,
+      "airdrop": "start"
+    },
+    {
+      "id": "prop_389",
       "position": [
         -10.88,
         0,
@@ -4951,7 +5064,7 @@
       "tint": null
     },
     {
-      "id": "prop_383",
+      "id": "prop_390",
       "position": [
         -5.1,
         0,
@@ -4965,7 +5078,7 @@
       "tint": null
     },
     {
-      "id": "prop_384",
+      "id": "prop_391",
       "position": [
         -5.12,
         0,
@@ -4979,7 +5092,7 @@
       "tint": null
     },
     {
-      "id": "prop_385",
+      "id": "prop_392",
       "position": [
         -10.64,
         0,
@@ -4993,7 +5106,7 @@
       "tint": null
     },
     {
-      "id": "prop_386",
+      "id": "prop_393",
       "position": [
         -2.42,
         0,
@@ -5007,7 +5120,7 @@
       "tint": null
     },
     {
-      "id": "prop_387",
+      "id": "prop_394",
       "position": [
         2.35,
         0,
@@ -5021,7 +5134,7 @@
       "tint": null
     },
     {
-      "id": "prop_388",
+      "id": "prop_395",
       "position": [
         2.51,
         0,
@@ -5035,7 +5148,7 @@
       "tint": null
     },
     {
-      "id": "prop_389",
+      "id": "prop_396",
       "position": [
         -3.07,
         0,
@@ -5049,7 +5162,7 @@
       "tint": null
     },
     {
-      "id": "prop_390",
+      "id": "prop_397",
       "position": [
         -2.88,
         4,
@@ -5063,7 +5176,7 @@
       "tint": null
     },
     {
-      "id": "prop_391",
+      "id": "prop_398",
       "position": [
         2.9,
         4,
@@ -5077,7 +5190,7 @@
       "tint": null
     },
     {
-      "id": "prop_392",
+      "id": "prop_399",
       "position": [
         2.88,
         4,
@@ -5091,7 +5204,7 @@
       "tint": null
     },
     {
-      "id": "prop_393",
+      "id": "prop_400",
       "position": [
         -2.64,
         4,
@@ -5105,7 +5218,7 @@
       "tint": null
     },
     {
-      "id": "spawn_394",
+      "id": "spawn_401",
       "position": [
         23.87,
         11.92,
@@ -5116,7 +5229,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_395",
+      "id": "spawn_402",
       "position": [
         -9.33,
         12.05,
@@ -5127,7 +5240,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_396",
+      "id": "spawn_403",
       "position": [
         -7.8,
         12.05,
@@ -5138,7 +5251,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_397",
+      "id": "spawn_404",
       "position": [
         -23.57,
         11.92,
@@ -5149,7 +5262,7 @@
       "faction": "tide"
     },
     {
-      "id": "light_398",
+      "id": "light_405",
       "position": [
         -8,
         3.45,
@@ -5163,7 +5276,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_399",
+      "id": "light_406",
       "position": [
         0,
         3.45,
@@ -5177,7 +5290,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_400",
+      "id": "light_407",
       "position": [
         0,
         7.45,
@@ -50516,6 +50629,7 @@
     "foliage": []
   },
   "bounds": null,
+  "track": null,
   "backdrop": null,
   "physics": null,
   "blood": null,

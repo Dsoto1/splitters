@@ -3,8 +3,8 @@
 Place them from MapMaker's Entities → Vehicles tab. Players walk
 up and press **E** to get in (driver first, then gunner, then passengers) and
 **E** again to get out. The definitions are data in
-`packages/shared/src/sim/mounts.ts`. Models come from Kenney Space Kit and
-Car Kit (CC0).
+`packages/shared/src/sim/mounts.ts`. Models come from Kenney Space Kit,
+Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0).
 
 | Mount | Seats | What it does |
 |---|---|---|
@@ -18,6 +18,12 @@ Car Kit (CC0).
 | Skyfighter | 1 pilot | Flies: the pilot climbs (Space) and dives (Ctrl/crouch), up to 30 m above where it was parked, firing twin blasters ahead |
 | Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier with an all-round door gun; riders stand on the deck |
 | Tank | 3 (driver, cannon, roof gun) | Slow and heavy (1200 health): the cannon fires explosive shells within 35° of the nose, the roof gun works all round |
+| Gun Jeep | 3 (driver, roof gun, passenger) | Wheeled light: a quick pickup with an all-round machine gun on the back (380 health) |
+| Armored Rover | 5 (driver, front gun, rear gun, 2 riders) | Wheeled heavy: slow, grippy and 900 health; the front gunner covers ±75° ahead, the rear gunner ±90° behind |
+| Hover Bike | 1 rider | Hover: the fastest thing on the map (31 m/s), fragile (170 health), no gun |
+| Gunship | 3 (pilot, left and right door guns) | Flying, on the dropship's flight model: the pilot fires blasters ahead, each door gunner covers ±70° off their own side (950 health) |
+| Ice Cream Truck | 4 (driver, 3 riders) | Wheeled light, the fun one: no gun, but the three riders shoot their own weapons out of the windows |
+| Snow Sled | 2 (driver, passenger) | Hover handling on runners: quick and slidey, sits on the snow instead of floating |
 
 - **Driving.** W/S throttle and reverse, A/D steer (harder the faster you
   go). Vehicles slide along walls, lose half their speed in a crash and
@@ -28,11 +34,16 @@ Car Kit (CC0).
   climb on jump and dive on crouch; let go and they hold their height. Left
   without a pilot they sink gently to the ground. Bots fly them at ground
   level.
-- **Models.** The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
+- **Models.** The gun jeep (pickup truck), armored rover (delivery truck) and
+  ice cream truck (van) are Kenney Car Kit models recoloured at build time;
+  the hover bike (speeder A), gunship (cargo craft B) and transport plane
+  (cargo craft A) are from Kenney Space Kit; the snow sled is Kenney Holiday
+  Kit's long sled. The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no
-  reloading) within its arc. Passengers use their own weapons. Drivers can't
+  reloading) within its arc; side door guns (the gunship's) have arcs centred
+  on their own side (`facing` on the seat). Passengers use their own weapons. Drivers can't
   shoot unless the seat has a gun (the speeder's and skyfighter's pilots).
 - **Damage.** Bullets, projectiles and blasts hurt mounts. A destroyed mount
   explodes, throws out everyone aboard into the blast and comes back where it
@@ -85,8 +96,84 @@ Car Kit (CC0).
   in any mode (see GAME_MODES.md, Race). `TrackDriver`
   (`sim/trackDriver.ts`) drives any vehicle round a track.
 
-Rockfall Canyon has a buggy and a speeder at each base, an MG turret on each
-roof, a hauler on the west ledge and two sentries mid-field.
+Rockfall Canyon has a buggy, a speeder and a hover bike at each base, an MG
+turret on each roof, a hauler on the west ledge, a dropship on the east and
+two sentries mid-field. Coldwater Gulch adds a gun jeep to each base's apron;
+Frost Basin a pair of snow sleds on each plateau, a glider on each roof and
+the air drop (below).
+
+## Handling classes
+
+Every vehicle is one of the classes the simulation already runs, with its
+own tuning (top speed, acceleration, turn rate, grip, weight, health, blast):
+
+| Class | How it drives | Vehicles |
+|---|---|---|
+| Wheeled light | Grippy, quick to turn, ramps launch it, hard landings dent it | Go-Kart, Buggy, Gun Jeep, Ice Cream Truck |
+| Wheeled heavy | Slow to speed up, high grip and weight: shrugs off pushes, loses little in crashes | Armored Rover |
+| Tracked | Slowest, heaviest, turns on the spot | Tank |
+| Hover | Low grip, drifts, floats over bumps, no landing damage | Speeder, Hauler, Hover Bike, Snow Sled |
+| Flying | Hover handling plus climb (jump) and dive (crouch) up to a ceiling | Skyfighter, Dropship, Gunship |
+
+## Paint skins
+
+Every placed vehicle or turret has a **Paint** setting in MapMaker's inspector
+(`skin` on the mount entity): Automatic, Factory paint, Desert, Forest, Snow,
+Urban grey or Team colour. Automatic paints a team-owned vehicle (one given a
+team in the inspector) in its team's colour and leaves the rest in factory
+paint, so the team bases on Coldwater Gulch and Frost Basin read at a glance.
+Skins are a tint over the model's own colours (the model gets its own copy of
+its materials); pale skins glow a touch so snow paint reads white. Paid
+upgrades are not planned.
+
+## Parachutes and gliders
+
+Anyone falling from height can open a parachute: **hold Space while falling,
+at least 5 m above the ground**. It settles to a 4 m/s sink and steers at
+5.5 m/s with WASD; **crouch cuts it away**; it packs itself up when you land,
+swim or catch a ladder. Landing under a canopy never does fall damage. With a
+**Glider** (a pickup, lost when you die) the canopy is a hang-glider instead:
+2.4 m/s sink, 15 m/s forward along your view (W faster, S slower), so a jump
+off Frost Basin's cliffs reaches the ridges. With a jetpack on, Space is
+thrust and never pulls the cord.
+
+Jumping out of the transport plane, or out of a flyer high up, arms the
+**automatic opener**: if you haven't opened it by about 28 m above the
+ground, it opens for you. Bots always have it (and never cut away), so they
+come down safely from flyers and the plane. The HUD offers "Open your
+parachute (Space)" whenever a fall is high enough.
+
+Drawn from code (no model files): a striped dome on rigging lines, or a delta
+wing with a control bar, over the wearer's head; gliders fly lying forward.
+The sim is `shared/src/sim/parachute.ts` (run inside `stepMovement`, so
+client prediction matches); snapshots carry `ch` (canopy) and `dr` (opener
+armed), private state `gl` (glider).
+
+## The transport plane and air drop
+
+A **Transport Plane** (MapMaker: Entities → Gameplay; map entity `airplane`,
+format v19) flies a fixed route over the map: its marker is the route's
+anchor, the route is a list of [x, z] points (metres from the marker, edited
+as a point list in the inspector), flown at an **altitude** above the marker,
+once every **lap time**; a **closed** route loops, an open one flies first
+to last and then starts over, throwing out anyone still aboard. Where it is
+depends only on the match clock, so it costs nothing on the wire beyond the
+usual mount snapshot. It can't be hurt and doesn't block anything.
+
+Players ride it on 24 benches (seated passengers with a chase camera, unable
+to shoot) and **jump out with E or Space** at any time: out of the tail with
+half the plane's speed, the parachute opener armed. **Air drop** decides who
+starts aboard: *Off* (it just flies over), *Round start* (everyone's first
+spawn of each round is in the plane: a battle-royale start) or *Every spawn*.
+Bots aboard pick a drop point (the enemy flag in Capture the Flag, a hill in
+King of the Hill, a bomb site in Bomb, otherwise their own base) and jump when
+the plane passes over it, then parachute in.
+
+The validator errors on route points closer than 10 m and warns when the
+plane passes under 12 m over the ground or buildings, flies slower than 8 or
+faster than 90 m/s, or strays more than 60 m outside the map boundary. Frost
+Basin has one: a 520 m loop over both bases at 70 m, with air drop at round
+start.
 
 ## Did the TimeSplitters MapMaker have these?
 

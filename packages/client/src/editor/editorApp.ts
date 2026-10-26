@@ -128,6 +128,11 @@ import {
   MOUNT_DEFS,
   MOUNT_MODELS,
   type MountModel,
+  MOUNT_SKINS,
+  MOUNT_SKIN_LABELS,
+  type MountSkin,
+  AIRDROP_MODES,
+  type AirdropMode,
   MAX_TEAMS,
   TEAM_PRESETS,
   teamLayoutLabel,
@@ -227,11 +232,12 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'water:water': '<rect x="6" y="24" width="44" height="22" fill="#3f8fb0" fill-opacity=".8"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#bfe6f5" stroke-width="2" fill="none"/>',
   'water:lava': '<rect x="6" y="24" width="44" height="22" fill="#ff5a1a"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#ffd34d" stroke-width="2" fill="none"/><circle cx="20" cy="34" r="3" fill="#ffd34d"/>',
   'water:acid': '<rect x="6" y="24" width="44" height="22" fill="#8aff3a" fill-opacity=".85"/><circle cx="18" cy="32" r="3" fill="#d8ffb0"/><circle cx="34" cy="38" r="2" fill="#d8ffb0"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#d8ffb0" stroke-width="2" fill="none"/>',
+  airplane: '<path d="M28 6l4 10v8l16 8v4l-16-4v10l5 4v3l-9-2-9 2v-3l5-4V32L8 36v-4l16-8v-8z" fill="#e2703a"/><path d="M10 50h36" stroke="#e2703a" stroke-width="2" stroke-dasharray="4 3"/>',
   'water:swamp': '<rect x="6" y="24" width="44" height="22" fill="#5a6a32"/><path d="M14 24q2-10 4-14M38 24q-1-9 2-13" stroke="#6fbf4a" stroke-width="2" fill="none"/>',
 };
 
 /** Scenario palette entries shown under Entities → Gameplay (game-mode objects) rather than Scenario. */
-const GAMEPLAY_OBJECTS: ReadonlySet<string> = new Set(['flag', 'hill', 'bombsite', 'hostage', 'rescue']);
+const GAMEPLAY_OBJECTS: ReadonlySet<string> = new Set(['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'airplane']);
 
 /** Tools that put something new into the map (the toolbar's Place button lights up for them). */
 const PLACING: ReadonlySet<Tool['kind']> = new Set(['tile', 'spawn', 'pickup', 'scenario', 'prop', 'mount', 'scatter', 'npc']);
@@ -2510,13 +2516,52 @@ export class EditorApp {
         const def = MOUNT_DEFS[e.model];
         choose('Type', MOUNT_MODELS.map((m) => [m, MOUNT_DEFS[m].displayName] as const), e.model, (v) => ({ model: v as MountModel }));
         number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
-        if (def.kind === 'sentry') {
-          const teams = mapTeams(doc, MAX_TEAMS);
-          choose('Team', [['', 'Nobody (shoots everyone)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));
+        const teams = mapTeams(doc, MAX_TEAMS);
+        if (def.kind === 'sentry') choose('Team', [['', 'Nobody (shoots everyone)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));
+        else {
+          choose('Team', [['', 'Nobody (anyone\'s)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));
+          choose('Paint', MOUNT_SKINS.map((k) => [k, MOUNT_SKIN_LABELS[k]] as const), e.skin ?? 'auto', (v) => ({ skin: v === 'auto' ? undefined : (v as MountSkin) }));
         }
         number('Respawn (s)', e.respawnSeconds ?? def.respawnSeconds, 5, (v) => ({ respawnSeconds: Math.max(5, Math.min(600, v)) }));
         const seats = def.seats.length ? def.seats.map((s) => `${s.label}${s.weapon ? ` (${CORE_WEAPONS[s.weapon]?.displayName})` : ''}`).join(', ') : 'none: it fires on its own';
         el.append(small(`${def.blurb}. Seats: ${seats}. Health ${def.health}. Players get in and out with E.`));
+        break;
+      }
+      case 'airplane': {
+        // The route as a point list: [x, z] offsets from the plane's anchor, flown in order.
+        number('Altitude (m)', e.altitude, 5, (v) => ({ altitude: clamp(v, 15, 400) }));
+        number('Lap time (s)', e.loopSeconds, 5, (v) => ({ loopSeconds: clamp(v, 10, 600) }));
+        toggle('Loops round', e.closed, (v) => ({ closed: v }));
+        const dropLabels: Record<AirdropMode, string> = { off: 'Off (it just flies over)', start: 'Round start (everyone starts aboard)', always: 'Every spawn' };
+        choose('Air drop', AIRDROP_MODES.map((m) => [m, dropLabels[m]] as const), e.airdrop, (v) => ({ airdrop: v as AirdropMode }));
+        const h3 = document.createElement('h3');
+        h3.textContent = 'Route';
+        el.append(h3);
+        e.route.forEach(([x, z], i) => {
+          const set = (j: 0 | 1, v: number) => {
+            const route = e.route.map((p) => [...p] as [number, number]);
+            route[i]![j] = clamp(v, -2000, 2000);
+            return { route };
+          };
+          const xIn = numberInput(x, 5, (v) => update('Move route point', set(0, v)));
+          const zIn = numberInput(z, 5, (v) => update('Move route point', set(1, v)));
+          const del = button('✕', () => update('Remove route point', { route: e.route.filter((_, j) => j !== i) }));
+          del.disabled = e.route.length <= 2;
+          del.title = 'Remove this point';
+          const wrap = document.createElement('span');
+          wrap.className = 'route-point';
+          wrap.append(xIn, zIn, del);
+          el.append(row(`${i + 1}. X, Z`, wrap));
+        });
+        el.append(button('+ Add point', () => {
+          const [lx, lz] = e.route[e.route.length - 1]!;
+          const [fx, fz] = e.route[0]!;
+          // Half-way back to the start (or 40 m on) so the new point is easy to find.
+          const next: [number, number] = e.closed ? [(lx + fx) / 2 + 20, (lz + fz) / 2 + 20] : [lx + 40, lz];
+          if (e.route.length < 32) update('Add route point', { route: [...e.route, next] });
+        }));
+        const length = e.route.reduce((sum, p, i) => (i ? sum + Math.hypot(p[0] - e.route[i - 1]![0], p[1] - e.route[i - 1]![1]) : 0), 0) + (e.closed ? Math.hypot(e.route[0]![0] - e.route[e.route.length - 1]![0], e.route[0]![1] - e.route[e.route.length - 1]![1]) : 0);
+        el.append(small(`Points are metres from the marker (moving it moves the whole route). ${Math.round(length)} m a lap at ${Math.round(length / e.loopSeconds)} m/s. Riders jump out with E or Space and parachute down; bots jump over their objective.`));
         break;
       }
       case 'spawn': {

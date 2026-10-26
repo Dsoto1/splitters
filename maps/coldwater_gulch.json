@@ -1,11 +1,11 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 19,
   "metadata": {
     "id": "coldwater_gulch",
     "name": "Coldwater Gulch",
     "author": "Tile Trigger",
-    "description": "A long grassy box canyon walled in by sheer rock, with two squat concrete bunkers facing each other from the far ends: Red holds the north, Blue the south. Each bunker keeps its flag behind the dais on the ground floor, a sniper rifle on its roof deck (open stairs at the front corners, a long ramp up the back) and a buggy, two speeders, a tank and a skyfighter on the apron. A jump pad beside each base throws you onto the 10 m sniper ledge along the far side cliff; each ledge also has a ramp at one end. Rolling grass, boulders, rock outcrops by the cliffs and bushes to hide in fill the floor; rockets wait on the knoll in the middle. A layout homage to the classic two-base canyon of 2001.",
+    "description": "A long grassy box canyon walled in by sheer rock, with two squat concrete bunkers facing each other from the far ends: Red holds the north, Blue the south. Each bunker keeps its flag behind the dais on the ground floor, a sniper rifle on its roof deck (open stairs at the front corners, a long ramp up the back) and a buggy, a gun jeep, two speeders, a tank and a skyfighter on the apron. A jump pad beside each base throws you onto the 10 m sniper ledge along the far side cliff; each ledge also has a ramp at one end. Rolling grass, boulders, rock outcrops by the cliffs and bushes to hide in fill the floor; rockets wait on the knoll in the middle. A layout homage to the classic two-base canyon of 2001.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -183,7 +183,7 @@
         }
       },
       {
-        "id": "tile_050",
+        "id": "tile_051",
         "tile": "core.hall",
         "x": -1,
         "y": -14,
@@ -208,18 +208,10 @@
         }
       },
       {
-        "id": "tile_051",
-        "tile": "core.platform_rail",
-        "x": 1,
-        "y": -12,
-        "z": 1,
-        "rotation": 0
-      },
-      {
         "id": "tile_052",
         "tile": "core.platform_rail",
         "x": 1,
-        "y": -13,
+        "y": -12,
         "z": 1,
         "rotation": 0
       },
@@ -227,15 +219,15 @@
         "id": "tile_053",
         "tile": "core.platform_rail",
         "x": 1,
-        "y": -14,
+        "y": -13,
         "z": 1,
         "rotation": 0
       },
       {
         "id": "tile_054",
         "tile": "core.platform_rail",
-        "x": 0,
-        "y": -12,
+        "x": 1,
+        "y": -14,
         "z": 1,
         "rotation": 0
       },
@@ -243,15 +235,15 @@
         "id": "tile_055",
         "tile": "core.platform_rail",
         "x": 0,
-        "y": -14,
+        "y": -12,
         "z": 1,
         "rotation": 0
       },
       {
         "id": "tile_056",
         "tile": "core.platform_rail",
-        "x": -1,
-        "y": -12,
+        "x": 0,
+        "y": -14,
         "z": 1,
         "rotation": 0
       },
@@ -259,7 +251,7 @@
         "id": "tile_057",
         "tile": "core.platform_rail",
         "x": -1,
-        "y": -13,
+        "y": -12,
         "z": 1,
         "rotation": 0
       },
@@ -267,12 +259,20 @@
         "id": "tile_058",
         "tile": "core.platform_rail",
         "x": -1,
-        "y": -14,
+        "y": -13,
         "z": 1,
         "rotation": 0
       },
       {
         "id": "tile_059",
+        "tile": "core.platform_rail",
+        "x": -1,
+        "y": -14,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_060",
         "tile": "core.room",
         "x": 0,
         "y": -13,
@@ -289,7 +289,7 @@
         }
       },
       {
-        "id": "tile_060",
+        "id": "tile_061",
         "tile": "core.stairs_open",
         "x": 2,
         "y": -12,
@@ -297,7 +297,7 @@
         "rotation": 2
       },
       {
-        "id": "tile_061",
+        "id": "tile_062",
         "tile": "core.stairs_open",
         "x": -2,
         "y": -12,
@@ -305,7 +305,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_062",
+        "id": "tile_063",
         "tile": "core.platform",
         "x": 3,
         "y": -12,
@@ -313,7 +313,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_063",
+        "id": "tile_064",
         "tile": "core.platform",
         "x": -3,
         "y": -12,
@@ -321,7 +321,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_064",
+        "id": "tile_065",
         "tile": "core.ramp",
         "x": -1,
         "y": -16,
@@ -358,6 +358,19 @@
     {
       "id": "mount_017",
       "position": [
+        -15,
+        -0.06,
+        80
+      ],
+      "kind": "mount",
+      "model": "gun_jeep",
+      "yaw": 3.141592653589793,
+      "faction": "red",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_018",
+      "position": [
         18,
         0.42,
         84
@@ -369,7 +382,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_018",
+      "id": "mount_019",
       "position": [
         24,
         0.22,
@@ -382,7 +395,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_019",
+      "id": "mount_020",
       "position": [
         -26,
         -0.15,
@@ -395,7 +408,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_020",
+      "id": "mount_021",
       "position": [
         26,
         -0.15,
@@ -408,20 +421,9 @@
       "respawnSeconds": null
     },
     {
-      "id": "spawn_021",
-      "position": [
-        -9,
-        0,
-        100
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "red"
-    },
-    {
       "id": "spawn_022",
       "position": [
-        9,
+        -9,
         0,
         100
       ],
@@ -432,9 +434,9 @@
     {
       "id": "spawn_023",
       "position": [
-        -9,
+        9,
         0,
-        110
+        100
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,
@@ -443,7 +445,7 @@
     {
       "id": "spawn_024",
       "position": [
-        9,
+        -9,
         0,
         110
       ],
@@ -454,6 +456,17 @@
     {
       "id": "spawn_025",
       "position": [
+        9,
+        0,
+        110
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "red"
+    },
+    {
+      "id": "spawn_026",
+      "position": [
         -4,
         0,
         114
@@ -463,20 +476,9 @@
       "faction": "red"
     },
     {
-      "id": "spawn_026",
-      "position": [
-        -6,
-        4,
-        98
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "red"
-    },
-    {
       "id": "spawn_027",
       "position": [
-        6,
+        -6,
         4,
         98
       ],
@@ -487,6 +489,17 @@
     {
       "id": "spawn_028",
       "position": [
+        6,
+        4,
+        98
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": "red"
+    },
+    {
+      "id": "spawn_029",
+      "position": [
         -14,
         -0.12,
         90
@@ -496,7 +509,7 @@
       "faction": "red"
     },
     {
-      "id": "pickup_029",
+      "id": "pickup_030",
       "position": [
         -6,
         0,
@@ -507,7 +520,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_030",
+      "id": "pickup_031",
       "position": [
         6,
         0,
@@ -518,7 +531,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_031",
+      "id": "pickup_032",
       "position": [
         9,
         0,
@@ -529,7 +542,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_032",
+      "id": "pickup_033",
       "position": [
         -9,
         0,
@@ -540,7 +553,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_033",
+      "id": "pickup_034",
       "position": [
         -12.5,
         0,
@@ -551,7 +564,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_034",
+      "id": "pickup_035",
       "position": [
         12.5,
         0,
@@ -562,7 +575,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_035",
+      "id": "pickup_036",
       "position": [
         -8,
         4,
@@ -573,7 +586,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_036",
+      "id": "pickup_037",
       "position": [
         8,
         4,
@@ -584,7 +597,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_037",
+      "id": "pickup_038",
       "position": [
         -4,
         -0.15,
@@ -595,7 +608,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_038",
+      "id": "pickup_039",
       "position": [
         -8,
         -0.15,
@@ -606,7 +619,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_039",
+      "id": "pickup_040",
       "position": [
         0,
         -0.11,
@@ -617,7 +630,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "flag_040",
+      "id": "flag_041",
       "position": [
         0,
         0,
@@ -628,7 +641,7 @@
       "team": "red"
     },
     {
-      "id": "pad_041",
+      "id": "pad_042",
       "position": [
         -40,
         0,
@@ -640,7 +653,7 @@
       "push": 30.72
     },
     {
-      "id": "prop_042",
+      "id": "prop_043",
       "position": [
         -6,
         -0.18,
@@ -654,7 +667,7 @@
       "tint": null
     },
     {
-      "id": "prop_043",
+      "id": "prop_044",
       "position": [
         6,
         -0.17,
@@ -668,7 +681,7 @@
       "tint": null
     },
     {
-      "id": "prop_044",
+      "id": "prop_045",
       "position": [
         -30,
         -0.18,
@@ -682,7 +695,7 @@
       "tint": null
     },
     {
-      "id": "prop_045",
+      "id": "prop_046",
       "position": [
         -30,
         -0.18,
@@ -696,7 +709,7 @@
       "tint": null
     },
     {
-      "id": "prop_046",
+      "id": "prop_047",
       "position": [
         30,
         -0.18,
@@ -710,7 +723,7 @@
       "tint": null
     },
     {
-      "id": "prop_047",
+      "id": "prop_048",
       "position": [
         -13,
         -0.18,
@@ -724,7 +737,7 @@
       "tint": null
     },
     {
-      "id": "prop_048",
+      "id": "prop_049",
       "position": [
         13,
         -0.18,
@@ -738,7 +751,7 @@
       "tint": null
     },
     {
-      "id": "destructible_049",
+      "id": "destructible_050",
       "position": [
         14,
         -0.15,
@@ -751,7 +764,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "mount_065",
+      "id": "mount_066",
       "position": [
         22,
         0.27,
@@ -764,7 +777,20 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_066",
+      "id": "mount_067",
+      "position": [
+        15,
+        -0.06,
+        -80
+      ],
+      "kind": "mount",
+      "model": "gun_jeep",
+      "yaw": 0,
+      "faction": "blue",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_068",
       "position": [
         -18,
         0.42,
@@ -777,7 +803,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_067",
+      "id": "mount_069",
       "position": [
         -24,
         0.22,
@@ -790,7 +816,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_068",
+      "id": "mount_070",
       "position": [
         26,
         -0.15,
@@ -803,7 +829,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_069",
+      "id": "mount_071",
       "position": [
         -26,
         -0.15,
@@ -816,33 +842,11 @@
       "respawnSeconds": null
     },
     {
-      "id": "spawn_070",
-      "position": [
-        9,
-        0,
-        -100
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": "blue"
-    },
-    {
-      "id": "spawn_071",
-      "position": [
-        -9,
-        0,
-        -100
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": "blue"
-    },
-    {
       "id": "spawn_072",
       "position": [
         9,
         0,
-        -110
+        -100
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -853,7 +857,7 @@
       "position": [
         -9,
         0,
-        -110
+        -100
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -861,6 +865,28 @@
     },
     {
       "id": "spawn_074",
+      "position": [
+        9,
+        0,
+        -110
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "blue"
+    },
+    {
+      "id": "spawn_075",
+      "position": [
+        -9,
+        0,
+        -110
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "blue"
+    },
+    {
+      "id": "spawn_076",
       "position": [
         4,
         0,
@@ -871,7 +897,7 @@
       "faction": "blue"
     },
     {
-      "id": "spawn_075",
+      "id": "spawn_077",
       "position": [
         6,
         4,
@@ -882,7 +908,7 @@
       "faction": "blue"
     },
     {
-      "id": "spawn_076",
+      "id": "spawn_078",
       "position": [
         -6,
         4,
@@ -893,7 +919,7 @@
       "faction": "blue"
     },
     {
-      "id": "spawn_077",
+      "id": "spawn_079",
       "position": [
         14,
         -0.12,
@@ -904,7 +930,7 @@
       "faction": "blue"
     },
     {
-      "id": "pickup_078",
+      "id": "pickup_080",
       "position": [
         6,
         0,
@@ -915,7 +941,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_079",
+      "id": "pickup_081",
       "position": [
         -6,
         0,
@@ -926,7 +952,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_080",
+      "id": "pickup_082",
       "position": [
         -9,
         0,
@@ -937,7 +963,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_081",
+      "id": "pickup_083",
       "position": [
         9,
         0,
@@ -948,7 +974,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_082",
+      "id": "pickup_084",
       "position": [
         12.5,
         0,
@@ -959,7 +985,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_083",
+      "id": "pickup_085",
       "position": [
         -12.5,
         0,
@@ -970,7 +996,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_084",
+      "id": "pickup_086",
       "position": [
         8,
         4,
@@ -981,7 +1007,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_085",
+      "id": "pickup_087",
       "position": [
         -8,
         4,
@@ -992,7 +1018,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_086",
+      "id": "pickup_088",
       "position": [
         4,
         -0.15,
@@ -1003,7 +1029,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_087",
+      "id": "pickup_089",
       "position": [
         8,
         -0.15,
@@ -1014,7 +1040,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_088",
+      "id": "pickup_090",
       "position": [
         0,
         -0.11,
@@ -1025,7 +1051,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "flag_089",
+      "id": "flag_091",
       "position": [
         0,
         0,
@@ -1036,7 +1062,7 @@
       "team": "blue"
     },
     {
-      "id": "pad_090",
+      "id": "pad_092",
       "position": [
         40,
         0,
@@ -1048,7 +1074,7 @@
       "push": 30.72
     },
     {
-      "id": "prop_091",
+      "id": "prop_093",
       "position": [
         6,
         -0.18,
@@ -1062,7 +1088,7 @@
       "tint": null
     },
     {
-      "id": "prop_092",
+      "id": "prop_094",
       "position": [
         -6,
         -0.17,
@@ -1076,7 +1102,7 @@
       "tint": null
     },
     {
-      "id": "prop_093",
+      "id": "prop_095",
       "position": [
         30,
         -0.18,
@@ -1090,7 +1116,7 @@
       "tint": null
     },
     {
-      "id": "prop_094",
+      "id": "prop_096",
       "position": [
         30,
         -0.18,
@@ -1104,7 +1130,7 @@
       "tint": null
     },
     {
-      "id": "prop_095",
+      "id": "prop_097",
       "position": [
         -30,
         -0.18,
@@ -1118,7 +1144,7 @@
       "tint": null
     },
     {
-      "id": "prop_096",
+      "id": "prop_098",
       "position": [
         13,
         -0.18,
@@ -1132,7 +1158,7 @@
       "tint": null
     },
     {
-      "id": "prop_097",
+      "id": "prop_099",
       "position": [
         -13,
         -0.18,
@@ -1146,7 +1172,7 @@
       "tint": null
     },
     {
-      "id": "destructible_098",
+      "id": "destructible_100",
       "position": [
         -14,
         -0.15,
@@ -1159,7 +1185,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "pickup_099",
+      "id": "pickup_101",
       "position": [
         -46,
         0.28,
@@ -1170,7 +1196,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_100",
+      "id": "pickup_102",
       "position": [
         46,
         0.28,
@@ -1181,7 +1207,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_101",
+      "id": "pickup_103",
       "position": [
         46,
         0.28,
@@ -1192,7 +1218,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_102",
+      "id": "pickup_104",
       "position": [
         -46,
         0.28,
@@ -1203,7 +1229,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_103",
+      "id": "pickup_105",
       "position": [
         -22,
         5.15,
@@ -1214,7 +1240,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_104",
+      "id": "pickup_106",
       "position": [
         22,
         5.15,
@@ -1225,7 +1251,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_105",
+      "id": "pickup_107",
       "position": [
         26,
         3.31,
@@ -1236,7 +1262,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_106",
+      "id": "pickup_108",
       "position": [
         -26,
         3.31,
@@ -1247,7 +1273,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_107",
+      "id": "pickup_109",
       "position": [
         38,
         2.47,
@@ -1258,7 +1284,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_108",
+      "id": "pickup_110",
       "position": [
         -38,
         2.47,
@@ -1269,7 +1295,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_109",
+      "id": "pickup_111",
       "position": [
         -30,
         0.68,
@@ -1280,7 +1306,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_110",
+      "id": "pickup_112",
       "position": [
         30,
         0.68,
@@ -1291,7 +1317,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_111",
+      "id": "pickup_113",
       "position": [
         10,
         -0.12,
@@ -1302,7 +1328,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_112",
+      "id": "pickup_114",
       "position": [
         -10,
         -0.12,
@@ -1313,7 +1339,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_113",
+      "id": "pickup_115",
       "position": [
         -8,
         0.41,
@@ -1324,7 +1350,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_114",
+      "id": "pickup_116",
       "position": [
         8,
         0.41,
@@ -1335,7 +1361,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_115",
+      "id": "pickup_117",
       "position": [
         34,
         0.81,
@@ -1346,7 +1372,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_116",
+      "id": "pickup_118",
       "position": [
         -34,
         0.81,
@@ -1357,7 +1383,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_117",
+      "id": "pickup_119",
       "position": [
         4,
         3.42,
@@ -1368,7 +1394,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_118",
+      "id": "pickup_120",
       "position": [
         -4,
         3.42,
@@ -1379,7 +1405,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_119",
+      "id": "pickup_121",
       "position": [
         65.14,
         9.85,
@@ -1390,7 +1416,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_120",
+      "id": "pickup_122",
       "position": [
         59.22,
         9.85,
@@ -1401,7 +1427,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_121",
+      "id": "pickup_123",
       "position": [
         -65.14,
         9.85,
@@ -1412,7 +1438,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_122",
+      "id": "pickup_124",
       "position": [
         -59.22,
         9.85,
@@ -1423,7 +1449,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "spawn_123",
+      "id": "spawn_125",
       "position": [
         -30,
         2.17,
@@ -1434,7 +1460,7 @@
       "faction": null
     },
     {
-      "id": "spawn_124",
+      "id": "spawn_126",
       "position": [
         30,
         2.17,
@@ -1445,7 +1471,7 @@
       "faction": null
     },
     {
-      "id": "spawn_125",
+      "id": "spawn_127",
       "position": [
         30,
         1.25,
@@ -1456,7 +1482,7 @@
       "faction": null
     },
     {
-      "id": "spawn_126",
+      "id": "spawn_128",
       "position": [
         -30,
         1.25,
@@ -1467,7 +1493,7 @@
       "faction": null
     },
     {
-      "id": "spawn_127",
+      "id": "spawn_129",
       "position": [
         -44,
         1.01,
@@ -1478,7 +1504,7 @@
       "faction": null
     },
     {
-      "id": "spawn_128",
+      "id": "spawn_130",
       "position": [
         44,
         1.01,
@@ -1489,7 +1515,7 @@
       "faction": null
     },
     {
-      "id": "spawn_129",
+      "id": "spawn_131",
       "position": [
         0,
         0.21,
@@ -1500,7 +1526,7 @@
       "faction": null
     },
     {
-      "id": "spawn_130",
+      "id": "spawn_132",
       "position": [
         0,
         0.21,
@@ -1511,7 +1537,7 @@
       "faction": null
     },
     {
-      "id": "spawn_131",
+      "id": "spawn_133",
       "position": [
         44,
         0.39,
@@ -1522,7 +1548,7 @@
       "faction": null
     },
     {
-      "id": "spawn_132",
+      "id": "spawn_134",
       "position": [
         -44,
         0.39,
@@ -1533,7 +1559,7 @@
       "faction": null
     },
     {
-      "id": "spawn_133",
+      "id": "spawn_135",
       "position": [
         16,
         0.5,
@@ -1544,7 +1570,7 @@
       "faction": null
     },
     {
-      "id": "spawn_134",
+      "id": "spawn_136",
       "position": [
         -16,
         0.5,
@@ -1555,7 +1581,7 @@
       "faction": null
     },
     {
-      "id": "spawn_135",
+      "id": "spawn_137",
       "position": [
         65,
         9.85,
@@ -1566,7 +1592,7 @@
       "faction": null
     },
     {
-      "id": "spawn_136",
+      "id": "spawn_138",
       "position": [
         -65,
         9.85,
@@ -1577,7 +1603,7 @@
       "faction": null
     },
     {
-      "id": "hill_137",
+      "id": "hill_139",
       "position": [
         4,
         3.42,
@@ -1587,7 +1613,7 @@
       "radius": 6
     },
     {
-      "id": "hill_138",
+      "id": "hill_140",
       "position": [
         -22,
         5.15,
@@ -1597,7 +1623,7 @@
       "radius": 6
     },
     {
-      "id": "hill_139",
+      "id": "hill_141",
       "position": [
         22,
         5.15,
@@ -1607,7 +1633,7 @@
       "radius": 6
     },
     {
-      "id": "prop_140",
+      "id": "prop_142",
       "position": [
         -44.38,
         0.53,
@@ -1621,7 +1647,7 @@
       "tint": null
     },
     {
-      "id": "prop_141",
+      "id": "prop_143",
       "position": [
         44.38,
         0.57,
@@ -1635,7 +1661,7 @@
       "tint": null
     },
     {
-      "id": "prop_142",
+      "id": "prop_144",
       "position": [
         -15.7,
         2.55,
@@ -1649,7 +1675,7 @@
       "tint": null
     },
     {
-      "id": "prop_143",
+      "id": "prop_145",
       "position": [
         15.7,
         2.67,
@@ -1663,7 +1689,7 @@
       "tint": null
     },
     {
-      "id": "prop_144",
+      "id": "prop_146",
       "position": [
         19.85,
         0.26,
@@ -1677,7 +1703,7 @@
       "tint": null
     },
     {
-      "id": "prop_145",
+      "id": "prop_147",
       "position": [
         -19.85,
         0.24,
@@ -1691,7 +1717,7 @@
       "tint": null
     },
     {
-      "id": "prop_146",
+      "id": "prop_148",
       "position": [
         -41.49,
         0.63,
@@ -1705,7 +1731,7 @@
       "tint": null
     },
     {
-      "id": "prop_147",
+      "id": "prop_149",
       "position": [
         41.49,
         0.66,
@@ -1719,7 +1745,7 @@
       "tint": null
     },
     {
-      "id": "prop_148",
+      "id": "prop_150",
       "position": [
         -22.38,
         0.05,
@@ -1733,7 +1759,7 @@
       "tint": null
     },
     {
-      "id": "prop_149",
+      "id": "prop_151",
       "position": [
         22.38,
         0.05,
@@ -1747,7 +1773,7 @@
       "tint": null
     },
     {
-      "id": "prop_150",
+      "id": "prop_152",
       "position": [
         0.15,
         0.34,
@@ -1761,7 +1787,7 @@
       "tint": null
     },
     {
-      "id": "prop_151",
+      "id": "prop_153",
       "position": [
         -0.15,
         0.35,
@@ -1775,7 +1801,7 @@
       "tint": null
     },
     {
-      "id": "prop_152",
+      "id": "prop_154",
       "position": [
         6.72,
         0.81,
@@ -1789,7 +1815,7 @@
       "tint": null
     },
     {
-      "id": "prop_153",
+      "id": "prop_155",
       "position": [
         -6.72,
         0.79,
@@ -1803,7 +1829,7 @@
       "tint": null
     },
     {
-      "id": "prop_154",
+      "id": "prop_156",
       "position": [
         34.71,
         1.71,
@@ -1817,7 +1843,7 @@
       "tint": null
     },
     {
-      "id": "prop_155",
+      "id": "prop_157",
       "position": [
         -34.71,
         1.73,
@@ -1831,7 +1857,7 @@
       "tint": null
     },
     {
-      "id": "prop_156",
+      "id": "prop_158",
       "position": [
         2.11,
         0.95,
@@ -1845,7 +1871,7 @@
       "tint": null
     },
     {
-      "id": "prop_157",
+      "id": "prop_159",
       "position": [
         -2.11,
         1.01,
@@ -1859,7 +1885,7 @@
       "tint": null
     },
     {
-      "id": "prop_158",
+      "id": "prop_160",
       "position": [
         -37.29,
         1.03,
@@ -1873,7 +1899,7 @@
       "tint": null
     },
     {
-      "id": "prop_159",
+      "id": "prop_161",
       "position": [
         37.29,
         1.02,
@@ -1887,7 +1913,7 @@
       "tint": null
     },
     {
-      "id": "prop_160",
+      "id": "prop_162",
       "position": [
         12.37,
         0.41,
@@ -1901,7 +1927,7 @@
       "tint": null
     },
     {
-      "id": "prop_161",
+      "id": "prop_163",
       "position": [
         -12.37,
         0.42,
@@ -1915,7 +1941,7 @@
       "tint": null
     },
     {
-      "id": "prop_162",
+      "id": "prop_164",
       "position": [
         -39.64,
         0.86,
@@ -1929,7 +1955,7 @@
       "tint": null
     },
     {
-      "id": "prop_163",
+      "id": "prop_165",
       "position": [
         39.64,
         0.85,
@@ -1943,7 +1969,7 @@
       "tint": null
     },
     {
-      "id": "prop_164",
+      "id": "prop_166",
       "position": [
         -51.15,
         0.25,
@@ -1957,7 +1983,7 @@
       "tint": null
     },
     {
-      "id": "prop_165",
+      "id": "prop_167",
       "position": [
         51.15,
         0.25,
@@ -1971,7 +1997,7 @@
       "tint": null
     },
     {
-      "id": "prop_166",
+      "id": "prop_168",
       "position": [
         37.24,
         0.27,
@@ -1985,7 +2011,7 @@
       "tint": null
     },
     {
-      "id": "prop_167",
+      "id": "prop_169",
       "position": [
         -37.24,
         0.25,
@@ -1999,7 +2025,7 @@
       "tint": null
     },
     {
-      "id": "prop_168",
+      "id": "prop_170",
       "position": [
         -15.55,
         0.83,
@@ -2013,7 +2039,7 @@
       "tint": null
     },
     {
-      "id": "prop_169",
+      "id": "prop_171",
       "position": [
         15.55,
         0.83,
@@ -2027,7 +2053,7 @@
       "tint": null
     },
     {
-      "id": "prop_170",
+      "id": "prop_172",
       "position": [
         -19.06,
         1.48,
@@ -2041,7 +2067,7 @@
       "tint": null
     },
     {
-      "id": "prop_171",
+      "id": "prop_173",
       "position": [
         19.06,
         1.47,
@@ -2055,7 +2081,7 @@
       "tint": null
     },
     {
-      "id": "prop_172",
+      "id": "prop_174",
       "position": [
         -47.89,
         0.05,
@@ -2069,7 +2095,7 @@
       "tint": null
     },
     {
-      "id": "prop_173",
+      "id": "prop_175",
       "position": [
         47.89,
         0.05,
@@ -2083,7 +2109,7 @@
       "tint": null
     },
     {
-      "id": "prop_174",
+      "id": "prop_176",
       "position": [
         28.52,
         -0.1,
@@ -2097,7 +2123,7 @@
       "tint": null
     },
     {
-      "id": "prop_175",
+      "id": "prop_177",
       "position": [
         -28.52,
         -0.08,
@@ -2111,7 +2137,7 @@
       "tint": null
     },
     {
-      "id": "prop_176",
+      "id": "prop_178",
       "position": [
         43.55,
         0.66,
@@ -2125,7 +2151,7 @@
       "tint": null
     },
     {
-      "id": "prop_177",
+      "id": "prop_179",
       "position": [
         -43.55,
         0.66,
@@ -2139,7 +2165,7 @@
       "tint": null
     },
     {
-      "id": "prop_178",
+      "id": "prop_180",
       "position": [
         46.79,
         -0.1,
@@ -2153,7 +2179,7 @@
       "tint": null
     },
     {
-      "id": "prop_179",
+      "id": "prop_181",
       "position": [
         -46.79,
         -0.1,
@@ -2167,7 +2193,7 @@
       "tint": null
     },
     {
-      "id": "prop_180",
+      "id": "prop_182",
       "position": [
         -25.86,
         0.57,
@@ -2181,7 +2207,7 @@
       "tint": null
     },
     {
-      "id": "prop_181",
+      "id": "prop_183",
       "position": [
         25.86,
         0.57,
@@ -2195,7 +2221,7 @@
       "tint": null
     },
     {
-      "id": "prop_182",
+      "id": "prop_184",
       "position": [
         27.8,
         1.57,
@@ -2209,7 +2235,7 @@
       "tint": null
     },
     {
-      "id": "prop_183",
+      "id": "prop_185",
       "position": [
         -27.8,
         1.62,
@@ -2223,7 +2249,7 @@
       "tint": null
     },
     {
-      "id": "prop_184",
+      "id": "prop_186",
       "position": [
         56.06,
         -0.02,
@@ -2237,7 +2263,7 @@
       "tint": null
     },
     {
-      "id": "prop_185",
+      "id": "prop_187",
       "position": [
         51.06,
         0.15,
@@ -2251,7 +2277,7 @@
       "tint": null
     },
     {
-      "id": "prop_186",
+      "id": "prop_188",
       "position": [
         50.06,
         0.34,
@@ -2265,7 +2291,7 @@
       "tint": null
     },
     {
-      "id": "prop_187",
+      "id": "prop_189",
       "position": [
         55.06,
         0.44,
@@ -2279,7 +2305,7 @@
       "tint": null
     },
     {
-      "id": "prop_188",
+      "id": "prop_190",
       "position": [
         59.06,
         0.63,
@@ -2293,7 +2319,7 @@
       "tint": null
     },
     {
-      "id": "prop_189",
+      "id": "prop_191",
       "position": [
         -56.06,
         0.39,
@@ -2307,7 +2333,7 @@
       "tint": null
     },
     {
-      "id": "prop_190",
+      "id": "prop_192",
       "position": [
         -51.06,
         0.38,
@@ -2321,7 +2347,7 @@
       "tint": null
     },
     {
-      "id": "prop_191",
+      "id": "prop_193",
       "position": [
         -50.06,
         0.17,
@@ -2335,7 +2361,7 @@
       "tint": null
     },
     {
-      "id": "prop_192",
+      "id": "prop_194",
       "position": [
         -55.06,
         -0.02,
@@ -2349,7 +2375,7 @@
       "tint": null
     },
     {
-      "id": "prop_193",
+      "id": "prop_195",
       "position": [
         -59.06,
         -0.05,
@@ -2363,7 +2389,7 @@
       "tint": null
     },
     {
-      "id": "prop_194",
+      "id": "prop_196",
       "position": [
         -54.91,
         3.39,
@@ -2377,7 +2403,7 @@
       "tint": null
     },
     {
-      "id": "prop_195",
+      "id": "prop_197",
       "position": [
         -55.89,
         0.8,
@@ -2391,7 +2417,7 @@
       "tint": null
     },
     {
-      "id": "prop_196",
+      "id": "prop_198",
       "position": [
         60.27,
         0.38,
@@ -2405,7 +2431,7 @@
       "tint": null
     },
     {
-      "id": "prop_197",
+      "id": "prop_199",
       "position": [
         58.93,
         0.46,
@@ -2419,7 +2445,7 @@
       "tint": null
     },
     {
-      "id": "prop_198",
+      "id": "prop_200",
       "position": [
         -59.23,
         0.5,
@@ -2433,7 +2459,7 @@
       "tint": null
     },
     {
-      "id": "prop_199",
+      "id": "prop_201",
       "position": [
         -59.01,
         0.47,
@@ -2447,7 +2473,7 @@
       "tint": null
     },
     {
-      "id": "prop_200",
+      "id": "prop_202",
       "position": [
         -60.4,
         3.91,
@@ -2461,7 +2487,7 @@
       "tint": null
     },
     {
-      "id": "prop_201",
+      "id": "prop_203",
       "position": [
         -59.57,
         0.1,
@@ -2475,7 +2501,7 @@
       "tint": null
     },
     {
-      "id": "prop_202",
+      "id": "prop_204",
       "position": [
         60.5,
         0.19,
@@ -2489,7 +2515,7 @@
       "tint": null
     },
     {
-      "id": "prop_203",
+      "id": "prop_205",
       "position": [
         -59.56,
         0.37,
@@ -2503,7 +2529,7 @@
       "tint": null
     },
     {
-      "id": "prop_204",
+      "id": "prop_206",
       "position": [
         -59.06,
         0.03,
@@ -2517,7 +2543,7 @@
       "tint": null
     },
     {
-      "id": "prop_205",
+      "id": "prop_207",
       "position": [
         60.39,
         0.08,
@@ -2531,7 +2557,7 @@
       "tint": null
     },
     {
-      "id": "prop_206",
+      "id": "prop_208",
       "position": [
         -56.57,
         0.78,
@@ -2545,7 +2571,7 @@
       "tint": null
     },
     {
-      "id": "prop_207",
+      "id": "prop_209",
       "position": [
         52.8,
         0.3,
@@ -2559,7 +2585,7 @@
       "tint": null
     },
     {
-      "id": "prop_208",
+      "id": "prop_210",
       "position": [
         55.78,
         0.83,
@@ -2573,7 +2599,7 @@
       "tint": null
     },
     {
-      "id": "prop_209",
+      "id": "prop_211",
       "position": [
         55.46,
         -0.18,
@@ -2587,7 +2613,7 @@
       "tint": null
     },
     {
-      "id": "prop_210",
+      "id": "prop_212",
       "position": [
         56.85,
         0.72,
@@ -2601,7 +2627,7 @@
       "tint": null
     },
     {
-      "id": "prop_211",
+      "id": "prop_213",
       "position": [
         58.77,
         0.2,
@@ -2615,7 +2641,7 @@
       "tint": null
     },
     {
-      "id": "prop_212",
+      "id": "prop_214",
       "position": [
         -59.83,
         0.1,
@@ -2629,7 +2655,7 @@
       "tint": null
     },
     {
-      "id": "prop_213",
+      "id": "prop_215",
       "position": [
         -55.87,
         -0.18,
@@ -2643,7 +2669,7 @@
       "tint": null
     },
     {
-      "id": "prop_214",
+      "id": "prop_216",
       "position": [
         -52.67,
         0.25,
@@ -2657,7 +2683,7 @@
       "tint": null
     },
     {
-      "id": "prop_215",
+      "id": "prop_217",
       "position": [
         57.82,
         4.65,
@@ -2671,7 +2697,7 @@
       "tint": null
     },
     {
-      "id": "prop_216",
+      "id": "prop_218",
       "position": [
         -61.04,
         0.41,
@@ -2685,7 +2711,7 @@
       "tint": null
     },
     {
-      "id": "prop_217",
+      "id": "prop_219",
       "position": [
         59.32,
         0.39,
@@ -2699,7 +2725,7 @@
       "tint": null
     },
     {
-      "id": "prop_218",
+      "id": "prop_220",
       "position": [
         59.73,
         0.05,
@@ -2713,7 +2739,7 @@
       "tint": null
     },
     {
-      "id": "prop_219",
+      "id": "prop_221",
       "position": [
         55.65,
         4.99,
@@ -2727,7 +2753,7 @@
       "tint": null
     },
     {
-      "id": "prop_220",
+      "id": "prop_222",
       "position": [
         -56.16,
         -0.11,
@@ -2741,7 +2767,7 @@
       "tint": null
     },
     {
-      "id": "prop_221",
+      "id": "prop_223",
       "position": [
         60.96,
         0.42,
@@ -2755,7 +2781,7 @@
       "tint": null
     },
     {
-      "id": "prop_222",
+      "id": "prop_224",
       "position": [
         -52,
         0.26,
@@ -2769,7 +2795,7 @@
       "tint": null
     },
     {
-      "id": "prop_223",
+      "id": "prop_225",
       "position": [
         52.93,
         0.14,
@@ -2783,7 +2809,7 @@
       "tint": null
     },
     {
-      "id": "prop_224",
+      "id": "prop_226",
       "position": [
         50.45,
         0.02,
@@ -2797,7 +2823,7 @@
       "tint": null
     },
     {
-      "id": "prop_225",
+      "id": "prop_227",
       "position": [
         50.11,
         0.9,
@@ -2811,7 +2837,7 @@
       "tint": null
     },
     {
-      "id": "prop_226",
+      "id": "prop_228",
       "position": [
         40.74,
         0.7,
@@ -2825,7 +2851,7 @@
       "tint": null
     },
     {
-      "id": "prop_227",
+      "id": "prop_229",
       "position": [
         50.33,
         0.42,
@@ -2839,7 +2865,7 @@
       "tint": null
     },
     {
-      "id": "prop_228",
+      "id": "prop_230",
       "position": [
         -50.89,
         0.43,
@@ -2853,7 +2879,7 @@
       "tint": null
     },
     {
-      "id": "prop_229",
+      "id": "prop_231",
       "position": [
         -53.03,
         0.14,
@@ -2867,7 +2893,7 @@
       "tint": null
     },
     {
-      "id": "prop_230",
+      "id": "prop_232",
       "position": [
         46.87,
         0.8,
@@ -2881,7 +2907,7 @@
       "tint": null
     },
     {
-      "id": "prop_231",
+      "id": "prop_233",
       "position": [
         -42.69,
         -0.09,
@@ -2895,7 +2921,7 @@
       "tint": null
     },
     {
-      "id": "prop_232",
+      "id": "prop_234",
       "position": [
         -49.86,
         0.8,
@@ -2909,7 +2935,7 @@
       "tint": null
     },
     {
-      "id": "prop_233",
+      "id": "prop_235",
       "position": [
         -47.78,
         0.03,
@@ -2923,7 +2949,7 @@
       "tint": null
     },
     {
-      "id": "prop_234",
+      "id": "prop_236",
       "position": [
         44.28,
         0.08,
@@ -2937,7 +2963,7 @@
       "tint": null
     },
     {
-      "id": "prop_235",
+      "id": "prop_237",
       "position": [
         -43.13,
         0.28,
@@ -2951,7 +2977,7 @@
       "tint": null
     },
     {
-      "id": "prop_236",
+      "id": "prop_238",
       "position": [
         44.16,
         -0.16,
@@ -2965,7 +2991,7 @@
       "tint": null
     },
     {
-      "id": "prop_237",
+      "id": "prop_239",
       "position": [
         52.88,
         0.56,
@@ -2979,7 +3005,7 @@
       "tint": null
     },
     {
-      "id": "prop_238",
+      "id": "prop_240",
       "position": [
         43.32,
         0.22,
@@ -2993,7 +3019,7 @@
       "tint": null
     },
     {
-      "id": "prop_239",
+      "id": "prop_241",
       "position": [
         46.15,
         -0.18,
@@ -3007,7 +3033,7 @@
       "tint": null
     },
     {
-      "id": "prop_240",
+      "id": "prop_242",
       "position": [
         47.07,
         1.63,
@@ -3021,7 +3047,7 @@
       "tint": null
     },
     {
-      "id": "prop_241",
+      "id": "prop_243",
       "position": [
         -48.45,
         -0.18,
@@ -3035,7 +3061,7 @@
       "tint": null
     },
     {
-      "id": "prop_242",
+      "id": "prop_244",
       "position": [
         48.41,
         -0.18,
@@ -3049,7 +3075,7 @@
       "tint": null
     },
     {
-      "id": "prop_243",
+      "id": "prop_245",
       "position": [
         49.31,
         0.96,
@@ -3063,7 +3089,7 @@
       "tint": null
     },
     {
-      "id": "prop_244",
+      "id": "prop_246",
       "position": [
         -47.07,
         -0.16,
@@ -3077,7 +3103,7 @@
       "tint": null
     },
     {
-      "id": "prop_245",
+      "id": "prop_247",
       "position": [
         -53.14,
         0.58,
@@ -3091,7 +3117,7 @@
       "tint": null
     },
     {
-      "id": "prop_246",
+      "id": "prop_248",
       "position": [
         -47.76,
         0.75,
@@ -3105,7 +3131,7 @@
       "tint": null
     },
     {
-      "id": "prop_247",
+      "id": "prop_249",
       "position": [
         -46.65,
         -0.15,
@@ -3119,7 +3145,7 @@
       "tint": null
     },
     {
-      "id": "prop_248",
+      "id": "prop_250",
       "position": [
         40.86,
         0.37,
@@ -3133,7 +3159,7 @@
       "tint": null
     },
     {
-      "id": "prop_249",
+      "id": "prop_251",
       "position": [
         49.28,
         0.53,
@@ -3147,7 +3173,7 @@
       "tint": null
     },
     {
-      "id": "prop_250",
+      "id": "prop_252",
       "position": [
         -43.55,
         -0.18,
@@ -3161,7 +3187,7 @@
       "tint": null
     },
     {
-      "id": "prop_251",
+      "id": "prop_253",
       "position": [
         -42.97,
         0.71,
@@ -3175,7 +3201,7 @@
       "tint": null
     },
     {
-      "id": "prop_252",
+      "id": "prop_254",
       "position": [
         50.45,
         -0.11,
@@ -3189,7 +3215,7 @@
       "tint": null
     },
     {
-      "id": "prop_253",
+      "id": "prop_255",
       "position": [
         -42.75,
         0.18,
@@ -3203,7 +3229,7 @@
       "tint": null
     },
     {
-      "id": "prop_254",
+      "id": "prop_256",
       "position": [
         46.22,
         0.1,
@@ -3217,7 +3243,7 @@
       "tint": null
     },
     {
-      "id": "prop_255",
+      "id": "prop_257",
       "position": [
         -37.4,
         0.8,
@@ -3231,7 +3257,7 @@
       "tint": null
     },
     {
-      "id": "prop_256",
+      "id": "prop_258",
       "position": [
         41.18,
         1.09,
@@ -3245,7 +3271,7 @@
       "tint": null
     },
     {
-      "id": "prop_257",
+      "id": "prop_259",
       "position": [
         -38.3,
         0.4,
@@ -3259,7 +3285,7 @@
       "tint": null
     },
     {
-      "id": "prop_258",
+      "id": "prop_260",
       "position": [
         31.65,
         1.88,
@@ -3273,7 +3299,7 @@
       "tint": null
     },
     {
-      "id": "prop_259",
+      "id": "prop_261",
       "position": [
         -52.55,
         0.51,
@@ -3287,7 +3313,7 @@
       "tint": null
     },
     {
-      "id": "prop_260",
+      "id": "prop_262",
       "position": [
         39.25,
         0.32,
@@ -3301,7 +3327,7 @@
       "tint": null
     },
     {
-      "id": "prop_261",
+      "id": "prop_263",
       "position": [
         -43.63,
         -0.18,
@@ -3315,7 +3341,7 @@
       "tint": null
     },
     {
-      "id": "prop_262",
+      "id": "prop_264",
       "position": [
         -28.79,
         0.99,
@@ -3329,7 +3355,7 @@
       "tint": null
     },
     {
-      "id": "prop_263",
+      "id": "prop_265",
       "position": [
         -43.06,
         0.19,
@@ -3343,7 +3369,7 @@
       "tint": null
     },
     {
-      "id": "prop_264",
+      "id": "prop_266",
       "position": [
         49.92,
         -0.08,
@@ -3357,7 +3383,7 @@
       "tint": null
     },
     {
-      "id": "prop_265",
+      "id": "prop_267",
       "position": [
         -51.82,
         0.71,
@@ -3371,7 +3397,7 @@
       "tint": null
     },
     {
-      "id": "prop_266",
+      "id": "prop_268",
       "position": [
         33.52,
         0.56,
@@ -3385,7 +3411,7 @@
       "tint": null
     },
     {
-      "id": "prop_267",
+      "id": "prop_269",
       "position": [
         -37.5,
         1.19,
@@ -3399,7 +3425,7 @@
       "tint": null
     },
     {
-      "id": "prop_268",
+      "id": "prop_270",
       "position": [
         47.04,
         0.27,
@@ -3413,7 +3439,7 @@
       "tint": null
     },
     {
-      "id": "prop_269",
+      "id": "prop_271",
       "position": [
         50.64,
         0.44,
@@ -3427,7 +3453,7 @@
       "tint": null
     },
     {
-      "id": "prop_270",
+      "id": "prop_272",
       "position": [
         -34.99,
         0.37,
@@ -3441,7 +3467,7 @@
       "tint": null
     },
     {
-      "id": "prop_271",
+      "id": "prop_273",
       "position": [
         -50.89,
         0.9,
@@ -3455,7 +3481,7 @@
       "tint": null
     },
     {
-      "id": "prop_272",
+      "id": "prop_274",
       "position": [
         -40.5,
         0.27,
@@ -3469,7 +3495,7 @@
       "tint": null
     },
     {
-      "id": "prop_273",
+      "id": "prop_275",
       "position": [
         34.49,
         1.81,
@@ -3483,7 +3509,7 @@
       "tint": null
     },
     {
-      "id": "prop_274",
+      "id": "prop_276",
       "position": [
         -39.13,
         0.99,
@@ -3497,7 +3523,7 @@
       "tint": null
     },
     {
-      "id": "prop_275",
+      "id": "prop_277",
       "position": [
         35.08,
         0.36,
@@ -3511,7 +3537,7 @@
       "tint": null
     },
     {
-      "id": "prop_276",
+      "id": "prop_278",
       "position": [
         -37.58,
         1.14,
@@ -3525,7 +3551,7 @@
       "tint": null
     },
     {
-      "id": "prop_277",
+      "id": "prop_279",
       "position": [
         44.14,
         0.19,
@@ -3539,7 +3565,7 @@
       "tint": null
     },
     {
-      "id": "prop_278",
+      "id": "prop_280",
       "position": [
         -43.59,
         0.91,
@@ -3553,7 +3579,7 @@
       "tint": null
     },
     {
-      "id": "prop_279",
+      "id": "prop_281",
       "position": [
         51.18,
         0.77,
@@ -3567,7 +3593,7 @@
       "tint": null
     },
     {
-      "id": "prop_280",
+      "id": "prop_282",
       "position": [
         36.45,
         0.27,
@@ -3581,7 +3607,7 @@
       "tint": null
     },
     {
-      "id": "prop_281",
+      "id": "prop_283",
       "position": [
         35.27,
         0.82,
@@ -3595,7 +3621,7 @@
       "tint": null
     },
     {
-      "id": "prop_282",
+      "id": "prop_284",
       "position": [
         -52.65,
         -0.02,
@@ -3609,7 +3635,7 @@
       "tint": null
     },
     {
-      "id": "prop_283",
+      "id": "prop_285",
       "position": [
         43.33,
         1.57,
@@ -3623,7 +3649,7 @@
       "tint": null
     },
     {
-      "id": "prop_284",
+      "id": "prop_286",
       "position": [
         -39.5,
         0.27,
@@ -3637,7 +3663,7 @@
       "tint": null
     },
     {
-      "id": "prop_285",
+      "id": "prop_287",
       "position": [
         -45.85,
         1.31,
@@ -3651,7 +3677,7 @@
       "tint": null
     },
     {
-      "id": "prop_286",
+      "id": "prop_288",
       "position": [
         -48.89,
         0.43,
@@ -3665,7 +3691,7 @@
       "tint": null
     },
     {
-      "id": "prop_287",
+      "id": "prop_289",
       "position": [
         40.78,
         0.16,
@@ -3679,7 +3705,7 @@
       "tint": null
     },
     {
-      "id": "prop_288",
+      "id": "prop_290",
       "position": [
         34.88,
         1.66,
@@ -3693,7 +3719,7 @@
       "tint": null
     },
     {
-      "id": "prop_289",
+      "id": "prop_291",
       "position": [
         -44.08,
         0.84,
@@ -3707,7 +3733,7 @@
       "tint": null
     },
     {
-      "id": "prop_290",
+      "id": "prop_292",
       "position": [
         38.2,
         0.9,
@@ -3721,7 +3747,7 @@
       "tint": null
     },
     {
-      "id": "prop_291",
+      "id": "prop_293",
       "position": [
         -48.54,
         0.53,
@@ -3735,7 +3761,7 @@
       "tint": null
     },
     {
-      "id": "prop_292",
+      "id": "prop_294",
       "position": [
         -46.63,
         1.23,
@@ -3749,7 +3775,7 @@
       "tint": null
     },
     {
-      "id": "prop_293",
+      "id": "prop_295",
       "position": [
         54.76,
         0.62,
@@ -3763,7 +3789,7 @@
       "tint": null
     },
     {
-      "id": "prop_294",
+      "id": "prop_296",
       "position": [
         35.36,
         0.9,
@@ -3777,7 +3803,7 @@
       "tint": null
     },
     {
-      "id": "prop_295",
+      "id": "prop_297",
       "position": [
         42.84,
         -0.18,
@@ -3791,7 +3817,7 @@
       "tint": null
     },
     {
-      "id": "prop_296",
+      "id": "prop_298",
       "position": [
         -42.52,
         2.51,
@@ -3805,7 +3831,7 @@
       "tint": null
     },
     {
-      "id": "prop_297",
+      "id": "prop_299",
       "position": [
         -44.54,
         0.1,
@@ -3819,7 +3845,7 @@
       "tint": null
     },
     {
-      "id": "prop_298",
+      "id": "prop_300",
       "position": [
         -48.82,
         0.25,
@@ -3833,7 +3859,7 @@
       "tint": null
     },
     {
-      "id": "prop_299",
+      "id": "prop_301",
       "position": [
         -52.93,
         0.05,
@@ -3847,7 +3873,7 @@
       "tint": null
     },
     {
-      "id": "prop_300",
+      "id": "prop_302",
       "position": [
         51.42,
         0,
@@ -3861,7 +3887,7 @@
       "tint": null
     },
     {
-      "id": "prop_301",
+      "id": "prop_303",
       "position": [
         39.64,
         0.96,
@@ -3875,7 +3901,7 @@
       "tint": null
     },
     {
-      "id": "prop_302",
+      "id": "prop_304",
       "position": [
         47.12,
         -0.16,
@@ -3889,7 +3915,7 @@
       "tint": null
     },
     {
-      "id": "prop_303",
+      "id": "prop_305",
       "position": [
         40.41,
         0.89,
@@ -3903,7 +3929,7 @@
       "tint": null
     },
     {
-      "id": "prop_304",
+      "id": "prop_306",
       "position": [
         55.06,
         0.03,
@@ -3917,7 +3943,7 @@
       "tint": null
     },
     {
-      "id": "prop_305",
+      "id": "prop_307",
       "position": [
         -33.83,
         0.39,
@@ -3931,7 +3957,7 @@
       "tint": null
     },
     {
-      "id": "prop_306",
+      "id": "prop_308",
       "position": [
         35.04,
         2.16,
@@ -3945,7 +3971,7 @@
       "tint": null
     },
     {
-      "id": "prop_307",
+      "id": "prop_309",
       "position": [
         38.18,
         1.15,
@@ -3959,7 +3985,7 @@
       "tint": null
     },
     {
-      "id": "prop_308",
+      "id": "prop_310",
       "position": [
         36.43,
         1.17,
@@ -3973,7 +3999,7 @@
       "tint": null
     },
     {
-      "id": "prop_309",
+      "id": "prop_311",
       "position": [
         41.72,
         1.25,
@@ -3987,7 +4013,7 @@
       "tint": null
     },
     {
-      "id": "prop_310",
+      "id": "prop_312",
       "position": [
         -30.71,
         0.68,
@@ -4001,7 +4027,7 @@
       "tint": null
     },
     {
-      "id": "prop_311",
+      "id": "prop_313",
       "position": [
         -53.94,
         0.01,
@@ -4015,7 +4041,7 @@
       "tint": null
     },
     {
-      "id": "prop_312",
+      "id": "prop_314",
       "position": [
         38.78,
         0.24,
@@ -4029,7 +4055,7 @@
       "tint": null
     },
     {
-      "id": "prop_313",
+      "id": "prop_315",
       "position": [
         42.23,
         1.08,
@@ -4043,7 +4069,7 @@
       "tint": null
     },
     {
-      "id": "prop_314",
+      "id": "prop_316",
       "position": [
         48.16,
         0.71,
@@ -4057,7 +4083,7 @@
       "tint": null
     },
     {
-      "id": "prop_315",
+      "id": "prop_317",
       "position": [
         -33.09,
         0.91,
@@ -4071,7 +4097,7 @@
       "tint": null
     },
     {
-      "id": "prop_316",
+      "id": "prop_318",
       "position": [
         35.46,
         0.51,
@@ -4085,7 +4111,7 @@
       "tint": null
     },
     {
-      "id": "prop_317",
+      "id": "prop_319",
       "position": [
         -44.04,
         0.99,
@@ -4099,7 +4125,7 @@
       "tint": null
     },
     {
-      "id": "prop_318",
+      "id": "prop_320",
       "position": [
         48.48,
         -0.18,
@@ -4113,7 +4139,7 @@
       "tint": null
     },
     {
-      "id": "prop_319",
+      "id": "prop_321",
       "position": [
         -33.53,
         1.88,
@@ -4127,7 +4153,7 @@
       "tint": null
     },
     {
-      "id": "prop_320",
+      "id": "prop_322",
       "position": [
         52.72,
         0.6,
@@ -4141,7 +4167,7 @@
       "tint": null
     },
     {
-      "id": "prop_321",
+      "id": "prop_323",
       "position": [
         36.04,
         0.78,
@@ -4155,7 +4181,7 @@
       "tint": null
     },
     {
-      "id": "prop_322",
+      "id": "prop_324",
       "position": [
         -52.26,
         -0.1,
@@ -4169,7 +4195,7 @@
       "tint": null
     },
     {
-      "id": "prop_323",
+      "id": "prop_325",
       "position": [
         30.13,
         2.83,
@@ -4183,7 +4209,7 @@
       "tint": null
     },
     {
-      "id": "prop_324",
+      "id": "prop_326",
       "position": [
         29.07,
         3.3,
@@ -4197,7 +4223,7 @@
       "tint": null
     },
     {
-      "id": "prop_325",
+      "id": "prop_327",
       "position": [
         39.13,
         0.31,
@@ -4211,7 +4237,7 @@
       "tint": null
     },
     {
-      "id": "prop_326",
+      "id": "prop_328",
       "position": [
         -37.61,
         0.85,
@@ -4225,7 +4251,7 @@
       "tint": null
     },
     {
-      "id": "prop_327",
+      "id": "prop_329",
       "position": [
         -47.74,
         1.06,
@@ -4239,7 +4265,7 @@
       "tint": null
     },
     {
-      "id": "prop_328",
+      "id": "prop_330",
       "position": [
         37.3,
         0.26,
@@ -4253,7 +4279,7 @@
       "tint": null
     },
     {
-      "id": "prop_329",
+      "id": "prop_331",
       "position": [
         46.84,
         0.87,
@@ -4267,7 +4293,7 @@
       "tint": null
     },
     {
-      "id": "prop_330",
+      "id": "prop_332",
       "position": [
         -48.97,
         0.21,
@@ -4281,7 +4307,7 @@
       "tint": null
     },
     {
-      "id": "prop_331",
+      "id": "prop_333",
       "position": [
         -34.18,
         0.07,
@@ -4295,7 +4321,7 @@
       "tint": null
     },
     {
-      "id": "prop_332",
+      "id": "prop_334",
       "position": [
         -32.85,
         0.52,
@@ -4309,7 +4335,7 @@
       "tint": null
     },
     {
-      "id": "prop_333",
+      "id": "prop_335",
       "position": [
         35.27,
         0.41,
@@ -4323,7 +4349,7 @@
       "tint": null
     },
     {
-      "id": "prop_334",
+      "id": "prop_336",
       "position": [
         -34.79,
         0.69,
@@ -4337,7 +4363,7 @@
       "tint": null
     },
     {
-      "id": "prop_335",
+      "id": "prop_337",
       "position": [
         -48.16,
         -0.04,
@@ -4351,7 +4377,7 @@
       "tint": null
     },
     {
-      "id": "prop_336",
+      "id": "prop_338",
       "position": [
         -46.55,
         0.89,
@@ -4365,7 +4391,7 @@
       "tint": null
     },
     {
-      "id": "prop_337",
+      "id": "prop_339",
       "position": [
         54.63,
         0.1,
@@ -4379,7 +4405,7 @@
       "tint": null
     },
     {
-      "id": "prop_338",
+      "id": "prop_340",
       "position": [
         -45.93,
         0.29,
@@ -4393,7 +4419,7 @@
       "tint": null
     },
     {
-      "id": "prop_339",
+      "id": "prop_341",
       "position": [
         -38.17,
         0.97,
@@ -4407,7 +4433,7 @@
       "tint": null
     },
     {
-      "id": "prop_340",
+      "id": "prop_342",
       "position": [
         49.7,
         0.14,
@@ -4421,7 +4447,7 @@
       "tint": null
     },
     {
-      "id": "prop_341",
+      "id": "prop_343",
       "position": [
         41.75,
         0.72,
@@ -4435,7 +4461,7 @@
       "tint": null
     },
     {
-      "id": "prop_342",
+      "id": "prop_344",
       "position": [
         35.64,
         1.21,
@@ -4449,7 +4475,7 @@
       "tint": null
     },
     {
-      "id": "prop_343",
+      "id": "prop_345",
       "position": [
         -36.69,
         0.71,
@@ -4463,7 +4489,7 @@
       "tint": null
     },
     {
-      "id": "prop_344",
+      "id": "prop_346",
       "position": [
         37.16,
         1.14,
@@ -4477,7 +4503,7 @@
       "tint": null
     },
     {
-      "id": "prop_345",
+      "id": "prop_347",
       "position": [
         -40.49,
         1.88,
@@ -4491,7 +4517,7 @@
       "tint": null
     },
     {
-      "id": "prop_346",
+      "id": "prop_348",
       "position": [
         30.89,
         0.84,
@@ -4505,7 +4531,7 @@
       "tint": null
     },
     {
-      "id": "prop_347",
+      "id": "prop_349",
       "position": [
         -41.88,
         0.53,
@@ -4519,7 +4545,7 @@
       "tint": null
     },
     {
-      "id": "prop_348",
+      "id": "prop_350",
       "position": [
         45.17,
         0.3,
@@ -4533,7 +4559,7 @@
       "tint": null
     },
     {
-      "id": "prop_349",
+      "id": "prop_351",
       "position": [
         44.1,
         -0.18,
@@ -4547,7 +4573,7 @@
       "tint": null
     },
     {
-      "id": "prop_350",
+      "id": "prop_352",
       "position": [
         -38.56,
         0.2,
@@ -4561,7 +4587,7 @@
       "tint": null
     },
     {
-      "id": "prop_351",
+      "id": "prop_353",
       "position": [
         -44.82,
         1.3,
@@ -4575,7 +4601,7 @@
       "tint": null
     },
     {
-      "id": "prop_352",
+      "id": "prop_354",
       "position": [
         -48.66,
         -0.15,
@@ -4589,7 +4615,7 @@
       "tint": null
     },
     {
-      "id": "prop_353",
+      "id": "prop_355",
       "position": [
         45.3,
         0.92,
@@ -4603,7 +4629,7 @@
       "tint": null
     },
     {
-      "id": "prop_354",
+      "id": "prop_356",
       "position": [
         -44.91,
         -0.18,
@@ -4617,7 +4643,7 @@
       "tint": null
     },
     {
-      "id": "prop_355",
+      "id": "prop_357",
       "position": [
         -53.84,
         0.55,
@@ -4631,7 +4657,7 @@
       "tint": null
     },
     {
-      "id": "prop_356",
+      "id": "prop_358",
       "position": [
         34.24,
         0.69,
@@ -4645,7 +4671,7 @@
       "tint": null
     },
     {
-      "id": "prop_357",
+      "id": "prop_359",
       "position": [
         36.76,
         1.05,
@@ -4659,7 +4685,7 @@
       "tint": null
     },
     {
-      "id": "prop_358",
+      "id": "prop_360",
       "position": [
         49.51,
         0.81,
@@ -4673,7 +4699,7 @@
       "tint": null
     },
     {
-      "id": "prop_359",
+      "id": "prop_361",
       "position": [
         46.14,
         0.54,
@@ -4687,7 +4713,7 @@
       "tint": null
     },
     {
-      "id": "prop_360",
+      "id": "prop_362",
       "position": [
         43.81,
         0.4,
@@ -4701,7 +4727,7 @@
       "tint": null
     },
     {
-      "id": "prop_361",
+      "id": "prop_363",
       "position": [
         -46.24,
         0.59,
@@ -4715,7 +4741,7 @@
       "tint": null
     },
     {
-      "id": "prop_362",
+      "id": "prop_364",
       "position": [
         -14.55,
         0.83,
@@ -4729,7 +4755,7 @@
       "tint": null
     },
     {
-      "id": "prop_363",
+      "id": "prop_365",
       "position": [
         52.7,
         0.43,
@@ -4743,7 +4769,7 @@
       "tint": null
     },
     {
-      "id": "prop_364",
+      "id": "prop_366",
       "position": [
         -48.42,
         0.97,
@@ -4757,7 +4783,7 @@
       "tint": null
     },
     {
-      "id": "prop_365",
+      "id": "prop_367",
       "position": [
         -28.64,
         0.69,
@@ -4771,7 +4797,7 @@
       "tint": null
     },
     {
-      "id": "prop_366",
+      "id": "prop_368",
       "position": [
         -38.1,
         1.03,
@@ -4785,7 +4811,7 @@
       "tint": null
     },
     {
-      "id": "prop_367",
+      "id": "prop_369",
       "position": [
         28.14,
         0.61,
@@ -4799,7 +4825,7 @@
       "tint": null
     },
     {
-      "id": "prop_368",
+      "id": "prop_370",
       "position": [
         39.79,
         2.71,
@@ -4813,7 +4839,7 @@
       "tint": null
     },
     {
-      "id": "prop_369",
+      "id": "prop_371",
       "position": [
         47,
         0.13,
@@ -4827,7 +4853,7 @@
       "tint": null
     },
     {
-      "id": "prop_370",
+      "id": "prop_372",
       "position": [
         -40.33,
         0.59,
@@ -4841,7 +4867,7 @@
       "tint": null
     },
     {
-      "id": "prop_371",
+      "id": "prop_373",
       "position": [
         -28.08,
         0.36,
@@ -4855,7 +4881,7 @@
       "tint": null
     },
     {
-      "id": "prop_372",
+      "id": "prop_374",
       "position": [
         50.09,
         -0.1,
@@ -4869,7 +4895,7 @@
       "tint": null
     },
     {
-      "id": "prop_373",
+      "id": "prop_375",
       "position": [
         30.48,
         0.62,
@@ -4883,7 +4909,7 @@
       "tint": null
     },
     {
-      "id": "prop_374",
+      "id": "prop_376",
       "position": [
         -52.19,
         -0.02,
@@ -4897,7 +4923,7 @@
       "tint": null
     },
     {
-      "id": "prop_375",
+      "id": "prop_377",
       "position": [
         -6.02,
         0.28,
@@ -4911,7 +4937,7 @@
       "tint": null
     },
     {
-      "id": "prop_376",
+      "id": "prop_378",
       "position": [
         -35.29,
         2.19,
@@ -4925,7 +4951,7 @@
       "tint": null
     },
     {
-      "id": "prop_377",
+      "id": "prop_379",
       "position": [
         53.72,
         0.45,
@@ -4939,7 +4965,7 @@
       "tint": null
     },
     {
-      "id": "prop_378",
+      "id": "prop_380",
       "position": [
         20.21,
         0.5,
@@ -4953,7 +4979,7 @@
       "tint": null
     },
     {
-      "id": "prop_379",
+      "id": "prop_381",
       "position": [
         49.28,
         -0.18,
@@ -4967,7 +4993,7 @@
       "tint": null
     },
     {
-      "id": "prop_380",
+      "id": "prop_382",
       "position": [
         -23.01,
         0.26,
@@ -4981,7 +5007,7 @@
       "tint": null
     },
     {
-      "id": "prop_381",
+      "id": "prop_383",
       "position": [
         21.99,
         0.04,
@@ -4995,7 +5021,7 @@
       "tint": null
     },
     {
-      "id": "prop_382",
+      "id": "prop_384",
       "position": [
         16.51,
         0.83,
@@ -5009,7 +5035,7 @@
       "tint": null
     },
     {
-      "id": "prop_383",
+      "id": "prop_385",
       "position": [
         1.43,
         0.04,
@@ -5023,7 +5049,7 @@
       "tint": null
     },
     {
-      "id": "prop_384",
+      "id": "prop_386",
       "position": [
         -49.81,
         -0.09,
@@ -5037,7 +5063,7 @@
       "tint": null
     },
     {
-      "id": "prop_385",
+      "id": "prop_387",
       "position": [
         42.85,
         0.19,
@@ -5051,7 +5077,7 @@
       "tint": null
     },
     {
-      "id": "prop_386",
+      "id": "prop_388",
       "position": [
         -10.37,
         1.98,
@@ -5065,7 +5091,7 @@
       "tint": null
     },
     {
-      "id": "prop_387",
+      "id": "prop_389",
       "position": [
         -33.45,
         1.77,
@@ -5079,7 +5105,7 @@
       "tint": null
     },
     {
-      "id": "prop_388",
+      "id": "prop_390",
       "position": [
         -16.87,
         0.6,
@@ -5093,7 +5119,7 @@
       "tint": null
     },
     {
-      "id": "prop_389",
+      "id": "prop_391",
       "position": [
         -45.23,
         -0.18,
@@ -5107,7 +5133,7 @@
       "tint": null
     },
     {
-      "id": "prop_390",
+      "id": "prop_392",
       "position": [
         -49.43,
         1.08,
@@ -5121,7 +5147,7 @@
       "tint": null
     },
     {
-      "id": "prop_391",
+      "id": "prop_393",
       "position": [
         -21.91,
         0.06,
@@ -5135,7 +5161,7 @@
       "tint": null
     },
     {
-      "id": "prop_392",
+      "id": "prop_394",
       "position": [
         11.35,
         0.29,
@@ -5149,7 +5175,7 @@
       "tint": null
     },
     {
-      "id": "prop_393",
+      "id": "prop_395",
       "position": [
         -52.76,
         0.16,
@@ -5163,7 +5189,7 @@
       "tint": null
     },
     {
-      "id": "prop_394",
+      "id": "prop_396",
       "position": [
         50.91,
         0.75,
@@ -5177,7 +5203,7 @@
       "tint": null
     },
     {
-      "id": "prop_395",
+      "id": "prop_397",
       "position": [
         -26.14,
         2.36,
@@ -5191,7 +5217,7 @@
       "tint": null
     },
     {
-      "id": "prop_396",
+      "id": "prop_398",
       "position": [
         55.14,
         0.52,
@@ -5205,7 +5231,7 @@
       "tint": null
     },
     {
-      "id": "prop_397",
+      "id": "prop_399",
       "position": [
         -43.59,
         -0.03,
@@ -5219,7 +5245,7 @@
       "tint": null
     },
     {
-      "id": "prop_398",
+      "id": "prop_400",
       "position": [
         -50.18,
         0.82,
@@ -5233,7 +5259,7 @@
       "tint": null
     },
     {
-      "id": "prop_399",
+      "id": "prop_401",
       "position": [
         -23.86,
         0.02,
@@ -5247,7 +5273,7 @@
       "tint": null
     },
     {
-      "id": "prop_400",
+      "id": "prop_402",
       "position": [
         -4.74,
         1.82,
@@ -5261,7 +5287,7 @@
       "tint": null
     },
     {
-      "id": "prop_401",
+      "id": "prop_403",
       "position": [
         2.07,
         0.09,
@@ -5275,7 +5301,7 @@
       "tint": null
     },
     {
-      "id": "prop_402",
+      "id": "prop_404",
       "position": [
         -25.48,
         2.07,
@@ -5289,7 +5315,7 @@
       "tint": null
     },
     {
-      "id": "prop_403",
+      "id": "prop_405",
       "position": [
         20.59,
         0.29,
@@ -5303,7 +5329,7 @@
       "tint": null
     },
     {
-      "id": "prop_404",
+      "id": "prop_406",
       "position": [
         -20.83,
         0.49,
@@ -5317,7 +5343,7 @@
       "tint": null
     },
     {
-      "id": "prop_405",
+      "id": "prop_407",
       "position": [
         -55.41,
         0.63,
@@ -5331,7 +5357,7 @@
       "tint": null
     },
     {
-      "id": "prop_406",
+      "id": "prop_408",
       "position": [
         -7.11,
         0.3,
@@ -5345,7 +5371,7 @@
       "tint": null
     },
     {
-      "id": "prop_407",
+      "id": "prop_409",
       "position": [
         -17.4,
         0.68,
@@ -5359,7 +5385,7 @@
       "tint": null
     },
     {
-      "id": "prop_408",
+      "id": "prop_410",
       "position": [
         3.38,
         1.02,
@@ -5373,7 +5399,7 @@
       "tint": null
     },
     {
-      "id": "prop_409",
+      "id": "prop_411",
       "position": [
         23.53,
         0.63,
@@ -5387,7 +5413,7 @@
       "tint": null
     },
     {
-      "id": "prop_410",
+      "id": "prop_412",
       "position": [
         19.91,
         0.59,
@@ -5401,7 +5427,7 @@
       "tint": null
     },
     {
-      "id": "prop_411",
+      "id": "prop_413",
       "position": [
         -43.9,
         0.21,
@@ -5415,7 +5441,7 @@
       "tint": null
     },
     {
-      "id": "prop_412",
+      "id": "prop_414",
       "position": [
         -22.35,
         0.18,
@@ -5429,7 +5455,7 @@
       "tint": null
     },
     {
-      "id": "prop_413",
+      "id": "prop_415",
       "position": [
         -26,
         3.76,
@@ -5443,7 +5469,7 @@
       "tint": null
     },
     {
-      "id": "prop_414",
+      "id": "prop_416",
       "position": [
         48.06,
         0.31,
@@ -5457,7 +5483,7 @@
       "tint": null
     },
     {
-      "id": "prop_415",
+      "id": "prop_417",
       "position": [
         -18.36,
         0.23,
@@ -5471,7 +5497,7 @@
       "tint": null
     },
     {
-      "id": "prop_416",
+      "id": "prop_418",
       "position": [
         -22.51,
         -0.03,
@@ -5485,7 +5511,7 @@
       "tint": null
     },
     {
-      "id": "prop_417",
+      "id": "prop_419",
       "position": [
         -0.07,
         0.18,
@@ -5499,7 +5525,7 @@
       "tint": null
     },
     {
-      "id": "prop_418",
+      "id": "prop_420",
       "position": [
         -8.89,
         1.91,
@@ -5513,7 +5539,7 @@
       "tint": null
     },
     {
-      "id": "prop_419",
+      "id": "prop_421",
       "position": [
         -24.53,
         4.21,
@@ -5527,7 +5553,7 @@
       "tint": null
     },
     {
-      "id": "prop_420",
+      "id": "prop_422",
       "position": [
         -30.04,
         0.1,
@@ -5541,7 +5567,7 @@
       "tint": null
     },
     {
-      "id": "prop_421",
+      "id": "prop_423",
       "position": [
         -49.02,
         0.42,
@@ -5555,7 +5581,7 @@
       "tint": null
     },
     {
-      "id": "prop_422",
+      "id": "prop_424",
       "position": [
         28.72,
         -0.1,
@@ -5569,7 +5595,7 @@
       "tint": null
     },
     {
-      "id": "prop_423",
+      "id": "prop_425",
       "position": [
         -11.57,
         0.04,
@@ -5583,7 +5609,7 @@
       "tint": null
     },
     {
-      "id": "prop_424",
+      "id": "prop_426",
       "position": [
         19.03,
         1.04,
@@ -5597,7 +5623,7 @@
       "tint": null
     },
     {
-      "id": "prop_425",
+      "id": "prop_427",
       "position": [
         -36.89,
         2.68,
@@ -5611,7 +5637,7 @@
       "tint": null
     },
     {
-      "id": "prop_426",
+      "id": "prop_428",
       "position": [
         -25.03,
         0.99,
@@ -5625,7 +5651,7 @@
       "tint": null
     },
     {
-      "id": "prop_427",
+      "id": "prop_429",
       "position": [
         -45.65,
         0.12,
@@ -5639,7 +5665,7 @@
       "tint": null
     },
     {
-      "id": "prop_428",
+      "id": "prop_430",
       "position": [
         20.87,
         0.65,
@@ -5653,7 +5679,7 @@
       "tint": null
     },
     {
-      "id": "prop_429",
+      "id": "prop_431",
       "position": [
         -1.18,
         0.26,
@@ -5667,7 +5693,7 @@
       "tint": null
     },
     {
-      "id": "prop_430",
+      "id": "prop_432",
       "position": [
         30.95,
         0.61,
@@ -5681,7 +5707,7 @@
       "tint": null
     },
     {
-      "id": "prop_431",
+      "id": "prop_433",
       "position": [
         -49.01,
         0.2,
@@ -5695,7 +5721,7 @@
       "tint": null
     },
     {
-      "id": "prop_432",
+      "id": "prop_434",
       "position": [
         25.54,
         0.7,
@@ -5709,7 +5735,7 @@
       "tint": null
     },
     {
-      "id": "prop_433",
+      "id": "prop_435",
       "position": [
         -29.73,
         0.99,
@@ -5723,7 +5749,7 @@
       "tint": null
     },
     {
-      "id": "prop_434",
+      "id": "prop_436",
       "position": [
         -19.96,
         0,
@@ -5737,7 +5763,7 @@
       "tint": null
     },
     {
-      "id": "prop_435",
+      "id": "prop_437",
       "position": [
         -11.17,
         0.26,
@@ -5751,7 +5777,7 @@
       "tint": null
     },
     {
-      "id": "prop_436",
+      "id": "prop_438",
       "position": [
         -39,
         0.46,
@@ -5765,7 +5791,7 @@
       "tint": null
     },
     {
-      "id": "prop_437",
+      "id": "prop_439",
       "position": [
         -9.32,
         0.77,
@@ -5779,7 +5805,7 @@
       "tint": null
     },
     {
-      "id": "prop_438",
+      "id": "prop_440",
       "position": [
         14.44,
         3.14,
@@ -5793,7 +5819,7 @@
       "tint": null
     },
     {
-      "id": "prop_439",
+      "id": "prop_441",
       "position": [
         -23,
         0.92,
@@ -5807,7 +5833,7 @@
       "tint": null
     },
     {
-      "id": "prop_440",
+      "id": "prop_442",
       "position": [
         -0.77,
         0.12,
@@ -5821,7 +5847,7 @@
       "tint": null
     },
     {
-      "id": "prop_441",
+      "id": "prop_443",
       "position": [
         -15.74,
         -0.09,
@@ -5835,7 +5861,7 @@
       "tint": null
     },
     {
-      "id": "prop_442",
+      "id": "prop_444",
       "position": [
         1.53,
         0.34,
@@ -5849,7 +5875,7 @@
       "tint": null
     },
     {
-      "id": "prop_443",
+      "id": "prop_445",
       "position": [
         -49.64,
         0.36,
@@ -5863,7 +5889,7 @@
       "tint": null
     },
     {
-      "id": "prop_444",
+      "id": "prop_446",
       "position": [
         5.22,
         1,
@@ -5877,7 +5903,7 @@
       "tint": null
     },
     {
-      "id": "prop_445",
+      "id": "prop_447",
       "position": [
         40.76,
         0.23,
@@ -5891,7 +5917,7 @@
       "tint": null
     },
     {
-      "id": "prop_446",
+      "id": "prop_448",
       "position": [
         -18.54,
         -0.05,
@@ -5905,7 +5931,7 @@
       "tint": null
     },
     {
-      "id": "prop_447",
+      "id": "prop_449",
       "position": [
         14.31,
         2.41,
@@ -5919,7 +5945,7 @@
       "tint": null
     },
     {
-      "id": "prop_448",
+      "id": "prop_450",
       "position": [
         49.4,
         0.42,
@@ -5933,7 +5959,7 @@
       "tint": null
     },
     {
-      "id": "prop_449",
+      "id": "prop_451",
       "position": [
         -15.11,
         3.34,
@@ -5947,7 +5973,7 @@
       "tint": null
     },
     {
-      "id": "prop_450",
+      "id": "prop_452",
       "position": [
         -43.57,
         -0.05,
@@ -5961,7 +5987,7 @@
       "tint": null
     },
     {
-      "id": "prop_451",
+      "id": "prop_453",
       "position": [
         46.04,
         -0.18,
@@ -5975,7 +6001,7 @@
       "tint": null
     },
     {
-      "id": "prop_452",
+      "id": "prop_454",
       "position": [
         -13.58,
         1.12,
@@ -5989,7 +6015,7 @@
       "tint": null
     },
     {
-      "id": "prop_453",
+      "id": "prop_455",
       "position": [
         -4.18,
         0.47,
@@ -6003,7 +6029,7 @@
       "tint": null
     },
     {
-      "id": "prop_454",
+      "id": "prop_456",
       "position": [
         28.96,
         0.49,
@@ -6017,7 +6043,7 @@
       "tint": null
     },
     {
-      "id": "prop_455",
+      "id": "prop_457",
       "position": [
         23.42,
         0.13,
@@ -6031,7 +6057,7 @@
       "tint": null
     },
     {
-      "id": "prop_456",
+      "id": "prop_458",
       "position": [
         -48.55,
         -0.18,
@@ -6045,7 +6071,7 @@
       "tint": null
     },
     {
-      "id": "prop_457",
+      "id": "prop_459",
       "position": [
         -5.05,
         0.57,
@@ -6059,7 +6085,7 @@
       "tint": null
     },
     {
-      "id": "prop_458",
+      "id": "prop_460",
       "position": [
         48.48,
         0.05,
@@ -6073,7 +6099,7 @@
       "tint": null
     },
     {
-      "id": "prop_459",
+      "id": "prop_461",
       "position": [
         54.28,
         0.48,
@@ -6087,7 +6113,7 @@
       "tint": null
     },
     {
-      "id": "prop_460",
+      "id": "prop_462",
       "position": [
         48.71,
         0.96,
@@ -6101,7 +6127,7 @@
       "tint": null
     },
     {
-      "id": "prop_461",
+      "id": "prop_463",
       "position": [
         -9.25,
         2.18,
@@ -6115,7 +6141,7 @@
       "tint": null
     },
     {
-      "id": "prop_462",
+      "id": "prop_464",
       "position": [
         -5.72,
         0.6,
@@ -6129,7 +6155,7 @@
       "tint": null
     },
     {
-      "id": "prop_463",
+      "id": "prop_465",
       "position": [
         -27.29,
         1.05,
@@ -6143,7 +6169,7 @@
       "tint": null
     },
     {
-      "id": "prop_464",
+      "id": "prop_466",
       "position": [
         -3.88,
         0.19,
@@ -6157,7 +6183,7 @@
       "tint": null
     },
     {
-      "id": "prop_465",
+      "id": "prop_467",
       "position": [
         22.75,
         0.54,
@@ -6171,7 +6197,7 @@
       "tint": null
     },
     {
-      "id": "prop_466",
+      "id": "prop_468",
       "position": [
         -53.6,
         0.18,
@@ -6185,7 +6211,7 @@
       "tint": null
     },
     {
-      "id": "prop_467",
+      "id": "prop_469",
       "position": [
         -11.5,
         0.21,
@@ -6199,7 +6225,7 @@
       "tint": null
     },
     {
-      "id": "prop_468",
+      "id": "prop_470",
       "position": [
         -21.88,
         0.7,
@@ -6213,7 +6239,7 @@
       "tint": null
     },
     {
-      "id": "prop_469",
+      "id": "prop_471",
       "position": [
         -11.38,
         -0.1,
@@ -6227,7 +6253,7 @@
       "tint": null
     },
     {
-      "id": "prop_470",
+      "id": "prop_472",
       "position": [
         -40.58,
         0.27,
@@ -6241,7 +6267,7 @@
       "tint": null
     },
     {
-      "id": "prop_471",
+      "id": "prop_473",
       "position": [
         16.57,
         0.59,
@@ -6255,7 +6281,7 @@
       "tint": null
     },
     {
-      "id": "prop_472",
+      "id": "prop_474",
       "position": [
         15.12,
         0.65,
@@ -6269,7 +6295,7 @@
       "tint": null
     },
     {
-      "id": "prop_473",
+      "id": "prop_475",
       "position": [
         -35.06,
         1.71,
@@ -6283,7 +6309,7 @@
       "tint": null
     },
     {
-      "id": "prop_474",
+      "id": "prop_476",
       "position": [
         17.54,
         0.44,
@@ -6297,7 +6323,7 @@
       "tint": null
     },
     {
-      "id": "prop_475",
+      "id": "prop_477",
       "position": [
         43.43,
         -0.04,
@@ -6311,7 +6337,7 @@
       "tint": null
     },
     {
-      "id": "prop_476",
+      "id": "prop_478",
       "position": [
         -20.66,
         2.38,
@@ -6325,7 +6351,7 @@
       "tint": null
     },
     {
-      "id": "prop_477",
+      "id": "prop_479",
       "position": [
         14.12,
         0.5,
@@ -6339,7 +6365,7 @@
       "tint": null
     },
     {
-      "id": "prop_478",
+      "id": "prop_480",
       "position": [
         18.43,
         0.57,
@@ -6353,7 +6379,7 @@
       "tint": null
     },
     {
-      "id": "prop_479",
+      "id": "prop_481",
       "position": [
         23.46,
         0.14,
@@ -6367,7 +6393,7 @@
       "tint": null
     },
     {
-      "id": "prop_480",
+      "id": "prop_482",
       "position": [
         27.29,
         0.28,
@@ -6381,7 +6407,7 @@
       "tint": null
     },
     {
-      "id": "prop_481",
+      "id": "prop_483",
       "position": [
         20.08,
         0.05,
@@ -6395,7 +6421,7 @@
       "tint": null
     },
     {
-      "id": "prop_482",
+      "id": "prop_484",
       "position": [
         -17.04,
         0.63,
@@ -6409,7 +6435,7 @@
       "tint": null
     },
     {
-      "id": "prop_483",
+      "id": "prop_485",
       "position": [
         11.36,
         -0.08,
@@ -6423,7 +6449,7 @@
       "tint": null
     },
     {
-      "id": "prop_484",
+      "id": "prop_486",
       "position": [
         -19.72,
         3.31,
@@ -6437,7 +6463,7 @@
       "tint": null
     },
     {
-      "id": "prop_485",
+      "id": "prop_487",
       "position": [
         42.98,
         0.26,
@@ -6451,7 +6477,7 @@
       "tint": null
     },
     {
-      "id": "prop_486",
+      "id": "prop_488",
       "position": [
         -15.35,
         -0.09,
@@ -6465,7 +6491,7 @@
       "tint": null
     },
     {
-      "id": "prop_487",
+      "id": "prop_489",
       "position": [
         -51.8,
         0.38,
@@ -6479,7 +6505,7 @@
       "tint": null
     },
     {
-      "id": "prop_488",
+      "id": "prop_490",
       "position": [
         3.75,
         0.45,
@@ -6493,7 +6519,7 @@
       "tint": null
     },
     {
-      "id": "prop_489",
+      "id": "prop_491",
       "position": [
         15.94,
         -0.09,
@@ -6507,7 +6533,7 @@
       "tint": null
     },
     {
-      "id": "prop_490",
+      "id": "prop_492",
       "position": [
         14.25,
         3.43,
@@ -6521,7 +6547,7 @@
       "tint": null
     },
     {
-      "id": "prop_491",
+      "id": "prop_493",
       "position": [
         6.76,
         0.11,
@@ -6535,7 +6561,7 @@
       "tint": null
     },
     {
-      "id": "prop_492",
+      "id": "prop_494",
       "position": [
         27.67,
         0.6,
@@ -6549,7 +6575,7 @@
       "tint": null
     },
     {
-      "id": "prop_493",
+      "id": "prop_495",
       "position": [
         42.64,
         2.08,
@@ -6563,7 +6589,7 @@
       "tint": null
     },
     {
-      "id": "prop_494",
+      "id": "prop_496",
       "position": [
         15.21,
         0.11,
@@ -6577,7 +6603,7 @@
       "tint": null
     },
     {
-      "id": "prop_495",
+      "id": "prop_497",
       "position": [
         -28.13,
         0.93,
@@ -6591,7 +6617,7 @@
       "tint": null
     },
     {
-      "id": "prop_496",
+      "id": "prop_498",
       "position": [
         -32.78,
         0.88,
@@ -6605,7 +6631,7 @@
       "tint": null
     },
     {
-      "id": "prop_497",
+      "id": "prop_499",
       "position": [
         27.84,
         0.72,
@@ -6619,7 +6645,7 @@
       "tint": null
     },
     {
-      "id": "prop_498",
+      "id": "prop_500",
       "position": [
         -27.76,
         3.03,
@@ -6633,7 +6659,7 @@
       "tint": null
     },
     {
-      "id": "prop_499",
+      "id": "prop_501",
       "position": [
         -15.89,
         0.57,
@@ -6647,7 +6673,7 @@
       "tint": null
     },
     {
-      "id": "prop_500",
+      "id": "prop_502",
       "position": [
         -52.81,
         0.33,
@@ -6661,7 +6687,7 @@
       "tint": null
     },
     {
-      "id": "prop_501",
+      "id": "prop_503",
       "position": [
         26.81,
         2.37,
@@ -6675,7 +6701,7 @@
       "tint": null
     },
     {
-      "id": "prop_502",
+      "id": "prop_504",
       "position": [
         -51.57,
         -0.14,
@@ -6689,7 +6715,7 @@
       "tint": null
     },
     {
-      "id": "prop_503",
+      "id": "prop_505",
       "position": [
         -47.52,
         0.11,
@@ -6703,7 +6729,7 @@
       "tint": null
     },
     {
-      "id": "prop_504",
+      "id": "prop_506",
       "position": [
         -13.97,
         0.08,
@@ -6717,7 +6743,7 @@
       "tint": null
     },
     {
-      "id": "prop_505",
+      "id": "prop_507",
       "position": [
         -25.74,
         0.33,
@@ -6731,7 +6757,7 @@
       "tint": null
     },
     {
-      "id": "prop_506",
+      "id": "prop_508",
       "position": [
         -43.48,
         0.13,
@@ -6745,7 +6771,7 @@
       "tint": null
     },
     {
-      "id": "prop_507",
+      "id": "prop_509",
       "position": [
         7.64,
         0.62,
@@ -6759,7 +6785,7 @@
       "tint": null
     },
     {
-      "id": "prop_508",
+      "id": "prop_510",
       "position": [
         35.93,
         0.25,
@@ -6773,7 +6799,7 @@
       "tint": null
     },
     {
-      "id": "prop_509",
+      "id": "prop_511",
       "position": [
         9.89,
         0.86,
@@ -6787,7 +6813,7 @@
       "tint": null
     },
     {
-      "id": "prop_510",
+      "id": "prop_512",
       "position": [
         3.18,
         0.26,
@@ -6801,7 +6827,7 @@
       "tint": null
     },
     {
-      "id": "prop_511",
+      "id": "prop_513",
       "position": [
         3.02,
         0.28,
@@ -6815,7 +6841,7 @@
       "tint": null
     },
     {
-      "id": "prop_512",
+      "id": "prop_514",
       "position": [
         14.86,
         0.01,
@@ -6829,7 +6855,7 @@
       "tint": null
     },
     {
-      "id": "prop_513",
+      "id": "prop_515",
       "position": [
         -30.29,
         0.72,
@@ -6843,7 +6869,7 @@
       "tint": null
     },
     {
-      "id": "prop_514",
+      "id": "prop_516",
       "position": [
         51.81,
         0.15,
@@ -6857,7 +6883,7 @@
       "tint": null
     },
     {
-      "id": "prop_515",
+      "id": "prop_517",
       "position": [
         1.6,
         0.34,
@@ -6871,7 +6897,7 @@
       "tint": null
     },
     {
-      "id": "prop_516",
+      "id": "prop_518",
       "position": [
         19.86,
         0.46,
@@ -6885,7 +6911,7 @@
       "tint": null
     },
     {
-      "id": "prop_517",
+      "id": "prop_519",
       "position": [
         -17.04,
         0.37,
@@ -6899,7 +6925,7 @@
       "tint": null
     },
     {
-      "id": "prop_518",
+      "id": "prop_520",
       "position": [
         26.7,
         1.26,
@@ -6913,7 +6939,7 @@
       "tint": null
     },
     {
-      "id": "prop_519",
+      "id": "prop_521",
       "position": [
         16.99,
         0.57,
@@ -6927,7 +6953,7 @@
       "tint": null
     },
     {
-      "id": "prop_520",
+      "id": "prop_522",
       "position": [
         -29.39,
         3.42,
@@ -6941,7 +6967,7 @@
       "tint": null
     },
     {
-      "id": "prop_521",
+      "id": "prop_523",
       "position": [
         23.19,
         0.29,
@@ -6955,7 +6981,7 @@
       "tint": null
     },
     {
-      "id": "prop_522",
+      "id": "prop_524",
       "position": [
         10.13,
         -0.02,
@@ -6969,7 +6995,7 @@
       "tint": null
     },
     {
-      "id": "prop_523",
+      "id": "prop_525",
       "position": [
         -34.49,
         1.29,
@@ -6983,7 +7009,7 @@
       "tint": null
     },
     {
-      "id": "prop_524",
+      "id": "prop_526",
       "position": [
         -49.77,
         0.09,
@@ -6997,7 +7023,7 @@
       "tint": null
     },
     {
-      "id": "prop_525",
+      "id": "prop_527",
       "position": [
         -25.3,
         0.69,
@@ -7011,7 +7037,7 @@
       "tint": null
     },
     {
-      "id": "prop_526",
+      "id": "prop_528",
       "position": [
         -19.77,
         0.33,
@@ -7025,7 +7051,7 @@
       "tint": null
     },
     {
-      "id": "prop_527",
+      "id": "prop_529",
       "position": [
         20.4,
         0.36,
@@ -7039,7 +7065,7 @@
       "tint": null
     },
     {
-      "id": "prop_528",
+      "id": "prop_530",
       "position": [
         52.24,
         0.45,
@@ -7053,7 +7079,7 @@
       "tint": null
     },
     {
-      "id": "prop_529",
+      "id": "prop_531",
       "position": [
         50.23,
         0.22,
@@ -7067,7 +7093,7 @@
       "tint": null
     },
     {
-      "id": "prop_530",
+      "id": "prop_532",
       "position": [
         -41.41,
         1.19,
@@ -7081,7 +7107,7 @@
       "tint": null
     },
     {
-      "id": "prop_531",
+      "id": "prop_533",
       "position": [
         6.02,
         0.58,
@@ -7095,7 +7121,7 @@
       "tint": null
     },
     {
-      "id": "prop_532",
+      "id": "prop_534",
       "position": [
         -40.33,
         0.91,
@@ -7109,7 +7135,7 @@
       "tint": null
     },
     {
-      "id": "prop_533",
+      "id": "prop_535",
       "position": [
         54.89,
         0.41,
@@ -7123,7 +7149,7 @@
       "tint": null
     },
     {
-      "id": "prop_534",
+      "id": "prop_536",
       "position": [
         -16.96,
         0.38,
@@ -7137,7 +7163,7 @@
       "tint": null
     },
     {
-      "id": "prop_535",
+      "id": "prop_537",
       "position": [
         -9.56,
         0.87,
@@ -7151,7 +7177,7 @@
       "tint": null
     },
     {
-      "id": "prop_536",
+      "id": "prop_538",
       "position": [
         42.8,
         0.05,
@@ -7165,7 +7191,7 @@
       "tint": null
     },
     {
-      "id": "prop_537",
+      "id": "prop_539",
       "position": [
         -18.85,
         0.06,
@@ -7179,7 +7205,7 @@
       "tint": null
     },
     {
-      "id": "prop_538",
+      "id": "prop_540",
       "position": [
         -43.55,
         0.31,
@@ -7193,7 +7219,7 @@
       "tint": null
     },
     {
-      "id": "prop_539",
+      "id": "prop_541",
       "position": [
         -29.49,
         0.86,
@@ -7207,7 +7233,7 @@
       "tint": null
     },
     {
-      "id": "prop_540",
+      "id": "prop_542",
       "position": [
         -38.56,
         1.88,
@@ -7221,7 +7247,7 @@
       "tint": null
     },
     {
-      "id": "prop_541",
+      "id": "prop_543",
       "position": [
         27.98,
         0.15,
@@ -7235,7 +7261,7 @@
       "tint": null
     },
     {
-      "id": "prop_542",
+      "id": "prop_544",
       "position": [
         -27.42,
         0.82,
@@ -7249,7 +7275,7 @@
       "tint": null
     },
     {
-      "id": "prop_543",
+      "id": "prop_545",
       "position": [
         -52.88,
         -0.05,
@@ -7263,7 +7289,7 @@
       "tint": null
     },
     {
-      "id": "prop_544",
+      "id": "prop_546",
       "position": [
         25.62,
         1.14,
@@ -7277,7 +7303,7 @@
       "tint": null
     },
     {
-      "id": "prop_545",
+      "id": "prop_547",
       "position": [
         13.41,
         0.28,
@@ -7291,7 +7317,7 @@
       "tint": null
     },
     {
-      "id": "prop_546",
+      "id": "prop_548",
       "position": [
         -43.77,
         -0.18,
@@ -7305,7 +7331,7 @@
       "tint": null
     },
     {
-      "id": "prop_547",
+      "id": "prop_549",
       "position": [
         17.53,
         1.1,
@@ -7319,7 +7345,7 @@
       "tint": null
     },
     {
-      "id": "prop_548",
+      "id": "prop_550",
       "position": [
         14.88,
         0.86,
@@ -7333,7 +7359,7 @@
       "tint": null
     },
     {
-      "id": "prop_549",
+      "id": "prop_551",
       "position": [
         -27.45,
         0.57,
@@ -7347,7 +7373,7 @@
       "tint": null
     },
     {
-      "id": "prop_550",
+      "id": "prop_552",
       "position": [
         28.93,
         0.34,
@@ -7361,7 +7387,7 @@
       "tint": null
     },
     {
-      "id": "prop_551",
+      "id": "prop_553",
       "position": [
         1.89,
         0.01,
@@ -7375,7 +7401,7 @@
       "tint": null
     },
     {
-      "id": "prop_552",
+      "id": "prop_554",
       "position": [
         -11.34,
         1.6,
@@ -7389,7 +7415,7 @@
       "tint": null
     },
     {
-      "id": "prop_553",
+      "id": "prop_555",
       "position": [
         -31.59,
         0.63,
@@ -7403,7 +7429,7 @@
       "tint": null
     },
     {
-      "id": "prop_554",
+      "id": "prop_556",
       "position": [
         54.97,
         0.22,
@@ -7417,7 +7443,7 @@
       "tint": null
     },
     {
-      "id": "prop_555",
+      "id": "prop_557",
       "position": [
         -53.08,
         0.45,
@@ -7431,7 +7457,7 @@
       "tint": null
     },
     {
-      "id": "prop_556",
+      "id": "prop_558",
       "position": [
         23.3,
         1.8,
@@ -7445,7 +7471,7 @@
       "tint": null
     },
     {
-      "id": "prop_557",
+      "id": "prop_559",
       "position": [
         -3.28,
         -0.02,
@@ -7459,7 +7485,7 @@
       "tint": null
     },
     {
-      "id": "prop_558",
+      "id": "prop_560",
       "position": [
         -2.18,
         0.38,
@@ -7473,7 +7499,7 @@
       "tint": null
     },
     {
-      "id": "prop_559",
+      "id": "prop_561",
       "position": [
         3.62,
         0.08,
@@ -7487,7 +7513,7 @@
       "tint": null
     },
     {
-      "id": "prop_560",
+      "id": "prop_562",
       "position": [
         -2.88,
         4,
@@ -7501,7 +7527,7 @@
       "tint": null
     },
     {
-      "id": "prop_561",
+      "id": "prop_563",
       "position": [
         2.9,
         4,
@@ -7515,7 +7541,7 @@
       "tint": null
     },
     {
-      "id": "prop_562",
+      "id": "prop_564",
       "position": [
         2.88,
         4,
@@ -7529,7 +7555,7 @@
       "tint": null
     },
     {
-      "id": "prop_563",
+      "id": "prop_565",
       "position": [
         -2.64,
         4,
@@ -7543,7 +7569,7 @@
       "tint": null
     },
     {
-      "id": "prop_564",
+      "id": "prop_566",
       "position": [
         -2.42,
         4,
@@ -7557,7 +7583,7 @@
       "tint": null
     },
     {
-      "id": "prop_565",
+      "id": "prop_567",
       "position": [
         2.35,
         4,
@@ -7571,7 +7597,7 @@
       "tint": null
     },
     {
-      "id": "prop_566",
+      "id": "prop_568",
       "position": [
         2.51,
         4,
@@ -7585,7 +7611,7 @@
       "tint": null
     },
     {
-      "id": "prop_567",
+      "id": "prop_569",
       "position": [
         -3.07,
         4,
@@ -84769,6 +84795,7 @@
     "style": "invisible",
     "height": 40
   },
+  "track": null,
   "backdrop": {
     "sky": "sunset",
     "scenery": "mountains",

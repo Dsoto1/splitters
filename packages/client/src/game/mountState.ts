@@ -1,4 +1,4 @@
-import { BUILT_MOUNT_BASE, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, TICK_RATE, getMountDef, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import { AIRPLANE_DEF, BUILT_MOUNT_BASE, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -19,6 +19,8 @@ export interface ClientMount {
   /** When the wreck stopped being solid (ms), so it can fade out; 0 otherwise. */
   wreckGoneAt: number;
   seats: number[];
+  /** Team colour, paint skin tint, or null: what the model is painted (see mountTint). */
+  tint: string | null;
   /** Smoothed pose for drawing. */
   shown: { pos: Vec3; yaw: number; aimYaw: number; aimPitch: number };
   /** Motion between the last two snapshots (m/s, rad/s), the snapshot's tick, and when it arrived (ms). */
@@ -43,13 +45,21 @@ export class MountState {
     map: MapDocument,
     private readonly physics: PhysicsWorld,
   ) {
+    const teams = map.entities.some((e) => e.kind === 'mount' && e.faction) ? mapTeams(map, MAX_TEAMS) : [];
     map.entities.forEach((e, index) => {
-      if (e.kind !== 'mount') return;
-      const def = getMountDef(e.model);
+      // Transport planes are mounts too (they fly their route); their box never blocks anything.
+      const plane = e.kind === 'airplane';
+      if (e.kind !== 'mount' && !plane) return;
+      const def = plane ? AIRPLANE_DEF : getMountDef(e.model);
       if (!def) return;
-      const pos = { x: e.position[0], y: e.position[1], z: e.position[2] };
-      const body = physics.createBox({ x: pos.x, y: pos.y + def.half[1], z: pos.z }, { x: def.half[0], y: def.half[1], z: def.half[2] }, e.yaw);
-      this.mounts.set(index, { index, def, model: e.model, pos, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0, health: 100, alive: true, wreck: false, burning: false, wreckGoneAt: 0, seats: def.seats.map(() => -1), shown: { pos: { ...pos }, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body });
+      const start = plane ? routePose(airRoute(e), 0) : null;
+      const pos = start ? start.pos : { x: e.position[0], y: e.position[1], z: e.position[2] };
+      const yaw = start ? start.yaw : e.kind === 'mount' ? e.yaw : 0;
+      const body = physics.createBox({ x: pos.x, y: pos.y + def.half[1], z: pos.z }, { x: def.half[0], y: def.half[1], z: def.half[2] }, yaw);
+      if (plane) physics.setBoxEnabled(body, false);
+      const team = e.kind === 'mount' && e.faction ? (teams.find((t) => t.id === e.faction)?.color ?? null) : null;
+      const tint = e.kind === 'mount' && def.kind !== 'sentry' ? mountTint(e.skin, team) : null;
+      this.mounts.set(index, { index, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: true, wreck: false, burning: false, wreckGoneAt: 0, seats: def.seats.map(() => -1), tint, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body });
     });
   }
 
@@ -91,8 +101,8 @@ export class MountState {
       m.wreck = wreck;
       m.burning = (flags & MOUNT_FLAG_BURNING) !== 0;
       m.seats = s.slice(9);
-      // The wreck is solid on the server too: keep it in the prediction physics until it goes.
-      const solid = alive || wreck;
+      // The wreck is solid on the server too: keep it in the prediction physics until it goes. The plane never blocks.
+      const solid = (alive || wreck) && !m.def.airplane;
       this.physics.setBoxEnabled(m.body, solid);
       if (solid) this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
     }
@@ -105,7 +115,7 @@ export class MountState {
     const pos = { x: s[1]!, y: s[2]!, z: s[3]! };
     const yaw = s[4]!;
     const body = this.physics.createBox({ x: pos.x, y: pos.y + def.half[1], z: pos.z }, { x: def.half[0], y: def.half[1], z: def.half[2] }, yaw);
-    const m: ClientMount = { index: s[0]!, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: false, wreck: false, burning: false, wreckGoneAt: 0, seats: [], shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body };
+    const m: ClientMount = { index: s[0]!, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: false, wreck: false, burning: false, wreckGoneAt: 0, seats: [], tint: null, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body };
     this.mounts.set(m.index, m);
     return m;
   }
@@ -144,7 +154,7 @@ export class MountState {
     let best: ClientMount | null = null;
     let bestD = Infinity;
     for (const m of this.mounts.values()) {
-      if (!m.alive || !m.def.seats.length || !m.seats.includes(-1)) continue;
+      if (!m.alive || !m.def.seats.length || !m.seats.includes(-1) || m.def.airplane) continue;
       const d = Math.hypot(m.pos.x - feet.x, m.pos.z - feet.z);
       if (d <= m.def.enterRadius && Math.abs(m.pos.y - feet.y) < 2.5 && d < bestD) {
         best = m;

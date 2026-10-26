@@ -31,6 +31,8 @@ export interface RemotePose {
   /** Dancing (emote). */
   emote?: boolean;
   sprinting?: boolean;
+  /** Under a parachute (1) or glider (2). */
+  chute?: number;
 }
 
 /** Snapshot interpolation for remote players, driven by an estimate of the server clock. */
@@ -115,6 +117,7 @@ export class Interpolator {
         ...(pb.sn ? { stance: pb.sn } : {}),
         ...(pb.sr ? { sprinting: true } : {}),
         ...(pb.em ? { emote: true } : {}),
+        ...(pb.ch ? { chute: pb.ch } : {}),
         weapon: pb.w,
         powerups: pb.pu,
         status: pb.fx ?? 0,

@@ -307,6 +307,7 @@ export const SCENARIO_PALETTE = [
   { key: 'water:lava', label: 'Lava', search: 'lava magma liquid hazard burn' },
   { key: 'water:acid', label: 'Acid', search: 'acid toxic liquid hazard pool' },
   { key: 'water:swamp', label: 'Swamp', search: 'swamp mud bog marsh liquid slow' },
+  { key: 'airplane', label: 'Transport Plane', search: 'airplane plane transport air drop parachute route fly over battle royale jump' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
@@ -399,6 +400,9 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       const fixture = key.slice(6) as LightFixture;
       return { id: newId('light'), kind: 'light', position, yaw, color: fixture === 'strip' ? '#e8f4ff' : '#fff1d6', intensity: 1, range: fixture === 'none' ? 12 : 10, fixture };
     }
+    case 'airplane':
+      // A square loop 160 m across, 70 m up, once a minute; no air drop until the creator picks one.
+      return { id: newId('plane'), kind: 'airplane', position, route: [[-80, -80], [80, -80], [80, 80], [-80, 80]], altitude: 70, loopSeconds: 60, closed: true, airdrop: 'off' };
     case 'water:water':
     case 'water:lava':
     case 'water:acid':
@@ -426,7 +430,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {

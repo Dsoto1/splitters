@@ -1,5 +1,5 @@
 import type { Scene } from '@babylonjs/core/scene';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
@@ -8,6 +8,7 @@ import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import '@babylonjs/core/Rendering/edgesRenderer';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
+import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import type { Material } from '@babylonjs/core/Materials/material';
@@ -25,6 +26,7 @@ import {
   TRAP_SPECS,
   TRAP_SPENT,
   TRAP_WARNING,
+  type AirplaneEntity,
   type LightEntity,
   type Liquid,
   type MapEntity,
@@ -189,7 +191,44 @@ export class ScenarioVisuals {
         return this.objective(name, e);
       case 'light':
         return this.light(name, e);
+      case 'airplane':
+        return this.airplane(name, e);
     }
+  }
+
+  /**
+   * MapMaker's view of a transport plane (in play the plane itself is a
+   * mount): a marker on the ground at its anchor, a mast up to its flying
+   * height and its route drawn in the sky, with the direction it flies.
+   */
+  private airplane(name: string, e: AirplaneEntity): Visual {
+    const root = new TransformNode(name, this.scene);
+    const orange = this.mat('planeMark', '#e2703a', { emissive: 0.5 });
+    this.box(`${name}_base`, root, [1.6, 0.2, 1.6], [0, 0.1, 0], this.mat('planeBase', '#2a2f3a'));
+    // A little plane on the marker: fuselage and wings.
+    this.box(`${name}_body`, root, [0.35, 0.3, 1.6], [0, 0.55, 0], orange);
+    this.box(`${name}_wing`, root, [1.8, 0.08, 0.45], [0, 0.6, 0.1], orange);
+    this.box(`${name}_tail`, root, [0.7, 0.08, 0.25], [0, 0.65, -0.65], orange);
+    const y = e.altitude;
+    const pts = e.route.map(([x, z]) => new Vector3(x, y, z));
+    if (e.closed && pts.length > 2) pts.push(pts[0]!.clone());
+    const colour = new Color4(1, 0.55, 0.25, 1);
+    const route = CreateLines(`${name}_route`, { points: pts, colors: pts.map(() => colour) }, this.scene);
+    route.parent = root;
+    const mast = CreateLines(`${name}_mast`, { points: [new Vector3(0, 0.8, 0), new Vector3(0, y, 0), ...(pts[0] ? [pts[0]] : [])], colors: [colour, colour, colour].slice(0, pts[0] ? 3 : 2) }, this.scene);
+    mast.parent = root;
+    // Arrow heads half-way along each leg show which way it flies.
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const a = pts[i]!;
+      const b = pts[i + 1]!;
+      const mid = a.add(b).scale(0.5);
+      const dir = b.subtract(a).normalize();
+      const side = new Vector3(dir.z, 0, -dir.x);
+      const back = mid.subtract(dir.scale(4));
+      const arrow = CreateLines(`${name}_arrow${i}`, { points: [back.add(side.scale(3)), mid, back.subtract(side.scale(3))], colors: [colour, colour, colour] }, this.scene);
+      arrow.parent = root;
+    }
+    return { root };
   }
 
   // ---------------------------------------------------------------- lights

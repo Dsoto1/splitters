@@ -97,6 +97,14 @@
       "licenseFile": "assets-src/quaternius-ultimate-spaceships/License.txt",
       "retrieved": "2026-10-25"
     },
+    "kenney-holiday-kit": {
+      "title": "Holiday Kit 2.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/holiday-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-holiday-kit/License.txt",
+      "retrieved": "2026-10-26"
+    },
     "quaternius-tank-pack": {
       "title": "Tank Pack",
       "creator": "Quaternius",
@@ -456,6 +464,67 @@
       "file": "Tank3.obj",
       "forward": "-x",
       "length": 6.3
+    },
+    {
+      "out": "vehicles/gun_jeep.glb",
+      "pack": "kenney-car-kit",
+      "file": "truck.glb",
+      "forward": "+z",
+      "length": 4.4,
+      "recolor": {
+        "desaturate": 0.55,
+        "tint": "#a3a878"
+      }
+    },
+    {
+      "out": "vehicles/armored_rover.glb",
+      "pack": "kenney-car-kit",
+      "file": "delivery.glb",
+      "forward": "+z",
+      "length": 5.4,
+      "recolor": {
+        "desaturate": 0.8,
+        "tint": "#8d9482"
+      }
+    },
+    {
+      "out": "vehicles/ice_cream_truck.glb",
+      "pack": "kenney-car-kit",
+      "file": "van.glb",
+      "forward": "+z",
+      "length": 4.8,
+      "recolor": {
+        "desaturate": 0.85,
+        "tint": "#ffd6e6"
+      }
+    },
+    {
+      "out": "vehicles/hover_bike.glb",
+      "pack": "kenney-space-kit",
+      "file": "craft_speederA.glb",
+      "forward": "+z",
+      "length": 3.0
+    },
+    {
+      "out": "vehicles/gunship.glb",
+      "pack": "kenney-space-kit",
+      "file": "craft_cargoB.glb",
+      "forward": "+z",
+      "length": 8.6
+    },
+    {
+      "out": "vehicles/transport_plane.glb",
+      "pack": "kenney-space-kit",
+      "file": "craft_cargoA.glb",
+      "forward": "+z",
+      "length": 16
+    },
+    {
+      "out": "vehicles/snow_sled.glb",
+      "pack": "kenney-holiday-kit",
+      "file": "sled-long.glb",
+      "forward": "+z",
+      "length": 2.8
     }
   ],
   "budgets": {

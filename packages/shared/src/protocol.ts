@@ -49,6 +49,10 @@ export interface PlayerSnapshot {
   sr?: 1;
   /** Classes: the player's class (index into CLASS_IDS). */
   cl?: number;
+  /** Under an open canopy: parachute (1) or glider (2). */
+  ch?: 1 | 2;
+  /** The parachute's automatic opener is armed (jumped out of the plane or a flyer). */
+  dr?: 1;
 }
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */
@@ -69,6 +73,8 @@ export interface PrivateState {
   dm: number;
   /** Jetpack fuel units (see JET); absent without a jetpack. */
   jp?: number;
+  /** Carrying a glider (canopies open as gliders). */
+  gl?: 1;
   /** Seconds of UAV sweep left for your side (enemies on the minimap). */
   uv?: number;
   /** Seconds your minimap stays jammed by an enemy Counter-UAV. */
