@@ -1230,7 +1230,8 @@ async function mapsFlow(browser) {
     }
     const alive = ok && (await page.evaluate((floor) => window.__cs.local.alive && window.__cs.local.state.pos.y > floor, floor));
     const where = ok ? await page.evaluate(() => window.__cs.local.state.pos.y.toFixed(1)) : 'no match';
-    check(ok && alive && errors.length === 0, `${id}: match starts and you spawn on solid ground${chosen.includes(id) ? ` (y ${where})` : ''}${errors.length ? ` (${errors.join('; ')})` : ''}`);
+    const why = !ok ? 'no match' : !alive ? `down or fell: y ${where}, floor ${floor.toFixed(1)}` : '';
+    check(ok && alive && errors.length === 0, `${id}: match starts and you spawn on solid ground${chosen.includes(id) ? ` (y ${where})` : ''}${why ? ` (${why})` : ''}${errors.length ? ` (${errors.join('; ')})` : ''}`);
     await page.context().close();
   }
 }
