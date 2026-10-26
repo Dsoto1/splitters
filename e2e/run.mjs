@@ -161,6 +161,14 @@ async function editorFlow(browser) {
   const btn = d.entities.find((e) => e.kind === 'button');
   check(door && door.locked && door.position[0] === 4 && door.position[2] === 0 && Math.abs(door.yaw - Math.PI / 2) < 1e-6, 'locked door snaps into the doorway');
   check(btn && d.entities.some((e) => e.kind === 'trap' && e.trap === 'spikes'), 'places a button and a spike trap');
+  // An electric fence: a straight run of posts and live wires (the placeable version of the fence border).
+  await clickTool(page, '[data-tool="scenario:trap:shock"]');
+  await clickWorld(16, -7);
+  await page.keyboard.press('Escape');
+  d = await doc();
+  const fence = d.entities.find((e) => e.kind === 'trap' && e.trap === 'shock');
+  const wires = await page.evaluate(() => window.__editor.view.scene.meshes.some((m) => m.name.endsWith('_wires') && m.isEnabled() && m.getTotalVertices() > 0));
+  check(fence && fence.length === 12 && fence.activation === 'always' && wires, `places an electric fence run with live wires (${JSON.stringify(fence && { length: fence.length, activation: fence.activation })}, wires ${wires})`);
   await page.click('#ed-logic-btn');
   await page.selectOption('.lg-head select', '0');
   d = await doc();
@@ -522,6 +530,9 @@ async function sceneryFlow(browser) {
   });
   check(canyon.names.includes('backdrop_sky') && canyon.names.includes('backdrop_ground') && canyon.names.includes('backdrop_ridge'), `canyon has a sky, ground beyond and distant scenery (${canyon.names.join(', ')})`);
   check(canyon.plants > 1000 && canyon.fog > 0, `grass grows on the canyon floor (${canyon.plants} plants) under haze`);
+  // Its border: sheer cliffs all round, one mesh.
+  const cliffs = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name === 'border_cliffs' && m.isEnabled() && m.getTotalVertices() > 1000).length);
+  check(cliffs === 1, `the canyon is ringed by a cliff border (${cliffs} mesh)`);
   await page.goto(`${CLIENT}/?offline=skyward`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const space = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('backdrop_')).map((m) => m.name));
@@ -542,6 +553,16 @@ async function sceneryFlow(browser) {
   check(blood?.color === '#3f9b1f' && blood?.amount === 'heavy', `MapMaker sets the map's blood (${JSON.stringify(blood)})`);
   await page.click('#ed-pal-tabs [data-pane="terrain"]');
   await page.click('#ed-tr-new');
+  // A border along the terrain's edge, previewed live: an electric fence, then cliffs on the north side.
+  await page.selectOption('#ed-bd-border', 'fence');
+  await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'border_fence_posts' && m.thinInstanceCount > 10), null, { timeout: T(10000) }).catch(() => {});
+  const fenced = await page.evaluate(() => ({ border: window.__editor.doc.backdrop?.border, posts: window.__editor.view.scene.meshes.find((m) => m.name === 'border_fence_posts')?.thinInstanceCount ?? 0 }));
+  check(fenced.border === 'fence' && fenced.posts > 10, `MapMaker sets an electric fence border and previews it (${fenced.posts} posts)`);
+  await page.click('#ed-bd-border-sides summary');
+  await page.selectOption('#ed-bd-border-north', 'cliffs');
+  await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'border_cliffs'), null, { timeout: T(10000) }).catch(() => {});
+  const mixed = await page.evaluate(() => ({ sides: window.__editor.doc.backdrop?.borderSides, cliffs: window.__editor.view.scene.meshes.some((m) => m.name === 'border_cliffs') }));
+  check(mixed.sides?.north === 'cliffs' && mixed.cliffs, `MapMaker mixes border styles per side (${JSON.stringify(mixed.sides)})`);
   await page.click('[data-foliage="4"]');
   const at = async (x, z) => page.evaluate(([x, z]) => window.__editor.view.project({ x, y: 0, z }), [x, z]);
   let p = await at(0, 0);

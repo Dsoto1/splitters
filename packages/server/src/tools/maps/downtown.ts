@@ -75,6 +75,8 @@ m.pickup('armor_large', [12, 0, 28]).pickup('health_large', [40, 0, -24]).pickup
 m.hill([12, 0, 12], 6);
 m.lightRooms({ color: '#fff1d8', intensity: 1 });
 m.bounds('invisible');
+// City blocks line the boundary, so the streets run on into a city.
+m.border('skyline');
 m.meta({
   description:
     'A city crossroads: two streets meet in the middle under an office block, a brownstone and a midrise; the south-east corner is a row of shops you can run through. Embers hold the west end, Tide the east.',

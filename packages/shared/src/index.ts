@@ -10,6 +10,7 @@ export * from './map/track.ts';
 export * from './map/settle.ts';
 export * from './map/backdrop.ts';
 export * from './map/dressing.ts';
+export * from './map/border.ts';
 export * from './map/inspirations.ts';
 export * from './map/migrate.ts';
 export * from './map/validate.ts';

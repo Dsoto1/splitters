@@ -72,6 +72,7 @@ texture, and a simple collision box (`collide: box`, `trunk` or `none` in
 - Distant scenery is built from a few large meshes and fades into haze.
 - Bots path on a navmesh built once per map.
 - City facades are GPU thin instances: one draw per piece and material, however many bays use it.
+- Borders cost a few dozen draw calls however long the boundary (merged meshes and thin instances; low-poly conifers stand in for trees behind the front row, the window texture for facades above the second storey): ≈0.6 M triangles on Apex Ring's 1.58 km boundary.
 
 ### Player settings (Options)
 

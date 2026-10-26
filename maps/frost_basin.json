@@ -50630,7 +50630,13 @@
   },
   "bounds": null,
   "track": null,
-  "backdrop": null,
+  "backdrop": {
+    "sky": "snowy",
+    "scenery": "peaks",
+    "ground": "snow",
+    "haze": 0.6,
+    "border": "cliffs"
+  },
   "physics": null,
   "blood": null,
   "teamSetup": {

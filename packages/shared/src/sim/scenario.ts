@@ -25,6 +25,8 @@ import {
   zoneBox,
   type Aabb,
 } from './scenarioDefs.ts';
+import { ELECTRIC_FENCE, borderFloor, borderRect, borderShockLines, borderStyles, fenceRun, shockLineNearest, type ShockLine } from '../map/border.ts';
+import { buildMapGeometry } from '../map/geometry.ts';
 
 /** What the scenario needs from the match it runs in. */
 export interface ScenarioHost {
@@ -34,6 +36,8 @@ export interface ScenarioHost {
   /** Players and NPCs: doors open for them and traps hurt them. */
   actors(): readonly { slot: number; alive: boolean; pos: Vec3 }[];
   hurt(slot: number, amount: number, weapon: string): void;
+  /** Throw someone along `dir` at `speed` m/s (an electric fence's jolt). */
+  push?(slot: number, dir: Vec3, speed: number): void;
   /** An explosion (barrel, mine) that hurts players and other destructibles. */
   blast(at: Vec3, radius: number, damage: number, edge: number, owner: number | null, weapon: string): void;
   /** End the round; co-op missions pass an outcome; "Next map" a suite map ID to load next. */
@@ -158,6 +162,9 @@ export class Scenario {
   private obSent = '';
   private tmSent = '';
   private snapshots = 0;
+  /** The border's electric fence (none without one) and when it last zapped each victim. */
+  private readonly borderShocks: ShockLine[];
+  private readonly borderZappedAt = new Map<number, number>();
 
   constructor(
     readonly map: MapDocument,
@@ -165,6 +172,7 @@ export class Scenario {
     private readonly host: ScenarioHost,
   ) {
     this.bodies = new ScenarioBodies(physics, map);
+    this.borderShocks = Object.values(borderStyles(map)).includes('fence') ? borderShockLines(map, borderFloor(map, buildMapGeometry(map))) : [];
     map.entities.forEach((e, i) => this.index.set(e.id, i));
     this.reset();
   }
@@ -236,6 +244,7 @@ export class Scenario {
     this.stepBlocks(tick);
     this.stepZones();
     this.stepTraps(tick);
+    this.stepBorderFence(tick);
     this.stepTimers(tick);
     this.stepSequences(tick);
     this.bodies.commit();
@@ -399,8 +408,52 @@ export class Scenario {
         if (tick - last < spec.intervalTicks) continue;
         t.hitAt.set(p.slot, tick);
         this.host.hurt(p.slot, trapDamage(t.e), trapWeaponId(t.e));
+        if (spec.knockback) {
+          // Electric fence: a spark from the nearest wire and a jolt away from the side they touched.
+          const run = fenceRun(t.e);
+          this.zap({ a: run.a, b: run.b, y0: t.e.position[1], height: ELECTRIC_FENCE.height, push: null, entity: t.i }, p, spec.knockback);
+        }
       }
     }
+  }
+
+  /** The border's electric fence: always live, it zaps and throws back anyone who touches it. */
+  private stepBorderFence(tick: number): void {
+    if (!this.borderShocks.length) return;
+    const rect = borderRect(this.map)!;
+    const near = ELECTRIC_FENCE.inset + ELECTRIC_FENCE.reach + 0.5;
+    const interval = Math.round(TICK_RATE * ELECTRIC_FENCE.interval);
+    for (const p of this.host.actors()) {
+      if (!p.alive) continue;
+      const { x, z } = p.pos;
+      if (Math.min(x - rect.min[0], rect.max[0] - x, z - rect.min[1], rect.max[1] - z) > near) continue;
+      if (tick - (this.borderZappedAt.get(p.slot) ?? -Infinity) < interval) continue;
+      for (const l of this.borderShocks) {
+        const n = shockLineNearest(l, x, z);
+        if (n.dist > ELECTRIC_FENCE.reach || p.pos.y > l.y0 + l.height || p.pos.y + PLAYER.height < l.y0 - 0.5) continue;
+        this.borderZappedAt.set(p.slot, tick);
+        this.host.hurt(p.slot, ELECTRIC_FENCE.damage, 'core.trap_shock');
+        this.zap(l, p, ELECTRIC_FENCE.knockback);
+        break;
+      }
+    }
+  }
+
+  /** A spark from the wire to the victim and a jolt away from the fence. */
+  private zap(l: ShockLine, p: { slot: number; pos: Vec3 }, speed: number): void {
+    const n = shockLineNearest(l, p.pos.x, p.pos.z);
+    let dir: [number, number];
+    if (l.push) dir = l.push;
+    else {
+      const vx = l.b[0] - l.a[0];
+      const vz = l.b[1] - l.a[1];
+      const len = Math.hypot(vx, vz) || 1;
+      // Left normal of the run, flipped to the side they are on.
+      dir = [(-vz / len) * n.side, (vx / len) * n.side];
+    }
+    this.host.push?.(p.slot, { x: dir[0], y: 0.3, z: dir[1] }, speed);
+    const wireY = Math.min(l.y0 + ELECTRIC_FENCE.height - 0.4, Math.max(l.y0 + 0.45, p.pos.y + 1.1));
+    this.host.emit({ e: 'arc', s: -1, pts: [[n.x, wireY, n.z], [p.pos.x, p.pos.y + 1.1, p.pos.z]] });
   }
 
   private trapFired(t: TrapRt, tick: number): void {

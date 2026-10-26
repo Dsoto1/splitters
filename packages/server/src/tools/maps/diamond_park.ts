@@ -1002,6 +1002,8 @@ for (let r = 0; r < COLS - 1; r++) {
 m.terrain({ ...ground, materials, foliage });
 
 m.backdrop('night', 'city', 'grass', 0.35);
+// A downtown ballpark: city blocks round it, windows lit for the night game.
+m.border('skyline');
 m.meta({
   description:
     "An evening ballgame under the light towers. Fight across the diamond and its raised mound, down into the sunken dugouts and through the player tunnels to the clubhouses; up the tiers of the lower bowl and the upper deck; along the concourse past the concession stands, restrooms and batting cage to the hub behind home plate; and up the club building to the suites and the press box, the sniper's seat. Out past the padded wall are the bullpens, the batter's eye and the scoreboard, three catwalk decks with peek slots in the board and rockets on its roof. Outside: the plaza and ticket gates, climbable light towers with sniper platforms, the parking lot, the loading dock and the groundskeeper's shed. Home hold the third-base side, the Visitors the first; each flag waits in its team's locker room.",

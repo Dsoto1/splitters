@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
+  resolveBackdrop,
   type LightFixture,
   AIR_PUSH_DECAY,
   PLAYER,
@@ -43,6 +44,8 @@ import {
   type BoundaryStyle,
   type SceneryId,
   type SkyId,
+  type BorderSides,
+  type BorderStyle,
   type EdgeStyle,
   type GameMode,
   type MapDocument,
@@ -368,7 +371,20 @@ export class MapBuilder {
 
   /** Sky, distant scenery, ground past the border and haze (otherwise the theme's). */
   backdrop(sky: SkyId, scenery: SceneryId, ground: BackdropGround, haze = 0.5, mist = 0): this {
-    this.run('Backdrop', { kind: 'setBackdrop', before: this.doc.backdrop, after: { sky, scenery, ground, haze, ...(mist ? { mist } : {}) } });
+    // A border set earlier stays.
+    const { border, borderSides } = this.doc.backdrop ?? {};
+    this.run('Backdrop', { kind: 'setBackdrop', before: this.doc.backdrop, after: { sky, scenery, ground, haze, ...(mist ? { mist } : {}), ...(border ? { border } : {}), ...(borderSides ? { borderSides } : {}) } });
+    return this;
+  }
+
+  /**
+   * A border along the boundary (see shared map/border.ts): one style all
+   * round, optionally overridden per side. Keeps the backdrop (the theme's,
+   * if the map has none of its own yet).
+   */
+  border(style: BorderStyle, sides?: BorderSides): this {
+    const { border: _b, borderSides: _s, ...rest } = resolveBackdrop(this.doc);
+    this.run('Border', { kind: 'setBackdrop', before: this.doc.backdrop, after: { ...rest, ...(style !== 'none' ? { border: style } : {}), ...(sides && Object.keys(sides).length ? { borderSides: sides } : {}) } });
     return this;
   }
 

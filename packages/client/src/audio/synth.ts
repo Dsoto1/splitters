@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark';
+export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -375,6 +375,21 @@ function renderArc(seed: number): Float32Array<ArrayBuffer> {
   });
 }
 
+/** Electric fence hum: a mains buzz (60 Hz and its harmonics) with the odd crackle, faded at both ends so repeats overlap smoothly. */
+function renderHum(seed: number): Float32Array<ArrayBuffer> {
+  const o1 = osc();
+  const o2 = osc();
+  const o3 = osc();
+  const hp = new Biquad('highpass').set(2500, 0.8);
+  let crack = 0;
+  return render(2, seed, (_t, u, rnd) => {
+    if (rnd() > 0.9993) crack = 1;
+    crack *= 0.995;
+    const buzz = Math.tanh(o2(120) * 2.5) * 0.45 + o1(60) * 0.35 + o3(180) * 0.12;
+    return (buzz + hp.run(rnd()) * crack * 0.9) * Math.sin(Math.PI * u) ** 0.6;
+  });
+}
+
 /** Bubble: a wobbling upward bloop. */
 function renderBubble(seed: number): Float32Array<ArrayBuffer> {
   const o = osc();
@@ -497,5 +512,7 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
       return renderFlamelet(seed);
     case 'hitmark':
       return renderHitmark(seed, variant);
+    case 'hum':
+      return renderHum(seed);
   }
 }

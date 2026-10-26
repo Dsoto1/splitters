@@ -31689,7 +31689,13 @@
   },
   "bounds": null,
   "track": null,
-  "backdrop": null,
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "mesas",
+    "ground": "stone",
+    "haze": 0.5,
+    "border": "cliffs"
+  },
   "physics": null,
   "blood": null,
   "teamSetup": null,

@@ -4,6 +4,7 @@ import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { getProp } from '../content/props.ts';
 import { terrainBoundary, terrainTriangles } from './terrain.ts';
 import { resolveBackdrop } from './backdrop.ts';
+import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
 
 /**
  * `trim` boxes are visual only (baseboards, cornices, frames): never in physics
@@ -469,6 +470,9 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     if (map.terrain) floorY = Math.min(floorY, map.terrain.baseY + Math.min(...map.terrain.heights) / 100);
     boxes.push(...boundaryBoxes(map.bounds, Number.isFinite(floorY) ? floorY : 0));
   }
+  // Borders (cliffs, city blocks, fences…) are solid, and so are placed electric fences.
+  if (hasBorder(map)) boxes.push(...borderBoxes(map, borderFloor(map, boxes)));
+  boxes.push(...electricFenceBoxes(map));
   for (const placement of map.classicStructure.tiles) {
     const def = catalog.get(placement.tile);
     if (!def) continue;

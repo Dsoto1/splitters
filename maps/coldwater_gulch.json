@@ -84801,7 +84801,8 @@
     "scenery": "mountains",
     "ground": "grass",
     "haze": 0.45,
-    "mist": 0.35
+    "mist": 0.35,
+    "border": "cliffs"
   },
   "physics": null,
   "blood": null,

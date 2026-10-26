@@ -1,5 +1,6 @@
 import { TERRAIN_MATERIALS, type TerrainMaterial } from './terrain.ts';
 import type { MapDocument } from './schema.ts';
+import type { BorderSides, BorderStyle } from './border.ts';
 import { PHOTO_SKIES } from '../content/skies.generated.ts';
 
 /**
@@ -26,6 +27,10 @@ export interface Backdrop {
   haze: number;
   /** Ground mist, 0 (none) to 1 (thick): fog that pools in low ground and thins with height. */
   mist?: number;
+  /** What stands just outside the boundary (see border.ts); absent: nothing. */
+  border?: BorderStyle;
+  /** Per-side overrides of `border`. */
+  borderSides?: BorderSides;
 }
 
 export interface SkyDefinition {

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 19,
   "metadata": {
     "id": "backwoods",
     "name": "Backwoods Lodge",
@@ -37161,12 +37161,14 @@
     "style": "invisible",
     "height": 8
   },
+  "track": null,
   "backdrop": {
     "sky": "cloudy",
     "scenery": "forest",
     "ground": "grass",
     "haze": 0.4,
-    "mist": 0.5
+    "mist": 0.5,
+    "border": "forest"
   },
   "physics": null,
   "blood": null,

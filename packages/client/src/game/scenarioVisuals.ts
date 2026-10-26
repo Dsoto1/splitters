@@ -21,6 +21,7 @@ import {
   DESTRUCTIBLE_SPECS,
   rosterSize,
   DOOR,
+  ELECTRIC_FENCE,
   TRAP_ACTIVE,
   TRAP_ENABLED,
   TRAP_SPECS,
@@ -32,6 +33,7 @@ import {
   type MapEntity,
 } from '@tiletrigger/shared';
 import { createFlagBase, createFlagModel, createHillModel, createBombsiteModel } from './flagVisuals.ts';
+import { buildFence } from '../borderVisuals.ts';
 
 /** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */
 export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: number; depthAlpha: number; shine: number; flow: number }> = {
@@ -803,7 +805,27 @@ export class ScenarioVisuals {
         return this.mine(name);
       case 'laser':
         return this.laser(name);
+      case 'shock':
+        return this.shockFence(name, e);
     }
+  }
+
+  /** A placed electric fence: posts every 4 m along its run, live wires that glow while it is on. */
+  private shockFence(name: string, e: Extract<MapEntity, { kind: 'trap' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const len = e.length ?? ELECTRIC_FENCE.defaultLength;
+    const fence = buildFence(this.scene, name, [{ a: [-len / 2, 0], b: [len / 2, 0], ground: () => 0 }]);
+    for (const m of fence.meshes) m.parent = root;
+    root.onDisposeObservable.add(() => fence.materials.forEach((m) => m.dispose()));
+    if (this.opts.editor) {
+      const h = TRAP_SPECS.shock.hazard;
+      this.box(`${name}_danger`, root, [len + 0.2, h.half[1] * 2, h.half[2] * 2], h.center, this.mat('danger', '#ff4040', { emissive: 0.5, alpha: 0.12 }));
+    }
+    fence.animate(0, true);
+    return {
+      root,
+      update: (flags, _b, now) => fence.animate(now, !!(flags & TRAP_ACTIVE)),
+    };
   }
 
   /** Editor-only danger area so creators see what a trap covers. */

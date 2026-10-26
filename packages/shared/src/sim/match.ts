@@ -481,6 +481,10 @@ export class Match {
         const c = this.actor(slot);
         if (c) this.damage(c, amount, null, weapon);
       },
+      push: (slot, dir, speed) => {
+        const c = this.actor(slot);
+        if (c?.alive) this.push(c, dir, speed);
+      },
       blast: (at, radius, damage, edge, owner, weapon) => {
         this.pendingEvents.push({ e: 'explode', s: owner ?? -1, p: tuple(at), r: radius });
         this.splash(at, radius, damage, edge, owner === null ? null : (this.actor(owner) ?? null), weapon, 1);

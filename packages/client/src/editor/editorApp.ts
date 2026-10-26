@@ -117,6 +117,13 @@ import {
   SKIES,
   SKY_IDS,
   resolveBackdrop,
+  BORDER_LABELS,
+  BORDER_SIDES,
+  BORDER_STYLES,
+  ELECTRIC_FENCE,
+  borderRect,
+  hasBorder,
+  type BorderStyle,
   type Backdrop,
   BLOOD_AMOUNTS,
   DEFAULT_BLOOD,
@@ -237,6 +244,7 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'trap:mine': '<ellipse cx="28" cy="38" rx="14" ry="5" fill="#3b4033"/><circle cx="28" cy="34" r="3" fill="#ff2a2a"/>',
   encounter: '<ellipse cx="28" cy="44" rx="20" ry="6" fill="#d04a3a" fill-opacity=".25" stroke="#d04a3a" stroke-width="2"/><rect x="26" y="6" width="2.5" height="36" fill="#3a3f48"/><rect x="28.5" y="6" width="12" height="8" fill="#d04a3a"/><circle cx="17" cy="30" r="5" fill="#d04a3a"/><rect x="13" y="34" width="8" height="10" rx="3" fill="#d04a3a"/><circle cx="38" cy="30" r="5" fill="#d04a3a"/><rect x="34" y="34" width="8" height="10" rx="3" fill="#d04a3a"/>',
   'trap:laser': '<rect x="8" y="10" width="4" height="38" fill="#2a2d33"/><rect x="44" y="10" width="4" height="38" fill="#2a2d33"/><path d="M12 18h32M12 26h32M12 34h32M12 42h32" stroke="#ff2040" stroke-width="2"/>',
+  'trap:shock': '<path d="M4 48h48" stroke="#5a5f55" stroke-width="2"/><rect x="7" y="12" width="4" height="36" fill="#3d4440"/><rect x="26" y="12" width="4" height="36" fill="#3d4440"/><rect x="45" y="12" width="4" height="36" fill="#3d4440"/><path d="M11 18h34M11 26h34M11 34h34M11 42h34" stroke="#ffe25a" stroke-width="1.6"/><path d="M33 4l-6 9h5l-4 8 9-11h-5l4-6z" fill="#ffe25a"/><rect x="12" y="28" width="10" height="7" fill="#f2c200"/>',
   'block:solid': '<path d="M8 26l20-10 20 10-20 10z" fill="#c9ccd2"/><path d="M8 26v6l20 10v-6z" fill="#8a8f98"/><path d="M48 26v6L28 42v-6z" fill="#6c7076"/><path d="M14 12q4-4 8 0M34 8q4-4 8 0" stroke="#7fd8ff" stroke-width="2" fill="none"/>',
   'block:crumble': '<path d="M8 22l20-10 20 10-20 10z" fill="#c9a36b"/><path d="M8 22v6l20 10v-6z" fill="#8a6a3f"/><path d="M48 22v6L28 38v-6z" fill="#6e5230"/><path d="M18 20l6 4-3 5M34 16l-4 6 5 3" stroke="#ffb03b" stroke-width="2" fill="none"/><rect x="14" y="44" width="5" height="5" fill="#8a6a3f"/><rect x="30" y="47" width="4" height="4" fill="#8a6a3f"/>',
   'block:trapdoor': '<rect x="6" y="20" width="44" height="6" fill="#6c7076"/><path d="M14 26l2 22h6l-2-22z" fill="#9a6b3d"/><rect x="22" y="20" width="20" height="6" fill="#1c1f26"/><path d="M28 32v10m-5-5l5 5 5-5" stroke="#ff5a4f" stroke-width="3" fill="none"/>',
@@ -300,7 +308,7 @@ function pickRadius(e: MapEntity): number {
     case 'zone':
       return Math.max(0.9, Math.min(e.size[0], e.size[2]) / 2);
     case 'trap':
-      return e.trap === 'mine' ? 0.7 : 1.5;
+      return e.trap === 'mine' ? 0.7 : e.trap === 'shock' ? 1.2 : 1.5;
     case 'destructible':
       return e.model === 'wall' ? 1.5 : 0.9;
     case 'encounter':
@@ -1622,8 +1630,43 @@ export class EditorApp {
     mist.title = 'Fog that pools in low ground (valleys, ditches, the canyon floor) and thins with height. Medium and high graphics.';
     mist.addEventListener('change', () => patch({ mist: Number(mist.value) / 100 }));
     el.append(row('Ground mist', mist));
+    // Border: what stands just outside the boundary (one style, or one per side).
+    const borderOptions = BORDER_STYLES.map((st) => [st, BORDER_LABELS[st]] as const);
+    el.append(
+      row(
+        'Border',
+        select('ed-bd-border', borderOptions, b.border ?? 'none', (v) => {
+          const { border: _border, borderSides: _sides, ...rest } = b;
+          set('Change border', v === 'none' ? rest : { ...rest, border: v as BorderStyle });
+        }),
+      ),
+    );
+    const sides = document.createElement('details');
+    sides.id = 'ed-bd-border-sides';
+    sides.open = !!b.borderSides && Object.keys(b.borderSides).length > 0;
+    const summary = document.createElement('summary');
+    summary.textContent = 'Per side';
+    sides.append(summary);
+    for (const side of BORDER_SIDES) {
+      const label = side[0]!.toUpperCase() + side.slice(1);
+      const value = b.borderSides?.[side];
+      sides.append(
+        row(
+          label,
+          select(`ed-bd-border-${side}`, [['', 'Same as border'], ...borderOptions], value ?? '', (v) => {
+            const next = { ...(b.borderSides ?? {}) };
+            if (v) next[side] = v as BorderStyle;
+            else delete next[side];
+            const { borderSides: _sides, ...rest } = b;
+            set('Change border', Object.keys(next).length ? { ...rest, borderSides: next } : rest);
+          }),
+        ),
+      );
+    }
+    el.append(sides);
+    if (hasBorder(this.doc) && !borderRect(this.doc)) el.append(small('A border stands along the map boundary: set one with the Boundary tool.'));
     if (own) el.append(button('Use the theme\'s backdrop', () => set('Theme backdrop', null)));
-    el.append(small(own ? 'Drawn only: nothing out there blocks players or shots.' : "Following the theme. Change anything to give this map its own."));
+    el.append(small(own ? (hasBorder(this.doc) ? 'The border is solid (the fence zaps); the rest is drawn only.' : 'Drawn only: nothing out there blocks players or shots.') : "Following the theme. Change anything to give this map its own."));
   }
 
   private settleProps(ids?: readonly string[]): void {
@@ -2445,6 +2488,7 @@ export class EditorApp {
         if (e.activation !== 'always' || e.trap === 'mine') number(e.trap === 'mine' ? 'Rearm (s)' : 'Off (s)', e.offSeconds, 0.5, (v) => ({ offSeconds: clamp(v, 0.2, 600) }));
         if (e.trap !== 'mine' && e.activation !== 'always') number('On (s)', e.onSeconds, 0.5, (v) => ({ onSeconds: clamp(v, 0.2, 60) }));
         if (e.activation === 'cycle' && e.trap !== 'mine') number('Offset (s)', e.offsetSeconds, 0.25, (v) => ({ offsetSeconds: clamp(v, 0, 60) }));
+        if (e.trap === 'shock') number('Length (m)', e.length ?? ELECTRIC_FENCE.defaultLength, 2, (v) => ({ length: clamp(v, 2, 96) }));
         number('Damage', e.damage ?? spec.blast?.damage ?? spec.damage, 5, (v) => ({ damage: v === (spec.blast?.damage ?? spec.damage) ? null : clamp(v, 1, 1000) }));
         toggle('Starts enabled', e.startEnabled, (v) => ({ startEnabled: v }));
         break;

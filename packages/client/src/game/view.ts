@@ -13,6 +13,7 @@ import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun } from './mountVisuals.ts';
 import { createCanopy, placeCanopy } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
+import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
@@ -287,6 +288,9 @@ export class GameView {
     const backdropVisuals = new BackdropVisuals(this.scene, styler, this.models);
     const backdrop = backdropVisuals.build(doc, boxes);
     if (backdropVisuals.sky) this.skyEffects.apply(doc, backdrop, backdropVisuals.sky);
+    this.border?.dispose();
+    this.border = new BorderVisuals(this.scene, styler, this.models);
+    this.border.update(doc, boxes);
     this.city.setMap(doc);
     this.liquids = mapLiquids(doc.entities);
     this.physics?.free();
@@ -310,6 +314,8 @@ export class GameView {
     void this.models.load('projectiles/grenade.glb');
   }
 
+  /** Cliffs, city blocks, fence, forest or shore along the boundary (built with the map). */
+  border: BorderVisuals | null = null;
   /** Client-only physics for ragdolls, debris and blood (built with the map). */
   private physics: EffectsWorld | null = null;
   readonly blood: BloodVisuals;

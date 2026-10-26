@@ -156,7 +156,7 @@ sounds (needs new CC0 sounds and a grip pose).
 | Single player / co-op | More challenges built from logic, NPCs and vehicles |
 
 ### 6d. Borders that blend in
-City skyline blocks, huge mountains/cliff walls, park-style electric fences (also placeable as props).
+✅ City skyline blocks, huge mountains/cliff walls, park-style electric fences (also placeable as props). Done: a map `border` (cliffs, city blocks, electric fence, forest wall, shoreline; per side), solid, the fence zaps and throws back, the Electric Fence as a placeable trap, MapMaker picker with live preview, set on eight maps (see SCENERY.md → Borders). Left: borders along non-rectangular edges.
 
 ## Sprint 7 — Asset library: MapMaker Style Packs, Set 1 "Foundation"
 
