@@ -97,13 +97,13 @@
 
     <div id="editor" hidden>
       <header id="ed-top">
-        <button id="ed-home" title="Main menu">◀ <span class="wide">Menu</span></button>
+        <button id="ed-home" title="Quit to the main menu (asks first if there are unsaved changes)">◀ <span class="wide">Quit</span></button>
         <span class="ed-brand"><i>Tile</i> <b>Trigger</b> <small>MapMaker</small></span>
         <input id="ed-name" maxlength="80" aria-label="Map name" />
         <span id="ed-dirty" title="Unsaved changes"></span>
         <div class="group ed-file">
           <button id="ed-new" title="New map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 11v6M9 14h6" stroke="currentColor" stroke-width="2"/></svg><span class="wide">New</span></button>
-          <button id="ed-open" title="Open a saved map or a template"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h6l2 2h10v11H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="wide">Open…</span></button>
+          <button id="ed-open" title="Open a saved map, an unsaved draft or a template"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h6l2 2h10v11H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="wide">Open…</span></button>
           <button id="ed-save" title="Save (Ctrl+S)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h13l3 3v13H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 4v5h8V4M8 20v-6h8v6" fill="none" stroke="currentColor" stroke-width="2"/></svg><span class="wide">Save</span></button>
           <button id="ed-export" title="Export the map file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="wide">Export</span></button>
           <button id="ed-import" title="Import a map file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="wide">Import</span></button>
@@ -266,6 +266,16 @@
         <h2>Open map</h2>
         <ul id="ed-library"></ul>
         <form method="dialog"><button>Close</button></form>
+      </dialog>
+      <dialog id="ed-quit-dialog">
+        <h2>Unsaved changes</h2>
+        <p id="ed-quit-msg"></p>
+        <label id="ed-quit-name-row" class="ed-dialog-field"><span>Save as</span><input id="ed-quit-name" maxlength="80" /></label>
+        <div class="ed-dialog-actions">
+          <button id="ed-quit-save" class="primary">Save &amp; quit</button>
+          <button id="ed-quit-discard">Quit without saving</button>
+          <button id="ed-quit-cancel">Cancel</button>
+        </div>
       </dialog>
     </div>
     <script type="module" src="/src/main.ts"></script>

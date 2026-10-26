@@ -193,7 +193,7 @@ import canyonTemplate from '../../../../maps/canyon.json';
 const SHIPPED_MAPS = import.meta.glob<unknown>('../../../../maps/*.json', { eager: true, import: 'default' });
 import { EditorView } from './editorView.ts';
 import { LIQUID_LOOKS } from '../game/scenarioVisuals.ts';
-import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibrary, readAutosave, saveToLibrary, writeAutosave } from './storage.ts';
+import { clearDraft, deleteFromLibrary, exportMap, importMapFile, inLibrary, listDrafts, listLibrary, openFromLibrary, saveToLibrary, writeDraft } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
@@ -408,7 +408,9 @@ const snap = (v: number, step: number) => Math.round(v / step) * step;
 /**
  * MapMaker controller: owns the edit history, tools, selection and the
  * editor UI. Every document change goes through EditHistory, so it is
- * undoable, autosaved and revalidated.
+ * undoable, kept as a draft while unsaved, and revalidated. MapMaker always
+ * opens on a blank starter map (startFresh); saved maps, drafts and
+ * templates are loaded on purpose from Open….
  */
 export class EditorApp {
   readonly view: EditorView;
@@ -481,8 +483,7 @@ export class EditorApp {
     this.view = new EditorView(host.engine);
     this.thumbs = new ModelThumbnails(host.engine);
     this.road = new RoadTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
-    const restored = readAutosave();
-    this.history = new EditHistory(restored?.map ?? newMapDocument('Untitled Map'));
+    this.history = new EditHistory(newMapDocument('Untitled Map'));
     this.logic = new LogicPanel({
       doc: () => this.doc,
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
@@ -495,7 +496,19 @@ export class EditorApp {
     this.bindInput();
     this.view.focus({ x: 0, y: 0, z: 0 });
     $('ed-reset-view').addEventListener('click', () => this.resetView());
-    if (restored) this.toast(`Restored your last session (${new Date(restored.savedAt).toLocaleString()})`);
+    // Closing the tab mid-edit: keep the pending draft.
+    window.addEventListener('pagehide', () => this.autosaveTimer !== undefined && this.flushDraft());
+  }
+
+  /**
+   * Entering MapMaker from the menu: a blank starter map, like New. Unsaved
+   * work from before stays in Open… as a draft rather than being restored.
+   */
+  startFresh(): void {
+    if (this.autosaveTimer !== undefined) this.flushDraft();
+    this.replaceDocument(newMapDocument('Untitled Map'));
+    const drafts = listDrafts().length;
+    this.toast(drafts ? `New blank map · ${drafts} unsaved draft${drafts > 1 ? 's' : ''} in Open…` : 'New blank map · Open… loads a saved map or template');
   }
 
   get doc(): MapDocument {
@@ -1307,7 +1320,7 @@ export class EditorApp {
         this.test();
         return;
       }
-      if (isTyping()) return;
+      if (isTyping() || document.querySelector('#editor dialog[open]')) return;
       this.keys.add(e.code);
       const mod = e.ctrlKey || e.metaKey;
       if (mod) {
@@ -2212,13 +2225,13 @@ export class EditorApp {
   }
 
   private bindUi(): void {
-    $('ed-home').addEventListener('click', () => this.host.goHome());
+    $('ed-home').addEventListener('click', () => this.quit());
     $('ed-undo').addEventListener('click', () => this.undo());
     $('ed-redo').addEventListener('click', () => this.redo());
     $('ed-save').addEventListener('click', () => this.save());
     $('ed-export').addEventListener('click', () => exportMap(this.doc));
     $('ed-new').addEventListener('click', () => {
-      if (this.isDirty() && !confirm('Discard unsaved changes and start a new map?')) return;
+      this.keepDraft();
       this.replaceDocument(newMapDocument('Untitled Map'));
     });
     $('ed-open').addEventListener('click', () => this.openDialog());
@@ -2229,6 +2242,7 @@ export class EditorApp {
       if (!file) return;
       const r = await importMapFile(file);
       if (!('map' in r)) return this.toast(`Import failed: ${r.issues[0]?.message ?? 'unknown error'}`, true);
+      this.keepDraft();
       this.replaceDocument(r.map);
       this.toast(`Imported ${r.map.metadata.name}`);
     });
@@ -3161,15 +3175,68 @@ export class EditorApp {
 
   private scheduleAutosave(): void {
     clearTimeout(this.autosaveTimer);
-    this.autosaveTimer = window.setTimeout(() => writeAutosave(this.doc), 400);
+    this.autosaveTimer = window.setTimeout(() => this.flushDraft(), 400);
   }
 
-  private save(): void {
+  /** Write the draft now: unsaved changes are kept, a clean map has none. */
+  private flushDraft(): void {
+    clearTimeout(this.autosaveTimer);
+    this.autosaveTimer = undefined;
+    if (this.isDirty()) writeDraft(this.doc);
+    else clearDraft(this.doc.metadata.id);
+  }
+
+  /** Before switching maps: unsaved changes stay in Open… as a draft. */
+  private keepDraft(): void {
+    if (!this.isDirty()) return;
+    this.flushDraft();
+    this.toast(`Unsaved changes to "${this.doc.metadata.name}" kept as a draft in Open…`);
+  }
+
+  private save(): boolean {
     const stored = saveToLibrary(this.doc);
-    if (!stored) return this.toast('Could not save to browser storage — use Export to keep a copy', true);
+    if (!stored) {
+      this.toast('Could not save to browser storage — use Export to keep a copy', true);
+      return false;
+    }
+    clearTimeout(this.autosaveTimer);
+    this.autosaveTimer = undefined;
+    clearDraft(stored.metadata.id);
     this.savedRevision = this.history.revision;
     this.updateTopBar();
     this.toast(`Saved "${stored.metadata.name}"`);
+    return true;
+  }
+
+  /**
+   * Quit to the main menu. With unsaved changes it asks first: Save & quit
+   * (naming a map that was never saved), Quit without saving, or Cancel.
+   */
+  private quit(): void {
+    if (!this.isDirty()) return this.host.goHome();
+    const dialog = $<HTMLDialogElement>('ed-quit-dialog');
+    const saved = inLibrary(this.doc.metadata.id);
+    const name = $<HTMLInputElement>('ed-quit-name');
+    $('ed-quit-msg').textContent = saved ? `"${this.doc.metadata.name}" has changes that are not saved.` : 'This map has never been saved. Name it to keep it in Open….';
+    $('ed-quit-name-row').hidden = saved;
+    name.value = this.doc.metadata.name;
+    $('ed-quit-save').onclick = () => {
+      const v = name.value.trim().slice(0, 80) || 'Untitled Map';
+      if (!saved && v !== this.doc.metadata.name) this.run('Rename map', { kind: 'setMetadata', before: { name: this.doc.metadata.name }, after: { name: v } });
+      if (!this.save()) return;
+      dialog.close();
+      this.host.goHome();
+    };
+    $('ed-quit-discard').onclick = () => {
+      clearTimeout(this.autosaveTimer);
+      this.autosaveTimer = undefined;
+      clearDraft(this.doc.metadata.id);
+      dialog.close();
+      this.host.goHome();
+    };
+    $('ed-quit-cancel').onclick = () => dialog.close();
+    dialog.showModal();
+    if (!saved) name.select();
   }
 
   private replaceDocument(doc: MapDocument): void {
@@ -3179,18 +3246,18 @@ export class EditorApp {
     this.setLevel(0, true);
     this.view.focus({ x: 0, y: 0, z: 0 });
     this.refresh(true);
-    writeAutosave(doc);
   }
 
   private openDialog(): void {
     const dialog = $<HTMLDialogElement>('ed-open-dialog');
     const list = $('ed-library');
     list.replaceChildren();
-    const add = (label: string, sub: string, open: () => void, remove?: () => void) => {
+    const add = (label: string, sub: string, open: () => void, remove?: () => void, cls = '') => {
       const li = document.createElement('li');
+      if (cls) li.className = cls;
       const b = button('', () => {
-        if (this.isDirty() && !confirm('Discard unsaved changes?')) return;
         dialog.close();
+        this.keepDraft();
         open();
       });
       b.innerHTML = `${escapeHtml(label)}<br><small>${escapeHtml(sub)}</small>`;
@@ -3198,6 +3265,27 @@ export class EditorApp {
       if (remove) li.append(button('Delete', () => confirm(`Delete "${label}" from this browser?`) && (remove(), this.openDialog())));
       list.append(li);
     };
+    // Unsaved drafts first (not the map being edited), then saved maps, then templates.
+    for (const draft of listDrafts()) {
+      if (draft.map.metadata.id === this.doc.metadata.id) continue;
+      const when = new Date(draft.savedAt).toLocaleString();
+      add(`Unsaved draft (${draft.map.metadata.name}, ${when})`, inLibrary(draft.map.metadata.id) ? 'Changes not saved to your saved copy' : 'Never saved', () => {
+        this.replaceDocument(draft.map);
+        // Still unsaved: the dirty dot stays on and Quit asks to save.
+        this.savedRevision = -1;
+        this.updateTopBar();
+        this.toast(`Opened the unsaved draft of "${draft.map.metadata.name}"`);
+      }, () => clearDraft(draft.map.metadata.id), 'draft');
+    }
+    for (const entry of listLibrary()) {
+      add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {
+        const r = openFromLibrary(entry.id);
+        if ('map' in r) {
+          this.replaceDocument(r.map);
+          this.toast(`Opened "${r.map.metadata.name}"`);
+        } else this.toast(`Could not open: ${r.issues[0]?.message}`, true);
+      }, () => deleteFromLibrary(entry.id));
+    }
     add('Phase 0 Arena', 'Template', () => {
       const r = loadMap(arenaTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Arena Remix', parentId: r.map.metadata.id } });
@@ -3231,15 +3319,6 @@ export class EditorApp {
       add(r.map.metadata.name, `Template · ${r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? ''}`, () => {
         this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: `${r.map.metadata.name} Remix`, parentId: r.map.metadata.id } });
       });
-    }
-    for (const entry of listLibrary()) {
-      add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {
-        const r = openFromLibrary(entry.id);
-        if ('map' in r) {
-          this.replaceDocument(r.map);
-          this.toast(`Opened "${r.map.metadata.name}"`);
-        } else this.toast(`Could not open: ${r.issues[0]?.message}`, true);
-      }, () => deleteFromLibrary(entry.id));
     }
     dialog.showModal();
   }

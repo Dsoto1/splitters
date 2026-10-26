@@ -5,7 +5,9 @@ import { loadMap, serializeMap, type MapDocument, type ValidationIssue } from '@
  * windows, quota), so every call is guarded and Export/Import to files stays
  * the durable path until accounts and cloud storage exist (Phase 5).
  */
+/** The single rolling autosave used before drafts; read once and moved into the drafts. */
 const AUTOSAVE_KEY = 'cs.editor.autosave';
+const DRAFTS_KEY = 'cs.editor.drafts';
 const INDEX_KEY = 'cs.maps.index';
 const mapKey = (id: string) => `cs.map.${id}`;
 
@@ -32,20 +34,78 @@ function set(key: string, value: string): boolean {
   }
 }
 
-export function readAutosave(): { map: MapDocument; savedAt: string } | null {
-  const raw = get(AUTOSAVE_KEY);
-  if (!raw) return null;
+/**
+ * Unsaved drafts: the rolling autosave, one per map, written only while a map
+ * has unsaved changes. MapMaker always opens on a blank starter; drafts are
+ * offered in Open… rather than restored automatically.
+ */
+export interface Draft {
+  map: MapDocument;
+  savedAt: string;
+}
+
+const MAX_DRAFTS = 5;
+
+function storedDrafts(): { map: unknown; savedAt: string }[] {
   try {
-    const parsed = JSON.parse(raw) as { map: unknown; savedAt: string };
-    const r = loadMap(parsed.map);
-    return r.ok ? { map: r.map, savedAt: parsed.savedAt } : null;
+    const list = JSON.parse(get(DRAFTS_KEY) ?? '[]') as { map: unknown; savedAt: string }[];
+    return Array.isArray(list) ? list : [];
   } catch {
-    return null;
+    return [];
   }
 }
 
-export function writeAutosave(map: MapDocument): boolean {
-  return set(AUTOSAVE_KEY, JSON.stringify({ map, savedAt: new Date().toISOString() }));
+/** Valid drafts, newest first. The old single autosave (before drafts) is moved in as a draft once. */
+export function listDrafts(): Draft[] {
+  const legacy = get(AUTOSAVE_KEY);
+  if (legacy) {
+    try {
+      const parsed = JSON.parse(legacy) as { map: unknown; savedAt: string };
+      const r = loadMap(parsed.map);
+      // Skip it when it is just the saved copy of a library map.
+      const saved = r.ok ? openFromLibrary(r.map.metadata.id) : null;
+      const same = r.ok && saved && 'map' in saved && sameContent(saved.map, r.map);
+      if (r.ok && !same && !storedDrafts().some((d) => (d.map as MapDocument)?.metadata?.id === r.map.metadata.id)) {
+        set(DRAFTS_KEY, JSON.stringify([{ map: r.map, savedAt: parsed.savedAt }, ...storedDrafts()].slice(0, MAX_DRAFTS)));
+      }
+    } catch {
+      /* unreadable: drop it */
+    }
+    try {
+      localStorage.removeItem(AUTOSAVE_KEY);
+    } catch {
+      /* storage unavailable */
+    }
+  }
+  const out: Draft[] = [];
+  for (const d of storedDrafts()) {
+    const r = loadMap(d.map);
+    if (r.ok) out.push({ map: r.map, savedAt: d.savedAt });
+  }
+  return out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+}
+
+/** Keep this map's unsaved changes as its draft (replacing its older draft; the oldest drafts fall off). */
+export function writeDraft(map: MapDocument): boolean {
+  const rest = storedDrafts().filter((d) => (d.map as MapDocument)?.metadata?.id !== map.metadata.id);
+  return set(DRAFTS_KEY, JSON.stringify([{ map, savedAt: new Date().toISOString() }, ...rest].slice(0, MAX_DRAFTS)));
+}
+
+/** Drop a map's draft (it was saved, or its changes were discarded on purpose). */
+export function clearDraft(id: string): void {
+  const list = storedDrafts();
+  const rest = list.filter((d) => (d.map as MapDocument)?.metadata?.id !== id);
+  if (rest.length !== list.length) set(DRAFTS_KEY, JSON.stringify(rest));
+}
+
+function sameContent(a: MapDocument, b: MapDocument): boolean {
+  const strip = (m: MapDocument) => serializeMap({ ...m, metadata: { ...m.metadata, updatedAt: '' } });
+  return strip(a) === strip(b);
+}
+
+/** Whether this map has been saved to the local library. */
+export function inLibrary(id: string): boolean {
+  return listLibrary().some((e) => e.id === id);
 }
 
 export function listLibrary(): LibraryEntry[] {

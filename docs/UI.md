@@ -42,6 +42,15 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
 - **MapMaker** (`src/editor/`), laid out after the board's build and logic views:
   - **Top bar:** map name, file actions (icons), undo/redo, the validation pill, the workspace tabs
     **Build / Entities / Logic / Environment / Test**, then Grid, Snap and Theme, bots, skill and ▶ TEST.
+  - **Opening and quitting:** MapMaker always opens on a blank starter map (one room and a spawn, the
+    same as **New**); nothing is restored on its own. **Open…** lists, in order, unsaved drafts, saved
+    maps and the templates; **Import** loads a `.cmap.json` file. While a map has unsaved changes it is
+    kept as a draft in browser storage (the five most recent maps), and Open… offers it as
+    "Unsaved draft (*name*, *time*)"; switching maps with New, Open… or Import keeps the draft rather
+    than asking. **Save** (Ctrl+S) stores the map under the name in the top bar and drops its draft.
+    **◀ Quit** goes back to the main menu; with unsaved changes it first asks in a small dialog:
+    **Save & quit** (a map that was never saved is named there first), **Quit without saving** (drops
+    the draft) or **Cancel**.
   - **Palette** (320 px; 300 px at 1400 px and below): the workspace's sub-tabs (Build: Tiles, Advanced,
     Terrain, Props; Entities: NPCs, Gameplay, Vehicles, Scenario; Environment: Paint, Plants, Terrain),
     a search box that looks across every pane, and categories of cards three to a row. Tile cards show
