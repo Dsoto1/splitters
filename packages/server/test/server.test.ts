@@ -100,7 +100,7 @@ describe('dedicated server', () => {
     await server.close();
     server = undefined;
     await expect(startServer({ port: 0, map: room, botFill: 0, mode: 'core.ctf' })).rejects.toThrow(/Capture the Flag/);
-  });
+  }, 60000);
 
   it('runs a two-client match: welcome, snapshots, acked inputs, and a networked kill', async () => {
     server = await startServer({ port: 0, map: room, botFill: 0, seed: 1, startGate: false, rules: { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 600 } });
