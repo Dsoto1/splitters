@@ -41,6 +41,14 @@ export class ScenarioState {
     if (sc.tm) this.timers = sc.tm.map(([k, secs]) => [k, secs, now]);
   }
 
+  /** Whether a portal (entity index) is switched on (its start state until the server says otherwise). */
+  portalOn = (i: number): boolean => {
+    const s = this.entities.get(i);
+    if (s) return s[0] > 0;
+    const e = this.map.entities[i];
+    return e?.kind === 'portal' ? e.startEnabled : false;
+  };
+
   /** Whether a block (entity index) is there: dropped and hidden blocks carry nobody. */
   present = (i: number): boolean => {
     const s = this.entities.get(i);

@@ -238,9 +238,9 @@ export const emptyLogic = (): ScenarioLogic => ({ variables: [], timers: [], obj
 /**
  * Entity kinds that can be enabled/disabled by logic. Blocks: present or
  * gone (any behaviour); movers: running or parked (at their next point);
- * lights: on or off.
+ * lights: on or off; portals: open or shut (a pair works only while both are on).
  */
-export const TOGGLEABLE_KINDS = ['button', 'zone', 'trap', 'pickup', 'block', 'mover', 'light'] as const;
+export const TOGGLEABLE_KINDS = ['button', 'zone', 'trap', 'pickup', 'block', 'mover', 'light', 'portal'] as const;
 
 /** Whether an entity of `kind` can be the target of a logic field expecting `target`. Blocks count as destructibles (destroy / destroyed). */
 /** Whether an entity of `kind` can be a rule's target of this kind (`breakable`: a prop that can be shot apart, which fires "destroyed" too). */

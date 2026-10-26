@@ -5,6 +5,9 @@ import {
   BUTTON_FIRE,
   OIL_TRACTION,
   applyPads,
+  applyPortals,
+  bodyHeightOf,
+  type Portal,
   type JumpPad,
   type Ladder,
   type LiquidBox,
@@ -91,6 +94,11 @@ export class LocalPlayer {
    * tick and carry feet standing on them, exactly as the server does.
    */
   platforms: { poseAt(tick: number): void; carry(feet: Vec3, tick: number): Vec3 | null } | null = null;
+  /** The map's portals, and whether one (entity index) is switched on (replicated scenario state): crossings are predicted like the server's. */
+  portals: Portal[] = [];
+  portalOn: (entity: number) => boolean = () => true;
+  /** View turn (radians) from portals walked through in live prediction, for the session to add to your yaw (replays never turn it again). */
+  portalTurn = 0;
   /** Server tick the latest predicted input will run on (estimate: snapshot tick + inputs not yet acknowledged). */
   predTick = 0;
   /** Trigger state mirrored from the server rules (semi-auto latch, spin-up, burst). */
@@ -163,7 +171,7 @@ export class LocalPlayer {
         this.windup = 0;
         this.burstLeft = 0;
       }
-      if (!this.mounted) this.state = this.move(this.state, input, this.predTick + 1);
+      if (!this.mounted) this.state = this.move(this.state, input, this.predTick + 1, true);
       if (this.fireCooldown > 0) this.fireCooldown--;
       if (this.raiseTicks > 0) this.raiseTicks--;
       if (this.reloadTicks > 0) this.reloadTicks--;
@@ -176,7 +184,7 @@ export class LocalPlayer {
   }
 
   /** Same order as the server: move with the current boost, then count the boost down. */
-  private move(state: MoveState, input: PlayerInput, tick: number): MoveState {
+  private move(state: MoveState, input: PlayerInput, tick: number, live = false): MoveState {
     if (this.platforms) {
       // The server moves platforms, then riders, then everyone's own movement (Match.step).
       this.platforms.poseAt(tick);
@@ -184,7 +192,14 @@ export class LocalPlayer {
       if (ridden) state = { ...state, pos: ridden };
     }
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
-    const next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}) }));
+    const before = state;
+    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}) }));
+    // Portals, exactly as the server takes them (Match.step).
+    const through = this.portals.length ? applyPortals(this.portals, before, next, this.portalOn, this.scale, bodyHeightOf(next, this.scale)) : null;
+    if (through) {
+      next = through.state;
+      if (live) this.portalTurn += through.turn;
+    }
     if (this.jetFuel !== null) this.jetFuel = stepJetFuel(this.jetFuel, !!next.jet);
     if (this.speedTicks > 0) this.speedTicks--;
     return next;

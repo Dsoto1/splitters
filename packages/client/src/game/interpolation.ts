@@ -125,8 +125,9 @@ export class Interpolator {
       pairs.push([slot, pa, pb, span > 0 ? Math.max(0, Math.min(1, (renderTick - fa!.tick) / span)) : 1]);
     }
     for (const [slot, pa, pb, t] of pairs) {
-      // Do not blend across a respawn teleport.
-      const blend = pa && pa.alive === pb.alive ? t : 1;
+      // Do not blend across a respawn or a portal (a jump no one could run between two snapshots).
+      const jumped = pa ? Math.hypot(pb.p[0] - pa.p[0], pb.p[1] - pa.p[1], pb.p[2] - pa.p[2]) > 6 : false;
+      const blend = pa && pa.alive === pb.alive && !jumped ? t : 1;
       const from = blend === 1 || !pa ? pb : pa;
       out.push({
         slot,

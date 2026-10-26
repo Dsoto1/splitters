@@ -6,7 +6,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type TilePlacement, type WorldBox } from '@tiletrigger/shared';
-import { materialPixels } from './materials/patterns.ts';
+import { materialPixels, patternSize } from './materials/patterns.ts';
 import { versioned } from './assetUrl.ts';
 
 /**
@@ -256,7 +256,8 @@ export class MapStyler {
     let tex = this.textures.get(def.id);
     if (!tex) {
       // Raw pixel upload (no canvas) keeps WebGPU on a plain buffer write.
-      tex = RawTexture.CreateRGBATexture(materialPixels(def), 128, 128, this.scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+      const size = patternSize(def);
+      tex = RawTexture.CreateRGBATexture(materialPixels(def, size), size, size, this.scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
       tex.wrapU = Texture.WRAP_ADDRESSMODE;
       tex.wrapV = Texture.WRAP_ADDRESSMODE;
       tex.anisotropicFilteringLevel = 8;

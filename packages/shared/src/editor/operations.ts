@@ -343,12 +343,18 @@ export const SCENARIO_PALETTE = [
   { key: 'block:fence', label: 'Breakable Fence', search: 'block fence picket breakable wood suburban garden yard' },
   { key: 'block:roof', label: 'Pitched Roof', search: 'block roof pitched gable slate shingles house suburban' },
   { key: 'water:pool', label: 'Pool Water', search: 'water pool swimming blue suburban' },
+  // Style Pack gameplay pieces (03 Imperial Arena, 09 Sands of Egypt).
+  { key: 'portal', label: 'Portal Pair', search: 'portal teleport teleporter gate warp pair link shortcut swirl stargate arena egypt tomb' },
+  { key: 'door:portcullis', label: 'Portcullis', search: 'door portcullis gate iron grille bars raise arena gladiator castle roman' },
+  { key: 'mover:portcullis', label: 'Portcullis Gate', search: 'mover portcullis gate iron grille bars raise lift wide arena gladiator roman logic' },
+  { key: 'mover:cage', label: 'Lift Cage', search: 'mover lift cage elevator hypogeum arena floor rise beast gladiator roman hatch' },
+  { key: 'light:brazier', label: 'Brazier', search: 'light brazier fire torch flame bowl warm roman egypt temple' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 
 /** Entities that sit in a doorway and snap to cell edges. */
-export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field' || key === 'mover:bookcase' || key === 'mover:garage_door';
+export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field' || key === 'mover:bookcase' || key === 'mover:garage_door' || key === 'mover:portcullis';
 
 /** Palette entries that place several entities at once (movers with their blocks, rope bridges, roofs). */
 const MULTI_KEYS = new Set<string>(['block:rope_bridge', 'block:roof']);
@@ -358,6 +364,7 @@ const MULTI_KEYS = new Set<string>(['block:rope_bridge', 'block:roof']);
  * mover that carries it (lift platform, sliding wall, drawbridge deck).
  */
 export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, number, number], yaw: number, doc?: MapDocument): MapEntity[] {
+  if (key === 'portal') return newPortalPair(position, yaw, doc);
   if (!key.startsWith('mover:') && !MULTI_KEYS.has(key)) return [newScenarioEntity(key, position, yaw, doc)];
   const block = (size: [number, number, number], at: [number, number, number]): Extract<MapEntity, { kind: 'block' }> => ({ id: newId('block'), kind: 'block', position: at, yaw, size, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
   const mover = (blocks: string[], points: [number, number, number][], extra: Partial<Extract<MapEntity, { kind: 'mover' }>>): Extract<MapEntity, { kind: 'mover' }> => ({ id: newId('mover'), kind: 'mover', position, yaw, blocks, points, mode: 'pingpong', speed: 2, turnSpeed: 45, wait: 2, startActive: true, ...extra });
@@ -389,6 +396,29 @@ export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, 
     const blocks = [hull([2.0, 2.0, 3.6], 1.5, 0.6, 'core.pbr_steel', dark), hull([2.9, 3.1, 2.8], -1.8, 0.6, 'core.pbr_steel', dark), ...cars.map((c, i) => hull([2.7, 0.35, 6.6], -7.4 - 7.5 * i, 0.55, 'core.pbr_weathered_planks', null))];
     const [ex, ez] = along(60);
     return [...blocks, loco, ...cars, { ...mover(blocks.map((b) => b.id), [[0, 0, 0], [ex, 0, ez]], { speed: 8, wait: 6 }), props: [loco.id, ...cars.map((c) => c.id)] }];
+  }
+  if (key === 'mover:portcullis') {
+    // An iron grille filling a 3 m gateway, raised by logic (a button, a rule) 3.4 m and lowered again.
+    const b: Extract<MapEntity, { kind: 'block' }> = { ...block([3.2, 3.2, 0.2], [x, y, z]), material: 'core.grate', tint: '#5a524a', name: 'Portcullis' };
+    return [b, mover([b.id], [[0, 0, 0], [0, 3.4, 0]], { mode: 'trigger', speed: 1.2, wait: 0, name: 'Portcullis' })];
+  }
+  if (key === 'mover:cage') {
+    // A gladiator's lift cage: a 3 m floor and an iron-barred cage on three sides, with a sand hatch for a roof,
+    // rising one storey from the hypogeum until its floor is the arena's (the hatch closes the hole while it is down).
+    const up = doc?.classicStructure.levelHeight ?? 4;
+    const [fx, fz] = [Math.sin(yaw), Math.cos(yaw)];
+    const [rx, rz] = [Math.cos(yaw), -Math.sin(yaw)];
+    const at = (across: number, along: number, dy: number): [number, number, number] => [Math.round((x + rx * across + fx * along) * 100) / 100, y + dy, Math.round((z + rz * across + fz * along) * 100) / 100];
+    const floor = { ...block([3, 0.3, 3], [x, y, z]), material: 'core.pbr_weathered_planks', name: 'Cage floor' };
+    const bars = { material: 'core.grate', tint: '#4a4440' };
+    const sides = [
+      { ...block([0.2, up - 0.6, 3], at(-1.4, 0, 0.3)), ...bars },
+      { ...block([0.2, up - 0.6, 3], at(1.4, 0, 0.3)), ...bars },
+      { ...block([3, up - 0.6, 0.2], at(0, -1.4, 0.3)), ...bars },
+    ];
+    const hatch = { ...block([3, 0.3, 3], [x, y + up - 0.3, z]), material: 'core.pbr_sand', name: 'Hatch' };
+    const parts = [floor, ...sides, hatch];
+    return [...parts, mover(parts.map((b) => b.id), [[0, 0, 0], [0, up, 0]], { speed: 1.5, wait: 4, name: 'Lift cage' })];
   }
   /** A point `d` along the facing and `s` across it (local +X), `up` above the marker. */
   const local = (s: number, up: number, d: number): [number, number, number] => [Math.round((x + Math.cos(yaw) * s + Math.sin(yaw) * d) * 100) / 100, Math.round((y + up) * 100) / 100, Math.round((z - Math.sin(yaw) * s + Math.cos(yaw) * d) * 100) / 100];
@@ -461,6 +491,37 @@ export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, 
   return [b, mover([b.id], [[0, 0, 0], [0, 0, 0]], { angles: [Math.PI / 2, 0], mode: 'trigger', turnSpeed: 30, wait: 0 })];
 }
 
+/** Pair IDs: "a", "b", … then "p27", "p28"… (the first not used in `doc`). */
+function freePair(doc?: MapDocument): string {
+  const taken = new Set(doc?.entities.flatMap((e) => (e.kind === 'portal' ? [e.pair] : [])) ?? []);
+  for (let i = 0; ; i++) {
+    const id = i < 26 ? String.fromCharCode(97 + i) : `p${i + 1}`;
+    if (!taken.has(id)) return id;
+  }
+}
+
+/** Portal colours, a pair at a time (blue and orange, then green and violet…). */
+export const PORTAL_COLORS = [
+  ['#3aa8ff', '#ff8a2a'],
+  ['#4dff9a', '#c06bff'],
+  ['#ffe14d', '#ff4d8a'],
+] as const;
+
+/**
+ * The Portal Pair tool: two linked portals, the second 8 m along the first's
+ * facing and turned to face back the way (drag it wherever its other end
+ * should be). Both share a new pair ID and a pair of colours.
+ */
+export function newPortalPair(position: [number, number, number], yaw: number, doc?: MapDocument): MapEntity[] {
+  const pair = freePair(doc);
+  const n = doc?.entities.filter((e) => e.kind === 'portal').length ?? 0;
+  const [ca, cb] = PORTAL_COLORS[Math.floor(n / 2) % PORTAL_COLORS.length]!;
+  const [x, y, z] = position;
+  const far: [number, number, number] = [Math.round((x + Math.sin(yaw) * 8) * 100) / 100, y, Math.round((z + Math.cos(yaw) * 8) * 100) / 100];
+  const portal = (at: [number, number, number], facing: number, color: string): Extract<MapEntity, { kind: 'portal' }> => ({ id: newId('portal'), kind: 'portal', position: at, yaw: facing, size: [2.4, 3.2], pair, startEnabled: true, color });
+  return [portal(position, yaw, ca), portal(far, yaw + Math.PI, cb)];
+}
+
 /**
  * A new scenario entity with sensible defaults. Flag bases go to the first
  * team (of the map's two) that has none yet when `doc` is given.
@@ -494,6 +555,12 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: false, auto: true, style: 'saloon' };
     case 'door:vault':
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: true, auto: false, style: 'vault' };
+    case 'light:brazier':
+      // A warm, flickering fire bowl (lighting only: put a brazier prop under it).
+      return { id: newId('light'), kind: 'light', position, yaw, color: '#ff9a3c', intensity: 1.4, range: 11, fixture: 'bulb', blink: 0.4 };
+    case 'door:portcullis':
+      // Raised by logic or E (a winch beside the gate).
+      return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: false, auto: false, style: 'portcullis' };
     case 'light:alarm':
       return { id: newId('light'), kind: 'light', position, yaw, color: '#ff3020', intensity: 1.6, range: 12, fixture: 'bulb', off: true, blink: 2.5 };
     case 'light:candle':
@@ -630,7 +697,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover', portal: 'Portal' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {

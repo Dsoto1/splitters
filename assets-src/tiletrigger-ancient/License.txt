@@ -1,0 +1,19 @@
+Style Pack pieces: 03 Imperial Arena and 09 Sands of Egypt (built in code)
+
+These models are original to Tile Trigger. They are not taken from any pack
+and no generative AI service made them: each one is assembled from plain
+geometry (boxes, cylinders, cones, spheres, rings and flat sheets) by
+tools/content/prepare-ancient.mjs with tools/content/pieces.mjs, which write
+the GLB files in this folder. Re-run that script to rebuild them; the same
+code writes the same files.
+
+They belong to the Tile Trigger owner and ship as part of the game
+(licence "Owned" in content/props.json and the provenance ledger).
+
+Pieces: Ionic column, bronze brazier, emperor statue, amphorae, gladius rack,
+training post, eagle standard, legion banner, racing chariot, beast cage,
+stake barricade, marble altar, bench and bust, forum fountain, velarium
+awning and the emperor's throne (Style Pack 03 Imperial Arena); obelisk,
+sphinx, seated pharaoh, Anubis shrine, sarcophagus, canopic jars, papyrus
+column, felucca, reed boat, date palm, papyrus reeds, fire stand, gilded
+chest, stele and Bastet statue (Style Pack 09 Sands of Egypt).

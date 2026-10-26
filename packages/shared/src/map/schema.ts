@@ -152,9 +152,9 @@ const TeamFilter = z
  * half-doors, `vault` a round bank-vault door that swings open. Looks only:
  * every style opens, locks and blocks the same way.
  */
-export const DOOR_STYLES = ['sliding', 'blast', 'saloon', 'vault'] as const;
+export const DOOR_STYLES = ['sliding', 'blast', 'saloon', 'vault', 'portcullis'] as const;
 export type DoorStyle = (typeof DOOR_STYLES)[number];
-export const DOOR_STYLE_LABELS: Record<DoorStyle, string> = { sliding: 'Sliding steel', blast: 'Blast door', saloon: 'Saloon doors', vault: 'Vault door' };
+export const DOOR_STYLE_LABELS: Record<DoorStyle, string> = { sliding: 'Sliding steel', blast: 'Blast door', saloon: 'Saloon doors', vault: 'Vault door', portcullis: 'Portcullis' };
 
 /** A sliding double door, sized for a Classic Grid doorway (3 m × 3 m). */
 export const DoorEntity = EntityBase.extend({
@@ -556,7 +556,29 @@ export const MoverEntity = EntityBase.extend({
   startActive: z.boolean().default(true),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity]);
+/**
+ * A portal (Style Packs 03 and 09): one of a linked pair of glowing surfaces.
+ * Walk (or fly, or shoot) into its front and you come out of the other portal
+ * of the same `pair`, moving the same way relative to it: your speed is kept
+ * and turned by the difference in the two portals' facings. Position is the
+ * centre of its bottom edge; it faces `yaw` (the side you go in by) and is
+ * `size` [width, height] metres. Logic can switch it off and on (Enable /
+ * Disable); bots use pairs as shortcuts. Absent `color`: the pair's own.
+ */
+export const PortalEntity = EntityBase.extend({
+  kind: z.literal('portal'),
+  yaw: Yaw,
+  size: z.tuple([z.number().min(1.2).max(8), z.number().min(2.2).max(8)]).default([2.4, 3.2]),
+  /** Pair ID: the two portals sharing it lead into each other. */
+  pair: z.string().regex(/^[a-z0-9_]{1,32}$/, 'pair IDs are 1-32 chars of [a-z0-9_]'),
+  startEnabled: z.boolean().default(true),
+  color: z
+    .string()
+    .regex(/^#[0-9a-f]{6}$/)
+    .optional(),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -735,6 +757,7 @@ export type RescueEntity = z.infer<typeof RescueEntity>;
 export type LightEntity = z.infer<typeof LightEntity>;
 export type AirplaneEntity = z.infer<typeof AirplaneEntity>;
 export type MoverEntity = z.infer<typeof MoverEntity>;
+export type PortalEntity = z.infer<typeof PortalEntity>;
 export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
 export type Liquid = (typeof LIQUIDS)[number];
 export type Faction = z.infer<typeof Faction>;

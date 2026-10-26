@@ -106,6 +106,9 @@ accepts for our own work:
 - `node tools/content/build-style-props.mjs` writes the Gothic Estate, Jungle
   Ruins and Suburban Chaos props (56 pieces, flat colours, modelled with
   `tools/content/pieces.mjs`) to `assets-src/tiletrigger-styleprops/`.
+- `node tools/content/prepare-ancient.mjs` writes the Imperial Arena and Sands
+  of Egypt props (flat colours, built with `pieces.mjs`) to
+  `assets-src/tiletrigger-ancient/`.
 
 `prepare-props.mjs` then builds them like any in-repo pack. The 05, 06 and 08
 facades are boxes drawn with the level (`map/geometry.ts`), so they need no

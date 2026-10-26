@@ -91,6 +91,12 @@ export interface BotWorldView {
   /** Lifts (movers going up and down): the ride's two ends (a navmesh link) and where the platform's top is now. */
   lifts?: readonly { start: Vec3; end: Vec3; top: Vec3; half: number }[];
   /**
+   * Portal pairs (a navmesh link each way): where to step in, where you come
+   * out, the portal's surface to walk into, and whether the pair works now
+   * (logic can switch portals off: then the shortcut is shut).
+   */
+  portals?: readonly { start: Vec3; end: Vec3; face: Vec3; on: boolean }[];
+  /**
    * Squad order (NPCs) or co-op goal (Player Bots): when not fighting, go here
    * instead of roaming, and wait within `radius` of it.
    */
@@ -1538,7 +1544,23 @@ export class BotBrain {
       return Math.atan2(goal.x - me.pos.x, goal.z - me.pos.z);
     }
     if (view.lifts?.length) this.holdStill = this.liftWait(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null);
+    // Taking a portal: the next corner is out of the far portal, so walk into this one's surface instead.
+    const face = view.portals?.length ? this.portalFace(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null) : null;
+    if (face) return Math.atan2(face.x - me.pos.x, face.z - me.pos.z);
     return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+  }
+
+  /** The portal surface to walk into when the path's next leg is a portal link (from in front of one portal to out of the other). */
+  private portalFace(view: BotWorldView, corner: Vec3, prev: Vec3 | null): Vec3 | null {
+    if (!prev) return null;
+    const near = (a: Vec3, b: Vec3, r: number) => horizontalDistance(a, b) < r && Math.abs(a.y - b.y) < 1.2;
+    for (const p of view.portals!) if (near(prev, p.start, 1.6) && near(corner, p.end, 1.8)) return p.face;
+    return null;
+  }
+
+  /** Went through a portal: the view turned with you (the server turned the body). */
+  turned(turn: number): void {
+    this.yaw += turn;
   }
 
   /**
@@ -1602,6 +1624,15 @@ export class BotBrain {
 
   /** The closed door or breakable wall the planned path crosses, if any. */
   private pathBlocked(view: BotWorldView): Aabb | null {
+    // A leg through a portal that is switched off is shut (there is no button to open it for the bot).
+    const shut = view.portals?.filter((p) => !p.on);
+    if (shut?.length) {
+      const near = (a: Vec3, b: Vec3, r: number) => horizontalDistance(a, b) < r && Math.abs(a.y - b.y) < 1.2;
+      for (let i = 1; i < this.path.length; i++) {
+        const leg = shut.find((p) => near(this.path[i - 1]!, p.start, 1.6) && near(this.path[i]!, p.end, 1.8));
+        if (leg) return { min: { x: leg.face.x - 0.5, y: leg.face.y, z: leg.face.z - 0.5 }, max: { x: leg.face.x + 0.5, y: leg.face.y + 3, z: leg.face.z + 0.5 } };
+      }
+    }
     if (!view.blockers?.length) return null;
     let prev = view.self.pos;
     for (const c of this.path) {
