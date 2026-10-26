@@ -41,6 +41,7 @@ import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EM
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
+import type { CarryOver } from './playlist.ts';
 import { ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
 import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
@@ -463,7 +464,7 @@ export class Match {
         this.pendingEvents.push({ e: 'explode', s: owner ?? -1, p: tuple(at), r: radius });
         this.splash(at, radius, damage, edge, owner === null ? null : (this.actor(owner) ?? null), weapon, 1);
       },
-      endRound: (winner, outcome) => this.endRound(winner, outcome),
+      endRound: (winner, outcome, next) => this.endRound(winner, outcome, next),
       encounter: (id, op, order) => {
         if (op === 'start') this.encounters.start(id);
         else if (op === 'stop') this.encounters.stop(id);
@@ -3099,8 +3100,12 @@ export class Match {
    * Ends the round; the winner is the top scorer unless scenario logic names
    * one (`null` = nobody). Co-op missions end with an outcome instead.
    */
-  private endRound(forced?: number | null, outcome?: 'victory' | 'defeat'): void {
+  /** The map a "Next map" logic action sent everyone on to (a suite map ID; hosts check it), once the round has ended. */
+  nextMap: string | null = null;
+
+  private endRound(forced?: number | null, outcome?: 'victory' | 'defeat', next?: string): void {
     if (this.phase !== 'playing') return;
+    if (next) this.nextMap = next;
     const ranked = this.combatants().sort((a, b) => b.kills - a.kills);
     const named = forced === undefined || forced === null ? undefined : this.actor(forced);
     const top = forced === undefined ? ranked[0] : named && !named.npc ? named : undefined;
@@ -3116,7 +3121,27 @@ export class Match {
       this.pendingEvents.push({ e: 'round_end', winner: null, team });
       return;
     }
-    this.pendingEvents.push(outcome ? { e: 'round_end', winner: null, outcome } : { e: 'round_end', winner: top && !tied ? top.slot : null });
+    this.pendingEvents.push(outcome ? { e: 'round_end', winner: null, outcome, ...(next ? { next } : {}) } : { e: 'round_end', winner: top && !tied ? top.slot : null });
+  }
+
+  /** Scenario chains: start this player with what they carried from the previous map (score, weapons). */
+  applyCarry(c: Combatant, carry: CarryOver): void {
+    if (carry.kills !== undefined) c.kills = carry.kills;
+    if (carry.deaths !== undefined) c.deaths = carry.deaths;
+    for (const [id, mag, reserve] of carry.weapons ?? []) {
+      let def: WeaponDefinition;
+      try {
+        def = getWeapon(id);
+      } catch {
+        continue;
+      }
+      c.weapons.set(weaponCode(def), { def, mag: Math.max(0, Math.min(def.magazine, mag)), reserve: Math.max(0, Math.min(def.reserveMax, reserve)), alt: def.alt?.max ?? 0 });
+    }
+  }
+
+  /** What `c` would carry into the next map of a chain. */
+  carryOf(c: Combatant): CarryOver {
+    return { kills: c.kills, deaths: c.deaths, weapons: [...c.weapons.values()].map((w): [string, number, number] => [w.def.id, w.mag, w.reserve]) };
   }
 
   /** Humans whose client has loaded everything (start gate). */

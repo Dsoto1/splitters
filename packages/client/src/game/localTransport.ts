@@ -12,6 +12,7 @@ import {
   sanitizeName,
   weaponCode,
   type BotDifficulty,
+  type CarryOver,
   type GameEvent,
   type MapDocument,
   type MatchRules,
@@ -36,6 +37,8 @@ export interface LocalMatchOptions {
   botFill: number;
   difficulty: BotDifficulty['id'];
   rules?: MatchRules;
+  /** Scenario chains: the score and weapons the local player brings from the previous map. */
+  carry?: CarryOver;
 }
 
 /**
@@ -52,6 +55,11 @@ export class LocalTransport implements Transport {
   private queueInputs?: (inputs: PlayerInput[]) => void;
   private markReady?: () => void;
   private teardown?: () => void;
+  private carryNow?: () => CarryOver;
+  /** What the local player would take into the next map of a chain (score and weapons), or null before the match runs. */
+  carry(): CarryOver | null {
+    return this.stopped ? null : (this.carryNow?.() ?? null);
+  }
   /** Time from start() to the welcome message, for the TEST transition budget. */
   startupMs = 0;
   /** Friends playing in this match (Host game), and the hook that lets them in once it's running. */
@@ -85,6 +93,8 @@ export class LocalTransport implements Transport {
     const rules = this.opts.rules ?? rulesForMap(this.map);
     const match = new Match(this.map, rules, Math.floor(Math.random() * 1e6), { startGate: true });
     const me = match.addHuman(this.opts.name, this.opts.look)!;
+    if (this.opts.carry) match.applyCarry(me, this.opts.carry);
+    this.carryNow = () => match.carryOf(me);
     // Automation hook for browser tests (give weapons, place players).
     (window as unknown as { __match: unknown; __give: (id: string) => void }).__match = match;
     (window as unknown as { __give: (id: string) => void }).__give = (id) => {

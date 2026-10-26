@@ -24,6 +24,7 @@ import {
   SPEED_BOOST,
   TICK_DT,
   TICK_RATE,
+  type CarryOver,
   weaponByCode,
   DESTRUCTIBLE_SPECS,
   NPC_ROLES,
@@ -105,12 +106,24 @@ export interface SessionOptions {
   exitOnF5: boolean;
   /** An in-browser match friends can be let into (pause menu → Host game). */
   hostable?: boolean;
-  /** Called when the player leaves or the transport closes. `reason` is set for unexpected closes. */
-  onExit: (reason?: string) => void;
+  /**
+   * Called when the player leaves or the transport closes. `reason` is set for unexpected closes.
+   * `travel`: a scenario chain moves on (a won co-op map with a next map, or the server changing map).
+   */
+  onExit: (reason?: string, travel?: Travel) => void;
+  /** Local matches in a playlist: a co-op win moves on even without a "Next map" link. */
+  chain?: boolean;
   /** Called once the map is loaded and the first frame can render. */
   onReady?: () => void;
   /** Your character's portrait for the HUD (rendered by the menus). */
   portrait?: Promise<string>;
+}
+
+/** Where a scenario chain goes next: a suite map ID (local "Next map"), or the server's new map (its name). */
+export interface Travel {
+  id?: string;
+  map?: string;
+  carry?: CarryOver;
 }
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -513,6 +526,23 @@ export class GameSession {
     }
   }
 
+  /** Set when a chain moves on (see Travel). */
+  private travel: Travel | null = null;
+
+  /** A won co-op map in a local match: after a moment for the results, go on to the next map of the chain. */
+  private chainOn(next: string | undefined): void {
+    const local = this.opts.transport;
+    if (!(local instanceof LocalTransport) || (!next && !this.opts.chain) || this.travel) return;
+    this.travel = { ...(next ? { id: next } : {}) };
+    const wait = Math.max(1000, ((this.rules?.intermissionTicks ?? 300) / TICK_RATE) * 1000 - 600);
+    this.hud.showMessage(next ? 'Mission complete: on to the next map…' : 'Mission complete: next mission…', wait / 1000);
+    window.setTimeout(() => {
+      if (this.closed) return;
+      this.travel!.carry = local.carry() ?? undefined;
+      this.exit('travel');
+    }, wait);
+  }
+
   private advertiser?: LobbyAdvertiser;
 
   /** Start or stop listing the hosted match in the game browser, following the pause-menu checkbox. */
@@ -563,7 +593,7 @@ export class GameSession {
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
-    this.opts.onExit(reason);
+    this.opts.onExit(reason, this.travel ?? undefined);
   }
 
   private onMessage(msg: ServerMessage): void {
@@ -767,6 +797,7 @@ export class GameSession {
             if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2);
             if (ev.hs && ev.killer === this.slot) this.hud.headshot();
           } else if (ev.e === 'round_end') {
+            if (ev.outcome === 'victory') this.chainOn(ev.next);
             this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
             this.outcome = ev.outcome ?? null;
           } else if (ev.e === 'round_start') {
@@ -825,6 +856,12 @@ export class GameSession {
         }
         break;
       }
+      case 'travel':
+        // The server is changing map: reconnect to play the next one.
+        this.travel = { map: msg.map };
+        this.hud.showMessage(`Next map: ${msg.map}`, 3);
+        this.exit('travel');
+        break;
       case 'stats':
         this.serverStats = msg;
         break;

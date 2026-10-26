@@ -22,6 +22,7 @@ export * from './sim/trajectory.ts';
 export * from './sim/mounts.ts';
 export * from './sim/items.ts';
 export * from './sim/rules.ts';
+export * from './sim/playlist.ts';
 export * from './sim/scenarioDefs.ts';
 export * from './sim/scenario.ts';
 export * from './sim/npc.ts';

@@ -1,4 +1,5 @@
 import { ACTION_INFO, CONDITION_INFO, EVENT_INFO, TOGGLEABLE_KINDS, type TargetKind } from './logic.ts';
+import { isMapId } from '../sim/playlist.ts';
 import { PLAYERS_FACTION, type MapDocument } from './schema.ts';
 import { MAX_TEAMS, mapFactions, mapTeams, rosterSize } from '../sim/npc.ts';
 import type { ValidationIssue } from './validate.ts';
@@ -78,6 +79,7 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
       if (info.states && a.state && !info.states.includes(a.state)) {
         issues.push({ severity: 'warning', code: 'logic.state', message: `rule "${name}": DO "${info.label}" needs one of ${info.states.join(', ')}`, targetId: rule.id });
       }
+      if (a.type === 'next_map' && !isMapId(a.text.trim())) issues.push({ severity: 'warning', code: 'logic.next_map', message: `rule "${name}": "Next map" needs a map ID from our suite (like creature_lab)`, targetId: rule.id });
       if (a.type === 'message' && !a.text.trim()) issues.push({ severity: 'warning', code: 'logic.empty_message', message: `rule "${name}": message is empty`, targetId: rule.id });
       if ((a.type === 'door_unlock' || a.type === 'door_open' || a.type === 'door_toggle') && a.target) used.unlocked.add(a.target);
       if ((a.type === 'trap_fire' || a.type === 'enable') && a.target) used.fired.add(a.target);

@@ -38,6 +38,7 @@ import { weaponIcon } from './weaponIcons.ts';
 import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
+import { PLAYLISTS } from '../playlists.ts';
 
 /** A built-in map the Arcade offers. */
 /**
@@ -98,6 +99,8 @@ export interface ArcadeSetup {
   /** Team names and colours by team order (empty entries: the map's). */
   teamNames?: string[];
   teamColors?: string[];
+  /** Co-op: play a playlist (scenario chain) instead of just this map. */
+  playlist?: string;
   /** Team leaders (team modes): on, or the Leader variant (downing a leader scores extra in Team Deathmatch). */
   leaders?: 'on' | 'vip';
   /** Small and large characters play differently (false: everyone standard). Absent = on. */
@@ -138,6 +141,8 @@ export interface FrontEndHooks {
   openDesigner(look: string): void;
   playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill']): void;
   playOnline(server: string, name: string): void;
+  /** Play a scenario chain (maps/playlists): its maps in order, each once the one before is won. */
+  playPlaylist(id: string, botFill: number, skill: ArcadeSetup['skill']): void;
   /** Join a friend's hosted game by its code. */
   joinCode(code: string, name: string): void;
 }
@@ -529,6 +534,9 @@ export class FrontEnd {
         el('section', {}, el('h4', { textContent: 'Mode' }), modeTabs),
         el('section', {}, el('h4', { textContent: coop ? 'Squad' : 'Players' }),
           ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, twoTeams) : [row(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper(s.bots, 1, 0, coop ? 15 : 47, (v) => (this.setup.bots = v)))]),
+          ...(coop && PLAYLISTS.length
+            ? [row('Playlist', `Play a chain of co-op maps: win one and you go on to the next${PLAYLISTS.map((p) => `\n\n${p.name} (${p.maps.length} maps): ${p.description}`).join('')}`, tabs([['', 'Just this map'], ...PLAYLISTS.map((p): [string, string] => [p.id, `${p.name} (${p.maps.length})`])], s.playlist ?? '', (v) => (this.setup.playlist = v || undefined)))]
+            : []),
           row('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill'])))),
         ...(coop
           ? []
@@ -578,6 +586,8 @@ export class FrontEnd {
       this.hooks.playLocal(m.map, { ...rules, teamSizes: teams, ...(names.some(Boolean) ? { teamNames: names } : {}), ...(colors.some(Boolean) ? { teamColors: colors } : {}) }, Math.min(MAX_PLAYER_SLOTS, teams.reduce((a, b) => a + b, 0)), this.setup.skill);
       return;
     }
+    // A co-op playlist starts on its own first map; the chain carries on from there.
+    if (this.setup.mode === 'core.coop' && this.setup.playlist && PLAYLISTS.some((p) => p.id === this.setup.playlist)) return this.hooks.playPlaylist(this.setup.playlist, this.setup.bots + 1, this.setup.skill);
     // The bot filler counts the player too.
     this.hooks.playLocal(m.map, rules, this.setup.bots + 1, this.setup.skill);
   }

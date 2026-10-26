@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { initPhysics, isGameMode, loadMap, mapCanRun, playableModes, rulesForMap, rulesForMode, type GameMode, type MatchRules } from '@tiletrigger/shared';
+import { initPhysics, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
@@ -27,7 +27,8 @@ import { MenuScene } from './frontend/menuScene.ts';
 import { ModelThumbnails } from './frontend/modelThumbs.ts';
 import { setWeaponIconSource } from './frontend/weaponIcons.ts';
 import { PortraitRenderer } from './frontend/portraits.ts';
-import { GameSession } from './game/session.ts';
+import { GameSession, type Travel } from './game/session.ts';
+import { PLAYLISTS, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import type { Transport } from './game/transport.ts';
 
@@ -141,6 +142,7 @@ class App {
         openDesigner: (look) => void this.openDesigner(look),
         playLocal: (map, rules, bots, skill) => this.playLocal(map, rules, bots, skill),
         playOnline: (server, name) => void this.playOnline(server, name),
+        playPlaylist: (id, botFill, skill) => this.playPlaylist(id, botFill, skill),
         joinCode: (code, name) => void this.joinCode(code, name),
       }, this.menuScene, this.portraits, audio, params);
       this.engine.runRenderLoop(() => this.frame());
@@ -234,13 +236,57 @@ class App {
     this.playLocal(arena.map, { ...(asked ? rulesForMode(arena.map, asked) : rulesForMap(arena.map)), ...extra }, botFill, 'normal');
   }
 
-  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard'): void {
-    this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules }), {
+  /** The scenario chain being played (Arcade → co-op → Playlist): which playlist, how far in, and its settings. */
+  private chain: { playlist: Playlist; index: number; botFill: number; difficulty: 'easy' | 'normal' | 'hard' } | null = null;
+
+  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver): void {
+    this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
-      onExit: (reason) => void this.showMenu(reason ?? ''),
+      chain: !!this.chain,
+      onExit: (reason, travel) => {
+        if (reason === 'travel' && travel) return this.travelLocal(travel, rules, botFill, difficulty);
+        this.chain = null;
+        void this.showMenu(reason ?? '');
+      },
     });
+  }
+
+  /** Start a playlist (maps/playlists): its first map; each win moves on to the next. */
+  playPlaylist(id: string, botFill: number, difficulty: 'easy' | 'normal' | 'hard'): void {
+    const playlist = PLAYLISTS.find((p) => p.id === id);
+    if (!playlist) return void this.showMenu(`No playlist called ${id}`);
+    this.chain = { playlist, index: -1, botFill, difficulty };
+    this.travelLocal({}, null, botFill, difficulty);
+  }
+
+  /**
+   * A local chain moves on: the "Next map" a map named, else the playlist's
+   * next. Only maps of our suite load; anything else ends the chain.
+   */
+  private travelLocal(travel: Travel, rules: MatchRules | null, botFill: number, difficulty: 'easy' | 'normal' | 'hard'): void {
+    const chain = this.chain;
+    const at = chain ? (chain.index < 0 ? 0 : playlistNext(chain.playlist, chain.index)) : null;
+    const id = travel.id ?? (chain && at !== null ? chain.playlist.maps[at]!.map : null);
+    if (!id) {
+      this.chain = null;
+      return void this.showMenu(chain ? `${chain.playlist.name} complete!` : '');
+    }
+    const json = inSuite(id) ? EXTRA_MAPS[`../../../maps/${id}.json`] : undefined;
+    const loaded = json ? loadMap(json) : null;
+    if (!loaded?.ok) {
+      this.chain = null;
+      return void this.showMenu(`The next map (${id}) isn't one of ours`);
+    }
+    const entry = chain && at !== null && chain.playlist.maps[at]!.map === id ? chain.playlist.maps[at]! : null;
+    if (chain) chain.index = entry ? at! : chain.index;
+    const want = entry?.mode ?? (mapCanRun(loaded.map, 'core.coop') ? 'core.coop' : rules?.mode);
+    const next = want && mapCanRun(loaded.map, want) ? rulesForMode(loaded.map, want) : rulesForMap(loaded.map);
+    const keep = chain?.playlist.carry ?? { score: true, loadout: true };
+    const c = travel.carry;
+    const carry = c ? { ...(keep.score ? { kills: c.kills, deaths: c.deaths } : {}), ...(keep.loadout ? { weapons: c.weapons } : {}) } : undefined;
+    this.playLocal(loaded.map, next, chain?.botFill ?? botFill, chain?.difficulty ?? difficulty, carry);
   }
 
   /** Join a friend's hosted game (Host game) by its code. */
@@ -260,11 +306,15 @@ class App {
     this.startSession(new NetTransport(url, name, this.front!.look), {
       exitLabel: 'Leave match',
       exitOnF5: false,
-      onExit: (reason) => void this.showMenu(reason ? `Disconnected: ${reason}` : ''),
+      onExit: (reason, travel) => {
+        // The server moved on to the next map of a chain: join it again in a moment.
+        if (reason === 'travel' && travel) return void window.setTimeout(() => void this.playOnline(url, name), 1200);
+        void this.showMenu(reason ? `Disconnected: ${reason}` : '');
+      },
     });
   }
 
-  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; onExit: (reason?: string) => void; onReady?: () => void }): void {
+  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; onExit: (reason?: string, travel?: Travel) => void; onReady?: () => void }): void {
     $('menu').hidden = true;
     this.mode = 'game';
     this.session = new GameSession({
@@ -276,12 +326,13 @@ class App {
       exitLabel: o.exitLabel,
       exitOnF5: o.exitOnF5,
       hostable: !!o.hostable,
+      chain: !!o.chain,
       showStats: params.has('stats'),
       onReady: o.onReady,
       portrait: this.portraits?.get(this.front!.look),
-      onExit: (reason) => {
+      onExit: (reason, travel) => {
         this.session = undefined;
-        o.onExit(reason);
+        o.onExit(reason, travel);
       },
     });
   }

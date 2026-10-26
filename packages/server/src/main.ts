@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GAME_MODES, isGameMode, type GameMode } from '@tiletrigger/shared';
+import { GAME_MODES, isGameMode, parsePlaylist, type GameMode } from '@tiletrigger/shared';
 import { startServer } from './server.ts';
 
 const env = process.env;
@@ -10,7 +12,12 @@ if (difficulty && !['easy', 'normal', 'hard'].includes(difficulty)) throw new Er
 const mode = env.MODE || undefined;
 if (mode && !isGameMode(mode)) throw new Error(`MODE must be one of ${GAME_MODES.join('|')}`);
 
+// PLAYLIST=maps/playlists/night_shift.json plays a scenario chain (its maps in order, each once the one before is won).
+const playlist = env.PLAYLIST ? parsePlaylist(JSON.parse(readFileSync(resolve(env.INIT_CWD ?? process.cwd(), env.PLAYLIST), 'utf8'))) : undefined;
+if (playlist === null) throw new Error(`PLAYLIST ${env.PLAYLIST} is not a valid playlist`);
+
 const server = await startServer({
+  playlist,
   port: Number(env.PORT ?? 7777),
   host: env.HOST,
   map: env.MAP ?? defaultMap,

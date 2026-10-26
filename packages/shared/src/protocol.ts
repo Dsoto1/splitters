@@ -135,7 +135,7 @@ export type GameEvent =
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit. */ hs?: 1 }
   | { e: 'spawn'; s: number }
   /** `outcome` is set when a co-op mission ends (victory or defeat). */
-  | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null }
+  | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null; /** "Next map" logic: the suite map ID everyone goes on to. */ next?: string }
   | { e: 'round_start' }
   // Objective modes. `team` is a team (faction) ID.
   /** Capture the Flag: `team`'s flag was taken, dropped, returned home or captured; `s` is who did it (null: it went home on its own). */
@@ -369,4 +369,6 @@ export type ServerMessage =
       ld?: number[];
     }
   | { t: 'pong'; id: number; ct: number }
+  /** The server is changing map (a scenario chain): reconnect in a moment to play `map` (its display name). */
+  | { t: 'travel'; map: string }
   | ({ t: 'stats' } & ServerStats);

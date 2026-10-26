@@ -1,4 +1,6 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { WebSocketServer, type WebSocket } from 'ws';
@@ -17,7 +19,11 @@ import {
   loadMap,
   parseClientMessage,
   sanitizeName,
+  isMapId,
+  playlistNext,
   type BotDifficulty,
+  type CarryOver,
+  type Playlist,
   type GameEvent,
   type MapDocument,
   type MatchRules,
@@ -51,13 +57,21 @@ export interface ServerOptions {
   onStats?: (line: string) => void;
   /** Server name in LAN discovery and /info (default "<map> server"). */
   name?: string;
+  /**
+   * Scenario chains: play these maps in order, each once the one before is won
+   * (the server starts on the playlist's first map; `map` is then ignored).
+   */
+  playlist?: Playlist;
+  /** Our suite (where "Next map" and playlist IDs are looked up): default the repo's maps/ folder. */
+  mapsDir?: string;
   /** Answer LAN discovery broadcasts (UDP, LAN_DISCOVERY_PORT unless a port is given). Off by default; main.ts turns it on. */
   lanDiscovery?: boolean | number;
 }
 
 export interface RunningServer {
   port: number;
-  match: Match;
+  /** The running match (a new one after a scenario chain moves on to the next map). */
+  readonly match: Match;
   /** What /info and LAN discovery say about this server right now. */
   info(): ServerInfo;
   close(): Promise<void>;
@@ -79,10 +93,30 @@ const HELLO_TIMEOUT_MS = 5000;
 export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   await Promise.all([initPhysics(), initNavigation()]);
 
-  const map = typeof opts.map === 'string' ? readMapFile(opts.map) : opts.map;
+  const mapsDir = opts.mapsDir ?? fileURLToPath(new URL('../../../maps/', import.meta.url));
+  /** A map of our suite by ID, or null: only files in the suite folder, never a path. */
+  const suiteMap = (id: string): MapDocument | null => {
+    const file = join(mapsDir, `${id}.json`);
+    if (!isMapId(id) || !existsSync(file)) return null;
+    try {
+      return readMapFile(file);
+    } catch {
+      return null;
+    }
+  };
+  let playIndex = 0;
+  const first = opts.playlist ? suiteMap(opts.playlist.maps[0]!.map) : null;
+  if (opts.playlist && !first) throw new Error(`playlist ${opts.playlist.id}: map ${opts.playlist.maps[0]!.map} is not in our suite`);
+  let map = first ?? (typeof opts.map === 'string' ? readMapFile(opts.map) : opts.map);
   if (opts.mode && !opts.rules && !mapCanRun(map, opts.mode)) throw new Error(`${map.metadata.name} can't host ${MODE_LABELS[opts.mode]} (it has no flag bases or hills for it)`);
-  const baseRules = opts.rules ?? (opts.mode ? rulesForMode(map, opts.mode) : rulesForMap(map));
-  const match = new Match(map, opts.leaders ? { ...baseRules, leaders: opts.leaders } : baseRules, opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
+  /** Rules for a chain's map: the playlist entry's mode, else co-op where the map has it, else the map's own. */
+  const chainRules = (m: MapDocument, mode?: GameMode): MatchRules => {
+    const want = mode ?? (mapCanRun(m, 'core.coop') ? 'core.coop' : undefined);
+    return want && mapCanRun(m, want) ? rulesForMode(m, want) : rulesForMap(m);
+  };
+  const baseRules = first ? chainRules(first, opts.playlist!.maps[0]!.mode) : (opts.rules ?? (opts.mode ? rulesForMode(map, opts.mode) : rulesForMap(map)));
+  const withLeaders = (r: MatchRules): MatchRules => (opts.leaders ? { ...r, leaders: opts.leaders } : r);
+  let match = new Match(map, withLeaders(baseRules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
   for (const issue of validateNavigation(map, match.nav)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
   const difficulty = BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'];
   const botFill = Math.min(opts.botFill, MAX_PLAYER_SLOTS);
@@ -90,7 +124,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const clients = new Set<Client>();
   const stats = new StatsWindow();
   let pendingEvents: GameEvent[] = [];
-  const bots = new BotFiller(match, difficulty, { takeBack: opts.botTakeBack });
+  let bots = new BotFiller(match, difficulty, { takeBack: opts.botTakeBack });
+  /** Scenario chains: what each player (by name) takes into the next map, until they rejoin. */
+  let carried = new Map<string, CarryOver>();
+  /** A won map with somewhere to go: travel at this tick (late in the intermission). */
+  let travel: { atTick: number; map: MapDocument; rules: MatchRules; index: number; carry: { score: boolean; loadout: boolean } } | null = null;
 
   const send = (c: Client, msg: ServerMessage | string) => {
     const data = typeof msg === 'string' ? msg : JSON.stringify(msg);
@@ -150,6 +188,12 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           return;
         }
         client.slot = player.slot;
+        // Back from a map change: pick up your score and weapons.
+        const carry = carried.get(player.name);
+        if (carry) {
+          match.applyCarry(player, carry);
+          carried.delete(player.name);
+        }
         send(client, {
           t: 'welcome',
           protocol: PROTOCOL_VERSION,
@@ -230,14 +274,59 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   let stopped = false;
   let timer: NodeJS.Timeout;
 
+  /** A won co-op map moves on: the "Next map" it named (checked against our suite), else the playlist's next. */
+  const planTravel = (next: string | undefined) => {
+    const list = opts.playlist;
+    const at = list ? playlistNext(list, playIndex) : null;
+    const id = next ?? (list && at !== null ? list.maps[at]!.map : null);
+    if (!id) return;
+    const m = suiteMap(id);
+    if (!m) return void console.warn(`[chain] "${id}" is not a map of our suite: staying on ${map.metadata.name}`);
+    const entry = list && at !== null && list.maps[at]!.map === id ? list.maps[at]! : null;
+    travel = {
+      atTick: match.tick + Math.max(30, match.rules.intermissionTicks - 30),
+      map: m,
+      rules: chainRules(m, entry?.mode),
+      index: entry ? at! : playIndex,
+      carry: list?.carry ?? { score: true, loadout: true },
+    };
+  };
+  /** Change map: everyone gets `travel` and reconnects to the new match, keeping what the chain carries. */
+  const doTravel = () => {
+    const t = travel!;
+    travel = null;
+    carried = new Map();
+    for (const c of match.combatants()) {
+      if (c.kind !== 'human') continue;
+      const all = match.carryOf(c);
+      carried.set(c.name, { ...(t.carry.score ? { kills: all.kills, deaths: all.deaths } : {}), ...(t.carry.loadout ? { weapons: all.weapons } : {}) });
+    }
+    for (const c of clients) {
+      if (c.slot !== null) send(c, { t: 'travel', map: t.map.metadata.name });
+      c.slot = null;
+      c.ws.close(4005, 'travel');
+    }
+    pendingEvents = [];
+    match.destroy();
+    map = t.map;
+    playIndex = t.index;
+    match = new Match(map, withLeaders(t.rules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
+    bots = new BotFiller(match, difficulty, { takeBack: opts.botTakeBack });
+    bots.rebalance(botFill);
+    console.log(`[chain] now playing ${map.metadata.name}`);
+  };
+
   const loop = () => {
     if (stopped) return;
     const now = performance.now();
     let ran = 0;
     while (now >= nextTickAt && ran < 5) {
       const t0 = performance.now();
-      pendingEvents.push(...match.step());
+      const events = match.step();
+      pendingEvents.push(...events);
+      for (const ev of events) if (ev.e === 'round_end' && ev.outcome === 'victory') planTravel(ev.next);
       if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) sendSnapshots();
+      if (travel && match.tick >= travel.atTick) doTravel();
       stats.recordTick(performance.now() - t0, match.lastAiMs);
       nextTickAt += tickMs;
       ran++;
@@ -267,7 +356,9 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
 
   return {
     port,
-    match,
+    get match() {
+      return match;
+    },
     info,
     close: async () => {
       stopped = true;
