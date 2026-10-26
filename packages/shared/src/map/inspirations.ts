@@ -26,6 +26,8 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   dead_reel: 'Kino der Toten (Call of Duty: Black Ops)',
   kanto_plaza: 'Nakatomi Plaza (Die Hard)',
   shingle_point: 'the D-Day beach landings (1944)',
+  atomic_court: 'Nuketown (Call of Duty: Black Ops)',
+  fallout_lane: 'Nuketown (Call of Duty: Black Ops)',
 };
 
 /** "Inspired by …" for a map, if it has one (imported TimeSplitters maps name their game). */

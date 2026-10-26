@@ -38,39 +38,16 @@ An homage to Half-Life deathmatch's **Stalkyard**. Script: `packages/server/src/
 
 ## Bunker Cross (`bunker_cross`)
 
-An homage to Half-Life deathmatch's **Crossfire**, rebuilt from memory with our own kit (script: `packages/server/src/tools/maps/bunker_cross.ts`). Bunker theme, clear sky over desert mesas and sand. Two concrete bunkers face each other across an open 40 × 40 m yard cut in half by a dry canal. Deathmatch and team deathmatch, 6–16 players. Embers spawn in the north bunker and Tide in the south one; 16 neutral spawns in both bunkers, the galleries and the tunnels cover deathmatch.
+An homage to Half-Life deathmatch's **Crossfire**, rebuilt to the original's layout with our own kit (script: `packages/server/src/tools/maps/bunker_cross.ts`). Two concrete bases face each other west and east across a courtyard sunk 4 m and open to the sky. Deathmatch, team deathmatch, CTF and King of the Hill.
 
 **Routes**
-- **The yard**: open ground with a little cover: two crate stacks, two low walls, broken columns in front of each bunker, concrete barriers, a skip and two explosive drums.
-- **The canal**: a 4 m deep dry canal across the middle of the yard. A railed bridge crosses it in the centre, and you can drop in either side of the bridge. Four jump pads throw you back up onto the yard.
-- **Bunker halls**: each bunker has a ground-floor hall with three blast doors onto the yard and doorways to the back rooms.
-- **Sniper galleries**: a storey up, over each hall, with windows and a firing slit looking over the yard. Stairwells at both ends lead up to them.
-- **Tunnels**: under the east and west flanks of the yard. They join the canal through two culverts, each with a blast door, and stairs at each end climb into the tunnel rooms at the corners of both bunkers.
+- **The courtyard**: ramps climb out of all four corners; each base basement has two doors straight onto the floor.
+- **The bridge**: a railed bridge crosses the middle at ground-floor height, with rockets on it and the damage boost underneath.
+- **Rim catwalks**: fenced catwalks a storey up along both rims, over side halls with slit windows.
+- **Sniper nests**: a gallery and a sandbagged roof nest on each base, each with a sniper rifle.
+- **Tunnels and the shelter**: tunnels from both bases meet in a shelter under the bridge (railgun); two drop holes in the courtyard lead down, jump pads lead back up.
 
-**Key pickups**
-- **Railgun**: in the north bunker's storeroom, behind the back rooms.
-- **Heavy armour**: in the south bunker's control room, next to the airstrike button.
-- **Rocket launcher**: on the canal floor under the bridge.
-- **Double damage**: on the bridge.
-- **Sniper rifles**: one in each gallery.
-- Shotguns, SMGs, big health and small armour are in both bunkers. The tunnels have a grenade launcher, a burst rifle and grenades, and the yard has a rifle and a plasma rifle.
-
-**The airstrike**
-
-The button is in the control room, deep in the south bunker.
-- **On the press**: the button switches off. Everyone sees "AIRSTRIKE INBOUND! Get inside!", and the alarm sounds three times over 4 s.
-- **At +5 s**: all eight blast doors lock shut: six bunker doors and the two culvert mouths.
-- **At +6 s**: 110 charges go off at once, with a boom. They are hidden just under the floor every 4 m across the yard and the canal floor, in the bridge deck, and on top of the crate stacks and ruins.
-- **At +8 s**: the doors unlock.
-- **At +60 s**: the button comes back on, with a chime.
-
-Anyone outside dies. Each charge is a logic-only proximity mine with 1000 damage that stays disabled except for the one second it fires, so it never goes off underfoot. Walls and the closed doors block the blasts, so the bunkers, galleries and tunnels are safe. Only someone standing in a doorway keeps that door from closing.
-
-Built from the scenario kit:
-- one button with a 60 s cooldown;
-- a master rule for the alarm, the messages and the cooldown;
-- a rule that locks, closes and unlocks the doors;
-- eleven rules that each enable, fire and disable ten charges, because a rule holds at most 32 actions.
+**The air strike**: a button in a control room off the north side hall (red lamps). It sounds the siren three times and starts a 10 s countdown; at 7 s the four shelter doors lock (amber lamps), at 10 s buried charges go off in a wave across the courtyard, ramps, bridge, catwalks and roof nests. The doors reopen about 17 s after the press; the button rearms after 60 s.
 
 ## Backwoods Lodge (`backwoods`)
 
