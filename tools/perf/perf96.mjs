@@ -67,7 +67,9 @@ const CLUMP = `(m, me, seed) => {
 const PROFILE = `(m, me, on, mod) => {
   const p = mod.simProfile;
   const w = globalThis.__simWake;
-  const wake = w ? { wakes: w.wakes, ticks: w.ticks, maxBatch: w.maxBatch, dropped: w.dropped, msPerWake: w.wakes ? +(w.ms / w.wakes).toFixed(2) : 0, maxWakeMs: +w.maxWakeMs.toFixed(1) } : null;
+  const t = w ? [...w.tickMs].sort((a, b) => a - b) : [];
+  const q = (p) => (t.length ? +t[Math.min(t.length - 1, Math.floor(p * t.length))].toFixed(2) : 0);
+  const wake = w ? { tickP50: q(0.5), tickP95: q(0.95), wakes: w.wakes, ticks: w.ticks, maxBatch: w.maxBatch, dropped: w.dropped, msPerWake: w.wakes ? +(w.ms / w.wakes).toFixed(2) : 0, maxWakeMs: +w.maxWakeMs.toFixed(1) } : null;
   const out = { ticks: m.tick - (globalThis.__perfTick0 ?? m.tick), ms: Object.fromEntries(p.ms), n: Object.fromEntries(p.n), wake };
   p.reset();
   p.on = on;

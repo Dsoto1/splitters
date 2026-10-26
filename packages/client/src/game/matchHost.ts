@@ -79,8 +79,11 @@ export const simWake = {
   /** Time spent ticking (ms) and the slowest single wake. */
   ms: 0,
   maxWakeMs: 0,
+  /** Each tick's time (ms, the step and its snapshots), the latest 20,000: perf runs read percentiles. */
+  tickMs: [] as number[],
   reset(): void {
     this.wakes = this.ticks = this.maxBatch = this.dropped = this.ms = this.maxWakeMs = 0;
+    this.tickMs.length = 0;
   },
 };
 (globalThis as unknown as { __simWake: typeof simWake }).__simWake = simWake;
@@ -189,6 +192,7 @@ export class MatchHost {
           events = [];
         }
         const ms = performance.now() - s;
+        if (simWake.tickMs.length < 20000) simWake.tickMs.push(ms);
         tickTotal += ms;
         tickMax = Math.max(tickMax, ms);
         aiTotal += match.lastAiMs;
