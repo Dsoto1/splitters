@@ -1063,7 +1063,8 @@ async function vehiclesFlow(browser) {
   const boom = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const m = window.__match.mounts.filter((x) => x.def.id === 'buggy' && x.alive).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
-    window.__match.damageMount(m, m.def.health * 0.9, null);
+    // Down to a tenth of its health (the drive may already have dented it): into the burning band, not past it.
+    window.__match.damageMount(m, m.health - m.def.health * 0.1, null, true);
     return m.index;
   });
   await page.waitForFunction((i) => window.__cs.mounts.mounts.get(i)?.burning, boom, { timeout: T(5000) }).catch(() => {});
