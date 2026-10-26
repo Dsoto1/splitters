@@ -1170,7 +1170,9 @@ async function raceFlow(browser) {
   check(d.track && Math.hypot(d.track.points[1][0] - 16, d.track.points[1][2] + 6) < 1, 'undo puts it back');
   await page.fill('#ed-road-laps', '5');
   await page.dispatchEvent('#ed-road-laps', 'change');
-  check((await doc()).track?.laps === 5, 'the Road pane sets the laps');
+  // CI's software renderer can be a frame behind: give the edit a moment to land.
+  const laps = await page.waitForFunction(() => window.__editor.doc.track?.laps === 5, null, { timeout: T(2000) }).then(() => 5, async () => (await doc()).track?.laps);
+  check(laps === 5, `the Road pane sets the laps (${laps})`);
   await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0), null, { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0)), 'MapMaker draws the road ribbon');
   const del = await at(13, 4);
