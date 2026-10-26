@@ -442,7 +442,8 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
 /**
  * Blocks the scenario runtime owns (v20): breakable, crumbling and trapdoor
  * blocks, plus solid blocks that logic targets, that start hidden or that a
- * mover carries. Everything else is static level geometry.
+ * mover carries, and force fields (they stop movement only, so they are
+ * never level geometry). Everything else is static level geometry.
  */
 export function dynamicBlockIds(map: MapDocument): Set<string> {
   const out = new Set<string>();
@@ -450,7 +451,7 @@ export function dynamicBlockIds(map: MapDocument): Set<string> {
   const carried = new Set(map.entities.flatMap((e) => (e.kind === 'mover' ? e.blocks : [])));
   for (const e of map.entities) {
     if (e.kind !== 'block') continue;
-    if (e.behaviour !== 'solid' || e.startHidden || targets.has(e.id) || carried.has(e.id)) out.add(e.id);
+    if (e.behaviour !== 'solid' || e.startHidden || e.field || targets.has(e.id) || carried.has(e.id)) out.add(e.id);
   }
   return out;
 }
@@ -945,6 +946,8 @@ export function boxesToTriangles(boxes: readonly WorldBox[]): { positions: Float
 /** One facade piece (a node in city/facades.glb): its bottom centre on the street face, turned to face out, stretched by sx / sy. */
 export interface FacadePiece {
   piece: string;
+  /** The GLB holding the piece (a node of that name). */
+  file: string;
   at: [number, number, number];
   yaw: number;
   sx: number;
@@ -994,13 +997,24 @@ function facadeFrames(map: MapDocument, cells: Map<string, CellOccupant>): World
   }
   return out;
 }
-const FACADE_SETS: Record<Exclude<Facade, 'none'>, { ground: string[]; upper: string[]; band: string; cornice: string; column: string }> = {
-  brick: { ground: ['Brick_Window_Trim_Single', 'Brick_BottomTrim'], upper: ['Brick_Window_Trim_Single', 'Brick_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Brick_Center', column: 'Trim_Column_Center' },
-  storefront: { ground: ['Metal_FullWindow', 'Metal_FirstFloor_Window'], upper: ['Brick_Window_Square_Single', 'Brick_Plain_3'], band: 'Metal_Plain_1', cornice: 'Cornice_Metal_Center', column: 'Metal_Column_Center' },
-  plaster: { ground: ['Trim_FirstFloor_Window_001', 'Trim_FirstFloor_Wall'], upper: ['Trim_Window', 'Trim_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Trim_Center', column: 'Trim_Column_Center' },
+const CITY_FACADES = 'city/facades.glb';
+const FACADE_SETS: Record<Exclude<Facade, 'none'>, { ground: string[]; upper: string[]; band: string; cornice: string; column: string; file: string }> = {
+  brick: { ground: ['Brick_Window_Trim_Single', 'Brick_BottomTrim'], upper: ['Brick_Window_Trim_Single', 'Brick_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Brick_Center', column: 'Trim_Column_Center', file: CITY_FACADES },
+  storefront: { ground: ['Metal_FullWindow', 'Metal_FirstFloor_Window'], upper: ['Brick_Window_Square_Single', 'Brick_Plain_3'], band: 'Metal_Plain_1', cornice: 'Cornice_Metal_Center', column: 'Metal_Column_Center', file: CITY_FACADES },
+  plaster: { ground: ['Trim_FirstFloor_Window_001', 'Trim_FirstFloor_Wall'], upper: ['Trim_Window', 'Trim_Plain_3'], band: 'Brick_Plain_1', cornice: 'Cornice_Trim_Center', column: 'Trim_Column_Center', file: CITY_FACADES },
+  // Style Packs: our own pieces (tools/content/prepare-packs.mjs), on the same 8/3 m bays and 4 m storeys.
+  hull: { ground: ['Hull_Viewport', 'Hull_Panel'], upper: ['Hull_Viewport', 'Hull_Panel'], band: 'Hull_Band', cornice: 'Hull_Cornice', column: 'Hull_Column', file: 'packs/facades_orbital.glb' },
+  glass: { ground: ['Glass_Lobby', 'Glass_Pane'], upper: ['Glass_Lit', 'Glass_Pane'], band: 'Glass_Band', cornice: 'Glass_Cornice', column: 'Glass_Column', file: 'packs/facades_neon.glb' },
+  neon: { ground: ['Neon_Shop', 'Neon_ShopWall'], upper: ['Neon_Window', 'Neon_Wall'], band: 'Neon_Band', cornice: 'Neon_Cornice', column: 'Neon_Column', file: 'packs/facades_neon.glb' },
 };
-/** Every facade piece name (city/facades.glb holds exactly these). */
-export const FACADE_PIECES: readonly string[] = [...new Set(Object.values(FACADE_SETS).flatMap((f) => [...f.ground, ...f.upper, f.band, f.cornice, f.column]))];
+const piecesOf = (f: (typeof FACADE_SETS)[keyof typeof FACADE_SETS]) => [...f.ground, ...f.upper, f.band, f.cornice, f.column];
+/** Every facade piece name in each facade file (a GLB holding a node per piece). */
+export const FACADE_FILES: Readonly<Record<string, readonly string[]>> = Object.values(FACADE_SETS).reduce<Record<string, string[]>>((acc, f) => {
+  acc[f.file] = [...new Set([...(acc[f.file] ?? []), ...piecesOf(f)])];
+  return acc;
+}, {});
+/** Every city facade piece name (city/facades.glb holds exactly these). */
+export const FACADE_PIECES: readonly string[] = FACADE_FILES[CITY_FACADES]!;
 
 /** Edges that get a facade on their outside (solid enough to dress). */
 const FACADE_WALLS = new Set<ResolvedEdge>(['wall', 'door', 'wide', 'window', 'windows', 'slit', 'high', 'tower', 'shutter', 'arch', 'broken', 'half']);
@@ -1061,12 +1075,12 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
               const kinds = first ? set.ground : set.upper;
               // Windows on alternate bays of a full wall, and on a pier beside an opening when it is wide enough.
               const piece = (n >= 3 ? i % 2 === 0 : n === 1 && w >= 2.2) ? kinds[0]! : kinds[kinds.length - 1]!;
-              out.push({ piece, at: at(u, baseY + y), yaw, sx: w / BAY, sy: Math.min(levelHeight, y1 - y) / 4 });
+              out.push({ piece, file: set.file, at: at(u, baseY + y), yaw, sx: w / BAY, sy: Math.min(levelHeight, y1 - y) / 4 });
             }
           } else {
-            out.push({ piece: set.band, at: at(u, baseY + y0), yaw, sx: w / BAY, sy: (y1 - y0) / BAND });
+            out.push({ piece: set.band, file: set.file, at: at(u, baseY + y0), yaw, sx: w / BAY, sy: (y1 - y0) / BAND });
           }
-          if (!roofed && y1 >= levelHeight - 1e-6 && (y0 > 0 || y1 - y0 >= levelHeight - 1e-6)) out.push({ piece: set.cornice, at: at(u, baseY + y1), yaw, sx: w / BAY, sy: 1 });
+          if (!roofed && y1 >= levelHeight - 1e-6 && (y0 > 0 || y1 - y0 >= levelHeight - 1e-6)) out.push({ piece: set.cornice, file: set.file, at: at(u, baseY + y1), yaw, sx: w / BAY, sy: 1 });
         }
       }
     }
@@ -1076,7 +1090,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
       const top = Math.max(...[sides.get(a)!, sides.get(b)!].map((st) => Math.max(...edgeSegments(st, half, levelHeight).map((g) => g[3]))));
       const ca = standOff(gx, gy, gz, sx > 0 ? 'E' : 'W') - FACADE_OUT / 2;
       const cb = standOff(gx, gy, gz, sz > 0 ? 'N' : 'S') - FACADE_OUT / 2;
-      for (let y = 0; y < top - 1e-6; y += levelHeight) out.push({ piece: set.column, at: [cx + sx * (half + ca), baseY + y, cz + sz * (half + cb)], yaw: 0, sx: 1, sy: Math.min(levelHeight, top - y) / 4 });
+      for (let y = 0; y < top - 1e-6; y += levelHeight) out.push({ piece: set.column, file: set.file, at: [cx + sx * (half + ca), baseY + y, cz + sz * (half + cb)], yaw: 0, sx: 1, sy: Math.min(levelHeight, top - y) / 4 });
     }
   }
   return out;

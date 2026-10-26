@@ -9435,6 +9435,726 @@
       ]
     },
     {
+      "file": "props/os_airlock_frame.glb",
+      "sha256": "64491825501d8eaf",
+      "triangles": 764,
+      "bytes": 41400,
+      "source": "kenney-modular-space-kit/gate.glb",
+      "title": "Modular Space Kit 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/modular-space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_bulkhead.glb",
+      "sha256": "31bb7e21d9283f9e",
+      "triangles": 1752,
+      "bytes": 91996,
+      "source": "kenney-modular-space-kit/gate-door.glb",
+      "title": "Modular Space Kit 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/modular-space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_bulkhead_window.glb",
+      "sha256": "f776f54759dd9a8f",
+      "triangles": 1872,
+      "bytes": 97348,
+      "source": "kenney-modular-space-kit/gate-door-window.glb",
+      "title": "Modular Space Kit 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/modular-space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_laser_gate.glb",
+      "sha256": "3578b33c410f868e",
+      "triangles": 968,
+      "bytes": 54316,
+      "source": "kenney-modular-space-kit/gate-lasers.glb",
+      "title": "Modular Space Kit 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/modular-space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_floor_cables.glb",
+      "sha256": "b6401fe68ba8e043",
+      "triangles": 400,
+      "bytes": 29892,
+      "source": "kenney-modular-space-kit/cables.glb",
+      "title": "Modular Space Kit 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/modular-space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_wall_column.glb",
+      "sha256": "18e723549ea34641",
+      "triangles": 368,
+      "bytes": 28476,
+      "source": "kenney-modular-space-kit/template-detail.glb",
+      "title": "Modular Space Kit 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/modular-space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_wall_panel.glb",
+      "sha256": "7d3055471fb5e1ea",
+      "triangles": 960,
+      "bytes": 62724,
+      "source": "kenney-modular-space-kit/template-wall-detail-a.glb",
+      "title": "Modular Space Kit 1.0",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/modular-space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_satellite_dish.glb",
+      "sha256": "0eaf35e302af0202",
+      "triangles": 186,
+      "bytes": 11168,
+      "source": "kenney-space-kit/satelliteDish_large.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_comms_dish.glb",
+      "sha256": "bc436393aedfb38b",
+      "triangles": 274,
+      "bytes": 15740,
+      "source": "kenney-space-kit/satelliteDish.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_generator.glb",
+      "sha256": "ac4f81838f9ea1a6",
+      "triangles": 126,
+      "bytes": 8380,
+      "source": "kenney-space-kit/machine_generatorLarge.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_power_unit.glb",
+      "sha256": "53947c82d61526d7",
+      "triangles": 406,
+      "bytes": 21276,
+      "source": "kenney-space-kit/machine_generator.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_transmitter.glb",
+      "sha256": "4e82b9ba62d64fbe",
+      "triangles": 174,
+      "bytes": 10828,
+      "source": "kenney-space-kit/machine_wireless.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_truss.glb",
+      "sha256": "3b8852d0ec2980b1",
+      "triangles": 312,
+      "bytes": 17316,
+      "source": "kenney-space-kit/supports_high.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_frame_module.glb",
+      "sha256": "62527b2653cffa6c",
+      "triangles": 232,
+      "bytes": 13360,
+      "source": "kenney-space-kit/structure_detailed.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_coolant_pipe.glb",
+      "sha256": "2b36a468bb0cdc84",
+      "triangles": 80,
+      "bytes": 5700,
+      "source": "kenney-space-kit/pipe_straight.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_pipe_junction.glb",
+      "sha256": "bf54d900485ff104",
+      "triangles": 144,
+      "bytes": 8944,
+      "source": "kenney-space-kit/pipe_ring.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_console_corner.glb",
+      "sha256": "f4b1fea46abddde8",
+      "triangles": 126,
+      "bytes": 7480,
+      "source": "kenney-space-kit/desk_computerCorner.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_terminal.glb",
+      "sha256": "a06b696dbaa5e9bc",
+      "triangles": 88,
+      "bytes": 6116,
+      "source": "kenney-space-kit/desk_computer.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_canister_rack.glb",
+      "sha256": "dacb2f1a03249f3d",
+      "triangles": 260,
+      "bytes": 15532,
+      "source": "kenney-space-kit/barrels_rail.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/os_viewport.glb",
+      "sha256": "9b1c6594959eacd9",
+      "triangles": 920,
+      "bytes": 39888,
+      "source": "tiletrigger-stylepacks/os_viewport.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/os_reactor_core.glb",
+      "sha256": "b88edd53fe60e36e",
+      "triangles": 1312,
+      "bytes": 55708,
+      "source": "tiletrigger-stylepacks/os_reactor_core.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/os_field_emitter.glb",
+      "sha256": "dd954997cb7cd19a",
+      "triangles": 60,
+      "bytes": 4708,
+      "source": "tiletrigger-stylepacks/os_field_emitter.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/os_cryo_pod.glb",
+      "sha256": "9652dea0d330db8a",
+      "triangles": 268,
+      "bytes": 10600,
+      "source": "tiletrigger-stylepacks/os_cryo_pod.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/os_holo_globe.glb",
+      "sha256": "ecf4ce28b08fd8c2",
+      "triangles": 848,
+      "bytes": 28360,
+      "source": "tiletrigger-stylepacks/os_holo_globe.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/os_cargo_crate.glb",
+      "sha256": "e3d32a60ba25115a",
+      "triangles": 72,
+      "bytes": 5432,
+      "source": "tiletrigger-stylepacks/os_cargo_crate.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nc_streetlight.glb",
+      "sha256": "8ff0b530f89110db",
+      "triangles": 92,
+      "bytes": 9740,
+      "source": "kenney-city-kit-roads/light-curved.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_streetlight_double.glb",
+      "sha256": "fe1bf981a697fac4",
+      "triangles": 152,
+      "bytes": 12576,
+      "source": "kenney-city-kit-roads/light-curved-double.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_traffic_light.glb",
+      "sha256": "93c2e30823246a0d",
+      "triangles": 212,
+      "bytes": 16780,
+      "source": "kenney-city-kit-roads/traffic-light.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_traffic_light_hanging.glb",
+      "sha256": "9c2d42dd14ea91fb",
+      "triangles": 230,
+      "bytes": 17856,
+      "source": "kenney-city-kit-roads/traffic-light-hanging.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_highway_sign.glb",
+      "sha256": "970db28b6aa79e60",
+      "triangles": 144,
+      "bytes": 12484,
+      "source": "kenney-city-kit-roads/sign-highway-wide.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_street_sign.glb",
+      "sha256": "aee3e247111aef19",
+      "triangles": 154,
+      "bytes": 13344,
+      "source": "kenney-city-kit-roads/road-sign-street.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_dumpster.glb",
+      "sha256": "b1455c5111375217",
+      "triangles": 234,
+      "bytes": 19668,
+      "source": "kenney-city-kit-roads/dumpster.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_road_barrier.glb",
+      "sha256": "4369238d42e8ad46",
+      "triangles": 60,
+      "bytes": 8760,
+      "source": "kenney-city-kit-roads/construction-barrier.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_cone.glb",
+      "sha256": "e7557e1a4c876a91",
+      "triangles": 66,
+      "bytes": 8584,
+      "source": "kenney-city-kit-roads/construction-cone.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_elevated_pillar.glb",
+      "sha256": "552aa5be4405219b",
+      "triangles": 38,
+      "bytes": 7476,
+      "source": "kenney-city-kit-roads/bridge-pillar-wide.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_power_pole.glb",
+      "sha256": "bf1c69979be773cf",
+      "triangles": 416,
+      "bytes": 33180,
+      "source": "kenney-city-kit-roads/electricity-pole.glb",
+      "title": "City Kit Roads 2.2",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_monorail_track.glb",
+      "sha256": "7eac065fe6c96a33",
+      "triangles": 28,
+      "bytes": 3164,
+      "source": "kenney-space-kit/monorail_trackStraight.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_monorail_pylon.glb",
+      "sha256": "1afbdda19b20fda8",
+      "triangles": 176,
+      "bytes": 10156,
+      "source": "kenney-space-kit/monorail_trackSupport.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_skytrain_car.glb",
+      "sha256": "16f1af5d1c7b28c1",
+      "triangles": 164,
+      "bytes": 10596,
+      "source": "kenney-space-kit/monorail_trainPassenger.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_skytrain_front.glb",
+      "sha256": "5f692428c5f6815f",
+      "triangles": 242,
+      "bytes": 13368,
+      "source": "kenney-space-kit/monorail_trainFront.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_skytrain_end.glb",
+      "sha256": "beabb18bbe6adf2c",
+      "triangles": 190,
+      "bytes": 11668,
+      "source": "kenney-space-kit/monorail_trainEnd.glb",
+      "title": "Space Kit",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/space-kit",
+      "license": "CC0-1.0",
+      "modifications": [
+        "turned to face +Z, centred and stood on the ground",
+        "textures downscaled and embedded, metal/roughness maps dropped"
+      ]
+    },
+    {
+      "file": "props/nc_vending.glb",
+      "sha256": "34470a20b27b85d3",
+      "triangles": 72,
+      "bytes": 5900,
+      "source": "tiletrigger-stylepacks/nc_vending.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nc_ac_unit.glb",
+      "sha256": "14c30317b00d3cb9",
+      "triangles": 208,
+      "bytes": 12364,
+      "source": "tiletrigger-stylepacks/nc_ac_unit.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nc_water_tank.glb",
+      "sha256": "888acd24beda7b86",
+      "triangles": 492,
+      "bytes": 21948,
+      "source": "tiletrigger-stylepacks/nc_water_tank.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nc_holo_kiosk.glb",
+      "sha256": "8602f759a204c88d",
+      "triangles": 84,
+      "bytes": 6200,
+      "source": "tiletrigger-stylepacks/nc_holo_kiosk.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nc_food_stall.glb",
+      "sha256": "3dff4c0d9b526750",
+      "triangles": 492,
+      "bytes": 17020,
+      "source": "tiletrigger-stylepacks/nc_food_stall.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nc_antenna.glb",
+      "sha256": "9c9473b193839136",
+      "triangles": 200,
+      "bytes": 8280,
+      "source": "tiletrigger-stylepacks/nc_antenna.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
+      "file": "props/nc_neon_barrier.glb",
+      "sha256": "3068fdb4e492b8c8",
+      "triangles": 48,
+      "bytes": 3384,
+      "source": "tiletrigger-stylepacks/nc_neon_barrier.glb",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "centred, stood on the ground and scaled to metres",
+        "texture embedded"
+      ]
+    },
+    {
       "file": "props/sv_backpack.glb",
       "sha256": "bf636fb3ba7d1adf",
       "triangles": 1752,
@@ -11813,6 +12533,124 @@
         "scaled by 4/3 (buildings fitted to whole cells)",
         "variant materials merged, normal and ORM maps dropped, colour maps shrunk",
         "interior wall faces removed; buildings simplified"
+      ]
+    },
+    {
+      "file": "packs/facades_orbital.glb",
+      "sha256": "9562d02e85a042f4",
+      "triangles": 816,
+      "bytes": 49432,
+      "source": "tiletrigger-stylepacks/tools/content/prepare-packs.mjs (orbital)",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "modelled in code by tools/content/prepare-packs.mjs"
+      ]
+    },
+    {
+      "file": "packs/facades_neon.glb",
+      "sha256": "484609bb02cf2df4",
+      "triangles": 1188,
+      "bytes": 52536,
+      "source": "tiletrigger-stylepacks/tools/content/prepare-packs.mjs (neon)",
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "modifications": [
+        "modelled in code by tools/content/prepare-packs.mjs"
+      ]
+    },
+    {
+      "file": "packs/neon_tower_a.glb",
+      "sha256": "c507601f761b2754",
+      "triangles": 1292,
+      "bytes": 82768,
+      "source": "kenney-city-kit-commercial/building-skyscraper-a.glb",
+      "title": "City Kit (Commercial) 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "fitted to whole cells (centred, stood on the ground, uniform scale)",
+        "colour map embedded as a palette PNG and reused as a faint emissive map (night city)"
+      ]
+    },
+    {
+      "file": "packs/neon_tower_b.glb",
+      "sha256": "2957957f4a6a27da",
+      "triangles": 1592,
+      "bytes": 100440,
+      "source": "kenney-city-kit-commercial/building-skyscraper-b.glb",
+      "title": "City Kit (Commercial) 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "fitted to whole cells (centred, stood on the ground, uniform scale)",
+        "colour map embedded as a palette PNG and reused as a faint emissive map (night city)"
+      ]
+    },
+    {
+      "file": "packs/neon_tower_c.glb",
+      "sha256": "9be0a600e0ebbb46",
+      "triangles": 1704,
+      "bytes": 105980,
+      "source": "kenney-city-kit-commercial/building-skyscraper-c.glb",
+      "title": "City Kit (Commercial) 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "fitted to whole cells (centred, stood on the ground, uniform scale)",
+        "colour map embedded as a palette PNG and reused as a faint emissive map (night city)"
+      ]
+    },
+    {
+      "file": "packs/neon_tower_e.glb",
+      "sha256": "8a334326ac5b1e36",
+      "triangles": 1156,
+      "bytes": 76612,
+      "source": "kenney-city-kit-commercial/building-skyscraper-e.glb",
+      "title": "City Kit (Commercial) 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "fitted to whole cells (centred, stood on the ground, uniform scale)",
+        "colour map embedded as a palette PNG and reused as a faint emissive map (night city)"
+      ]
+    },
+    {
+      "file": "packs/neon_shop_a.glb",
+      "sha256": "72813802f8c7320f",
+      "triangles": 1252,
+      "bytes": 78240,
+      "source": "kenney-city-kit-commercial/building-a.glb",
+      "title": "City Kit (Commercial) 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "fitted to whole cells (centred, stood on the ground, uniform scale)",
+        "colour map embedded as a palette PNG and reused as a faint emissive map (night city)"
+      ]
+    },
+    {
+      "file": "packs/neon_block_n.glb",
+      "sha256": "a99fbabc8b094ea0",
+      "triangles": 4350,
+      "bytes": 230724,
+      "source": "kenney-city-kit-commercial/building-n.glb",
+      "title": "City Kit (Commercial) 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "license": "CC0-1.0",
+      "modifications": [
+        "fitted to whole cells (centred, stood on the ground, uniform scale)",
+        "colour map embedded as a palette PNG and reused as a faint emissive map (night city)"
       ]
     }
   ]

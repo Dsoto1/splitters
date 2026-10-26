@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { initPhysics, loadMap, mapPads, padLandings, PhysicsWorld, buildMapGeometry, mapTerrainMesh, type MapDocument } from '../src/index.ts';
+import { initPhysics, loadMap, mapGravityZones, mapPads, padLandings, PhysicsWorld, buildMapGeometry, mapTerrainMesh, type MapDocument } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 
 beforeAll(async () => {
@@ -23,7 +23,7 @@ describe('jump pads land where bots are told they do', () => {
     const map = load(id);
     const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
     const pads = mapPads(map.entities);
-    const predicted = padLandings(pads, physics);
+    const predicted = padLandings(pads, physics, 1, mapGravityZones(map.entities));
     physics.free();
     for (const pad of pads) {
       const match = new Match(map, undefined, 1);

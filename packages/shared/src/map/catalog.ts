@@ -102,15 +102,21 @@ export type Corner = (typeof CORNERS)[number];
  * City facades (Quaternius' Downtown City MegaKit at 4/3 scale): the outside of
  * a room's walls dressed in brick, a shopfront ground floor or painted
  * plaster, with a cornice along the top and columns on the outer corners.
+ * The Style Packs add our own: white station hull with round viewports
+ * (Orbital Station), a glass curtain wall and a neon-lit block (Neon Megacity).
  * Purely visual: doorways and windows stay our own openings.
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
   brick: 'City brick',
   storefront: 'Shopfront and brick',
   plaster: 'Painted plaster',
+  // Style Packs (pieces we model ourselves, packages/client/public/packs).
+  hull: 'Station hull (viewports)',
+  glass: 'Glass tower',
+  neon: 'Neon block',
 };
 
 export const CORNER_LABELS: Record<Corner, string> = {
@@ -1128,6 +1134,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
   roundTower(),
   curvedCorridor(),
   ...balconies(),
+  ...stylePackTiles(),
   // ---------------------------------------------------------------- special
   {
     id: 'core.pit',
@@ -1368,6 +1375,87 @@ function buildings(): TileDefinition[] {
         ...lamp(3.3, 3.3, -1),
       ],
     },
+  ];
+}
+
+// ---------------------------------------------------------------- Style Packs (Set 1)
+
+/**
+ * Tiles of the MapMaker Style Packs (see map/stylePacks.ts): 04 Orbital
+ * Station's hangar and reactor hall (our own geometry, painted by the theme)
+ * and 07 Neon Megacity's towers (Kenney's City Kit (Commercial), CC0, fitted
+ * to whole cells by tools/content/prepare-packs.mjs). Towers are solid blocks
+ * as tall as their roofs (measured by the script), so rooftops are walkable;
+ * rooftop clutter above that is walk-through, as for the city buildings.
+ */
+function stylePackTiles(): TileDefinition[] {
+  /** A model-backed tower w × d cells, `across` metres wide (centred on its cells), its roof `roof` metres up. */
+  const tower = (id: string, displayName: string, blurb: string, w: number, d: number, across: number, roof: number): TileDefinition => {
+    const cx = ((w - 1) * 8) / 2;
+    const cz = ((d - 1) * 8) / 2;
+    const h = across / 2;
+    return {
+      id,
+      category: 'Buildings',
+      displayName,
+      blurb,
+      cells: footprint(w, d, Math.ceil(roof / 4)),
+      floors: [0],
+      ports: [],
+      edgeDefault: 'open',
+      solids: [{ min: [cx - h, 0, cz - h], max: [cx + h, roof, cz + h], kind: 'prop' }],
+      model: { file: `packs/${id.replace('neon.', 'neon_')}.glb` },
+    };
+  };
+  return [
+    {
+      id: 'orbital.hangar',
+      category: 'Large',
+      displayName: 'Hangar Bay',
+      blurb: '3 × 3 cells, two storeys: a landing pad under a gantry along the back wall, stairs up the west side (open the front onto space and seal it with a force field)',
+      cells: footprint(3, 3, 2),
+      floors: [0],
+      ports: [...perimeterPorts(3, 3, [0]), ...[0, 1, 2].map((x) => ({ side: 'N' as const, level: 1, cell: [x, 2] as const }))],
+      extraFloors: [box(-4, 3.5, 16.5, 20, 4, 20), box(-4, 3.5, 8.5, -0.5, 4, 16.5)],
+      solids: [
+        ...flight('z', 1, 0.5, -3.5, -1, 16),
+        rail(-0.5, 16.5, 20, 16.5, 4),
+        rail(-0.5, 8.5, -0.5, 16.5, 4),
+        // The landing pad: a low deck with glowing marks round it (trim).
+        box(3, 0, 3, 13, 0.2, 13),
+        trim(2.8, 0, 2.8, 13.2, 0.22, 3),
+        trim(2.8, 0, 13, 13.2, 0.22, 13.2),
+        trim(2.8, 0, 3, 3, 0.22, 13),
+        trim(13, 0, 3, 13.2, 0.22, 13),
+      ],
+    },
+    {
+      id: 'orbital.reactor_hall',
+      category: 'Large',
+      displayName: 'Reactor Hall',
+      blurb: '2 × 2 cells, two storeys: a catwalk all round under glowing edge lights, stairs up, and room in the middle for the Reactor Core prop. Pair it with a Low-Gravity Zone and float up to the catwalk',
+      cells: footprint(2, 2, 2),
+      floors: [0],
+      ports: perimeterPorts(2, 2, [0, 1]),
+      extraFloors: [box(-4, 3.5, 9.5, 12, 4, 12), box(-4, 3.5, -4, 12, 4, -1.5), box(-4, 3.5, -1.5, -1.5, 4, 9.5), box(9.5, 3.5, -1.5, 12, 4, 9.5)],
+      solids: [
+        ...flight('x', 1, 1.5, -1.5, 0.75, 16),
+        // Glowing strips along the catwalk's inner edge (trim: paint them with Glow Trim).
+        trim(-1.5, 3.5, 9.4, 9.5, 4.02, 9.5),
+        trim(-1.5, 3.5, -1.5, -1.4, 4.02, 9.5),
+        trim(9.4, 3.5, 0.75, 9.5, 4.02, 9.5),
+        // Coolant pylons in the corners.
+        box(-3.6, 0, -3.6, -2.6, 3.5, -2.6),
+        box(10.6, 0, 10.6, 11.6, 3.5, 11.6),
+        box(-3.6, 0, 10.6, -2.6, 3.5, 11.6),
+      ],
+    },
+    tower('neon.tower_a', 'Glass Tower', '2 × 2 cells, a 31 m glass office tower (solid; elevators and pads up to its roof)', 2, 2, 15.2, 31.29),
+    tower('neon.tower_b', 'Spire Tower', '2 × 2 cells, a 49 m glass spire (solid; a skyline piece)', 2, 2, 15.2, 49.18),
+    tower('neon.tower_c', 'Stepped Tower', '2 × 2 cells, a 39 m tower with a stepped crown (solid)', 2, 2, 15.2, 39.43),
+    tower('neon.tower_e', 'Twin-Block Tower', '2 × 2 cells, a 47 m tower (solid; a skyline piece)', 2, 2, 15.2, 46.95),
+    tower('neon.shop_a', 'Corner Shop Block', '1 cell, three storeys of flats over a shop (solid; climb the roof)', 1, 1, 7.4, 9.45),
+    tower('neon.block_n', 'Apartment Block', '2 × 2 cells, a 13 m apartment block with a roof terrace (solid)', 2, 2, 15.2, 13.1),
   ];
 }
 

@@ -14,11 +14,16 @@ export function initPhysics(): Promise<void> {
 // Interaction groups: high 16 bits = membership, low 16 bits = filter.
 const GROUP_WORLD = 0x0001;
 const GROUP_PLAYER = 0x0002;
+/** Force fields: they stop bodies moving (players, vehicles) but never shots, sight or other queries. */
+const GROUP_FIELD = 0x0004;
 const groups = (membership: number, filter: number): number => ((membership << 16) | filter) >>> 0;
 const WORLD_COLLIDER_GROUPS = groups(GROUP_WORLD, 0xffff);
 const PLAYER_COLLIDER_GROUPS = groups(GROUP_PLAYER, 0xffff);
 /** Queries that should only see static map geometry (movement, line of sight, shot occlusion). */
 const WORLD_ONLY_QUERY = groups(0xffff, GROUP_WORLD);
+const FIELD_COLLIDER_GROUPS = groups(GROUP_FIELD, 0xffff);
+/** Movement queries: static geometry and force fields. */
+const MOVE_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD);
 
 const CAPSULE_HALF_HEIGHT = (PLAYER.height - PLAYER.radius * 2) / 2;
 const CONTROLLER_OFFSET = 0.02;
@@ -73,12 +78,14 @@ export class PhysicsWorld {
    * A world collider that scenario objects (doors, crates) move, enable and
    * disable. It blocks movement, shots and line of sight like static geometry.
    * `yaw` turns the box about the vertical axis (see viewDirection()).
+   * A `field` box (force field) blocks movement only: shots, grenades, line
+   * of sight and every other query pass through it.
    */
-  createBox(center: Vec3, half: Vec3, yaw = 0, rotation?: Rot): RAPIER.Collider {
+  createBox(center: Vec3, half: Vec3, yaw = 0, rotation?: Rot, field = false): RAPIER.Collider {
     const desc = RAPIER.ColliderDesc.cuboid(half.x, half.y, half.z)
       .setTranslation(center.x, center.y, center.z)
       .setRotation(rotation ?? { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) })
-      .setCollisionGroups(WORLD_COLLIDER_GROUPS);
+      .setCollisionGroups(field ? FIELD_COLLIDER_GROUPS : WORLD_COLLIDER_GROUPS);
     this.dirty = true;
     return this.world.createCollider(desc);
   }
@@ -122,7 +129,7 @@ export class PhysicsWorld {
     const centerY = shape.halfHeight + shape.radius;
     const lift = 0.05;
     probe.setTranslation({ x: feet.x, y: feet.y + lift + centerY, z: feet.z });
-    this.controller.computeColliderMovement(probe, { x: delta.x, y: delta.y - lift, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, WORLD_ONLY_QUERY, (c) => c.handle !== body.handle);
+    this.controller.computeColliderMovement(probe, { x: delta.x, y: delta.y - lift, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, (c) => c.handle !== body.handle);
     const m = this.controller.computedMovement();
     const next = { x: feet.x + m.x, y: feet.y + lift + m.y, z: feet.z + m.z };
     probe.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
@@ -162,7 +169,7 @@ export class PhysicsWorld {
     const centerY = height / 2;
     const startY = feet.y + START_LIFT;
     collider.setTranslation({ x: feet.x, y: startY + centerY, z: feet.z });
-    this.controller.computeColliderMovement(collider, { x: delta.x, y: delta.y - START_LIFT, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, WORLD_ONLY_QUERY);
+    this.controller.computeColliderMovement(collider, { x: delta.x, y: delta.y - START_LIFT, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY);
     const m = this.controller.computedMovement();
     let next = { x: feet.x + m.x, y: startY + m.y, z: feet.z + m.z };
     // The controller can let a capsule creep into a gap a little smaller than it (a standing
@@ -179,7 +186,7 @@ export class PhysicsWorld {
   headroom(feet: Vec3, height: number, radius: number = PLAYER.radius): boolean {
     const r = radius - 0.03;
     const half = Math.max(0.01, height / 2 - r);
-    const hit = this.world.intersectionWithShape({ x: feet.x, y: feet.y + height / 2 + 0.03, z: feet.z }, { x: 0, y: 0, z: 0, w: 1 }, new RAPIER.Capsule(half, r), undefined, WORLD_ONLY_QUERY);
+    const hit = this.world.intersectionWithShape({ x: feet.x, y: feet.y + height / 2 + 0.03, z: feet.z }, { x: 0, y: 0, z: 0, w: 1 }, new RAPIER.Capsule(half, r), undefined, MOVE_QUERY);
     return !hit;
   }
 

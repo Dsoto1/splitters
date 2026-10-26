@@ -8,6 +8,8 @@ import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import '@babylonjs/core/Rendering/edgesRenderer';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
+import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
@@ -339,6 +341,8 @@ export class ScenarioVisuals {
     const housing = this.mat('lighthousing', '#3a3f48');
     // The light hangs just in front of its fixture, so it lights the room and not the wall behind.
     let offset = new Vector3(0, 0, 0);
+    /** Signs and billboards: their lettered face, lit with the light (and dark when it is off). */
+    let face: { mesh: Mesh; mat: StandardMaterial } | null = null;
     switch (e.fixture) {
       case 'ceiling': {
         const panel = CreateBox(`${name}_panel`, { width: 1.2, height: 0.06, depth: 1.2 }, this.scene);
@@ -376,6 +380,31 @@ export class ScenarioVisuals {
         offset = new Vector3(0, -0.3, 0);
         break;
       }
+      case 'sign':
+      case 'billboard': {
+        // A neon sign (lit letters on a dark box, a tube round the edge) or a holographic billboard
+        // (a glowing, flickering screen of the words over bands of colour), facing +Z like a wall lamp.
+        const board = e.fixture === 'billboard';
+        const [w, h] = e.size ?? (board ? [6, 3.4] : [2.4, 0.8]);
+        const back = CreateBox(`${name}_back`, { width: w + 0.12, height: h + 0.12, depth: board ? 0.25 : 0.14 }, this.scene);
+        back.material = housing;
+        back.parent = root;
+        back.position.z = board ? 0.125 : 0.07;
+        face = this.signFace(name, e.text ?? (board ? 'TILE TRIGGER' : 'OPEN'), w, h, e.color, board);
+        face.mesh.parent = root;
+        face.mesh.position.z = (board ? 0.25 : 0.14) + 0.012;
+        if (!board) {
+          // The neon tube border.
+          for (const [bw, bh, x, y] of [[w, 0.05, 0, h / 2 - 0.05], [w, 0.05, 0, -h / 2 + 0.05], [0.05, h, w / 2 - 0.05, 0], [0.05, h, -w / 2 + 0.05, 0]] as const) {
+            const tube = CreateBox(`${name}_tube`, { width: bw, height: bh, depth: 0.05 }, this.scene);
+            tube.material = glow;
+            tube.parent = root;
+            tube.position.set(x, y, 0.17);
+          }
+        }
+        offset = new Vector3(0, 0, board ? 1.5 : 0.8);
+        break;
+      }
       case 'none':
         if (this.opts.editor) {
           const marker = CreateSphere(`${name}_marker`, { diameter: 0.35, segments: 8 }, this.scene);
@@ -404,6 +433,7 @@ export class ScenarioVisuals {
         ownGlow.emissiveColor = level ? c.scale(1.4 * Math.min(level, 1.6)) : c.scale(0.08);
         ownGlow.diffuseColor = c;
       }
+      if (face) face.mat.emissiveColor = level ? c.scale(Math.min(level, 1.6)) : c.scale(0.06);
       if (light) {
         light.diffuse = c;
         light.specular = c.scale(0.25);
@@ -431,6 +461,56 @@ export class ScenarioVisuals {
     // Off or blinking from the start: show that before the first update arrives.
     if (e.off || e.blink) update((e.off ? 0 : LIGHT_ON) | (Math.round((e.blink ?? 0) * 10) << 2), parseInt(e.color.slice(1), 16), performance.now());
     return { root, update };
+  }
+
+  /**
+   * The face of a sign or billboard: the words in white on black (the light's
+   * colour tints it through the emissive colour, so logic can recolour, dim or
+   * blink it). Billboards add bands of colour and scanlines, drawn a little
+   * see-through like a hologram.
+   */
+  private signFace(name: string, text: string, w: number, h: number, color: string, board: boolean): { mesh: Mesh; mat: StandardMaterial } {
+    const px = 512;
+    const py = Math.max(64, Math.min(512, Math.round((px * h) / w / 16) * 16));
+    const tex = new DynamicTexture(`${name}_facetex`, { width: px, height: py }, this.scene, true);
+    const ctx = tex.getContext() as CanvasRenderingContext2D;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, px, py);
+    if (board) {
+      for (let y = 0; y < py; y += 4) {
+        const v = Math.round(40 + 40 * Math.sin((y / py) * Math.PI * 3));
+        ctx.fillStyle = `rgb(${v},${v},${v})`;
+        ctx.fillRect(0, y, px, 2);
+      }
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(8, 8, px - 16, py - 16);
+    }
+    const words = text.toUpperCase();
+    let size = Math.floor(py * (board ? 0.42 : 0.62));
+    ctx.font = `bold ${size}px sans-serif`;
+    while (size > 12 && ctx.measureText(words).width > px * 0.88) {
+      size -= 4;
+      ctx.font = `bold ${size}px sans-serif`;
+    }
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(words, px / 2, py / 2 + size * 0.04);
+    tex.update();
+    const mat = new StandardMaterial(`${name}_facemat`, this.scene);
+    mat.diffuseColor = Color3.Black();
+    mat.specularColor = Color3.Black();
+    mat.emissiveTexture = tex;
+    mat.emissiveColor = Color3.FromHexString(color);
+    mat.disableLighting = true;
+    if (board) mat.alpha = 0.92;
+    this.mats.set(mat.name, mat);
+    const mesh = CreatePlane(`${name}_face`, { width: w, height: h, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
+    // Planes face -Z; turn it to face +Z, out from the wall like a wall lamp.
+    mesh.rotation.y = Math.PI;
+    mesh.material = mat;
+    return { mesh, mat };
   }
 
   /** Team colours for flag bases (MapMaker). */
@@ -465,6 +545,7 @@ export class ScenarioVisuals {
    * up; trapdoors swing down on their hinge; all come back when respawned.
    */
   private block(name: string, e: Extract<MapEntity, { kind: 'block' }>): Visual {
+    if (e.field && e.behaviour === 'solid') return this.field(name, e);
     const root = new TransformNode(name, this.scene);
     const driven = this.dynamicBlocks.has(e.id);
     if (e.behaviour === 'solid' && !this.opts.editor && !driven) return { root };
@@ -586,18 +667,130 @@ export class ScenarioVisuals {
     }
     this.rippleTex = RawTexture.CreateRGBATexture(px, n, n, this.scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
     this.rippleTex.wrapU = this.rippleTex.wrapV = Texture.WRAP_ADDRESSMODE;
-    this.scene.onBeforeRenderObservable.add(() => {
-      const dt = this.scene.getEngine().getDeltaTime() / 1000;
-      for (const f of this.flowing) {
-        f.tex.uOffset = (f.tex.uOffset + dt * f.speed) % 1;
-        f.tex.vOffset = (f.tex.vOffset + dt * f.speed * 0.6) % 1;
-      }
-    });
+    this.startFlow();
     return this.rippleTex;
   }
 
+  /** Scroll every flowing texture each frame (liquids drift both ways; fields and gravity motes only along v). */
+  private startFlow(): void {
+    if (this.flowStarted) return;
+    this.flowStarted = true;
+    this.scene.onBeforeRenderObservable.add(() => {
+      const dt = this.scene.getEngine().getDeltaTime() / 1000;
+      for (const f of this.flowing) {
+        if (!f.vOnly) f.tex.uOffset = (f.tex.uOffset + dt * f.speed) % 1;
+        f.tex.vOffset = (f.tex.vOffset + dt * f.speed * (f.vOnly ? 1 : 0.6)) % 1;
+      }
+    });
+  }
+
+  private flowStarted = false;
   private rippleTex: RawTexture | null = null;
-  private flowing: { tex: Texture; speed: number }[] = [];
+  private flowing: { tex: Texture; speed: number; vOnly?: boolean }[] = [];
+
+  /** Horizontal bands (force fields) or scattered motes (gravity zones), white on black, made once each. */
+  private bandsTex: RawTexture | null = null;
+  private motesTex: RawTexture | null = null;
+  private pattern(kind: 'bands' | 'motes'): Texture {
+    const have = kind === 'bands' ? this.bandsTex : this.motesTex;
+    if (have) return have.clone();
+    if (this.scene.isDisposed) return new Texture(null, this.scene);
+    const n = 64;
+    const px = new Uint8Array(n * n * 4);
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const motes = kind === 'motes' ? Array.from({ length: 22 }, () => [rnd() * n, rnd() * n, 1 + rnd() * 1.6] as const) : [];
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
+        let v: number;
+        if (kind === 'bands') v = 0.35 + 0.35 * Math.pow(0.5 + 0.5 * Math.sin((y / n) * Math.PI * 2 * 6), 6) + 0.3 * Math.pow(0.5 + 0.5 * Math.sin((y / n) * Math.PI * 2 * 1 + x * 0.05), 12);
+        else v = Math.max(0, ...motes.map(([mx, my, r]) => 1 - Math.hypot(Math.min(Math.abs(x - mx), n - Math.abs(x - mx)), Math.min(Math.abs(y - my), n - Math.abs(y - my))) / r));
+        const i = (y * n + x) * 4;
+        px[i] = px[i + 1] = px[i + 2] = Math.round(Math.min(1, v) * 255);
+        px[i + 3] = Math.round(Math.min(1, kind === 'bands' ? 0.5 + v * 0.5 : v) * 255);
+      }
+    }
+    const tex = RawTexture.CreateRGBATexture(px, n, n, this.scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+    tex.wrapU = tex.wrapV = Texture.WRAP_ADDRESSMODE;
+    if (kind === 'bands') this.bandsTex = tex;
+    else this.motesTex = tex;
+    return tex.clone();
+  }
+
+  /**
+   * A force field: a glowing sheet of scrolling bands between two emitter
+   * posts, in the block's tint (cyan by default). Shots and sight pass
+   * through it; players and vehicles don't. Logic switches it off and on.
+   */
+  private field(name: string, e: Extract<MapEntity, { kind: 'block' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const [w, h, d] = e.size;
+    const color = e.tint ?? '#5ad8ff';
+    const sheet = CreateBox(`${name}_sheet`, { width: w, height: h, depth: d }, this.scene);
+    sheet.parent = root;
+    sheet.position.y = h / 2;
+    const m = new StandardMaterial(`${name}_fieldmat`, this.scene);
+    const tex = this.pattern('bands');
+    tex.uScale = Math.max(1, Math.round(Math.max(w, d) / 3));
+    tex.vScale = Math.max(1, Math.round(h / 3));
+    m.diffuseColor = Color3.Black();
+    m.emissiveColor = Color3.FromHexString(color);
+    m.emissiveTexture = tex;
+    m.opacityTexture = tex;
+    m.alpha = 0.55;
+    m.disableLighting = true;
+    m.backFaceCulling = false;
+    this.mats.set(m.name, m);
+    this.flowing.push({ tex, speed: 0.35, vOnly: true });
+    this.startFlow();
+    sheet.material = m;
+    sheet.enableEdgesRendering();
+    sheet.edgesWidth = 3;
+    sheet.edgesColor = Color3.FromHexString(color).toColor4(0.9);
+    // Emitter posts at both ends of its long side.
+    const post = this.mat('fieldPost', '#2a2f3a');
+    const core = this.mat('fieldCore', color, { emissive: 1.2 });
+    const long = w >= d;
+    const along = (long ? w : d) / 2;
+    for (const sgn of [-1, 1]) {
+      const at: [number, number, number] = long ? [sgn * (along + 0.12), h / 2, 0] : [0, h / 2, sgn * (along + 0.12)];
+      this.box(`${name}_post${sgn}`, root, [0.24, h + 0.3, 0.24], at, post);
+      this.box(`${name}_core${sgn}`, root, [0.1, h, 0.1], [at[0] * 0.995, h / 2, at[2] * 0.995], core).position.addInPlace(long ? new Vector3(-sgn * 0.08, 0, 0) : new Vector3(0, 0, -sgn * 0.08));
+    }
+    if (this.opts.editor) {
+      if (e.startHidden) sheet.visibility = 0.35;
+      return { root };
+    }
+    if (e.startHidden) sheet.setEnabled(false);
+    return { root, update: (a) => sheet.setEnabled(a > 0) };
+  }
+
+  /** A low-gravity zone in play: a faint column of motes drifting up (MapMaker draws every zone as a box). */
+  private gravityColumn(name: string, e: Extract<MapEntity, { kind: 'zone' }>, root: TransformNode): void {
+    const [sx, sy, sz] = e.size;
+    const heavy = (e.gravity ?? 1) > 1;
+    const vol = CreateBox(`${name}_motes`, { width: sx, height: sy, depth: sz, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
+    vol.parent = root;
+    vol.position.y = sy / 2;
+    vol.isPickable = false;
+    const m = new StandardMaterial(`${name}_gravmat`, this.scene);
+    const tex = this.pattern('motes');
+    tex.uScale = Math.max(1, Math.round(Math.max(sx, sz) / 4));
+    tex.vScale = Math.max(1, Math.round(sy / 4));
+    const color = Color3.FromHexString(heavy ? '#ff9a5a' : '#8fc4ff');
+    m.diffuseColor = Color3.Black();
+    m.emissiveColor = color;
+    m.emissiveTexture = tex;
+    m.opacityTexture = tex;
+    m.alpha = 0.5;
+    m.disableLighting = true;
+    m.backFaceCulling = false;
+    this.mats.set(m.name, m);
+    // Motes rise where gravity is light and sink where it is heavy.
+    this.flowing.push({ tex, speed: heavy ? 0.12 : -0.06, vOnly: true });
+    this.startFlow();
+    vol.material = m;
+  }
 
   /** Jump pad: a glowing ring on a dark plate with a chevron pointing where it throws you. */
   /** Two wooden rails and rungs every 30 cm, standing just off the wall. */
@@ -903,12 +1096,18 @@ export class ScenarioVisuals {
 
   private zone(name: string, e: Extract<MapEntity, { kind: 'zone' }>): Visual {
     const root = new TransformNode(name, this.scene);
-    if (!this.opts.editor) return { root };
+    const gravity = e.gravity !== undefined && e.gravity !== 1;
+    if (!this.opts.editor) {
+      if (gravity) this.gravityColumn(name, e, root);
+      return { root };
+    }
     const [sx, sy, sz] = e.size;
-    const m = this.box(`${name}_vol`, root, [sx, sy, sz], [0, sy / 2, 0], this.mat('zone', '#36d6ff', { emissive: 0.4, alpha: 0.16 }));
+    // Gravity zones are blue-violet in MapMaker, trigger zones cyan.
+    const hue = gravity ? '#8f7bff' : '#36d6ff';
+    const m = this.box(`${name}_vol`, root, [sx, sy, sz], [0, sy / 2, 0], this.mat('zone', hue, { emissive: 0.4, alpha: 0.16 }));
     m.enableEdgesRendering();
     m.edgesWidth = 2;
-    m.edgesColor = Color3.FromHexString('#36d6ff').toColor4(0.9);
+    m.edgesColor = Color3.FromHexString(hue).toColor4(0.9);
     return { root };
   }
 

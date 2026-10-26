@@ -187,7 +187,8 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
       issues.push({ severity: 'warning', code: 'block.never_appears', message: `block ${e.id} starts hidden and no rule ever rebuilds or enables it`, targetId: e.id });
     } else if (e.kind === 'button' && !used.buttons.has(e.id)) {
       issues.push({ severity: 'warning', code: 'button.unused', message: `button ${e.id} does nothing (no rule uses it)`, targetId: e.id });
-    } else if (e.kind === 'zone' && !used.zones.has(e.id)) {
+    } else if (e.kind === 'zone' && !used.zones.has(e.id) && e.gravity === undefined) {
+      // (A low-gravity zone does its job without rules.)
       issues.push({ severity: 'suggestion', code: 'zone.unused', message: `zone ${e.id} isn't used by any rule`, targetId: e.id });
     } else if (e.kind === 'door' && e.locked && !e.startOpen && !used.unlocked.has(e.id)) {
       issues.push({ severity: 'warning', code: 'door.never_opens', message: `door ${e.id} is locked and no rule ever unlocks or opens it`, targetId: e.id });

@@ -4,12 +4,11 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { buildFacades, tileModels, type MapDocument } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 
-const FACADES = 'city/facades.glb';
-
 /**
  * The city kit in a map: facade pieces on rooms with a `facade` option (one
- * GPU-instanced mesh per piece and material, however many bays use it) and the
- * models of city building and street tiles. Rebuilt whenever the map changes;
+ * GPU-instanced mesh per piece and material, however many bays use it; the
+ * city kit's and the Style Packs' facade files alike) and the models of
+ * model-backed tiles (city buildings and streets, Neon Megacity towers). Rebuilt whenever the map changes;
  * `ready` settles once everything for the latest build is in the scene.
  */
 export class CityVisuals {
@@ -44,7 +43,10 @@ export class CityVisuals {
   private async make(doc: MapDocument, build: number): Promise<void> {
     const pieces = buildFacades(doc);
     const tiles = tileModels(doc);
-    const facades = pieces.length ? await this.models.load(FACADES) : null;
+    const byFile = new Map<string, typeof pieces>();
+    for (const p of pieces) (byFile.get(p.file) ?? byFile.set(p.file, []).get(p.file)!).push(p);
+    const files = [...byFile.keys()];
+    const facadeFiles = await Promise.all(files.map((f) => this.models.load(f)));
     const tileNodes = await Promise.all(tiles.map((t) => this.models.instantiate(t.file, `${this.name}_${t.id}`, true)));
     if (build !== this.build) {
       for (const n of tileNodes) n.dispose();
@@ -57,7 +59,11 @@ export class CityVisuals {
       node.rotation.y = t.yaw;
       this.nodes.push(node);
     });
-    if (!facades) return;
+    files.forEach((f, k) => this.instanceFacades(facadeFiles[k]!, byFile.get(f)!));
+  }
+
+  /** One file's facade pieces: each piece's meshes become thin instances, one per bay. */
+  private instanceFacades(facades: Awaited<ReturnType<ModelLibrary['load']>>, pieces: ReturnType<typeof buildFacades>): void {
     const inst = facades.instantiateModelsToScene((n) => `${this.name}_${n}`, false, { doNotInstantiate: true });
     const byPiece = new Map<string, typeof pieces>();
     for (const p of pieces) (byPiece.get(p.piece) ?? byPiece.set(p.piece, []).get(p.piece)!).push(p);

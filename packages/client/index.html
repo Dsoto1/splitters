@@ -134,6 +134,7 @@
           <button class="tab" data-ws="build" data-pane="advanced">Advanced</button>
           <button class="tab" data-ws="build" data-pane="terrain">Terrain</button>
           <button class="tab" data-ws="build" data-pane="props">Props</button>
+          <button class="tab" data-ws="build" data-pane="packs" title="Style Packs: tiles, props and gameplay pieces in one look">Packs</button>
           <button class="tab" data-ws="entities" data-pane="npcs" hidden>NPCs</button>
           <button class="tab" data-ws="entities" data-pane="entities" hidden>Gameplay</button>
           <button class="tab" data-ws="entities" data-pane="vehicles" hidden>Vehicles</button>
@@ -154,6 +155,11 @@
         </div>
         <div class="ed-pane" data-pane="props" hidden>
           <div id="ed-props" class="tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="packs" hidden>
+          <h3>Style Packs</h3>
+          <p class="ed-note">Each pack is a look: its theme, tiles, props and gameplay pieces together. Mix them freely; "Use this look" switches the map's theme.</p>
+          <div id="ed-packs" class="tiles"></div>
         </div>
         <div class="ed-pane" data-pane="plants" hidden>
           <h3>Scatter brush</h3>

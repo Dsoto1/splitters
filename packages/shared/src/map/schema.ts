@@ -194,6 +194,13 @@ export const ZoneEntity = EntityBase.extend({
   startEnabled: z.boolean().default(true),
   /** Only this team's players count (enter, leave, "all" means all of that team). */
   team: TeamFilter,
+  /**
+   * Low-gravity zone (Style Packs): gravity inside is this multiple of the
+   * map's (0.35 = drifting reactor core, 2 = crushing). Applies to movement
+   * on the server and in prediction alike, whatever the zone's logic state.
+   * Absent: no change.
+   */
+  gravity: z.number().min(0.1).max(3).optional(),
 });
 
 export const TRAP_KINDS = ['spikes', 'flames', 'crusher', 'mine', 'laser', 'shock'] as const;
@@ -402,6 +409,13 @@ export const BlockEntity = EntityBase.extend({
   roll: z.number().min(-Math.PI / 4).max(Math.PI / 4).optional(),
   /** Starts gone (v20): logic "Rebuild block" or "Enable" makes it appear (a bridge that extends). */
   startHidden: z.boolean().optional(),
+  /**
+   * Force field (Style Packs): a glowing, humming barrier that stops players
+   * and vehicles but lets shots, grenades and sight through. Logic switches it
+   * like any block ("Drop / crumble block" or Disable switches it off,
+   * "Rebuild block" or Enable on). Solid behaviour only.
+   */
+  field: z.boolean().optional(),
 });
 
 /** A body of liquid (position: centre of its floor). Water is swum in; lava and acid hurt; swamp slows you down. */
@@ -450,8 +464,8 @@ export const RescueEntity = EntityBase.extend({
   radius: z.number().min(2).max(12).default(4),
 });
 
-/** What a light looks like where it hangs: nothing, a ceiling panel, a wall lamp, a bare bulb, or a long strip. */
-export const LIGHT_FIXTURES = ['none', 'ceiling', 'wall', 'bulb', 'strip'] as const;
+/** What a light looks like where it hangs: nothing, a ceiling panel, a wall lamp, a bare bulb, a long strip, a neon sign or a holographic billboard. */
+export const LIGHT_FIXTURES = ['none', 'ceiling', 'wall', 'bulb', 'strip', 'sign', 'billboard'] as const;
 export type LightFixture = (typeof LIGHT_FIXTURES)[number];
 
 /** A light: a glow of `color` fading out over `range` metres, drawn as its fixture (lighting only; no gameplay). */
@@ -469,6 +483,10 @@ export const LightEntity = EntityBase.extend({
   off: z.boolean().optional(),
   /** Starts blinking this many times a second (v20; alarms, failing tubes). Absent = steady. */
   blink: z.number().min(0.2).max(10).optional(),
+  /** Sign and billboard fixtures (Style Packs): the words lit up on it. */
+  text: z.string().max(24).optional(),
+  /** Sign and billboard fixtures: width and height in metres (signs 2.4 × 0.8, billboards 6 × 3.4 by default). */
+  size: z.tuple([z.number().min(0.4).max(24), z.number().min(0.3).max(16)]).optional(),
 });
 
 /** How a mover runs: round its points, back and forth, or only when logic sends it. */

@@ -38,6 +38,7 @@ import {
   isTeamMode,
   MODE_LABELS,
   SCENARIO_PALETTE,
+  STYLE_PACKS,
   TRAP_ACTIVATIONS,
   TRAP_KINDS,
   TRAP_SPECS,
@@ -262,6 +263,12 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'mover:slider': '<rect x="10" y="12" width="20" height="32" fill="#8a8f98"/><path d="M34 28h14M43 23l5 5-5 5" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
   'mover:drawbridge': '<rect x="6" y="40" width="10" height="10" fill="#5a5f68"/><path d="M16 42L44 18" stroke="#8a6a42" stroke-width="5"/><path d="M40 44a20 20 0 0 0-6-18" stroke="#2ec4b6" stroke-width="2" fill="none"/>',
   'water:swamp': '<rect x="6" y="24" width="44" height="22" fill="#5a6a32"/><path d="M14 24q2-10 4-14M38 24q-1-9 2-13" stroke="#6fbf4a" stroke-width="2" fill="none"/>',
+  'block:field': '<rect x="6" y="8" width="5" height="40" fill="#2a2f3a"/><rect x="45" y="8" width="5" height="40" fill="#2a2f3a"/><rect x="11" y="10" width="34" height="36" fill="#5ad8ff" fill-opacity=".35"/><path d="M11 16h34M11 24h34M11 32h34M11 40h34" stroke="#5ad8ff" stroke-width="2"/>',
+  'zone:lowgrav': '<rect x="10" y="10" width="36" height="38" fill="#8f7bff" fill-opacity=".15" stroke="#8f7bff" stroke-width="2" stroke-dasharray="4 3"/><circle cx="28" cy="24" r="6" fill="#d8e6ff"/><path d="M20 44v-8M28 44v-10M36 44v-8" stroke="#8fc4ff" stroke-width="2"/><path d="M17 38l3-4 3 4M25 36l3-4 3 4M33 38l3-4 3 4" stroke="#8fc4ff" stroke-width="2" fill="none"/>',
+  'light:sign': '<rect x="6" y="16" width="44" height="22" rx="2" fill="#15101e" stroke="#ff4fd8" stroke-width="2.5"/><text x="28" y="32" font-size="12" font-weight="bold" text-anchor="middle" fill="#ff4fd8">OPEN</text>',
+  'light:billboard': '<rect x="4" y="8" width="48" height="28" fill="#4fe0ff" fill-opacity=".3" stroke="#4fe0ff" stroke-width="2"/><path d="M6 14h44M6 20h44M6 26h44M6 32h44" stroke="#4fe0ff" stroke-opacity=".45"/><rect x="25" y="36" width="6" height="14" fill="#3a3f48"/>',
+  'mover:elevator': '<rect x="12" y="6" width="4" height="44" fill="#5a5f68"/><rect x="40" y="6" width="4" height="44" fill="#5a5f68"/><rect x="16" y="20" width="24" height="18" fill="#bfe6f5" fill-opacity=".35" stroke="#2ec4b6" stroke-width="2"/><path d="M28 10v8M24 14l4-4 4 4M28 48v-8M24 44l4 4 4-4" stroke="#2ec4b6" stroke-width="2" fill="none"/>',
+  'mover:tram': '<path d="M4 14h48" stroke="#5a5f68" stroke-width="3"/><rect x="10" y="18" width="34" height="18" rx="3" fill="#e0412f"/><rect x="14" y="22" width="8" height="7" fill="#bfe6f5"/><rect x="25" y="22" width="8" height="7" fill="#bfe6f5"/><rect x="36" y="22" width="5" height="7" fill="#bfe6f5"/><path d="M14 44h28M37 40l5 4-5 4" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
 };
 
 /** Scenario palette entries shown under Entities → Gameplay (game-mode objects) rather than Scenario. */
@@ -1506,6 +1513,7 @@ export class EditorApp {
 
     this.buildScatterPalette();
     this.buildPropPalette();
+    this.buildStylePackPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
     const roadBtn = document.createElement('button');
@@ -2008,6 +2016,85 @@ export class EditorApp {
     }
   }
 
+  /**
+   * Style Packs (map/stylePacks.ts): per pack a heading, a button that switches
+   * the map to the pack's theme, then its gameplay pieces, tiles and props, the
+   * same tools as in the other tabs.
+   */
+  private buildStylePackPalette(): void {
+    const box = $('ed-packs');
+    const seen = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const img = entry.target as HTMLImageElement;
+        seen.unobserve(img);
+        void this.thumbs.get(img.dataset.file!).then((src) => (img.src = src), () => undefined);
+      }
+    });
+    const sub = (text: string) => {
+      const h = document.createElement('div');
+      h.className = 'sub-h';
+      h.style.gridColumn = '1 / -1';
+      h.textContent = text;
+      return h;
+    };
+    for (const pack of STYLE_PACKS) {
+      const head = document.createElement('div');
+      head.className = 'tile-cat';
+      head.textContent = `${pack.number} ${pack.name}`;
+      head.title = pack.blurb;
+      const note = document.createElement('div');
+      note.className = 'ed-note';
+      note.style.gridColumn = '1 / -1';
+      note.textContent = `${pack.style}. ${pack.blurb}`;
+      const look = document.createElement('button');
+      look.className = 'tile-btn';
+      look.style.gridColumn = '1 / -1';
+      look.dataset.search = `${pack.name} ${pack.style} style pack theme look`.toLowerCase();
+      const theme = coreThemes.get(pack.theme);
+      look.textContent = `Use this look (${theme?.displayName ?? pack.theme} theme)`;
+      look.title = `Switch the map's theme to ${theme?.displayName ?? pack.theme}; dress rooms with the ${FACADE_LABELS[pack.room.facade]} facade in the tile inspector`;
+      look.addEventListener('click', () => {
+        if (this.doc.classicStructure.theme !== pack.theme) this.run('Change theme', setThemeCommand(this.doc, pack.theme));
+      });
+      box.append(head, note, look, sub('Gameplay'));
+      for (const g of pack.gameplay) {
+        const entry = SCENARIO_PALETTE.find((e) => e.key === g.key);
+        if (!entry) continue;
+        const b = document.createElement('button');
+        b.className = 'tile-btn';
+        b.dataset.tool = `scenario:${entry.key}`;
+        b.dataset.search = `${entry.label} ${entry.search} ${pack.name}`.toLowerCase();
+        b.title = g.note;
+        b.innerHTML = `<svg viewBox="0 0 56 56">${SCENARIO_ICONS[entry.key]}</svg>${escapeHtml(entry.label)}`;
+        b.addEventListener('click', () => this.setTool({ kind: 'scenario', key: entry.key }));
+        box.append(b);
+      }
+      box.append(sub('Tiles'));
+      for (const id of pack.tiles) {
+        const def = coreCatalog.get(id);
+        if (def) box.append(this.paletteButton(def));
+      }
+      box.append(sub('Props'));
+      for (const id of pack.props) {
+        const def = getProp(`prop.${id}`);
+        if (!def) continue;
+        const b = document.createElement('button');
+        b.className = 'tile-btn prop-btn';
+        b.dataset.tool = `prop:${def.id}`;
+        b.dataset.search = `${def.displayName} ${def.category} ${pack.name} prop`.toLowerCase();
+        b.title = `${def.displayName}\n${def.size.map((v) => v.toFixed(1)).join(' × ')} m${def.collision ? '' : ' · walk-through'}`;
+        const img = document.createElement('img');
+        img.alt = '';
+        img.dataset.file = def.file;
+        b.append(img, document.createTextNode(def.displayName));
+        b.addEventListener('click', () => this.setTool({ kind: 'prop', model: def.id }));
+        box.append(b);
+        seen.observe(img);
+      }
+    }
+  }
+
   private buildPaintPalette(): void {
     const mats = $('ed-materials');
     let category = '';
@@ -2486,6 +2573,17 @@ export class EditorApp {
         if (e.pitch || e.roll) el.append(small(`Pitch lifts its far (+Z) end, roll its +X side. Players walk up slopes of ${PLAYER.maxSlopeDegrees}° or less; steeper ones are slides and walls (bots treat them so too).`));
         toggle('Starts hidden', !!e.startHidden, (v) => ({ startHidden: v || undefined }));
         if (e.startHidden) el.append(small('Appears when a rule rebuilds or enables it (a bridge that extends).'));
+        if (e.behaviour === 'solid') {
+          toggle('Force field', !!e.field, (v) => ({ field: v || undefined, ...(v && !e.tint ? { tint: '#5ad8ff' } : {}) }));
+          if (e.field) {
+            const glow = document.createElement('input');
+            glow.type = 'color';
+            glow.value = e.tint ?? '#5ad8ff';
+            glow.addEventListener('change', () => update('Colour field', { tint: glow.value.toLowerCase() }));
+            el.append(row('Field colour', glow));
+            el.append(small('A humming energy barrier: players and vehicles can\'t pass, but shots, grenades and sight go straight through. Switch it with logic: Drop block or Disable turns it off, Rebuild block or Enable back on (a team button that drops the enemy\'s shield).'));
+          }
+        }
         el.append(small(e.behaviour === 'solid' ? 'Part of the level: walk on it anywhere, at any height. Logic can drop it (Drop block), bring it back (Rebuild block) or carry it on a mover.' : 'Drawn with a coloured lip so players can learn what it does. Logic can drop it at any time (Drop block) and rebuild it.'));
         break;
       }
@@ -2513,6 +2611,11 @@ export class EditorApp {
         if (e.who === 'count') number('Players needed', e.count, 1, (v) => ({ count: clamp(Math.round(v), 1, 32) }));
         toggle('Starts enabled', e.startEnabled, (v) => ({ startEnabled: v }));
         teamFilter(e.team, 'counts in it ("every living player" means all of that team)');
+        number('Gravity (× map, 1 = none)', e.gravity ?? 1, 0.05, (v) => {
+          const g = Math.round(clamp(v, 0.1, 3) * 100) / 100;
+          return { gravity: g === 1 ? undefined : g };
+        });
+        if (e.gravity !== undefined) el.append(small(`Gravity inside is ${Math.round(e.gravity * 100)}% of the map's: jumps go ${e.gravity < 1 ? 'higher and float down slowly' : 'lower and drop fast'}, and so do jump-pad flights. Always on, whatever logic does to the zone.`));
         break;
       case 'trap': {
         const spec = TRAP_SPECS[e.trap];
@@ -2571,7 +2674,19 @@ export class EditorApp {
         break;
       }
       case 'light': {
-        choose('Fixture', [['ceiling', 'Ceiling panel'], ['wall', 'Wall lamp'], ['bulb', 'Hanging bulb'], ['strip', 'Strip light'], ['none', 'Hidden (light only)']] as const, e.fixture, (v) => ({ fixture: v as LightFixture }));
+        choose('Fixture', [['ceiling', 'Ceiling panel'], ['wall', 'Wall lamp'], ['bulb', 'Hanging bulb'], ['strip', 'Strip light'], ['sign', 'Neon sign'], ['billboard', 'Holo billboard'], ['none', 'Hidden (light only)']] as const, e.fixture, (v) => ({ fixture: v as LightFixture }));
+        if (e.fixture === 'sign' || e.fixture === 'billboard') {
+          const words = document.createElement('input');
+          words.type = 'text';
+          words.maxLength = 24;
+          words.value = e.text ?? '';
+          words.placeholder = e.fixture === 'sign' ? 'OPEN' : 'TILE TRIGGER';
+          words.addEventListener('change', () => update('Sign text', { text: words.value.trim() || undefined }));
+          el.append(row('Words', words));
+          const [sw, sh] = e.size ?? (e.fixture === 'billboard' ? [6, 3.4] : [2.4, 0.8]);
+          number('Sign width (m)', sw, 0.2, (v) => ({ size: [clamp(v, 0.4, 24), sh] }));
+          number('Sign height (m)', sh, 0.1, (v) => ({ size: [sw, clamp(v, 0.3, 16)] }));
+        }
         const color = document.createElement('input');
         color.type = 'color';
         color.value = e.color;

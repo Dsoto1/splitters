@@ -265,7 +265,7 @@ export class MapBuilder {
   }
 
   /** A light at `at` (fixture defaults to a ceiling panel; colour a warm white). */
-  light(at: V3, o: { fixture?: LightFixture; color?: string; intensity?: number; range?: number; yaw?: number; id?: string; off?: boolean; blink?: number } = {}): this {
+  light(at: V3, o: { fixture?: LightFixture; color?: string; intensity?: number; range?: number; yaw?: number; id?: string; off?: boolean; blink?: number; text?: string; size?: [number, number] } = {}): this {
     return this.add({
       kind: 'light',
       position: at,
@@ -277,6 +277,9 @@ export class MapBuilder {
       // v20: logic can switch lights by ID; they can start off or blinking.
       ...(o.off ? { off: true } : {}),
       ...(o.blink ? { blink: o.blink } : {}),
+      // Style Packs: the words and size of a neon sign or holographic billboard.
+      ...(o.text ? { text: o.text } : {}),
+      ...(o.size ? { size: o.size } : {}),
       ...(o.id ? { id: o.id } : {}),
     });
   }
@@ -318,7 +321,7 @@ export class MapBuilder {
   }
 
   /** A free block (`size` [x, thickness, z], base at `at`): solid, breakable, crumble or trapdoor. */
-  block(at: V3, size: V3, behaviour: 'solid' | 'breakable' | 'crumble' | 'trapdoor' = 'solid', o: { material?: string; tint?: string; yaw?: number; delay?: number; respawn?: number | null; health?: number; trigger?: 'step' | 'logic'; id?: string; pitch?: number; roll?: number; hidden?: boolean } = {}): this {
+  block(at: V3, size: V3, behaviour: 'solid' | 'breakable' | 'crumble' | 'trapdoor' = 'solid', o: { material?: string; tint?: string; yaw?: number; delay?: number; respawn?: number | null; health?: number; trigger?: 'step' | 'logic'; id?: string; pitch?: number; roll?: number; hidden?: boolean; field?: boolean } = {}): this {
     return this.add({
       kind: 'block',
       position: at,
@@ -335,8 +338,20 @@ export class MapBuilder {
       ...(o.pitch ? { pitch: o.pitch } : {}),
       ...(o.roll ? { roll: o.roll } : {}),
       ...(o.hidden ? { startHidden: true } : {}),
+      // Style Packs: a force field (blocks players and vehicles, not shots; logic switches it).
+      ...(o.field ? { field: true } : {}),
       ...(o.id ? { id: o.id } : {}),
     });
+  }
+
+  /** A force field across `width` m, `height` m tall, centred at `at` and turned by `yaw` (logic switches it by `id`). */
+  field(at: V3, width: number, height: number, o: { yaw?: number; id?: string; tint?: string; hidden?: boolean } = {}): this {
+    return this.block(at, [width, height, 0.2], 'solid', { yaw: o.yaw ?? 0, tint: o.tint ?? '#5ad8ff', trigger: 'logic', respawn: null, field: true, ...(o.id ? { id: o.id } : {}), ...(o.hidden ? { hidden: true } : {}) });
+  }
+
+  /** A zone whose gravity is `gravity` × the map's (Style Packs): floor centre `at`, `size` [x, height, z]. */
+  gravityZone(at: V3, size: V3, gravity: number, name = 'Low gravity'): this {
+    return this.add({ kind: 'zone', position: at, size, who: 'any', count: 1, startEnabled: true, gravity, name });
   }
 
   /** A body of liquid with its floor at `at` and `size` [x, depth, z]; `tint` recolours it (v20: green acid, murky sewer water). */

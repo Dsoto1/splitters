@@ -1,0 +1,23 @@
+{
+  "$comment": "MapMaker Style Packs, Set 1 (04 Orbital Station, 07 Neon Megacity): facade pieces and props we model ourselves in code, and glass-tower tiles fitted from Kenney's City Kit (Commercial). tools/content/prepare-packs.mjs builds packages/client/public/packs (and the prop sources in assets-src/tiletrigger-stylepacks) and writes content/packs.lock.json. The Kenney kit is downloaded, never committed.",
+  "packs": {
+    "kenney-city-kit-commercial": {
+      "title": "City Kit (Commercial) 2.1",
+      "creator": "Kenney",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/kenney-city-kit-commercial/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "kenney_city-kit-commercial_2.1"
+    },
+    "tiletrigger-stylepacks": {
+      "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+      "url": "tools/content/prepare-packs.mjs",
+      "license": "Owned",
+      "licenseFile": "assets-src/tiletrigger-stylepacks/License.txt",
+      "retrieved": "2026-10-26"
+    }
+  },
+  "budgets": { "maxBytes": 400000, "maxTriangles": 8000 }
+}

@@ -39,7 +39,7 @@ import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STRE
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
 import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
-  padLandings, sanitizeInput, stepMovement, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
+  padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld } from './physics.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
@@ -356,6 +356,8 @@ export class Match {
   private readonly lastShot = new Map<number, number>();
   private readonly ladders: Ladder[];
   private readonly liquids: LiquidBox[];
+  /** Low-gravity (or heavy) zones: movement falls by their factor inside. */
+  private readonly gravityZones: GravityZone[];
   private readonly mounts: MountRt[] = [];
   /** Collider handle -> mount, so shots and blasts can hurt vehicles. */
   private readonly mountBodies = new Map<number, MountRt>();
@@ -466,6 +468,7 @@ export class Match {
     this.pads = mapPads(map.entities);
     this.ladders = mapLadders(map.entities);
     this.liquids = mapLiquids(map.entities);
+    this.gravityZones = mapGravityZones(map.entities);
     this.phaseEndTick = this.roundEndTick();
     if (opts.startGate) {
       this.phase = 'waiting';
@@ -1582,7 +1585,7 @@ export class Match {
         if (ridden) c.move = { ...c.move, pos: ridden };
         const was = c.move.pos;
         const before = c.move;
-        const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}), ...(c.jetFuel !== null ? { jetpack: true } : {}), ...(c.glider ? { glider: true } : {}), ...(c.kind !== 'human' ? { autoChute: true } : {}) });
+        const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}), ...(c.jetFuel !== null ? { jetpack: true } : {}), ...(c.glider ? { glider: true } : {}), ...(c.kind !== 'human' ? { autoChute: true } : {}) });
         c.move = applyPads(this.pads, stepped);
         this.trackFall(c, before, c.move !== stepped);
         c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / TICK_DT;
@@ -2985,7 +2988,8 @@ export class Match {
     c.fallPeak = undefined;
     c.padFlight = false;
     if (!this.phys.fallDamage || peak === undefined || free || before.grounded) return;
-    const drop = (peak - m.pos.y) * this.phys.gravity;
+    // A landing in a low-gravity zone is as soft as the gravity there.
+    const drop = (peak - m.pos.y) * this.phys.gravity * gravityAt(this.gravityZones, m.pos);
     if (drop > 5) this.damage(c, (drop - 5) * 9, null, 'core.fall');
   }
 

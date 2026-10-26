@@ -9,10 +9,12 @@
 //   node tools/content/prepare-props.mjs [--downloads <dir>]
 //
 // Most packs live in assets-src/<pack>/. Packs with a `download` folder in
-// content/props.json (the Quaternius Modular SciFi MegaKit) are too large to
-// keep in the repo: their props are rebuilt only when --downloads points at a
+// content/props.json (the Quaternius Modular SciFi MegaKit, and the Kenney
+// kits behind the Orbital Station and Neon Megacity Style Packs) stay out of
+// the repo: their props are rebuilt only when --downloads points at a
 // directory holding the extracted download (directly or one level down);
-// otherwise the props already built from them are kept as they are.
+// otherwise (or when that pack's folder is not there) the props already built
+// from them are kept as they are.
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -43,18 +45,24 @@ const STEP_RISE = 0.25;
 /** Thinnest collision box: single-sided kit walls are planes. */
 const MIN_THICKNESS = 0.2;
 
-/** The folder of an extracted download: directly under the downloads dir or one level down. */
+/** The folder of an extracted download: directly under the downloads dir or one level down (null: not there, so that pack is kept as built). */
 function downloadDir(folder) {
+  if (!downloads) return null;
   const direct = join(downloads, folder);
   if (existsSync(direct)) return direct;
   for (const d of readdirSync(downloads, { withFileTypes: true })) {
     if (d.isDirectory() && existsSync(join(downloads, d.name, folder))) return join(downloads, d.name, folder);
   }
-  throw new Error(`${folder} not found in ${downloads}`);
+  return null;
 }
 
-/** Read a .gltf from a download whose images live in a separate folder (and whose buffer names may be off). */
+/** Read a .gltf from a download whose images live in a separate folder (and whose buffer names may be off), or a .glb (Kenney kits: textures beside it). */
 async function readKitGltf(path, imageDir) {
+  if (path.endsWith('.glb')) {
+    const doc = await io.read(path);
+    doc.setLogger(quiet);
+    return doc;
+  }
   const json = JSON.parse(readFileSync(path, 'utf8'));
   const dir = dirname(path);
   const resources = {};
@@ -243,11 +251,11 @@ for (const p of manifest.props) {
   const external = !!pack.download;
   let glb;
   let size;
+  const dir = external ? downloadDir(pack.download) : null;
   if (external) {
-    if (downloads) {
-      const dir = downloadDir(pack.download);
+    if (dir) {
       const srcs = Array.isArray(p.src) ? p.src : [p.src];
-      const doc = await readPieces(srcs.map((s) => join(dir, pack.models, s)), join(dir, pack.images));
+      const doc = await readPieces(srcs.map((s) => join(dir, pack.models, s)), join(dir, pack.images ?? pack.models));
       await bakeKitMaterials(doc, pack);
       const scene = doc.getRoot().listScenes()[0];
       const turn = doc.createNode('turn').setRotation(yawQuat(p.yaw ?? 0));

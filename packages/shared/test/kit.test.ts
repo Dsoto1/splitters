@@ -143,6 +143,9 @@ describe('building kit navigation', () => {
     { name: 'terrace', tiles: [t('m', 'core.terrace', 0, 0, 0)], from: [0, 0, -2.5], to: [0, 1, 2.5] },
     { name: 'watchtower', tiles: [t('m', 'core.tower', 0, 0, 0)], from: [-2, 0, 2], to: [2.4, 1.5, 1] },
     { name: 'bridge', tiles: [t('a', 'core.room', 0, -1, 0), t('b', 'core.bridge', 0, 0, 0), t('c', 'core.room', 0, 1, 0)], from: [0, 0, -8], to: [0, 0, 8] },
+    // Style Packs: the Orbital Station hangar's gantry and the reactor hall's catwalk.
+    { name: 'hangar bay', tiles: [t('h', 'orbital.hangar', 0, 0, 0)], from: [8, 0.2, 8], to: [8, 4, 18.2] },
+    { name: 'reactor hall', tiles: [t('m', 'orbital.reactor_hall', 0, 0, 0)], from: [4, 0, 4], to: [4, 4, 10.8] },
   ];
   // A quarter turn clockwise (the tiles' own rotation rule), for grid cells and world points alike.
   const turn = (x: number, z: number, r: number): [number, number] => {

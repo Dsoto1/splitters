@@ -89,6 +89,8 @@ export const THEME_BACKDROPS: Record<string, Backdrop> = {
   'core.forest': b('cloudy', 'forest', 'grass', 0.55),
   'core.canyon': b('clear', 'mesas', 'dirt', 0.5),
   'core.garden': b('clear', 'hills', 'grass', 0.45),
+  'core.orbital': b('space', 'none', 'none', 0),
+  'core.neon_megacity': b('night', 'city', 'stone', 0.5),
 };
 
 /** The backdrop a map is drawn with: its own, or its theme's (the ground carrying on in the terrain's commonest edge material). */
