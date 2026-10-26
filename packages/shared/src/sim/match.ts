@@ -198,6 +198,8 @@ export interface Combatant {
   deaths: number;
   /** Suicides: each costs the player a point (in `kills`) but not their team. */
   selfKills: number;
+  /** Objective plays this round (flag captures, bomb plants and defuses, hostage rescues), for the scoreboard. */
+  objective: number;
   /** Owned weapons by weapon code. */
   weapons: Map<number, WeaponState>;
   /** Code of the held weapon. */
@@ -1031,6 +1033,7 @@ export class Match {
       respawnTick: 0,
       kills: 0,
       selfKills: 0,
+      objective: 0,
       deaths: 0,
       weapons: new Map(),
       current: 0,
@@ -1296,6 +1299,7 @@ export class Match {
     const events = this.pendingEvents;
     this.pendingEvents = [];
     this.noteCombat(events);
+    this.noteObjectives(events);
     this.classes?.events(events);
     return events;
   }
@@ -3846,6 +3850,7 @@ export class Match {
     for (const c of this.combatants()) {
       c.kills = 0;
       c.selfKills = 0;
+      c.objective = 0;
       c.deaths = 0;
       c.alive = false;
       this.leaveMount(c, false);
@@ -4040,7 +4045,17 @@ export class Match {
   }
 
   scores(): ScoreEntry[] {
-    return this.combatants().map((c) => ({ s: c.slot, k: c.kills, d: c.deaths, ...(c.selfKills ? { x: c.selfKills } : {}) }));
+    return this.combatants().map((c) => ({ s: c.slot, k: c.kills, d: c.deaths, ...(c.selfKills ? { x: c.selfKills } : {}), ...(c.objective ? { o: c.objective } : {}) }));
+  }
+
+  /** Credit objective plays (the scoreboard's Caps / Bomb / Rescues column) to the player who made them. */
+  private noteObjectives(events: readonly GameEvent[]): void {
+    for (const ev of events) {
+      const play = (ev.e === 'flag' && ev.a === 'capture') || (ev.e === 'bomb' && (ev.a === 'plant' || ev.a === 'defuse')) || (ev.e === 'hostage' && ev.a === 'rescue');
+      if (!play || ev.s === null) continue;
+      const c = this.slots[ev.s];
+      if (c) c.objective++;
+    }
   }
 
   /** Snapshot message body shared by every recipient; hosts add the per-recipient `ack` and `me`. */
