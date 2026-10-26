@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 10,
+  "formatVersion": 19,
   "metadata": {
     "id": "tsfp_dungeon_d",
     "name": "Dungeon D",
@@ -32,6 +32,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -45,6 +48,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -57,6 +63,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -69,6 +78,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -81,6 +93,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -93,6 +108,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -104,6 +122,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -115,6 +136,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -126,6 +150,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -138,6 +165,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -149,6 +179,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -162,6 +195,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -172,9 +208,11 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "wall",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -186,6 +224,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -195,8 +236,8 @@
         "y": 1,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open"
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -209,6 +250,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -221,6 +265,9 @@
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -232,6 +279,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -243,6 +293,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -251,7 +304,10 @@
         "x": 2,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_021",
@@ -350,6 +406,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -382,19 +441,18 @@
         "x": 0,
         "y": -1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_037",
-        "tile": "core.room",
+        "tile": "core.stairs",
         "x": 1,
         "y": 2,
         "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:W": "open"
-        }
+        "rotation": 1
       },
       {
         "id": "tile_038",
@@ -406,6 +464,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -417,6 +478,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -427,8 +491,10 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:W": "open"
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -441,6 +507,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -450,20 +519,17 @@
         "y": 4,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:W": "open"
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_043",
-        "tile": "core.room",
+        "tile": "core.stairs",
         "x": -1,
         "y": 2,
         "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open"
-        }
+        "rotation": 2
       },
       {
         "id": "tile_044",
@@ -472,17 +538,17 @@
         "y": 3,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open"
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_045",
-        "tile": "core.room",
+        "tile": "core.stairs",
         "x": -1,
         "y": 4,
         "z": 0,
-        "rotation": 0
+        "rotation": 3
       },
       {
         "id": "tile_046",
@@ -670,6 +736,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -681,6 +750,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -692,6 +764,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -700,19 +775,22 @@
         "x": 4,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_072",
-        "tile": "core.junction_t",
+        "tile": "core.corridor_clear",
         "x": 2,
         "y": 2,
         "z": 0,
-        "rotation": 3
+        "rotation": 0
       },
       {
         "id": "tile_073",
-        "tile": "core.room",
+        "tile": "core.dead_end",
         "x": 1,
         "y": 1,
         "z": 1,
@@ -720,11 +798,11 @@
       },
       {
         "id": "tile_074",
-        "tile": "core.corner",
+        "tile": "core.junction_t",
         "x": -2,
         "y": 2,
         "z": 1,
-        "rotation": 3
+        "rotation": 0
       },
       {
         "id": "tile_075",
@@ -808,7 +886,7 @@
       },
       {
         "id": "tile_085",
-        "tile": "core.dead_end",
+        "tile": "core.corner",
         "x": -1,
         "y": 5,
         "z": 1,
@@ -880,16 +958,27 @@
     {
       "id": "spawn_092",
       "position": [
-        -8,
-        0,
+        -32,
+        4,
         16
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.5707963267948966,
       "faction": null
     },
     {
       "id": "spawn_093",
+      "position": [
+        8,
+        0,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_094",
       "position": [
         -40,
         0,
@@ -900,18 +989,18 @@
       "faction": null
     },
     {
-      "id": "spawn_094",
+      "id": "spawn_095",
       "position": [
-        16,
+        32,
         0,
         8
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
-      "id": "spawn_095",
+      "id": "spawn_096",
       "position": [
         0,
         4,
@@ -922,7 +1011,18 @@
       "faction": null
     },
     {
-      "id": "spawn_096",
+      "id": "spawn_097",
+      "position": [
+        -8,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_098",
       "position": [
         24,
         4,
@@ -933,36 +1033,14 @@
       "faction": null
     },
     {
-      "id": "spawn_097",
-      "position": [
-        32,
-        0,
-        24
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_098",
-      "position": [
-        8,
-        0,
-        -32
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": null
-    },
-    {
       "id": "spawn_099",
       "position": [
-        8,
         0,
-        -8
+        4,
+        40
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.5707963267948966,
       "faction": null
     },
     {
@@ -979,9 +1057,9 @@
     {
       "id": "pickup_101",
       "position": [
-        8,
+        16,
         0,
-        24
+        -32
       ],
       "kind": "pickup",
       "item": "core.health_small",
@@ -990,9 +1068,9 @@
     {
       "id": "pickup_102",
       "position": [
-        -16,
-        4,
-        -32
+        32,
+        0,
+        32
       ],
       "kind": "pickup",
       "item": "core.weapon_auto_shotgun",
@@ -1003,7 +1081,7 @@
       "position": [
         0,
         0,
-        48
+        -8
       ],
       "kind": "pickup",
       "item": "core.ammo",
@@ -1012,9 +1090,9 @@
     {
       "id": "pickup_104",
       "position": [
-        0,
-        0,
-        0
+        -16,
+        4,
+        -32
       ],
       "kind": "pickup",
       "item": "core.armor_small",
@@ -1023,9 +1101,9 @@
     {
       "id": "pickup_105",
       "position": [
-        -32,
         0,
-        8
+        0,
+        48
       ],
       "kind": "pickup",
       "item": "core.weapon_burst_rifle",
@@ -1034,9 +1112,9 @@
     {
       "id": "pickup_106",
       "position": [
-        24,
-        0,
-        16
+        -16,
+        4,
+        24
       ],
       "kind": "pickup",
       "item": "core.health_large",
@@ -1045,9 +1123,9 @@
     {
       "id": "pickup_107",
       "position": [
-        -32,
+        8,
         0,
-        -16
+        24
       ],
       "kind": "pickup",
       "item": "core.weapon_marksman",
@@ -1056,9 +1134,9 @@
     {
       "id": "pickup_108",
       "position": [
-        -24,
-        0,
-        -16
+        8,
+        4,
+        8
       ],
       "kind": "pickup",
       "item": "core.ammo",
@@ -1069,7 +1147,7 @@
       "position": [
         8,
         0,
-        0
+        -16
       ],
       "kind": "pickup",
       "item": "core.weapon_flak",
@@ -1078,9 +1156,9 @@
     {
       "id": "pickup_110",
       "position": [
-        24,
+        -32,
         0,
-        -8
+        8
       ],
       "kind": "pickup",
       "item": "core.armor_large",
@@ -1089,9 +1167,9 @@
     {
       "id": "pickup_111",
       "position": [
-        16,
-        0,
-        32
+        -40,
+        4,
+        8
       ],
       "kind": "pickup",
       "item": "core.weapon_rockets",
@@ -1100,9 +1178,9 @@
     {
       "id": "pickup_112",
       "position": [
-        8,
+        24,
         0,
-        40
+        16
       ],
       "kind": "pickup",
       "item": "core.health_small",
@@ -1111,7 +1189,7 @@
     {
       "id": "pickup_113",
       "position": [
-        8,
+        -32,
         0,
         -16
       ],
@@ -1122,7 +1200,7 @@
     {
       "id": "pickup_114",
       "position": [
-        -8,
+        -24,
         0,
         -16
       ],
@@ -1133,9 +1211,9 @@
     {
       "id": "pickup_115",
       "position": [
-        -40,
         0,
-        8
+        0,
+        0
       ],
       "kind": "pickup",
       "item": "core.weapon_railgun",
@@ -1144,9 +1222,9 @@
     {
       "id": "pickup_116",
       "position": [
-        -24,
+        8,
         0,
-        -24
+        0
       ],
       "kind": "pickup",
       "item": "core.armor_small",
@@ -1155,9 +1233,9 @@
     {
       "id": "pickup_117",
       "position": [
-        16,
+        24,
         0,
-        -32
+        -8
       ],
       "kind": "pickup",
       "item": "core.weapon_shotgun",
@@ -1166,7 +1244,7 @@
     {
       "id": "pickup_118",
       "position": [
-        32,
+        16,
         0,
         32
       ],
@@ -1177,13 +1255,1581 @@
     {
       "id": "pickup_119",
       "position": [
+        8,
         0,
-        0,
-        -8
+        40
       ],
       "kind": "pickup",
       "item": "core.health_small",
       "respawnSeconds": null
+    },
+    {
+      "id": "light_120",
+      "position": [
+        -24,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_121",
+      "position": [
+        -8,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_122",
+      "position": [
+        0,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_123",
+      "position": [
+        8,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_124",
+      "position": [
+        8,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_125",
+      "position": [
+        16,
+        3.45,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_126",
+      "position": [
+        16,
+        3.2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_127",
+      "position": [
+        16,
+        3.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_128",
+      "position": [
+        0,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_129",
+      "position": [
+        -40,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_130",
+      "position": [
+        -8,
+        3.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_131",
+      "position": [
+        -24,
+        3.45,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_132",
+      "position": [
+        16,
+        3.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_133",
+      "position": [
+        32,
+        3.2,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_134",
+      "position": [
+        0,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_135",
+      "position": [
+        24,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_136",
+      "position": [
+        0,
+        3.2,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_137",
+      "position": [
+        0,
+        7.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_138",
+      "position": [
+        -16,
+        7.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_139",
+      "position": [
+        8,
+        7.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_140",
+      "position": [
+        24,
+        7.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_141",
+      "position": [
+        24,
+        3.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_142",
+      "position": [
+        8,
+        3.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_143",
+      "position": [
+        -24,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_144",
+      "position": [
+        -40,
+        3.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_145",
+      "position": [
+        -32,
+        7.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_146",
+      "position": [
+        -40,
+        7.2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_147",
+      "position": [
+        0,
+        7.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_148",
+      "position": [
+        8,
+        7.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_149",
+      "position": [
+        -16,
+        7.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_150",
+      "position": [
+        0,
+        3.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_151",
+      "position": [
+        0,
+        7.2,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_152",
+      "position": [
+        -8,
+        7.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_153",
+      "position": [
+        8,
+        7.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        -23.78,
+        0,
+        -8.11
+      ],
+      "kind": "prop",
+      "model": "prop.hm_table_round",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        -22.92,
+        0,
+        -7.17
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        -22.92,
+        0,
+        -9.06
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        -23.78,
+        0,
+        -7.17
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_158",
+      "position": [
+        -23.78,
+        0,
+        -9.06
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_159",
+      "position": [
+        -24.64,
+        0,
+        -7.17
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        -24.64,
+        0,
+        -9.06
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        -23.78,
+        0,
+        -11.45
+      ],
+      "kind": "prop",
+      "model": "prop.hm_table_round",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        -22.92,
+        0,
+        -10.5
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        -22.92,
+        0,
+        -12.4
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_164",
+      "position": [
+        -23.78,
+        0,
+        -10.5
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_165",
+      "position": [
+        -23.78,
+        0,
+        -12.4
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_166",
+      "position": [
+        -24.64,
+        0,
+        -10.5
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_167",
+      "position": [
+        -24.64,
+        0,
+        -12.4
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_168",
+      "position": [
+        -29.25,
+        0,
+        -18.98
+      ],
+      "kind": "prop",
+      "model": "prop.kitchen_cabinet",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_169",
+      "position": [
+        -30.6,
+        0,
+        2.98
+      ],
+      "kind": "prop",
+      "model": "prop.kitchen_cabinet",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_170",
+      "position": [
+        -34.16,
+        0,
+        3.14
+      ],
+      "kind": "prop",
+      "model": "prop.hm_fireplace",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_171",
+      "position": [
+        -35.25,
+        0,
+        -19.25
+      ],
+      "kind": "prop",
+      "model": "prop.hm_floor_lamp",
+      "yaw": 0.808,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_172",
+      "position": [
+        -15.06,
+        1.6,
+        3.43
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_173",
+      "position": [
+        -35.43,
+        1.6,
+        -16.21
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_174",
+      "position": [
+        16.28,
+        0,
+        -19.09
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_175",
+      "position": [
+        27.09,
+        0,
+        -13.12
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_176",
+      "position": [
+        25.58,
+        0,
+        -5.35
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_177",
+      "position": [
+        27.09,
+        0,
+        -14.52
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_178",
+      "position": [
+        26.36,
+        0,
+        -16.3
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_179",
+      "position": [
+        19.87,
+        0,
+        -11.94
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_180",
+      "position": [
+        19.87,
+        1.1,
+        -11.94
+      ],
+      "kind": "prop",
+      "model": "prop.sv_medkit_case",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_181",
+      "position": [
+        26.85,
+        0,
+        -18.85
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": -0.6716,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_182",
+      "position": [
+        13.15,
+        0,
+        -18.85
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": 0.7741,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_183",
+      "position": [
+        27.36,
+        1.4,
+        -15.05
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_184",
+      "position": [
+        27.36,
+        1.4,
+        -11.85
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_185",
+      "position": [
+        12.65,
+        1.4,
+        -17.82
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_186",
+      "position": [
+        19.95,
+        1.4,
+        -19.36
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_187",
+      "position": [
+        -5.23,
+        0,
+        26.79
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_188",
+      "position": [
+        -4.63,
+        1,
+        26.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_189",
+      "position": [
+        -5.83,
+        1,
+        26.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_190",
+      "position": [
+        1.42,
+        0,
+        33.17
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_191",
+      "position": [
+        5.55,
+        0,
+        33.17
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_192",
+      "position": [
+        1.42,
+        0,
+        31.45
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_193",
+      "position": [
+        9.69,
+        0,
+        33.17
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_194",
+      "position": [
+        5.55,
+        0,
+        31.45
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_195",
+      "position": [
+        1.42,
+        0,
+        29.72
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_196",
+      "position": [
+        9.25,
+        0,
+        31.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_197",
+      "position": [
+        5.55,
+        0,
+        29.72
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_198",
+      "position": [
+        1.42,
+        0,
+        28
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_199",
+      "position": [
+        9.69,
+        0,
+        29.72
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_200",
+      "position": [
+        11.1,
+        0,
+        27.2
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_stag",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_201",
+      "position": [
+        -3.05,
+        0,
+        12.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0.8299,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_202",
+      "position": [
+        11.05,
+        0,
+        20.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": -0.852,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_203",
+      "position": [
+        -11.05,
+        0,
+        20.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0.7403,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_204",
+      "position": [
+        -11.08,
+        0,
+        27.08
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 2.3418,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_205",
+      "position": [
+        3.4,
+        1.2,
+        15.53
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_206",
+      "position": [
+        -3.4,
+        1.2,
+        32.23
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_207",
+      "position": [
+        11.4,
+        1.2,
+        32.53
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_208",
+      "position": [
+        -3.4,
+        1.2,
+        34.63
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_209",
+      "position": [
+        34.91,
+        0,
+        17.25
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_210",
+      "position": [
+        34.91,
+        1.1,
+        17.25
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_211",
+      "position": [
+        21.09,
+        0,
+        20.45
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_212",
+      "position": [
+        21.09,
+        1.1,
+        20.45
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_213",
+      "position": [
+        22.05,
+        0,
+        26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_214",
+      "position": [
+        22.05,
+        1.1,
+        26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_215",
+      "position": [
+        34.65,
+        0,
+        23.68
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_216",
+      "position": [
+        34.91,
+        0,
+        20.25
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_217",
+      "position": [
+        34.91,
+        1.1,
+        20.25
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_218",
+      "position": [
+        25.85,
+        0,
+        26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_219",
+      "position": [
+        25.85,
+        1.1,
+        26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_220",
+      "position": [
+        28.35,
+        0,
+        20.28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_221",
+      "position": [
+        27.7,
+        0,
+        20.28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_222",
+      "position": [
+        28.02,
+        0,
+        19.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_223",
+      "position": [
+        30.84,
+        0,
+        20.28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_224",
+      "position": [
+        30.19,
+        0,
+        20.28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_225",
+      "position": [
+        30.52,
+        0,
+        19.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_226",
+      "position": [
+        28.35,
+        0,
+        22.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_227",
+      "position": [
+        27.7,
+        0,
+        22.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_228",
+      "position": [
+        28.02,
+        0,
+        22.17
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_229",
+      "position": [
+        21.08,
+        0,
+        13.08
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0.7681,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_230",
+      "position": [
+        35.18,
+        0,
+        27.18
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": -2.4161,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_231",
+      "position": [
+        35.19,
+        0,
+        12.81
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": -0.6232,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -1195,7 +2841,9 @@
   },
   "terrain": null,
   "bounds": null,
+  "track": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

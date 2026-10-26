@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 10,
+  "formatVersion": 19,
   "metadata": {
     "id": "tsfp_dead_heat_2",
     "name": "DEAD HEAT 2",
@@ -11,7 +11,7 @@
     "parentId": null,
     "recommendedPlayers": {
       "min": 2,
-      "max": 4
+      "max": 10
     },
     "supportedModes": [
       "core.deathmatch"
@@ -31,6 +31,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -42,6 +45,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -50,15 +56,18 @@
         "x": 2,
         "y": -4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_004",
-        "tile": "core.corridor_clear",
+        "tile": "core.junction_t",
         "x": 1,
         "y": -2,
         "z": 0,
-        "rotation": 1
+        "rotation": 0
       },
       {
         "id": "tile_005",
@@ -69,6 +78,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -80,6 +92,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -88,7 +103,10 @@
         "x": 0,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_008",
@@ -116,6 +134,9 @@
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -127,6 +148,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -138,6 +162,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -146,18 +173,18 @@
         "x": 0,
         "y": -6,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_014",
-        "tile": "core.room",
+        "tile": "core.dead_end",
         "x": 3,
         "y": 1,
         "z": -1,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:W": "wall"
-        }
+        "rotation": 3
       },
       {
         "id": "tile_015",
@@ -165,7 +192,10 @@
         "x": -3,
         "y": 1,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_016",
@@ -177,6 +207,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -189,6 +222,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -200,6 +236,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -212,6 +251,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -224,6 +266,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -235,6 +280,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -246,6 +294,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -257,6 +308,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -265,7 +319,10 @@
         "x": 2,
         "y": 4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_025",
@@ -291,8 +348,10 @@
         "z": -1,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:W": "open"
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -305,6 +364,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -316,19 +378,18 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_030",
-        "tile": "core.room",
+        "tile": "core.stairs",
         "x": 1,
         "y": -1,
         "z": -1,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:W": "open"
-        }
+        "rotation": 1
       },
       {
         "id": "tile_031",
@@ -340,6 +401,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -349,8 +413,8 @@
         "y": 1,
         "z": -1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:W": "open"
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -362,6 +426,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -371,17 +438,17 @@
         "y": 0,
         "z": -1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open"
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_035",
-        "tile": "core.room",
+        "tile": "core.stairs",
         "x": 0,
         "y": 1,
         "z": -1,
-        "rotation": 0
+        "rotation": 3
       }
     ]
   },
@@ -402,6 +469,50 @@
       "position": [
         0,
         0,
+        40
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_038",
+      "position": [
+        24,
+        -4,
+        8
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_039",
+      "position": [
+        0,
+        -4,
+        0
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_040",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_041",
+      "position": [
+        0,
+        0,
         -32
       ],
       "kind": "spawn",
@@ -409,7 +520,18 @@
       "faction": null
     },
     {
-      "id": "spawn_038",
+      "id": "spawn_042",
+      "position": [
+        16,
+        0,
+        32
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_043",
       "position": [
         16,
         0,
@@ -420,7 +542,7 @@
       "faction": null
     },
     {
-      "id": "spawn_039",
+      "id": "spawn_044",
       "position": [
         0,
         0,
@@ -431,7 +553,18 @@
       "faction": null
     },
     {
-      "id": "pickup_040",
+      "id": "spawn_045",
+      "position": [
+        0,
+        0,
+        24
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "pickup_046",
       "position": [
         8,
         -4,
@@ -442,31 +575,31 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_041",
+      "id": "pickup_047",
       "position": [
-        8,
-        0,
-        -24
+        16,
+        -4,
+        -8
       ],
       "kind": "pickup",
       "item": "core.health_small",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_042",
+      "id": "pickup_048",
       "position": [
+        8,
         0,
-        -4,
-        -40
+        -24
       ],
       "kind": "pickup",
       "item": "core.weapon_auto_shotgun",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_043",
+      "id": "pickup_049",
       "position": [
-        8,
+        0,
         -4,
         -40
       ],
@@ -475,26 +608,933 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_044",
+      "id": "pickup_050",
       "position": [
-        0,
+        8,
         -4,
-        -48
+        -40
       ],
       "kind": "pickup",
       "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_045",
+      "id": "pickup_051",
       "position": [
-        16,
         0,
-        -24
+        -4,
+        -48
       ],
       "kind": "pickup",
       "item": "core.weapon_burst_rifle",
       "respawnSeconds": null
+    },
+    {
+      "id": "pickup_052",
+      "position": [
+        0,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "light_053",
+      "position": [
+        16,
+        3.45,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_054",
+      "position": [
+        8,
+        3.2,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_055",
+      "position": [
+        0,
+        3.45,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_056",
+      "position": [
+        8,
+        -0.5499999999999998,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_057",
+      "position": [
+        0,
+        -0.5499999999999998,
+        -48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff0000",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_058",
+      "position": [
+        24,
+        -0.7999999999999998,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_059",
+      "position": [
+        8,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_060",
+      "position": [
+        0,
+        3.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff0000",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_061",
+      "position": [
+        16,
+        3.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_062",
+      "position": [
+        8,
+        -0.5499999999999998,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "prop_063",
+      "position": [
+        8,
+        0,
+        24.28
+      ],
+      "kind": "prop",
+      "model": "prop.rug",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_064",
+      "position": [
+        8,
+        0,
+        24.28
+      ],
+      "kind": "prop",
+      "model": "prop.side_table",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_065",
+      "position": [
+        8,
+        0,
+        23.18
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_066",
+      "position": [
+        6.65,
+        0,
+        24.28
+      ],
+      "kind": "prop",
+      "model": "prop.armchair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_067",
+      "position": [
+        9.35,
+        0,
+        24.28
+      ],
+      "kind": "prop",
+      "model": "prop.armchair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_068",
+      "position": [
+        10.59,
+        0,
+        12.86
+      ],
+      "kind": "prop",
+      "model": "prop.hm_fireplace",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_069",
+      "position": [
+        -3.18,
+        0,
+        18.6
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_070",
+      "position": [
+        19.18,
+        0,
+        31.6
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_071",
+      "position": [
+        19.29,
+        0,
+        16.91
+      ],
+      "kind": "prop",
+      "model": "prop.hm_shelf_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "position": [
+        17,
+        0,
+        12.94
+      ],
+      "kind": "prop",
+      "model": "prop.hm_couch_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "position": [
+        -3.22,
+        0,
+        12.78
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": 0.7098,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "position": [
+        -3.23,
+        0,
+        35.22
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": 2.4947,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "position": [
+        19.23,
+        0,
+        12.78
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": -0.6402,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "position": [
+        19.23,
+        0,
+        35.22
+      ],
+      "kind": "prop",
+      "model": "prop.floor_lamp",
+      "yaw": -2.5292,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "position": [
+        19.43,
+        1.6,
+        33.79
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "position": [
+        8.14,
+        1.6,
+        12.57
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "position": [
+        4.82,
+        -4,
+        7.5
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "position": [
+        0.6,
+        -4,
+        -11.18
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "position": [
+        19.18,
+        -4,
+        2.2
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "position": [
+        16.8,
+        -4,
+        -11.18
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "position": [
+        -0.4,
+        -4,
+        -11.18
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "position": [
+        12.86,
+        -4,
+        -8.04
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase_wide",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "position": [
+        5.5,
+        -4,
+        -3.18
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "position": [
+        16.6,
+        -4,
+        11.18
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_087",
+      "position": [
+        -3.18,
+        -4,
+        2.2
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "position": [
+        -1.99,
+        -4,
+        -11.19
+      ],
+      "kind": "prop",
+      "model": "prop.rn_bookcase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "position": [
+        9.22,
+        -4,
+        0.15
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "position": [
+        10.45,
+        -4,
+        -0.91
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "position": [
+        10.45,
+        -4,
+        1.21
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "position": [
+        9.63,
+        -4,
+        -0.91
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "position": [
+        9.63,
+        -4,
+        1.21
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "position": [
+        8.81,
+        -4,
+        -0.91
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "position": [
+        8.81,
+        -4,
+        1.21
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_096",
+      "position": [
+        7.98,
+        -4,
+        -0.91
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_097",
+      "position": [
+        7.98,
+        -4,
+        1.21
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_098",
+      "position": [
+        9.22,
+        -3.15,
+        0.15
+      ],
+      "kind": "prop",
+      "model": "prop.hm_desk_lamp",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_099",
+      "position": [
+        9.22,
+        -4,
+        3.72
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_100",
+      "position": [
+        10.45,
+        -4,
+        2.65
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "position": [
+        10.45,
+        -4,
+        4.78
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_102",
+      "position": [
+        9.63,
+        -4,
+        2.65
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "position": [
+        9.63,
+        -4,
+        4.78
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "position": [
+        8.81,
+        -4,
+        2.65
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "position": [
+        8.81,
+        -4,
+        4.78
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_106",
+      "position": [
+        7.98,
+        -4,
+        2.65
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_107",
+      "position": [
+        7.98,
+        -4,
+        4.78
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_108",
+      "position": [
+        9.22,
+        -3.15,
+        3.72
+      ],
+      "kind": "prop",
+      "model": "prop.hm_desk_lamp",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_109",
+      "position": [
+        13.69,
+        -4,
+        1.52
+      ],
+      "kind": "prop",
+      "model": "prop.rug_round",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_110",
+      "position": [
+        13.69,
+        -4,
+        1.52
+      ],
+      "kind": "prop",
+      "model": "prop.hm_side_table",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_111",
+      "position": [
+        12.4,
+        -4,
+        1.52
+      ],
+      "kind": "prop",
+      "model": "prop.hm_armchair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_112",
+      "position": [
+        14.99,
+        -4,
+        1.52
+      ],
+      "kind": "prop",
+      "model": "prop.hm_armchair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_113",
+      "position": [
+        -3.05,
+        -4,
+        3.05
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": 2.4796,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_114",
+      "position": [
+        4.95,
+        -4,
+        11.05
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": 2.4579,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_115",
+      "position": [
+        19.05,
+        -4,
+        -11.05
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": -0.9076,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_116",
+      "position": [
+        3.25,
+        -4,
+        -11.25
+      ],
+      "kind": "prop",
+      "model": "prop.hm_floor_lamp",
+      "yaw": -0.868,
+      "scale": 1,
+      "solid": false,
+      "tint": null
     }
   ],
   "factions": [],
@@ -506,7 +1546,9 @@
   },
   "terrain": null,
   "bounds": null,
+  "track": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

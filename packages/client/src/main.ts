@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { initPhysics, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { VISIBLE_IMPORTED_MAPS, initPhysics, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
@@ -49,8 +49,8 @@ const OFFLINE_MAPS = { arena: arenaJson, vault: vaultJson, outpost: outpostJson,
 type OfflineMap = keyof typeof OFFLINE_MAPS;
 /** Every map file shipped in maps/ (loaded up front; they are small). */
 const EXTRA_MAPS = import.meta.glob<unknown>('../../../maps/*.json', { eager: true, import: 'default' });
-/** Maps converted from TimeSplitters MapMaker saves: their own chunk, and their own "Imported" group in the Arcade. */
-const importedMaps = (): Promise<Record<string, unknown>> => import('./importedMaps.ts').then((m) => m.IMPORTED_MAPS);
+/** Maps converted from TimeSplitters MapMaker saves: their own chunks, and their own "Imported" group in the Arcade. */
+const importedMaps = (ids?: readonly string[]): Promise<Record<string, unknown>> => import('./importedMaps.ts').then((m) => m.loadImportedMaps(ids));
 
 /** Arcade entries for a set of map files, from each map's own metadata, by name. */
 function arcadeEntries(files: Record<string, unknown>, group?: string): ArcadeMap[] {
@@ -129,14 +129,12 @@ class App {
       this.portraits = new PortraitRenderer(this.engine);
       setWeaponIconSource(new ModelThumbnails(this.engine));
       const maps = arcadeMaps();
-      // Imported maps stay out of the list until the importer rebuilds them properly
-      // (docs/ROADMAP_V1.md); they still open directly with ?offline=<name> or ?imported.
-      if (params.has('imported')) {
-        void importedMaps().then(
-          (files) => maps.push(...arcadeEntries(files, 'Imported')),
-          (e: unknown) => console.warn('imported maps failed to load', e),
-        );
-      }
+      // Imported maps stay out of the list until each one is verified (docs/IMPORTED_MAPS_AUDIT.md):
+      // the verified ones join the Arcade, ?imported lists them all, ?offline=<name> opens any one.
+      void importedMaps(params.has('imported') ? undefined : VISIBLE_IMPORTED_MAPS).then(
+        (files) => maps.push(...arcadeEntries(files, 'Imported')),
+        (e: unknown) => console.warn('imported maps failed to load', e),
+      );
       this.front = new FrontEnd($('menu'), maps, {
         openEditor: () => void this.openEditor(),
         openDesigner: (look) => void this.openDesigner(look),
@@ -225,7 +223,7 @@ class App {
   /** Quick start from a URL (?offline=sandgate, &gamemode=core.ctf): the map's own mode (or the one asked for) and a default bot count; `extra` adds rules (Classes). */
   async playOffline(which: string = 'arena', mode: string | null = null, extra: Partial<MatchRules> = {}): Promise<void> {
     await this.init();
-    const json = which in OFFLINE_MAPS ? OFFLINE_MAPS[which as OfflineMap] : (EXTRA_MAPS[`../../../maps/${which}.json`] ?? (await importedMaps())[`../../../maps/imported/${which}.json`]);
+    const json = which in OFFLINE_MAPS ? OFFLINE_MAPS[which as OfflineMap] : (EXTRA_MAPS[`../../../maps/${which}.json`] ?? (await importedMaps([which]))[`../../../maps/imported/${which}.json`]);
     if (!json) return void this.showMenu(`No map called ${which}`);
     const arena = loadMap(json);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');

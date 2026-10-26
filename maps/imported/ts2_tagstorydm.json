@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 10,
+  "formatVersion": 19,
   "metadata": {
     "id": "ts2_tagstorydm",
     "name": "TAGSTORYDM",
@@ -11,7 +11,7 @@
     "parentId": null,
     "recommendedPlayers": {
       "min": 2,
-      "max": 9
+      "max": 11
     },
     "supportedModes": [
       "core.deathmatch"
@@ -31,6 +31,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -39,7 +42,10 @@
         "x": -2,
         "y": 2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_003",
@@ -50,6 +56,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -58,7 +67,10 @@
         "x": 0,
         "y": 2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_005",
@@ -69,6 +81,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -77,7 +92,10 @@
         "x": 4,
         "y": 1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_007",
@@ -88,6 +106,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -97,8 +118,8 @@
         "y": -1,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:S": "wall"
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -109,8 +130,10 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:E": "wall"
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -119,7 +142,10 @@
         "x": 1,
         "y": -1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_011",
@@ -130,6 +156,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -138,7 +167,10 @@
         "x": 0,
         "y": -4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_013",
@@ -149,6 +181,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -160,6 +195,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -171,6 +209,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -179,7 +220,10 @@
         "x": -3,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_017",
@@ -190,6 +234,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -198,7 +245,10 @@
         "x": -5,
         "y": -1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_019",
@@ -209,6 +259,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -217,7 +270,10 @@
         "x": -5,
         "y": 1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_021",
@@ -227,8 +283,10 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:E": "wall"
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -237,7 +295,10 @@
         "x": -5,
         "y": -4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_023",
@@ -247,8 +308,10 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "wall",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -257,7 +320,10 @@
         "x": -3,
         "y": -8,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_025",
@@ -267,8 +333,10 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "wall",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -277,7 +345,10 @@
         "x": 3,
         "y": -5,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_027",
@@ -288,6 +359,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -296,7 +370,10 @@
         "x": 3,
         "y": -7,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_029",
@@ -307,6 +384,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -315,7 +395,10 @@
         "x": 0,
         "y": 4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_031",
@@ -325,7 +408,11 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "open"
+          "0,0,0:N": "open",
+          "0,0,0:W": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -334,7 +421,10 @@
         "x": -2,
         "y": 5,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_033",
@@ -345,6 +435,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -353,7 +446,10 @@
         "x": -2,
         "y": 7,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_035",
@@ -364,6 +460,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -372,7 +471,10 @@
         "x": 1,
         "y": 7,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_037",
@@ -383,6 +485,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -391,7 +496,10 @@
         "x": -5,
         "y": 8,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_039",
@@ -402,6 +510,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -410,7 +521,10 @@
         "x": -6,
         "y": 5,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_041",
@@ -438,7 +552,7 @@
       },
       {
         "id": "tile_044",
-        "tile": "core.dead_end",
+        "tile": "core.corner",
         "x": -3,
         "y": 2,
         "z": 0,
@@ -457,11 +571,11 @@
       },
       {
         "id": "tile_046",
-        "tile": "core.corridor_clear",
+        "tile": "core.junction_t",
         "x": -3,
         "y": 4,
         "z": 0,
-        "rotation": 0
+        "rotation": 1
       },
       {
         "id": "tile_047",
@@ -500,6 +614,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -511,6 +628,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -522,6 +642,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -530,15 +653,18 @@
         "x": 3,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_054",
-        "tile": "core.corridor_clear",
+        "tile": "core.junction_t",
         "x": -2,
         "y": -5,
         "z": 0,
-        "rotation": 1
+        "rotation": 0
       },
       {
         "id": "tile_055",
@@ -550,6 +676,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -561,6 +690,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -572,6 +704,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -580,7 +715,10 @@
         "x": -3,
         "y": -5,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_059",
@@ -956,9 +1094,9 @@
     {
       "id": "spawn_101",
       "position": [
-        24,
+        -24,
         0,
-        -56
+        -32
       ],
       "kind": "spawn",
       "yaw": 1.5707963267948966,
@@ -967,38 +1105,16 @@
     {
       "id": "spawn_102",
       "position": [
-        -32,
+        24,
         0,
-        -48
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_103",
-      "position": [
-        0,
-        0,
-        -80
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_104",
-      "position": [
-        -8,
-        0,
-        -40
+        -64
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": null
     },
     {
-      "id": "spawn_105",
+      "id": "spawn_103",
       "position": [
         -16,
         0,
@@ -1009,11 +1125,33 @@
       "faction": null
     },
     {
+      "id": "spawn_104",
+      "position": [
+        -8,
+        0,
+        -48
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_105",
+      "position": [
+        -32,
+        0,
+        -48
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": null
+    },
+    {
       "id": "spawn_106",
       "position": [
-        8,
         0,
-        -64
+        0,
+        -80
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -1022,12 +1160,12 @@
     {
       "id": "spawn_107",
       "position": [
-        -8,
+        8,
         0,
         -56
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.5707963267948966,
       "faction": null
     },
     {
@@ -1038,22 +1176,44 @@
         -40
       ],
       "kind": "spawn",
-      "yaw": 1.5707963267948966,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
       "id": "spawn_109",
       "position": [
-        -8,
         0,
-        -48
+        0,
+        -64
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 3.141592653589793,
       "faction": null
     },
     {
-      "id": "pickup_110",
+      "id": "spawn_110",
+      "position": [
+        24,
+        0,
+        -56
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_111",
+      "position": [
+        -8,
+        0,
+        -40
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "pickup_112",
       "position": [
         24,
         0,
@@ -1064,136 +1224,387 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_111",
+      "id": "pickup_113",
       "position": [
-        24,
+        -40,
         0,
-        -72
+        -32
       ],
       "kind": "pickup",
       "item": "core.health_small",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_112",
+      "id": "pickup_114",
       "position": [
-        8,
+        -24,
         0,
-        -88
+        -56
       ],
       "kind": "pickup",
       "item": "core.weapon_auto_shotgun",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_113",
+      "id": "pickup_115",
       "position": [
-        32,
+        8,
         0,
-        -56
+        -88
       ],
       "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_114",
+      "id": "pickup_116",
       "position": [
-        -32,
+        -16,
         0,
-        -40
+        -32
       ],
       "kind": "pickup",
       "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_115",
+      "id": "pickup_117",
       "position": [
-        -24,
+        -40,
         0,
-        -48
+        -40
       ],
       "kind": "pickup",
       "item": "core.weapon_burst_rifle",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_116",
+      "id": "pickup_118",
       "position": [
         -24,
         0,
-        -40
+        -64
       ],
       "kind": "pickup",
       "item": "core.health_large",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_117",
+      "id": "pickup_119",
       "position": [
-        -8,
+        32,
         0,
-        -64
+        -56
       ],
       "kind": "pickup",
       "item": "core.weapon_marksman",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_118",
+      "id": "pickup_120",
       "position": [
-        -8,
+        -32,
         0,
-        -72
+        -40
       ],
       "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_119",
+      "id": "pickup_121",
       "position": [
+        -24,
         0,
-        0,
-        -88
+        -48
       ],
       "kind": "pickup",
       "item": "core.weapon_flak",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_120",
+      "id": "pickup_122",
       "position": [
-        16,
+        -24,
         0,
-        -88
+        -40
       ],
       "kind": "pickup",
       "item": "core.armor_large",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_121",
+      "id": "pickup_123",
       "position": [
-        24,
+        -8,
         0,
-        -80
+        -64
       ],
       "kind": "pickup",
       "item": "core.weapon_rockets",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_122",
+      "id": "pickup_124",
+      "position": [
+        -8,
+        0,
+        -72
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_125",
+      "position": [
+        0,
+        0,
+        -88
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_126",
+      "position": [
+        16,
+        0,
+        -88
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_127",
+      "position": [
+        24,
+        0,
+        -80
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_128",
+      "position": [
+        24,
+        0,
+        -72
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_129",
       "position": [
         16,
         0,
         -56
       ],
       "kind": "pickup",
-      "item": "core.health_small",
+      "item": "core.weapon_shotgun",
       "respawnSeconds": null
+    },
+    {
+      "id": "light_130",
+      "position": [
+        -16,
+        3.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_131",
+      "position": [
+        -40,
+        3.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_132",
+      "position": [
+        -24,
+        3.45,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_133",
+      "position": [
+        24,
+        3.45,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_134",
+      "position": [
+        -32,
+        3.45,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff4040",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_135",
+      "position": [
+        -8,
+        3.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_136",
+      "position": [
+        -8,
+        3.2,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_137",
+      "position": [
+        -8,
+        3.2,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_138",
+      "position": [
+        0,
+        3.2,
+        -64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_139",
+      "position": [
+        0,
+        3.2,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_140",
+      "position": [
+        24,
+        3.2,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_141",
+      "position": [
+        24,
+        3.2,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_142",
+      "position": [
+        16,
+        3.2,
+        -64
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_143",
+      "position": [
+        8,
+        3.2,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.89,
+      "range": 9,
+      "fixture": "none"
     }
   ],
   "factions": [],
@@ -1205,7 +1616,9 @@
   },
   "terrain": null,
   "bounds": null,
+  "track": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

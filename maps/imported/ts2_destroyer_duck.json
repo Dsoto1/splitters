@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 10,
+  "formatVersion": 19,
   "metadata": {
     "id": "ts2_destroyer_duck",
     "name": "Destroyer Duck",
@@ -32,6 +32,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -43,6 +46,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -54,6 +60,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -62,7 +71,10 @@
         "x": 0,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_005",
@@ -886,7 +898,7 @@
         32
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
@@ -908,7 +920,7 @@
         32
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.5707963267948966,
       "faction": null
     },
     {
@@ -930,7 +942,7 @@
         -48
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
@@ -952,7 +964,7 @@
         0
       ],
       "kind": "spawn",
-      "yaw": 1.5707963267948966,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
@@ -996,7 +1008,7 @@
         8
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.5707963267948966,
       "faction": null
     },
     {
@@ -1218,6 +1230,804 @@
       "kind": "pickup",
       "item": "core.health_small",
       "respawnSeconds": null
+    },
+    {
+      "id": "light_137",
+      "position": [
+        -24,
+        3.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#8181ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_138",
+      "position": [
+        16,
+        3.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#8181ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_139",
+      "position": [
+        0,
+        3.2,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4040ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_140",
+      "position": [
+        24,
+        3.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_141",
+      "position": [
+        32,
+        3.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_142",
+      "position": [
+        16,
+        3.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.99,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_143",
+      "position": [
+        24,
+        3.2,
+        -48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_144",
+      "position": [
+        8,
+        3.2,
+        -48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_145",
+      "position": [
+        0,
+        3.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_146",
+      "position": [
+        -8,
+        3.2,
+        -48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_147",
+      "position": [
+        -8,
+        3.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_148",
+      "position": [
+        8,
+        3.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_149",
+      "position": [
+        -16,
+        3.2,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4040ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_150",
+      "position": [
+        -40,
+        3.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_151",
+      "position": [
+        -40,
+        3.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_152",
+      "position": [
+        -24,
+        3.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_153",
+      "position": [
+        -32,
+        3.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.99,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_154",
+      "position": [
+        -16,
+        3.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.99,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_155",
+      "position": [
+        -24,
+        3.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_156",
+      "position": [
+        -32,
+        3.2,
+        -48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_157",
+      "position": [
+        -16,
+        3.2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#8181ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_158",
+      "position": [
+        -24,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4040ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_159",
+      "position": [
+        -16,
+        3.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_160",
+      "position": [
+        0,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4040ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_161",
+      "position": [
+        -32,
+        3.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_162",
+      "position": [
+        -40,
+        3.2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.99,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_163",
+      "position": [
+        -24,
+        3.2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.99,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_164",
+      "position": [
+        -40,
+        3.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_165",
+      "position": [
+        -32,
+        3.2,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_166",
+      "position": [
+        -16,
+        3.2,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_167",
+      "position": [
+        -24,
+        3.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_168",
+      "position": [
+        -8,
+        3.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_169",
+      "position": [
+        -8,
+        3.2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.99,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_170",
+      "position": [
+        16,
+        3.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_171",
+      "position": [
+        32,
+        3.2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_172",
+      "position": [
+        8,
+        3.2,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_173",
+      "position": [
+        24,
+        3.2,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.78,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_174",
+      "position": [
+        32,
+        3.2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.99,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_175",
+      "position": [
+        16,
+        3.2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 0.99,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_176",
+      "position": [
+        8,
+        3.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_177",
+      "position": [
+        16,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#4040ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_178",
+      "position": [
+        24,
+        3.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#0000ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_179",
+      "position": [
+        24,
+        3.2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#8181ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_180",
+      "position": [
+        8,
+        3.2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#8181ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_181",
+      "position": [
+        -32,
+        3.2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#8181ff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_182",
+      "position": [
+        -6.52,
+        0,
+        2.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_183",
+      "position": [
+        -10.65,
+        0,
+        -9.72
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_184",
+      "position": [
+        -10.65,
+        0,
+        -6.32
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_185",
+      "position": [
+        -3.72,
+        0,
+        2.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_186",
+      "position": [
+        2.65,
+        0,
+        -8.92
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_187",
+      "position": [
+        -6.32,
+        0,
+        -10.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_188",
+      "position": [
+        -4,
+        0,
+        -4
+      ],
+      "kind": "prop",
+      "model": "prop.checkout",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_189",
+      "position": [
+        -4.83,
+        0,
+        -0.82
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_190",
+      "position": [
+        -3.16,
+        0,
+        -0.82
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_191",
+      "position": [
+        2.66,
+        0,
+        2.7
+      ],
+      "kind": "prop",
+      "model": "prop.shopping_cart",
+      "yaw": -2.2408,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_192",
+      "position": [
+        2.65,
+        0,
+        -10.72
+      ],
+      "kind": "prop",
+      "model": "prop.shopping_cart",
+      "yaw": -0.966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_193",
+      "position": [
+        -10.68,
+        0,
+        2.67
+      ],
+      "kind": "prop",
+      "model": "prop.shopping_cart",
+      "yaw": 2.3995,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -1229,7 +2039,9 @@
   },
   "terrain": null,
   "bounds": null,
+  "track": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

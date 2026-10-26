@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 10,
+  "formatVersion": 19,
   "metadata": {
     "id": "tsfp_10tilsunrise",
     "name": "10tilSunrise",
@@ -344,22 +344,22 @@
       },
       {
         "id": "tile_041",
-        "tile": "core.dead_end",
+        "tile": "core.corridor_clear",
         "x": -2,
         "y": 0,
         "z": -1,
-        "rotation": 3,
+        "rotation": 1,
         "edges": {
-          "0,0,0:N": "open"
+          "0,0,0:N": "wide"
         }
       },
       {
         "id": "tile_042",
-        "tile": "core.dead_end",
+        "tile": "core.stairs",
         "x": -3,
         "y": 0,
         "z": -1,
-        "rotation": 1
+        "rotation": 2
       },
       {
         "id": "tile_043",
@@ -371,6 +371,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -383,6 +386,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -393,8 +399,11 @@
         "z": -1,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "wall",
+          "0,0,0:N": "wide",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -406,6 +415,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -417,6 +429,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -425,7 +440,10 @@
         "x": 2,
         "y": -1,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_049",
@@ -437,6 +455,9 @@
         "edges": {
           "0,0,0:E": "wide",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -445,7 +466,10 @@
         "x": -1,
         "y": 1,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_051",
@@ -457,6 +481,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -468,6 +495,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -479,6 +509,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -487,15 +520,18 @@
         "x": 2,
         "y": 2,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_055",
-        "tile": "core.dead_end",
+        "tile": "core.corridor_clear",
         "x": -4,
         "y": 0,
         "z": 0,
-        "rotation": 3
+        "rotation": 1
       },
       {
         "id": "tile_056",
@@ -506,6 +542,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -517,6 +556,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -525,7 +567,10 @@
         "x": 1,
         "y": -6,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_059",
@@ -536,6 +581,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -547,6 +595,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -555,7 +606,10 @@
         "x": -5,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_062",
@@ -566,6 +620,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -577,6 +634,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -585,7 +645,10 @@
         "x": -3,
         "y": -3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_065",
@@ -596,6 +659,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -607,6 +673,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -615,7 +684,10 @@
         "x": -6,
         "y": -1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_068",
@@ -626,6 +698,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -637,6 +712,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -645,7 +723,10 @@
         "x": -1,
         "y": 6,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       }
     ]
   },
@@ -691,7 +772,7 @@
         -40
       ],
       "kind": "spawn",
-      "yaw": 1.5707963267948966,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
@@ -719,9 +800,9 @@
     {
       "id": "spawn_077",
       "position": [
-        16,
-        0,
-        40
+        -16,
+        -4,
+        0
       ],
       "kind": "spawn",
       "yaw": 1.5707963267948966,
@@ -730,12 +811,12 @@
     {
       "id": "spawn_078",
       "position": [
-        -16,
+        16,
         0,
-        16
+        40
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
@@ -752,9 +833,9 @@
     {
       "id": "spawn_080",
       "position": [
-        -48,
+        -16,
         0,
-        0
+        24
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -763,31 +844,31 @@
     {
       "id": "spawn_081",
       "position": [
-        24,
+        -48,
         0,
-        -24
+        0
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.5707963267948966,
       "faction": null
     },
     {
       "id": "spawn_082",
       "position": [
-        -16,
+        24,
         0,
         -24
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 3.141592653589793,
       "faction": null
     },
     {
       "id": "pickup_083",
       "position": [
-        24,
-        0,
-        16
+        16,
+        -4,
+        8
       ],
       "kind": "pickup",
       "item": "core.weapon_smg",
@@ -796,9 +877,9 @@
     {
       "id": "pickup_084",
       "position": [
-        40,
         0,
-        0
+        -4,
+        -8
       ],
       "kind": "pickup",
       "item": "core.health_small",
@@ -807,9 +888,9 @@
     {
       "id": "pickup_085",
       "position": [
-        -16,
+        24,
         0,
-        -40
+        16
       ],
       "kind": "pickup",
       "item": "core.weapon_auto_shotgun",
@@ -818,9 +899,9 @@
     {
       "id": "pickup_086",
       "position": [
-        -16,
+        40,
         0,
-        40
+        0
       ],
       "kind": "pickup",
       "item": "core.ammo",
@@ -829,9 +910,9 @@
     {
       "id": "pickup_087",
       "position": [
-        -40,
-        0,
-        -16
+        16,
+        -4,
+        -8
       ],
       "kind": "pickup",
       "item": "core.armor_small",
@@ -840,9 +921,9 @@
     {
       "id": "pickup_088",
       "position": [
-        24,
         0,
-        -40
+        -4,
+        8
       ],
       "kind": "pickup",
       "item": "core.weapon_burst_rifle",
@@ -851,9 +932,9 @@
     {
       "id": "pickup_089",
       "position": [
-        24,
+        -16,
         0,
-        -16
+        -40
       ],
       "kind": "pickup",
       "item": "core.health_large",
@@ -862,9 +943,9 @@
     {
       "id": "pickup_090",
       "position": [
-        -40,
+        -16,
         0,
-        0
+        40
       ],
       "kind": "pickup",
       "item": "core.weapon_marksman",
@@ -873,8 +954,8 @@
     {
       "id": "pickup_091",
       "position": [
-        -40,
-        0,
+        8,
+        -4,
         16
       ],
       "kind": "pickup",
@@ -884,9 +965,9 @@
     {
       "id": "pickup_092",
       "position": [
-        24,
+        -40,
         0,
-        40
+        -16
       ],
       "kind": "pickup",
       "item": "core.weapon_flak",
@@ -895,9 +976,9 @@
     {
       "id": "pickup_093",
       "position": [
-        40,
+        24,
         0,
-        -8
+        -40
       ],
       "kind": "pickup",
       "item": "core.armor_large",
@@ -906,13 +987,675 @@
     {
       "id": "pickup_094",
       "position": [
+        24,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_095",
+      "position": [
+        -40,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_096",
+      "position": [
+        -40,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_097",
+      "position": [
+        24,
+        0,
+        40
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_098",
+      "position": [
+        40,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_099",
+      "position": [
         40,
         0,
         8
       ],
       "kind": "pickup",
-      "item": "core.weapon_rockets",
+      "item": "core.armor_small",
       "respawnSeconds": null
+    },
+    {
+      "id": "pickup_100",
+      "position": [
+        -8,
+        -4,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_101",
+      "position": [
+        -8,
+        -4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_102",
+      "position": [
+        0,
+        -4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "light_103",
+      "position": [
+        40,
+        3.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb900",
+      "intensity": 0.57,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_104",
+      "position": [
+        40,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb900",
+      "intensity": 0.57,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_105",
+      "position": [
+        -16,
+        -0.7999999999999998,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_106",
+      "position": [
+        -8,
+        -0.5499999999999998,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.56,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_107",
+      "position": [
+        8,
+        -0.5499999999999998,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_108",
+      "position": [
+        -8,
+        -0.5499999999999998,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.56,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_109",
+      "position": [
+        8,
+        -0.5499999999999998,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.56,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_110",
+      "position": [
+        -32,
+        3.2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_111",
+      "position": [
+        0,
+        3.45,
+        -48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_112",
+      "position": [
+        -32,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_113",
+      "position": [
+        -32,
+        3.45,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_114",
+      "position": [
+        -48,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_115",
+      "position": [
+        0,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "prop_116",
+      "position": [
+        -10.16,
+        -4,
+        -9.07
+      ],
+      "kind": "prop",
+      "model": "prop.machine",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_117",
+      "position": [
+        2.91,
+        -4,
+        -1.95
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_118",
+      "position": [
+        1.7,
+        -4,
+        2.65
+      ],
+      "kind": "prop",
+      "model": "prop.pipe_valve",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_119",
+      "position": [
+        -8.88,
+        -4,
+        -10.94
+      ],
+      "kind": "prop",
+      "model": "prop.workbench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_120",
+      "position": [
+        0.72,
+        -4,
+        -10.94
+      ],
+      "kind": "prop",
+      "model": "prop.workbench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_121",
+      "position": [
+        -4,
+        -4,
+        -4
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box_long",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_122",
+      "position": [
+        -4,
+        -4,
+        -6.02
+      ],
+      "kind": "prop",
+      "model": "prop.factory_box_long",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_123",
+      "position": [
+        3.29,
+        -4,
+        3.29
+      ],
+      "kind": "prop",
+      "model": "prop.sv_gas_can",
+      "yaw": -2.3521,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_124",
+      "position": [
+        -10.97,
+        -4,
+        -10.97
+      ],
+      "kind": "prop",
+      "model": "prop.cone",
+      "yaw": 0.7751,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_125",
+      "position": [
+        3.3,
+        -4,
+        -11.28
+      ],
+      "kind": "prop",
+      "model": "prop.sv_gas_can",
+      "yaw": -0.9072,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_126",
+      "position": [
+        -11.29,
+        -4,
+        3.29
+      ],
+      "kind": "prop",
+      "model": "prop.sv_gas_can",
+      "yaw": 2.3603,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_127",
+      "position": [
+        7.88,
+        -4,
+        5.35
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_128",
+      "position": [
+        12.88,
+        -4,
+        18.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_129",
+      "position": [
+        18.28,
+        -4,
+        18.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_130",
+      "position": [
+        18.65,
+        -4,
+        14.48
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_131",
+      "position": [
+        5.88,
+        -4,
+        18.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_132",
+      "position": [
+        18.65,
+        -4,
+        12.08
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_133",
+      "position": [
+        12.35,
+        -4,
+        12.28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_134",
+      "position": [
+        11.7,
+        -4,
+        12.28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_135",
+      "position": [
+        12.02,
+        -4,
+        11.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_136",
+      "position": [
+        9.56,
+        -4,
+        12.29
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_137",
+      "position": [
+        8.76,
+        -4,
+        12.29
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_138",
+      "position": [
+        9.16,
+        -4,
+        11.61
+      ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        12.35,
+        -4,
+        14.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        11.7,
+        -4,
+        14.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        12.02,
+        -4,
+        14.17
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
+        18.92,
+        -4,
+        5.08
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -0.6825,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        4.82,
+        -4,
+        4.82
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0.6761,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -924,7 +1667,9 @@
   },
   "terrain": null,
   "bounds": null,
+  "track": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

@@ -80,13 +80,30 @@ npx tsx src/tools/import-timesplitters.ts --decoded /tmp/tsdecode --report /tmp/
 #    --only tsfp_hallway_2  converts one map
 ```
 
-It writes `maps/imported/<game>_<slug>.json` (`ts2_…`, `tsfp_…`). Each map is
+It writes `maps/imported/<game>_<slug>.json` (`ts2_…`, `tsfp_…`) and a per-map
+summary (`content/import/timesplitters-import.json`, counts only). Each map is
 validated like any other (schema, rules, bot navmesh: every spawn and pickup
 reachable) before it is written. Profiles and corrupt saves are skipped with
-the reason. Imported maps appear in the Arcade under their own **Imported
-maps** heading (loaded in their own chunk after the menu is up) and start
-directly with `?offline=<id>`, e.g. `?offline=tsfp_hallway_2`. They are not
-MapMaker templates.
+the reason. Then:
+
+```sh
+npx tsx src/tools/polish-imported.ts   # hand polish of the maps that set the bar (weapons, spawns, dressing)
+npx tsx src/tools/audit-imported.ts    # docs/IMPORTED_MAPS_AUDIT.md: per-map checks and a quality score
+```
+
+The saves themselves are never committed (`*.gci` is in `.gitignore`); the
+importer needs the user's copies to run again. Without them, changes go into
+the maps through a script over `maps/imported/*.json` (as the polish does).
+
+**Visibility (Sprint 6b).** Imported maps stay out of the map list until each
+one is verified: 0 errors and 0 warnings from validation, bots reach every
+floor, spawn and pickup, and it looks right in play. The verified ones are
+listed in `packages/shared/src/map/imported.ts` (`VISIBLE_IMPORTED_MAPS`) and
+show in the Arcade under the **Imported** heading, with "Inspired by a
+TimeSplitters … MapMaker map". `?imported` lists all of them; any one starts
+with `?offline=<id>`, e.g. `?offline=tsfp_hallway_2`. Each map is its own
+small chunk, loaded only when asked for. They are not MapMaker templates, and
+online servers never carry them (they run only our own suite).
 
 Each map keeps the original **name** and **description**; the description ends
 with the credit "Imported from a TimeSplitters 2 MapMaker save." (or
@@ -120,15 +137,24 @@ should refine it: put the confirmed name in `original.name`, raise
 | Doorway style | Our choice: a doorway between pieces, a wide doorway between two rooms, no wall inside a room or inside a block of linked open cells (2 × 2 or bigger: courtyards, big halls). |
 | Stairs | 1 × 1 and 1 × 2 pieces whose ends meet two levels (Future Perfect: links to the level above; TS2: an exit at one level and only the level above or below at the other end) become our Stairs or Long Ramp, turned to climb the right way. 200 in the current set. Other vertical pieces (lifts, ladders, tall shafts) are unknown, so some upper floors are cut off. |
 | Tiles with no links (Future Perfect) | Skipped when stacked right over another tile (most likely the upper storey of a tall space, or scenery): about 2,000 of 8,900 tiles, almost all of types 17, 16 and 6. Elsewhere they become closed rooms. |
-| Items | Kinds unknown. Pickups go where the original had items (in the main connected area), handed out from a balanced default set (weapons, health, armour, ammo); spawns are spread out by farthest-point sampling. All placeholders. |
+| Items | Kinds unknown. Pickups go where the original had items (in the main connected area), handed out from a balanced default set (weapons, health, armour, ammo); spawns are spread out by farthest-point sampling and face down the longest open run. All placeholders, except on the hand-polished maps. |
 | Theme | A Tile Trigger theme picked from keywords in the name, then the description ("Fire Temple" → Volcano Lair, "Ice Temple" → Arctic, "Romulus" → Marble Temple…). TS2 maps without a keyword use the guessed tileset field; others a stable pick from the name. |
-| Lights, logic, AI, objectives, game settings | Not converted. |
+| Joining up | MapMaker only saves maps whose pieces all connect, so an area our reading cuts off is our mistake. A repair pass joins areas that touch with the smallest change, Kruskal-style: a doorway where two areas meet on a level (where the save hints at a link first), else stairs: turning a cell into a step up onto a higher area beside it (terraces, stepped pyramids), or a stairwell / flight in an empty column beside two areas stacked one over the other. 686 doorways and 654 stairs in the current set; areas that touch nothing (separate wings joined by pieces we can't decode) stay cut off and get no spawns or pickups. |
+| Roofs | Original rooms and halls get a roof (the originals are indoor complexes), except Future Perfect's open blocks (type 17: courtyards). Corridor pieces take no roof option. |
+| Lights | From the save: every tile's light colour (RGBA; white by default, black = lights off) becomes one light at the tile's middle cell, dimmer for darker colours: a ceiling panel under a roof, light only in the open. |
+| Backdrop | Always ground under the map. Space Station's own backdrop floats in space with no ground, which showed sky under every gap and below the map (the "sky below" bug); imported maps on that theme keep the starfield but stand on stone. |
+| Dressing | The originals' props are not decoded: each original room of four cells or more gets sparse dressing for what the theme suggests (barracks and armouries in bunkers, labs and server rooms in labs…), keeping doorways, spawns and pickups clear; a map whose dressing would block a way through goes without. |
+| Logic, AI, objectives, game settings | Not converted. |
 
 ### Current result (36 TS2 + 80 Future Perfect saves)
 
-All 116 valid saves convert, load, validate with no errors and no navmesh
+All 116 valid saves convert, load and validate with no errors and no
 warnings; the 9 corrupt Future Perfect saves and the 2 profiles are skipped.
+Bots reach 89% of all floor cells (53 maps: every cell; before the repair pass
+many maps had most of their floor cut off, which is why they looked empty).
+Five maps are verified and visible; two of them (`ts2_clover`, `tsfp_bunker`)
+are polished by hand to set the bar. Per-map numbers, the score and the
+orientation checks: [IMPORTED_MAPS_AUDIT.md](IMPORTED_MAPS_AUDIT.md).
 Stand-ins (pieces whose meaning is a guess) are mostly Future Perfect types
-30, 27, 42, 4, 5, 3, 28, 44 and TS2 types 4, 28, 23. The converter's log and
-`--report` list every stand-in, skipped tile, unreachable area and warning per
-map.
+30, 27, 42, 4, 5, 3, 28, 44 and TS2 types 4, 28, 23.
+

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 10,
+  "formatVersion": 19,
   "metadata": {
     "id": "tsfp_sugar_rush",
     "name": "Sugar Rush",
@@ -32,6 +32,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -45,6 +48,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -56,6 +62,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -69,6 +78,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -81,6 +93,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -93,6 +108,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -105,6 +123,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -116,6 +137,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -127,6 +151,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -139,6 +166,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -151,6 +181,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -162,6 +195,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -174,6 +210,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -186,6 +225,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -197,6 +239,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -209,6 +254,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -221,6 +269,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -229,7 +280,10 @@
         "x": -2,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_019",
@@ -241,6 +295,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -253,6 +310,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -264,6 +324,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -276,6 +339,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -288,6 +354,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -298,8 +367,10 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:E": "wall"
+          "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -311,6 +382,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -323,6 +397,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -334,6 +411,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -346,6 +426,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -358,6 +441,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -369,6 +455,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -381,6 +470,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -393,6 +485,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -404,6 +499,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -415,6 +513,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -427,6 +528,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -438,6 +542,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -450,6 +557,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -462,6 +572,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -473,6 +586,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -484,8 +600,10 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
-          "0,0,0:E": "open",
-          "0,0,0:W": "wall"
+          "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -498,6 +616,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -509,6 +630,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -521,6 +645,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -533,6 +660,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -541,7 +671,10 @@
         "x": 5,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_046",
@@ -553,6 +686,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -565,6 +701,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -576,6 +715,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -589,6 +731,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -601,6 +746,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -612,6 +760,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -624,6 +775,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -635,6 +789,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -643,7 +800,10 @@
         "x": 4,
         "y": 6,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_055",
@@ -655,6 +815,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -667,6 +830,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -678,6 +844,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -690,6 +859,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -702,6 +874,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -714,6 +889,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -725,6 +903,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -736,6 +917,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -747,6 +931,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -759,6 +946,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -770,8 +960,10 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
-          "0,0,0:E": "open",
-          "0,0,0:S": "wall"
+          "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -783,6 +975,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -795,6 +990,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -807,6 +1005,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -818,6 +1019,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -829,6 +1033,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -840,6 +1047,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -848,7 +1058,10 @@
         "x": 1,
         "y": 7,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_073",
@@ -859,6 +1072,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -870,6 +1086,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -878,7 +1097,10 @@
         "x": 0,
         "y": -4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_076",
@@ -890,19 +1112,19 @@
       },
       {
         "id": "tile_077",
-        "tile": "core.room",
+        "tile": "core.dead_end",
         "x": 0,
         "y": 2,
         "z": 0,
-        "rotation": 0
+        "rotation": 3
       },
       {
         "id": "tile_078",
-        "tile": "core.dead_end",
+        "tile": "core.corner",
         "x": 0,
         "y": 3,
         "z": 0,
-        "rotation": 1
+        "rotation": 0
       },
       {
         "id": "tile_079",
@@ -914,19 +1136,19 @@
       },
       {
         "id": "tile_080",
-        "tile": "core.room",
+        "tile": "core.dead_end",
         "x": 0,
         "y": 4,
         "z": 0,
-        "rotation": 0
+        "rotation": 2
       },
       {
         "id": "tile_081",
-        "tile": "core.dead_end",
+        "tile": "core.corner",
         "x": 1,
         "y": 2,
         "z": 0,
-        "rotation": 2
+        "rotation": 1
       },
       {
         "id": "tile_082",
@@ -938,11 +1160,11 @@
       },
       {
         "id": "tile_083",
-        "tile": "core.room",
+        "tile": "core.dead_end",
         "x": 2,
         "y": 2,
         "z": 0,
-        "rotation": 0
+        "rotation": 3
       },
       {
         "id": "tile_084",
@@ -962,7 +1184,7 @@
       },
       {
         "id": "tile_086",
-        "tile": "core.dead_end",
+        "tile": "core.corner",
         "x": -1,
         "y": 2,
         "z": 0,
@@ -978,11 +1200,11 @@
       },
       {
         "id": "tile_088",
-        "tile": "core.room",
+        "tile": "core.dead_end",
         "x": -2,
         "y": 2,
         "z": 0,
-        "rotation": 0
+        "rotation": 3
       },
       {
         "id": "tile_089",
@@ -1025,7 +1247,7 @@
         40
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
@@ -1058,7 +1280,7 @@
         24
       ],
       "kind": "spawn",
-      "yaw": 3.141592653589793,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
@@ -1069,7 +1291,7 @@
         56
       ],
       "kind": "spawn",
-      "yaw": 1.5707963267948966,
+      "yaw": 3.141592653589793,
       "faction": null
     },
     {
@@ -1102,7 +1324,7 @@
         8
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.5707963267948966,
       "faction": null
     },
     {
@@ -1124,7 +1346,7 @@
         -8
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
@@ -1253,7 +1475,7 @@
       "position": [
         0,
         0,
-        -24
+        16
       ],
       "kind": "pickup",
       "item": "core.weapon_rockets",
@@ -1262,9 +1484,9 @@
     {
       "id": "pickup_114",
       "position": [
-        -32,
         0,
-        -16
+        0,
+        32
       ],
       "kind": "pickup",
       "item": "core.health_small",
@@ -1273,9 +1495,9 @@
     {
       "id": "pickup_115",
       "position": [
-        -32,
         0,
-        8
+        0,
+        -24
       ],
       "kind": "pickup",
       "item": "core.ammo_explosive",
@@ -1284,9 +1506,9 @@
     {
       "id": "pickup_116",
       "position": [
-        -24,
+        -32,
         0,
-        8
+        -16
       ],
       "kind": "pickup",
       "item": "core.weapon_lmg",
@@ -1295,9 +1517,9 @@
     {
       "id": "pickup_117",
       "position": [
-        -40,
+        -32,
         0,
-        16
+        8
       ],
       "kind": "pickup",
       "item": "core.weapon_railgun",
@@ -1306,9 +1528,9 @@
     {
       "id": "pickup_118",
       "position": [
-        16,
+        -24,
         0,
-        -16
+        8
       ],
       "kind": "pickup",
       "item": "core.armor_small",
@@ -1317,9 +1539,9 @@
     {
       "id": "pickup_119",
       "position": [
-        24,
+        -40,
         0,
-        8
+        16
       ],
       "kind": "pickup",
       "item": "core.weapon_shotgun",
@@ -1328,9 +1550,9 @@
     {
       "id": "pickup_120",
       "position": [
-        32,
+        16,
         0,
-        8
+        -16
       ],
       "kind": "pickup",
       "item": "core.ammo",
@@ -1341,11 +1563,1971 @@
       "position": [
         24,
         0,
-        32
+        8
       ],
       "kind": "pickup",
       "item": "core.health_small",
       "respawnSeconds": null
+    },
+    {
+      "id": "light_122",
+      "position": [
+        0,
+        3.45,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_123",
+      "position": [
+        -24,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_124",
+      "position": [
+        -32,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_125",
+      "position": [
+        24,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_126",
+      "position": [
+        32,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_127",
+      "position": [
+        24,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_128",
+      "position": [
+        -24,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_129",
+      "position": [
+        0,
+        3.45,
+        48
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_130",
+      "position": [
+        0,
+        3.45,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_131",
+      "position": [
+        0,
+        3.2,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_132",
+      "position": [
+        0,
+        3.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#81ffff",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_133",
+      "position": [
+        8,
+        3.2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff8100",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_134",
+      "position": [
+        0,
+        3.2,
+        32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff8100",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_135",
+      "position": [
+        8,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff8100",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_136",
+      "position": [
+        16,
+        3.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff8100",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_137",
+      "position": [
+        -8,
+        3.2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff8100",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_138",
+      "position": [
+        -16,
+        3.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ff8100",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_139",
+      "position": [
+        -7.05,
+        0,
+        -5.7
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_140",
+      "position": [
+        -3.65,
+        0,
+        -5.7
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_141",
+      "position": [
+        5.8,
+        0,
+        -26.3
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_142",
+      "position": [
+        1.75,
+        0,
+        -5.7
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_143",
+      "position": [
+        -9.35,
+        0,
+        -26.3
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_144",
+      "position": [
+        -10.3,
+        0,
+        -23.55
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_145",
+      "position": [
+        5.15,
+        0,
+        -5.7
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_146",
+      "position": [
+        8.35,
+        0,
+        -5.7
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_147",
+      "position": [
+        0.7,
+        0,
+        -16.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_148",
+      "position": [
+        0,
+        0,
+        -16.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_149",
+      "position": [
+        -0.7,
+        0,
+        -16.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_150",
+      "position": [
+        0.7,
+        0,
+        -15.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_151",
+      "position": [
+        0,
+        0,
+        -15.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_152",
+      "position": [
+        -0.7,
+        0,
+        -15.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_153",
+      "position": [
+        0,
+        0,
+        -18.59
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_154",
+      "position": [
+        0.7,
+        0,
+        -13.71
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_155",
+      "position": [
+        0,
+        0,
+        -13.71
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_156",
+      "position": [
+        -0.7,
+        0,
+        -13.71
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_157",
+      "position": [
+        0.7,
+        0,
+        -13.07
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_158",
+      "position": [
+        0,
+        0,
+        -13.07
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_159",
+      "position": [
+        -0.7,
+        0,
+        -13.07
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_160",
+      "position": [
+        4.14,
+        0,
+        -16.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_161",
+      "position": [
+        3.44,
+        0,
+        -16.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_162",
+      "position": [
+        2.74,
+        0,
+        -16.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_163",
+      "position": [
+        4.14,
+        0,
+        -15.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_164",
+      "position": [
+        3.44,
+        0,
+        -15.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_165",
+      "position": [
+        2.74,
+        0,
+        -15.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_166",
+      "position": [
+        10.74,
+        0,
+        -26.74
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate",
+      "yaw": -0.7497,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_167",
+      "position": [
+        -34.3,
+        0,
+        -3.72
+      ],
+      "kind": "prop",
+      "model": "prop.machine_window",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_168",
+      "position": [
+        -34.93,
+        0,
+        -15.48
+      ],
+      "kind": "prop",
+      "model": "prop.screen_panel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_169",
+      "position": [
+        -22.2,
+        0,
+        -18.76
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_170",
+      "position": [
+        -28.52,
+        0,
+        -18.3
+      ],
+      "kind": "prop",
+      "model": "prop.machine_window",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_171",
+      "position": [
+        -30.52,
+        0,
+        -18.3
+      ],
+      "kind": "prop",
+      "model": "prop.machine_window",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_172",
+      "position": [
+        -23.89,
+        0,
+        -7.89
+      ],
+      "kind": "prop",
+      "model": "prop.space_table",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_173",
+      "position": [
+        -22.89,
+        0,
+        -8.5
+      ],
+      "kind": "prop",
+      "model": "prop.space_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_174",
+      "position": [
+        -24.89,
+        0,
+        -8.5
+      ],
+      "kind": "prop",
+      "model": "prop.space_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_175",
+      "position": [
+        -22.89,
+        0,
+        -7.27
+      ],
+      "kind": "prop",
+      "model": "prop.space_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_176",
+      "position": [
+        -24.89,
+        0,
+        -7.27
+      ],
+      "kind": "prop",
+      "model": "prop.space_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_177",
+      "position": [
+        -21.16,
+        0,
+        -7.89
+      ],
+      "kind": "prop",
+      "model": "prop.holo_table",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_178",
+      "position": [
+        -35.08,
+        0,
+        0.3
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_179",
+      "position": [
+        -12.92,
+        0,
+        3.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": -2.4267,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_180",
+      "position": [
+        -35.08,
+        0,
+        -19.09
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 0.8864,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_181",
+      "position": [
+        -42.46,
+        0,
+        16.71
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_182",
+      "position": [
+        -43.21,
+        0,
+        16.71
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_office",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_183",
+      "position": [
+        -42.46,
+        0.8,
+        17.1
+      ],
+      "kind": "prop",
+      "model": "prop.hm_desk_lamp",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_184",
+      "position": [
+        -43.08,
+        0,
+        12.66
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_185",
+      "position": [
+        -20.92,
+        0,
+        8.96
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_186",
+      "position": [
+        -20.92,
+        0,
+        12.96
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_187",
+      "position": [
+        -31.89,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.rug_round",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_188",
+      "position": [
+        -31.89,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.hm_side_table",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_189",
+      "position": [
+        -31.89,
+        0,
+        14.7
+      ],
+      "kind": "prop",
+      "model": "prop.hm_armchair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_190",
+      "position": [
+        -31.89,
+        0,
+        17.3
+      ],
+      "kind": "prop",
+      "model": "prop.hm_armchair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_191",
+      "position": [
+        -43,
+        0,
+        5
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": 0.6727,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_192",
+      "position": [
+        -43.01,
+        0,
+        27.01
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": 2.5528,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_193",
+      "position": [
+        35.18,
+        0,
+        -5.88
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_194",
+      "position": [
+        20.02,
+        0,
+        -19.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_195",
+      "position": [
+        35.18,
+        0,
+        -17.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_196",
+      "position": [
+        20.82,
+        0,
+        -19.18
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_197",
+      "position": [
+        35.18,
+        0,
+        -11.28
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_198",
+      "position": [
+        35.18,
+        0,
+        0.72
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_199",
+      "position": [
+        16.2,
+        0,
+        2.76
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_200",
+      "position": [
+        35.18,
+        0,
+        -18.68
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_201",
+      "position": [
+        24.59,
+        0,
+        -8.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_202",
+      "position": [
+        23.89,
+        0,
+        -8.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_203",
+      "position": [
+        23.19,
+        0,
+        -8.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_204",
+      "position": [
+        24.59,
+        0,
+        -7.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_205",
+      "position": [
+        23.89,
+        0,
+        -7.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_206",
+      "position": [
+        23.19,
+        0,
+        -7.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_207",
+      "position": [
+        23.89,
+        0,
+        -10.58
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_208",
+      "position": [
+        23.89,
+        0,
+        -5.19
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_209",
+      "position": [
+        27.28,
+        0,
+        -7.89
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_210",
+      "position": [
+        12.92,
+        0,
+        3.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": 2.4065,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_211",
+      "position": [
+        42.76,
+        0,
+        25.8
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_212",
+      "position": [
+        38.9,
+        0,
+        5.24
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_213",
+      "position": [
+        42.76,
+        0,
+        8.6
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_214",
+      "position": [
+        21.24,
+        0,
+        20.55
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_215",
+      "position": [
+        21.24,
+        0,
+        24.95
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_216",
+      "position": [
+        31.89,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.holo_table",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_217",
+      "position": [
+        31.89,
+        0,
+        18.73
+      ],
+      "kind": "prop",
+      "model": "prop.holo_table",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_218",
+      "position": [
+        43.08,
+        0,
+        22.5
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_219",
+      "position": [
+        43.09,
+        0,
+        4.91
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": -0.9574,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_220",
+      "position": [
+        43.18,
+        0,
+        27.18
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": -2.4346,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_221",
+      "position": [
+        34.46,
+        0,
+        50.61
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_222",
+      "position": [
+        35.21,
+        0,
+        50.61
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_office",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_223",
+      "position": [
+        34.46,
+        0.8,
+        50.23
+      ],
+      "kind": "prop",
+      "model": "prop.hm_desk_lamp",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_224",
+      "position": [
+        28.56,
+        0,
+        51.08
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_225",
+      "position": [
+        12.92,
+        0,
+        33.26
+      ],
+      "kind": "prop",
+      "model": "prop.sofa",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_226",
+      "position": [
+        14.86,
+        0,
+        29.3
+      ],
+      "kind": "prop",
+      "model": "prop.sofa_long",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_227",
+      "position": [
+        23.89,
+        0,
+        39.89
+      ],
+      "kind": "prop",
+      "model": "prop.rug_round",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_228",
+      "position": [
+        23.89,
+        0,
+        39.89
+      ],
+      "kind": "prop",
+      "model": "prop.hm_side_table",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_229",
+      "position": [
+        25.18,
+        0,
+        39.89
+      ],
+      "kind": "prop",
+      "model": "prop.hm_armchair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_230",
+      "position": [
+        22.59,
+        0,
+        39.89
+      ],
+      "kind": "prop",
+      "model": "prop.hm_armchair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_231",
+      "position": [
+        35.18,
+        0,
+        51.18
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": -2.4588,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_232",
+      "position": [
+        12.81,
+        0,
+        28.82
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 0.6076,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_233",
+      "position": [
+        -15.95,
+        0,
+        50.3
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_234",
+      "position": [
+        -34.3,
+        0,
+        35.75
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_235",
+      "position": [
+        -29.55,
+        0,
+        50.3
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_236",
+      "position": [
+        -34.3,
+        0,
+        41.15
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_237",
+      "position": [
+        -34.3,
+        0,
+        46.55
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_238",
+      "position": [
+        -13.7,
+        0,
+        33.45
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_239",
+      "position": [
+        -21.35,
+        0,
+        50.3
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_240",
+      "position": [
+        -25.95,
+        0,
+        50.3
+      ],
+      "kind": "prop",
+      "model": "prop.computer_bank",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_241",
+      "position": [
+        -23.89,
+        0,
+        39.89
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_242",
+      "position": [
+        -23.89,
+        0,
+        42.58
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_243",
+      "position": [
+        -23.89,
+        0,
+        37.19
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_244",
+      "position": [
+        -19.74,
+        0,
+        39.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_245",
+      "position": [
+        -20.44,
+        0,
+        39.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_246",
+      "position": [
+        -21.14,
+        0,
+        39.57
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_247",
+      "position": [
+        -19.74,
+        0,
+        40.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_248",
+      "position": [
+        -20.44,
+        0,
+        40.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_249",
+      "position": [
+        -21.14,
+        0,
+        40.21
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_250",
+      "position": [
+        -13.25,
+        0,
+        29.25
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate",
+      "yaw": -0.6222,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_251",
+      "position": [
+        -34.74,
+        0,
+        50.74
+      ],
+      "kind": "prop",
+      "model": "prop.sf_crate",
+      "yaw": 2.3172,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_252",
+      "position": [
+        5.82,
+        0,
+        36.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_253",
+      "position": [
+        -8.4,
+        0,
+        58.76
+      ],
+      "kind": "prop",
+      "model": "prop.computer_wide",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_254",
+      "position": [
+        11.18,
+        0,
+        56.82
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_255",
+      "position": [
+        -3.18,
+        0,
+        37.07
+      ],
+      "kind": "prop",
+      "model": "prop.screen_panel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_256",
+      "position": [
+        11.18,
+        0,
+        58.22
+      ],
+      "kind": "prop",
+      "model": "prop.sf_computer",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_257",
+      "position": [
+        0,
+        0,
+        47.89
+      ],
+      "kind": "prop",
+      "model": "prop.display_table",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_258",
+      "position": [
+        0,
+        0,
+        45.43
+      ],
+      "kind": "prop",
+      "model": "prop.display_table",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_259",
+      "position": [
+        -5,
+        0,
+        36.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_260",
+      "position": [
+        -11.18,
+        0,
+        59.19
+      ],
+      "kind": "prop",
+      "model": "prop.potted_plant",
+      "yaw": 2.1605,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_261",
+      "position": [
+        11.08,
+        0,
+        59.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_barrel",
+      "yaw": -2.3904,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -1357,7 +3539,14 @@
   },
   "terrain": null,
   "bounds": null,
-  "backdrop": null,
+  "track": null,
+  "backdrop": {
+    "sky": "space",
+    "scenery": "none",
+    "ground": "stone",
+    "haze": 0
+  },
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

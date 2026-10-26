@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 10,
+  "formatVersion": 19,
   "metadata": {
     "id": "tsfp_solar_shrine",
     "name": "Solar Shrine",
@@ -25,7 +25,7 @@
       {
         "id": "tile_001",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": 1,
         "z": 0,
         "rotation": 0,
@@ -34,12 +34,15 @@
           "0,0,0:E": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_002",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": 1,
         "z": 0,
         "rotation": 0,
@@ -47,12 +50,15 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_003",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": 1,
         "z": 0,
         "rotation": 0,
@@ -60,12 +66,15 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_004",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": 2,
         "z": 0,
         "rotation": 0,
@@ -73,109 +82,127 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_005",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": 2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_006",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": 2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_007",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": 3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_008",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": 3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_009",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": 3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_010",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": -2,
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_011",
-        "tile": "core.room",
-        "x": -2,
+        "tile": "core.stairs",
+        "x": -1,
         "y": -1,
         "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:E": "open",
-          "0,0,0:W": "open"
-        }
+        "rotation": 0
       },
       {
         "id": "tile_012",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": 0,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_013",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -2,
         "z": 0,
         "rotation": 0,
@@ -183,70 +210,88 @@
           "0,0,0:N": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_014",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_015",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": 0,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_016",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": -2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_017",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": -1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_018",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 0,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_019",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": -2,
         "z": 0,
         "rotation": 0,
@@ -255,12 +300,15 @@
           "0,0,0:E": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_020",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": -2,
         "z": 0,
         "rotation": 0,
@@ -268,24 +316,30 @@
           "0,0,0:N": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_021",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": -2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_022",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": -3,
         "z": 0,
         "rotation": 0,
@@ -293,70 +347,88 @@
           "0,0,0:E": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_023",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": -3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_024",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": -3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_025",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": -4,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_026",
+        "tile": "core.room",
+        "x": 1,
+        "y": -4,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_027",
         "tile": "core.room",
         "x": 0,
         "y": -4,
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:W": "open"
-        }
-      },
-      {
-        "id": "tile_027",
-        "tile": "core.room",
-        "x": -1,
-        "y": -4,
-        "z": 0,
-        "rotation": 0,
-        "edges": {
           "0,0,0:W": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_028",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": 1,
         "z": 0,
         "rotation": 0,
@@ -364,12 +436,15 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_029",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": 0,
         "z": 0,
         "rotation": 0,
@@ -377,24 +452,30 @@
           "0,0,0:E": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_030",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": -1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_031",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 1,
         "z": 0,
         "rotation": 0,
@@ -402,70 +483,88 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_032",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 0,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_033",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": -1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_034",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": 1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_035",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": 0,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_036",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_037",
         "tile": "core.corner",
-        "x": 2,
+        "x": 3,
         "y": -2,
         "z": 1,
         "rotation": 1
@@ -473,31 +572,37 @@
       {
         "id": "tile_038",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": -2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_039",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": -3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_040",
         "tile": "core.corridor_clear",
-        "x": 2,
+        "x": 3,
         "y": -3,
         "z": 1,
         "rotation": 0
@@ -505,7 +610,7 @@
       {
         "id": "tile_041",
         "tile": "core.corner",
-        "x": -2,
+        "x": -1,
         "y": -3,
         "z": 1,
         "rotation": 2
@@ -513,7 +618,7 @@
       {
         "id": "tile_042",
         "tile": "core.corridor_clear",
-        "x": -3,
+        "x": -2,
         "y": -3,
         "z": 1,
         "rotation": 1
@@ -521,7 +626,7 @@
       {
         "id": "tile_043",
         "tile": "core.corner",
-        "x": -3,
+        "x": -2,
         "y": 1,
         "z": 1,
         "rotation": 3
@@ -529,7 +634,7 @@
       {
         "id": "tile_044",
         "tile": "core.corridor_clear",
-        "x": -3,
+        "x": -2,
         "y": 2,
         "z": 1,
         "rotation": 0
@@ -537,7 +642,7 @@
       {
         "id": "tile_045",
         "tile": "core.corner",
-        "x": 1,
+        "x": 2,
         "y": 2,
         "z": 1,
         "rotation": 0
@@ -545,7 +650,7 @@
       {
         "id": "tile_046",
         "tile": "core.corridor_clear",
-        "x": 2,
+        "x": 3,
         "y": 2,
         "z": 1,
         "rotation": 1
@@ -553,7 +658,7 @@
       {
         "id": "tile_047",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 2,
         "z": 0,
         "rotation": 0,
@@ -561,23 +666,29 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_048",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": 2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_049",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": 2,
         "z": 0,
         "rotation": 0,
@@ -585,1168 +696,1498 @@
           "0,0,0:N": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_050",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": 1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_051",
-        "tile": "core.room",
-        "x": -3,
-        "y": -3,
-        "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:S": "open",
-          "0,0,0:W": "open"
-        }
-      },
-      {
-        "id": "tile_052",
         "tile": "core.room",
         "x": -2,
         "y": -3,
         "z": 0,
         "rotation": 0,
         "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_052",
+        "tile": "core.room",
+        "x": -1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_053",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": -1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_054",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": -1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_055",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": 0,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_056",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_057",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": -1,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_058",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": -1,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_059",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": 0,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_060",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": 0,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_061",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": -4,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_062",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": -4,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_063",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": -3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_064",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": -3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_065",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": -4,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_066",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": -4,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_067",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": -3,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_068",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": -3,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_069",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -5,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_070",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -4,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "wall",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_071",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": -5,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_072",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": -4,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_073",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -5,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_074",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -4,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_075",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": -5,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_076",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": -4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_077",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 4,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_078",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 3,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_079",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": 4,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_080",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": 3,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_081",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 4,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_082",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_083",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": 4,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_084",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_085",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 2,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_086",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": 2,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_087",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 1,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_088",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": 1,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_089",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_090",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": 2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_091",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 1,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_092",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": 1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_093",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -4,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_094",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -5,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_095",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": -4,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_096",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": -5,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_097",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -4,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_098",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -5,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_099",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": -4,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_100",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": -5,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_101",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_102",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": -3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_103",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_104",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_105",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -3,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_106",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": -3,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_107",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -2,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_108",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": -2,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_109",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 3,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_110",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 4,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_111",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": 3,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_112",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": 4,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_113",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": -2,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_114",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -2,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_115",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": -1,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_116",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -1,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_117",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": -4,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_118",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": -3,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_119",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": -4,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_120",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": -3,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_121",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": 0,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_122",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 0,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_123",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -1,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_124",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": -1,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_125",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": 3,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_126",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": 2,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_127",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": 3,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_128",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": 2,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_129",
         "tile": "core.room",
-        "x": -1,
+        "x": 0,
         "y": -1,
         "z": -1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_130",
         "tile": "core.room",
-        "x": 0,
+        "x": 1,
         "y": -1,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_131",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": 3,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_132",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": 3,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_133",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": 2,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_134",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": 2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_135",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": 3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_136",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": 3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_137",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": 2,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_138",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": 2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_139",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_140",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 4,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_141",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": 3,
         "z": 0,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_142",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": 4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_143",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 3,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_144",
         "tile": "core.room",
-        "x": 2,
+        "x": 3,
         "y": 4,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_145",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": 3,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_146",
         "tile": "core.room",
-        "x": 1,
+        "x": 2,
         "y": 4,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_147",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 2,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_148",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": 2,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_149",
         "tile": "core.room",
-        "x": -4,
+        "x": -3,
         "y": 1,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_150",
         "tile": "core.room",
-        "x": -5,
+        "x": -4,
         "y": 1,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_151",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -4,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_152",
         "tile": "core.room",
-        "x": -3,
+        "x": -2,
         "y": -5,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_153",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": -4,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_154",
         "tile": "core.room",
-        "x": -2,
+        "x": -1,
         "y": -5,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_155",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -3,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_156",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": -3,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_157",
         "tile": "core.room",
-        "x": 3,
+        "x": 4,
         "y": -2,
         "z": 1,
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_158",
         "tile": "core.room",
-        "x": 4,
+        "x": 5,
         "y": -2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_159",
         "tile": "core.dead_end",
-        "x": -1,
+        "x": 0,
         "y": 1,
         "z": -1,
         "rotation": 0
@@ -1754,7 +2195,7 @@
       {
         "id": "tile_160",
         "tile": "core.corridor_clear",
-        "x": -2,
+        "x": -1,
         "y": -1,
         "z": -1,
         "rotation": 1
@@ -1762,7 +2203,7 @@
       {
         "id": "tile_161",
         "tile": "core.corridor_clear",
-        "x": 0,
+        "x": 1,
         "y": -2,
         "z": -1,
         "rotation": 0
@@ -1770,41 +2211,113 @@
       {
         "id": "tile_162",
         "tile": "core.dead_end",
-        "x": 1,
+        "x": 2,
         "y": 0,
         "z": -1,
         "rotation": 1
+      },
+      {
+        "id": "tile_163",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_164",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": 1,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_165",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": 2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_166",
+        "tile": "core.stairwell",
+        "x": -3,
+        "y": -5,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_167",
+        "tile": "core.stairwell",
+        "x": 1,
+        "y": 4,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_168",
+        "tile": "core.stairwell",
+        "x": 2,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_169",
+        "tile": "core.stairwell",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_170",
+        "tile": "core.stairwell",
+        "x": 5,
+        "y": -4,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_171",
+        "tile": "core.stairwell",
+        "x": -1,
+        "y": 4,
+        "z": -1,
+        "rotation": 3
       }
     ]
   },
   "entities": [
     {
-      "id": "spawn_163",
+      "id": "spawn_172",
       "position": [
-        -8,
+        0,
         0,
         8
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 3.141592653589793,
       "faction": null
     },
     {
-      "id": "spawn_164",
+      "id": "spawn_173",
       "position": [
-        24,
-        0,
+        32,
+        4,
         -40
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
-      "id": "spawn_165",
+      "id": "spawn_174",
       "position": [
-        -40,
-        0,
+        -32,
+        4,
         -32
       ],
       "kind": "spawn",
@@ -1812,10 +2325,10 @@
       "faction": null
     },
     {
-      "id": "spawn_166",
+      "id": "spawn_175",
       "position": [
-        32,
-        0,
+        40,
+        4,
         24
       ],
       "kind": "spawn",
@@ -1823,131 +2336,131 @@
       "faction": null
     },
     {
-      "id": "spawn_167",
+      "id": "spawn_176",
       "position": [
-        -32,
         0,
-        32
-      ],
-      "kind": "spawn",
-      "yaw": 1.5707963267948966,
-      "faction": null
-    },
-    {
-      "id": "spawn_168",
-      "position": [
-        -8,
-        0,
-        -24
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_169",
-      "position": [
-        24,
-        0,
-        -8
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_170",
-      "position": [
-        -32,
-        0,
-        -8
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_171",
-      "position": [
-        8,
-        0,
-        32
-      ],
-      "kind": "spawn",
-      "yaw": 1.5707963267948966,
-      "faction": null
-    },
-    {
-      "id": "spawn_172",
-      "position": [
-        -16,
-        0,
-        24
-      ],
-      "kind": "spawn",
-      "yaw": 1.5707963267948966,
-      "faction": null
-    },
-    {
-      "id": "spawn_173",
-      "position": [
-        8,
-        0,
+        -4,
         -32
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
-      "id": "spawn_174",
+      "id": "spawn_177",
       "position": [
-        8,
+        40,
+        -4,
+        -16
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_178",
+      "position": [
+        -24,
+        4,
+        32
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_179",
+      "position": [
+        -32,
+        -4,
+        16
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_180",
+      "position": [
+        24,
+        -4,
+        32
+      ],
+      "kind": "spawn",
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_181",
+      "position": [
+        -24,
+        0,
+        -8
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_182",
+      "position": [
+        24,
         0,
         0
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
-      "id": "pickup_175",
+      "id": "spawn_183",
       "position": [
         16,
-        0,
-        16
+        4,
+        32
+      ],
+      "kind": "spawn",
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "pickup_184",
+      "position": [
+        -8,
+        4,
+        -24
       ],
       "kind": "pickup",
       "item": "core.weapon_smg",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_176",
+      "id": "pickup_185",
       "position": [
-        8,
+        24,
         0,
-        -16
+        -24
       ],
       "kind": "pickup",
       "item": "core.health_small",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_177",
+      "id": "pickup_186",
       "position": [
-        -24,
-        0,
-        -24
+        -8,
+        -4,
+        24
       ],
       "kind": "pickup",
       "item": "core.weapon_auto_shotgun",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_178",
+      "id": "pickup_187",
       "position": [
-        -8,
-        0,
+        8,
+        -4,
         -8
       ],
       "kind": "pickup",
@@ -1955,76 +2468,76 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_179",
+      "id": "pickup_188",
       "position": [
         -16,
-        0,
-        -16
+        4,
+        8
       ],
       "kind": "pickup",
       "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_180",
+      "id": "pickup_189",
       "position": [
-        16,
-        0,
-        -24
+        -16,
+        -4,
+        -16
       ],
       "kind": "pickup",
       "item": "core.weapon_burst_rifle",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_181",
+      "id": "pickup_190",
       "position": [
-        -24,
+        -8,
         0,
-        16
+        -16
       ],
       "kind": "pickup",
       "item": "core.health_large",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_182",
+      "id": "pickup_191",
       "position": [
-        -16,
-        0,
-        8
+        24,
+        4,
+        -16
       ],
       "kind": "pickup",
       "item": "core.weapon_marksman",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_183",
+      "id": "pickup_192",
       "position": [
-        8,
-        0,
-        8
+        24,
+        4,
+        16
       ],
       "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_184",
+      "id": "pickup_193",
       "position": [
+        -16,
         0,
-        0,
-        -8
+        16
       ],
       "kind": "pickup",
       "item": "core.weapon_flak",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_185",
+      "id": "pickup_194",
       "position": [
-        0,
-        0,
+        32,
+        -4,
         0
       ],
       "kind": "pickup",
@@ -2032,15 +2545,7775 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_186",
+      "id": "pickup_195",
       "position": [
-        -8,
+        24,
         0,
-        0
+        16
       ],
       "kind": "pickup",
       "item": "core.weapon_rockets",
       "respawnSeconds": null
+    },
+    {
+      "id": "pickup_196",
+      "position": [
+        8,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_197",
+      "position": [
+        16,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_198",
+      "position": [
+        16,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_199",
+      "position": [
+        -16,
+        0,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_200",
+      "position": [
+        8,
+        -4,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_201",
+      "position": [
+        -8,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_202",
+      "position": [
+        24,
+        4,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_203",
+      "position": [
+        -16,
+        4,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "light_204",
+      "position": [
+        0,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_205",
+      "position": [
+        -16,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_206",
+      "position": [
+        8,
+        3.45,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_207",
+      "position": [
+        24,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_208",
+      "position": [
+        24,
+        7.2,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_209",
+      "position": [
+        24,
+        3.45,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_210",
+      "position": [
+        -8,
+        7.2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_211",
+      "position": [
+        -16,
+        7.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_212",
+      "position": [
+        16,
+        7.2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_213",
+      "position": [
+        24,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_214",
+      "position": [
+        -16,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_215",
+      "position": [
+        -16,
+        3.45,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_216",
+      "position": [
+        0,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_217",
+      "position": [
+        8,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_218",
+      "position": [
+        0,
+        7.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_219",
+      "position": [
+        8,
+        7.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_220",
+      "position": [
+        -32,
+        3.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_221",
+      "position": [
+        -32,
+        7.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_222",
+      "position": [
+        24,
+        7.45,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_223",
+      "position": [
+        24,
+        3.45,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_224",
+      "position": [
+        -24,
+        7.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_225",
+      "position": [
+        -24,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_226",
+      "position": [
+        -32,
+        -0.5499999999999998,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff81",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_227",
+      "position": [
+        -32,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_228",
+      "position": [
+        -16,
+        3.45,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_229",
+      "position": [
+        -16,
+        -0.5499999999999998,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff81",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_230",
+      "position": [
+        32,
+        3.45,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_231",
+      "position": [
+        32,
+        -0.5499999999999998,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff81",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_232",
+      "position": [
+        16,
+        -0.5499999999999998,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff81",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_233",
+      "position": [
+        -24,
+        -0.5499999999999998,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff81",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_234",
+      "position": [
+        0,
+        -0.5499999999999998,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff81",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_235",
+      "position": [
+        24,
+        -0.5499999999999998,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff81",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_236",
+      "position": [
+        -8,
+        -0.5499999999999998,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff81",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_237",
+      "position": [
+        0,
+        -0.5499999999999998,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff40",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_238",
+      "position": [
+        32,
+        7.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_239",
+      "position": [
+        16,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_240",
+      "position": [
+        -32,
+        7.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_241",
+      "position": [
+        -16,
+        7.45,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_242",
+      "position": [
+        32,
+        7.45,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_243",
+      "position": [
+        0,
+        -0.5499999999999998,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff40",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_244",
+      "position": [
+        8,
+        -0.5499999999999998,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff40",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_245",
+      "position": [
+        16,
+        -0.5499999999999998,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffff40",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "prop_246",
+      "position": [
+        2.57,
+        0,
+        26.79
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_247",
+      "position": [
+        3.17,
+        1,
+        26.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_248",
+      "position": [
+        1.97,
+        1,
+        26.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_249",
+      "position": [
+        -0.08,
+        0,
+        24.94
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_250",
+      "position": [
+        1.49,
+        0,
+        24.94
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_251",
+      "position": [
+        -1.65,
+        0,
+        24.94
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_252",
+      "position": [
+        3.06,
+        0,
+        24.94
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_253",
+      "position": [
+        -3.21,
+        0,
+        24.94
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_254",
+      "position": [
+        4.62,
+        0,
+        24.94
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_255",
+      "position": [
+        -4.78,
+        0,
+        24.94
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_256",
+      "position": [
+        -0.08,
+        0,
+        23.71
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_257",
+      "position": [
+        4.06,
+        0,
+        23.22
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_258",
+      "position": [
+        -6.35,
+        0,
+        24.94
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_259",
+      "position": [
+        10.97,
+        0,
+        21.65
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_260",
+      "position": [
+        11.1,
+        0,
+        24.7
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_stag",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_261",
+      "position": [
+        11.04,
+        0,
+        27.04
+      ],
+      "kind": "prop",
+      "model": "prop.pillar",
+      "yaw": -2.2111,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_262",
+      "position": [
+        6.88,
+        1.2,
+        27.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_263",
+      "position": [
+        5.68,
+        1.2,
+        27.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_264",
+      "position": [
+        2.48,
+        1.2,
+        27.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_265",
+      "position": [
+        5.88,
+        1.2,
+        27.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_266",
+      "position": [
+        -23.35,
+        0,
+        2.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_267",
+      "position": [
+        -7.62,
+        0,
+        -13.35
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_268",
+      "position": [
+        -26.91,
+        0,
+        -14.25
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_269",
+      "position": [
+        -26.91,
+        0,
+        -17.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_270",
+      "position": [
+        -26.91,
+        1.1,
+        -17.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_271",
+      "position": [
+        -26.91,
+        0,
+        -1.45
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_272",
+      "position": [
+        -26.91,
+        0,
+        -11.65
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_273",
+      "position": [
+        -26.91,
+        0,
+        -6.45
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_274",
+      "position": [
+        -9.65,
+        0,
+        -13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_275",
+      "position": [
+        -16.87,
+        0,
+        -8.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_276",
+      "position": [
+        -16.87,
+        1.1,
+        -8.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_277",
+      "position": [
+        -16.39,
+        0,
+        -4.94
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_278",
+      "position": [
+        -17.19,
+        0,
+        -4.94
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_279",
+      "position": [
+        -16.79,
+        0,
+        -5.63
+      ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_280",
+      "position": [
+        -19.17,
+        0,
+        -8.09
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_281",
+      "position": [
+        -19.17,
+        1.1,
+        -8.09
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_282",
+      "position": [
+        -26.92,
+        0,
+        2.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 2.5376,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_283",
+      "position": [
+        8.22,
+        0,
+        -34.79
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_284",
+      "position": [
+        7.62,
+        1,
+        -34.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_285",
+      "position": [
+        8.82,
+        1,
+        -34.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_286",
+      "position": [
+        8.08,
+        0,
+        -33.17
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_287",
+      "position": [
+        3.94,
+        0,
+        -33.17
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_288",
+      "position": [
+        11.21,
+        0,
+        -33.17
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_289",
+      "position": [
+        8.08,
+        0,
+        -31.45
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_290",
+      "position": [
+        -0.19,
+        0,
+        -33.17
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_291",
+      "position": [
+        3.94,
+        0,
+        -31.45
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_292",
+      "position": [
+        12.21,
+        0,
+        -31.45
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_293",
+      "position": [
+        8.08,
+        0,
+        -29.72
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_294",
+      "position": [
+        -0.19,
+        0,
+        -31.45
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_295",
+      "position": [
+        12.21,
+        0,
+        -29.72
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_296",
+      "position": [
+        16.15,
+        0,
+        -34.97
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_297",
+      "position": [
+        14.15,
+        0,
+        -34.97
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_298",
+      "position": [
+        -3,
+        0,
+        -35
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0.6582,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_299",
+      "position": [
+        7.73,
+        1.2,
+        -35.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_300",
+      "position": [
+        10.33,
+        1.2,
+        -35.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_301",
+      "position": [
+        -3.4,
+        1.2,
+        -29.47
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_302",
+      "position": [
+        -3.4,
+        1.2,
+        -32.87
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_303",
+      "position": [
+        34.65,
+        0,
+        5.48
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_304",
+      "position": [
+        34.64,
+        0,
+        -5.91
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_305",
+      "position": [
+        34.91,
+        0,
+        -1.3
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_306",
+      "position": [
+        34.65,
+        0,
+        3.08
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_307",
+      "position": [
+        30.98,
+        0,
+        -10.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_308",
+      "position": [
+        34.65,
+        0,
+        7.68
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_309",
+      "position": [
+        32.98,
+        0,
+        -10.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_310",
+      "position": [
+        34.65,
+        0,
+        -7.72
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_311",
+      "position": [
+        23.7,
+        0,
+        2.38
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_312",
+      "position": [
+        23.7,
+        1.1,
+        2.38
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_313",
+      "position": [
+        23.7,
+        0,
+        -2.22
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_314",
+      "position": [
+        23.7,
+        1.1,
+        -2.22
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_315",
+      "position": [
+        20.3,
+        0,
+        0.08
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_316",
+      "position": [
+        20.3,
+        1.1,
+        0.08
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_317",
+      "position": [
+        35.03,
+        0,
+        -11.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.6421,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_318",
+      "position": [
+        -27.78,
+        0,
+        -34.79
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_319",
+      "position": [
+        -28.38,
+        1,
+        -34.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_320",
+      "position": [
+        -27.18,
+        1,
+        -34.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_321",
+      "position": [
+        -27.69,
+        0,
+        -33.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_322",
+      "position": [
+        -26.12,
+        0,
+        -33.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_323",
+      "position": [
+        -29.25,
+        0,
+        -33.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_324",
+      "position": [
+        -31.82,
+        0,
+        -33.42
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_325",
+      "position": [
+        -24.55,
+        0,
+        -33.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_326",
+      "position": [
+        -27.69,
+        0,
+        -32.18
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_327",
+      "position": [
+        -22.99,
+        0,
+        -33.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_328",
+      "position": [
+        -26.12,
+        0,
+        -32.18
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_329",
+      "position": [
+        -31.45,
+        0,
+        -21.03
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_330",
+      "position": [
+        -35.04,
+        0,
+        -35.04
+      ],
+      "kind": "prop",
+      "model": "prop.pillar",
+      "yaw": 0.6476,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_331",
+      "position": [
+        -35.04,
+        0,
+        -20.96
+      ],
+      "kind": "prop",
+      "model": "prop.pillar",
+      "yaw": 2.507,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_332",
+      "position": [
+        -29.47,
+        1.2,
+        -35.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_333",
+      "position": [
+        -25.07,
+        1.2,
+        -35.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_334",
+      "position": [
+        -35.4,
+        1.2,
+        -27.32
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_335",
+      "position": [
+        -33.75,
+        4,
+        -21.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_336",
+      "position": [
+        -21.36,
+        4,
+        -30.31
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_337",
+      "position": [
+        -34.51,
+        4,
+        -34.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_338",
+      "position": [
+        -29.11,
+        4,
+        -34.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_339",
+      "position": [
+        -26.51,
+        4,
+        -34.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_340",
+      "position": [
+        -22.5,
+        4,
+        -34.91
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_341",
+      "position": [
+        -26.15,
+        4,
+        -21.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_342",
+      "position": [
+        -26.15,
+        5.1,
+        -21.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_343",
+      "position": [
+        -27.65,
+        4,
+        -27.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_344",
+      "position": [
+        -28.3,
+        4,
+        -27.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_345",
+      "position": [
+        -27.98,
+        4,
+        -28.28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_346",
+      "position": [
+        -25.16,
+        4,
+        -27.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_347",
+      "position": [
+        -25.81,
+        4,
+        -27.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_348",
+      "position": [
+        -25.48,
+        4,
+        -28.28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_349",
+      "position": [
+        -30.15,
+        4,
+        -27.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_350",
+      "position": [
+        -30.8,
+        4,
+        -27.72
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_351",
+      "position": [
+        -30.47,
+        4,
+        -28.28
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_352",
+      "position": [
+        -21.07,
+        4,
+        -21.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -2.1563,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_353",
+      "position": [
+        -21.08,
+        4,
+        -34.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -0.8096,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_354",
+      "position": [
+        34.79,
+        4,
+        -36.18
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_355",
+      "position": [
+        34.79,
+        5,
+        -36.78
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_356",
+      "position": [
+        34.79,
+        5,
+        -35.58
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_357",
+      "position": [
+        33.17,
+        4,
+        -36
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_358",
+      "position": [
+        33.17,
+        4,
+        -31.87
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_359",
+      "position": [
+        31.44,
+        4,
+        -36
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_360",
+      "position": [
+        31.44,
+        4,
+        -31.87
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_361",
+      "position": [
+        29.72,
+        4,
+        -36
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_362",
+      "position": [
+        29.72,
+        4,
+        -31.87
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_363",
+      "position": [
+        28,
+        4,
+        -36
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_364",
+      "position": [
+        30.7,
+        4,
+        -29.03
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_365",
+      "position": [
+        20.91,
+        4,
+        -28.91
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 2.5284,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_366",
+      "position": [
+        35,
+        4,
+        -29
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": -2.3075,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_367",
+      "position": [
+        35,
+        4,
+        -43
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": -0.6439,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_368",
+      "position": [
+        21,
+        4,
+        -43
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": 0.8239,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_369",
+      "position": [
+        20.6,
+        5.2,
+        -42.67
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_370",
+      "position": [
+        35.4,
+        5.2,
+        -33.47
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_371",
+      "position": [
+        27.88,
+        5.2,
+        -28.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_372",
+      "position": [
+        34.65,
+        0,
+        -30.92
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_373",
+      "position": [
+        34.65,
+        0,
+        -37.32
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_374",
+      "position": [
+        34.65,
+        0,
+        -33.12
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_375",
+      "position": [
+        22.88,
+        0,
+        -42.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_376",
+      "position": [
+        28.68,
+        0,
+        -42.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_377",
+      "position": [
+        34.65,
+        0,
+        -40.32
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_378",
+      "position": [
+        28.22,
+        0,
+        -35.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_379",
+      "position": [
+        27.57,
+        0,
+        -35.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_380",
+      "position": [
+        27.89,
+        0,
+        -35.96
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_381",
+      "position": [
+        30.71,
+        0,
+        -35.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_382",
+      "position": [
+        30.06,
+        0,
+        -35.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_383",
+      "position": [
+        30.39,
+        0,
+        -35.96
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_384",
+      "position": [
+        28.22,
+        0,
+        -37.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_385",
+      "position": [
+        27.57,
+        0,
+        -37.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -2.4416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_386",
+      "position": [
+        27.89,
+        0,
+        -38.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.7416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_387",
+      "position": [
+        21.3,
+        0,
+        -42.7
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": 0.8004,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_388",
+      "position": [
+        35.03,
+        0,
+        -43.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.9228,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_389",
+      "position": [
+        -19.98,
+        4,
+        34.79
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_390",
+      "position": [
+        -19.38,
+        5,
+        34.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_391",
+      "position": [
+        -20.58,
+        5,
+        34.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_392",
+      "position": [
+        -20,
+        4,
+        32.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_393",
+      "position": [
+        -21.57,
+        4,
+        32.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_394",
+      "position": [
+        -18.43,
+        4,
+        32.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_395",
+      "position": [
+        -20,
+        4,
+        31.21
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_396",
+      "position": [
+        -16.87,
+        4,
+        32.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_397",
+      "position": [
+        -20,
+        4,
+        29.49
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_398",
+      "position": [
+        -15.3,
+        4,
+        32.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_399",
+      "position": [
+        -26.27,
+        4,
+        32.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_400",
+      "position": [
+        -18.17,
+        4,
+        20.82
+      ],
+      "kind": "prop",
+      "model": "prop.urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_401",
+      "position": [
+        -12.91,
+        4,
+        35.08
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -2.4998,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_402",
+      "position": [
+        -27.09,
+        4,
+        35.09
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 2.542,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_403",
+      "position": [
+        -27.08,
+        4,
+        20.92
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0.7484,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_404",
+      "position": [
+        -12.92,
+        4,
+        20.91
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -0.9485,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_405",
+      "position": [
+        -12.6,
+        5.2,
+        24.13
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_406",
+      "position": [
+        -27.4,
+        5.2,
+        28.13
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_407",
+      "position": [
+        -20.27,
+        5.2,
+        35.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_408",
+      "position": [
+        -22.52,
+        0,
+        34.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_409",
+      "position": [
+        -16.32,
+        0,
+        34.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_410",
+      "position": [
+        -13.35,
+        0,
+        32.98
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_411",
+      "position": [
+        -19.92,
+        0,
+        34.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_412",
+      "position": [
+        -26.65,
+        0,
+        23.78
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_413",
+      "position": [
+        -26.65,
+        0,
+        28.18
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_414",
+      "position": [
+        -26.65,
+        0,
+        32.78
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_415",
+      "position": [
+        -19.87,
+        0,
+        27.69
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_416",
+      "position": [
+        -19.87,
+        1.1,
+        27.69
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_417",
+      "position": [
+        -19.87,
+        0,
+        29.99
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_418",
+      "position": [
+        -19.87,
+        1.1,
+        29.99
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_419",
+      "position": [
+        -12.97,
+        0,
+        35.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.3485,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_420",
+      "position": [
+        -27.19,
+        0,
+        35.19
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 2.1775,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_421",
+      "position": [
+        -21.21,
+        -4,
+        12.02
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_422",
+      "position": [
+        -21.21,
+        -3,
+        11.42
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_423",
+      "position": [
+        -21.21,
+        -3,
+        12.62
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_424",
+      "position": [
+        -22.83,
+        -4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_425",
+      "position": [
+        -22.83,
+        -4,
+        16.13
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_426",
+      "position": [
+        -22.83,
+        -4,
+        7.87
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_427",
+      "position": [
+        -24.56,
+        -4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_428",
+      "position": [
+        -24.56,
+        -4,
+        7.87
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_429",
+      "position": [
+        -24.56,
+        -4,
+        16.13
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_430",
+      "position": [
+        -26.53,
+        -4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_431",
+      "position": [
+        -35.1,
+        -4,
+        17.55
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_stag",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_432",
+      "position": [
+        -20.92,
+        -4,
+        19.08
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -2.3883,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_433",
+      "position": [
+        -20.95,
+        -4,
+        4.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": -0.7056,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_434",
+      "position": [
+        -35.08,
+        -4,
+        4.92
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0.8779,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_435",
+      "position": [
+        -35.08,
+        -4,
+        19.08
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 2.3295,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_436",
+      "position": [
+        -20.6,
+        -2.8,
+        17.53
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_437",
+      "position": [
+        -22.27,
+        -2.8,
+        4.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_438",
+      "position": [
+        -21.87,
+        -2.8,
+        19.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_439",
+      "position": [
+        -29.35,
+        0,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_440",
+      "position": [
+        -29.35,
+        1.1,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_441",
+      "position": [
+        -34.91,
+        0,
+        11.8
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_442",
+      "position": [
+        -34.91,
+        1.1,
+        11.8
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_443",
+      "position": [
+        -30.15,
+        0,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_444",
+      "position": [
+        -30.15,
+        1.1,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_445",
+      "position": [
+        -26.95,
+        0,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_446",
+      "position": [
+        -26.95,
+        1.1,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_447",
+      "position": [
+        -32.95,
+        0,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_448",
+      "position": [
+        -32.95,
+        1.1,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_449",
+      "position": [
+        -23.55,
+        0,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_450",
+      "position": [
+        -23.55,
+        1.1,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_451",
+      "position": [
+        -33.51,
+        0,
+        18.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_452",
+      "position": [
+        -27.69,
+        0,
+        12.13
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_453",
+      "position": [
+        -27.69,
+        1.1,
+        12.13
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_454",
+      "position": [
+        -27.69,
+        0,
+        9.83
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_455",
+      "position": [
+        -27.69,
+        1.1,
+        9.83
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_456",
+      "position": [
+        -27.69,
+        0,
+        14.43
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_457",
+      "position": [
+        -27.69,
+        1.1,
+        14.43
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_458",
+      "position": [
+        -35.03,
+        0,
+        19.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 2.2477,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_459",
+      "position": [
+        -35.03,
+        0,
+        4.97
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.8073,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_460",
+      "position": [
+        -11.98,
+        0,
+        -42.79
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_461",
+      "position": [
+        -12.58,
+        1,
+        -42.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_462",
+      "position": [
+        -11.38,
+        1,
+        -42.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_463",
+      "position": [
+        -12.13,
+        0,
+        -40.85
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_464",
+      "position": [
+        -12.13,
+        0,
+        -39.13
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_465",
+      "position": [
+        -12.13,
+        0,
+        -37.41
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_466",
+      "position": [
+        -12.13,
+        0,
+        -35.69
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_467",
+      "position": [
+        -9,
+        0,
+        -40.85
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_468",
+      "position": [
+        -12.13,
+        0,
+        -33.96
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_469",
+      "position": [
+        -12.13,
+        0,
+        -32.24
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_470",
+      "position": [
+        -15.27,
+        0,
+        -40.85
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_471",
+      "position": [
+        -6.6,
+        0,
+        -43.1
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_stag",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_472",
+      "position": [
+        -4.97,
+        0,
+        -43.03
+      ],
+      "kind": "prop",
+      "model": "prop.pillar",
+      "yaw": -0.8007,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_473",
+      "position": [
+        -19.05,
+        0,
+        -43.05
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0.7398,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_474",
+      "position": [
+        -8.27,
+        1.2,
+        -43.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_475",
+      "position": [
+        -4.6,
+        1.2,
+        -34.87
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_476",
+      "position": [
+        -15.47,
+        1.2,
+        -43.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_477",
+      "position": [
+        -13.55,
+        -4,
+        -42.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_478",
+      "position": [
+        -18.91,
+        -4,
+        -36.6
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_479",
+      "position": [
+        -16.15,
+        -4,
+        -29.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_480",
+      "position": [
+        -18.91,
+        -4,
+        -33.8
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_481",
+      "position": [
+        -11.9,
+        -4,
+        -29.09
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_482",
+      "position": [
+        -9.15,
+        -4,
+        -29.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_483",
+      "position": [
+        -9.15,
+        -2.9,
+        -29.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_484",
+      "position": [
+        -12.22,
+        -4,
+        -36.22
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_485",
+      "position": [
+        -11.57,
+        -4,
+        -36.22
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_486",
+      "position": [
+        -11.9,
+        -4,
+        -35.66
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_487",
+      "position": [
+        -14.17,
+        -4,
+        -35.94
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_488",
+      "position": [
+        -14.17,
+        -2.9,
+        -35.94
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_489",
+      "position": [
+        -9.57,
+        -4,
+        -35.94
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_490",
+      "position": [
+        -9.57,
+        -2.9,
+        -35.94
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_491",
+      "position": [
+        -19.19,
+        -4,
+        -28.81
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 2.1639,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_492",
+      "position": [
+        -19.18,
+        -4,
+        -43.18
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0.9118,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_493",
+      "position": [
+        -5.28,
+        -4,
+        -42.72
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": -0.5934,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_494",
+      "position": [
+        35.92,
+        0,
+        -13.21
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_495",
+      "position": [
+        36.52,
+        1,
+        -13.21
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_496",
+      "position": [
+        35.32,
+        1,
+        -13.21
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_497",
+      "position": [
+        35.69,
+        0,
+        -14.97
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_498",
+      "position": [
+        39.82,
+        0,
+        -14.97
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_499",
+      "position": [
+        35.69,
+        0,
+        -16.69
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_500",
+      "position": [
+        39.82,
+        0,
+        -16.69
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_501",
+      "position": [
+        35.69,
+        0,
+        -18.41
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_502",
+      "position": [
+        39.82,
+        0,
+        -18.41
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_503",
+      "position": [
+        35.69,
+        0,
+        -20.13
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_504",
+      "position": [
+        39.82,
+        0,
+        -13.24
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_505",
+      "position": [
+        31.1,
+        0,
+        -12.9
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_stag",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_506",
+      "position": [
+        43.05,
+        0,
+        -12.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": -2.2793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_507",
+      "position": [
+        43.05,
+        0,
+        -27.05
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": -0.9212,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_508",
+      "position": [
+        43.4,
+        1.2,
+        -20.27
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_509",
+      "position": [
+        43.4,
+        1.2,
+        -17.67
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_510",
+      "position": [
+        43.4,
+        1.2,
+        -26.07
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_511",
+      "position": [
+        38.35,
+        -4,
+        -13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_512",
+      "position": [
+        38.35,
+        -2.9,
+        -13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_513",
+      "position": [
+        29.09,
+        -4,
+        -17.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_514",
+      "position": [
+        29.09,
+        -2.9,
+        -17.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_515",
+      "position": [
+        42.65,
+        -4,
+        -24.92
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_516",
+      "position": [
+        42.91,
+        -4,
+        -20.15
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_517",
+      "position": [
+        42.91,
+        -2.9,
+        -20.15
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_518",
+      "position": [
+        33.45,
+        -4,
+        -26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_519",
+      "position": [
+        33.45,
+        -2.9,
+        -26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_520",
+      "position": [
+        29.09,
+        -4,
+        -26.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_521",
+      "position": [
+        29.09,
+        -2.9,
+        -26.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_522",
+      "position": [
+        35.66,
+        -4,
+        -19.53
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_523",
+      "position": [
+        35.66,
+        -4,
+        -20.18
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 2.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_524",
+      "position": [
+        36.21,
+        -4,
+        -19.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 2.9708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_525",
+      "position": [
+        35.66,
+        -4,
+        -17.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_526",
+      "position": [
+        35.66,
+        -4,
+        -17.68
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 2.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_527",
+      "position": [
+        36.21,
+        -4,
+        -17.36
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 2.9708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_528",
+      "position": [
+        42.92,
+        -4,
+        -13.08
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -2.2689,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_529",
+      "position": [
+        42.92,
+        -4,
+        -26.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -0.8379,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_530",
+      "position": [
+        26.79,
+        -4,
+        28.02
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_531",
+      "position": [
+        26.79,
+        -3,
+        27.42
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_532",
+      "position": [
+        26.79,
+        -3,
+        28.62
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_533",
+      "position": [
+        25.17,
+        -4,
+        28
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_534",
+      "position": [
+        25.17,
+        -4,
+        23.87
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_535",
+      "position": [
+        23.44,
+        -4,
+        28
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_536",
+      "position": [
+        23.44,
+        -4,
+        23.87
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_537",
+      "position": [
+        21.72,
+        -4,
+        28
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_538",
+      "position": [
+        21.72,
+        -4,
+        23.87
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_539",
+      "position": [
+        20,
+        -4,
+        28
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_540",
+      "position": [
+        20.23,
+        -4,
+        24.87
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_541",
+      "position": [
+        27.1,
+        -4,
+        21.2
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_stag",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_542",
+      "position": [
+        12.95,
+        -4,
+        20.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0.7535,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_543",
+      "position": [
+        12.95,
+        -4,
+        35.05
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 2.366,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_544",
+      "position": [
+        27.05,
+        -4,
+        35.05
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": -2.2308,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_545",
+      "position": [
+        13.53,
+        -2.8,
+        35.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_546",
+      "position": [
+        27.4,
+        -2.8,
+        24.93
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_547",
+      "position": [
+        -26.91,
+        -4,
+        -7.75
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_548",
+      "position": [
+        -26.91,
+        -2.9,
+        -7.75
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_549",
+      "position": [
+        -17.35,
+        -4,
+        -18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_550",
+      "position": [
+        -26.65,
+        -4,
+        -12.92
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_551",
+      "position": [
+        -20.95,
+        -4,
+        -18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_552",
+      "position": [
+        -20.95,
+        -2.9,
+        -18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_553",
+      "position": [
+        -25.95,
+        -4,
+        -5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_554",
+      "position": [
+        -26.91,
+        -4,
+        -17.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_555",
+      "position": [
+        -26.91,
+        -2.9,
+        -17.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_556",
+      "position": [
+        -19.72,
+        -4,
+        -12.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_557",
+      "position": [
+        -19.72,
+        -4,
+        -11.7
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -0.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_558",
+      "position": [
+        -20.28,
+        -4,
+        -12.02
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.1708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_559",
+      "position": [
+        -22.17,
+        -4,
+        -12.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_560",
+      "position": [
+        -22.17,
+        -4,
+        -11.7
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -0.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_561",
+      "position": [
+        -22.72,
+        -4,
+        -12.02
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.1708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_562",
+      "position": [
+        -19.72,
+        -4,
+        -9.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_563",
+      "position": [
+        -19.72,
+        -4,
+        -9.2
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -0.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_564",
+      "position": [
+        -20.28,
+        -4,
+        -9.53
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.1708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_565",
+      "position": [
+        -27.03,
+        -4,
+        -19.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.8889,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_566",
+      "position": [
+        -13.29,
+        -4,
+        -5.29
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": -2.2148,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_567",
+      "position": [
+        -13.29,
+        -4,
+        -18.71
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": -0.6736,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_568",
+      "position": [
+        10.79,
+        -4,
+        -27.98
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_569",
+      "position": [
+        10.79,
+        -3,
+        -28.58
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_570",
+      "position": [
+        10.79,
+        -3,
+        -27.38
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_571",
+      "position": [
+        9.42,
+        -4,
+        -28.06
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_572",
+      "position": [
+        9.42,
+        -4,
+        -32.2
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_573",
+      "position": [
+        7.7,
+        -4,
+        -28.06
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_574",
+      "position": [
+        7.7,
+        -4,
+        -32.2
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_575",
+      "position": [
+        5.98,
+        -4,
+        -28.06
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_576",
+      "position": [
+        5.98,
+        -4,
+        -32.2
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_577",
+      "position": [
+        4.26,
+        -4,
+        -28.06
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_578",
+      "position": [
+        -2.63,
+        -4,
+        -23.93
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_579",
+      "position": [
+        8.13,
+        -4,
+        -35.18
+      ],
+      "kind": "prop",
+      "model": "prop.urn",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_580",
+      "position": [
+        -3.08,
+        -4,
+        -20.92
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 2.3585,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_581",
+      "position": [
+        11.08,
+        -4,
+        -20.92
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -2.41,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_582",
+      "position": [
+        11.08,
+        -4,
+        -35.08
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -0.7221,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_583",
+      "position": [
+        11.4,
+        -2.8,
+        -30.87
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_584",
+      "position": [
+        6.43,
+        -2.8,
+        -35.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_585",
+      "position": [
+        1.53,
+        -2.8,
+        -20.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_586",
+      "position": [
+        30.25,
+        -4,
+        2.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_587",
+      "position": [
+        24.49,
+        -4,
+        2.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_588",
+      "position": [
+        34.91,
+        -4,
+        -8.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_589",
+      "position": [
+        21.36,
+        -4,
+        -6.11
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_590",
+      "position": [
+        34.91,
+        -4,
+        -4.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_591",
+      "position": [
+        34.91,
+        -4,
+        2.8
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_592",
+      "position": [
+        28.06,
+        -4,
+        -4.13
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_593",
+      "position": [
+        28.06,
+        -2.9,
+        -4.13
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_594",
+      "position": [
+        28.06,
+        -4,
+        -1.83
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_595",
+      "position": [
+        28.06,
+        -2.9,
+        -1.83
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_596",
+      "position": [
+        28.06,
+        -4,
+        -6.43
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_597",
+      "position": [
+        28.06,
+        -2.9,
+        -6.43
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_598",
+      "position": [
+        21.29,
+        -4,
+        -10.71
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": 0.6355,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_599",
+      "position": [
+        21.3,
+        -4,
+        2.7
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": 2.3455,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_600",
+      "position": [
+        -6.58,
+        -4,
+        13.21
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_601",
+      "position": [
+        -7.18,
+        -3,
+        13.21
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_602",
+      "position": [
+        -5.98,
+        -3,
+        13.21
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_603",
+      "position": [
+        -4,
+        -4,
+        15.07
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_604",
+      "position": [
+        -5.57,
+        -4,
+        15.07
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_605",
+      "position": [
+        -2.43,
+        -4,
+        15.07
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_606",
+      "position": [
+        -0.87,
+        -4,
+        15.07
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_607",
+      "position": [
+        -7.13,
+        -4,
+        15.07
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_608",
+      "position": [
+        -8.7,
+        -4,
+        15.07
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_609",
+      "position": [
+        0.7,
+        -4,
+        15.07
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_610",
+      "position": [
+        -4,
+        -4,
+        16.3
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_611",
+      "position": [
+        -10.97,
+        -4,
+        27.18
+      ],
+      "kind": "prop",
+      "model": "prop.urn",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_612",
+      "position": [
+        3.05,
+        -4,
+        12.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": -0.9282,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_613",
+      "position": [
+        -11.05,
+        -4,
+        12.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0.8279,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_614",
+      "position": [
+        3.05,
+        -4,
+        27.05
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": -2.4979,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_615",
+      "position": [
+        0.68,
+        -2.8,
+        27.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_616",
+      "position": [
+        -2.67,
+        -2.8,
+        12.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_617",
+      "position": [
+        29.09,
+        4,
+        23.65
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_618",
+      "position": [
+        41.65,
+        4,
+        13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_619",
+      "position": [
+        41.65,
+        5.1,
+        13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_620",
+      "position": [
+        34.05,
+        4,
+        13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_621",
+      "position": [
+        34.05,
+        5.1,
+        13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_622",
+      "position": [
+        42.91,
+        4,
+        17.25
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_623",
+      "position": [
+        42.91,
+        5.1,
+        17.25
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_624",
+      "position": [
+        29.65,
+        4,
+        13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_625",
+      "position": [
+        42.91,
+        4,
+        26.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_626",
+      "position": [
+        42.91,
+        5.1,
+        26.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_627",
+      "position": [
+        36,
+        4,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_628",
+      "position": [
+        36,
+        5.1,
+        20
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_629",
+      "position": [
+        36,
+        4,
+        22.3
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_630",
+      "position": [
+        36,
+        5.1,
+        22.3
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_631",
+      "position": [
+        29.08,
+        4,
+        26.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 2.2096,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_632",
+      "position": [
+        35.92,
+        0,
+        26.79
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_633",
+      "position": [
+        36.52,
+        1,
+        26.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_634",
+      "position": [
+        35.32,
+        1,
+        26.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_635",
+      "position": [
+        35.69,
+        0,
+        25.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_636",
+      "position": [
+        34.12,
+        0,
+        25.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_637",
+      "position": [
+        37.25,
+        0,
+        25.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_638",
+      "position": [
+        38.82,
+        0,
+        25.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_639",
+      "position": [
+        31.55,
+        0,
+        25.42
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_640",
+      "position": [
+        35.69,
+        0,
+        23.7
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_641",
+      "position": [
+        39.82,
+        0,
+        23.7
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_642",
+      "position": [
+        40.39,
+        0,
+        25.42
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_643",
+      "position": [
+        34.45,
+        0,
+        26.97
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_644",
+      "position": [
+        42.97,
+        0,
+        20.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_645",
+      "position": [
+        43,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": -2.3937,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_646",
+      "position": [
+        43.08,
+        0,
+        12.92
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": -0.8404,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_647",
+      "position": [
+        38.83,
+        1.2,
+        27.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_648",
+      "position": [
+        43.4,
+        1.2,
+        14.33
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_649",
+      "position": [
+        43.4,
+        1.2,
+        15.13
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_650",
+      "position": [
+        25.64,
+        0,
+        34.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_651",
+      "position": [
+        26.65,
+        0,
+        30.38
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_652",
+      "position": [
+        21.43,
+        0,
+        34.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_653",
+      "position": [
+        13.35,
+        0,
+        26.38
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_654",
+      "position": [
+        18.83,
+        0,
+        34.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_655",
+      "position": [
+        23.63,
+        0,
+        34.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_656",
+      "position": [
+        13.35,
+        0,
+        29.18
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_657",
+      "position": [
+        19.78,
+        0,
+        27.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_658",
+      "position": [
+        20.43,
+        0,
+        27.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_659",
+      "position": [
+        20.11,
+        0,
+        27.96
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_660",
+      "position": [
+        22.28,
+        0,
+        27.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_661",
+      "position": [
+        22.93,
+        0,
+        27.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_662",
+      "position": [
+        22.6,
+        0,
+        27.96
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_663",
+      "position": [
+        17.29,
+        0,
+        27.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_664",
+      "position": [
+        17.94,
+        0,
+        27.41
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_665",
+      "position": [
+        17.61,
+        0,
+        27.96
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_666",
+      "position": [
+        27.18,
+        0,
+        35.18
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": -2.2651,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_667",
+      "position": [
+        12.82,
+        0,
+        35.18
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 2.4369,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_668",
+      "position": [
+        22.57,
+        4,
+        34.79
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_669",
+      "position": [
+        23.17,
+        5,
+        34.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_670",
+      "position": [
+        21.97,
+        5,
+        34.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_671",
+      "position": [
+        20,
+        4,
+        33.17
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_672",
+      "position": [
+        24.13,
+        4,
+        33.17
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_673",
+      "position": [
+        20,
+        4,
+        31.44
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_674",
+      "position": [
+        13.73,
+        4,
+        33.17
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_675",
+      "position": [
+        24.13,
+        4,
+        31.44
+      ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_676",
+      "position": [
+        13.73,
+        4,
+        31.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_677",
+      "position": [
+        16.87,
+        4,
+        30.7
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_678",
+      "position": [
+        13.03,
+        4,
+        24.35
+      ],
+      "kind": "prop",
+      "model": "prop.rn_statue_fox",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_679",
+      "position": [
+        12.95,
+        4,
+        35.05
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 2.2998,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_680",
+      "position": [
+        12.95,
+        4,
+        20.95
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": 0.8167,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_681",
+      "position": [
+        27.05,
+        4,
+        35.05
+      ],
+      "kind": "prop",
+      "model": "prop.rn_candles",
+      "yaw": -2.191,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_682",
+      "position": [
+        27,
+        4,
+        21
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": -0.6959,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_683",
+      "position": [
+        26.28,
+        5.2,
+        35.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_684",
+      "position": [
+        12.6,
+        5.2,
+        32.93
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_685",
+      "position": [
+        24.48,
+        5.2,
+        20.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_686",
+      "position": [
+        -29.35,
+        4,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_687",
+      "position": [
+        -29.35,
+        5.1,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_688",
+      "position": [
+        -25.55,
+        4,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_689",
+      "position": [
+        -25.55,
+        5.1,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_690",
+      "position": [
+        -21.09,
+        4,
+        11.8
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_691",
+      "position": [
+        -21.09,
+        5.1,
+        11.8
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_692",
+      "position": [
+        -26.95,
+        4,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_693",
+      "position": [
+        -26.95,
+        5.1,
+        5.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_694",
+      "position": [
+        -22.15,
+        4,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_695",
+      "position": [
+        -22.15,
+        5.1,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_696",
+      "position": [
+        -34.91,
+        4,
+        10.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_697",
+      "position": [
+        -34.91,
+        5.1,
+        10.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_698",
+      "position": [
+        -28,
+        4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_699",
+      "position": [
+        -28,
+        5.1,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_700",
+      "position": [
+        -30.3,
+        4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_701",
+      "position": [
+        -30.3,
+        5.1,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_702",
+      "position": [
+        -25.7,
+        4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_703",
+      "position": [
+        -25.7,
+        5.1,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_704",
+      "position": [
+        -34.7,
+        4,
+        18.7
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": 2.3305,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_705",
+      "position": [
+        -21.29,
+        4,
+        5.29
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": -0.6511,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_706",
+      "position": [
+        -34.71,
+        4,
+        5.29
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": 0.7083,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_707",
+      "position": [
+        -20.82,
+        4,
+        19.18
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": -2.4185,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_708",
+      "position": [
+        -11.98,
+        4,
+        -42.79
+      ],
+      "kind": "prop",
+      "model": "prop.altar",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_709",
+      "position": [
+        -12.58,
+        5,
+        -42.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_710",
+      "position": [
+        -11.38,
+        5,
+        -42.79
+      ],
+      "kind": "prop",
+      "model": "prop.candles",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_711",
+      "position": [
+        -12,
+        4,
+        -40.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_712",
+      "position": [
+        -10.43,
+        4,
+        -40.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_713",
+      "position": [
+        -13.57,
+        4,
+        -40.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_714",
+      "position": [
+        -8.87,
+        4,
+        -40.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_715",
+      "position": [
+        -15.13,
+        4,
+        -40.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_716",
+      "position": [
+        -7.3,
+        4,
+        -40.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_717",
+      "position": [
+        -16.7,
+        4,
+        -40.93
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_718",
+      "position": [
+        -12,
+        4,
+        -39.7
+      ],
+      "kind": "prop",
+      "model": "prop.graveyard_bench",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_719",
+      "position": [
+        -4.82,
+        4,
+        -37.17
+      ],
+      "kind": "prop",
+      "model": "prop.urn",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_720",
+      "position": [
+        -10.37,
+        4,
+        -28.82
+      ],
+      "kind": "prop",
+      "model": "prop.urn",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_721",
+      "position": [
+        -5,
+        4,
+        -29
+      ],
+      "kind": "prop",
+      "model": "prop.rn_urn",
+      "yaw": -2.3833,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_722",
+      "position": [
+        -19.03,
+        4,
+        -28.97
+      ],
+      "kind": "prop",
+      "model": "prop.pillar",
+      "yaw": 2.3315,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_723",
+      "position": [
+        -19.03,
+        4,
+        -43.03
+      ],
+      "kind": "prop",
+      "model": "prop.pillar",
+      "yaw": 0.8341,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_724",
+      "position": [
+        -4.97,
+        4,
+        -43.03
+      ],
+      "kind": "prop",
+      "model": "prop.pillar",
+      "yaw": -0.7767,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_725",
+      "position": [
+        -19.4,
+        5.2,
+        -35.07
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_726",
+      "position": [
+        -15.27,
+        5.2,
+        -28.6
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_727",
+      "position": [
+        -10.27,
+        5.2,
+        -43.4
+      ],
+      "kind": "prop",
+      "model": "prop.dg_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_728",
+      "position": [
+        31.45,
+        4,
+        -13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_729",
+      "position": [
+        31.45,
+        5.1,
+        -13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_730",
+      "position": [
+        39.45,
+        4,
+        -26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_731",
+      "position": [
+        39.45,
+        5.1,
+        -26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_732",
+      "position": [
+        39.65,
+        4,
+        -13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_733",
+      "position": [
+        39.65,
+        5.1,
+        -13.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_734",
+      "position": [
+        32.85,
+        4,
+        -26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_735",
+      "position": [
+        32.85,
+        5.1,
+        -26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_736",
+      "position": [
+        29.65,
+        4,
+        -26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_737",
+      "position": [
+        29.65,
+        5.1,
+        -26.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_738",
+      "position": [
+        42.91,
+        4,
+        -20.95
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_739",
+      "position": [
+        42.91,
+        5.1,
+        -20.95
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_740",
+      "position": [
+        35.72,
+        4,
+        -19.65
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_741",
+      "position": [
+        35.72,
+        4,
+        -20.3
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 2.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_742",
+      "position": [
+        36.28,
+        4,
+        -19.98
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 2.9708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_743",
+      "position": [
+        38.17,
+        4,
+        -19.65
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_744",
+      "position": [
+        38.17,
+        4,
+        -20.3
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 2.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_745",
+      "position": [
+        38.72,
+        4,
+        -19.98
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 2.9708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_746",
+      "position": [
+        33.28,
+        4,
+        -19.65
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_747",
+      "position": [
+        33.28,
+        4,
+        -20.3
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 2.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_748",
+      "position": [
+        33.83,
+        4,
+        -19.98
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 2.9708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_749",
+      "position": [
+        42.92,
+        4,
+        -26.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -0.6336,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_750",
+      "position": [
+        29.08,
+        4,
+        -13.08
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 2.5422,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_751",
+      "position": [
+        42.92,
+        4,
+        -13.08
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -2.2782,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -2052,7 +10325,9 @@
   },
   "terrain": null,
   "bounds": null,
+  "track": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []

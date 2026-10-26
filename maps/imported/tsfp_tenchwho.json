@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 10,
+  "formatVersion": 19,
   "metadata": {
     "id": "tsfp_tenchwho",
     "name": "Tenchwho?",
@@ -33,6 +33,9 @@
           "0,0,0:E": "open",
           "0,0,0:S": "open",
           "0,0,0:W": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -45,6 +48,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -57,6 +63,9 @@
         "edges": {
           "0,0,0:E": "wide",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -69,6 +78,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -81,6 +93,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -92,6 +107,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -103,17 +121,19 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open",
-          "0,0,0:S": "wall",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
         "id": "tile_008",
-        "tile": "core.dead_end",
+        "tile": "core.corner",
         "x": -2,
         "y": 0,
         "z": 0,
-        "rotation": 2
+        "rotation": 1
       },
       {
         "id": "tile_009",
@@ -125,6 +145,9 @@
         "edges": {
           "0,0,0:E": "wall",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -136,6 +159,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -144,7 +170,10 @@
         "x": 0,
         "y": -1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_012",
@@ -155,6 +184,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -166,6 +198,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -178,6 +213,9 @@
         "edges": {
           "0,0,0:E": "wide",
           "0,0,0:W": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -190,6 +228,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -201,6 +242,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -212,6 +256,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -220,7 +267,10 @@
         "x": -3,
         "y": 2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_019",
@@ -232,6 +282,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -245,6 +298,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -257,6 +313,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -269,6 +328,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -281,6 +343,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -292,6 +357,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -304,6 +372,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -316,6 +387,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -324,7 +398,10 @@
         "x": 3,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_028",
@@ -345,6 +422,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -357,6 +437,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -368,6 +451,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -381,6 +467,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -393,6 +482,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -404,6 +496,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -416,6 +511,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -427,6 +525,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -435,7 +536,10 @@
         "x": 2,
         "y": 6,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_038",
@@ -448,6 +552,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -460,6 +567,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -471,6 +581,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -484,6 +597,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -496,6 +612,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -507,6 +626,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -519,6 +641,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -530,6 +655,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -538,7 +666,10 @@
         "x": -1,
         "y": 6,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_047",
@@ -551,6 +682,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -564,6 +698,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -575,6 +712,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -587,6 +727,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -599,6 +742,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -610,6 +756,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -621,6 +770,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -632,6 +784,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -640,7 +795,10 @@
         "x": -4,
         "y": 6,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_056",
@@ -653,6 +811,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -666,6 +827,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -677,6 +841,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -689,6 +856,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -701,6 +871,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -712,6 +885,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -723,6 +899,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -734,6 +913,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -742,7 +924,10 @@
         "x": -5,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_065",
@@ -754,6 +939,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -767,6 +955,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -779,6 +970,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -790,7 +984,11 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open",
-          "0,0,0:E": "open"
+          "0,0,0:E": "open",
+          "0,0,0:W": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -803,6 +1001,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -814,6 +1015,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -825,6 +1029,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -836,6 +1043,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -844,7 +1054,10 @@
         "x": -6,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_074",
@@ -856,6 +1069,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -869,6 +1085,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -881,6 +1100,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -893,6 +1115,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -905,6 +1130,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -916,6 +1144,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -927,6 +1158,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -938,6 +1172,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -946,7 +1183,10 @@
         "x": -5,
         "y": -3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_083",
@@ -958,6 +1198,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -970,6 +1213,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -982,6 +1228,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -994,6 +1243,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1006,6 +1258,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1018,6 +1273,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1029,6 +1287,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1040,6 +1301,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1051,6 +1315,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1064,6 +1331,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1076,6 +1346,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1087,6 +1360,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1100,6 +1376,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1112,6 +1391,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1123,6 +1405,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1135,6 +1420,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1147,6 +1435,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1158,6 +1449,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1170,6 +1464,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1182,6 +1479,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1193,6 +1493,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1205,6 +1508,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1217,6 +1523,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1228,6 +1537,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1239,6 +1551,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1251,6 +1566,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1262,6 +1580,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1274,6 +1595,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1286,6 +1610,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1297,6 +1624,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1309,6 +1639,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1321,6 +1654,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1331,7 +1667,11 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "open"
+          "0,0,0:N": "open",
+          "0,0,0:E": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1343,6 +1683,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1354,6 +1697,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1362,26 +1708,26 @@
         "x": 4,
         "y": 0,
         "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_119",
-        "tile": "core.dead_end",
-        "x": -9,
-        "y": -1,
-        "z": 0,
-        "rotation": 3,
-        "edges": {
-          "0,0,0:N": "open"
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
-        "id": "tile_120",
-        "tile": "core.dead_end",
-        "x": -10,
+        "id": "tile_119",
+        "tile": "core.corridor_clear",
+        "x": -9,
         "y": -1,
         "z": 0,
         "rotation": 1
+      },
+      {
+        "id": "tile_120",
+        "tile": "core.stairs",
+        "x": -10,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
       },
       {
         "id": "tile_121",
@@ -1393,6 +1739,9 @@
         "edges": {
           "0,0,0:N": "wide",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1404,6 +1753,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1415,6 +1767,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1427,6 +1782,9 @@
         "edges": {
           "0,0,0:N": "wide",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1438,6 +1796,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1449,6 +1810,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1461,6 +1825,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1473,6 +1840,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1484,6 +1854,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1496,6 +1869,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1508,6 +1884,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1519,6 +1898,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1532,6 +1914,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1544,6 +1929,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1556,6 +1944,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1568,6 +1959,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1579,6 +1973,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1590,6 +1987,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1602,6 +2002,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1613,6 +2016,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1621,7 +2027,10 @@
         "x": -4,
         "y": 1,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_142",
@@ -1633,6 +2042,9 @@
         "edges": {
           "0,0,0:E": "wide",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1644,6 +2056,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1655,6 +2070,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1666,6 +2084,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1677,6 +2098,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1688,6 +2112,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1700,6 +2127,9 @@
         "edges": {
           "0,0,0:N": "wide",
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1711,6 +2141,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1719,7 +2152,10 @@
         "x": -7,
         "y": 7,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_151",
@@ -1728,8 +2164,8 @@
         "y": -3,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:S": "wall"
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1741,6 +2177,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1777,6 +2216,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:W": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1788,6 +2230,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1796,7 +2241,10 @@
         "x": -8,
         "y": 4,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_159",
@@ -1808,6 +2256,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1819,6 +2270,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1830,6 +2284,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1842,6 +2299,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1854,6 +2314,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1865,6 +2328,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1877,6 +2343,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1889,6 +2358,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1900,6 +2372,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1911,6 +2386,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1922,6 +2400,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1930,7 +2411,10 @@
         "x": -9,
         "y": 2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_171",
@@ -1942,7 +2426,7 @@
       },
       {
         "id": "tile_172",
-        "tile": "core.dead_end",
+        "tile": "core.corridor_clear",
         "x": 5,
         "y": -1,
         "z": 0,
@@ -1965,7 +2449,10 @@
         "x": -4,
         "y": -2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_175",
@@ -1976,6 +2463,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1987,6 +2477,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -1998,6 +2491,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2006,53 +2502,53 @@
         "x": 0,
         "y": 1,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_179",
-        "tile": "core.dead_end",
+        "tile": "core.corridor_clear",
         "x": 9,
         "y": -1,
         "z": 0,
-        "rotation": 3,
+        "rotation": 1,
         "edges": {
-          "0,0,0:N": "open"
+          "0,0,0:N": "wide"
         }
       },
       {
         "id": "tile_180",
-        "tile": "core.dead_end",
+        "tile": "core.stairs",
         "x": 8,
         "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_181",
+        "tile": "core.dead_end",
+        "x": 9,
+        "y": 1,
         "z": 0,
         "rotation": 1
       },
       {
-        "id": "tile_181",
-        "tile": "core.room",
-        "x": 9,
-        "y": 1,
-        "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:E": "wall"
-        }
-      },
-      {
         "id": "tile_182",
-        "tile": "core.corridor_clear",
+        "tile": "core.junction_t",
         "x": 7,
         "y": -1,
         "z": 1,
-        "rotation": 0
+        "rotation": 1
       },
       {
         "id": "tile_183",
-        "tile": "core.corridor_clear",
+        "tile": "core.junction_t",
         "x": -11,
         "y": -1,
         "z": 1,
-        "rotation": 0
+        "rotation": 1
       },
       {
         "id": "tile_184",
@@ -2079,6 +2575,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2090,6 +2589,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2101,6 +2603,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2113,6 +2618,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2124,6 +2632,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2132,7 +2643,10 @@
         "x": 1,
         "y": 8,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_192",
@@ -2143,6 +2657,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2154,6 +2671,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2162,7 +2682,10 @@
         "x": 10,
         "y": 1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_195",
@@ -2174,6 +2697,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:W": "wide"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2186,6 +2712,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2197,6 +2726,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2209,6 +2741,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2221,6 +2756,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2232,6 +2770,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2242,9 +2783,11 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:N": "wall",
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2257,6 +2800,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2268,6 +2814,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2279,6 +2828,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2290,6 +2842,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2298,7 +2853,10 @@
         "x": -1,
         "y": -8,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_207",
@@ -2310,6 +2868,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2322,6 +2883,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2333,6 +2897,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2345,6 +2912,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2357,6 +2927,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2368,6 +2941,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2379,6 +2955,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2390,6 +2969,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2398,7 +2980,10 @@
         "x": -9,
         "y": -2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_216",
@@ -2410,6 +2995,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2422,6 +3010,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2433,6 +3024,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2445,6 +3039,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2457,6 +3054,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2468,6 +3068,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2479,6 +3082,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2490,6 +3096,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2498,7 +3107,10 @@
         "x": 7,
         "y": -2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_225",
@@ -2510,6 +3122,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2522,6 +3137,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2533,6 +3151,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2545,6 +3166,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2557,6 +3181,9 @@
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2568,6 +3195,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2579,6 +3209,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2590,6 +3223,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2598,18 +3234,18 @@
         "x": 8,
         "y": 2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_234",
-        "tile": "core.room",
+        "tile": "core.dead_end",
         "x": -2,
         "y": -5,
         "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:N": "wall"
-        }
+        "rotation": 2
       },
       {
         "id": "tile_235",
@@ -2621,6 +3257,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2632,6 +3271,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:E": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2643,6 +3285,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2651,7 +3296,10 @@
         "x": -2,
         "y": -1,
         "z": -1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_239",
@@ -2662,6 +3310,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2673,6 +3324,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2681,7 +3335,10 @@
         "x": -3,
         "y": 7,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_242",
@@ -2692,6 +3349,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2703,6 +3363,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2711,7 +3374,10 @@
         "x": -7,
         "y": -8,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_245",
@@ -2722,6 +3388,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2733,6 +3402,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:N": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2741,7 +3413,10 @@
         "x": 3,
         "y": -6,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_248",
@@ -2752,6 +3427,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2763,6 +3441,9 @@
         "rotation": 0,
         "edges": {
           "0,0,0:S": "open"
+        },
+        "options": {
+          "ceiling": "roof"
         }
       },
       {
@@ -2771,19 +3452,18 @@
         "x": 4,
         "y": 2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_251",
-        "tile": "core.room",
+        "tile": "core.corridor_clear",
         "x": -2,
         "y": -4,
         "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:E": "wall",
-          "0,0,0:W": "wall"
-        }
+        "rotation": 1
       },
       {
         "id": "tile_252",
@@ -2791,7 +3471,10 @@
         "x": -3,
         "y": -4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
       },
       {
         "id": "tile_253",
@@ -2799,83 +3482,80 @@
         "x": -1,
         "y": -4,
         "z": 0,
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "tile_254",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_255",
+        "tile": "core.stairwell",
+        "x": -1,
+        "y": 0,
+        "z": -1,
         "rotation": 0
       }
     ]
   },
   "entities": [
     {
-      "id": "spawn_254",
+      "id": "spawn_256",
       "position": [
         -16,
         0,
         -8
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.5707963267948966,
       "faction": null
     },
     {
-      "id": "spawn_255",
+      "id": "spawn_257",
       "position": [
-        16,
+        80,
         0,
-        48
+        8
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": null
     },
     {
-      "id": "spawn_256",
-      "position": [
-        16,
-        0,
-        -64
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_257",
-      "position": [
-        -48,
-        0,
-        48
-      ],
-      "kind": "spawn",
-      "yaw": 1.5707963267948966,
-      "faction": null
-    },
-    {
       "id": "spawn_258",
       "position": [
-        -48,
-        0,
-        -56
+        -88,
+        4,
+        16
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 3.141592653589793,
       "faction": null
     },
     {
       "id": "spawn_259",
       "position": [
-        -64,
-        0,
-        0
+        8,
+        4,
+        64
       ],
       "kind": "spawn",
-      "yaw": 1.5707963267948966,
+      "yaw": -1.5707963267948966,
       "faction": null
     },
     {
       "id": "spawn_260",
       "position": [
-        32,
-        0,
-        -16
+        -56,
+        4,
+        -64
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -2884,9 +3564,9 @@
     {
       "id": "spawn_261",
       "position": [
-        -16,
-        0,
-        32
+        24,
+        4,
+        -64
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -2895,8 +3575,19 @@
     {
       "id": "spawn_262",
       "position": [
-        24,
-        0,
+        -48,
+        4,
+        56
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_263",
+      "position": [
+        32,
+        4,
         16
       ],
       "kind": "spawn",
@@ -2904,22 +3595,11 @@
       "faction": null
     },
     {
-      "id": "spawn_263",
-      "position": [
-        -16,
-        0,
-        -48
-      ],
-      "kind": "spawn",
-      "yaw": 1.5707963267948966,
-      "faction": null
-    },
-    {
       "id": "spawn_264",
       "position": [
-        -40,
-        0,
-        16
+        -88,
+        4,
+        -32
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -2928,18 +3608,40 @@
     {
       "id": "spawn_265",
       "position": [
-        -48,
-        0,
-        -24
+        56,
+        4,
+        -32
       ],
       "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
-      "id": "pickup_266",
+      "id": "spawn_266",
       "position": [
+        -16,
         0,
+        -56
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_267",
+      "position": [
+        -16,
+        0,
+        32
+      ],
+      "kind": "spawn",
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "pickup_268",
+      "position": [
+        -56,
         0,
         8
       ],
@@ -2948,113 +3650,91 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_267",
-      "position": [
-        -32,
-        0,
-        0
-      ],
-      "kind": "pickup",
-      "item": "core.health_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_268",
-      "position": [
-        -24,
-        0,
-        -24
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_auto_shotgun",
-      "respawnSeconds": null
-    },
-    {
       "id": "pickup_269",
-      "position": [
-        -64,
-        0,
-        -16
-      ],
-      "kind": "pickup",
-      "item": "core.ammo",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_270",
-      "position": [
-        0,
-        0,
-        -64
-      ],
-      "kind": "pickup",
-      "item": "core.armor_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_271",
       "position": [
         16,
         0,
         -16
       ],
       "kind": "pickup",
-      "item": "core.weapon_burst_rifle",
+      "item": "core.health_small",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_272",
+      "id": "pickup_270",
       "position": [
-        -8,
-        0,
-        -24
+        56,
+        4,
+        0
       ],
       "kind": "pickup",
-      "item": "core.health_large",
+      "item": "core.weapon_auto_shotgun",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_273",
+      "id": "pickup_271",
       "position": [
-        -56,
+        8,
         0,
         8
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_marksman",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_274",
-      "position": [
-        -24,
-        0,
-        -8
       ],
       "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_275",
+      "id": "pickup_272",
       "position": [
-        -24,
+        -64,
         0,
         -16
       ],
       "kind": "pickup",
-      "item": "core.weapon_flak",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_273",
+      "position": [
+        -16,
+        0,
+        -32
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_274",
+      "position": [
+        -24,
+        -4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_275",
+      "position": [
+        -32,
+        0,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
       "respawnSeconds": null
     },
     {
       "id": "pickup_276",
       "position": [
-        -16,
+        -48,
         0,
-        -16
+        -64
       ],
       "kind": "pickup",
-      "item": "core.armor_large",
+      "item": "core.ammo",
       "respawnSeconds": null
     },
     {
@@ -3062,44 +3742,5259 @@
       "position": [
         0,
         0,
-        0
+        -64
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_flak",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_278",
+      "position": [
+        80,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_279",
+      "position": [
+        -24,
+        0,
+        -16
       ],
       "kind": "pickup",
       "item": "core.weapon_rockets",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_278",
+      "id": "pickup_280",
       "position": [
-        -32,
         0,
-        -8
+        0,
+        0
       ],
       "kind": "pickup",
       "item": "core.health_small",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_279",
+      "id": "pickup_281",
       "position": [
-        8,
+        -8,
         0,
-        8
+        -24
       ],
       "kind": "pickup",
       "item": "core.ammo_explosive",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_280",
+      "id": "pickup_282",
       "position": [
-        -48,
+        -24,
         0,
-        -64
+        -8
       ],
       "kind": "pickup",
       "item": "core.weapon_lmg",
       "respawnSeconds": null
+    },
+    {
+      "id": "pickup_283",
+      "position": [
+        -16,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_railgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_284",
+      "position": [
+        0,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_285",
+      "position": [
+        -32,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_286",
+      "position": [
+        -24,
+        0,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_287",
+      "position": [
+        48,
+        4,
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "light_288",
+      "position": [
+        -16,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_289",
+      "position": [
+        -16,
+        3.45,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_290",
+      "position": [
+        0,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_291",
+      "position": [
+        -32,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_292",
+      "position": [
+        -24,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_293",
+      "position": [
+        16,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_294",
+      "position": [
+        -16,
+        3.2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_295",
+      "position": [
+        8,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_296",
+      "position": [
+        -16,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_297",
+      "position": [
+        -40,
+        3.45,
+        40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_298",
+      "position": [
+        -48,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_299",
+      "position": [
+        -56,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_300",
+      "position": [
+        -48,
+        3.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_301",
+      "position": [
+        -40,
+        3.45,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_302",
+      "position": [
+        8,
+        3.45,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_303",
+      "position": [
+        16,
+        3.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_304",
+      "position": [
+        24,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_305",
+      "position": [
+        -16,
+        7.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_306",
+      "position": [
+        -16,
+        7.45,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_307",
+      "position": [
+        -32,
+        7.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_308",
+      "position": [
+        0,
+        7.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_309",
+      "position": [
+        8,
+        7.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_310",
+      "position": [
+        -40,
+        7.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_311",
+      "position": [
+        -32,
+        7.2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_312",
+      "position": [
+        -32,
+        7.45,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_313",
+      "position": [
+        0,
+        7.45,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_314",
+      "position": [
+        0,
+        7.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_315",
+      "position": [
+        72,
+        3.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_316",
+      "position": [
+        72,
+        3.2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_317",
+      "position": [
+        56,
+        7.2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_318",
+      "position": [
+        -24,
+        7.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_319",
+      "position": [
+        -8,
+        7.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_320",
+      "position": [
+        80,
+        3.45,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_321",
+      "position": [
+        48,
+        7.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_322",
+      "position": [
+        -16,
+        3.45,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.99,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_323",
+      "position": [
+        56,
+        7.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_324",
+      "position": [
+        -16,
+        3.2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffffff",
+      "intensity": 0.67,
+      "range": 9,
+      "fixture": "none"
+    },
+    {
+      "id": "light_325",
+      "position": [
+        -24,
+        -0.5499999999999998,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_326",
+      "position": [
+        -24,
+        3.45,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1.2,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "prop_327",
+      "position": [
+        -22.85,
+        0,
+        18.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_328",
+      "position": [
+        -24.3,
+        0,
+        19.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_329",
+      "position": [
+        -13.63,
+        0,
+        10.72
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_330",
+      "position": [
+        -13.09,
+        0,
+        11.89
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_331",
+      "position": [
+        -18.45,
+        0,
+        18.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_332",
+      "position": [
+        -19.9,
+        0,
+        19.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_333",
+      "position": [
+        -13.73,
+        0,
+        14.59
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_334",
+      "position": [
+        -12.92,
+        0,
+        16.04
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_335",
+      "position": [
+        -24.81,
+        0,
+        5.73
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_336",
+      "position": [
+        -23.36,
+        0,
+        4.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_337",
+      "position": [
+        -20.21,
+        0,
+        5.73
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_338",
+      "position": [
+        -18.76,
+        0,
+        4.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_339",
+      "position": [
+        -13.73,
+        0,
+        7.19
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_340",
+      "position": [
+        -12.92,
+        0,
+        8.64
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_341",
+      "position": [
+        -26.65,
+        0,
+        17.43
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_342",
+      "position": [
+        -26.91,
+        0,
+        11.45
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_343",
+      "position": [
+        -12.85,
+        0,
+        4.88
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": -0.9011,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_344",
+      "position": [
+        -27.13,
+        0,
+        19.13
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": 2.3713,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_345",
+      "position": [
+        -27.12,
+        0,
+        4.85
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": 0.6776,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_346",
+      "position": [
+        20.8,
+        0,
+        26.36
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_347",
+      "position": [
+        5.64,
+        0,
+        23.1
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_348",
+      "position": [
+        22.38,
+        0,
+        27.09
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_349",
+      "position": [
+        27.08,
+        0,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_350",
+      "position": [
+        27.09,
+        0,
+        11.98
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_351",
+      "position": [
+        26.36,
+        0,
+        10.8
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_352",
+      "position": [
+        16,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.workbench",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_353",
+      "position": [
+        5.15,
+        0,
+        5.15
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": 0.7654,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_354",
+      "position": [
+        9.55,
+        1.4,
+        4.64
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_355",
+      "position": [
+        4.64,
+        1.4,
+        19.55
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_356",
+      "position": [
+        4.64,
+        1.4,
+        26.15
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_357",
+      "position": [
+        27.36,
+        1.4,
+        7.45
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_358",
+      "position": [
+        0.95,
+        0,
+        50.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_359",
+      "position": [
+        0.95,
+        1.1,
+        50.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_360",
+      "position": [
+        18.91,
+        0,
+        43.75
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_361",
+      "position": [
+        18.91,
+        1.1,
+        43.75
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_362",
+      "position": [
+        6.59,
+        0,
+        50.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_363",
+      "position": [
+        18.91,
+        0,
+        34.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_364",
+      "position": [
+        18.91,
+        1.1,
+        34.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_365",
+      "position": [
+        18.91,
+        0,
+        47.95
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_366",
+      "position": [
+        18.91,
+        1.1,
+        47.95
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_367",
+      "position": [
+        14.95,
+        0,
+        50.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_368",
+      "position": [
+        14.95,
+        1.1,
+        50.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_369",
+      "position": [
+        18.91,
+        0,
+        37.8
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_370",
+      "position": [
+        18.91,
+        0,
+        31.75
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_371",
+      "position": [
+        18.91,
+        1.1,
+        31.75
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_372",
+      "position": [
+        7.46,
+        0,
+        39.56
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_373",
+      "position": [
+        8.11,
+        0,
+        39.56
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_374",
+      "position": [
+        7.78,
+        0,
+        40.11
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_375",
+      "position": [
+        9.95,
+        0,
+        39.56
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_376",
+      "position": [
+        10.6,
+        0,
+        39.56
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_377",
+      "position": [
+        10.28,
+        0,
+        40.11
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_378",
+      "position": [
+        7.46,
+        0,
+        37.11
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_379",
+      "position": [
+        8.11,
+        0,
+        37.11
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_380",
+      "position": [
+        7.78,
+        0,
+        37.67
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_381",
+      "position": [
+        19.03,
+        0,
+        51.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.3348,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_382",
+      "position": [
+        -17.75,
+        0,
+        50.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_383",
+      "position": [
+        -19.2,
+        0,
+        51.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_384",
+      "position": [
+        -8.86,
+        0,
+        29.73
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_385",
+      "position": [
+        -7.41,
+        0,
+        28.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_386",
+      "position": [
+        -24.91,
+        0,
+        29.73
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_387",
+      "position": [
+        -23.46,
+        0,
+        28.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_388",
+      "position": [
+        -22.18,
+        0,
+        50.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_389",
+      "position": [
+        -9.95,
+        0,
+        50.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_390",
+      "position": [
+        -11.4,
+        0,
+        51.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_391",
+      "position": [
+        -21.11,
+        0,
+        29.73
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_392",
+      "position": [
+        -19.66,
+        0,
+        28.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_393",
+      "position": [
+        -23.95,
+        0,
+        50.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_394",
+      "position": [
+        -25.4,
+        0,
+        51.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_395",
+      "position": [
+        -12.95,
+        0,
+        50.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_396",
+      "position": [
+        -14.4,
+        0,
+        51.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_397",
+      "position": [
+        -10.75,
+        0,
+        28.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_398",
+      "position": [
+        -6.4,
+        0,
+        51.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_399",
+      "position": [
+        -16,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_400",
+      "position": [
+        -16.98,
+        0,
+        39.54
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_401",
+      "position": [
+        -15.02,
+        0,
+        39.54
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_402",
+      "position": [
+        -16.98,
+        0,
+        40.46
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_403",
+      "position": [
+        -15.02,
+        0,
+        40.46
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_404",
+      "position": [
+        -50.91,
+        0,
+        35.8
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_405",
+      "position": [
+        -50.91,
+        0,
+        37.6
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_406",
+      "position": [
+        -35.5,
+        0,
+        50.91
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_407",
+      "position": [
+        -50.91,
+        0,
+        49.2
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_408",
+      "position": [
+        -50.91,
+        0,
+        40.8
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_409",
+      "position": [
+        -50.91,
+        0,
+        34.6
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_410",
+      "position": [
+        -39.81,
+        0,
+        39.83
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_411",
+      "position": [
+        -51.3,
+        0,
+        51.28
+      ],
+      "kind": "prop",
+      "model": "prop.sv_gas_can",
+      "yaw": 2.2556,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_412",
+      "position": [
+        -51.34,
+        1.4,
+        43.88
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_413",
+      "position": [
+        -32.82,
+        1.4,
+        51.34
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_414",
+      "position": [
+        -39.42,
+        1.4,
+        51.34
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_415",
+      "position": [
+        -45.22,
+        1.4,
+        51.34
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_416",
+      "position": [
+        -58.91,
+        0,
+        12.15
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_417",
+      "position": [
+        -56.11,
+        0,
+        26.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_418",
+      "position": [
+        -37.09,
+        0,
+        11.25
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_419",
+      "position": [
+        -37.09,
+        0,
+        24.45
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_420",
+      "position": [
+        -37.09,
+        0,
+        22.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_421",
+      "position": [
+        -58.91,
+        0,
+        19.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_422",
+      "position": [
+        -37.09,
+        0,
+        18.25
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_423",
+      "position": [
+        -37.09,
+        0,
+        8.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_424",
+      "position": [
+        -48.48,
+        0,
+        15.71
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_425",
+      "position": [
+        -47.67,
+        0,
+        15.71
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_426",
+      "position": [
+        -48.08,
+        0,
+        16.39
+      ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "yaw": 1.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_427",
+      "position": [
+        -48,
+        0,
+        13.7
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_428",
+      "position": [
+        -48,
+        1.1,
+        13.7
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_429",
+      "position": [
+        -50.3,
+        0,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_430",
+      "position": [
+        -50.3,
+        1.1,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_431",
+      "position": [
+        -37.29,
+        0,
+        5.29
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": -0.6195,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_432",
+      "position": [
+        -58.92,
+        0,
+        26.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 2.4048,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_433",
+      "position": [
+        -66.36,
+        0,
+        -1.53
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_434",
+      "position": [
+        -66.36,
+        0,
+        -4.73
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_435",
+      "position": [
+        -66.27,
+        0,
+        -12.25
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_436",
+      "position": [
+        -67.08,
+        0,
+        -13.7
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_437",
+      "position": [
+        -45.63,
+        0,
+        -9.38
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_438",
+      "position": [
+        -45.63,
+        0,
+        -15.18
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_439",
+      "position": [
+        -65.48,
+        0,
+        -18.36
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_440",
+      "position": [
+        -64.31,
+        0,
+        -18.91
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_441",
+      "position": [
+        -45.73,
+        0,
+        -5.31
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_442",
+      "position": [
+        -44.92,
+        0,
+        -3.86
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_443",
+      "position": [
+        -66.36,
+        0,
+        1.27
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_444",
+      "position": [
+        -62.7,
+        0,
+        -19.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_445",
+      "position": [
+        -67.08,
+        0,
+        -15.5
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_446",
+      "position": [
+        -55.89,
+        0,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_small",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_447",
+      "position": [
+        -55.43,
+        0,
+        -8.98
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_448",
+      "position": [
+        -55.43,
+        0,
+        -7.02
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_449",
+      "position": [
+        -56.36,
+        0,
+        -8.98
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_450",
+      "position": [
+        -56.36,
+        0,
+        -7.02
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_451",
+      "position": [
+        -66.92,
+        0,
+        -18.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0.6713,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_452",
+      "position": [
+        -67.03,
+        0,
+        3.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 2.4362,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_453",
+      "position": [
+        -41.8,
+        0,
+        -21.09
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_454",
+      "position": [
+        -36.91,
+        0,
+        -29.03
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_455",
+      "position": [
+        -59.09,
+        0,
+        -29.53
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_456",
+      "position": [
+        -59.09,
+        0,
+        -30.53
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_457",
+      "position": [
+        -56.13,
+        0,
+        -43.09
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_458",
+      "position": [
+        -36.91,
+        0,
+        -39.02
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_459",
+      "position": [
+        -48,
+        0,
+        -32
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_460",
+      "position": [
+        -37.07,
+        0,
+        -21.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -2.157,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_461",
+      "position": [
+        -58.92,
+        0,
+        -42.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0.934,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_462",
+      "position": [
+        -59.34,
+        1.4,
+        -31.22
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_463",
+      "position": [
+        -59.34,
+        1.4,
+        -29.22
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_464",
+      "position": [
+        -36.66,
+        1.4,
+        -25.92
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_465",
+      "position": [
+        -36.64,
+        1.4,
+        -27.35
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_466",
+      "position": [
+        -33.25,
+        0,
+        -45.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_467",
+      "position": [
+        -43.95,
+        0,
+        -66.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_468",
+      "position": [
+        -29.09,
+        0,
+        -53.95
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_469",
+      "position": [
+        -36.55,
+        0,
+        -66.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_470",
+      "position": [
+        -29.09,
+        0,
+        -56.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_471",
+      "position": [
+        -50.91,
+        0,
+        -52.15
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_472",
+      "position": [
+        -50.51,
+        0,
+        -66.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_473",
+      "position": [
+        -50.91,
+        0,
+        -48.55
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_474",
+      "position": [
+        -39.97,
+        0,
+        -55.78
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_475",
+      "position": [
+        -39.97,
+        1.1,
+        -55.78
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_476",
+      "position": [
+        -37.67,
+        0,
+        -55.78
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_477",
+      "position": [
+        -37.67,
+        1.1,
+        -55.78
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_478",
+      "position": [
+        -39.97,
+        0,
+        -58.08
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_479",
+      "position": [
+        -39.97,
+        1.1,
+        -58.08
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_480",
+      "position": [
+        -28.97,
+        0,
+        -67.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.9778,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_481",
+      "position": [
+        12.89,
+        0,
+        -66.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_482",
+      "position": [
+        14.34,
+        0,
+        -67.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_483",
+      "position": [
+        -0.11,
+        0,
+        -66.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_484",
+      "position": [
+        1.34,
+        0,
+        -67.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_485",
+      "position": [
+        7.69,
+        0,
+        -66.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_486",
+      "position": [
+        9.14,
+        0,
+        -67.08
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_487",
+      "position": [
+        18.36,
+        0,
+        -52.68
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_488",
+      "position": [
+        18.91,
+        0,
+        -51.51
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_489",
+      "position": [
+        18.27,
+        0,
+        -63.01
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_490",
+      "position": [
+        19.08,
+        0,
+        -61.56
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_491",
+      "position": [
+        1.45,
+        0,
+        -45.73
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_492",
+      "position": [
+        0,
+        0,
+        -44.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_493",
+      "position": [
+        18.27,
+        0,
+        -48.81
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_494",
+      "position": [
+        19.08,
+        0,
+        -47.36
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_495",
+      "position": [
+        18.36,
+        0,
+        -57.28
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_496",
+      "position": [
+        18.65,
+        0,
+        -59.52
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_497",
+      "position": [
+        3.98,
+        0,
+        -66.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_498",
+      "position": [
+        7.81,
+        0,
+        -55.83
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_499",
+      "position": [
+        8.78,
+        0,
+        -55.37
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_500",
+      "position": [
+        6.83,
+        0,
+        -55.37
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_501",
+      "position": [
+        8.78,
+        0,
+        -56.3
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_502",
+      "position": [
+        6.83,
+        0,
+        -56.3
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_503",
+      "position": [
+        19.14,
+        0,
+        -67.13
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": -0.8441,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_504",
+      "position": [
+        7.68,
+        0,
+        -20.91
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_505",
+      "position": [
+        4.91,
+        0,
+        -37.42
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_506",
+      "position": [
+        4.91,
+        0,
+        -33.23
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_507",
+      "position": [
+        27.09,
+        0,
+        -33.13
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_508",
+      "position": [
+        26.65,
+        0,
+        -38.52
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_509",
+      "position": [
+        27.09,
+        0,
+        -34.33
+      ],
+      "kind": "prop",
+      "model": "prop.dg_chest",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_510",
+      "position": [
+        16,
+        0,
+        -32
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_511",
+      "position": [
+        5.15,
+        0,
+        -21.15
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": 2.401,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_512",
+      "position": [
+        26.85,
+        0,
+        -42.85
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": -0.9002,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_513",
+      "position": [
+        27.36,
+        1.4,
+        -21.85
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_514",
+      "position": [
+        27.36,
+        1.4,
+        -27.85
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_515",
+      "position": [
+        4.64,
+        1.4,
+        -28.75
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_516",
+      "position": [
+        27.36,
+        1.4,
+        -29.05
+      ],
+      "kind": "prop",
+      "model": "prop.shield",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_517",
+      "position": [
+        34.91,
+        0,
+        -12.55
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_518",
+      "position": [
+        13.09,
+        0,
+        -4.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_519",
+      "position": [
+        34.91,
+        0,
+        -4.2
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_520",
+      "position": [
+        13.09,
+        0,
+        -8.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_521",
+      "position": [
+        13.09,
+        0,
+        -16.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_522",
+      "position": [
+        34.91,
+        0,
+        -17.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_523",
+      "position": [
+        34.91,
+        0,
+        -0.4
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_524",
+      "position": [
+        13.09,
+        0,
+        -0.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_525",
+      "position": [
+        24.17,
+        0,
+        -8.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_526",
+      "position": [
+        24.17,
+        0,
+        -7.7
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -0.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_527",
+      "position": [
+        23.62,
+        0,
+        -8.02
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.1708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_528",
+      "position": [
+        21.73,
+        0,
+        -8.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_529",
+      "position": [
+        21.73,
+        0,
+        -7.7
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -0.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_530",
+      "position": [
+        21.17,
+        0,
+        -8.02
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.1708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_531",
+      "position": [
+        24.17,
+        0,
+        -5.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_532",
+      "position": [
+        24.17,
+        0,
+        -5.2
+      ],
+      "kind": "prop",
+      "model": "prop.crate_open",
+      "yaw": -0.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_533",
+      "position": [
+        23.62,
+        0,
+        -5.53
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.1708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_534",
+      "position": [
+        34.71,
+        0,
+        2.71
+      ],
+      "kind": "prop",
+      "model": "prop.container",
+      "yaw": -2.3018,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_535",
+      "position": [
+        -22.98,
+        4,
+        -5.63
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_536",
+      "position": [
+        -8.98,
+        4,
+        -5.63
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_537",
+      "position": [
+        -15.78,
+        4,
+        -5.63
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_538",
+      "position": [
+        -25.78,
+        4,
+        -5.63
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_539",
+      "position": [
+        -6.78,
+        4,
+        -5.63
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_540",
+      "position": [
+        -17.75,
+        4,
+        -5.73
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_541",
+      "position": [
+        -19.2,
+        4,
+        -4.92
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_542",
+      "position": [
+        -24.58,
+        4,
+        -5.63
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_543",
+      "position": [
+        -5.63,
+        4,
+        -20.98
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_544",
+      "position": [
+        -27.08,
+        4,
+        -21.4
+      ],
+      "kind": "prop",
+      "model": "prop.sf_chest",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_545",
+      "position": [
+        -11.02,
+        4,
+        -5.35
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_546",
+      "position": [
+        -16,
+        4,
+        -16.14
+      ],
+      "kind": "prop",
+      "model": "prop.table",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_547",
+      "position": [
+        -15.48,
+        4,
+        -15.34
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_548",
+      "position": [
+        -15.48,
+        4,
+        -16.94
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_549",
+      "position": [
+        -16.52,
+        4,
+        -15.34
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_550",
+      "position": [
+        -16.52,
+        4,
+        -16.94
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_551",
+      "position": [
+        -78.17,
+        4,
+        -2.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_552",
+      "position": [
+        -83.92,
+        4,
+        18.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_553",
+      "position": [
+        -87.7,
+        4,
+        18.36
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_554",
+      "position": [
+        -90.65,
+        4,
+        8.68
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_555",
+      "position": [
+        -80.12,
+        4,
+        18.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_556",
+      "position": [
+        -71.12,
+        4,
+        18.65
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_557",
+      "position": [
+        -80,
+        4,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_558",
+      "position": [
+        -80,
+        5.1,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.sv_medkit_case",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_559",
+      "position": [
+        -90.85,
+        4,
+        -2.85
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": 0.8395,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_560",
+      "position": [
+        -68.72,
+        4,
+        19.3
+      ],
+      "kind": "prop",
+      "model": "prop.sv_gas_can",
+      "yaw": -2.4621,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_561",
+      "position": [
+        -90.85,
+        4,
+        18.86
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": 2.4844,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_562",
+      "position": [
+        -69.15,
+        4,
+        -2.85
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": -0.7873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_563",
+      "position": [
+        -86.02,
+        5.4,
+        19.34
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_564",
+      "position": [
+        -91.34,
+        5.4,
+        11.98
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_565",
+      "position": [
+        -73.47,
+        5.4,
+        -3.35
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_566",
+      "position": [
+        -84.27,
+        5.4,
+        -3.35
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_567",
+      "position": [
+        -26.35,
+        0,
+        -66.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_568",
+      "position": [
+        -26.91,
+        0,
+        -62.55
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_569",
+      "position": [
+        -26.91,
+        0,
+        -60.35
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_570",
+      "position": [
+        -12.96,
+        0,
+        -45.36
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_571",
+      "position": [
+        -26.91,
+        0,
+        -53.95
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_572",
+      "position": [
+        -20.3,
+        0,
+        -66.91
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_573",
+      "position": [
+        -26.91,
+        0,
+        -57.75
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_574",
+      "position": [
+        -24.05,
+        0,
+        -45.09
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_575",
+      "position": [
+        -17.55,
+        0,
+        -54.01
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_576",
+      "position": [
+        -17.55,
+        0,
+        -54.81
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 2.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_577",
+      "position": [
+        -16.87,
+        0,
+        -54.41
+      ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "yaw": 2.9708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_578",
+      "position": [
+        -14.7,
+        0,
+        -54.01
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_579",
+      "position": [
+        -14.7,
+        0,
+        -54.81
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 2.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_580",
+      "position": [
+        -14.01,
+        0,
+        -54.41
+      ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "yaw": 2.9708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_581",
+      "position": [
+        -14.7,
+        0,
+        -56.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_582",
+      "position": [
+        -14.7,
+        0,
+        -57.73
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 2.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_583",
+      "position": [
+        -14.01,
+        0,
+        -57.33
+      ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "yaw": 2.9708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_584",
+      "position": [
+        -90.36,
+        4,
+        -24.08
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_585",
+      "position": [
+        -90.36,
+        4,
+        -31.88
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_586",
+      "position": [
+        -90.36,
+        4,
+        -15.28
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_587",
+      "position": [
+        -80.88,
+        4,
+        -34.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_588",
+      "position": [
+        -83.33,
+        4,
+        -13.63
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_589",
+      "position": [
+        -72.53,
+        4,
+        -13.63
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_590",
+      "position": [
+        -82.48,
+        4,
+        -34.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_591",
+      "position": [
+        -90.36,
+        4,
+        -28.53
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_592",
+      "position": [
+        -90.91,
+        4,
+        -29.7
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_593",
+      "position": [
+        -69.09,
+        4,
+        -19.55
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_594",
+      "position": [
+        -69.35,
+        4,
+        -21.97
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_595",
+      "position": [
+        -80,
+        4,
+        -24
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_596",
+      "position": [
+        -80.98,
+        4,
+        -24.46
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_597",
+      "position": [
+        -79.02,
+        4,
+        -24.46
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_598",
+      "position": [
+        -80.98,
+        4,
+        -23.54
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_599",
+      "position": [
+        -79.02,
+        4,
+        -23.54
+      ],
+      "kind": "prop",
+      "model": "prop.dungeon_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_600",
+      "position": [
+        -68.98,
+        4,
+        -13
+      ],
+      "kind": "prop",
+      "model": "prop.sv_trashcan_metal",
+      "yaw": -2.5236,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_601",
+      "position": [
+        -90.93,
+        4,
+        -13.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 2.5521,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_602",
+      "position": [
+        -91.15,
+        4,
+        -35.12
+      ],
+      "kind": "prop",
+      "model": "prop.sv_backpack",
+      "yaw": 0.9538,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_603",
+      "position": [
+        53.5,
+        4,
+        -13.09
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_604",
+      "position": [
+        37.09,
+        4,
+        -14.75
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_605",
+      "position": [
+        58.91,
+        4,
+        -15.1
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_606",
+      "position": [
+        45.1,
+        4,
+        -13.09
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_607",
+      "position": [
+        37.35,
+        4,
+        -21.77
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_bags",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_608",
+      "position": [
+        58.91,
+        4,
+        -30.3
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_609",
+      "position": [
+        48,
+        4,
+        -24
+      ],
+      "kind": "prop",
+      "model": "prop.workbench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_610",
+      "position": [
+        58.68,
+        4,
+        -34.68
+      ],
+      "kind": "prop",
+      "model": "prop.powder_keg",
+      "yaw": -0.8535,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_611",
+      "position": [
+        37.15,
+        4,
+        -13.15
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": 2.4211,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_612",
+      "position": [
+        58.86,
+        4,
+        -13.14
+      ],
+      "kind": "prop",
+      "model": "prop.dg_barrel",
+      "yaw": -2.1992,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_613",
+      "position": [
+        59.34,
+        5.4,
+        -28.02
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_614",
+      "position": [
+        59.34,
+        5.4,
+        -18.62
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_615",
+      "position": [
+        41.58,
+        5.4,
+        -35.34
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_616",
+      "position": [
+        49.18,
+        5.4,
+        -12.65
+      ],
+      "kind": "prop",
+      "model": "prop.dg_sword_mount",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_617",
+      "position": [
+        45.09,
+        4,
+        13.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_618",
+      "position": [
+        45.09,
+        5.1,
+        13.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_619",
+      "position": [
+        45.36,
+        4,
+        16.89
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_620",
+      "position": [
+        45.09,
+        4,
+        5.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_621",
+      "position": [
+        45.09,
+        5.1,
+        5.85
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_622",
+      "position": [
+        66.91,
+        4,
+        11.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_623",
+      "position": [
+        66.91,
+        5.1,
+        11.05
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -1.2708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_624",
+      "position": [
+        45.09,
+        4,
+        3.45
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_625",
+      "position": [
+        45.09,
+        5.1,
+        3.45
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_626",
+      "position": [
+        62.39,
+        4,
+        18.64
+      ],
+      "kind": "prop",
+      "model": "prop.shelf_boxes",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_627",
+      "position": [
+        45.09,
+        4,
+        8.65
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_628",
+      "position": [
+        45.09,
+        5.1,
+        8.65
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_629",
+      "position": [
+        65.95,
+        4,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_630",
+      "position": [
+        65.95,
+        5.1,
+        18.91
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -2.8416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_631",
+      "position": [
+        55.95,
+        4,
+        8.17
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_632",
+      "position": [
+        55.95,
+        5.1,
+        8.17
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_633",
+      "position": [
+        55.95,
+        4,
+        10.47
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_634",
+      "position": [
+        55.95,
+        5.1,
+        10.47
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_635",
+      "position": [
+        58.25,
+        4,
+        8.17
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_636",
+      "position": [
+        58.25,
+        5.1,
+        8.17
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 1.8708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_637",
+      "position": [
+        44.97,
+        4,
+        -3.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": 0.9098,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_638",
+      "position": [
+        67.03,
+        4,
+        -3.03
+      ],
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "yaw": -0.6949,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_639",
+      "position": [
+        -19.48,
+        -4,
+        2.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_640",
+      "position": [
+        -13.68,
+        -4,
+        -10.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_641",
+      "position": [
+        -26.36,
+        -4,
+        -5.48
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_642",
+      "position": [
+        -16.48,
+        -4,
+        2.37
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_643",
+      "position": [
+        -13.63,
+        -4,
+        -5.68
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_644",
+      "position": [
+        -26.36,
+        -4,
+        -7.28
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_645",
+      "position": [
+        -26.36,
+        -4,
+        2.72
+      ],
+      "kind": "prop",
+      "model": "prop.bunk_bed",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_646",
+      "position": [
+        -13.09,
+        -4,
+        -3.1
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_647",
+      "position": [
+        -26.91,
+        -4,
+        0.1
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_648",
+      "position": [
+        -20,
+        -4,
+        -4
+      ],
+      "kind": "prop",
+      "model": "prop.table",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_649",
+      "position": [
+        -19.48,
+        -4,
+        -3.2
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_650",
+      "position": [
+        -19.48,
+        -4,
+        -4.8
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_651",
+      "position": [
+        -20.52,
+        -4,
+        -3.2
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_652",
+      "position": [
+        -20.52,
+        -4,
+        -4.8
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_653",
+      "position": [
+        -13.08,
+        -4,
+        2.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": -2.4764,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_654",
+      "position": [
+        -26.92,
+        -4,
+        -10.92
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
+      "yaw": 0.7658,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -3111,7 +9006,9 @@
   },
   "terrain": null,
   "bounds": null,
+  "track": null,
   "backdrop": null,
+  "physics": null,
   "blood": null,
   "teamSetup": null,
   "dependencies": []
