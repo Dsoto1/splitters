@@ -180,7 +180,7 @@ export type GameEvent =
   | { e: 'use'; s: number; i: number; ok: 0 | 1 }
   /** Team leaders: `s` now leads `team` ('lead'), or `team`'s leader went down ('down'; Leader variant: `n` points to the killer's side). */
   | { e: 'leader'; a: 'lead' | 'down'; s: number; team: string; n?: number }
-  /** Slot `s` changed hands mid-match: `to` (a player who joined, or a bot when a player left) took over `from`, keeping the body, team and loadout. */
+  /** A player `to` joined mid-match in slot `s`, replacing the bot `from` (removed to make room; the player spawns normally); or, with `bot`, the bot `to` took over for `from`, a player who left, where they stood. */
   | { e: 'takeover'; s: number; from: string; to: string; bot?: 1 };
 
 /**

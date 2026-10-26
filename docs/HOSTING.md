@@ -67,7 +67,7 @@ Other settings (environment variables):
 
 | Variable | What it does |
 | --- | --- |
-| `BOT_FILL` | Players + bots to keep (up to 96: 48 v 48). A player who joins **takes over a bot** where it stands (same body, team, weapons and score; the feed says "Ana took over Mildred"), on the team that most needs a person. |
+| `BOT_FILL` | Players + bots to keep (up to 96: 48 v 48). A player who joins **replaces a bot**: the worst-scoring bot on the team that most needs a person is removed and the player spawns normally (the feed says "Ana joined, replacing Mildred"). |
 | `BOT_TAKEBACK=0` | When a player leaves, the slot empties and a fresh bot spawns. Default: a bot takes over where they were. |
 | `LEADERS=on` / `vip` | Team leaders (gold star; their Follow me / Hold here orders every bot on the team). `vip`: Leader hunt, downing a leader scores 3 for Team Deathmatch. |
 | `PLAYLIST=maps/playlists/night_shift.json` | Plays a scenario chain: each won map moves everyone on to the next (see GAME_MODES.md, Scenario chains). |

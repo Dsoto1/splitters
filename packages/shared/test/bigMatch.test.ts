@@ -19,27 +19,31 @@ const run = (m: Match, n: number): GameEvent[] => {
   return out;
 };
 
-describe('players take over bots', () => {
-  it('a joining player takes a bot’s place where it stands, on the team that needs a player, keeping its loadout', () => {
+describe('players joining and leaving running matches', () => {
+  it('a joining player replaces the worst-scoring bot on the team that needs a player and spawns normally', () => {
     const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2] }, 5);
     const filler = new BotFiller(match);
     const host = filler.join('Host', undefined, 4)!;
     expect(match.combatants()).toHaveLength(4);
     run(match, 90);
-    // The host's team already has a person: the newcomer goes to the other one, into a bot's body.
-    const before = new Map(match.combatants().filter((c) => c.kind === 'bot').map((c) => [c.slot, { name: c.name, pos: { ...c.move.pos }, weapons: [...c.weapons.keys()], kills: c.kills, alive: c.alive }]));
+    // The host's team already has a person: the newcomer goes to the other one.
+    const bots = match.combatants().filter((c) => c.kind === 'bot' && c.faction !== host.faction);
+    bots[0]!.kills = 3;
+    if (bots[1]) bots[1].deaths = 2;
+    const worst = [...bots].sort((a, b) => a.kills - a.deaths - (b.kills - b.deaths))[0]!;
+    const gone = { name: worst.name, pos: { ...worst.move.pos } };
     const ana = filler.join('Ana', undefined, 4)!;
-    const was = before.get(ana.slot)!;
-    expect(was).toBeDefined();
+    // The worst-scoring bot on the team that needs a player is gone; Ana takes a fresh place there.
+    expect(match.combatants().some((c) => c.name === gone.name)).toBe(false);
     expect(ana.faction).not.toBe(host.faction);
     expect(match.combatants()).toHaveLength(4);
     expect(ana.kind).toBe('human');
     expect(ana.bot).toBeUndefined();
-    expect(ana.alive).toBe(was.alive);
-    expect(ana.move.pos).toEqual(was.pos);
-    expect([...ana.weapons.keys()]).toEqual(was.weapons);
-    expect(ana.kills).toBe(was.kills);
-    expect(match.step().find((e) => e.e === 'takeover')).toEqual({ e: 'takeover', s: ana.slot, to: 'Ana', from: was.name });
+    expect(ana.kills).toBe(0);
+    // She spawns at a spawn point like anyone else, not where the bot stood.
+    const spawns = match.map.entities.filter((e) => e.kind === 'spawn');
+    expect(spawns.some((e) => Math.hypot(e.position[0] - ana.move.pos.x, e.position[2] - ana.move.pos.z) < 1.5)).toBe(true);
+    expect(match.step().find((e) => e.e === 'takeover')).toEqual({ e: 'takeover', s: ana.slot, to: 'Ana', from: gone.name });
     // Its inputs start from seq 1 like any new player.
     match.queueInputs(ana.slot, [{ seq: 1, forward: 1, right: 0, yaw: 0, pitch: 0, buttons: 0 }]);
     expect(ana.queue).toHaveLength(1);

@@ -349,10 +349,11 @@ low-scoring CTF map: its bases are 108 m apart on a sniper causeway.
 
 - **48 v 48.** Up to 96 players and bots (Arcade team sizes go to 48; presets
   16v16, 24v24, 48v48). See HOSTING.md (96 players) for what keeps it fast.
-- **Taking over bots.** A player joining a running match (dedicated server,
-  Host game, or a LAN game) doesn't spawn fresh: they take over a Player Bot
-  on the team that most needs a person, right where it stands, with its
-  health, weapons, seat and score. The feed says "Ana took over Mildred".
+- **Joining running matches.** A player joining a running match (dedicated
+  server, Host game, or a LAN game) makes room by removing a Player Bot: the
+  worst-scoring one (fewest kills less deaths) on the team that most needs a
+  person. They then spawn normally at a spawn point with a fresh loadout. The
+  feed says "Ana joined, replacing Mildred".
   When a player leaves, a bot takes over where they were ("Mildred took over
   for Ana"); servers can turn that off (`BOT_TAKEBACK=0`).
 - **Team leaders** (Arcade → More rules → Team leaders; servers `LEADERS=on`).

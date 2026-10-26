@@ -1026,11 +1026,11 @@ export class Match {
   }
 
   /**
-   * A player joining a running match takes over a Player Bot in place: the
-   * same slot, body, position, team, loadout, seat and score, so play goes on
-   * without a respawn. The bot comes from the team that most needs a player
-   * (fewest people for its size), preferring one that is alive and on foot.
-   * Null when there is no bot to take over.
+   * A player joining a running match makes room by removing a Player Bot: the
+   * worst-scoring bot (fewest kills less deaths) on the team that most needs a
+   * player (fewest people for its size). The player then spawns like anyone
+   * else, at a spawn point, never in the bot's place. Null when there is no bot
+   * to remove or no free slot after.
    */
   takeOverBot(name: string, look?: string): Combatant | null {
     const all = this.combatants();
@@ -1038,24 +1038,15 @@ export class Match {
     if (!bots.length) return null;
     const targets = this.teamTargets();
     const people = (team: string | null) => all.filter((c) => c.kind === 'human' && c.faction === team).length / (team ? (targets.get(team) ?? 1) : 1);
-    bots.sort((a, b) => people(a.faction) - people(b.faction) || Number(b.alive) - Number(a.alive) || Number(!!a.mount) - Number(!!b.mount) || a.slot - b.slot);
-    const c = bots[0]!;
-    const from = c.name;
-    c.kind = 'human';
-    c.name = name;
-    c.bot = undefined;
-    c.order = undefined;
-    c.shotAt = undefined;
-    // The newcomer's inputs count from 1: forget the bot's.
-    c.queue = [];
-    c.lastSeq = 0;
-    c.prevButtons = 0;
-    c.look = validLookId(look);
-    this.applyBodySize(c);
-    c.health = Math.min(c.health, c.maxHealth);
-    this.botThought.delete(c.slot);
-    this.raceBots.delete(c.slot);
-    this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name });
+    const score = (c: Combatant) => c.kills - c.deaths;
+    bots.sort((a, b) => people(a.faction) - people(b.faction) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
+    const out = bots[0]!;
+    const from = out.name;
+    this.botThought.delete(out.slot);
+    this.raceBots.delete(out.slot);
+    this.remove(out.slot);
+    const c = this.addHuman(name, look);
+    if (c) this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name });
     return c;
   }
 
@@ -3588,8 +3579,9 @@ export class BotFiller {
   }
 
   /**
-   * A player joins: they take over a bot where it stands (Match.takeOverBot),
-   * or get a slot of their own when there is no bot. Then the fill is kept.
+   * A player joins: the worst-scoring bot on the team that needs them is removed
+   * to make room (Match.takeOverBot) and they spawn normally, or they get a slot
+   * of their own when there is no bot. Then the fill is kept.
    */
   join(name: string, look: string | undefined, fill: number): Combatant | null {
     const c = this.match.takeOverBot(name, look) ?? this.match.addHuman(name, look);
