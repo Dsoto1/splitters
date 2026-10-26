@@ -126,7 +126,9 @@ export class LocalTransport implements Transport {
 
   /** Tell everyone the map is about to change ("Changing map to …"). */
   notice(text: string): void {
-    this.toHost({ k: 'notice', text });
+    // This player sees it now (the map change follows at once); friends get it from the match.
+    if (!this.stopped) this.onMessage?.({ t: 'notice', text });
+    this.toHost({ k: 'notice', text, guestsOnly: true });
   }
 
   /** Host game, map change: friends get `travel` and reconnect by themselves to the same join code, where the next match lets them in. */

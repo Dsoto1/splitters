@@ -288,9 +288,9 @@ export class MatchHost {
     if (this.control && !this.stopped) this.announce({ t: 'roster', players: this.control.match.roster() });
   }
 
-  /** Tell everyone something ("Changing map to …"). */
-  notice(text: string): void {
-    this.announce({ t: 'notice', text });
+  /** Tell everyone something ("Changing map to …"); `guestsOnly` when the page has shown it to its player already. */
+  notice(text: string, guestsOnly = false): void {
+    this.announce({ t: 'notice', text }, guestsOnly);
   }
 
   /** A friend's link opened (Host game). Before the match runs, what they say waits for it. */
@@ -389,8 +389,8 @@ export class MatchHost {
   }
 
   /** Notices, rosters and the host's settings: to this player, and (except the settings) to every friend. */
-  private announce(msg: ServerMessage): void {
-    this.sink.local(msg);
+  private announce(msg: ServerMessage, guestsOnly = false): void {
+    if (!guestsOnly) this.sink.local(msg);
     if (msg.t === 'host') return;
     const text = JSON.stringify(msg);
     for (const r of this.remotes.values()) if (r.slot !== null) this.sink.send(r.id, text);
@@ -414,7 +414,7 @@ export type ToSimHost =
   | { k: 'ready' }
   | { k: 'cmd'; cmd: Exclude<HostCommand, { c: 'map' }> }
   | { k: 'drop'; reason: string }
-  | { k: 'notice'; text: string }
+  | { k: 'notice'; text: string; guestsOnly?: boolean }
   | { k: 'open'; id: number }
   | { k: 'msg'; id: number; text: string }
   | { k: 'closed'; id: number }
@@ -460,7 +460,7 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
     case 'drop':
       return host.dropGuests(m.reason);
     case 'notice':
-      return host.notice(m.text);
+      return host.notice(m.text, m.guestsOnly);
     case 'open':
       return host.open(m.id);
     case 'msg':
