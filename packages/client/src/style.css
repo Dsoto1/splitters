@@ -395,6 +395,10 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #vehicle-hp[hidden] { display: none; }
 #vehicle-hp i { display: block; width: 220px; height: 7px; background: rgba(255, 255, 255, 0.12); }
 #vehicle-hp b, #vehicle-bars b { display: block; height: 100%; width: var(--hp, 100%); background: var(--hp-color, var(--success)); transition: width 0.2s; }
+#vehicle-hp em { font-style: normal; color: #ffb347; font-size: 14px; animation: vehicle-fire 0.6s ease-in-out infinite alternate; }
+#vehicle-hp em[hidden] { display: none; }
+#vehicle-hp.burning { background: rgba(80, 18, 8, 0.88); outline: 1px solid rgba(255, 122, 26, 0.7); }
+@keyframes vehicle-fire { from { color: #ffb347; } to { color: #ff4a1a; } }
 #vehicle-bars { position: absolute; inset: 0; pointer-events: none; }
 #vehicle-bars i { position: absolute; width: 64px; height: 5px; margin-left: -32px; background: rgba(0, 0, 0, 0.55); outline: 1px solid rgba(0, 0, 0, 0.6); }
 

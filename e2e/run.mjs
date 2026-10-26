@@ -918,6 +918,23 @@ async function vehiclesFlow(browser) {
     if (out) break;
   }
   check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
+  // Blow the buggy up: it goes up in a vehicle explosion and leaves a charred wreck the client keeps solid.
+  const boom = await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const m = window.__match.mounts.filter((x) => x.def.id === 'buggy' && x.alive).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
+    window.__match.damageMount(m, m.def.health * 0.9, null);
+    return m.index;
+  });
+  await page.waitForFunction((i) => window.__cs.mounts.mounts.get(i)?.burning, boom, { timeout: T(5000) }).catch(() => {});
+  check(await page.evaluate((i) => window.__cs.mounts.mounts.get(i)?.burning === true, boom), 'a badly damaged buggy catches fire');
+  await page.evaluate((i) => window.__match.damageMount(window.__match.mounts.find((x) => x.index === i), 10_000, null), boom);
+  await page.waitForFunction((i) => window.__cs.mounts.mounts.get(i)?.wreck, boom, { timeout: T(5000) }).catch(() => {});
+  const wreck = await page.evaluate((i) => {
+    const m = window.__cs.mounts.mounts.get(i);
+    return { wreck: m?.wreck, alive: m?.alive, solid: m?.body.isEnabled(), enter: !!window.__cs.mounts.enterable(m.pos) };
+  }, boom);
+  check(wreck.wreck && !wreck.alive && wreck.solid && !wreck.enter, `it blows up and leaves a solid wreck nobody can board (${JSON.stringify(wreck)})`);
+  await page.waitForTimeout(800);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

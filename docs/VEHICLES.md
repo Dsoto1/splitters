@@ -38,7 +38,42 @@ Car Kit (CC0).
   explodes, throws out everyone aboard into the blast and comes back where it
   was placed after its respawn delay (set per mount in the inspector).
   Sentries can be given a team in the inspector.
-- **Net code.** Mounts go out in every snapshot (`mt`) with their occupants;
+- **Damage states** (everyone sees them; thresholds in `mounts.ts`):
+  light grey smoke under 60% health, thick black smoke and sparks under
+  35%, on fire under 15%. A **burning** vehicle loses health on its own
+  (from 15% it blows in about 5 s) unless something finishes it first; the
+  people inside see "Vehicle on fire — bail out!" on their vehicle health
+  panel. Whoever hit it last gets the kills when it goes up.
+- **Explosions.** A layered fireball (white flash, core, outer ball and
+  bursts of flame round it), a shockwave ring along the ground, sparks,
+  charred chunks on the effects physics and a column of black smoke; a deep
+  boom and falling metal; cameras shake, out to about six blast radii. The
+  blast hurts players, other mounts and destructibles in reach, so parked
+  vehicles, barrels, gas cans and explosive props go up in chains, and it
+  lights oil. Its kills show "✹ Wreck" in the feed, credited to the
+  attacker.
+- **Wrecks.** A destroyed vehicle leaves a charred, smoking hulk where it
+  fell (a downed flyer drops to the ground): solid cover in the simulation
+  and in client prediction, with no seats (it reads as not alive, so bots
+  never try to board it). It stands for 20 s (never past the respawn delay
+  less 1.5 s), then stops being solid and sinks and fades while the vehicle
+  waits to respawn at home. Turrets and sentries leave no wreck.
+- **Crashes.** Driving into another vehicle, a wreck or a turret at 5 m/s
+  or more (closing speed) hurts both, `(closing − 3) × 8` shared out by
+  weight: a kart into a tank comes off far worse. Each driver is credited for
+  the other's damage, and the lighter one is shoved. Running people over
+  (5 m/s+) hurts and throws them, credited to the driver. Both play a metal
+  crash with sparks.
+- **Lava, acid and water.** Lava sets a vehicle on fire at once and burns
+  20% of its health a second; acid eats 6% a second; a ground vehicle
+  sunk deeper than its body floods (12% a second). Hovercraft and flyers ride
+  over water.
+- **Vehicle damage setting** (arcade setup, more rules; `rules.vehicleDamage`):
+  Normal, Tough (vehicles take half damage) or Off (indestructible, except by
+  falling off the map). Turrets and sentries always take full damage.
+- **Net code.** Mounts go out in every snapshot (`mt`: health %, state bits
+  alive / wreck / burning, occupants); `explode` events carry `m` for a
+  vehicle blowing up, and `crash` events a position and strength;
   your seat comes in your private state (`mo`). Riding isn't predicted
   locally: the server moves you, and the client smooths the vehicle's pose.
   Vehicle bodies are in the prediction physics, so walking into one feels

@@ -1,4 +1,4 @@
-import { TICK_RATE, getMountDef, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import { MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, TICK_RATE, getMountDef, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -12,6 +12,12 @@ export interface ClientMount {
   aimPitch: number;
   health: number;
   alive: boolean;
+  /** Destroyed vehicle: its charred wreck still stands (solid, no seats). */
+  wreck: boolean;
+  /** On fire (bail out!). */
+  burning: boolean;
+  /** When the wreck stopped being solid (ms), so it can fade out; 0 otherwise. */
+  wreckGoneAt: number;
   seats: number[];
   /** Smoothed pose for drawing. */
   shown: { pos: Vec3; yaw: number; aimYaw: number; aimPitch: number };
@@ -43,7 +49,7 @@ export class MountState {
       if (!def) return;
       const pos = { x: e.position[0], y: e.position[1], z: e.position[2] };
       const body = physics.createBox({ x: pos.x, y: pos.y + def.half[1], z: pos.z }, { x: def.half[0], y: def.half[1], z: def.half[2] }, e.yaw);
-      this.mounts.set(index, { index, def, model: e.model, pos, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0, health: 100, alive: true, seats: def.seats.map(() => -1), shown: { pos: { ...pos }, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body });
+      this.mounts.set(index, { index, def, model: e.model, pos, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0, health: 100, alive: true, wreck: false, burning: false, wreckGoneAt: 0, seats: def.seats.map(() => -1), shown: { pos: { ...pos }, yaw: e.yaw, aimYaw: e.yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body });
     });
   }
 
@@ -71,16 +77,24 @@ export class MountState {
       m.aimYaw = s[5]!;
       m.aimPitch = s[6]!;
       m.health = s[7]!;
-      const alive = s[8] === 1;
+      const flags = s[8]!;
+      const alive = (flags & MOUNT_FLAG_ALIVE) !== 0;
+      const wreck = (flags & MOUNT_FLAG_WRECK) !== 0;
       if (!m.alive && alive) {
         m.shown = { pos: { ...m.pos }, yaw: m.yaw, aimYaw: m.aimYaw, aimPitch: m.aimPitch };
         m.vel = { x: 0, y: 0, z: 0 };
         m.spin = 0;
       }
+      if (m.wreck && !wreck && !alive) m.wreckGoneAt = now;
+      if (alive || wreck) m.wreckGoneAt = 0;
       m.alive = alive;
+      m.wreck = wreck;
+      m.burning = (flags & MOUNT_FLAG_BURNING) !== 0;
       m.seats = s.slice(9);
-      this.physics.setBoxEnabled(m.body, alive);
-      if (alive) this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
+      // The wreck is solid on the server too: keep it in the prediction physics until it goes.
+      const solid = alive || wreck;
+      this.physics.setBoxEnabled(m.body, solid);
+      if (solid) this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
     }
     this.physics.commit();
   }

@@ -179,6 +179,19 @@ export class ImpactVisuals {
     this.puffs.push({ mesh: puff, age: 0, life: 0.45, grow: 0.5 * size });
   }
 
+  /** A spray of hot sparks from a point (a badly damaged vehicle shorting out, a crash). */
+  sparkBurst(at: Vec3, count: number, speed = 3): void {
+    for (let i = 0; i < count; i++) {
+      const vel = new Vector3((Math.random() - 0.5) * speed * 2, Math.random() * speed * 1.4, (Math.random() - 0.5) * speed * 2);
+      const mesh = this.spark.createInstance('spark');
+      mesh.isPickable = false;
+      mesh.scaling.setAll(0.03 + Math.random() * 0.03);
+      const pos = new Vector3(at.x, at.y, at.z);
+      mesh.position.copyFrom(pos);
+      this.sparks.push({ mesh, pos, vel, age: 0, life: 0.25 + Math.random() * 0.3 });
+    }
+  }
+
   private readonly puffMats = new Map<string, StandardMaterial>();
 
   /** A soft puff that grows, rises and fades (vehicle smoke and fire). */

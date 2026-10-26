@@ -142,6 +142,41 @@
         }
       ]
     },
+    "explosion.vehicle": {
+      "gain": 1.2,
+      "range": "far",
+      "rate": 0.7,
+      "jitter": 0.05,
+      "variants": [
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/lowFrequency_explosion_001.ogg"
+        },
+        {
+          "pack": "kenney-sci-fi-sounds",
+          "file": "Audio/lowFrequency_explosion_000.ogg"
+        }
+      ]
+    },
+    "vehicle.crash": {
+      "gain": 0.9,
+      "range": "mid",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactMetal_heavy_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactMetal_heavy_001.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPlate_heavy_000.ogg"
+        }
+      ]
+    },
     "explosion.debris": {
       "gain": 0.6,
       "range": "mid",

@@ -25,7 +25,10 @@ tumble at once; older ones freeze where they lie.
 
 Chunks from broken crates, barrels, glass, walls and props are real little
 boxes now: they bounce off the floor and each other, roll down slopes and come
-to rest, then shrink away after 6 s.
+to rest, then shrink away after 6 s. A vehicle blowing up throws two dozen
+charred and glowing chunks harder and further, alongside its layered fireball,
+shockwave ring, sparks and smoke (see [`VEHICLES.md`](VEHICLES.md)); blasts
+and crashes near you shake the camera.
 
 ## Blood
 
