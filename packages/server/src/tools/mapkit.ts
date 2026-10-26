@@ -205,8 +205,9 @@ export class MapBuilder {
     return this.add({ kind: 'destructible', model, position: at, yaw, health: null, explosiveOnly: false });
   }
 
-  mount(model: MountModel, at: V3, yaw = 0, team: string | null = null): this {
-    return this.add({ kind: 'mount', model, position: at, yaw, faction: team, respawnSeconds: null });
+  /** A turret or vehicle; `onWater` vehicles ride on water instead of sinking (boats, jet skis). */
+  mount(model: MountModel, at: V3, yaw = 0, team: string | null = null, opts: { onWater?: boolean } = {}): this {
+    return this.add({ kind: 'mount', model, position: at, yaw, faction: team, respawnSeconds: null, ...(opts.onWater ? { onWater: true } : {}) });
   }
 
   /** Capture the Flag: `team`'s flag base, standing on the floor at `at`. */

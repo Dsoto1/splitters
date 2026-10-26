@@ -7,7 +7,7 @@ import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type En
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
-  AIRPLANE_DEF, BUILT_MOUNT_BASE, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
+  AIRPLANE_DEF, BUILT_MOUNT_BASE, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
 } from './mounts.ts';
 import { airRoute, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute } from './airplane.ts';
 import { CHUTE, heightAboveGround } from './parachute.ts';
@@ -43,7 +43,7 @@ import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EM
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
-import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
+import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
 import { ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
@@ -133,6 +133,9 @@ interface MountRt {
   /** Sideways slide (m/s along the vehicle's right), kept between ticks so it drifts. */
   slide: number;
   airborne: boolean;
+  /** Placed to ride on water (MountEntity.onWater), and riding on it right now (see FLOAT). */
+  floats: boolean;
+  afloat: boolean;
   /** Skipped this tick's drive (Match.farVehicle): the next one covers two ticks. */
   moveOwed?: boolean;
   /** Parked and settled since this tick (driveVehicle skips the physics until something moves it). */
@@ -507,7 +510,7 @@ export class Match {
     map.entities.forEach((e, index) => {
       if (e.kind !== 'mount') return;
       const def = getMountDef(e.model);
-      if (def) this.addMount(index, def, { x: e.position[0], y: e.position[1], z: e.position[2] }, e.yaw, e.faction, e.respawnSeconds);
+      if (def) this.addMount(index, def, { x: e.position[0], y: e.position[1], z: e.position[2] }, e.yaw, e.faction, e.respawnSeconds, !!e.onWater && !!def.vehicle);
     });
     // Race: the start-grid vehicles, after the map's own mounts (clients add the same ones: withRaceGrid).
     this.road = trackGeometry(map);
@@ -1539,6 +1542,7 @@ export class Match {
       enterRadius: m.def.enterRadius,
       seats: m.def.seats.map((s, i) => ({ role: s.role, free: m.seats[i] === null, ...(m.seats[i] !== null ? { by: m.seats[i]! } : {}), ...(s.weapon ? { weapon: getWeapon(s.weapon) } : {}), ...(s.arc !== undefined ? { arc: s.arc } : {}), ...(s.facing ? { facing: s.facing } : {}) })),
       ...(m.def.vehicle ? { maxSpeed: m.def.vehicle.maxSpeed, speed: Math.abs(m.speed) } : {}),
+      ...(m.floats ? { floats: true } : {}),
       humanNear: humans.some((h) => horizontalDistance(h.move.pos, m.pos) < 35),
     }));
   }
@@ -2833,7 +2837,7 @@ export class Match {
 
   // ---------------------------------------------------------------- turrets, sentries and vehicles
 
-  private addMount(index: number, def: MountDef, pos: Vec3, yaw: number, faction: string | null, respawnSeconds: number | null): void {
+  private addMount(index: number, def: MountDef, pos: Vec3, yaw: number, faction: string | null, respawnSeconds: number | null, floats = false): void {
     const half = { x: def.half[0], y: def.half[1], z: def.half[2] };
     const body = this.physics.createBox({ x: pos.x, y: pos.y + half.y, z: pos.z }, half, yaw);
     const probe = def.vehicle ? this.physics.createVehicleProbe(Math.min(half.x, half.z) * 0.95) : null;
@@ -2860,6 +2864,8 @@ export class Match {
       drive: { forward: 0, right: 0 },
       slide: 0,
       airborne: false,
+      floats,
+      afloat: false,
       cooldown: 0,
       lastHitBy: null,
       runOver: new Map(),
@@ -3059,7 +3065,7 @@ export class Match {
     m.aimPitch = 0;
     m.speed = m.velY = m.slide = 0;
     m.vel = { x: 0, z: 0 };
-    m.airborne = false;
+    m.airborne = m.afloat = false;
     m.push = { x: 0, z: 0 };
     m.lastHitBy = null;
     for (const g of m.guns) if (g) g.heat = 0;
@@ -3138,7 +3144,8 @@ export class Match {
         m.burning = true;
         this.damageMount(m, (max * 0.2) / TICK_RATE, null, true);
       } else if (low?.liquid === 'acid') this.damageMount(m, (max * 0.06) / TICK_RATE, null, true);
-      const deep = !v.hover && !v.fly ? liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y + m.def.half[1] * 1.5, z: m.pos.z }) : null;
+      // Afloat it rides at the surface and never floods; lava and acid carry nothing, so a floater sinks in and burns.
+      const deep = !v.hover && !v.fly && !m.afloat ? liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y + m.def.half[1] * 1.5, z: m.pos.z }) : null;
       if (deep && deep.liquid !== 'lava') this.damageMount(m, (max * 0.12) / TICK_RATE, null, true);
     }
     if (m.alive && m.burning) this.damageMount(m, (max * MOUNT_BURN_FRACTION) / MOUNT_BURN_SECONDS / TICK_RATE, null, true);
@@ -3224,7 +3231,9 @@ export class Match {
     const grounded = !m.airborne || !!v.hover || !!v.fly;
     // On a track's road tyres grip better; off it wheeled vehicles are a little slower.
     const road = roadHandling(this.road, m.pos, !!v.hover || !!v.fly);
-    const target = (forward > 0 ? v.maxSpeed * forward : forward < 0 ? -v.reverseSpeed * -forward : 0) * road.speed;
+    // On water: a little slower, and the hull slides more (see FLOAT).
+    const water = m.afloat ? FLOAT.speed : 1;
+    const target = (forward > 0 ? v.maxSpeed * forward : forward < 0 ? -v.reverseSpeed * -forward : 0) * road.speed * water;
     const braking = target === 0 || Math.sign(target) !== Math.sign(m.speed);
     let rate = (target === 0 ? v.accel * (v.hover ? 0.35 : 0.8) : braking ? v.accel * 1.8 : v.accel) * dt;
     if (!grounded) rate = 0;
@@ -3237,7 +3246,7 @@ export class Match {
     m.yaw += turn;
     // Turning swings the heading out from under the momentum: that becomes slide, which grip then eats.
     m.slide += -m.speed * Math.sin(turn);
-    const grip = grounded ? Math.min(0.6, (v.grip ?? (v.hover ? 0.06 : 0.25)) * road.grip) * (brake ? 0.25 : 1) : 0;
+    const grip = grounded ? Math.min(0.6, (v.grip ?? (v.hover ? 0.06 : 0.25)) * road.grip) * (brake ? 0.25 : 1) * (m.afloat ? FLOAT.grip : 1) : 0;
     m.slide *= (1 - grip) ** ticks;
     if (Math.abs(m.slide) < 0.02) m.slide = 0;
     if (v.fly) {
@@ -3261,13 +3270,25 @@ export class Match {
       return;
     }
     const startY = m.pos.y;
+    // Riding on water: the surface holds it up with its feet `draft` under, rising to it from below
+    // (it comes back up after a plunge); on the way down from a jump the water catches it.
+    const surface = m.floats && this.liquids.length ? floatSurface(this.liquids, m.pos) : null;
+    const line = surface === null ? null : surface - (v.draft ?? FLOAT.draft);
+    if (line !== null && m.pos.y + m.velY * dt < line) m.velY = Math.min(FLOAT.rise, (line - m.pos.y) / dt);
     const moved = this.physics.moveVehicle(m.probe!, m.body, m.pos, { x: vx * dt, y: m.velY * dt, z: vz * dt });
     if (parked && Math.abs(moved.feet.y - startY) < 1e-3) m.restSince ??= this.tick;
     else m.restSince = undefined;
     const climbed = (moved.feet.y - startY) / dt;
-    if (moved.grounded) {
+    const afloat = line !== null && moved.feet.y <= line + 0.02;
+    const wasAfloat = m.afloat;
+    m.afloat = afloat;
+    if (afloat && !moved.grounded) {
+      // On the water, not the bed or the shore: it rides the surface (a splash, never a hard landing).
+      m.velY = 0;
+      m.airborne = false;
+    } else if (moved.grounded) {
       // Hard landing: the heavier and faster it comes down, the more it hurts.
-      if (m.airborne && m.velY < -11 && !v.hover && !v.fly) this.damageMount(m, (-m.velY - 11) * 6 * mass, null);
+      if (m.airborne && !wasAfloat && !afloat && m.velY < -11 && !v.hover && !v.fly) this.damageMount(m, (-m.velY - 11) * 6 * mass, null);
       // On the ground the vertical speed follows the slope, so leaving a ramp keeps the climb (a flyer lifts off at will).
       m.velY = v.fly ? Math.max(0, m.velY) : Math.max(0, Math.min(climbed, 14));
       m.airborne = false;
@@ -3277,7 +3298,7 @@ export class Match {
       m.slide *= 0.5;
     }
     m.pos = moved.feet;
-    const decay = (moved.grounded ? 0.9 : 0.99) ** ticks;
+    const decay = (moved.grounded || afloat ? 0.9 : 0.99) ** ticks;
     m.push = { x: m.push.x * decay, z: m.push.z * decay };
     this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
     if (m.pos.y < this.killY) {

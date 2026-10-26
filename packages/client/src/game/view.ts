@@ -47,6 +47,7 @@ import {
   FX_CLOAK,
   FX_JET,
   CHUTE_GLIDER,
+  floatSurface,
   liquidAt,
   mapLiquids,
   type Liquid,
@@ -1376,6 +1377,7 @@ export class GameView {
       node.position.set(m.shown.pos.x, m.shown.pos.y, m.shown.pos.z);
       this.charMount(m.index, node, !m.alive && shown, m.alive ? 1 : m.wreck ? 1 : Math.max(0, 1 - fade));
       this.mountDamageFx(m, now);
+      if (m.alive && m.def.vehicle && this.liquids.length) this.wake(m, now);
       node.rotation.y = m.shown.yaw;
       if (m.def.kind === 'vehicle' && m.alive && !m.def.airplane) this.suspend(m, node);
       else if (!m.alive && shown) {
@@ -1495,6 +1497,30 @@ export class GameView {
   }
 
   private readonly mountFxAt = new Map<number, number>();
+  private readonly wakeAt = new Map<number, number>();
+
+  /**
+   * A vehicle moving at the surface of water or swamp (riding on it, or
+   * wading through the shallows) throws white spray off its stern and
+   * sides, more the faster it goes. Drawing only.
+   */
+  private wake(m: ClientMount, now: number): void {
+    if ((this.wakeAt.get(m.index) ?? 0) > now) return;
+    const p = m.shown.pos;
+    const top = floatSurface(this.liquids, p, 0.6);
+    if (top === null || p.y < top - 1.2) return;
+    const speed = Math.hypot(m.vel.x, m.vel.z);
+    if (speed < 3) return;
+    const [hx, , hz] = m.def.half;
+    const f = { x: Math.sin(m.shown.yaw), z: Math.cos(m.shown.yaw) };
+    const r = { x: f.z, z: -f.x };
+    const k = Math.min(1, speed / 25);
+    const at = (along: number, side: number) => ({ x: p.x + f.x * along + r.x * side, y: top + 0.05, z: p.z + f.z * along + r.z * side });
+    this.impacts.puff(at(-hz * 0.95, (Math.random() - 0.5) * hx), '#e4f0ee', 0.5 + k * 0.9, 0.7, 0.6);
+    const s = Math.random() < 0.5 ? -1 : 1;
+    this.impacts.puff(at(hz * (0.2 + Math.random() * 0.5), s * hx * 1.05), '#f4faf9', 0.35 + k * 0.5, 0.45, 1.2);
+    this.wakeAt.set(m.index, now + 110 - k * 60);
+  }
 
   /**
    * Damage you can read from across the map: light grey smoke under 60%

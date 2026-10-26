@@ -1302,12 +1302,15 @@ export class GameSession {
     }
     for (const m of models) jobs.push(this.view.models.load(m).catch(() => undefined));
     let done = 0;
+    let started = false;
     const total = jobs.length + 2;
-    const tick = () => this.hud.setLoading(`Loading ${map.metadata.name}`, ++done / total);
+    // A file that finishes after the start (see the cap below) must not bring the loading screen back over the game.
+    const tick = () => void (started || this.hud.setLoading(`Loading ${map.metadata.name}`, ++done / total));
     this.hud.setLoading(`Loading ${map.metadata.name}`, 0);
     const all = Promise.all([...jobs.map((j) => j.then(tick, tick)), this.view.scene.whenReadyAsync().then(tick, tick), this.view.city.ready.then(tick, tick)]);
     // Never stall the start on one slow file.
     await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
+    started = true;
     if (this.closed) return;
     this.hud.setLoading(null);
     this.opts.transport.sendReady();

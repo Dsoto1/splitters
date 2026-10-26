@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 21,
   "metadata": {
     "id": "norman_shores",
     "name": "Norman Shores",
@@ -10947,222 +10947,239 @@
       "id": "mount_376",
       "position": [
         -40,
-        -0.65,
+        -1.1,
         -76
       ],
       "kind": "mount",
       "model": "hover_bike",
       "yaw": 1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_377",
       "position": [
         -23,
-        -0.65,
+        -1.1,
         -86
       ],
       "kind": "mount",
       "model": "speeder",
       "yaw": 1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_378",
       "position": [
         -40,
-        -0.65,
+        -1.1,
         -4
       ],
       "kind": "mount",
       "model": "hover_bike",
       "yaw": 1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_379",
       "position": [
         -23,
-        -0.65,
+        -1.1,
         -14
       ],
       "kind": "mount",
       "model": "speeder",
       "yaw": 1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_380",
       "position": [
         -24,
-        -0.65,
+        -1.1,
         84
       ],
       "kind": "mount",
       "model": "hover_bike",
       "yaw": 1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_381",
       "position": [
         -7,
-        -0.65,
+        -1.1,
         74
       ],
       "kind": "mount",
       "model": "speeder",
       "yaw": 1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_382",
       "position": [
         32,
-        -0.65,
+        -1.1,
         -76
       ],
       "kind": "mount",
       "model": "hover_bike",
       "yaw": -1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_383",
       "position": [
         15,
-        -0.65,
+        -1.1,
         -86
       ],
       "kind": "mount",
       "model": "speeder",
       "yaw": -1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_384",
       "position": [
         48,
-        -0.65,
+        -1.1,
         20
       ],
       "kind": "mount",
       "model": "hover_bike",
       "yaw": -1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_385",
       "position": [
         31,
-        -0.65,
+        -1.1,
         10
       ],
       "kind": "mount",
       "model": "speeder",
       "yaw": -1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_386",
       "position": [
         32,
-        -0.65,
+        -1.1,
         84
       ],
       "kind": "mount",
       "model": "hover_bike",
       "yaw": -1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_387",
       "position": [
         15,
-        -0.65,
+        -1.1,
         74
       ],
       "kind": "mount",
       "model": "speeder",
       "yaw": -1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_388",
       "position": [
         34.95,
-        -0.65,
+        -1.1,
         -18.5
       ],
       "kind": "mount",
       "model": "hover_bike",
       "yaw": -1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_389",
       "position": [
         34.95,
-        -0.65,
+        -1.1,
         -11.5
       ],
       "kind": "mount",
       "model": "hover_bike",
       "yaw": -1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_390",
       "position": [
         34,
-        -0.65,
+        -1.1,
         -27
       ],
       "kind": "mount",
       "model": "hauler",
       "yaw": -1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_391",
       "position": [
         8,
-        -0.65,
+        -1.1,
         -50
       ],
       "kind": "mount",
       "model": "speeder",
       "yaw": 0,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_392",
       "position": [
         -48,
-        -0.65,
+        -1.1,
         -40
       ],
       "kind": "mount",
       "model": "hover_bike",
       "yaw": 1.5707963267948966,
       "faction": null,
-      "respawnSeconds": null
+      "respawnSeconds": null,
+      "onWater": true
     },
     {
       "id": "mount_393",
@@ -20089,13 +20106,13 @@
     {
       "id": "prop_1053",
       "position": [
-        -74.68,
+        -69.53,
         0,
-        -76.78
+        -83.22
       ],
       "kind": "prop",
       "model": "prop.tv_cabinet",
-      "yaw": 3.1416,
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -20103,13 +20120,13 @@
     {
       "id": "prop_1054",
       "position": [
-        -74.68,
+        -69.53,
         0.6,
-        -76.78
+        -83.22
       ],
       "kind": "prop",
       "model": "prop.tv",
-      "yaw": 3.1416,
+      "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
@@ -20117,13 +20134,13 @@
     {
       "id": "prop_1055",
       "position": [
-        -75.29,
+        -74.4,
         0,
-        -82.93
+        -83.18
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
-      "yaw": 1.5708,
+      "model": "prop.bookcase",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -20131,61 +20148,75 @@
     {
       "id": "prop_1056",
       "position": [
-        -68.95,
+        -75.07,
         0,
-        -83.05
+        -76.93
       ],
       "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
-      "yaw": -0.82,
+      "model": "prop.hh_plant",
+      "yaw": 2.3632,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
       "id": "prop_1057",
       "position": [
-        -69.46,
-        -0.18,
-        -83.43
+        -69.65,
+        0,
+        -70
       ],
       "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": 0,
+      "model": "prop.hh_bed_single",
+      "yaw": -1.5708,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
       "id": "prop_1058",
+      "position": [
+        -68.8,
+        0,
+        -69.2
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1059",
       "position": [
         -72,
         0,
         -72
       ],
       "kind": "prop",
-      "model": "prop.rug",
+      "model": "prop.hh_rug_small",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1059",
+      "id": "prop_1060",
       "position": [
-        -75,
+        -69.07,
         0,
-        -69
+        -74.93
       ],
       "kind": "prop",
-      "model": "prop.coat_rack",
-      "yaw": 2.3118,
+      "model": "prop.hh_floor_lamp",
+      "yaw": -0.8013,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1060",
+      "id": "prop_1061",
       "position": [
         -81.95,
         0,
@@ -20199,7 +20230,7 @@
       "tint": null
     },
     {
-      "id": "prop_1061",
+      "id": "prop_1062",
       "position": [
         -81.58,
         0,
@@ -20213,7 +20244,7 @@
       "tint": null
     },
     {
-      "id": "prop_1062",
+      "id": "prop_1063",
       "position": [
         -81.58,
         0,
@@ -20227,7 +20258,7 @@
       "tint": null
     },
     {
-      "id": "prop_1063",
+      "id": "prop_1064",
       "position": [
         -82.26,
         0,
@@ -20241,7 +20272,7 @@
       "tint": null
     },
     {
-      "id": "prop_1064",
+      "id": "prop_1065",
       "position": [
         -82.92,
         0,
@@ -20255,7 +20286,7 @@
       "tint": null
     },
     {
-      "id": "prop_1065",
+      "id": "prop_1066",
       "position": [
         -82.98,
         0,
@@ -20269,7 +20300,7 @@
       "tint": null
     },
     {
-      "id": "prop_1066",
+      "id": "prop_1067",
       "position": [
         -79.57,
         0,
@@ -20283,11 +20314,11 @@
       "tint": null
     },
     {
-      "id": "prop_1067",
+      "id": "prop_1068",
       "position": [
         -83.19,
         0,
-        -69.39
+        -69.59
       ],
       "kind": "prop",
       "model": "prop.hm_bathroom_sink",
@@ -20297,29 +20328,15 @@
       "tint": null
     },
     {
-      "id": "prop_1068",
-      "position": [
-        -83.23,
-        0,
-        -75.24
-      ],
-      "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": 0.9372,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_1069",
       "position": [
-        -75.29,
+        -73.92,
         4,
-        -90.69
+        -91.22
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 1.5708,
+      "model": "prop.hh_bookcase",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -20333,7 +20350,7 @@
       ],
       "kind": "prop",
       "model": "prop.hm_houseplant_tall",
-      "yaw": -0.7935,
+      "yaw": -0.6695,
       "scale": 1,
       "solid": false,
       "tint": null
@@ -20341,27 +20358,27 @@
     {
       "id": "prop_1071",
       "position": [
-        -68.98,
-        4,
-        -69.73
+        -75.27,
+        5.6,
+        -85.5
       ],
       "kind": "prop",
-      "model": "prop.fridge",
-      "yaw": -1.5708,
+      "model": "prop.hh_wall_shelf",
+      "yaw": 1.5708,
       "scale": 1,
-      "solid": true,
+      "solid": false,
       "tint": null
     },
     {
       "id": "prop_1072",
       "position": [
-        -70.55,
+        -69.06,
         4,
-        -72
+        -68.84
       ],
       "kind": "prop",
-      "model": "prop.dg_table_small",
-      "yaw": 0,
+      "model": "prop.hh_fridge",
+      "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -20369,27 +20386,27 @@
     {
       "id": "prop_1073",
       "position": [
-        -71.38,
+        -72,
         4,
-        -72.46
+        -72
       ],
       "kind": "prop",
-      "model": "prop.hm_stool",
+      "model": "prop.hh_table",
       "yaw": 1.5708,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
       "id": "prop_1074",
       "position": [
-        -69.72,
+        -72.66,
         4,
-        -72.46
+        -71.59
       ],
       "kind": "prop",
-      "model": "prop.hm_stool",
-      "yaw": -1.5708,
+      "model": "prop.hh_chair",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
@@ -20397,13 +20414,13 @@
     {
       "id": "prop_1075",
       "position": [
-        -71.38,
+        -71.34,
         4,
-        -71.54
+        -71.59
       ],
       "kind": "prop",
-      "model": "prop.hm_stool",
-      "yaw": 1.5708,
+      "model": "prop.hh_chair",
+      "yaw": -1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
@@ -20411,19 +20428,75 @@
     {
       "id": "prop_1076",
       "position": [
-        -69.72,
+        -72.66,
         4,
-        -71.54
+        -72.41
       ],
       "kind": "prop",
-      "model": "prop.hm_stool",
-      "yaw": -1.5708,
+      "model": "prop.hh_chair",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
       "id": "prop_1077",
+      "position": [
+        -71.34,
+        4,
+        -72.41
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1078",
+      "position": [
+        -70.1,
+        4,
+        -68.94
+      ],
+      "kind": "prop",
+      "model": "prop.hm_washer",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1079",
+      "position": [
+        -75.17,
+        4,
+        -68.83
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bin",
+      "yaw": 2.3639,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1080",
+      "position": [
+        -68.57,
+        5.6,
+        -74.21
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1081",
       "position": [
         -80,
         4,
@@ -20437,7 +20510,7 @@
       "tint": null
     },
     {
-      "id": "prop_1078",
+      "id": "prop_1082",
       "position": [
         -80,
         4,
@@ -20451,7 +20524,7 @@
       "tint": null
     },
     {
-      "id": "prop_1079",
+      "id": "prop_1083",
       "position": [
         -79.62,
         4.8,
@@ -20465,7 +20538,7 @@
       "tint": null
     },
     {
-      "id": "prop_1080",
+      "id": "prop_1084",
       "position": [
         -82.29,
         4,
@@ -20479,7 +20552,7 @@
       "tint": null
     },
     {
-      "id": "prop_1081",
+      "id": "prop_1085",
       "position": [
         -83.05,
         4,
@@ -20493,7 +20566,7 @@
       "tint": null
     },
     {
-      "id": "prop_1082",
+      "id": "prop_1086",
       "position": [
         -82.3,
         4,
@@ -20507,7 +20580,7 @@
       "tint": null
     },
     {
-      "id": "prop_1083",
+      "id": "prop_1087",
       "position": [
         -76.82,
         4,
@@ -20521,7 +20594,7 @@
       "tint": null
     },
     {
-      "id": "prop_1084",
+      "id": "prop_1088",
       "position": [
         -88.67,
         4,
@@ -20535,9 +20608,23 @@
       "tint": null
     },
     {
-      "id": "prop_1085",
+      "id": "prop_1089",
       "position": [
-        -69.34,
+        -67.43,
+        5.6,
+        -85.06
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1090",
+      "position": [
+        -69.74,
         8,
         -91.05
       ],
@@ -20549,9 +20636,9 @@
       "tint": null
     },
     {
-      "id": "prop_1086",
+      "id": "prop_1091",
       "position": [
-        -69.34,
+        -69.74,
         8,
         -90.32
       ],
@@ -20563,9 +20650,9 @@
       "tint": null
     },
     {
-      "id": "prop_1087",
+      "id": "prop_1092",
       "position": [
-        -68.95,
+        -69.35,
         8.8,
         -91.05
       ],
@@ -20577,39 +20664,53 @@
       "tint": null
     },
     {
-      "id": "prop_1088",
+      "id": "prop_1093",
       "position": [
-        -75.25,
+        -74.93,
         8,
-        -84.75
+        -85.07
       ],
       "kind": "prop",
-      "model": "prop.hm_floor_lamp",
-      "yaw": 2.4681,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1089",
-      "position": [
-        -75.18,
-        8,
-        -77.45
-      ],
-      "kind": "prop",
-      "model": "prop.bookcase",
-      "yaw": 1.5708,
+      "model": "prop.hh_floor_lamp",
+      "yaw": 2.2709,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1090",
+      "id": "prop_1094",
+      "position": [
+        -75.43,
+        9.5,
+        -90.21
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1095",
+      "position": [
+        -69.33,
+        8,
+        -83.16
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chest_drawers",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1096",
       "position": [
         -75.05,
         8,
-        -82.49
+        -77.54
       ],
       "kind": "prop",
       "model": "prop.desk",
@@ -20619,11 +20720,11 @@
       "tint": null
     },
     {
-      "id": "prop_1091",
+      "id": "prop_1097",
       "position": [
         -74.32,
         8,
-        -82.49
+        -77.54
       ],
       "kind": "prop",
       "model": "prop.hm_chair_wood",
@@ -20633,11 +20734,11 @@
       "tint": null
     },
     {
-      "id": "prop_1092",
+      "id": "prop_1098",
       "position": [
         -75.05,
         8.8,
-        -82.87
+        -77.92
       ],
       "kind": "prop",
       "model": "prop.hm_desk_lamp",
@@ -20647,49 +20748,35 @@
       "tint": null
     },
     {
-      "id": "prop_1093",
+      "id": "prop_1099",
       "position": [
-        -68.75,
+        -75,
         8,
-        -83.25
-      ],
-      "kind": "prop",
-      "model": "prop.hm_floor_lamp",
-      "yaw": -0.971,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1094",
-      "position": [
-        -69.66,
-        9.5,
-        -76.57
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1095",
-      "position": [
-        -68.99,
-        8,
-        -75.01
+        -83
       ],
       "kind": "prop",
       "model": "prop.coat_rack",
-      "yaw": -0.9739,
+      "yaw": 0.8505,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1096",
+      "id": "prop_1100",
+      "position": [
+        -69.06,
+        8,
+        -74.94
+      ],
+      "kind": "prop",
+      "model": "prop.hh_floor_lamp",
+      "yaw": -0.9739,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1101",
       "position": [
         -73.81,
         9.5,
@@ -20703,67 +20790,67 @@
       "tint": null
     },
     {
-      "id": "prop_1097",
+      "id": "prop_1102",
       "position": [
-        -82.87,
+        -82.6,
         8,
-        -90.66
+        -91.06
       ],
       "kind": "prop",
-      "model": "prop.hm_shower",
-      "yaw": 1.5708,
+      "model": "prop.bathtub",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1098",
+      "id": "prop_1103",
       "position": [
-        -82.37,
+        -77.2,
         8,
-        -84.96
+        -91.08
       ],
       "kind": "prop",
-      "model": "prop.toilet",
+      "model": "prop.hh_toilet",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1104",
+      "position": [
+        -77.08,
+        8,
+        -84.69
+      ],
+      "kind": "prop",
+      "model": "prop.hh_basin",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1099",
-      "position": [
-        -76.81,
-        8,
-        -85.84
-      ],
-      "kind": "prop",
-      "model": "prop.hm_bathroom_sink",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1100",
-      "position": [
-        -76.77,
-        8,
-        -91.23
-      ],
-      "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": -0.9051,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1101",
+      "id": "prop_1105",
       "position": [
         -80,
         8,
-        -79.7
+        -88
+      ],
+      "kind": "prop",
+      "model": "prop.hm_rug",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1106",
+      "position": [
+        -80,
+        8,
+        -79.69
       ],
       "kind": "prop",
       "model": "prop.desk",
@@ -20773,63 +20860,63 @@
       "tint": null
     },
     {
-      "id": "prop_1102",
+      "id": "prop_1107",
       "position": [
         -80,
         8,
         -80.46
       ],
       "kind": "prop",
-      "model": "prop.hm_chair_office",
+      "model": "prop.office_chair",
       "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1103",
+      "id": "prop_1108",
       "position": [
-        -80.38,
-        8.8,
-        -79.7
-      ],
-      "kind": "prop",
-      "model": "prop.hm_desk_lamp",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1104",
-      "position": [
-        -80.13,
+        -80.04,
         8,
-        -76.71
+        -76.79
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
+      "model": "prop.hh_bookcase_wide",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1105",
+      "id": "prop_1109",
       "position": [
-        -83.25,
+        -83.23,
         8,
-        -83.25
+        -76.77
       ],
       "kind": "prop",
-      "model": "prop.hm_floor_lamp",
-      "yaw": 0.9031,
+      "model": "prop.trashcan",
+      "yaw": 2.4352,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1110",
+      "position": [
+        -78.26,
+        9.6,
+        -83.43
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1106",
+      "id": "prop_1111",
       "position": [
         -71.01,
         0,
@@ -20843,91 +20930,91 @@
       "tint": null
     },
     {
-      "id": "prop_1107",
-      "position": [
-        -70.15,
-        0,
-        -16.58
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_wood",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1108",
-      "position": [
-        -70.15,
-        0,
-        -18.48
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_wood",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1109",
-      "position": [
-        -71.01,
-        0,
-        -16.58
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_wood",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1110",
-      "position": [
-        -71.01,
-        0,
-        -18.48
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_wood",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1111",
-      "position": [
-        -71.87,
-        0,
-        -16.58
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_wood",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
       "id": "prop_1112",
       "position": [
-        -71.87,
+        -70.15,
         0,
-        -18.48
+        -16.58
       ],
       "kind": "prop",
       "model": "prop.hm_chair_wood",
-      "yaw": 0,
+      "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
       "id": "prop_1113",
+      "position": [
+        -70.15,
+        0,
+        -18.48
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1114",
+      "position": [
+        -71.01,
+        0,
+        -16.58
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1115",
+      "position": [
+        -71.01,
+        0,
+        -18.48
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1116",
+      "position": [
+        -71.87,
+        0,
+        -16.58
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1117",
+      "position": [
+        -71.87,
+        0,
+        -18.48
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1118",
       "position": [
         -68.92,
         0,
@@ -20941,7 +21028,7 @@
       "tint": null
     },
     {
-      "id": "prop_1114",
+      "id": "prop_1119",
       "position": [
         -75.27,
         0,
@@ -20955,9 +21042,37 @@
       "tint": null
     },
     {
-      "id": "prop_1115",
+      "id": "prop_1120",
       "position": [
-        -74.93,
+        -69.53,
+        0,
+        -4.84
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chest_drawers",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1121",
+      "position": [
+        -69.53,
+        0.76,
+        -4.84
+      ],
+      "kind": "prop",
+      "model": "prop.hh_tv",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1122",
+      "position": [
+        -74.73,
         0,
         -4.71
       ],
@@ -20969,21 +21084,63 @@
       "tint": null
     },
     {
-      "id": "prop_1116",
+      "id": "prop_1123",
       "position": [
-        -74.8,
+        -69.65,
         0,
-        -2.81
+        2
       ],
       "kind": "prop",
-      "model": "prop.hm_houseplant",
-      "yaw": 0.6238,
+      "model": "prop.hh_bed_single",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1124",
+      "position": [
+        -68.8,
+        0,
+        2.8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1125",
+      "position": [
+        -74.94,
+        0,
+        2.94
+      ],
+      "kind": "prop",
+      "model": "prop.hh_floor_lamp",
+      "yaw": 2.5085,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1126",
+      "position": [
+        -69.06,
+        -0.18,
+        3.43
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1117",
+      "id": "prop_1127",
       "position": [
         -80.95,
         0,
@@ -20997,7 +21154,7 @@
       "tint": null
     },
     {
-      "id": "prop_1118",
+      "id": "prop_1128",
       "position": [
         -82.3,
         0,
@@ -21011,7 +21168,7 @@
       "tint": null
     },
     {
-      "id": "prop_1119",
+      "id": "prop_1129",
       "position": [
         -82.3,
         1.1,
@@ -21025,63 +21182,63 @@
       "tint": null
     },
     {
-      "id": "prop_1120",
+      "id": "prop_1130",
       "position": [
-        -82.86,
+        -83.06,
         0,
-        2.87
+        -2
       ],
       "kind": "prop",
-      "model": "prop.hm_shower",
-      "yaw": 3.1416,
+      "model": "prop.bathtub",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1121",
+      "id": "prop_1131",
       "position": [
-        -80,
+        -79.57,
         0,
-        -3.1
+        -3.04
       ],
       "kind": "prop",
-      "model": "prop.hm_toilet",
+      "model": "prop.toilet",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1122",
+      "id": "prop_1132",
       "position": [
-        -76.81,
+        -80.59,
         0,
-        -2.59
+        3.19
       ],
       "kind": "prop",
       "model": "prop.hm_bathroom_sink",
-      "yaw": -1.5708,
+      "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1123",
+      "id": "prop_1133",
       "position": [
-        -83.24,
+        -76.77,
         0,
         -3.23
       ],
       "kind": "prop",
       "model": "prop.trashcan",
-      "yaw": 0.6399,
+      "yaw": -0.8641,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1124",
+      "id": "prop_1134",
       "position": [
         -69.78,
         4,
@@ -21095,21 +21252,133 @@
       "tint": null
     },
     {
-      "id": "prop_1125",
+      "id": "prop_1135",
       "position": [
-        -68.78,
+        -74.93,
         4,
-        -19.22
+        -18.93
       ],
       "kind": "prop",
-      "model": "prop.floor_lamp",
-      "yaw": -0.7442,
+      "model": "prop.hh_floor_lamp",
+      "yaw": 0.8644,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1136",
+      "position": [
+        -75.27,
+        5.6,
+        -13.5
+      ],
+      "kind": "prop",
+      "model": "prop.hh_wall_shelf",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1126",
+      "id": "prop_1137",
+      "position": [
+        -72,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_table",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1138",
+      "position": [
+        -71.59,
+        4,
+        -7.34
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1139",
+      "position": [
+        -71.59,
+        4,
+        -8.66
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1140",
+      "position": [
+        -72.41,
+        4,
+        -7.34
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1141",
+      "position": [
+        -72.41,
+        4,
+        -8.66
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1142",
+      "position": [
+        -70.87,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1143",
+      "position": [
+        -73.13,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1144",
       "position": [
         -75.09,
         4,
@@ -21123,7 +21392,7 @@
       "tint": null
     },
     {
-      "id": "prop_1127",
+      "id": "prop_1145",
       "position": [
         -70.55,
         4,
@@ -21137,7 +21406,7 @@
       "tint": null
     },
     {
-      "id": "prop_1128",
+      "id": "prop_1146",
       "position": [
         -69.72,
         4,
@@ -21151,7 +21420,7 @@
       "tint": null
     },
     {
-      "id": "prop_1129",
+      "id": "prop_1147",
       "position": [
         -71.38,
         4,
@@ -21165,7 +21434,7 @@
       "tint": null
     },
     {
-      "id": "prop_1130",
+      "id": "prop_1148",
       "position": [
         -69.72,
         4,
@@ -21179,7 +21448,7 @@
       "tint": null
     },
     {
-      "id": "prop_1131",
+      "id": "prop_1149",
       "position": [
         -71.38,
         4,
@@ -21193,49 +21462,49 @@
       "tint": null
     },
     {
-      "id": "prop_1132",
+      "id": "prop_1150",
       "position": [
-        -74.49,
+        -75.13,
         4,
-        3.29
+        2.95
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 3.1416,
+      "model": "prop.hh_cupboard",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1133",
+      "id": "prop_1151",
       "position": [
-        -68.94,
-        4,
-        1.9
+        -75.13,
+        4.88,
+        2.95
       ],
       "kind": "prop",
-      "model": "prop.hm_washer",
+      "model": "prop.hh_microwave",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1152",
+      "position": [
+        -68.57,
+        5.6,
+        2.94
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
       "yaw": -1.5708,
       "scale": 1,
-      "solid": true,
+      "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1134",
-      "position": [
-        -69.02,
-        4,
-        2.98
-      ],
-      "kind": "prop",
-      "model": "prop.hm_bin_large",
-      "yaw": -2.4057,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1135",
+      "id": "prop_1153",
       "position": [
         -80,
         4,
@@ -21249,7 +21518,7 @@
       "tint": null
     },
     {
-      "id": "prop_1136",
+      "id": "prop_1154",
       "position": [
         -80,
         4,
@@ -21263,7 +21532,7 @@
       "tint": null
     },
     {
-      "id": "prop_1137",
+      "id": "prop_1155",
       "position": [
         -80.38,
         4.8,
@@ -21277,91 +21546,35 @@
       "tint": null
     },
     {
-      "id": "prop_1138",
+      "id": "prop_1156",
       "position": [
-        -82.13,
+        -82.04,
         4,
-        -12.71
+        -12.79
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
+      "model": "prop.hh_bookcase_wide",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1139",
+      "id": "prop_1157",
       "position": [
-        -83.05,
+        -77,
         4,
-        -18.69
+        -19
       ],
       "kind": "prop",
-      "model": "prop.desk",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1140",
-      "position": [
-        -82.3,
-        4,
-        -18.69
-      ],
-      "kind": "prop",
-      "model": "prop.hm_chair_office",
-      "yaw": -1.5708,
+      "model": "prop.coat_rack",
+      "yaw": -0.742,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1141",
-      "position": [
-        -76.82,
-        4,
-        -19.18
-      ],
-      "kind": "prop",
-      "model": "prop.potted_plant",
-      "yaw": -0.7473,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1142",
-      "position": [
-        -76.82,
-        4,
-        -12.82
-      ],
-      "kind": "prop",
-      "model": "prop.potted_plant",
-      "yaw": -2.292,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1143",
-      "position": [
-        -83.43,
-        5.6,
-        -18.01
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1144",
+      "id": "prop_1158",
       "position": [
         -85.7,
         4,
@@ -21375,7 +21588,7 @@
       "tint": null
     },
     {
-      "id": "prop_1145",
+      "id": "prop_1159",
       "position": [
         -85,
         4,
@@ -21389,39 +21602,11 @@
       "tint": null
     },
     {
-      "id": "prop_1146",
+      "id": "prop_1160",
       "position": [
-        -72,
-        8,
-        -16
-      ],
-      "kind": "prop",
-      "model": "prop.hm_rug",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1147",
-      "position": [
-        -74.8,
-        8,
-        -13.2
-      ],
-      "kind": "prop",
-      "model": "prop.hm_houseplant",
-      "yaw": 2.4254,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1148",
-      "position": [
-        -75.43,
-        9.5,
-        -19.41
+        -67.43,
+        5.6,
+        -19.19
       ],
       "kind": "prop",
       "model": "prop.hm_wall_shelf",
@@ -21431,105 +21616,175 @@
       "tint": null
     },
     {
-      "id": "prop_1149",
+      "id": "prop_1161",
       "position": [
-        -75.29,
+        -68.71,
         8,
-        -5.54
+        -18.69
       ],
       "kind": "prop",
       "model": "prop.hm_shelf_large",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1150",
-      "position": [
-        -72,
-        8,
-        -8
-      ],
-      "kind": "prop",
-      "model": "prop.rug",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1151",
-      "position": [
-        -69.2,
-        8,
-        -2.81
-      ],
-      "kind": "prop",
-      "model": "prop.hm_houseplant",
-      "yaw": -0.6951,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1152",
-      "position": [
-        -77.85,
-        8,
-        -12.9
-      ],
-      "kind": "prop",
-      "model": "prop.hm_toilet",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1153",
-      "position": [
-        -77.04,
-        8,
-        -19.19
-      ],
-      "kind": "prop",
-      "model": "prop.hm_bathroom_sink",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1154",
-      "position": [
-        -76.94,
-        8,
-        -13.3
-      ],
-      "kind": "prop",
-      "model": "prop.hm_washer",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1155",
+      "id": "prop_1162",
       "position": [
-        -83.26,
+        -72,
         8,
-        -12.74
+        -16
       ],
       "kind": "prop",
-      "model": "prop.plant_small",
-      "yaw": 2.5475,
+      "model": "prop.hm_rug",
+      "yaw": -1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1156",
+      "id": "prop_1163",
+      "position": [
+        -73.81,
+        9.5,
+        -19.43
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1164",
+      "position": [
+        -75,
+        8,
+        -11.18
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1165",
+      "position": [
+        -73.81,
+        9.5,
+        -4.57
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1166",
+      "position": [
+        -69.65,
+        8,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bed_single",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1167",
+      "position": [
+        -68.8,
+        8,
+        2.8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1168",
+      "position": [
+        -74.48,
+        8,
+        -3.16
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chest_drawers",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1169",
+      "position": [
+        -74.8,
+        8,
+        2.8
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant",
+      "yaw": 2.3956,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1170",
+      "position": [
+        -68.57,
+        9.5,
+        2.54
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1171",
+      "position": [
+        -77.62,
+        8,
+        -12.96
+      ],
+      "kind": "prop",
+      "model": "prop.toilet",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1172",
+      "position": [
+        -77.88,
+        8,
+        -19.32
+      ],
+      "kind": "prop",
+      "model": "prop.hh_basin",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1173",
       "position": [
         -80,
         8,
@@ -21543,7 +21798,7 @@
       "tint": null
     },
     {
-      "id": "prop_1157",
+      "id": "prop_1174",
       "position": [
         -80,
         8,
@@ -21557,7 +21812,7 @@
       "tint": null
     },
     {
-      "id": "prop_1158",
+      "id": "prop_1175",
       "position": [
         -79.62,
         8.8,
@@ -21571,63 +21826,63 @@
       "tint": null
     },
     {
-      "id": "prop_1159",
+      "id": "prop_1176",
       "position": [
-        -78.89,
+        -79.13,
         8,
         -4.71
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.hm_bookshelf",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1160",
+      "id": "prop_1177",
       "position": [
-        -83.18,
+        -77.69,
         8,
-        -11.18
+        -4.95
       ],
       "kind": "prop",
-      "model": "prop.potted_plant",
-      "yaw": 0.8122,
+      "model": "prop.desk",
+      "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1161",
+      "id": "prop_1178",
       "position": [
-        -76.82,
+        -77.69,
         8,
-        -11.19
+        -5.7
       ],
       "kind": "prop",
-      "model": "prop.potted_plant",
-      "yaw": -0.9549,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1162",
-      "position": [
-        -76.57,
-        9.6,
-        -10.21
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
+      "model": "prop.hm_chair_office",
+      "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1163",
+      "id": "prop_1179",
+      "position": [
+        -83.23,
+        8,
+        -11.24
+      ],
+      "kind": "prop",
+      "model": "prop.trashcan",
+      "yaw": 0.9398,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1180",
       "position": [
         -64,
         0,
@@ -21641,7 +21896,7 @@
       "tint": null
     },
     {
-      "id": "prop_1164",
+      "id": "prop_1181",
       "position": [
         -62.99,
         0,
@@ -21655,7 +21910,7 @@
       "tint": null
     },
     {
-      "id": "prop_1165",
+      "id": "prop_1182",
       "position": [
         -65.01,
         0,
@@ -21669,7 +21924,7 @@
       "tint": null
     },
     {
-      "id": "prop_1166",
+      "id": "prop_1183",
       "position": [
         -62.99,
         0,
@@ -21683,7 +21938,7 @@
       "tint": null
     },
     {
-      "id": "prop_1167",
+      "id": "prop_1184",
       "position": [
         -65.01,
         0,
@@ -21697,63 +21952,147 @@
       "tint": null
     },
     {
-      "id": "prop_1168",
+      "id": "prop_1185",
       "position": [
-        -67.29,
+        -67.19,
         0,
-        82.46
+        68.82
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 1.5708,
+      "model": "prop.potted_plant",
+      "yaw": 0.6045,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1169",
+      "id": "prop_1186",
       "position": [
-        -67.22,
+        -61.33,
         0,
         76.78
       ],
       "kind": "prop",
-      "model": "prop.floor_lamp",
-      "yaw": 0.8997,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1170",
-      "position": [
-        -67.18,
-        0,
-        85
-      ],
-      "kind": "prop",
-      "model": "prop.bookcase",
-      "yaw": 1.5708,
+      "model": "prop.tv_cabinet",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1171",
+      "id": "prop_1187",
+      "position": [
+        -61.33,
+        0.6,
+        76.78
+      ],
+      "kind": "prop",
+      "model": "prop.tv",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1188",
+      "position": [
+        -61.45,
+        0,
+        83.18
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1189",
+      "position": [
+        -66.93,
+        0,
+        82.93
+      ],
+      "kind": "prop",
+      "model": "prop.hh_floor_lamp",
+      "yaw": 2.341,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1190",
+      "position": [
+        -66.93,
+        0,
+        77.07
+      ],
+      "kind": "prop",
+      "model": "prop.hh_floor_lamp",
+      "yaw": 0.7391,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1191",
+      "position": [
+        -61.65,
+        0,
+        90
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bed_single",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1192",
+      "position": [
+        -60.8,
+        0,
+        90.8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1193",
       "position": [
         -64,
         0,
         88
       ],
       "kind": "prop",
-      "model": "prop.hm_rug",
-      "yaw": 1.5708,
+      "model": "prop.hh_rug_small",
+      "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1172",
+      "id": "prop_1194",
+      "position": [
+        -66.93,
+        0,
+        85.07
+      ],
+      "kind": "prop",
+      "model": "prop.hh_floor_lamp",
+      "yaw": 0.8065,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1195",
       "position": [
         -71.7,
         0,
@@ -21767,7 +22106,7 @@
       "tint": null
     },
     {
-      "id": "prop_1173",
+      "id": "prop_1196",
       "position": [
         -72.9,
         0,
@@ -21781,49 +22120,63 @@
       "tint": null
     },
     {
-      "id": "prop_1174",
+      "id": "prop_1197",
       "position": [
-        -70.3,
+        -72.97,
         0,
-        74.3
+        75.04
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "prop.barrel",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1175",
+      "id": "prop_1198",
       "position": [
-        -70.3,
-        1.1,
-        74.3
-      ],
-      "kind": "prop",
-      "model": "prop.crate_small",
-      "yaw": 1.8708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1176",
-      "position": [
-        -68.97,
+        -72.97,
         0,
-        68.97
+        74.23
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
-      "yaw": -0.6629,
+      "model": "prop.barrel",
+      "yaw": 2.2708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1177",
+      "id": "prop_1199",
+      "position": [
+        -72.28,
+        0,
+        74.64
+      ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "yaw": 2.9708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1200",
+      "position": [
+        -75.18,
+        0,
+        68.82
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 0.8208,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1201",
       "position": [
         -74.98,
         0,
@@ -21837,23 +22190,23 @@
       "tint": null
     },
     {
-      "id": "prop_1178",
+      "id": "prop_1202",
       "position": [
-        -73.8,
+        -73.77,
         0,
-        91.1
+        91.04
       ],
       "kind": "prop",
-      "model": "prop.hm_toilet",
+      "model": "prop.toilet",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1179",
+      "id": "prop_1203",
       "position": [
-        -70.19,
+        -69.99,
         0,
         84.81
       ],
@@ -21865,161 +22218,161 @@
       "tint": null
     },
     {
-      "id": "prop_1180",
+      "id": "prop_1204",
       "position": [
-        -68.77,
-        0,
-        91.23
+        -61.33,
+        4,
+        68.78
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": -2.2431,
+      "model": "prop.tv_cabinet",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1181",
+      "id": "prop_1205",
       "position": [
-        -67.29,
-        4,
-        69.31
+        -61.33,
+        4.6,
+        68.78
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 1.5708,
+      "model": "prop.tv",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1206",
+      "position": [
+        -66.33,
+        4,
+        68.71
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bookshelf",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1182",
+      "id": "prop_1207",
       "position": [
-        -60.94,
+        -60.84,
         4,
-        68.94
+        90.94
       ],
       "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
-      "yaw": -0.9789,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1183",
-      "position": [
-        -60.57,
-        5.6,
-        68.99
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1184",
-      "position": [
-        -60.98,
-        4,
-        90.87
-      ],
-      "kind": "prop",
-      "model": "prop.fridge",
+      "model": "prop.hh_fridge",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1185",
+      "id": "prop_1208",
       "position": [
-        -62.52,
+        -64,
         4,
         88
       ],
       "kind": "prop",
-      "model": "prop.table",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1186",
-      "position": [
-        -62.01,
-        4,
-        88.8
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1187",
-      "position": [
-        -62.01,
-        4,
-        87.2
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1188",
-      "position": [
-        -63.04,
-        4,
-        88.8
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1189",
-      "position": [
-        -63.04,
-        4,
-        87.2
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1190",
-      "position": [
-        -67.29,
-        4,
-        90.46
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.hh_table",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1191",
+      "id": "prop_1209",
+      "position": [
+        -64.66,
+        4,
+        88.41
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1210",
+      "position": [
+        -63.34,
+        4,
+        88.41
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1211",
+      "position": [
+        -64.66,
+        4,
+        87.59
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1212",
+      "position": [
+        -63.34,
+        4,
+        87.59
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1213",
+      "position": [
+        -67.17,
+        4,
+        91.17
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bin",
+      "yaw": 2.313,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1214",
+      "position": [
+        -61.46,
+        5.6,
+        91.43
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1215",
       "position": [
         -72,
         4,
@@ -22033,7 +22386,7 @@
       "tint": null
     },
     {
-      "id": "prop_1192",
+      "id": "prop_1216",
       "position": [
         -72,
         4,
@@ -22047,7 +22400,7 @@
       "tint": null
     },
     {
-      "id": "prop_1193",
+      "id": "prop_1217",
       "position": [
         -71.62,
         4.8,
@@ -22061,91 +22414,133 @@
       "tint": null
     },
     {
-      "id": "prop_1194",
+      "id": "prop_1218",
       "position": [
-        -74.68,
+        -75.18,
         4,
         75.18
       ],
       "kind": "prop",
-      "model": "prop.sf_computer",
+      "model": "prop.potted_plant",
+      "yaw": 2.2499,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1219",
+      "position": [
+        -79.3,
+        4,
+        74.91
+      ],
+      "kind": "prop",
+      "model": "prop.metal_crate",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1195",
+      "id": "prop_1220",
       "position": [
-        -69,
-        4,
-        69
-      ],
-      "kind": "prop",
-      "model": "prop.coat_rack",
-      "yaw": -0.7564,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1196",
-      "position": [
-        -78.91,
-        4,
-        74.64
-      ],
-      "kind": "prop",
-      "model": "prop.shelf_boxes",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1197",
-      "position": [
-        -76.72,
-        4,
-        68.69
-      ],
-      "kind": "prop",
-      "model": "prop.sv_gas_can",
-      "yaw": -0.59,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1198",
-      "position": [
-        -83.3,
+        -76.7,
         4,
         68.72
       ],
       "kind": "prop",
       "model": "prop.sv_gas_can",
-      "yaw": 0.8578,
+      "yaw": -0.9259,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1199",
+      "id": "prop_1221",
       "position": [
-        -66.49,
+        -61.8,
         8,
-        68.71
+        69.65
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.hh_bed_single",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1200",
+      "id": "prop_1222",
+      "position": [
+        -61,
+        8,
+        68.8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1223",
+      "position": [
+        -67.18,
+        8,
+        74.75
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1224",
+      "position": [
+        -64,
+        8,
+        72
+      ],
+      "kind": "prop",
+      "model": "prop.hm_rug",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1225",
+      "position": [
+        -61.18,
+        8,
+        74.81
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant",
+      "yaw": -2.1595,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1226",
+      "position": [
+        -64,
+        8,
+        80
+      ],
+      "kind": "prop",
+      "model": "prop.hh_rug_small",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1227",
       "position": [
         -67,
         8,
@@ -22153,83 +22548,195 @@
       ],
       "kind": "prop",
       "model": "prop.coat_rack",
-      "yaw": 0.8944,
+      "yaw": 0.7485,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1201",
+      "id": "prop_1228",
       "position": [
-        -74.86,
-        8,
-        69.13
+        -65.81,
+        9.5,
+        83.43
       ],
       "kind": "prop",
-      "model": "prop.hm_shower",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1229",
+      "position": [
+        -61.65,
+        8,
+        90
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bed_single",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1230",
+      "position": [
+        -60.8,
+        8,
+        90.8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1231",
+      "position": [
+        -66.69,
+        8,
+        91.29
+      ],
+      "kind": "prop",
+      "model": "prop.hm_shelf_large",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1232",
+      "position": [
+        -60.95,
+        8,
+        85.31
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1233",
+      "position": [
+        -61.68,
+        8,
+        85.31
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1234",
+      "position": [
+        -60.95,
+        8.8,
+        85.7
+      ],
+      "kind": "prop",
+      "model": "prop.hm_desk_lamp",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1235",
+      "position": [
+        -64,
+        8,
+        88
+      ],
+      "kind": "prop",
+      "model": "prop.hh_rug_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1236",
+      "position": [
+        -67,
+        8,
+        85
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": 0.9393,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1237",
+      "position": [
+        -74.6,
+        8,
+        68.94
+      ],
+      "kind": "prop",
+      "model": "prop.bathtub",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1202",
+      "id": "prop_1238",
       "position": [
-        -74.6,
+        -68.92,
         8,
-        75.1
+        74.4
       ],
       "kind": "prop",
-      "model": "prop.hm_toilet",
-      "yaw": 3.1416,
+      "model": "prop.hh_toilet",
+      "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1203",
+      "id": "prop_1239",
       "position": [
-        -69.04,
+        -75.31,
         8,
-        75.19
+        74.32
       ],
       "kind": "prop",
-      "model": "prop.hm_bathroom_sink",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1204",
-      "position": [
-        -75.06,
-        8,
-        74.3
-      ],
-      "kind": "prop",
-      "model": "prop.hm_washer",
+      "model": "prop.hh_basin",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1205",
+      "id": "prop_1240",
       "position": [
-        -68.74,
+        -72,
         8,
-        68.74
+        72
       ],
       "kind": "prop",
-      "model": "prop.plant_small",
-      "yaw": -0.8779,
+      "model": "prop.hm_rug",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1206",
+      "id": "prop_1241",
       "position": [
         -72,
         8,
@@ -22243,7 +22750,7 @@
       "tint": null
     },
     {
-      "id": "prop_1207",
+      "id": "prop_1242",
       "position": [
         -72,
         8,
@@ -22257,7 +22764,7 @@
       "tint": null
     },
     {
-      "id": "prop_1208",
+      "id": "prop_1243",
       "position": [
         -72.38,
         8.8,
@@ -22271,343 +22778,539 @@
       "tint": null
     },
     {
-      "id": "prop_1209",
+      "id": "prop_1244",
       "position": [
-        -75.29,
+        -75.21,
         8,
-        77.27
+        82.51
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
+      "model": "prop.hh_bookcase_wide",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1210",
+      "id": "prop_1245",
       "position": [
-        -75.23,
+        -68.99,
         8,
-        83.23
+        83.01
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": 2.4023,
+      "model": "prop.coat_rack",
+      "yaw": -2.546,
       "scale": 1,
-      "solid": true,
+      "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1211",
+      "id": "prop_1246",
       "position": [
-        70.63,
+        72,
         0,
-        -88
+        -89.37
       ],
       "kind": "prop",
       "model": "prop.table_round",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1247",
+      "position": [
+        70.99,
+        0,
+        -89.81
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1248",
+      "position": [
+        73.01,
+        0,
+        -89.81
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1249",
+      "position": [
+        70.99,
+        0,
+        -88.94
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1250",
+      "position": [
+        73.01,
+        0,
+        -88.94
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1251",
+      "position": [
+        68.92,
+        0,
+        -91.07
+      ],
+      "kind": "prop",
+      "model": "prop.barrel",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1212",
+      "id": "prop_1252",
       "position": [
-        70.19,
-        0,
-        -86.99
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1213",
-      "position": [
-        70.19,
-        0,
-        -89.01
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1214",
-      "position": [
-        71.06,
-        0,
-        -86.99
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1215",
-      "position": [
-        71.06,
-        0,
-        -89.01
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1216",
-      "position": [
-        68.93,
-        0,
-        -91.08
-      ],
-      "kind": "prop",
-      "model": "prop.barrel",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1217",
-      "position": [
-        75.18,
+        68.82,
         0,
         -84.82
       ],
       "kind": "prop",
       "model": "prop.potted_plant",
-      "yaw": -2.4242,
+      "yaw": 2.4273,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1218",
+      "id": "prop_1253",
       "position": [
-        74.75,
+        74.67,
         0,
-        -76.82
+        -76.78
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "prop.tv_cabinet",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1219",
+      "id": "prop_1254",
+      "position": [
+        74.67,
+        0.6,
+        -76.78
+      ],
+      "kind": "prop",
+      "model": "prop.tv",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1255",
       "position": [
         68.95,
         0,
-        -83.05
+        -76.95
       ],
       "kind": "prop",
       "model": "prop.hm_houseplant_tall",
-      "yaw": 0.8477,
+      "yaw": 2.4648,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1220",
+      "id": "prop_1256",
       "position": [
-        74.81,
+        70,
         0,
-        -74.82
+        -69.65
       ],
       "kind": "prop",
-      "model": "prop.hm_houseplant",
-      "yaw": -0.6062,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1221",
-      "position": [
-        82.65,
-        0,
-        -88.52
-      ],
-      "kind": "prop",
-      "model": "prop.shelf_bags",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1222",
-      "position": [
-        82.92,
-        0,
-        -90.92
-      ],
-      "kind": "prop",
-      "model": "prop.barrel",
-      "yaw": -0.6685,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1223",
-      "position": [
-        82.87,
-        0,
-        -74.66
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shower",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1224",
-      "position": [
-        78.23,
-        0,
-        -68.96
-      ],
-      "kind": "prop",
-      "model": "prop.toilet",
+      "model": "prop.hh_bed_single",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1225",
+      "id": "prop_1257",
       "position": [
-        77.61,
+        69.2,
         0,
-        -75.19
+        -68.8
       ],
       "kind": "prop",
-      "model": "prop.hm_bathroom_sink",
-      "yaw": 0,
+      "model": "prop.hh_bedside",
+      "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1226",
+      "id": "prop_1258",
       "position": [
-        74.02,
-        4,
-        -91.29
+        68.71,
+        0,
+        -69.34
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
-      "yaw": 0,
+      "model": "prop.hm_shelf_large",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1227",
+      "id": "prop_1259",
       "position": [
-        69.46,
-        4,
-        -91.08
+        72,
+        0,
+        -72
       ],
       "kind": "prop",
-      "model": "prop.sofa",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1228",
-      "position": [
-        75.05,
-        4,
-        -91.05
-      ],
-      "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
-      "yaw": -0.821,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1229",
-      "position": [
-        75.43,
-        5.6,
-        -77.06
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1230",
-      "position": [
-        75.02,
-        4,
-        -69.73
-      ],
-      "kind": "prop",
-      "model": "prop.fridge",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1231",
-      "position": [
-        69.02,
-        4,
-        -69.02
-      ],
-      "kind": "prop",
-      "model": "prop.hm_bin_large",
-      "yaw": 2.4336,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1232",
-      "position": [
-        68.57,
-        5.6,
-        -74.21
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
+      "model": "prop.hm_rug",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1233",
+      "id": "prop_1260",
+      "position": [
+        75,
+        0,
+        -69
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": -2.3196,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1261",
+      "position": [
+        82.91,
+        0,
+        -87.95
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1262",
+      "position": [
+        76.82,
+        0,
+        -84.82
+      ],
+      "kind": "prop",
+      "model": "prop.cardboard_box",
+      "yaw": 2.3111,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1263",
+      "position": [
+        83.06,
+        0,
+        -74
+      ],
+      "kind": "prop",
+      "model": "prop.bathtub",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1264",
+      "position": [
+        82.25,
+        0,
+        -68.92
+      ],
+      "kind": "prop",
+      "model": "prop.hh_toilet",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1265",
+      "position": [
+        81.21,
+        0,
+        -68.81
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bathroom_sink",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1266",
+      "position": [
+        75.21,
+        4,
+        -90.84
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bookcase_wide",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1267",
+      "position": [
+        68.94,
+        4,
+        -91.05
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant_tall",
+      "yaw": 0.9248,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1268",
+      "position": [
+        72,
+        4,
+        -80
+      ],
+      "kind": "prop",
+      "model": "prop.hh_table",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1269",
+      "position": [
+        71.59,
+        4,
+        -80.66
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1270",
+      "position": [
+        71.59,
+        4,
+        -79.34
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1271",
+      "position": [
+        72.41,
+        4,
+        -80.66
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1272",
+      "position": [
+        72.41,
+        4,
+        -79.34
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1273",
+      "position": [
+        70.87,
+        4,
+        -80
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1274",
+      "position": [
+        73.13,
+        4,
+        -80
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chair",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1275",
+      "position": [
+        68.91,
+        4,
+        -69.53
+      ],
+      "kind": "prop",
+      "model": "prop.hm_fridge",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1276",
+      "position": [
+        70.55,
+        4,
+        -72
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1277",
+      "position": [
+        71.38,
+        4,
+        -71.54
+      ],
+      "kind": "prop",
+      "model": "prop.hm_stool",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1278",
+      "position": [
+        69.72,
+        4,
+        -71.54
+      ],
+      "kind": "prop",
+      "model": "prop.hm_stool",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1279",
+      "position": [
+        71.38,
+        4,
+        -72.46
+      ],
+      "kind": "prop",
+      "model": "prop.hm_stool",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1280",
+      "position": [
+        69.72,
+        4,
+        -72.46
+      ],
+      "kind": "prop",
+      "model": "prop.hm_stool",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1281",
+      "position": [
+        73.94,
+        5.6,
+        -68.57
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1282",
       "position": [
         80,
         4,
@@ -22621,7 +23324,7 @@
       "tint": null
     },
     {
-      "id": "prop_1234",
+      "id": "prop_1283",
       "position": [
         80,
         4,
@@ -22635,175 +23338,245 @@
       "tint": null
     },
     {
-      "id": "prop_1235",
+      "id": "prop_1284",
       "position": [
-        81.16,
+        76.71,
         4,
-        -84.86
+        -85.54
       ],
       "kind": "prop",
-      "model": "prop.bookcase_wide",
-      "yaw": 3.1416,
+      "model": "prop.hm_shelf_large",
+      "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1236",
+      "id": "prop_1285",
       "position": [
-        82.72,
+        83.18,
         4,
-        -84.82
+        -91.19
       ],
       "kind": "prop",
-      "model": "prop.sf_computer",
-      "yaw": 3.1416,
+      "model": "prop.potted_plant",
+      "yaw": -0.9761,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1237",
+      "id": "prop_1286",
       "position": [
-        77,
+        85.09,
         4,
-        -91
+        -90.5
       ],
       "kind": "prop",
-      "model": "prop.coat_rack",
-      "yaw": 0.6847,
+      "model": "prop.metal_crate",
+      "yaw": 1.5708,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1238",
+      "id": "prop_1287",
       "position": [
-        85.06,
+        88.52,
         4,
         -85.73
       ],
       "kind": "prop",
-      "model": "prop.workbench",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1239",
-      "position": [
-        85.03,
-        4,
-        -90.97
-      ],
-      "kind": "prop",
-      "model": "prop.cone",
-      "yaw": 0.8322,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1240",
-      "position": [
-        75.25,
-        8,
-        -91.25
-      ],
-      "kind": "prop",
-      "model": "prop.hm_floor_lamp",
-      "yaw": -0.8727,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1241",
-      "position": [
-        75.25,
-        8,
-        -83.25
-      ],
-      "kind": "prop",
-      "model": "prop.hm_floor_lamp",
-      "yaw": -0.611,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1242",
-      "position": [
-        74.74,
-        9.5,
-        -75.43
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1243",
-      "position": [
-        82.87,
-        8,
-        -90.86
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shower",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1244",
-      "position": [
-        82.58,
-        8,
-        -84.96
-      ],
-      "kind": "prop",
-      "model": "prop.toilet",
+      "model": "prop.sv_propane",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1245",
+      "id": "prop_1288",
       "position": [
-        83.19,
-        8,
-        -85.24
+        87.57,
+        4,
+        -85.73
       ],
       "kind": "prop",
-      "model": "prop.hm_bathroom_sink",
-      "yaw": -1.5708,
+      "model": "prop.barrel",
+      "yaw": -2.4416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1246",
+      "id": "prop_1289",
       "position": [
-        76.94,
-        8,
-        -85.7
+        85.17,
+        4,
+        -85.16
       ],
       "kind": "prop",
-      "model": "prop.hm_washer",
+      "model": "prop.sv_propane",
+      "yaw": 2.4415,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1290",
+      "position": [
+        69.65,
+        8,
+        -90
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bed_single",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1247",
+      "id": "prop_1291",
+      "position": [
+        68.8,
+        8,
+        -90.8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1292",
+      "position": [
+        68.71,
+        8,
+        -85.54
+      ],
+      "kind": "prop",
+      "model": "prop.hm_shelf_large",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1293",
+      "position": [
+        74.8,
+        8,
+        -90.8
+      ],
+      "kind": "prop",
+      "model": "prop.hm_houseplant",
+      "yaw": -0.7201,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1294",
+      "position": [
+        70,
+        8,
+        -69.65
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bed_single",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1295",
+      "position": [
+        69.2,
+        8,
+        -68.8
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1296",
+      "position": [
+        75.16,
+        8,
+        -69.53
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chest_drawers",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1297",
+      "position": [
+        83.06,
+        8,
+        -90.6
+      ],
+      "kind": "prop",
+      "model": "prop.bathtub",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1298",
+      "position": [
+        83.04,
+        8,
+        -86.22
+      ],
+      "kind": "prop",
+      "model": "prop.toilet",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1299",
+      "position": [
+        76.69,
+        8,
+        -90.43
+      ],
+      "kind": "prop",
+      "model": "prop.hh_basin",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1300",
+      "position": [
+        80,
+        8,
+        -88
+      ],
+      "kind": "prop",
+      "model": "prop.hm_rug",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1301",
       "position": [
         80,
         8,
@@ -22817,7 +23590,7 @@
       "tint": null
     },
     {
-      "id": "prop_1248",
+      "id": "prop_1302",
       "position": [
         80,
         8,
@@ -22831,7 +23604,7 @@
       "tint": null
     },
     {
-      "id": "prop_1249",
+      "id": "prop_1303",
       "position": [
         79.62,
         8.8,
@@ -22845,371 +23618,287 @@
       "tint": null
     },
     {
-      "id": "prop_1250",
+      "id": "prop_1304",
       "position": [
-        83.29,
+        77.16,
         8,
-        -77.58
+        -83.21
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1251",
-      "position": [
-        80.92,
-        8,
-        -76.82
-      ],
-      "kind": "prop",
-      "model": "prop.sf_computer",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1252",
-      "position": [
-        83.18,
-        8,
-        -76.82
-      ],
-      "kind": "prop",
-      "model": "prop.potted_plant",
-      "yaw": -2.2451,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1253",
-      "position": [
-        80,
-        0,
-        6.57
-      ],
-      "kind": "prop",
-      "model": "prop.dg_table_small",
+      "model": "prop.hh_bookcase_wide",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1254",
+      "id": "prop_1305",
       "position": [
-        79.02,
-        0,
-        6.11
+        83.23,
+        8,
+        -83.23
       ],
       "kind": "prop",
-      "model": "prop.dungeon_chair",
-      "yaw": 1.5708,
+      "model": "prop.trashcan",
+      "yaw": -0.8129,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1255",
+      "id": "prop_1306",
       "position": [
-        80.98,
+        83.18,
         0,
-        6.11
-      ],
-      "kind": "prop",
-      "model": "prop.dungeon_chair",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1256",
-      "position": [
-        79.02,
-        0,
-        7.04
-      ],
-      "kind": "prop",
-      "model": "prop.dungeon_chair",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1257",
-      "position": [
-        80.98,
-        0,
-        7.04
-      ],
-      "kind": "prop",
-      "model": "prop.dungeon_chair",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1258",
-      "position": [
-        76.82,
-        0,
-        4.82
+        11.19
       ],
       "kind": "prop",
       "model": "prop.potted_plant",
-      "yaw": 0.839,
+      "yaw": -2.1935,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1259",
+      "id": "prop_1307",
       "position": [
-        83.29,
+        82.46,
         0,
-        18.66
+        12.71
       ],
       "kind": "prop",
       "model": "prop.hm_shelf_large",
-      "yaw": -1.5708,
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1260",
+      "id": "prop_1308",
       "position": [
-        83.22,
+        83.06,
         0,
-        12.78
+        19.06
       ],
       "kind": "prop",
-      "model": "prop.floor_lamp",
-      "yaw": -0.7322,
+      "model": "prop.hm_houseplant_tall",
+      "yaw": -2.5156,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1261",
+      "id": "prop_1309",
       "position": [
-        83.43,
+        83.27,
         -0.18,
-        13.79
+        18.49
       ],
       "kind": "prop",
-      "model": "prop.hm_wall_shelf",
+      "model": "prop.hh_wall_shelf",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1262",
+      "id": "prop_1310",
       "position": [
-        82.66,
+        78,
         0,
-        27.29
+        26.35
       ],
       "kind": "prop",
-      "model": "prop.hm_shelf_large",
+      "model": "prop.hh_bed_single",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1263",
+      "id": "prop_1311",
+      "position": [
+        77.2,
+        0,
+        27.2
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1312",
+      "position": [
+        77.51,
+        0,
+        20.95
+      ],
+      "kind": "prop",
+      "model": "prop.desk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1313",
+      "position": [
+        77.51,
+        0,
+        21.68
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1314",
+      "position": [
+        77.9,
+        0.8,
+        20.95
+      ],
+      "kind": "prop",
+      "model": "prop.hm_desk_lamp",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1315",
       "position": [
         80,
         0,
         24
       ],
       "kind": "prop",
-      "model": "prop.rug",
+      "model": "prop.hh_rug_small",
       "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1264",
+      "id": "prop_1316",
       "position": [
-        83,
+        82.94,
         0,
-        21
+        21.06
       ],
       "kind": "prop",
-      "model": "prop.coat_rack",
-      "yaw": -0.772,
+      "model": "prop.hh_floor_lamp",
+      "yaw": -0.6702,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1265",
+      "id": "prop_1317",
       "position": [
-        89.05,
+        88.5,
         0,
         10.91
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1266",
-      "position": [
-        89.05,
-        1.1,
-        10.91
-      ],
-      "kind": "prop",
-      "model": "prop.crate_small",
-      "yaw": -2.8416,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1267",
-      "position": [
-        90.72,
-        0,
-        5.28
-      ],
-      "kind": "prop",
-      "model": "prop.container",
-      "yaw": -0.5969,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1268",
-      "position": [
-        90.87,
-        0,
-        21.54
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shower",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1269",
-      "position": [
-        86.2,
-        0,
-        20.9
-      ],
-      "kind": "prop",
-      "model": "prop.hm_toilet",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1270",
-      "position": [
-        91.19,
-        0,
-        26.81
-      ],
-      "kind": "prop",
-      "model": "prop.hm_bathroom_sink",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1271",
-      "position": [
-        82.66,
-        4,
-        4.71
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1272",
-      "position": [
-        77.46,
-        4,
-        4.92
-      ],
-      "kind": "prop",
-      "model": "prop.sofa",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1273",
-      "position": [
-        83.43,
-        5.6,
-        11.14
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1274",
-      "position": [
-        77.31,
-        4,
-        27.02
-      ],
-      "kind": "prop",
-      "model": "prop.fridge",
+      "model": "prop.metal_crate",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1275",
+      "id": "prop_1318",
       "position": [
-        83.23,
-        4,
-        27.23
+        84.81,
+        0,
+        4.81
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": -2.2334,
+      "model": "prop.cardboard_box",
+      "yaw": 0.9513,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1276",
+      "id": "prop_1319",
+      "position": [
+        91.06,
+        0,
+        26.4
+      ],
+      "kind": "prop",
+      "model": "prop.bathtub",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1320",
+      "position": [
+        90.23,
+        0,
+        20.96
+      ],
+      "kind": "prop",
+      "model": "prop.toilet",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1321",
+      "position": [
+        87.57,
+        0,
+        20.68
+      ],
+      "kind": "prop",
+      "model": "prop.hh_basin",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1322",
+      "position": [
+        83.22,
+        4,
+        5.08
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bookcase",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1323",
+      "position": [
+        77.19,
+        4,
+        27.16
+      ],
+      "kind": "prop",
+      "model": "prop.hh_fridge",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1324",
       "position": [
         88,
         4,
@@ -23223,7 +23912,7 @@
       "tint": null
     },
     {
-      "id": "prop_1277",
+      "id": "prop_1325",
       "position": [
         88,
         4,
@@ -23237,7 +23926,7 @@
       "tint": null
     },
     {
-      "id": "prop_1278",
+      "id": "prop_1326",
       "position": [
         88.38,
         4.8,
@@ -23251,151 +23940,25 @@
       "tint": null
     },
     {
-      "id": "prop_1279",
+      "id": "prop_1327",
       "position": [
-        90.47,
+        90.56,
         4,
-        11.29
+        11.21
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
+      "model": "prop.hh_bookcase_wide",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1280",
+      "id": "prop_1328",
       "position": [
-        84.76,
+        85.31,
         4,
-        4.77
-      ],
-      "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": 0.6219,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1281",
-      "position": [
-        91.43,
-        5.6,
-        10.14
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1282",
-      "position": [
-        94.35,
-        4,
-        5.35
-      ],
-      "kind": "prop",
-      "model": "prop.pipe_valve",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1283",
-      "position": [
-        95.47,
-        4,
-        10.62
-      ],
-      "kind": "prop",
-      "model": "prop.workbench",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1284",
-      "position": [
-        96.67,
-        4,
-        10.62
-      ],
-      "kind": "prop",
-      "model": "prop.workbench",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1285",
-      "position": [
-        93.17,
-        4,
-        10.83
-      ],
-      "kind": "prop",
-      "model": "prop.sv_propane",
-      "yaw": 2.3183,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1286",
-      "position": [
-        75.43,
-        5.6,
-        11.34
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1287",
-      "position": [
-        76.71,
-        8,
-        10.46
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shelf_large",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1288",
-      "position": [
-        80,
-        8,
-        8
-      ],
-      "kind": "prop",
-      "model": "prop.rug",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1289",
-      "position": [
-        82.66,
-        8,
-        12.95
+        4.95
       ],
       "kind": "prop",
       "model": "prop.desk",
@@ -23405,133 +23968,245 @@
       "tint": null
     },
     {
-      "id": "prop_1290",
+      "id": "prop_1329",
       "position": [
-        82.66,
-        8,
-        13.68
+        85.31,
+        4,
+        5.7
       ],
       "kind": "prop",
-      "model": "prop.hm_chair_wood",
+      "model": "prop.hm_chair_office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1291",
+      "id": "prop_1330",
       "position": [
-        83.05,
-        8.8,
-        12.95
+        91.23,
+        4,
+        4.77
       ],
       "kind": "prop",
-      "model": "prop.hm_desk_lamp",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1292",
-      "position": [
-        82.8,
-        8,
-        18.8
-      ],
-      "kind": "prop",
-      "model": "prop.hm_houseplant",
-      "yaw": -2.4131,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1293",
-      "position": [
-        83.43,
-        9.5,
-        13.79
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1294",
-      "position": [
-        77.2,
-        8,
-        26.8
-      ],
-      "kind": "prop",
-      "model": "prop.hm_houseplant",
-      "yaw": 2.3122,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1295",
-      "position": [
-        83.34,
-        9.5,
-        27.43
-      ],
-      "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1296",
-      "position": [
-        90.87,
-        8,
-        5.54
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shower",
-      "yaw": -1.5708,
+      "model": "prop.trashcan",
+      "yaw": -0.7018,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1297",
+      "id": "prop_1331",
       "position": [
-        89.78,
-        8,
-        4.96
-      ],
-      "kind": "prop",
-      "model": "prop.toilet",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1298",
-      "position": [
-        91.19,
-        8,
+        95.93,
+        4,
         10.16
       ],
       "kind": "prop",
-      "model": "prop.hm_bathroom_sink",
+      "model": "prop.machine",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1332",
+      "position": [
+        77.65,
+        8,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bed_single",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1333",
+      "position": [
+        76.8,
+        8,
+        5.2
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1334",
+      "position": [
+        82.75,
+        8,
+        11.18
+      ],
+      "kind": "prop",
+      "model": "prop.bookcase",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1335",
+      "position": [
+        83,
+        8,
+        5
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": -0.8027,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1336",
+      "position": [
+        82.67,
+        8,
+        12.84
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chest_drawers",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1337",
+      "position": [
+        83,
+        8,
+        19
+      ],
+      "kind": "prop",
+      "model": "prop.coat_rack",
+      "yaw": -2.4792,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1338",
+      "position": [
+        76.57,
+        9.5,
+        12.79
+      ],
+      "kind": "prop",
+      "model": "prop.hm_wall_shelf",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1339",
+      "position": [
+        78,
+        8,
+        26.35
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bed_single",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1340",
+      "position": [
+        77.2,
+        8,
+        27.2
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1341",
+      "position": [
+        90.35,
+        8,
+        4.94
+      ],
+      "kind": "prop",
+      "model": "prop.bathtub",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1342",
+      "position": [
+        85.05,
+        8,
+        4.92
+      ],
+      "kind": "prop",
+      "model": "prop.hh_toilet",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1343",
+      "position": [
+        90.52,
+        8,
+        11.31
+      ],
+      "kind": "prop",
+      "model": "prop.hh_basin",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1344",
+      "position": [
+        91.06,
+        8,
+        10.5
+      ],
+      "kind": "prop",
+      "model": "prop.hm_washer",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1299",
+      "id": "prop_1345",
+      "position": [
+        91.23,
+        8,
+        11.23
+      ],
+      "kind": "prop",
+      "model": "prop.trashcan",
+      "yaw": -2.484,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1346",
       "position": [
         88,
         8,
@@ -23545,7 +24220,7 @@
       "tint": null
     },
     {
-      "id": "prop_1300",
+      "id": "prop_1347",
       "position": [
         88,
         8,
@@ -23559,161 +24234,147 @@
       "tint": null
     },
     {
-      "id": "prop_1301",
+      "id": "prop_1348",
       "position": [
-        90.67,
+        90.76,
         8,
-        19.29
+        19.21
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
+      "model": "prop.hh_bookcase_wide",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1302",
-      "position": [
-        91.18,
-        8,
-        13.12
-      ],
-      "kind": "prop",
-      "model": "prop.sf_computer",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1303",
+      "id": "prop_1349",
       "position": [
         84.77,
         8,
-        12.77
+        19.23
       ],
       "kind": "prop",
       "model": "prop.trashcan",
-      "yaw": 0.6876,
+      "yaw": 2.4911,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1304",
+      "id": "prop_1350",
       "position": [
-        70.57,
+        68.92,
         0,
-        72
+        69.93
       ],
       "kind": "prop",
-      "model": "prop.dg_table_small",
+      "model": "prop.barrel",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1305",
+      "id": "prop_1351",
       "position": [
-        70.11,
+        75.18,
         0,
-        72.98
+        68.82
       ],
       "kind": "prop",
-      "model": "prop.dungeon_chair",
+      "model": "prop.potted_plant",
+      "yaw": -0.8819,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1352",
+      "position": [
+        68.93,
+        0,
+        83.07
+      ],
+      "kind": "prop",
+      "model": "prop.hh_plant",
+      "yaw": 2.3365,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1353",
+      "position": [
+        70,
+        0,
+        90.35
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bed_single",
       "yaw": 3.1416,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1306",
+      "id": "prop_1354",
       "position": [
-        70.11,
+        69.2,
         0,
-        71.02
+        91.2
       ],
       "kind": "prop",
-      "model": "prop.dungeon_chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1307",
-      "position": [
-        71.04,
-        0,
-        72.98
-      ],
-      "kind": "prop",
-      "model": "prop.dungeon_chair",
+      "model": "prop.hh_bedside",
       "yaw": 3.1416,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1308",
+      "id": "prop_1355",
       "position": [
-        71.04,
+        75.29,
         0,
-        71.02
+        85.51
       ],
       "kind": "prop",
-      "model": "prop.dungeon_chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1309",
-      "position": [
-        75.08,
-        0,
-        68.93
-      ],
-      "kind": "prop",
-      "model": "prop.barrel",
+      "model": "prop.hm_shelf_large",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1310",
+      "id": "prop_1356",
       "position": [
-        75.22,
+        72,
         0,
-        83.22
+        88
       ],
       "kind": "prop",
-      "model": "prop.floor_lamp",
-      "yaw": -2.3606,
+      "model": "prop.hh_rug_small",
+      "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1311",
+      "id": "prop_1357",
       "position": [
-        75,
+        69.06,
         0,
-        91
+        85.06
       ],
       "kind": "prop",
-      "model": "prop.coat_rack",
-      "yaw": -2.3804,
+      "model": "prop.hh_floor_lamp",
+      "yaw": 0.6162,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1312",
+      "id": "prop_1358",
       "position": [
         82.7,
         0,
@@ -23727,7 +24388,7 @@
       "tint": null
     },
     {
-      "id": "prop_1313",
+      "id": "prop_1359",
       "position": [
         80.3,
         0,
@@ -23741,7 +24402,7 @@
       "tint": null
     },
     {
-      "id": "prop_1314",
+      "id": "prop_1360",
       "position": [
         80,
         0,
@@ -23755,7 +24416,7 @@
       "tint": null
     },
     {
-      "id": "prop_1315",
+      "id": "prop_1361",
       "position": [
         80,
         1.1,
@@ -23769,107 +24430,135 @@
       "tint": null
     },
     {
-      "id": "prop_1316",
-      "position": [
-        82.87,
-        0,
-        85.34
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shower",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1317",
-      "position": [
-        83.1,
-        0,
-        89.8
-      ],
-      "kind": "prop",
-      "model": "prop.hm_toilet",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1318",
+      "id": "prop_1362",
       "position": [
         76.81,
         0,
-        85.41
+        75.19
       ],
       "kind": "prop",
-      "model": "prop.hm_bathroom_sink",
-      "yaw": 1.5708,
+      "model": "prop.cardboard_box",
+      "yaw": 2.1994,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1319",
+      "id": "prop_1363",
       "position": [
-        83.24,
+        83.06,
         0,
-        91.23
+        85.4
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": -2.5211,
+      "model": "prop.bathtub",
+      "yaw": -1.5708,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1320",
+      "id": "prop_1364",
       "position": [
-        69.52,
-        4,
-        68.78
+        79.43,
+        0,
+        84.96
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "prop.toilet",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1321",
+      "id": "prop_1365",
       "position": [
-        69.52,
-        4.6,
-        68.78
+        78.97,
+        0,
+        91.31
       ],
       "kind": "prop",
-      "model": "prop.tv",
+      "model": "prop.hh_basin",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1366",
+      "position": [
+        76.76,
+        0,
+        84.77
+      ],
+      "kind": "prop",
+      "model": "prop.trashcan",
+      "yaw": 0.5978,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1367",
+      "position": [
+        80,
+        0,
+        88
+      ],
+      "kind": "prop",
+      "model": "prop.hm_rug",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1368",
+      "position": [
+        69.32,
+        4,
+        68.84
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chest_drawers",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1369",
+      "position": [
+        69.32,
+        4.76,
+        68.84
+      ],
+      "kind": "prop",
+      "model": "prop.hh_tv",
       "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1322",
+      "id": "prop_1370",
       "position": [
-        75.29,
+        74.94,
         4,
-        69.27
+        69.06
       ],
       "kind": "prop",
-      "model": "prop.hm_bookshelf",
-      "yaw": -1.5708,
+      "model": "prop.hh_floor_lamp",
+      "yaw": -0.8754,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1323",
+      "id": "prop_1371",
       "position": [
-        70.19,
+        69.59,
         5.6,
         68.57
       ],
@@ -23881,7 +24570,7 @@
       "tint": null
     },
     {
-      "id": "prop_1324",
+      "id": "prop_1372",
       "position": [
         68.91,
         4,
@@ -23895,7 +24584,7 @@
       "tint": null
     },
     {
-      "id": "prop_1325",
+      "id": "prop_1373",
       "position": [
         69.01,
         4,
@@ -23909,7 +24598,7 @@
       "tint": null
     },
     {
-      "id": "prop_1326",
+      "id": "prop_1374",
       "position": [
         80,
         4,
@@ -23923,7 +24612,7 @@
       "tint": null
     },
     {
-      "id": "prop_1327",
+      "id": "prop_1375",
       "position": [
         80,
         4,
@@ -23937,7 +24626,7 @@
       "tint": null
     },
     {
-      "id": "prop_1328",
+      "id": "prop_1376",
       "position": [
         79.62,
         4.8,
@@ -23951,21 +24640,21 @@
       "tint": null
     },
     {
-      "id": "prop_1329",
+      "id": "prop_1377",
       "position": [
-        76.95,
+        76.82,
         4,
-        75.05
+        75.18
       ],
       "kind": "prop",
-      "model": "prop.hm_houseplant_tall",
+      "model": "prop.potted_plant",
       "yaw": 2.4346,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1330",
+      "id": "prop_1378",
       "position": [
         88.53,
         4,
@@ -23979,7 +24668,7 @@
       "tint": null
     },
     {
-      "id": "prop_1331",
+      "id": "prop_1379",
       "position": [
         91.28,
         4,
@@ -23993,25 +24682,39 @@
       "tint": null
     },
     {
-      "id": "prop_1332",
+      "id": "prop_1380",
       "position": [
-        67.43,
-        5.6,
-        68.41
+        69.65,
+        8,
+        70
       ],
       "kind": "prop",
-      "model": "prop.hm_wall_shelf",
-      "yaw": -1.5708,
+      "model": "prop.hh_bed_single",
+      "yaw": 1.5708,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1333",
+      "id": "prop_1381",
+      "position": [
+        68.8,
+        8,
+        69.2
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bedside",
+      "yaw": 1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1382",
       "position": [
         68.82,
         8,
-        69.6
+        74.75
       ],
       "kind": "prop",
       "model": "prop.bookcase",
@@ -24021,105 +24724,203 @@
       "tint": null
     },
     {
-      "id": "prop_1334",
+      "id": "prop_1383",
       "position": [
-        75.25,
+        72,
         8,
-        68.75
+        72
       ],
       "kind": "prop",
-      "model": "prop.hm_floor_lamp",
-      "yaw": -0.8944,
+      "model": "prop.hh_rug_small",
+      "yaw": 0,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1335",
+      "id": "prop_1384",
       "position": [
-        74.8,
-        8,
-        77.18
+        74.94,
+        9.5,
+        75.43
       ],
       "kind": "prop",
-      "model": "prop.hm_houseplant",
-      "yaw": -0.6146,
+      "model": "prop.hm_wall_shelf",
+      "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1336",
+      "id": "prop_1385",
       "position": [
-        74.8,
+        69.31,
         8,
-        90.81
+        76.71
       ],
       "kind": "prop",
-      "model": "prop.hm_houseplant",
-      "yaw": -2.4868,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_1337",
-      "position": [
-        82.69,
-        8,
-        69.13
-      ],
-      "kind": "prop",
-      "model": "prop.hm_shower",
+      "model": "prop.hm_shelf_large",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1338",
+      "id": "prop_1386",
       "position": [
-        76.9,
+        75.05,
         8,
-        75.15
+        82.66
       ],
       "kind": "prop",
-      "model": "prop.hm_toilet",
+      "model": "prop.desk",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1387",
+      "position": [
+        74.32,
+        8,
+        82.66
+      ],
+      "kind": "prop",
+      "model": "prop.hm_chair_wood",
       "yaw": 1.5708,
       "scale": 1,
-      "solid": true,
+      "solid": false,
       "tint": null
     },
     {
-      "id": "prop_1339",
+      "id": "prop_1388",
       "position": [
-        76.81,
-        8,
-        69.21
+        75.05,
+        8.8,
+        83.05
       ],
       "kind": "prop",
-      "model": "prop.hm_bathroom_sink",
-      "yaw": 1.5708,
+      "model": "prop.hm_desk_lamp",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1389",
+      "position": [
+        72,
+        8,
+        80
+      ],
+      "kind": "prop",
+      "model": "prop.hh_rug_small",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_1390",
+      "position": [
+        70,
+        8,
+        90.35
+      ],
+      "kind": "prop",
+      "model": "prop.hh_bed_single",
+      "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1340",
+      "id": "prop_1391",
       "position": [
-        83.24,
+        69.2,
         8,
-        75.23
+        91.2
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
-      "yaw": -2.5282,
+      "model": "prop.hh_bedside",
+      "yaw": 3.1416,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1341",
+      "id": "prop_1392",
+      "position": [
+        74.27,
+        8,
+        91.16
+      ],
+      "kind": "prop",
+      "model": "prop.hh_chest_drawers",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1393",
+      "position": [
+        74.94,
+        8,
+        85.06
+      ],
+      "kind": "prop",
+      "model": "prop.hh_floor_lamp",
+      "yaw": -0.8933,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1394",
+      "position": [
+        82.35,
+        8,
+        68.94
+      ],
+      "kind": "prop",
+      "model": "prop.bathtub",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1395",
+      "position": [
+        83.04,
+        8,
+        69.63
+      ],
+      "kind": "prop",
+      "model": "prop.toilet",
+      "yaw": -1.5708,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1396",
+      "position": [
+        77.97,
+        8,
+        68.69
+      ],
+      "kind": "prop",
+      "model": "prop.hh_basin",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1397",
       "position": [
         80,
         8,
@@ -24133,7 +24934,7 @@
       "tint": null
     },
     {
-      "id": "prop_1342",
+      "id": "prop_1398",
       "position": [
         80,
         8,
@@ -24147,7 +24948,7 @@
       "tint": null
     },
     {
-      "id": "prop_1343",
+      "id": "prop_1399",
       "position": [
         80.38,
         8.8,
@@ -24161,7 +24962,7 @@
       "tint": null
     },
     {
-      "id": "prop_1344",
+      "id": "prop_1400",
       "position": [
         83.05,
         8,
@@ -24175,7 +24976,7 @@
       "tint": null
     },
     {
-      "id": "prop_1345",
+      "id": "prop_1401",
       "position": [
         82.3,
         8,
@@ -24189,7 +24990,7 @@
       "tint": null
     },
     {
-      "id": "prop_1346",
+      "id": "prop_1402",
       "position": [
         83,
         8,
@@ -24203,7 +25004,7 @@
       "tint": null
     },
     {
-      "id": "prop_1347",
+      "id": "prop_1403",
       "position": [
         77.59,
         9.6,
@@ -24217,7 +25018,7 @@
       "tint": null
     },
     {
-      "id": "prop_1348",
+      "id": "prop_1404",
       "position": [
         68,
         0,
@@ -24231,7 +25032,7 @@
       "tint": null
     },
     {
-      "id": "prop_1349",
+      "id": "prop_1405",
       "position": [
         69.01,
         0,
@@ -24245,7 +25046,7 @@
       "tint": null
     },
     {
-      "id": "prop_1350",
+      "id": "prop_1406",
       "position": [
         66.99,
         0,
@@ -24259,7 +25060,7 @@
       "tint": null
     },
     {
-      "id": "prop_1351",
+      "id": "prop_1407",
       "position": [
         69.01,
         0,
@@ -24273,7 +25074,7 @@
       "tint": null
     },
     {
-      "id": "prop_1352",
+      "id": "prop_1408",
       "position": [
         66.99,
         0,
@@ -24287,7 +25088,7 @@
       "tint": null
     },
     {
-      "id": "prop_1353",
+      "id": "prop_1409",
       "position": [
         68,
         0,
@@ -24301,7 +25102,7 @@
       "tint": null
     },
     {
-      "id": "prop_1354",
+      "id": "prop_1410",
       "position": [
         69.01,
         0,
@@ -24315,7 +25116,7 @@
       "tint": null
     },
     {
-      "id": "prop_1355",
+      "id": "prop_1411",
       "position": [
         66.99,
         0,
@@ -24329,7 +25130,7 @@
       "tint": null
     },
     {
-      "id": "prop_1356",
+      "id": "prop_1412",
       "position": [
         69.01,
         0,
@@ -24343,7 +25144,7 @@
       "tint": null
     },
     {
-      "id": "prop_1357",
+      "id": "prop_1413",
       "position": [
         66.99,
         0,
@@ -24357,7 +25158,7 @@
       "tint": null
     },
     {
-      "id": "prop_1358",
+      "id": "prop_1414",
       "position": [
         68,
         0,
@@ -24371,7 +25172,7 @@
       "tint": null
     },
     {
-      "id": "prop_1359",
+      "id": "prop_1415",
       "position": [
         69.01,
         0,
@@ -24385,7 +25186,7 @@
       "tint": null
     },
     {
-      "id": "prop_1360",
+      "id": "prop_1416",
       "position": [
         66.99,
         0,
@@ -24399,7 +25200,7 @@
       "tint": null
     },
     {
-      "id": "prop_1361",
+      "id": "prop_1417",
       "position": [
         69.01,
         0,
@@ -24413,7 +25214,7 @@
       "tint": null
     },
     {
-      "id": "prop_1362",
+      "id": "prop_1418",
       "position": [
         66.99,
         0,
@@ -24427,7 +25228,7 @@
       "tint": null
     },
     {
-      "id": "prop_1363",
+      "id": "prop_1419",
       "position": [
         64.58,
         0,
@@ -24441,7 +25242,7 @@
       "tint": null
     },
     {
-      "id": "prop_1364",
+      "id": "prop_1420",
       "position": [
         65.59,
         0,
@@ -24455,7 +25256,7 @@
       "tint": null
     },
     {
-      "id": "prop_1365",
+      "id": "prop_1421",
       "position": [
         63.57,
         0,
@@ -24469,7 +25270,7 @@
       "tint": null
     },
     {
-      "id": "prop_1366",
+      "id": "prop_1422",
       "position": [
         65.59,
         0,
@@ -24483,7 +25284,7 @@
       "tint": null
     },
     {
-      "id": "prop_1367",
+      "id": "prop_1423",
       "position": [
         63.57,
         0,
@@ -24497,7 +25298,7 @@
       "tint": null
     },
     {
-      "id": "prop_1368",
+      "id": "prop_1424",
       "position": [
         71.42,
         0,
@@ -24511,7 +25312,7 @@
       "tint": null
     },
     {
-      "id": "prop_1369",
+      "id": "prop_1425",
       "position": [
         72.43,
         0,
@@ -24525,7 +25326,7 @@
       "tint": null
     },
     {
-      "id": "prop_1370",
+      "id": "prop_1426",
       "position": [
         70.41,
         0,
@@ -24539,7 +25340,7 @@
       "tint": null
     },
     {
-      "id": "prop_1371",
+      "id": "prop_1427",
       "position": [
         72.43,
         0,
@@ -24553,7 +25354,7 @@
       "tint": null
     },
     {
-      "id": "prop_1372",
+      "id": "prop_1428",
       "position": [
         70.41,
         0,
@@ -24567,7 +25368,7 @@
       "tint": null
     },
     {
-      "id": "prop_1373",
+      "id": "prop_1429",
       "position": [
         68,
         0,
@@ -24581,7 +25382,7 @@
       "tint": null
     },
     {
-      "id": "prop_1374",
+      "id": "prop_1430",
       "position": [
         69.01,
         0,
@@ -24595,7 +25396,7 @@
       "tint": null
     },
     {
-      "id": "prop_1375",
+      "id": "prop_1431",
       "position": [
         66.99,
         0,
@@ -24609,7 +25410,7 @@
       "tint": null
     },
     {
-      "id": "prop_1376",
+      "id": "prop_1432",
       "position": [
         69.01,
         0,
@@ -24623,7 +25424,7 @@
       "tint": null
     },
     {
-      "id": "prop_1377",
+      "id": "prop_1433",
       "position": [
         66.99,
         0,
@@ -24637,7 +25438,7 @@
       "tint": null
     },
     {
-      "id": "prop_1378",
+      "id": "prop_1434",
       "position": [
         64.58,
         0,
@@ -24651,7 +25452,7 @@
       "tint": null
     },
     {
-      "id": "prop_1379",
+      "id": "prop_1435",
       "position": [
         65.59,
         0,
@@ -24665,7 +25466,7 @@
       "tint": null
     },
     {
-      "id": "prop_1380",
+      "id": "prop_1436",
       "position": [
         63.57,
         0,
@@ -24679,7 +25480,7 @@
       "tint": null
     },
     {
-      "id": "prop_1381",
+      "id": "prop_1437",
       "position": [
         65.59,
         0,
@@ -24693,7 +25494,7 @@
       "tint": null
     },
     {
-      "id": "prop_1382",
+      "id": "prop_1438",
       "position": [
         63.57,
         0,
@@ -24707,7 +25508,7 @@
       "tint": null
     },
     {
-      "id": "prop_1383",
+      "id": "prop_1439",
       "position": [
         71.42,
         0,
@@ -24721,7 +25522,7 @@
       "tint": null
     },
     {
-      "id": "prop_1384",
+      "id": "prop_1440",
       "position": [
         72.43,
         0,
@@ -24735,7 +25536,7 @@
       "tint": null
     },
     {
-      "id": "prop_1385",
+      "id": "prop_1441",
       "position": [
         70.41,
         0,
@@ -24749,7 +25550,7 @@
       "tint": null
     },
     {
-      "id": "prop_1386",
+      "id": "prop_1442",
       "position": [
         72.43,
         0,
@@ -24763,7 +25564,7 @@
       "tint": null
     },
     {
-      "id": "prop_1387",
+      "id": "prop_1443",
       "position": [
         70.41,
         0,
@@ -24777,7 +25578,7 @@
       "tint": null
     },
     {
-      "id": "prop_1388",
+      "id": "prop_1444",
       "position": [
         78.92,
         0,
@@ -24791,7 +25592,7 @@
       "tint": null
     },
     {
-      "id": "prop_1389",
+      "id": "prop_1445",
       "position": [
         76.77,
         0,
@@ -24805,7 +25606,7 @@
       "tint": null
     },
     {
-      "id": "prop_1390",
+      "id": "prop_1446",
       "position": [
         83.43,
         -0.18,
@@ -24819,821 +25620,37 @@
       "tint": null
     },
     {
-      "id": "prop_1391",
+      "id": "prop_1447",
       "position": [
-        74.64,
+        60.82,
         0,
-        -2.51
+        3.18
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
-      "yaw": -1.5708,
+      "model": "prop.cardboard_box",
+      "yaw": 2.2436,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_1392",
+      "id": "prop_1448",
       "position": [
-        61.35,
+        75.18,
         0,
-        -2.52
+        3.18
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
-      "yaw": 1.5708,
+      "model": "prop.cardboard_box",
+      "yaw": -2.3531,
       "scale": 1,
       "solid": true,
       "tint": null
-    },
-    {
-      "id": "prop_1393",
-      "position": [
-        74.64,
-        0,
-        2.44
-      ],
-      "kind": "prop",
-      "model": "prop.shelf_boxes",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1394",
-      "position": [
-        69.43,
-        0,
-        -2.65
-      ],
-      "kind": "prop",
-      "model": "prop.shelf_bags",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1395",
-      "position": [
-        61.35,
-        0,
-        2.43
-      ],
-      "kind": "prop",
-      "model": "prop.shelf_bags",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1396",
-      "position": [
-        70.12,
-        0,
-        1.44
-      ],
-      "kind": "prop",
-      "model": "prop.shelf_boxes",
-      "yaw": -1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_1397",
-      "position": [
-        71.8,
-        0,
-        1.44
-      ],
-      "kind": "prop",
-      "model": "prop.shelf_bags",
-      "yaw": 1.5708,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "light_1398",
-      "position": [
-        -72,
-        3.45,
-        -88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1399",
-      "position": [
-        -72,
-        3.45,
-        -80
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1400",
-      "position": [
-        -72,
-        3.45,
-        -72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1401",
-      "position": [
-        -80,
-        3.45,
-        -88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1402",
-      "position": [
-        -80,
-        3.45,
-        -72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1403",
-      "position": [
-        -72,
-        7.45,
-        -88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1404",
-      "position": [
-        -72,
-        7.45,
-        -80
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1405",
-      "position": [
-        -72,
-        7.45,
-        -72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1406",
-      "position": [
-        -80,
-        7.45,
-        -88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1407",
-      "position": [
-        -88,
-        7.45,
-        -88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1408",
-      "position": [
-        -64,
-        7.45,
-        -88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1409",
-      "position": [
-        -72,
-        11.45,
-        -88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1410",
-      "position": [
-        -72,
-        11.45,
-        -80
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1411",
-      "position": [
-        -72,
-        11.45,
-        -72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1412",
-      "position": [
-        -80,
-        11.45,
-        -88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1413",
-      "position": [
-        -80,
-        11.45,
-        -80
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1414",
-      "position": [
-        -72,
-        3.45,
-        -16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1415",
-      "position": [
-        -72,
-        3.45,
-        -8
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1416",
-      "position": [
-        -72,
-        3.45,
-        0
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1417",
-      "position": [
-        -80,
-        3.45,
-        -16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1418",
-      "position": [
-        -80,
-        3.45,
-        0
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1419",
-      "position": [
-        -72,
-        7.45,
-        -16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1420",
-      "position": [
-        -72,
-        7.45,
-        -8
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1421",
-      "position": [
-        -72,
-        7.45,
-        0
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1422",
-      "position": [
-        -80,
-        7.45,
-        -16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1423",
-      "position": [
-        -88,
-        7.45,
-        -16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1424",
-      "position": [
-        -64,
-        7.45,
-        -16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1425",
-      "position": [
-        -72,
-        11.45,
-        -16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1426",
-      "position": [
-        -72,
-        11.45,
-        -8
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1427",
-      "position": [
-        -72,
-        11.45,
-        0
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1428",
-      "position": [
-        -80,
-        11.45,
-        -16
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1429",
-      "position": [
-        -80,
-        11.45,
-        -8
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1430",
-      "position": [
-        -64,
-        3.45,
-        72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1431",
-      "position": [
-        -64,
-        3.45,
-        80
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1432",
-      "position": [
-        -64,
-        3.45,
-        88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1433",
-      "position": [
-        -72,
-        3.45,
-        72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1434",
-      "position": [
-        -72,
-        3.45,
-        88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1435",
-      "position": [
-        -64,
-        7.45,
-        72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1436",
-      "position": [
-        -64,
-        7.45,
-        80
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1437",
-      "position": [
-        -64,
-        7.45,
-        88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1438",
-      "position": [
-        -72,
-        7.45,
-        72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1439",
-      "position": [
-        -80,
-        7.45,
-        72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1440",
-      "position": [
-        -56,
-        7.45,
-        72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1441",
-      "position": [
-        -64,
-        11.45,
-        72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1442",
-      "position": [
-        -64,
-        11.45,
-        80
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1443",
-      "position": [
-        -64,
-        11.45,
-        88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1444",
-      "position": [
-        -72,
-        11.45,
-        72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1445",
-      "position": [
-        -72,
-        11.45,
-        80
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1446",
-      "position": [
-        72,
-        3.45,
-        -88
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1447",
-      "position": [
-        72,
-        3.45,
-        -80
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
-    },
-    {
-      "id": "light_1448",
-      "position": [
-        72,
-        3.45,
-        -72
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffe2b8",
-      "intensity": 0.9,
-      "range": 9,
-      "fixture": "ceiling"
     },
     {
       "id": "light_1449",
       "position": [
-        80,
+        -72,
         3.45,
         -88
       ],
@@ -25647,9 +25664,9 @@
     {
       "id": "light_1450",
       "position": [
-        80,
+        -72,
         3.45,
-        -72
+        -80
       ],
       "kind": "light",
       "yaw": 0,
@@ -25661,9 +25678,9 @@
     {
       "id": "light_1451",
       "position": [
-        72,
-        7.45,
-        -88
+        -72,
+        3.45,
+        -72
       ],
       "kind": "light",
       "yaw": 0,
@@ -25675,9 +25692,9 @@
     {
       "id": "light_1452",
       "position": [
-        72,
-        7.45,
-        -80
+        -80,
+        3.45,
+        -88
       ],
       "kind": "light",
       "yaw": 0,
@@ -25689,8 +25706,8 @@
     {
       "id": "light_1453",
       "position": [
-        72,
-        7.45,
+        -80,
+        3.45,
         -72
       ],
       "kind": "light",
@@ -25703,7 +25720,7 @@
     {
       "id": "light_1454",
       "position": [
-        80,
+        -72,
         7.45,
         -88
       ],
@@ -25717,9 +25734,9 @@
     {
       "id": "light_1455",
       "position": [
-        88,
+        -72,
         7.45,
-        -88
+        -80
       ],
       "kind": "light",
       "yaw": 0,
@@ -25731,9 +25748,9 @@
     {
       "id": "light_1456",
       "position": [
-        64,
+        -72,
         7.45,
-        -88
+        -72
       ],
       "kind": "light",
       "yaw": 0,
@@ -25745,8 +25762,8 @@
     {
       "id": "light_1457",
       "position": [
-        72,
-        11.45,
+        -80,
+        7.45,
         -88
       ],
       "kind": "light",
@@ -25759,9 +25776,9 @@
     {
       "id": "light_1458",
       "position": [
-        72,
-        11.45,
-        -80
+        -88,
+        7.45,
+        -88
       ],
       "kind": "light",
       "yaw": 0,
@@ -25773,9 +25790,9 @@
     {
       "id": "light_1459",
       "position": [
-        72,
-        11.45,
-        -72
+        -64,
+        7.45,
+        -88
       ],
       "kind": "light",
       "yaw": 0,
@@ -25787,7 +25804,7 @@
     {
       "id": "light_1460",
       "position": [
-        80,
+        -72,
         11.45,
         -88
       ],
@@ -25801,7 +25818,7 @@
     {
       "id": "light_1461",
       "position": [
-        80,
+        -72,
         11.45,
         -80
       ],
@@ -25815,9 +25832,9 @@
     {
       "id": "light_1462",
       "position": [
-        80,
-        3.45,
-        8
+        -72,
+        11.45,
+        -72
       ],
       "kind": "light",
       "yaw": 0,
@@ -25829,9 +25846,9 @@
     {
       "id": "light_1463",
       "position": [
-        80,
-        3.45,
-        16
+        -80,
+        11.45,
+        -88
       ],
       "kind": "light",
       "yaw": 0,
@@ -25843,9 +25860,9 @@
     {
       "id": "light_1464",
       "position": [
-        80,
-        3.45,
-        24
+        -80,
+        11.45,
+        -80
       ],
       "kind": "light",
       "yaw": 0,
@@ -25857,9 +25874,9 @@
     {
       "id": "light_1465",
       "position": [
-        88,
+        -72,
         3.45,
-        8
+        -16
       ],
       "kind": "light",
       "yaw": 0,
@@ -25871,9 +25888,9 @@
     {
       "id": "light_1466",
       "position": [
-        88,
+        -72,
         3.45,
-        24
+        -8
       ],
       "kind": "light",
       "yaw": 0,
@@ -25885,9 +25902,9 @@
     {
       "id": "light_1467",
       "position": [
-        80,
-        7.45,
-        8
+        -72,
+        3.45,
+        0
       ],
       "kind": "light",
       "yaw": 0,
@@ -25899,9 +25916,9 @@
     {
       "id": "light_1468",
       "position": [
-        80,
-        7.45,
-        16
+        -80,
+        3.45,
+        -16
       ],
       "kind": "light",
       "yaw": 0,
@@ -25913,9 +25930,9 @@
     {
       "id": "light_1469",
       "position": [
-        80,
-        7.45,
-        24
+        -80,
+        3.45,
+        0
       ],
       "kind": "light",
       "yaw": 0,
@@ -25927,9 +25944,9 @@
     {
       "id": "light_1470",
       "position": [
-        88,
+        -72,
         7.45,
-        8
+        -16
       ],
       "kind": "light",
       "yaw": 0,
@@ -25941,9 +25958,9 @@
     {
       "id": "light_1471",
       "position": [
-        96,
+        -72,
         7.45,
-        8
+        -8
       ],
       "kind": "light",
       "yaw": 0,
@@ -25955,9 +25972,9 @@
     {
       "id": "light_1472",
       "position": [
-        72,
+        -72,
         7.45,
-        8
+        0
       ],
       "kind": "light",
       "yaw": 0,
@@ -25969,9 +25986,9 @@
     {
       "id": "light_1473",
       "position": [
-        80,
-        11.45,
-        8
+        -80,
+        7.45,
+        -16
       ],
       "kind": "light",
       "yaw": 0,
@@ -25983,9 +26000,9 @@
     {
       "id": "light_1474",
       "position": [
-        80,
-        11.45,
-        16
+        -88,
+        7.45,
+        -16
       ],
       "kind": "light",
       "yaw": 0,
@@ -25997,9 +26014,9 @@
     {
       "id": "light_1475",
       "position": [
-        80,
-        11.45,
-        24
+        -64,
+        7.45,
+        -16
       ],
       "kind": "light",
       "yaw": 0,
@@ -26011,9 +26028,9 @@
     {
       "id": "light_1476",
       "position": [
-        88,
+        -72,
         11.45,
-        8
+        -16
       ],
       "kind": "light",
       "yaw": 0,
@@ -26025,9 +26042,9 @@
     {
       "id": "light_1477",
       "position": [
-        88,
+        -72,
         11.45,
-        16
+        -8
       ],
       "kind": "light",
       "yaw": 0,
@@ -26039,9 +26056,9 @@
     {
       "id": "light_1478",
       "position": [
-        72,
-        3.45,
-        72
+        -72,
+        11.45,
+        0
       ],
       "kind": "light",
       "yaw": 0,
@@ -26053,9 +26070,9 @@
     {
       "id": "light_1479",
       "position": [
-        72,
-        3.45,
-        80
+        -80,
+        11.45,
+        -16
       ],
       "kind": "light",
       "yaw": 0,
@@ -26067,9 +26084,9 @@
     {
       "id": "light_1480",
       "position": [
-        72,
-        3.45,
-        88
+        -80,
+        11.45,
+        -8
       ],
       "kind": "light",
       "yaw": 0,
@@ -26081,7 +26098,7 @@
     {
       "id": "light_1481",
       "position": [
-        80,
+        -64,
         3.45,
         72
       ],
@@ -26095,9 +26112,9 @@
     {
       "id": "light_1482",
       "position": [
-        80,
+        -64,
         3.45,
-        88
+        80
       ],
       "kind": "light",
       "yaw": 0,
@@ -26109,9 +26126,9 @@
     {
       "id": "light_1483",
       "position": [
-        72,
-        7.45,
-        72
+        -64,
+        3.45,
+        88
       ],
       "kind": "light",
       "yaw": 0,
@@ -26123,9 +26140,9 @@
     {
       "id": "light_1484",
       "position": [
-        72,
-        7.45,
-        80
+        -72,
+        3.45,
+        72
       ],
       "kind": "light",
       "yaw": 0,
@@ -26137,8 +26154,8 @@
     {
       "id": "light_1485",
       "position": [
-        72,
-        7.45,
+        -72,
+        3.45,
         88
       ],
       "kind": "light",
@@ -26151,7 +26168,7 @@
     {
       "id": "light_1486",
       "position": [
-        80,
+        -64,
         7.45,
         72
       ],
@@ -26165,9 +26182,9 @@
     {
       "id": "light_1487",
       "position": [
-        88,
+        -64,
         7.45,
-        72
+        80
       ],
       "kind": "light",
       "yaw": 0,
@@ -26179,9 +26196,9 @@
     {
       "id": "light_1488",
       "position": [
-        64,
+        -64,
         7.45,
-        72
+        88
       ],
       "kind": "light",
       "yaw": 0,
@@ -26193,8 +26210,8 @@
     {
       "id": "light_1489",
       "position": [
-        72,
-        11.45,
+        -72,
+        7.45,
         72
       ],
       "kind": "light",
@@ -26207,9 +26224,9 @@
     {
       "id": "light_1490",
       "position": [
-        72,
-        11.45,
-        80
+        -80,
+        7.45,
+        72
       ],
       "kind": "light",
       "yaw": 0,
@@ -26221,9 +26238,9 @@
     {
       "id": "light_1491",
       "position": [
-        72,
-        11.45,
-        88
+        -56,
+        7.45,
+        72
       ],
       "kind": "light",
       "yaw": 0,
@@ -26235,7 +26252,7 @@
     {
       "id": "light_1492",
       "position": [
-        80,
+        -64,
         11.45,
         72
       ],
@@ -26249,7 +26266,7 @@
     {
       "id": "light_1493",
       "position": [
-        80,
+        -64,
         11.45,
         80
       ],
@@ -26263,42 +26280,42 @@
     {
       "id": "light_1494",
       "position": [
-        64,
-        3.45,
-        -16
+        -64,
+        11.45,
+        88
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd090",
-      "intensity": 1,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
       "range": 9,
       "fixture": "ceiling"
     },
     {
       "id": "light_1495",
       "position": [
-        72,
-        3.45,
-        -16
+        -72,
+        11.45,
+        72
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd090",
-      "intensity": 1,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
       "range": 9,
       "fixture": "ceiling"
     },
     {
       "id": "light_1496",
       "position": [
-        64,
-        3.45,
-        -8
+        -72,
+        11.45,
+        80
       ],
       "kind": "light",
       "yaw": 0,
-      "color": "#ffd090",
-      "intensity": 1,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
       "range": 9,
       "fixture": "ceiling"
     },
@@ -26307,6 +26324,706 @@
       "position": [
         72,
         3.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1498",
+      "position": [
+        72,
+        3.45,
+        -80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1499",
+      "position": [
+        72,
+        3.45,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1500",
+      "position": [
+        80,
+        3.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1501",
+      "position": [
+        80,
+        3.45,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1502",
+      "position": [
+        72,
+        7.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1503",
+      "position": [
+        72,
+        7.45,
+        -80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1504",
+      "position": [
+        72,
+        7.45,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1505",
+      "position": [
+        80,
+        7.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1506",
+      "position": [
+        88,
+        7.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1507",
+      "position": [
+        64,
+        7.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1508",
+      "position": [
+        72,
+        11.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1509",
+      "position": [
+        72,
+        11.45,
+        -80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1510",
+      "position": [
+        72,
+        11.45,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1511",
+      "position": [
+        80,
+        11.45,
+        -88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1512",
+      "position": [
+        80,
+        11.45,
+        -80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1513",
+      "position": [
+        80,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1514",
+      "position": [
+        80,
+        3.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1515",
+      "position": [
+        80,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1516",
+      "position": [
+        88,
+        3.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1517",
+      "position": [
+        88,
+        3.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1518",
+      "position": [
+        80,
+        7.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1519",
+      "position": [
+        80,
+        7.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1520",
+      "position": [
+        80,
+        7.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1521",
+      "position": [
+        88,
+        7.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1522",
+      "position": [
+        96,
+        7.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1523",
+      "position": [
+        72,
+        7.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1524",
+      "position": [
+        80,
+        11.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1525",
+      "position": [
+        80,
+        11.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1526",
+      "position": [
+        80,
+        11.45,
+        24
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1527",
+      "position": [
+        88,
+        11.45,
+        8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1528",
+      "position": [
+        88,
+        11.45,
+        16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1529",
+      "position": [
+        72,
+        3.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1530",
+      "position": [
+        72,
+        3.45,
+        80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1531",
+      "position": [
+        72,
+        3.45,
+        88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1532",
+      "position": [
+        80,
+        3.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1533",
+      "position": [
+        80,
+        3.45,
+        88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1534",
+      "position": [
+        72,
+        7.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1535",
+      "position": [
+        72,
+        7.45,
+        80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1536",
+      "position": [
+        72,
+        7.45,
+        88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1537",
+      "position": [
+        80,
+        7.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1538",
+      "position": [
+        88,
+        7.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1539",
+      "position": [
+        64,
+        7.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1540",
+      "position": [
+        72,
+        11.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1541",
+      "position": [
+        72,
+        11.45,
+        80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1542",
+      "position": [
+        72,
+        11.45,
+        88
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1543",
+      "position": [
+        80,
+        11.45,
+        72
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1544",
+      "position": [
+        80,
+        11.45,
+        80
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe2b8",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1545",
+      "position": [
+        64,
+        3.45,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd090",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1546",
+      "position": [
+        72,
+        3.45,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd090",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1547",
+      "position": [
+        64,
+        3.45,
         -8
       ],
       "kind": "light",
@@ -26317,7 +27034,21 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_1498",
+      "id": "light_1548",
+      "position": [
+        72,
+        3.45,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd090",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_1549",
       "position": [
         80,
         3.45,
@@ -26331,7 +27062,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_1499",
+      "id": "light_1550",
       "position": [
         64,
         3.45,
@@ -26345,7 +27076,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_1500",
+      "id": "light_1551",
       "position": [
         72,
         3.45,
@@ -26359,7 +27090,7 @@
       "fixture": "ceiling"
     },
     {
-      "id": "light_1501",
+      "id": "light_1552",
       "position": [
         -37,
         2.6,
@@ -26373,7 +27104,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1502",
+      "id": "light_1553",
       "position": [
         -37,
         2.6,
@@ -26387,7 +27118,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1503",
+      "id": "light_1554",
       "position": [
         -21,
         2.6,
@@ -26401,7 +27132,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1504",
+      "id": "light_1555",
       "position": [
         29,
         2.6,
@@ -26415,7 +27146,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1505",
+      "id": "light_1556",
       "position": [
         45,
         2.6,
@@ -26429,7 +27160,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1506",
+      "id": "light_1557",
       "position": [
         29,
         2.6,
@@ -26443,7 +27174,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1507",
+      "id": "light_1558",
       "position": [
         -72,
         12.2,
@@ -26457,7 +27188,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1508",
+      "id": "light_1559",
       "position": [
         -60,
         12.2,
@@ -26471,7 +27202,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1509",
+      "id": "light_1560",
       "position": [
         -48,
         12.2,
@@ -26485,7 +27216,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1510",
+      "id": "light_1561",
       "position": [
         -36,
         12.2,
@@ -26499,7 +27230,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1511",
+      "id": "light_1562",
       "position": [
         -24,
         12.2,
@@ -26513,7 +27244,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1512",
+      "id": "light_1563",
       "position": [
         -12,
         12.2,
@@ -26527,7 +27258,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1513",
+      "id": "light_1564",
       "position": [
         0,
         12.2,
@@ -26541,7 +27272,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1514",
+      "id": "light_1565",
       "position": [
         12,
         12.2,
@@ -26555,7 +27286,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1515",
+      "id": "light_1566",
       "position": [
         24,
         12.2,
@@ -26569,7 +27300,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1516",
+      "id": "light_1567",
       "position": [
         36,
         12.2,
@@ -26583,7 +27314,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1517",
+      "id": "light_1568",
       "position": [
         48,
         12.2,
@@ -26597,7 +27328,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1518",
+      "id": "light_1569",
       "position": [
         60,
         12.2,
@@ -26611,7 +27342,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1519",
+      "id": "light_1570",
       "position": [
         72,
         12.2,
@@ -26625,7 +27356,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1520",
+      "id": "light_1571",
       "position": [
         84,
         12.2,
@@ -26639,7 +27370,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1521",
+      "id": "light_1572",
       "position": [
         43.45,
         3,
@@ -26653,7 +27384,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1522",
+      "id": "light_1573",
       "position": [
         43.45,
         3,
@@ -26667,7 +27398,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1523",
+      "id": "light_1574",
       "position": [
         27,
         2.5,
@@ -26681,7 +27412,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_1524",
+      "id": "light_1575",
       "position": [
         12,
         2.49,

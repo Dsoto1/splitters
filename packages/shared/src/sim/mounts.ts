@@ -95,6 +95,8 @@ export interface MountDef {
     mass?: number;
     /** Flyers: no gravity; the pilot climbs (jump) and dives (crouch) at `climb` m/s, up to `ceiling` m above where it is parked. */
     fly?: { climb: number; ceiling: number };
+    /** Placed to ride on water (the mount entity's `onWater`): how deep its feet sit under the surface (m). Default FLOAT.draft. */
+    draft?: number;
   };
   sentry?: { weapon: string; range: number; turnRate: number };
   /** The transport plane: flies its map entity's route on its own, can't be hurt, and riders jump out (E or jump) to parachute down. */
@@ -328,7 +330,8 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     model: 'vehicles/hover_bike.glb',
     health: 170,
     half: [0.9, 0.5, 1.5],
-    seats: [{ role: 'driver', label: 'Rider', offset: [0, 0.95, -0.3] }],
+    // Astride the canopy, ahead of the middle: the nose (+Z) leads and the twin exhausts trail.
+    seats: [{ role: 'driver', label: 'Rider', offset: [0, 0.95, 0.25] }],
     enterRadius: 2.6,
     respawnSeconds: 30,
     blast: { radius: 3.5, damage: 70 },
@@ -414,6 +417,14 @@ export const AIRPLANE_DEF: MountDef = {
 };
 
 export const getMountDef = (id: string): MountDef | undefined => (id === AIRPLANE_MODEL ? AIRPLANE_DEF : MOUNT_DEFS[id as MountModel]);
+
+/**
+ * Vehicles placed to ride on water (MountEntity.onWater). Over water or
+ * swamp they float with their feet `draft` under the surface (rising to it
+ * at up to `rise` m/s from below), top out at `speed` of their top speed
+ * and keep only `grip` of their tyre or pad grip, so they slide more.
+ */
+export const FLOAT = { draft: 0.3, rise: 4, speed: 0.75, grip: 0.5 } as const;
 
 /** Turn a mount-frame offset into world space for a mount at `pos` facing `yaw` (see viewDirection). */
 export function mountToWorld(pos: { x: number; y: number; z: number }, yaw: number, o: readonly [number, number, number]): { x: number; y: number; z: number } {
