@@ -221,7 +221,7 @@ class App {
   }
 
   /** Quick start from a URL (?offline=sandgate, &gamemode=core.ctf): the map's own mode (or the one asked for) and a default bot count; `extra` adds rules (Classes). */
-  async playOffline(which: string = 'arena', mode: string | null = null, extra: Partial<MatchRules> = {}): Promise<void> {
+  async playOffline(which: string = 'arena', mode: string | null = null, extra: Partial<MatchRules> = {}, bots = 0): Promise<void> {
     await this.init();
     const json = which in OFFLINE_MAPS ? OFFLINE_MAPS[which as OfflineMap] : (EXTRA_MAPS[`../../../maps/${which}.json`] ?? (await importedMaps([which]))[`../../../maps/imported/${which}.json`]);
     if (!json) return void this.showMenu(`No map called ${which}`);
@@ -231,7 +231,10 @@ class App {
     const asked = mode && isGameMode(mode) && mapCanRun(arena.map, mode) ? mode : null;
     // Zombies: you and three bots (the horde is the crowd).
     const botFill = asked === 'core.zombies' ? 4 : (({ outpost: 3, vault: 6, sandgate: 10, arena: 4, citadel: 10, canyon: 10 } as Record<string, number>)[which] ?? Math.max(4, Math.min(12, arena.map.metadata.recommendedPlayers.max)));
-    this.playLocal(arena.map, { ...(asked ? rulesForMode(arena.map, asked) : rulesForMap(arena.map)), ...extra }, botFill, 'normal');
+    const rules = { ...(asked ? rulesForMode(arena.map, asked) : rulesForMap(arena.map)), ...extra };
+    // &bots=96 (load tests): that many players in all, split evenly over two teams.
+    if (bots > 0 && rules.teamSizes?.length === 2) rules.teamSizes = [Math.ceil(bots / 2), Math.floor(bots / 2)];
+    this.playLocal(arena.map, rules, bots > 0 ? bots : botFill, 'normal');
   }
 
   /** The scenario chain being played (Arcade → co-op → Playlist): which playlist, how far in, and its settings. */
@@ -363,7 +366,7 @@ else if (params.has('offline')) {
   const which = params.get('offline');
   // &classes=1 (or a number: the per-team class limit) plays with Classes.
   const classes = params.get('classes');
-  void app.playOffline(which || 'arena', params.get('gamemode'), classes ? { classes: true, ...(Number(classes) > 1 ? { classLimit: Number(classes) } : {}) } : {});
+  void app.playOffline(which || 'arena', params.get('gamemode'), classes ? { classes: true, ...(Number(classes) > 1 ? { classLimit: Number(classes) } : {}) } : {}, Math.max(0, Math.min(96, Number(params.get('bots')) || 0)));
 } else if (params.has('join')) void app.init().then(() => app.joinCode(params.get('join') ?? '', app.front!.displayName || 'Player'));
 else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.front!.server, app.front!.name));
 else void app.showMenu();

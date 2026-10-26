@@ -21,6 +21,7 @@ the map format (4,096 entities, terrain 161 × 161 vertices).
 | Breakable / crumbling / trapdoor blocks | 150 | Each is simulated every tick and its state is sent to players. |
 | Bodies of liquid | 32 | Each is a see-through surface (transparency is expensive). |
 | Active pieces | 300 | Doors, traps, zones, NPC squads, vehicles, pads and buttons think every tick. |
+| Lights | 256 | Lights are clustered (each pixel only adds up the lamps that reach it), but overlapping ones still cost every pixel they light; fixtures nothing switches are merged into a few meshes. |
 
 Suggested sizes by player count:
 
@@ -68,11 +69,80 @@ texture, and a simple collision box (`collide: box`, `trunk` or `none` in
 ## Keeping it fast
 
 - Props use GPU instancing; tinted props get their own materials, so tint sparingly.
-- Terrain plants are instanced in 32 m chunks and drawn only near the camera.
+- Terrain plants are instanced in 32 m chunks (culled per chunk) and drawn only near the camera, in a plain lambert material, casting no shadows. Grass, tall grass, flowers and pebbles thin out with distance (all of them close by, a third at the edge of their range) and by graphics setting (Low: half the range and a third as many; Medium: 80% of the range, three quarters as many); shrubs and bushes always grow in full.
 - Distant scenery is built from a few large meshes and fades into haze.
 - Bots path on a navmesh built once per map.
 - City facades are GPU thin instances: one draw per piece and material, however many bays use it.
-- Borders cost a few dozen draw calls however long the boundary (merged meshes and thin instances; low-poly conifers stand in for trees behind the front row, the window texture for facades above the second storey): ≈0.6 M triangles on Apex Ring's 1.58 km boundary.
+- Borders cost a few dozen draw calls however long the boundary (merged meshes and thin instances; low-poly conifers stand in for trees behind the front row, the window texture for facades above the second storey). The detailed models (front-row trees, facades) are split into 120 m squares so the ones behind you are culled: Apex Ring's 1.58 km boundary was ≈0.6 M triangles wherever you looked.
+
+### Big maps at 48 v 48
+
+The server's tick (60 Hz, 16.7 ms) and a player's frame both grow with the
+crowd, so a map meant for 96 players should stay inside these on top of the
+budgets above:
+
+- **Lights**: up to 256 (validator). Only lights that logic switches, or that
+  start off or blinking, cost a draw call each; the rest share materials and
+  their fixtures are merged. Prefer `fixture: 'none'` for fill light.
+- **Terrain**: the format's 161 × 161 at 2 m (320 m) is the most a map should
+  use; 2.5 m spacing (400 m) is fine for open ground. Character movement on
+  terrain is the dearest thing the server does: bots in big matches use a
+  coarse move over it (the terrain's height function instead of its collision
+  mesh), players keep the exact one.
+- **Navigation**: one navmesh at 0.2 m cells for every map. Coarser cells
+  (0.25–0.3 m) halve the build on Norman Shores and Apex Ring but close
+  doorways (40% of Norman Shores' spawn pairs lost their route), so there is
+  no per-map setting; keep big maps connected with wide openings (≥ 1.4 m)
+  instead. Routes may be long: path searches have 65,535 nodes and 8,192
+  polygons, and teammates share routes to the same place.
+- **Water in the middle**: a lake or a canyon nobody can cross makes every
+  route go round it; give it two crossings or more so bots spread out.
+- **Props**: instanced, so the count matters less than the number of
+  different models (80) and tints (each tint is its own material).
+- **Measure**: `pnpm bench:96:maps` (server, 96 bots, 60 s a map) and
+  `node tools/perf/client-perf.mjs <map>` after `pnpm build` (headless
+  Chromium, 96 players offline: draw calls, meshes, triangles, shadow casters).
+
+#### Before and after (October 2026 performance pass)
+
+Server, 96 bots, Team Deathmatch 48 v 48, 60 s (`pnpm bench:96:maps`), four
+bots standing in for players. The box (4 cores) was shared with other heavy
+jobs at load 16–24 for the comparison runs, so wall-clock ticks were 2–3×
+inflated; the process CPU time per tick is the fairer measure (at load ~3 the
+old code's average tick matched its CPU time). Old and new ran alternately,
+map by map.
+
+| Map | CPU ms/tick before | after | Path queries failing before | after | Kills before → after |
+|---|---|---|---|---|---|
+| Norman Shores | 13.5–14.3 | 7.4–7.5 | 70% (4,485 of 6,387) | 2–3% | 4 → 1–2* |
+| Apex Ring | 11.9–13.3 | 8.5–9.1 | 2% | 1% | 34 → 32 |
+| Capitol Mall | 12.3–12.6 | 8.1–8.7 | 41% | 2–4% | 32 → 27–32 |
+| Riot Junction | 10.8–11.0 | 8.7–9.2 | 1% | 1% | 80 → 87–91 |
+| Eagle Spires | 12.1–12.5 | 7.7–7.8 | 55% | 17–19% | 40 → 30–37 |
+| Shingle Point | 12.4 | 8.5–8.7 | 19% | 7–8% | 41 → 38–40 |
+| Frost Basin | 11.8 | 7.9–8.0 | 40% | 14–16% | 33 → 30–31 |
+| Primeval Park | 15.7 | 9.9–10.0 | 16% | 13–14% | 103 → 71–89 |
+
+\* Norman Shores' sides start on opposite shores; bots now take the long way
+round (they used to give up and idle at the water: 8.6% idle samples before,
+2.5% after) and a minute is barely enough to cross. Remaining failures are
+goals truly out of reach (roofs, pads' far ends); they are remembered, so they
+cost a lookup. Where the time goes now (CPU, per tick): bot thinking 2–4 ms,
+character moves 2–4 ms (almost all coarse), vehicles and traffic < 1 ms
+(Apex Ring's ambient karts ~2 ms), snapshots ~0.5 ms.
+
+Client, headless Chromium (SwiftShader, so frame rates are meaningless; draw
+calls and triangles are not), 96 players offline, Medium graphics:
+
+| Map | Draw calls before | after | Triangles drawn before | after | Shadow-map casters before | after |
+|---|---|---|---|---|---|---|
+| Norman Shores | 6,116 | 2,389 | 7.34 M | 4.35 M | 6,316 | 1,447 |
+| Frost Basin | 3,892 | 1,157 | 1.95 M | 0.69 M | 3,853 | 1,175 |
+
+Terrain plants on Norman Shores (the grassiest big map), in view: before,
+≈0.61 M triangles of grass in PBR materials, all of it also drawn into the
+shadow map; after, 0.52 M on High, 0.31 M (2,500 plants) on Medium, a lambert
+material and no shadow casting. Apex Ring on Medium: 0.07 M.
 
 ### Player settings (Options)
 
@@ -84,7 +154,9 @@ texture, and a simple collision box (`collide: box`, `trunk` or `none` in
   game would otherwise draw every refresh; 30 fps for battery, Unlimited to
   follow the screen. Applies at once.
 - **Graphics** (Low / Medium / High): shadows, then far shadows, ambient
-  occlusion, bloom and light shafts. Applies from the next match.
+  occlusion, bloom and light shafts; the border's detailed trees and facades
+  are drawn to 160 m on Low and 260 m on Medium (the low-poly rows behind
+  them always). Applies from the next match.
 
 On a MacBook (M1) the defaults (Auto, 60 fps, Medium) keep the fans quiet; High
 with Native scale at 120 fps is roughly six times the GPU work.

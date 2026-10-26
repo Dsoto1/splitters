@@ -185,6 +185,9 @@ export class BotBrain {
   private roamGoal: Vec3 | null = null;
   private via: Vec3 | null = null;
   private lastPathTick = -Infinity;
+  /** The last goal no path led to, and until when not to ask again (doubling with each failure in a row). */
+  private noPath: { goal: Vec3; until: number } | null = null;
+  private pathFails = 0;
   private strafeDir = 1;
   private nextStrafeFlip = 0;
   /** When the current strafe run started, and the last tick spent strafing. */
@@ -288,6 +291,8 @@ export class BotBrain {
     this.lastKnown = null;
     this.heard = null;
     this.unreachable = null;
+    this.noPath = null;
+    this.pathFails = 0;
     this.headway = null;
     this.path = [];
     this.goal = null;
@@ -1513,7 +1518,15 @@ export class BotBrain {
     const exhausted = this.pathIndex >= this.path.length && horizontalDistance(me.pos, goal) > 1;
     if ((goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6)) {
       this.goal = { ...goal };
-      this.path = view.nav.findPath(me.pos, goal) ?? [];
+      // No way there a moment ago: don't search again every few ticks, back off (0.2 s, doubling up to 4 s).
+      const np = this.noPath;
+      const backedOff = !!np && view.tick < np.until && horizontalDistance(np.goal, goal) < 2 && Math.abs(np.goal.y - goal.y) < 1.5;
+      const found = backedOff ? null : view.nav.findPath(me.pos, goal);
+      if (!backedOff) {
+        this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
+        this.noPath = found ? null : { goal: { ...goal }, until: view.tick + Math.min(TICK_RATE * 4, 6 << this.pathFails) };
+      }
+      this.path = found ?? [];
       const door = this.pathBlocked(view);
       if (door) {
         this.path = [];

@@ -2,6 +2,7 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import { boxQuat, type Rot, type WorldBox } from '../map/geometry.ts';
 import type { Vec3 } from '../math.ts';
 import { PLAYER } from './constants.ts';
+import { simProfile } from './profile.ts';
 
 let initPromise: Promise<void> | undefined;
 
@@ -16,14 +17,63 @@ const GROUP_WORLD = 0x0001;
 const GROUP_PLAYER = 0x0002;
 /** Force fields: they stop bodies moving (players, vehicles) but never shots, sight or other queries. */
 const GROUP_FIELD = 0x0004;
+/** The terrain: static geometry like the rest, in a group of its own so coarse moves can leave it out. */
+const GROUP_TERRAIN = 0x0008;
 const groups = (membership: number, filter: number): number => ((membership << 16) | filter) >>> 0;
 const WORLD_COLLIDER_GROUPS = groups(GROUP_WORLD, 0xffff);
+const TERRAIN_COLLIDER_GROUPS = groups(GROUP_TERRAIN, 0xffff);
 const PLAYER_COLLIDER_GROUPS = groups(GROUP_PLAYER, 0xffff);
 /** Queries that should only see static map geometry (movement, line of sight, shot occlusion). */
-const WORLD_ONLY_QUERY = groups(0xffff, GROUP_WORLD);
+const WORLD_ONLY_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN);
 const FIELD_COLLIDER_GROUPS = groups(GROUP_FIELD, 0xffff);
 /** Movement queries: static geometry and force fields. */
-const MOVE_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD);
+const MOVE_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_TERRAIN);
+/** Coarse moves (moveCharacter with a ground function): everything but the terrain, which the function stands in for. */
+const MOVE_NO_TERRAIN_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD);
+const MAX_SLOPE_TAN = Math.tan((PLAYER.maxSlopeDegrees * Math.PI) / 180);
+
+/**
+ * Fewer, bigger colliders for the same solid space: unturned boxes with the
+ * same cross-section that touch or overlap end to end along x, then along z,
+ * become one (a run of floor tiles, a wall along several rooms): fewer
+ * candidates for every move and sight check, and no seams between
+ * neighbouring boxes for a capsule to catch on. Turned boxes stay as they are.
+ */
+export function mergeBoxes(boxes: readonly WorldBox[]): WorldBox[] {
+  const out: WorldBox[] = [];
+  let flat: WorldBox[] = [];
+  for (const b of boxes) (b.yaw || b.pitch || b.roll ? out : flat).push(b);
+  const k = (n: number) => Math.round(n * 1e4);
+  for (const axis of [0, 2] as const) {
+    const other = axis === 0 ? 2 : 0;
+    const groups = new Map<string, WorldBox[]>();
+    for (const b of flat) {
+      const key = `${k(b.min[1])},${k(b.max[1])},${k(b.min[other])},${k(b.max[other])}`;
+      let g = groups.get(key);
+      if (!g) groups.set(key, (g = []));
+      g.push(b);
+    }
+    const merged: WorldBox[] = [];
+    for (const g of groups.values()) {
+      g.sort((a, b) => a.min[axis] - b.min[axis]);
+      let cur: WorldBox | null = null;
+      for (const b of g) {
+        if (cur && b.min[axis] <= cur.max[axis] + 1e-4) {
+          if (b.max[axis] > cur.max[axis]) cur.max[axis] = b.max[axis];
+        } else {
+          if (cur) merged.push(cur);
+          cur = { ...b, min: [...b.min], max: [...b.max] };
+        }
+      }
+      if (cur) merged.push(cur);
+    }
+    flat = merged;
+  }
+  return [...out, ...flat];
+}
+
+/** Height of the terrain at (x, z), or null off it (PhysicsWorld.moveCharacter's coarse moves). */
+export type GroundHeight = (x: number, z: number) => number | null;
 
 const CAPSULE_HALF_HEIGHT = (PLAYER.height - PLAYER.radius * 2) / 2;
 const CONTROLLER_OFFSET = 0.02;
@@ -48,8 +98,8 @@ export class PhysicsWorld {
 
   constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null) {
     this.world = new RAPIER.World({ x: 0, y: 0, z: 0 });
-    if (terrain) this.world.createCollider(RAPIER.ColliderDesc.trimesh(terrain.positions, terrain.indices).setCollisionGroups(WORLD_COLLIDER_GROUPS));
-    for (const b of boxes) {
+    if (terrain) this.world.createCollider(RAPIER.ColliderDesc.trimesh(terrain.positions, terrain.indices).setCollisionGroups(TERRAIN_COLLIDER_GROUPS));
+    for (const b of mergeBoxes(boxes)) {
       const hx = (b.max[0] - b.min[0]) / 2;
       const hy = (b.max[1] - b.min[1]) / 2;
       const hz = (b.max[2] - b.min[2]) / 2;
@@ -70,7 +120,10 @@ export class PhysicsWorld {
   }
 
   createPlayerCollider(): RAPIER.Collider {
-    const desc = RAPIER.ColliderDesc.capsule(CAPSULE_HALF_HEIGHT, PLAYER.radius).setCollisionGroups(PLAYER_COLLIDER_GROUPS);
+    // Disabled: nothing queries player capsules (shots test players on their own), and the character
+    // controller moves a disabled collider just the same. Out of the broad phase, the capsules that
+    // move every tick cost nothing in physics updates (commit).
+    const desc = RAPIER.ColliderDesc.capsule(CAPSULE_HALF_HEIGHT, PLAYER.radius).setCollisionGroups(PLAYER_COLLIDER_GROUPS).setEnabled(false);
     return this.world.createCollider(desc);
   }
 
@@ -116,7 +169,7 @@ export class PhysicsWorld {
 
   /** A probe capsule that carries a vehicle over the ground (it collides with the world only, never players). */
   createVehicleProbe(radius: number): RAPIER.Collider {
-    const desc = RAPIER.ColliderDesc.capsule(Math.max(0.05, 0.5 - radius * 0.2), radius).setCollisionGroups(PLAYER_COLLIDER_GROUPS);
+    const desc = RAPIER.ColliderDesc.capsule(Math.max(0.05, 0.5 - radius * 0.2), radius).setCollisionGroups(PLAYER_COLLIDER_GROUPS).setEnabled(false);
     return this.world.createCollider(desc);
   }
 
@@ -148,7 +201,16 @@ export class PhysicsWorld {
   commit(): void {
     if (!this.dirty) return;
     this.dirty = false;
-    this.world.step();
+    const t0 = simProfile.on ? performance.now() : 0;
+    // World.step() then walks every collider handle through a JS callback to pick up colliders the
+    // step made itself, which a world with no bodies never does (ours are all created and removed
+    // through the JS API, which keeps its own map): on a 3,000-collider map that walk cost as much
+    // as the step. Run the pipeline directly when the build has the fields we expect.
+    const w = this.world as unknown as Record<string, unknown> & { physicsPipeline?: { step?: (...a: unknown[]) => void } };
+    if (typeof w.physicsPipeline?.step === 'function' && 'softBodies' in w) {
+      w.physicsPipeline.step(w.gravity, w.integrationParameters, w.islands, w.broadPhase, w.narrowPhase, w.bodies, w.colliders, w.softBodies, w.impulseJoints, w.multibodyJoints, w.ccdSolver);
+    } else this.world.step();
+    if (simProfile.on) simProfile.add('commit', performance.now() - t0);
   }
 
   removeCollider(collider: RAPIER.Collider): void {
@@ -160,7 +222,24 @@ export class PhysicsWorld {
    * geometry. Other players never block movement, which keeps client
    * prediction independent of remote player positions.
    */
-  moveCharacter(collider: RAPIER.Collider, feet: Vec3, delta: Vec3, height: number = PLAYER.height, radius: number = PLAYER.radius): { feet: Vec3; grounded: boolean; movedY: number } {
+  moveCharacter(collider: RAPIER.Collider, feet: Vec3, delta: Vec3, height: number = PLAYER.height, radius: number = PLAYER.radius, ground?: GroundHeight): { feet: Vec3; grounded: boolean; movedY: number } {
+    if (!simProfile.on) return this.moveCharacterNow(collider, feet, delta, height, radius, ground);
+    const t0 = performance.now();
+    const r = this.moveCharacterNow(collider, feet, delta, height, radius, ground);
+    simProfile.add('move', performance.now() - t0);
+    simProfile.count(ground ? 'moveCoarse' : 'move');
+    return r;
+  }
+
+  /**
+   * With `ground` (a coarse move, for bots on foot in big matches: Match.relaxedMove)
+   * the controller leaves the terrain out, the costliest thing it collides with
+   * (about four times a move on flat boxes), and the terrain's height function
+   * stands in for it: feet are kept on it, stepped down onto it, and slopes too
+   * steep to climb stop the move.
+   */
+  private moveCharacterNow(collider: RAPIER.Collider, feet: Vec3, delta: Vec3, height: number, radius: number, ground?: GroundHeight): { feet: Vec3; grounded: boolean; movedY: number } {
+    const query = ground ? MOVE_NO_TERRAIN_QUERY : MOVE_QUERY;
     // Crouching and prone shrink the capsule; small and large characters have their own.
     const half = Math.max(0.01, (height - radius * 2) / 2);
     const shape = collider.shape as RAPIER.Capsule;
@@ -169,24 +248,43 @@ export class PhysicsWorld {
     const centerY = height / 2;
     const startY = feet.y + START_LIFT;
     collider.setTranslation({ x: feet.x, y: startY + centerY, z: feet.z });
-    this.controller.computeColliderMovement(collider, { x: delta.x, y: delta.y - START_LIFT, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY);
+    this.controller.computeColliderMovement(collider, { x: delta.x, y: delta.y - START_LIFT, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, query);
     const m = this.controller.computedMovement();
     let next = { x: feet.x + m.x, y: startY + m.y, z: feet.z + m.z };
     // The controller can let a capsule creep into a gap a little smaller than it (a standing
     // player through a window): refuse a move that ends inside the level when it didn't start there.
-    if (!this.headroom(next, height, radius) && this.headroom(feet, height, radius)) {
+    if (!this.headroom(next, height, radius, query) && this.headroom(feet, height, radius, query)) {
       const upright = { x: feet.x, y: next.y, z: feet.z };
-      next = this.headroom(upright, height, radius) ? upright : { ...feet };
+      next = this.headroom(upright, height, radius, query) ? upright : { ...feet };
+    }
+    let grounded = this.controller.computedGrounded();
+    let movedY = m.y + START_LIFT;
+    const g1 = ground?.(next.x, next.z) ?? null;
+    if (ground && g1 !== null) {
+      let at = g1;
+      const run = Math.hypot(next.x - feet.x, next.z - feet.z);
+      const g0 = ground(feet.x, feet.z) ?? g1;
+      if (g1 > feet.y + 0.02 && run > 1e-6 && (g1 - g0) / run > MAX_SLOPE_TAN) {
+        // Too steep to walk up: stay where we were.
+        next = { x: feet.x, y: next.y, z: feet.z };
+        at = g0;
+      }
+      // Below the ground: up onto it. A little above it and not on anything else: down onto it.
+      if (next.y < at || (!grounded && delta.y <= 0 && next.y - at < PLAYER.maxStepHeight + START_LIFT)) {
+        movedY += at - next.y;
+        next.y = at;
+        grounded = true;
+      }
     }
     collider.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
-    return { feet: next, grounded: this.controller.computedGrounded(), movedY: m.y + START_LIFT };
+    return { feet: next, grounded, movedY };
   }
 
   /** Whether a player body `height` tall fits standing at `feet` (room to stand or crouch up). */
-  headroom(feet: Vec3, height: number, radius: number = PLAYER.radius): boolean {
+  headroom(feet: Vec3, height: number, radius: number = PLAYER.radius, query = MOVE_QUERY): boolean {
     const r = radius - 0.03;
     const half = Math.max(0.01, height / 2 - r);
-    const hit = this.world.intersectionWithShape({ x: feet.x, y: feet.y + height / 2 + 0.03, z: feet.z }, { x: 0, y: 0, z: 0, w: 1 }, new RAPIER.Capsule(half, r), undefined, MOVE_QUERY);
+    const hit = this.world.intersectionWithShape({ x: feet.x, y: feet.y + height / 2 + 0.03, z: feet.z }, { x: 0, y: 0, z: 0, w: 1 }, new RAPIER.Capsule(half, r), undefined, query);
     return !hit;
   }
 
@@ -217,6 +315,7 @@ export class PhysicsWorld {
 
   /** True when nothing static blocks the segment a -> b. */
   lineOfSight(a: Vec3, b: Vec3): boolean {
+    if (simProfile.on) simProfile.count('los');
     const d = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
     const len = Math.hypot(d.x, d.y, d.z);
     if (len < 1e-6) return true;

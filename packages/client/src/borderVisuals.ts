@@ -27,6 +27,7 @@ import {
 import type { ModelLibrary } from './content/models.ts';
 import type { MapStyler } from './mapMeshes.ts';
 import { windows } from './backdrop.ts';
+import { loadGraphicsQuality } from './game/atmosphere.ts';
 
 type V3 = [number, number, number];
 
@@ -140,9 +141,11 @@ export class BorderVisuals {
   }
 
   private add(mesh: Mesh): Mesh {
-    mesh.isPickable = false;
-    mesh.freezeWorldMatrix();
-    this.meshes.push(mesh);
+    for (const m of splitThin(mesh)) {
+      m.isPickable = false;
+      m.freezeWorldMatrix();
+      this.meshes.push(m);
+    }
     return mesh;
   }
 
@@ -826,6 +829,45 @@ const FOREST_KITS = {
 } as const satisfies Record<string, { trees: readonly string[]; bushes: readonly string[] }>;
 
 /** Every mesh of a model, GPU-instanced at each of `matrices` (one draw call per mesh, however many copies). */
+/** Side of the squares (m) detailed instanced border models are split into (splitThin). */
+const SECTOR = 120;
+/** Below this many triangles a model's instances stay in one draw call (cones, posts, signs). */
+const SPLIT_TRIANGLES = 300;
+/** Past this distance (m) split chunks of detailed models aren't drawn, by graphics setting (the cones behind stand in). */
+const SECTOR_FAR: Record<string, number> = { low: 160, medium: 260, high: 0 };
+
+/**
+ * A thin-instanced mesh is drawn whole or not at all. Detailed models (the
+ * forest's front-row trees, ~2 k triangles each, the skyline's facades) that
+ * run along the whole boundary were all drawn wherever you looked: 0.6 M
+ * triangles on Apex Ring. Split into SECTOR squares, the ones behind you are
+ * culled, and on low and medium graphics far ones drop out.
+ */
+function splitThin(mesh: Mesh): Mesh[] {
+  const n = mesh.thinInstanceCount;
+  if (n < 8 || mesh.getTotalIndices() / 3 < SPLIT_TRIANGLES) return [mesh];
+  const all = mesh.thinInstanceGetWorldMatrices();
+  const groups = new Map<string, Matrix[]>();
+  for (const m of all) {
+    const key = `${Math.floor(m.m[12]! / SECTOR)},${Math.floor(m.m[14]! / SECTOR)}`;
+    (groups.get(key) ?? groups.set(key, []).get(key)!).push(m);
+  }
+  const far = SECTOR_FAR[loadGraphicsQuality()] ?? 0;
+  const out: Mesh[] = [];
+  for (const list of groups.values()) {
+    const m = out.length === 0 ? mesh : mesh.clone(`${mesh.name}_${out.length}`, null, true, false);
+    // The instance buffer lives on the geometry: each chunk needs its own.
+    if (m !== mesh) m.makeGeometryUnique();
+    const buf = new Float32Array(list.length * 16);
+    list.forEach((x, i) => x.copyToArray(buf, i * 16));
+    m.thinInstanceSetBuffer('matrix', buf, 16, true);
+    m.thinInstanceRefreshBoundingInfo(false);
+    if (far) m.addLODLevel(far, null);
+    out.push(m);
+  }
+  return out;
+}
+
 async function thinModel(models: ModelLibrary, file: string, name: string, matrices: readonly Matrix[]): Promise<Mesh[]> {
   const container = await models.load(file);
   const inst = container.instantiateModelsToScene((n) => `${name}_${n}`, false, { doNotInstantiate: true });

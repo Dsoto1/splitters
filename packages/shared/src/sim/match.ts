@@ -1,4 +1,5 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
+import { simProfile } from './profile.ts';
 import { BotBrain, type CombatantView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
@@ -40,7 +41,8 @@ import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
 import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
-import { PhysicsWorld } from './physics.ts';
+import { PhysicsWorld, type GroundHeight } from './physics.ts';
+import { terrainHeightAt } from '../map/terrain.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
@@ -123,6 +125,10 @@ interface MountRt {
   /** Sideways slide (m/s along the vehicle's right), kept between ticks so it drifts. */
   slide: number;
   airborne: boolean;
+  /** Skipped this tick's drive (Match.farVehicle): the next one covers two ticks. */
+  moveOwed?: boolean;
+  /** Parked and settled since this tick (driveVehicle skips the physics until something moves it). */
+  restSince?: number;
   cooldown: number;
   /** Who damaged it last (credit for the explosion). */
   lastHitBy: number | null;
@@ -208,6 +214,8 @@ export interface Combatant {
   bloom: number;
   /** Horizontal speed over the last tick (m/s), for movement spread. */
   moveSpeed: number;
+  /** Skipped this tick's move (Match.relaxedMove): the next one covers two ticks. */
+  moveOwed?: boolean;
   /** Status effects (ticks left; chill builds 0..1 into a freeze), and who caused them (kill credit). */
   burnTicks: number;
   /** Jetpack fuel units (see JET), or null without a jetpack. */
@@ -375,6 +383,22 @@ export class Match {
   private readonly history = new Map<number, Map<number, Vec3 & { h: number }>>();
   /** Bot AI time spent in the most recent tick, for instrumentation. */
   lastAiMs = 0;
+  /**
+   * Slots that count as people watching for movement detail (load tests stand
+   * bots in for players with it; see relaxedMove).
+   */
+  readonly watchers = new Set<number>();
+  /** Where the people (and watchers) are this tick, in big matches only (relaxedMove). */
+  private watched: Vec3[] | null = null;
+  /** The terrain's height, for coarse moves (relaxedMove), on maps with terrain. */
+  private groundFn: GroundHeight | null | undefined;
+  private get groundAt(): GroundHeight | null {
+    if (this.groundFn === undefined) {
+      const t = this.map.terrain;
+      this.groundFn = t ? (x, z) => terrainHeightAt(t, x, z) : null;
+    }
+    return this.groundFn;
+  }
   /** Objective rules (Capture the Flag, King of the Hill, Elimination); null in other modes. */
   readonly mode: ModeLogic | null;
   /** The race in Race mode (null in every other mode); see race.ts. */
@@ -1141,16 +1165,30 @@ export class Match {
       if (this.phase === 'waiting' && ((humans.length > 0 && humans.every((c) => this.readySlots.has(c.slot))) || this.tick >= this.phaseEndTick)) this.startCountdown();
       else if (this.phase === 'countdown' && this.tick >= this.phaseEndTick) this.beginPlay();
     } else {
+      const prof = simProfile.on;
+      let t = prof ? performance.now() : 0;
+      const lap = (key: string) => {
+        const now = performance.now();
+        simProfile.add(key, now - t);
+        t = now;
+      };
       this.runBots();
       if (this.race) this.raceInputs(this.race);
+      if (prof) lap('bots');
       // Movers first, so everyone moves against (and rides) this tick's platforms.
       this.scenario.moveMovers();
-      for (const c of this.actors()) this.applyInputs(c);
+      if (prof) lap('scenario');
+      const actors = this.actors();
+      this.watched = this.botBudget(actors) > 1 ? actors.filter((c) => c.alive && (c.kind === 'human' || this.watchers.has(c.slot))).map((c) => c.move.pos) : null;
+      for (const c of actors) this.applyInputs(c);
+      if (prof) lap('players');
       if (this.ambient.length && this.road) this.driveAmbient(this.road);
       this.stepMounts();
+      if (prof) lap('mounts');
       this.stepProjectiles();
       this.stepZones();
       this.stepStatuses();
+      if (prof) lap('projectiles');
       if (this.phase === 'playing') this.scenario.step();
       if (this.phase === 'playing') this.encounters.step();
       if (this.phase === 'playing') this.mode?.step();
@@ -1162,6 +1200,7 @@ export class Match {
       }
       for (const c of this.npcs.values()) if (!c.alive && this.tick >= c.npc!.removeAt) this.removeNpc(c.slot);
       if (this.tick >= this.phaseEndTick) this.endRound();
+      if (prof) lap('scenario');
     }
     this.recordHistory();
     const events = this.pendingEvents;
@@ -1169,6 +1208,35 @@ export class Match {
     this.noteCombat(events);
     this.classes?.events(events);
     return events;
+  }
+
+  /** Big matches: an empty vehicle (ambient traffic, a parked car rolling) more than twice RELAXED_RANGE from every player. */
+  private farVehicle(m: MountRt): boolean {
+    const near = this.watched;
+    if (!near || m.route || !m.seats.every((s) => s === null)) return false;
+    const r = RELAXED_RANGE * 2;
+    for (const w of near) if ((w.x - m.pos.x) ** 2 + (w.z - m.pos.z) ** 2 < r * r) return false;
+    return true;
+  }
+
+  /**
+   * Movement detail for big matches (past BOT_FULL_RATE bots), for bots and
+   * NPCs walking on the ground (no push, jump, ladder, swim, canopy or
+   * jetpack). 'coarse': on terrain maps the terrain's height function stands
+   * in for its collision mesh (PhysicsWorld.moveCharacter), the dearest thing
+   * the character controller collides with. 'far': also more than
+   * RELAXED_RANGE from every player, so it moves every other tick by two
+   * ticks' worth; snapshots go out every other tick anyway, so nobody sees
+   * the difference. 'full': the same move a player makes.
+   */
+  private relaxedMove(c: Combatant, input: PlayerInput): 'full' | 'coarse' | 'far' {
+    const near = this.watched;
+    if (!near || c.kind === 'human' || this.watchers.has(c.slot)) return 'full';
+    const m = c.move;
+    if (!m.grounded || m.velY !== 0 || m.vx || m.vz || m.swim || m.climb || m.chute || m.jet || input.buttons & BUTTON_JUMP) return 'full';
+    const p = m.pos;
+    for (const w of near) if ((w.x - p.x) ** 2 + (w.z - p.z) ** 2 < RELAXED_RANGE * RELAXED_RANGE) return 'coarse';
+    return 'far';
   }
 
   /**
@@ -1231,6 +1299,15 @@ export class Match {
       if (!list) hostileBySide.set(c.faction, (list = actors.filter((o) => o.alive && (o === c || this.hostile(c, o)) && (o !== c || c.faction === null))));
       return list.includes(c) ? list.filter((o) => o !== c) : list;
     };
+    // Their views, likewise once per side (when the side's list doesn't hold the bot itself).
+    const hostileViewsBySide = new Map<string | null, CombatantView[]>();
+    const hostileViews = (c: Combatant, hostiles: Combatant[]): CombatantView[] => {
+      if (hostiles !== hostileBySide.get(c.faction)) return hostiles.map((o) => views.get(o.slot)!);
+      let list = hostileViewsBySide.get(c.faction);
+      if (!list) hostileViewsBySide.set(c.faction, (list = hostiles.map((o) => views.get(o.slot)!)));
+      return list;
+    };
+    const anySentries = this.mounts.some((m) => m.def.sentry && m.alive);
     const budget = this.botBudget(actors);
     for (const c of actors) {
       if (!c.bot) continue;
@@ -1260,7 +1337,7 @@ export class Match {
       const input = c.bot.think({
         tick: this.tick,
         self: views.get(c.slot)!,
-        others: [...(aware < Infinity ? hostiles.filter((o) => horizontalDistance(o.move.pos, c.move.pos) <= aware) : hostiles).map((o) => views.get(o.slot)!), ...this.hostileSentries(c)],
+        others: aware < Infinity || anySentries ? [...(aware < Infinity ? hostiles.filter((o) => horizontalDistance(o.move.pos, c.move.pos) <= aware) : hostiles).map((o) => views.get(o.slot)!), ...this.hostileSentries(c)] : hostileViews(c, hostiles),
         physics: this.physics,
         nav: this.nav,
         spawnPoints: npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
@@ -1581,11 +1658,18 @@ export class Match {
         }
         const was = c.move.pos;
         const before = c.move;
-        const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}), ...(c.jetFuel !== null ? { jetpack: true } : {}), ...(c.glider ? { glider: true } : {}), ...(c.kind !== 'human' ? { autoChute: true } : {}) });
-        c.move = applyPads(this.pads, stepped);
-        this.trackFall(c, before, c.move !== stepped);
-        c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / TICK_DT;
-        if (c.jetFuel !== null) c.jetFuel = stepJetFuel(c.jetFuel, !!c.move.jet);
+        // Big matches: bots on foot move coarsely over terrain, and far from every player every other tick (relaxedMove).
+        const detail = ridden ? 'full' : this.relaxedMove(c, input);
+        if (detail === 'far' && !c.moveOwed && (this.tick + c.slot) % 2 === 0) c.moveOwed = true;
+        else {
+          const dt = c.moveOwed ? TICK_DT * 2 : TICK_DT;
+          c.moveOwed = false;
+          const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}), ...(c.jetFuel !== null ? { jetpack: true } : {}), ...(c.glider ? { glider: true } : {}), ...(c.kind !== 'human' ? { autoChute: true } : {}), ...(detail !== 'full' && this.groundAt ? { ground: this.groundAt } : {}) });
+          c.move = applyPads(this.pads, stepped);
+          this.trackFall(c, before, c.move !== stepped);
+          c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / dt;
+          if (c.jetFuel !== null) c.jetFuel = stepJetFuel(c.jetFuel, !!c.move.jet);
+        }
       }
       if (c.fireCooldown > 0) c.fireCooldown--;
       if (c.throwCooldown > 0) c.throwCooldown--;
@@ -2540,6 +2624,7 @@ export class Match {
     m.health = m.def.health;
     m.burning = false;
     m.wreckUntil = 0;
+    m.restSince = undefined;
     m.pos = { ...m.home.pos };
     m.yaw = m.aimYaw = m.home.yaw;
     m.aimPitch = 0;
@@ -2572,7 +2657,14 @@ export class Match {
         if (g.heat === 0) g.overheated = false;
       }
       if (m.route) this.flyPlane(m);
-      if (m.def.vehicle) this.driveVehicle(m);
+      if (m.def.vehicle) {
+        // Empty vehicles far from every player (ambient traffic) drive every other tick, two ticks at a time.
+        if (this.farVehicle(m) && !m.moveOwed && (this.tick + m.index) % 2 === 0) m.moveOwed = true;
+        else {
+          this.driveVehicle(m, m.moveOwed ? 2 : 1);
+          m.moveOwed = false;
+        }
+      }
       if (m.def.sentry && this.race?.combat !== false) this.runSentry(m);
       if (m.alive && m.def.vehicle) this.vehicleHazards(m);
       if (!m.alive) continue;
@@ -2657,8 +2749,12 @@ export class Match {
    */
   private ramMounts(m: MountRt, vx: number, vz: number, driver: Combatant | null): void {
     if (Math.hypot(vx, vz) < RAM_MIN_SPEED) return;
+    const reach = Math.hypot(m.def.half[0], m.def.half[2]) + 0.5;
     for (const o of this.mounts) {
       if (o === m || o.route || (!o.alive && this.tick >= o.wreckUntil) || (m.rammed.get(o.index) ?? 0) > this.tick) continue;
+      // Too far apart to touch (the exact test below is dearer).
+      const r = reach + Math.hypot(o.def.half[0], o.def.half[2]);
+      if (Math.abs(o.pos.x - m.pos.x) > r || Math.abs(o.pos.z - m.pos.z) > r) continue;
       const c = footprintGap({ pos: m.pos, yaw: m.yaw, half: m.def.half }, { pos: o.pos, yaw: o.yaw, half: o.def.half });
       if (!c || c.gap > 0.3) continue;
       const closing = (vx - o.vel.x) * c.nx + (vz - o.vel.z) * c.nz;
@@ -2691,7 +2787,8 @@ export class Match {
    * in the air there's little steering and no throttle, and a hard landing
    * dents the vehicle. Walls bleed speed, less for heavy ones.
    */
-  private driveVehicle(m: MountRt): void {
+  private driveVehicle(m: MountRt, ticks = 1): void {
+    const dt = TICK_DT * ticks;
     const v = m.def.vehicle!;
     const { forward, right, brake } = m.drive;
     const mass = v.mass ?? 1;
@@ -2700,34 +2797,45 @@ export class Match {
     const road = roadHandling(this.road, m.pos, !!v.hover || !!v.fly);
     const target = (forward > 0 ? v.maxSpeed * forward : forward < 0 ? -v.reverseSpeed * -forward : 0) * road.speed;
     const braking = target === 0 || Math.sign(target) !== Math.sign(m.speed);
-    let rate = (target === 0 ? v.accel * (v.hover ? 0.35 : 0.8) : braking ? v.accel * 1.8 : v.accel) * TICK_DT;
+    let rate = (target === 0 ? v.accel * (v.hover ? 0.35 : 0.8) : braking ? v.accel * 1.8 : v.accel) * dt;
     if (!grounded) rate = 0;
-    if (brake && grounded) rate = Math.max(rate, v.accel * 1.2 * TICK_DT);
+    if (brake && grounded) rate = Math.max(rate, v.accel * 1.2 * dt);
     m.speed += Math.max(-rate, Math.min(rate, (brake ? 0 : target) - m.speed));
     // Steering: needs some speed, tightest around half speed, a little lazier flat out; barely any in the air.
     const frac = Math.min(1, Math.abs(m.speed) / v.maxSpeed);
     const steer = Math.min(1, Math.abs(m.speed) / 5) * (1 - 0.35 * frac * frac) * (grounded ? 1 : 0.2) * (brake ? 1.35 : 1);
-    const turn = right * v.turnRate * TICK_DT * steer * (m.speed >= 0 ? 1 : -1);
+    const turn = right * v.turnRate * dt * steer * (m.speed >= 0 ? 1 : -1);
     m.yaw += turn;
     // Turning swings the heading out from under the momentum: that becomes slide, which grip then eats.
     m.slide += -m.speed * Math.sin(turn);
     const grip = grounded ? Math.min(0.6, (v.grip ?? (v.hover ? 0.06 : 0.25)) * road.grip) * (brake ? 0.25 : 1) : 0;
-    m.slide *= 1 - grip;
+    m.slide *= (1 - grip) ** ticks;
     if (Math.abs(m.slide) < 0.02) m.slide = 0;
     if (v.fly) {
       // Flyers hold their height: climb or dive at the pilot's say, and sink back down with nobody at the controls.
       const piloted = m.def.seats.some((s, i) => s.role === 'driver' && m.seats[i] !== null);
       const want = piloted ? (m.drive.lift ?? 0) * v.fly.climb : -v.fly.climb * 0.5;
-      m.velY += Math.max(-v.fly.climb * 3 * TICK_DT, Math.min(v.fly.climb * 3 * TICK_DT, want - m.velY));
+      m.velY += Math.max(-v.fly.climb * 3 * dt, Math.min(v.fly.climb * 3 * dt, want - m.velY));
       if (m.pos.y >= m.home.pos.y + v.fly.ceiling && m.velY > 0) m.velY = 0;
-    } else m.velY -= PLAYER.gravity * TICK_DT;
+    } else m.velY -= PLAYER.gravity * dt;
     const dir = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
     const side = { x: Math.cos(m.yaw), z: -Math.sin(m.yaw) };
     const vx = dir.x * m.speed + side.x * m.slide + m.push.x;
     const vz = dir.z * m.speed + side.z * m.slide + m.push.z;
+    // Parked and settled (nobody aboard, nothing pushing): no physics, but a look every half second
+    // in case the ground went from under it.
+    const parked = !vx && !vz && m.seats.every((s) => s === null);
+    if (!parked) m.restSince = undefined;
+    else if (m.restSince !== undefined && (this.tick - m.restSince) % 30 !== 0) {
+      m.vel = { x: 0, z: 0 };
+      m.velY = 0;
+      return;
+    }
     const startY = m.pos.y;
-    const moved = this.physics.moveVehicle(m.probe!, m.body, m.pos, { x: vx * TICK_DT, y: m.velY * TICK_DT, z: vz * TICK_DT });
-    const climbed = (moved.feet.y - startY) / TICK_DT;
+    const moved = this.physics.moveVehicle(m.probe!, m.body, m.pos, { x: vx * dt, y: m.velY * dt, z: vz * dt });
+    if (parked && Math.abs(moved.feet.y - startY) < 1e-3) m.restSince ??= this.tick;
+    else m.restSince = undefined;
+    const climbed = (moved.feet.y - startY) / dt;
     if (moved.grounded) {
       // Hard landing: the heavier and faster it comes down, the more it hurts.
       if (m.airborne && m.velY < -11 && !v.hover && !v.fly) this.damageMount(m, (-m.velY - 11) * 6 * mass, null);
@@ -2740,7 +2848,7 @@ export class Match {
       m.slide *= 0.5;
     }
     m.pos = moved.feet;
-    const decay = moved.grounded ? 0.9 : 0.99;
+    const decay = (moved.grounded ? 0.9 : 0.99) ** ticks;
     m.push = { x: m.push.x * decay, z: m.push.z * decay };
     this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
     if (m.pos.y < this.killY) {
@@ -3647,6 +3755,8 @@ export const LEADER_BOUNTY = 3;
 
 /** Past this many thinking bots, idle ones think every other tick (Match.botBudget). */
 export const BOT_FULL_RATE = 40;
+/** In those matches, bots this far (m) from every player move at half rate (Match.relaxedMove). */
+export const RELAXED_RANGE = 45;
 /** Held buttons a coasting bot keeps (movement stance); fire, use, jump and the rest are one-shot. */
 const COAST_BUTTONS = BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE;
 

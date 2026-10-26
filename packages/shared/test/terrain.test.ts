@@ -72,6 +72,31 @@ describe('terrain', () => {
     expect(state.pos.y).toBeGreaterThan(-1);
   });
 
+  it('coarse moves (bots in big matches) follow the ground without colliding with the terrain mesh, and stop at slopes too steep to climb', () => {
+    const map = hillMap();
+    const t = map.terrain!;
+    const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+    const collider = physics.createPlayerCollider();
+    const ground = (x: number, z: number) => terrainHeightAt(t, x, z);
+    let feet = { x: -20, y: terrainHeightAt(t, -20, 0)!, z: 0 };
+    // Up and over the hill, two ticks at a time like a far bot.
+    for (let i = 0; i < 160; i++) {
+      const r = physics.moveCharacter(collider, feet, { x: 0.2, y: -0.01, z: 0 }, undefined, undefined, ground);
+      expect(r.grounded).toBe(true);
+      feet = r.feet;
+      expect(Math.abs(feet.y - terrainHeightAt(t, feet.x, feet.z)!)).toBeLessThan(0.02);
+    }
+    expect(feet.x).toBeGreaterThan(10);
+    // A wall of earth: no walking up it.
+    const steep = { ...map, terrain: applyBrush(newTerrain(64, 2), { brush: 'raise', x: 6, z: 0, radius: 3, strength: 12 }) };
+    const wall = new PhysicsWorld(buildMapGeometry(steep), mapTerrainMesh(steep));
+    const c2 = wall.createPlayerCollider();
+    const g2 = (x: number, z: number) => terrainHeightAt(steep.terrain, x, z);
+    let f2 = { x: -4, y: g2(-4, 0)!, z: 0 };
+    for (let i = 0; i < 80; i++) f2 = wall.moveCharacter(c2, f2, { x: 0.2, y: -0.01, z: 0 }, undefined, undefined, g2).feet;
+    expect(f2.y).toBeLessThan(4);
+  });
+
   it('bots can path over it, and MapMaker can point at it', () => {
     const map = hillMap();
     const nav = NavWorld.build(buildMapGeometry(map), mapTerrainMesh(map));

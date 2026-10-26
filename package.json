@@ -12,6 +12,7 @@
     "test": "vitest run",
     "bench": "pnpm --filter @tiletrigger/server bench",
     "bench:96": "pnpm --filter @tiletrigger/server bench 96 60 maps/frost_basin.json --mode=core.tdm",
+    "bench:96:maps": "pnpm --filter @tiletrigger/server bench 96 60 maps/norman_shores.json maps/apex_ring.json maps/capitol_mall.json maps/riot_junction.json maps/eagle_spires.json maps/shingle_point.json maps/frost_basin.json maps/primeval_park.json --mode=core.tdm",
     "validate-map": "pnpm --filter @tiletrigger/server validate-map",
     "e2e": "node e2e/run.mjs",
     "content:build": "node tools/content/build.mjs",

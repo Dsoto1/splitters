@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NavWorld, initNavigation, validateNavigation } from '../src/nav/index.ts';
-import { buildMapGeometry } from '../src/index.ts';
+import { buildMapGeometry, loadMap, mapTerrainMesh } from '../src/index.ts';
 import { loadArena, makeMap } from './helpers.ts';
 
 beforeAll(() => initNavigation());
@@ -39,4 +41,30 @@ describe('navigation', () => {
     expect(validateNavigation(map, nav).map((i) => [i.code, i.targetId])).toEqual([['nav.disconnected', 'spawn_1']]);
     nav.destroy();
   });
+});
+
+describe('long routes', () => {
+  it('finds the way round the lake on Norman Shores (house to house across the basin, over the bridge) and shares it', () => {
+    const loaded = loadMap(readFileSync(fileURLToPath(new URL('../../../maps/norman_shores.json', import.meta.url)), 'utf8'));
+    if (!loaded.ok) throw new Error('Norman Shores failed to load');
+    const map = loaded.map;
+    const nav = NavWorld.build(buildMapGeometry(map), mapTerrainMesh(map));
+    // The flags sit in the two southern houses, facing each other across the water: the way is north over the bridge.
+    const [a, b] = map.entities.filter((e) => e.kind === 'flag').map((e) => ({ x: e.position[0], y: e.position[1], z: e.position[2] }));
+    const path = nav.findPath(a!, b!);
+    expect(path).not.toBeNull();
+    let len = 0;
+    for (let i = 1; i < path!.length; i++) len += Math.hypot(path![i]!.x - path![i - 1]!.x, path![i]!.z - path![i - 1]!.z);
+    expect(len).toBeGreaterThan(250);
+    expect(Math.max(...path!.map((p) => p.z))).toBeGreaterThan(40);
+    // A teammate setting off from along the way takes the rest of that route (and still gets there).
+    const mid = path![Math.floor(path!.length / 2)]!;
+    const rest = nav.findPath(mid, b!);
+    expect(rest).not.toBeNull();
+    const end = rest![rest!.length - 1]!;
+    expect(Math.hypot(end.x - b!.x, end.z - b!.z)).toBeLessThan(1.5);
+    // Every spawn reaches every other.
+    expect(validateNavigation(map, nav).filter((i) => i.code === 'nav.disconnected')).toEqual([]);
+    nav.destroy();
+  }, 120_000);
 });
