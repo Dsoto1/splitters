@@ -1411,6 +1411,11 @@ async function hostgameFlow(browser) {
     await friend.waitForTimeout(2500);
     const seen = await host.evaluate(() => window.__match.combatants().filter((c) => c.kind === 'human').map((c) => c.name));
     check(seen.length === 2 && seen.includes('Friend'), `the host's match has both players (${seen.join(', ')})`);
+    // The friend takes over a bot where it stands, maybe mid-fight: keep them alive while they walk.
+    await host.evaluate(() => {
+      const f = window.__match.combatants().find((c) => c.name === 'Friend');
+      if (f) setInterval(() => (f.health = f.maxHealth), 50);
+    });
     const moved = await friend.evaluate(async () => {
       const y0 = window.__cs.local.state.pos;
       window.__autoInput = { forward: 1 };
@@ -1423,7 +1428,8 @@ async function hostgameFlow(browser) {
       const f = window.__match.combatants().find((c) => c.name === 'Friend');
       return f ? f.move.pos : null;
     });
-    check(moved > 1 && !!onHost, `the friend moves and the host's match follows (${moved.toFixed(1)} m)`);
+    const alive = await friend.evaluate(() => window.__cs.local.alive);
+    check(moved > 1 && !!onHost, `the friend moves and the host's match follows (${moved.toFixed(1)} m${alive ? '' : ', friend down'})`);
     // The host's stream to a friend is compressed: a few KB/s, not the ~40 KB/s of raw snapshots.
     const bytes = () => friend.evaluate(() => window.__cs.transport.bytesIn);
     const b0 = await bytes();
